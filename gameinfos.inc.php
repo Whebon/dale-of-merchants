@@ -12,8 +12,8 @@
 
 /** @var (string|int|null|bool|string[]|int[])[] $gameinfos */
 $gameinfos = array(
-	'game_name' => 'My Great Game',
-	'publisher' => 'My Publishing Company',
+	'game_name' => 'Dale of Merchants',
+	'publisher' => 'Snowdale Design',
 	'publisher_website' => 'http://www.mypublishingcompany.com/',
 	'publisher_bgg_id' => 1234,
 	'bgg_id' => 176165,
