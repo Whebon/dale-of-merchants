@@ -23,6 +23,22 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
+.stockitem {
+	border-radius: 10px;
+}
+
+#market_background {
+    background-image: url(img/shop_day.jpg);
+	background-repeat: no-repeat;
+    // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
+    // margin-bottom: 10px;
+    // margin-top: 10px;
+	// padding-top: 16.887417218%; /* 153px / 906px */
+	// padding-bottom: 4.966887417%; /* 45px / 906px */
+	// padding-left: 1.656238498%; /* 45px / 2717px */
+	// padding-right: 1.656238498%; /* 45px / 2717px */
+}
+
 /*
 	Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
 

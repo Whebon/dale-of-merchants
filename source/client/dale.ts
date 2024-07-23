@@ -11,12 +11,16 @@
 
 import Gamegui = require('ebg/core/gamegui');
 import "ebg/counter";
+import "ebg/stock"; //needed for board game arena
+import Stock = require('ebg/stock'); //needed for the IDE
+
+import * as ImageConstants from './types/ImageConstants';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
-	// myGlobalValue: number = 0;
-	// myGlobalArray: string[] = [];
+	protected market: Stock = new ebg.stock(); 
+	protected hand: Stock = new ebg.stock();
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -35,8 +39,50 @@ class Dale extends Gamegui
 			var player = gamedatas.players[player_id];
 			// TODO: Setting up players boards if needed
 		}
-		
+
 		// TODO: Set up your game interface here, according to "gamedatas"
+		
+		this.market.create( this, $('market'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
+		this.market.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
+		this.market.image_items_per_row = 6;
+		this.market.item_margin = ImageConstants.MARKET_ITEM_MARGIN_S;
+		console.log($('market'));
+		$('market_background')?.setAttribute("style", `
+			background-size: ${ImageConstants.MARKET_WIDTH_S}px ${ImageConstants.MARKET_HEIGHT_S}px;
+			padding-top: ${ImageConstants.MARKET_PADDING_TOP_S}px;
+			padding-left: ${ImageConstants.MARKET_PADDING_LEFT_S}px;
+		`);
+
+		this.hand.create( this, $('myhand'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
+		this.hand.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
+		this.hand.image_items_per_row = 6;
+
+		// Create cards types
+		for (var i = 0; i < 100; i++) {
+			var card_type_id = i; //todo: add more card types, and make [card->number] and [number->card] functions
+			this.market.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards_1.jpg', card_type_id);
+			this.hand.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards_1.jpg', card_type_id);
+		}
+
+		// just to feel it: add 5 cards to market
+		this.market.addToStockWithId(1, 1);
+		this.market.addToStockWithId(2, 2);
+		this.market.addToStockWithId(3, 3);
+		this.market.addToStockWithId(4, 4);
+		this.market.addToStockWithId(5, 5);
+
+		// just to feel it: add 2 cards to hand
+		this.hand.addToStockWithId(1, 6);
+		this.hand.addToStockWithId(1, 7);
+
+
+		// Todo: initial hand (from server)
+		// for (var i in this.gamedatas.hand) {
+		// 	var card = this.gamedatas.hand[i]!;
+		// 	var color = card.type;
+		// 	var value = card.type_arg;
+		// 	this.playerHand.addToStockWithId(this.getCardUniqueType(color, value), card.id);
+		// }
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -147,10 +193,21 @@ class Dale extends Gamegui
 	/** @gameSpecific See {@link Gamegui.setupNotifications} for more information. */
 	override setupNotifications()
 	{
-		console.log( 'notifications subscriptions setup' );
+		console.log( 'notifications subscriptions setup2' );
 		
 		// TODO: here, associate your game notifications with local methods
+
+		const notifs: [keyof NotifTypes, number][] = [
+			['reshuffle', 1]
+		];
+
+		notifs.forEach((notif) => {
+			dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
+			this.notifqueue.setSynchronous(notif[0], notif[1]);
+		});
 		
+		console.log( 'notifications subscriptions setup done' );
+
 		// With base Gamegui class...
 		// dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
 
@@ -171,6 +228,10 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+	
+	notif_reshuffle(notif: NotifAs<'reshuffle'>) {
+		console.log("notif_reshuffle")
+	}
 }
 
 

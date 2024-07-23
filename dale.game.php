@@ -22,6 +22,11 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
 class Dale extends Table
 {
+    var Deck $marketdeck;
+    
+    /** @var Deck[] */
+    public array $playerdecks;
+
 	function __construct( )
 	{
         // Your global variables labels:
@@ -39,7 +44,18 @@ class Dale extends Table
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
             //      ...
-        ) );        
+        ) );
+
+        $this->marketdeck = $this->getNew( "module.common.deck" );
+        $this->marketdeck->init("marketdeck");
+        $this->marketdeck->autoreshuffle = true;
+        $this->marketdeck->autoreshuffle_trigger = array('obj' => $this, 'method' => 'deckAutoReshuffle');
+        
+        // $this->playerdecks = array();
+        // $players = $this->loadPlayersBasicInfos();
+        // foreach ($players as $player_id => $player) {
+        //     $this->playerdecks[$player_id] = $this->getNew( "module.common.deck" );
+        // }
 	}
 	
     protected function getGameName( )
@@ -146,6 +162,18 @@ class Dale extends Table
     /*
         In this space, you can put any utility methods useful for your game logic
     */
+
+    function numberListToArray($AT_numberlist){
+        if( substr( $AT_numberlist, -1 ) == ';' )
+            $AT_numberlist = substr( $AT_numberlist, 0, -1 );
+        if( $AT_numberlist == '' )
+            return array();
+        return explode( ';', $AT_numberlist );
+    }
+
+    function deckAutoReshuffle() {
+        self::notifyAllPlayers('reshuffle', clienttranslate('No more cards in deck ! The discard pile is shuffled back into the draw pile'), array());
+    }
 
 
 

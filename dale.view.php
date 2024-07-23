@@ -42,6 +42,8 @@ class view_dale_dale extends game_view
 
         /*********** Place your code below:  ************/
 
+        $this->tpl['MARKET'] = $this->_("Market");
+        $this->tpl['MY_HAND'] = $this->_("My Hand");
 
         /*
         

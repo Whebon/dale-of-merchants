@@ -25,10 +25,17 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
+<div id="myhand_wrap" class="whiteblock">
+    <h3>{MARKET}</h3>
+    <div id="market_background">
+        <div id="market"></div>
+    </div>
+</div>
 
-This is your game interface. You can edit this HTML in your ".tpl" file.
-<br>
-Hello World.
+<div id="myhand_wrap" class="whiteblock">
+    <h3>{MY_HAND}</h3>
+    <div id="myhand"></div>
+</div>
 
 
 <script type="text/javascript">

@@ -37,7 +37,7 @@
 
 		/* Preference. This defaults to the most strict ts rules. */
 		"strict": true,
-		"exactOptionalPropertyTypes": true,
+		"exactOptionalPropertyTypes": false,
 		"noImplicitReturns": true,
 		"noPropertyAccessFromIndexSignature": true,
 		"noFallthroughCasesInSwitch": true,
