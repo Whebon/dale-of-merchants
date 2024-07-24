@@ -13,62 +13,95 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("types/ImageConstants", ["require", "exports"], function (require, exports) {
+define("components/types/Animalfolk", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.get_card_style = exports.MARKET_HEIGHT_S = exports.MARKET_WIDTH_S = exports.MARKET_ITEM_MARGIN_S = exports.MARKET_PADDING_RIGHT_S = exports.MARKET_PADDING_LEFT_S = exports.MARKET_PADDING_BOTTOM_S = exports.MARKET_PADDING_TOP_S = exports.CARD_HEIGHT_S = exports.CARD_WIDTH_S = exports.SHEET_HEIGHT_S = exports.SHEET_WIDTH_S = exports.S_SCALE = exports.MARKET_HEIGHT = exports.MARKET_WIDTH = exports.MARKET_ITEM_MARGIN = exports.MARKET_PADDING_RIGHT = exports.MARKET_PADDING_LEFT = exports.MARKET_PADDING_BOTTOM = exports.MARKET_PADDING_TOP = exports.CARD_HEIGHT = exports.CARD_WIDTH = exports.SHEET_HEIGHT = exports.SHEET_WIDTH = exports.IMAGES_PER_COLUMN = exports.IMAGES_PER_ROW = void 0;
-    exports.IMAGES_PER_ROW = 7;
-    exports.IMAGES_PER_COLUMN = 6;
-    exports.SHEET_WIDTH = 2694;
-    exports.SHEET_HEIGHT = 5112;
-    exports.CARD_WIDTH = exports.SHEET_WIDTH / exports.IMAGES_PER_COLUMN;
-    exports.CARD_HEIGHT = exports.SHEET_HEIGHT / exports.IMAGES_PER_ROW;
-    exports.MARKET_PADDING_TOP = 153;
-    exports.MARKET_PADDING_BOTTOM = 45;
-    exports.MARKET_PADDING_LEFT = 45;
-    exports.MARKET_PADDING_RIGHT = 45;
-    exports.MARKET_ITEM_MARGIN = 95;
-    exports.MARKET_WIDTH = 2717;
-    exports.MARKET_HEIGHT = 906;
-    exports.S_SCALE = 0.3;
-    exports.SHEET_WIDTH_S = exports.S_SCALE * exports.SHEET_WIDTH;
-    exports.SHEET_HEIGHT_S = exports.S_SCALE * exports.SHEET_HEIGHT;
-    exports.CARD_WIDTH_S = exports.S_SCALE * exports.CARD_WIDTH;
-    exports.CARD_HEIGHT_S = exports.S_SCALE * exports.CARD_HEIGHT;
-    exports.MARKET_PADDING_TOP_S = exports.S_SCALE * exports.MARKET_PADDING_TOP;
-    exports.MARKET_PADDING_BOTTOM_S = exports.S_SCALE * exports.MARKET_PADDING_BOTTOM;
-    exports.MARKET_PADDING_LEFT_S = exports.S_SCALE * exports.MARKET_PADDING_LEFT;
-    exports.MARKET_PADDING_RIGHT_S = exports.S_SCALE * exports.MARKET_PADDING_RIGHT;
-    exports.MARKET_ITEM_MARGIN_S = exports.S_SCALE * exports.MARKET_ITEM_MARGIN;
-    exports.MARKET_WIDTH_S = exports.S_SCALE * exports.MARKET_WIDTH;
-    exports.MARKET_HEIGHT_S = exports.S_SCALE * exports.MARKET_HEIGHT;
-    function get_card_style(card_id) {
-        var style = "width:".concat(exports.CARD_WIDTH_S, "px; height:").concat(exports.CARD_HEIGHT_S, "px;");
-        if (card_id == null) {
-            style += "background-size: ".concat(exports.CARD_WIDTH_S, "px ").concat(exports.CARD_HEIGHT_S, "px;");
+});
+define("components/Images", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Images = void 0;
+    var Images = (function () {
+        function Images() {
         }
-        else {
-            style += "background-size: ".concat(exports.SHEET_WIDTH_S, "px ").concat(exports.SHEET_HEIGHT_S, "px;");
-            if (card_id >= 0 && card_id < exports.IMAGES_PER_ROW * exports.IMAGES_PER_COLUMN) {
-                var x = card_id % exports.IMAGES_PER_ROW;
-                var y = (card_id - x) / exports.IMAGES_PER_ROW;
-                style += "background-position:-".concat(x, "00% -").concat(y, "00%");
+        Images.getCardStyle = function (card_type_id) {
+            var style = "width:".concat(Images.CARD_WIDTH_S, "px; height:").concat(Images.CARD_HEIGHT_S, "px;");
+            if (card_type_id == null) {
+                style += "background-size: ".concat(Images.CARD_WIDTH_S, "px ").concat(Images.CARD_HEIGHT_S, "px;");
             }
             else {
-                console.error("Card with id ".concat(card_id, " does not exist!"));
+                style += "background-size: ".concat(Images.SHEET_WIDTH_S, "px ").concat(Images.SHEET_HEIGHT_S, "px;");
+                if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
+                    var x = card_type_id % Images.IMAGES_PER_ROW;
+                    var y = (card_type_id - x) / Images.IMAGES_PER_ROW;
+                    style += "background-position:-".concat(x, "00% -").concat(y, "00%");
+                }
+                else {
+                    console.error("Card with type id ".concat(card_type_id, " does not exist!"));
+                }
             }
-        }
-        return style;
-    }
-    exports.get_card_style = get_card_style;
+            return style;
+        };
+        Images.getAnimalfolk = function (card_type_id) {
+            if (card_type_id < Images.IMAGES_PER_ROW) {
+                return null;
+            }
+            else if (card_type_id < 2 * Images.IMAGES_PER_ROW) {
+                return "macaws";
+            }
+            else if (card_type_id < 3 * Images.IMAGES_PER_ROW) {
+                return "pandas";
+            }
+            else if (card_type_id < 4 * Images.IMAGES_PER_ROW) {
+                return "raccoons";
+            }
+            else if (card_type_id < 5 * Images.IMAGES_PER_ROW) {
+                return "squirrels";
+            }
+            else if (card_type_id < 6 * Images.IMAGES_PER_ROW) {
+                return "ocelots";
+            }
+            else if (card_type_id < 7 * Images.IMAGES_PER_ROW) {
+                return "chameleons";
+            }
+            return null;
+        };
+        Images.IMAGES_PER_ROW = 7;
+        Images.IMAGES_PER_COLUMN = 6;
+        Images.SHEET_WIDTH = 2694;
+        Images.SHEET_HEIGHT = 5112;
+        Images.CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_COLUMN;
+        Images.CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_ROW;
+        Images.MARKET_PADDING_TOP = 153;
+        Images.MARKET_PADDING_BOTTOM = 45;
+        Images.MARKET_PADDING_LEFT = 45;
+        Images.MARKET_PADDING_RIGHT = 45;
+        Images.MARKET_ITEM_MARGIN = 95;
+        Images.MARKET_WIDTH = 2717;
+        Images.MARKET_HEIGHT = 906;
+        Images.S_SCALE = 0.3;
+        Images.SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
+        Images.SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
+        Images.CARD_WIDTH_S = Images.S_SCALE * Images.CARD_WIDTH;
+        Images.CARD_HEIGHT_S = Images.S_SCALE * Images.CARD_HEIGHT;
+        Images.MARKET_PADDING_TOP_S = Images.S_SCALE * Images.MARKET_PADDING_TOP;
+        Images.MARKET_PADDING_BOTTOM_S = Images.S_SCALE * Images.MARKET_PADDING_BOTTOM;
+        Images.MARKET_PADDING_LEFT_S = Images.S_SCALE * Images.MARKET_PADDING_LEFT;
+        Images.MARKET_PADDING_RIGHT_S = Images.S_SCALE * Images.MARKET_PADDING_RIGHT;
+        Images.MARKET_ITEM_MARGIN_S = Images.S_SCALE * Images.MARKET_ITEM_MARGIN;
+        Images.MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
+        Images.MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
+        return Images;
+    }());
+    exports.Images = Images;
 });
-define("pile", ["require", "exports", "types/ImageConstants"], function (require, exports, ImageConstants) {
+define("components/Pile", ["require", "exports", "components/Images"], function (require, exports, Images_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
     var Pile = (function () {
         function Pile(pile_container_id, pile_name) {
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(ImageConstants.get_card_style(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(ImageConstants.get_card_style(), "\"></div>\n                <div class=\"pile-card\" style=\"").concat(ImageConstants.get_card_style(30), "\"></div>\n                <div class=\"size\">x 69</div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_1.Images.getCardStyle(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(Images_1.Images.getCardStyle(), "\"></div>\n                <div class=\"pile-card\" style=\"").concat(Images_1.Images.getCardStyle(30), "\"></div>\n                <div class=\"size\">x 69</div>\n            </div>\n        ");
             this.topCard = $(pile_container_id).querySelector('.pile-card');
             this.size = $(pile_container_id).querySelector('.size');
         }
@@ -76,7 +109,7 @@ define("pile", ["require", "exports", "types/ImageConstants"], function (require
     }());
     exports.Pile = Pile;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "types/ImageConstants", "pile", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, ImageConstants, pile_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_2, Pile_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -96,17 +129,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "types/ImageCo
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
             }
-            this.market.create(this, $('market'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
-            this.market.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
+            this.market.create(this, $('market'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
+            this.market.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
             this.market.image_items_per_row = 6;
-            this.market.item_margin = ImageConstants.MARKET_ITEM_MARGIN_S;
+            this.market.item_margin = Images_2.Images.MARKET_ITEM_MARGIN_S;
             console.log($('market'));
-            (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(ImageConstants.MARKET_WIDTH_S, "px ").concat(ImageConstants.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(ImageConstants.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(ImageConstants.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
-            this.marketDeck = new pile_1.Pile('marketdeck', 'Market Deck');
-            this.marketDiscard = new pile_1.Pile('marketdiscard', 'Market Discard');
-            this.hand.create(this, $('myhand'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
-            this.hand.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
-            this.hand.image_items_per_row = ImageConstants.IMAGES_PER_ROW;
+            (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(Images_2.Images.MARKET_WIDTH_S, "px ").concat(Images_2.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_2.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_2.Images.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
+            this.marketDeck = new Pile_1.Pile('marketdeck', 'Market Deck');
+            this.marketDiscard = new Pile_1.Pile('marketdiscard', 'Market Discard');
+            this.hand.create(this, $('myhand'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
+            this.hand.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
+            this.hand.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
             for (var i = 0; i < 100; i++) {
                 var card_type_id = i;
                 this.market.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);

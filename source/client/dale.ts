@@ -17,8 +17,8 @@ import Stock = require('ebg/stock');
 import "ebg/counter";
 import "ebg/stock"; 
 
-import * as ImageConstants from './types/ImageConstants';
-import { Pile } from './pile';
+import { Images } from './components/Images';
+import { Pile } from './components/Pile';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -48,22 +48,22 @@ class Dale extends Gamegui
 
 		// TODO: Set up your game interface here, according to "gamedatas"
 		
-		this.market.create( this, $('market'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
-		this.market.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
+		this.market.create( this, $('market'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
+		this.market.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
 		this.market.image_items_per_row = 6;
-		this.market.item_margin = ImageConstants.MARKET_ITEM_MARGIN_S;
+		this.market.item_margin = Images.MARKET_ITEM_MARGIN_S;
 		console.log($('market'));
 		$('market-background')?.setAttribute("style", `
-			background-size: ${ImageConstants.MARKET_WIDTH_S}px ${ImageConstants.MARKET_HEIGHT_S}px;
-			padding-top: ${ImageConstants.MARKET_PADDING_TOP_S}px;
-			padding-left: ${ImageConstants.MARKET_PADDING_LEFT_S}px;
+			background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
+			padding-top: ${Images.MARKET_PADDING_TOP_S}px;
+			padding-left: ${Images.MARKET_PADDING_LEFT_S}px;
 		`);
 		this.marketDeck = new Pile('marketdeck', 'Market Deck');
 		this.marketDiscard = new Pile('marketdiscard', 'Market Discard');
 
-		this.hand.create( this, $('myhand'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
-		this.hand.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
-		this.hand.image_items_per_row = ImageConstants.IMAGES_PER_ROW;
+		this.hand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
+		this.hand.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
+		this.hand.image_items_per_row = Images.IMAGES_PER_ROW;
 
 		// Create cards types
 		for (var i = 0; i < 100; i++) {

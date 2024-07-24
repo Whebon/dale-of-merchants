@@ -1,5 +1,5 @@
 import Gamegui = require('ebg/core/gamegui');
-import * as ImageConstants from './types/ImageConstants';
+import { Images } from './Images';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -14,9 +14,9 @@ export class Pile {
     constructor(pile_container_id: string, pile_name?: string){
         $(pile_container_id).innerHTML = `
             ${pile_name ? `<h4 class="name">${pile_name}</h4>` : ""}
-            <div class="pile" style="${ImageConstants.get_card_style()}">
-                <div class="pile-placeholder" style="${ImageConstants.get_card_style()}"></div>
-                <div class="pile-card" style="${ImageConstants.get_card_style(30)}"></div>
+            <div class="pile" style="${Images.getCardStyle()}">
+                <div class="pile-placeholder" style="${Images.getCardStyle()}"></div>
+                <div class="pile-card" style="${Images.getCardStyle(30)}"></div>
                 <div class="size">x 69</div>
             </div>
         `;
