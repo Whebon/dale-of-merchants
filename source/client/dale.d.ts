@@ -8,6 +8,8 @@
  * -----
  */
 
+import { DbCard } from './components/types/DbCard';
+
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
 
@@ -22,6 +24,11 @@ declare global {
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
 	interface Gamedatas {
 		// [key: string | number]: Record<keyof any, any>; // Uncomment to remove type safety on game state arguments
+		'marketDeckSize': number
+		'marketDiscard': DbCard[]
+		
+		'hand': DbCard[]
+		'market': DbCard[]
 	}
 
 	//

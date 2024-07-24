@@ -19,6 +19,7 @@ import "ebg/stock";
 
 import { Images } from './components/Images';
 import { Pile } from './components/Pile';
+import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -38,6 +39,9 @@ class Dale extends Gamegui
 	override setup(gamedatas: Gamedatas): void
 	{
 		console.log( "Starting game setup" );
+		console.log("------ GAME DATAS ------")
+		console.log(this.gamedatas)
+		console.log("------------------------")
 		
 		// Setting up player boards
 		for( var player_id in gamedatas.players )
@@ -48,19 +52,32 @@ class Dale extends Gamegui
 
 		// TODO: Set up your game interface here, according to "gamedatas"
 		
+		//initialize the market, marketDeck and marketDiscard
 		this.market.create( this, $('market'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
 		this.market.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
 		this.market.image_items_per_row = 6;
 		this.market.item_margin = Images.MARKET_ITEM_MARGIN_S;
-		console.log($('market'));
 		$('market-background')?.setAttribute("style", `
 			background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
 			padding-top: ${Images.MARKET_PADDING_TOP_S}px;
 			padding-left: ${Images.MARKET_PADDING_LEFT_S}px;
 		`);
+
 		this.marketDeck = new Pile('marketdeck', 'Market Deck');
 		this.marketDiscard = new Pile('marketdiscard', 'Market Discard');
 
+		for (const card of gamedatas.market) {
+			this.market.addToStockWithId(card.id, card.type_arg);
+		}
+
+		this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
+
+		for (let i in gamedatas.marketDiscard) {
+			var card = gamedatas.marketDiscard[i]!;
+			this.marketDiscard.push(card);
+		}
+
+		// TODO: load hand from DB
 		this.hand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
 		this.hand.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
 		this.hand.image_items_per_row = Images.IMAGES_PER_ROW;

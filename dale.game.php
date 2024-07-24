@@ -22,10 +22,8 @@ require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
 class Dale extends Table
 {
-    var Deck $marketdeck;
-    
-    /** @var Deck[] */
-    public array $playerdecks;
+    var Deck $cards;
+    var $card_types;
 
 	function __construct( )
 	{
@@ -46,16 +44,8 @@ class Dale extends Table
             //      ...
         ) );
 
-        $this->marketdeck = $this->getNew( "module.common.deck" );
-        $this->marketdeck->init("marketdeck");
-        $this->marketdeck->autoreshuffle = true;
-        $this->marketdeck->autoreshuffle_trigger = array('obj' => $this, 'method' => 'deckAutoReshuffle');
-        
-        // $this->playerdecks = array();
-        // $players = $this->loadPlayersBasicInfos();
-        // foreach ($players as $player_id => $player) {
-        //     $this->playerdecks[$player_id] = $this->getNew( "module.common.deck" );
-        // }
+        $this->cards = $this->getNew( "module.common.deck" );
+        $this->cards->init("card");
 	}
 	
     protected function getGameName( )
@@ -105,6 +95,27 @@ class Dale extends Table
 
         // TODO: setup the initial game situation here
        
+        //Create the market deck
+        $cards = array();
+        foreach ($this->card_types as $type_id => $card_type) {
+            // TODO: #animalfolk_sets = #players + 1
+            $cards[] = array ('type' => 'UNUSED','type_arg' => $type_id,'nbr' => $card_type['nbr']);
+        }
+        $this->cards->createCards($cards, 'marketDeck');
+        $this->cards->shuffle('marketDeck');
+
+        // TODO: remove this, this is for debugging purposes only
+
+        $this->cards->moveCard(24, 'marketDeck');
+        $this->cards->moveCard(25, 'marketDeck');
+        $this->cards->moveCard(26, 'marketDeck');
+        $this->cards->moveCard(27, 'marketDeck');
+
+        $this->cards->moveCard(8, 'marketDiscard');
+        $this->cards->moveCard(9, 'marketDiscard');
+        $this->cards->moveCard(10, 'marketDiscard');
+
+
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -131,8 +142,16 @@ class Dale extends Table
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
-  
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+
+        $result['marketDeckSize'] = $this->cards->countCardInLocation('marketDeck'); //count the cards in market deck, but don't send them (that information is hidden)
+        $result['marketDiscard'] = $this->cards->getCardsInLocation('marketDiscard');
+
+        $result['market'] = $this->cards->getCardsInLocation( 'market');
+        $result['hand'] = $this->cards->getCardsInLocation('hand', $current_player_id);
+
+        //TODO: player decks, discards and hands
+
+        //TODO: stacks and stalls
   
         return $result;
     }
@@ -175,7 +194,17 @@ class Dale extends Table
         self::notifyAllPlayers('reshuffle', clienttranslate('No more cards in deck ! The discard pile is shuffled back into the draw pile'), array());
     }
 
+//////////////////////////////////////////////////////////////////////////////
+//////////// Debug functions
+////////////    
 
+    /*
+        In this space, you can put debugging tools
+    */
+
+    function myDebug() {
+        die($this->card_types[17]['text']);
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions

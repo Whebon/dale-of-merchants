@@ -1,5 +1,6 @@
+//Card representation as received from the database
 export interface DbCard {
-    id: number //todo: check, is this really a number?
+    id: number
     type: string
     type_arg: number
     location: string

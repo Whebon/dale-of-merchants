@@ -95,16 +95,62 @@ define("components/Images", ["require", "exports"], function (require, exports) 
     }());
     exports.Images = Images;
 });
+define("components/types/DbCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/Pile", ["require", "exports", "components/Images"], function (require, exports, Images_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
     var Pile = (function () {
         function Pile(pile_container_id, pile_name) {
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_1.Images.getCardStyle(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(Images_1.Images.getCardStyle(), "\"></div>\n                <div class=\"pile-card\" style=\"").concat(Images_1.Images.getCardStyle(30), "\"></div>\n                <div class=\"size\">x 69</div>\n            </div>\n        ");
-            this.topCard = $(pile_container_id).querySelector('.pile-card');
-            this.size = $(pile_container_id).querySelector('.size');
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_1.Images.getCardStyle(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(Images_1.Images.getCardStyle(), "\"></div>\n                <div class=\"pile-card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
+            this.topCardHTML = $(pile_container_id).querySelector('.pile-card');
+            this.sizeHTML = $(pile_container_id).querySelector('.size');
+            this.cards = [];
+            this.updateHTML();
         }
+        Pile.prototype.updateHTML = function () {
+            this.sizeHTML.innerText = 'x ' + this.cards.length;
+            if (this.cards.length == 0) {
+                this.topCardHTML.setAttribute('style', "display: none");
+            }
+            else {
+                this.topCardHTML.setAttribute('style', Images_1.Images.getCardStyle(this.peek().type_arg));
+            }
+        };
+        Pile.prototype.pushHiddenCards = function (amount) {
+            for (var i = 0; i < amount; i++) {
+                this.cards.push(Pile.HIDDEN_CARD);
+            }
+            this.updateHTML();
+        };
+        Pile.prototype.push = function (card) {
+            this.cards.push(card);
+            this.updateHTML();
+        };
+        Pile.prototype.pop = function () {
+            if (this.cards.length == 0) {
+                throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
+            }
+            var card = this.cards.pop();
+            this.updateHTML();
+            return card;
+        };
+        Pile.prototype.peek = function () {
+            if (this.cards.length == 0) {
+                throw new Error('Cannot peek at an empty pile. The Server is responsible for reshuffling.');
+            }
+            return this.cards[this.cards.length - 1];
+        };
+        Pile.HIDDEN_CARD = {
+            id: 0,
+            type: "",
+            type_arg: 0,
+            location: "",
+            location_arg: 0
+        };
         return Pile;
     }());
     exports.Pile = Pile;
@@ -126,6 +172,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
         Dale.prototype.setup = function (gamedatas) {
             var _a;
             console.log("Starting game setup");
+            console.log("------ GAME DATAS ------");
+            console.log(this.gamedatas);
+            console.log("------------------------");
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
             }
@@ -133,10 +182,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.market.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
             this.market.image_items_per_row = 6;
             this.market.item_margin = Images_2.Images.MARKET_ITEM_MARGIN_S;
-            console.log($('market'));
             (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(Images_2.Images.MARKET_WIDTH_S, "px ").concat(Images_2.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_2.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_2.Images.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
             this.marketDeck = new Pile_1.Pile('marketdeck', 'Market Deck');
             this.marketDiscard = new Pile_1.Pile('marketdiscard', 'Market Discard');
+            for (var _i = 0, _b = gamedatas.market; _i < _b.length; _i++) {
+                var card_1 = _b[_i];
+                this.market.addToStockWithId(card_1.id, card_1.type_arg);
+            }
+            this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
+            for (var i_1 in gamedatas.marketDiscard) {
+                var card = gamedatas.marketDiscard[i_1];
+                this.marketDiscard.push(card);
+            }
             this.hand.create(this, $('myhand'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
             this.hand.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
             this.hand.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
