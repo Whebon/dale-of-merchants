@@ -9,18 +9,24 @@
  */
 /// <amd-module name="bgagame/dale"/>
 
+//needed for the IDE
 import Gamegui = require('ebg/core/gamegui');
+import Stock = require('ebg/stock'); 
+
+//needed for BGA
 import "ebg/counter";
-import "ebg/stock"; //needed for board game arena
-import Stock = require('ebg/stock'); //needed for the IDE
+import "ebg/stock"; 
 
 import * as ImageConstants from './types/ImageConstants';
+import { Pile } from './pile';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
-	protected market: Stock = new ebg.stock(); 
-	protected hand: Stock = new ebg.stock();
+	marketDeck: Pile | null = null;
+	marketDiscard: Pile | null = null;
+	market: Stock = new ebg.stock(); 
+	hand: Stock = new ebg.stock();
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -47,21 +53,23 @@ class Dale extends Gamegui
 		this.market.image_items_per_row = 6;
 		this.market.item_margin = ImageConstants.MARKET_ITEM_MARGIN_S;
 		console.log($('market'));
-		$('market_background')?.setAttribute("style", `
+		$('market-background')?.setAttribute("style", `
 			background-size: ${ImageConstants.MARKET_WIDTH_S}px ${ImageConstants.MARKET_HEIGHT_S}px;
 			padding-top: ${ImageConstants.MARKET_PADDING_TOP_S}px;
 			padding-left: ${ImageConstants.MARKET_PADDING_LEFT_S}px;
 		`);
+		this.marketDeck = new Pile('marketdeck', 'Market Deck');
+		this.marketDiscard = new Pile('marketdiscard', 'Market Discard');
 
 		this.hand.create( this, $('myhand'), ImageConstants.CARD_WIDTH, ImageConstants.CARD_HEIGHT);
 		this.hand.resizeItems(ImageConstants.CARD_WIDTH_S, ImageConstants.CARD_HEIGHT_S, ImageConstants.SHEET_WIDTH_S, ImageConstants.SHEET_HEIGHT_S);
-		this.hand.image_items_per_row = 6;
+		this.hand.image_items_per_row = ImageConstants.IMAGES_PER_ROW;
 
 		// Create cards types
 		for (var i = 0; i < 100; i++) {
 			var card_type_id = i; //todo: add more card types, and make [card->number] and [number->card] functions
-			this.market.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards_1.jpg', card_type_id);
-			this.hand.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards_1.jpg', card_type_id);
+			this.market.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);
+			this.hand.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);
 		}
 
 		// just to feel it: add 5 cards to market

@@ -25,14 +25,31 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div id="myhand_wrap" class="whiteblock">
+<div id="myhand-wrap" class="whiteblock">
     <h3>{MARKET}</h3>
-    <div id="market_background">
+
+    <div id="marketdiscard" class="pile-container"></div>
+    <div id="marketdeck" class="pile-container"></div>
+
+    <div class="cardontable">
+        <div class="card cardontable" id="cardontable"></div>
+
+        <div class="playertablename">
+            {PLAYER_NAME}
+        </div>
+        <div class="playertablecard" id="playertablecard">
+        </div>
+    </div>
+
+
+    
+
+    <div id="market-background">
         <div id="market"></div>
     </div>
 </div>
 
-<div id="myhand_wrap" class="whiteblock">
+<div id="myhand-wrap" class="whiteblock">
     <h3>{MY_HAND}</h3>
     <div id="myhand"></div>
 </div>

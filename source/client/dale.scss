@@ -27,9 +27,14 @@
 	border-radius: 10px;
 }
 
-#market_background {
+#myhand-container {
+	padding-right: 0;
+}
+
+#market-background {
     background-image: url(img/shop_day.jpg);
 	background-repeat: no-repeat;
+	min-width: 3000px; //large enough to always fit the full the background image (2717px) + a little bit of margin for right item_margin of the right card
     // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
     // margin-bottom: 10px;
     // margin-top: 10px;
@@ -38,6 +43,51 @@
 	// padding-left: 1.656238498%; /* 45px / 2717px */
 	// padding-right: 1.656238498%; /* 45px / 2717px */
 }
+
+.pile-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 10px;
+	padding: 10px;
+	width: max-content;
+
+	.name {
+		margin: 10px;
+	}
+
+	.size {
+		position: absolute;
+		font-weight: bold;
+		top: 4%;	
+		left: 82%;
+		transform: translateX(-50%);
+		color: white;
+		background-color: rgba(0, 0, 0, 0.62); /* Optional, for better visibility */
+		text-align: center;
+		padding: 5px 10px;
+		width: 40px;
+		font-size: 16px;
+		margin: auto;
+		padding-top: 2px;
+		padding-bottom: 2px;
+	}
+
+	.pile {
+		position: relative;
+		.pile-placeholder {
+			background-image: url('img/placeholder.png');
+			border-radius: 10px;
+			position: absolute;
+		}
+		.pile-card {
+			background-image: url('img/cards.jpg');
+			border-radius: 10px;
+			position: absolute;
+		}
+	}
+}
+
 
 /*
 	Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
