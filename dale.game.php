@@ -209,11 +209,11 @@ class Dale extends Table
     */
 
     function debugClient($i = 0) {
-        self::notifyAllPlayers('debugClient', clienttranslate('Debugging (index = ${index})...'), array('index' => $i));
+        $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (index = ${index})...'), array('index' => $i));
     }
 
     function reshuffleMarketDeck() {
-        self::notifyAllPlayers('reshuffleMarketDeck', clienttranslate('Shuffling the market discard pile to form a new market deck.'), array());
+        $this->notifyAllPlayers('reshuffleMarketDeck', clienttranslate('Shuffling the market discard pile to form a new market deck.'), array());
     }
 
 //////////////////////////////////////////////////////////////////////////////
