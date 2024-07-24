@@ -104,8 +104,10 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
     var Pile = (function () {
-        function Pile(pile_container_id, pile_name) {
+        function Pile(page, pile_container_id, pile_name) {
             $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_1.Images.getCardStyle(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(Images_1.Images.getCardStyle(), "\"></div>\n                <div class=\"pile-card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
+            this.page = page;
+            this.containerHTML = $(pile_container_id);
             this.topCardHTML = $(pile_container_id).querySelector('.pile-card');
             this.sizeHTML = $(pile_container_id).querySelector('.size');
             this.cards = [];
@@ -130,13 +132,62 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
             this.cards.push(card);
             this.updateHTML();
         };
-        Pile.prototype.pop = function () {
+        Pile.prototype.pop = function (to, onEnd, duration, delay) {
+            if (duration === void 0) { duration = 500; }
+            if (delay === void 0) { delay = 0; }
             if (this.cards.length == 0) {
                 throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
             }
-            var card = this.cards.pop();
+            if (to != null) {
+                if (to instanceof Pile) {
+                    to = to.topCardHTML;
+                }
+                var movingElement = this.topCardHTML.cloneNode();
+                this.topCardHTML.insertAdjacentElement('afterend', movingElement);
+                var callback = function (node) {
+                    dojo.destroy(node);
+                    if (onEnd) {
+                        onEnd(node);
+                    }
+                };
+                var slideAnimation = this.page.slideToObject(movingElement, to, duration, delay);
+                ;
+                var fadeAnimation = dojo.fadeOut({ node: movingElement, end: callback });
+                dojo.fx.chain([slideAnimation, fadeAnimation]).play();
+                dojo.addClass(movingElement, 'to_be_destroyed');
+            }
+            this.cards.pop();
             this.updateHTML();
-            return card;
+        };
+        Pile.prototype.shuffleToDrawPile = function (drawPile, duration) {
+            if (duration === void 0) { duration = 1000; }
+            if (this === drawPile) {
+                throw new Error('Cannot shuffle to self.');
+            }
+            var n = this.cards.length;
+            var durationPerPop = 2 * duration / n;
+            var thiz = this;
+            var callback = function (node) {
+                if (thiz.cards.length > 0) {
+                    thiz.pop(drawPile, callback, durationPerPop);
+                }
+                drawPile.pushHiddenCards(1);
+            };
+            if (n > 10) {
+                durationPerPop *= 4;
+                this.pop(drawPile, callback, durationPerPop);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 2 / 4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 3 / 4);
+            }
+            else if (n > 5) {
+                durationPerPop *= 2;
+                this.pop(drawPile, callback, durationPerPop);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
+            }
+            else {
+                this.pop(drawPile, callback, durationPerPop);
+            }
         };
         Pile.prototype.peek = function () {
             if (this.cards.length == 0) {
@@ -183,8 +234,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.market.image_items_per_row = 6;
             this.market.item_margin = Images_2.Images.MARKET_ITEM_MARGIN_S;
             (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(Images_2.Images.MARKET_WIDTH_S, "px ").concat(Images_2.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_2.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_2.Images.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
-            this.marketDeck = new Pile_1.Pile('marketdeck', 'Market Deck');
-            this.marketDiscard = new Pile_1.Pile('marketdiscard', 'Market Discard');
+            this.marketDeck = new Pile_1.Pile(this, 'marketdeck', 'Market Deck');
+            this.marketDiscard = new Pile_1.Pile(this, 'marketdiscard', 'Market Discard');
             for (var _i = 0, _b = gamedatas.market; _i < _b.length; _i++) {
                 var card_1 = _b[_i];
                 this.market.addToStockWithId(card_1.id, card_1.type_arg);
@@ -209,6 +260,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.market.addToStockWithId(5, 5);
             this.hand.addToStockWithId(1, 6);
             this.hand.addToStockWithId(1, 7);
+            this.marketDiscard.shuffleToDrawPile(this.marketDeck);
             this.setupNotifications();
             console.log("Ending game setup");
         };

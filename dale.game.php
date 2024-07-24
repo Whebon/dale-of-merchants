@@ -106,14 +106,24 @@ class Dale extends Table
 
         // TODO: remove this, this is for debugging purposes only
 
-        $this->cards->moveCard(24, 'marketDeck');
-        $this->cards->moveCard(25, 'marketDeck');
-        $this->cards->moveCard(26, 'marketDeck');
-        $this->cards->moveCard(27, 'marketDeck');
-
         $this->cards->moveCard(8, 'marketDiscard');
         $this->cards->moveCard(9, 'marketDiscard');
         $this->cards->moveCard(10, 'marketDiscard');
+        $this->cards->moveCard(11, 'marketDiscard');
+        $this->cards->moveCard(12, 'marketDiscard');
+        $this->cards->moveCard(13, 'marketDiscard');
+        $this->cards->moveCard(14, 'marketDiscard');
+        $this->cards->moveCard(15, 'marketDiscard');
+        $this->cards->moveCard(16, 'marketDiscard');
+        $this->cards->moveCard(17, 'marketDiscard');
+        $this->cards->moveCard(18, 'marketDiscard');
+        $this->cards->moveCard(19, 'marketDiscard');
+        $this->cards->moveCard(20, 'marketDiscard');
+        $this->cards->moveCard(21, 'marketDiscard');
+        $this->cards->moveCard(22, 'marketDiscard');
+        $this->cards->moveCard(23, 'marketDiscard');
+        $this->cards->moveCard(24, 'marketDiscard');
+        $this->cards->moveCard(25, 'marketDiscard');
 
 
 
@@ -188,10 +198,6 @@ class Dale extends Table
         if( $AT_numberlist == '' )
             return array();
         return explode( ';', $AT_numberlist );
-    }
-
-    function deckAutoReshuffle() {
-        self::notifyAllPlayers('reshuffle', clienttranslate('No more cards in deck ! The discard pile is shuffled back into the draw pile'), array());
     }
 
 //////////////////////////////////////////////////////////////////////////////

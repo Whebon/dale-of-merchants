@@ -63,8 +63,8 @@ class Dale extends Gamegui
 			padding-left: ${Images.MARKET_PADDING_LEFT_S}px;
 		`);
 
-		this.marketDeck = new Pile('marketdeck', 'Market Deck');
-		this.marketDiscard = new Pile('marketdiscard', 'Market Discard');
+		this.marketDeck = new Pile(this, 'marketdeck', 'Market Deck');
+		this.marketDiscard = new Pile(this, 'marketdiscard', 'Market Discard');
 
 		for (const card of gamedatas.market) {
 			this.market.addToStockWithId(card.id, card.type_arg);
@@ -100,6 +100,7 @@ class Dale extends Gamegui
 		this.hand.addToStockWithId(1, 6);
 		this.hand.addToStockWithId(1, 7);
 
+		this.marketDiscard.shuffleToDrawPile(this.marketDeck);
 
 		// Todo: initial hand (from server)
 		// for (var i in this.gamedatas.hand) {
