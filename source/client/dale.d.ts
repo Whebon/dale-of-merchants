@@ -16,7 +16,10 @@ declare global {
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
-		'reshuffle': { 
+		'debugClient': {
+			index: number
+		}
+		'reshuffleMarketDeck': { 
 			//no args
 		}
 	}

@@ -12,6 +12,7 @@ export class Pile {
     private page: Gamegui;
     private cards: DbCard[];
     private containerHTML: HTMLElement;
+    private placeholderHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private topCardHTML: HTMLElement;
 
@@ -35,6 +36,7 @@ export class Pile {
         `;
         this.page = page;
         this.containerHTML = $(pile_container_id);
+        this.placeholderHTML = $(pile_container_id).querySelector('.pile-placeholder')!;
         this.topCardHTML = $(pile_container_id).querySelector('.pile-card')!;
         this.sizeHTML = $(pile_container_id).querySelector('.size')!;
         this.cards = [];
@@ -88,7 +90,7 @@ export class Pile {
         //animate card
         if (to != null) {
             if (to instanceof Pile) {
-                to = to.topCardHTML;
+                to = to.placeholderHTML;
             }
             let movingElement = this.topCardHTML.cloneNode() as HTMLElement;
             this.topCardHTML.insertAdjacentElement('afterend', movingElement);
@@ -155,7 +157,7 @@ export class Pile {
     */
     public peek(): DbCard {
         if (this.cards.length == 0) {
-            throw new Error('Cannot peek at an empty pile. The Server is responsible for reshuffling.');
+            throw new Error('Cannot peek at an empty Pile.');
         }
         return this.cards[this.cards.length - 1]!;
     }

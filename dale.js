@@ -108,6 +108,7 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
             $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_1.Images.getCardStyle(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(Images_1.Images.getCardStyle(), "\"></div>\n                <div class=\"pile-card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
+            this.placeholderHTML = $(pile_container_id).querySelector('.pile-placeholder');
             this.topCardHTML = $(pile_container_id).querySelector('.pile-card');
             this.sizeHTML = $(pile_container_id).querySelector('.size');
             this.cards = [];
@@ -140,7 +141,7 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
             }
             if (to != null) {
                 if (to instanceof Pile) {
-                    to = to.topCardHTML;
+                    to = to.placeholderHTML;
                 }
                 var movingElement = this.topCardHTML.cloneNode();
                 this.topCardHTML.insertAdjacentElement('afterend', movingElement);
@@ -191,7 +192,7 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
         };
         Pile.prototype.peek = function () {
             if (this.cards.length == 0) {
-                throw new Error('Cannot peek at an empty pile. The Server is responsible for reshuffling.');
+                throw new Error('Cannot peek at an empty Pile.');
             }
             return this.cards[this.cards.length - 1];
         };
@@ -260,7 +261,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.market.addToStockWithId(5, 5);
             this.hand.addToStockWithId(1, 6);
             this.hand.addToStockWithId(1, 7);
-            this.marketDiscard.shuffleToDrawPile(this.marketDeck);
             this.setupNotifications();
             console.log("Ending game setup");
         };
@@ -291,7 +291,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
-                ['reshuffle', 1]
+                ['debugClient', 1],
+                ['reshuffleMarketDeck', 1]
             ];
             notifs.forEach(function (notif) {
                 dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
@@ -299,8 +300,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             });
             console.log('notifications subscriptions setup done');
         };
-        Dale.prototype.notif_reshuffle = function (notif) {
-            console.log("notif_reshuffle");
+        Dale.prototype.notif_debugClient = function (notif) {
+            var _a, _b;
+            if (notif.args.index == 0) {
+                (_a = this.marketDeck) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDiscard);
+            }
+            if (notif.args.index == 1) {
+                (_b = this.marketDiscard) === null || _b === void 0 ? void 0 : _b.shuffleToDrawPile(this.marketDeck);
+            }
+        };
+        Dale.prototype.notif_reshuffleMarketDeck = function (notif) {
+            var _a;
+            (_a = this.marketDiscard) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDeck);
         };
         return Dale;
     }(Gamegui));

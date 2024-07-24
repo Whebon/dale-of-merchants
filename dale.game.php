@@ -208,8 +208,12 @@ class Dale extends Table
         In this space, you can put debugging tools
     */
 
-    function myDebug() {
-        die($this->card_types[17]['text']);
+    function debugClient($i = 0) {
+        self::notifyAllPlayers('debugClient', clienttranslate('Debugging (index = ${index})...'), array('index' => $i));
+    }
+
+    function reshuffleMarketDeck() {
+        self::notifyAllPlayers('reshuffleMarketDeck', clienttranslate('Shuffling the market discard pile to form a new market deck.'), array());
     }
 
 //////////////////////////////////////////////////////////////////////////////

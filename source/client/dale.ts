@@ -100,8 +100,6 @@ class Dale extends Gamegui
 		this.hand.addToStockWithId(1, 6);
 		this.hand.addToStockWithId(1, 7);
 
-		this.marketDiscard.shuffleToDrawPile(this.marketDeck);
-
 		// Todo: initial hand (from server)
 		// for (var i in this.gamedatas.hand) {
 		// 	var card = this.gamedatas.hand[i]!;
@@ -224,7 +222,8 @@ class Dale extends Gamegui
 		// TODO: here, associate your game notifications with local methods
 
 		const notifs: [keyof NotifTypes, number][] = [
-			['reshuffle', 1]
+			['debugClient', 1],
+			['reshuffleMarketDeck', 1]
 		];
 
 		notifs.forEach((notif) => {
@@ -254,9 +253,21 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_debugClient(notif: NotifAs<'debugClient'>) {
+		//this notification only exists for debugging purposes
+		if (notif.args.index == 0) {
+			//debug 0
+			this.marketDeck?.shuffleToDrawPile(this.marketDiscard!);
+		}
+		if (notif.args.index == 1) {
+			//debug 1
+			this.marketDiscard?.shuffleToDrawPile(this.marketDeck!);
+		}
+	}
 	
-	notif_reshuffle(notif: NotifAs<'reshuffle'>) {
-		console.log("notif_reshuffle")
+	notif_reshuffleMarketDeck(notif: NotifAs<'reshuffleMarketDeck'>) {
+		this.marketDiscard?.shuffleToDrawPile(this.marketDeck!);
 	}
 }
 
