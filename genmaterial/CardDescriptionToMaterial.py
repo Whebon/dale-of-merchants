@@ -18,6 +18,7 @@ card_types = {}
 for index, row in df.iterrows():
     type_id = row['type_id']
     card_types[type_id] = {
+        'type_id': row['type_id'],
         'name': f"clienttranslate(\"{row['name']}\")",
         'text': f"clienttranslate(\"{row['text']}\")",
         'has_plus': row['has_plus'],

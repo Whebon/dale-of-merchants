@@ -42,30 +42,6 @@ define("components/Images", ["require", "exports"], function (require, exports) 
             }
             return style;
         };
-        Images.getAnimalfolk = function (card_type_id) {
-            if (card_type_id < Images.IMAGES_PER_ROW) {
-                return null;
-            }
-            else if (card_type_id < 2 * Images.IMAGES_PER_ROW) {
-                return "macaws";
-            }
-            else if (card_type_id < 3 * Images.IMAGES_PER_ROW) {
-                return "pandas";
-            }
-            else if (card_type_id < 4 * Images.IMAGES_PER_ROW) {
-                return "raccoons";
-            }
-            else if (card_type_id < 5 * Images.IMAGES_PER_ROW) {
-                return "squirrels";
-            }
-            else if (card_type_id < 6 * Images.IMAGES_PER_ROW) {
-                return "ocelots";
-            }
-            else if (card_type_id < 7 * Images.IMAGES_PER_ROW) {
-                return "chameleons";
-            }
-            return null;
-        };
         Images.IMAGES_PER_ROW = 7;
         Images.IMAGES_PER_COLUMN = 6;
         Images.SHEET_WIDTH = 2694;
@@ -95,11 +71,82 @@ define("components/Images", ["require", "exports"], function (require, exports) 
     }());
     exports.Images = Images;
 });
-define("components/types/DbCard", ["require", "exports"], function (require, exports) {
+define("components/types/CardType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/Pile", ["require", "exports", "components/Images"], function (require, exports, Images_1) {
+define("components/DaleCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleCard = void 0;
+    var DaleCard = (function () {
+        function DaleCard(id, type_id) {
+            this.id = id;
+            if (type_id != undefined) {
+                var prev_type_id = DaleCard.cardIdtoTypeId.get(id);
+                if (prev_type_id == undefined) {
+                    DaleCard.cardIdtoTypeId.set(id, type_id);
+                }
+                else if (prev_type_id != type_id) {
+                    throw new Error("Card id ".concat(id, " with type_id ").concat(prev_type_id, " cannot be set to a different type_id ").concat(type_id, "."));
+                }
+            }
+            else if (!DaleCard.cardIdtoTypeId.has(id)) {
+                throw new Error("The type_id of card_id ".concat(id, " is unknown. Therefore, a card with id ").concat(id, " cannot be instantiated."));
+            }
+        }
+        DaleCard.init = function (cardTypes) {
+            if (DaleCard.cardTypes) {
+                throw new Error("Card types are only be initialized once");
+            }
+            DaleCard.cardTypes = Object.values(cardTypes);
+        };
+        Object.defineProperty(DaleCard.prototype, "type_id", {
+            get: function () {
+                var _type_id = DaleCard.cardIdtoTypeId.get(this.id);
+                if (_type_id == undefined) {
+                    console.warn("id ".concat(this.id, " does not have a corresponding type_id"));
+                    return 0;
+                }
+                return _type_id;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "name", {
+            get: function () {
+                return DaleCard.cardTypes[this.type_id].name;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "text", {
+            get: function () {
+                return DaleCard.cardTypes[this.type_id].text;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "value", {
+            get: function () {
+                return DaleCard.cardTypes[this.type_id].value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "animalfolk", {
+            get: function () {
+                return DaleCard.cardTypes[this.type_id].animalfolk;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        DaleCard.cardIdtoTypeId = new Map();
+        return DaleCard;
+    }());
+    exports.DaleCard = DaleCard;
+});
+define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_1, DaleCard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
@@ -120,12 +167,12 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
                 this.topCardHTML.setAttribute('style', "display: none");
             }
             else {
-                this.topCardHTML.setAttribute('style', Images_1.Images.getCardStyle(this.peek().type_arg));
+                this.topCardHTML.setAttribute('style', Images_1.Images.getCardStyle(this.peek().type_id));
             }
         };
         Pile.prototype.pushHiddenCards = function (amount) {
             for (var i = 0; i < amount; i++) {
-                this.cards.push(Pile.HIDDEN_CARD);
+                this.cards.push(new DaleCard_1.DaleCard(0, 0));
             }
             this.updateHTML();
         };
@@ -196,18 +243,15 @@ define("components/Pile", ["require", "exports", "components/Images"], function 
             }
             return this.cards[this.cards.length - 1];
         };
-        Pile.HIDDEN_CARD = {
-            id: 0,
-            type: "",
-            type_arg: 0,
-            location: "",
-            location_arg: 0
-        };
         return Pile;
     }());
     exports.Pile = Pile;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_2, Pile_1) {
+define("components/types/DbCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_2, Pile_1, DaleCard_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -230,6 +274,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
             }
+            DaleCard_2.DaleCard.init(gamedatas.cardTypes);
             this.market.create(this, $('market'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
             this.market.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
             this.market.image_items_per_row = 6;
@@ -244,7 +289,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
             for (var i_1 in gamedatas.marketDiscard) {
                 var card = gamedatas.marketDiscard[i_1];
-                this.marketDiscard.push(card);
+                this.marketDiscard.push(new DaleCard_2.DaleCard(card.id, card.type_arg));
             }
             this.hand.create(this, $('myhand'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
             this.hand.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);

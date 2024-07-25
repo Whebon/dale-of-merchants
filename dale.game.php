@@ -158,6 +158,8 @@ class Dale extends Table
 
         $result['market'] = $this->cards->getCardsInLocation( 'market');
         $result['hand'] = $this->cards->getCardsInLocation('hand', $current_player_id);
+        
+        $result['cardTypes'] = $this->card_types;
 
         //TODO: player decks, discards and hands
 

@@ -19,6 +19,7 @@ import "ebg/stock";
 
 import { Images } from './components/Images';
 import { Pile } from './components/Pile';
+import { DaleCard } from './components/DaleCard';
 import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
@@ -51,6 +52,9 @@ class Dale extends Gamegui
 		}
 
 		// TODO: Set up your game interface here, according to "gamedatas"
+
+		//initialize the card types
+		DaleCard.init(gamedatas.cardTypes);
 		
 		//initialize the market, marketDeck and marketDiscard
 		this.market.create( this, $('market'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
@@ -74,7 +78,7 @@ class Dale extends Gamegui
 
 		for (let i in gamedatas.marketDiscard) {
 			var card = gamedatas.marketDiscard[i]!;
-			this.marketDiscard.push(card);
+			this.marketDiscard.push(new DaleCard(card.id, card.type_arg));
 		}
 
 		// TODO: load hand from DB

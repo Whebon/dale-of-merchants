@@ -54,34 +54,4 @@ export class Images {
         }
         return style;
     }
-
-    /**
-     * Returns the animalfolk of given card_type_id
-     * @param card_type_id The id of the card type to get the animal folk type of
-     * @returns {string} String that can to be set to an HTML element's style.
-     */
-    static getAnimalfolk(card_type_id: number): Animalfolk {
-        if (card_type_id < Images.IMAGES_PER_ROW) {
-            return null;
-        }
-        else if (card_type_id < 2*Images.IMAGES_PER_ROW) {
-            return "macaws";
-        }
-        else if (card_type_id < 3*Images.IMAGES_PER_ROW) {
-            return "pandas";
-        }
-        else if (card_type_id < 4*Images.IMAGES_PER_ROW) {
-            return "raccoons";
-        }
-        else if (card_type_id < 5*Images.IMAGES_PER_ROW) {
-            return "squirrels";
-        }
-        else if (card_type_id < 6*Images.IMAGES_PER_ROW) {
-            return "ocelots";
-        }
-        else if (card_type_id < 7*Images.IMAGES_PER_ROW) {
-            return "chameleons";
-        }
-        return null;
-    }
 }

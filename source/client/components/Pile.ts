@@ -1,6 +1,6 @@
 import Gamegui = require('ebg/core/gamegui');
 import { Images } from './Images';
-import { DbCard } from './types/DbCard';
+import { DaleCard } from './DaleCard';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -10,20 +10,11 @@ declare function $(text: string | Element): HTMLElement;
  */
 export class Pile {
     private page: Gamegui;
-    private cards: DbCard[];
+    private cards: DaleCard[];
     private containerHTML: HTMLElement;
     private placeholderHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private topCardHTML: HTMLElement;
-
-    //Shared reference for facedown card that are kept hidden from the current player
-    private static readonly HIDDEN_CARD: DbCard = {
-        id: 0,
-        type: "",
-        type_arg: 0,
-        location: "",
-        location_arg: 0
-    }
 
     constructor(page: Gamegui, pile_container_id: string, pile_name?: string){
         $(pile_container_id).innerHTML = `
@@ -51,7 +42,7 @@ export class Pile {
         }
         else {
             //the pile is non-empty and its content is known, draw the top card of the pile
-            this.topCardHTML.setAttribute('style', Images.getCardStyle(this.peek().type_arg)); //TODO: top card card of the pile
+            this.topCardHTML.setAttribute('style', Images.getCardStyle(this.peek().type_id)); //TODO: top card card of the pile
         }
     }
 
@@ -61,7 +52,7 @@ export class Pile {
      */
     public pushHiddenCards(amount: number) {
         for (let i = 0; i < amount; i++) {
-            this.cards.push(Pile.HIDDEN_CARD);
+            this.cards.push(new DaleCard(0, 0));
         }
         this.updateHTML();
     }
@@ -70,7 +61,7 @@ export class Pile {
      * Push a card on top of the pile.
      * @param card: card to push on the pile.
      */
-    public push(card: DbCard) {
+    public push(card: DaleCard) {
         this.cards.push(card);
         this.updateHTML();
     }
@@ -114,8 +105,8 @@ export class Pile {
     }
 
     /**
-    * Pop all cards from the pile, destroying the entire pile in the process. Adds `HIDDEN_CARD`s to the provided `drawPile`.
-    * @param drawPile pile to add `HIDDEN_CARD`s to for each card popped.
+    * Pop all cards from the pile, destroying the entire pile in the process. Adds hidden cards to the provided `drawPile`.
+    * @param drawPile pile to add a hidden card to for each card popped.
     * @param duration (optional) defines the total duration in millisecond of the slide.
     */
     public shuffleToDrawPile(drawPile: Pile, duration: number = 1000) {
@@ -153,9 +144,9 @@ export class Pile {
 
     /**
     * Get at the top card of the pile without modifying the pile.
-    * @returns {DbCard} top card of the pile.
+    * @returns {DaleCard} top card of the pile.
     */
-    public peek(): DbCard {
+    public peek(): DaleCard {
         if (this.cards.length == 0) {
             throw new Error('Cannot peek at an empty Pile.');
         }
