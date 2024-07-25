@@ -25,11 +25,11 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div id="myhand-wrap" class="whiteblock">
+<div id="market-wrap" class="whiteblock">
     <h3>{MARKET}</h3>
 
-    <div id="marketdiscard" class="pile-container"></div>
-    <div id="marketdeck" class="pile-container"></div>
+    <div id="market-discard" class="pile-container"></div>
+    <div id="market-deck" class="pile-container"></div>
 
     <div class="cardontable">
         <div class="card cardontable" id="cardontable"></div>
@@ -41,12 +41,7 @@
         </div>
     </div>
 
-
-    
-
-    <div id="market-background">
-        <div id="market"></div>
-    </div>
+    <div id="market-board-background"><div id="market-board"></div></div>
 </div>
 
 <div id="myhand-wrap" class="whiteblock">

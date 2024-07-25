@@ -26,14 +26,26 @@
   border-radius: 10px;
 }
 
-#myhand-container {
-  padding-right: 0;
+.placeholder {
+  background-image: url("img/placeholder.png");
+  border-radius: 10px;
+  position: absolute;
 }
 
-#market-background {
+.card {
+  background-image: url("img/cards.jpg");
+  border-radius: 10px;
+  position: absolute;
+}
+
+#market-board-background {
   background-image: url(img/shop_day.jpg);
   background-repeat: no-repeat;
-  min-width: 3000px;
+  position: relative;
+}
+
+#market-board {
+  position: relative;
 }
 
 .pile-container {
@@ -65,16 +77,6 @@
 }
 .pile-container .pile {
   position: relative;
-}
-.pile-container .pile .pile-placeholder {
-  background-image: url("img/placeholder.png");
-  border-radius: 10px;
-  position: absolute;
-}
-.pile-container .pile .pile-card {
-  background-image: url("img/cards.jpg");
-  border-radius: 10px;
-  position: absolute;
 }
 
 /*

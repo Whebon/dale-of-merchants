@@ -20,15 +20,15 @@ export class Pile {
         $(pile_container_id).innerHTML = `
             ${pile_name ? `<h4 class="name">${pile_name}</h4>` : ""}
             <div class="pile" style="${Images.getCardStyle()}">
-                <div class="pile-placeholder" style="${Images.getCardStyle()}"></div>
-                <div class="pile-card"></div>
+                <div class="placeholder" style="${Images.getCardStyle()}"></div>
+                <div class="card"></div>
                 <div class="size"></div>
             </div>
         `;
         this.page = page;
         this.containerHTML = $(pile_container_id);
-        this.placeholderHTML = $(pile_container_id).querySelector('.pile-placeholder')!;
-        this.topCardHTML = $(pile_container_id).querySelector('.pile-card')!;
+        this.placeholderHTML = $(pile_container_id).querySelector('.placeholder')!;
+        this.topCardHTML = $(pile_container_id).querySelector('.card')!;
         this.sizeHTML = $(pile_container_id).querySelector('.size')!;
         this.cards = [];
         this.updateHTML();

@@ -5,19 +5,19 @@ export class Images {
     static readonly IMAGES_PER_COLUMN = 7;
 
     static readonly SHEET_WIDTH = 2694;
-    static readonly SHEET_HEIGHT = 5112;
+    static readonly SHEET_HEIGHT = 4907;
     static readonly CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_ROW;
     static readonly CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_COLUMN;
 
-    static readonly MARKET_PADDING_TOP = 153;
-    static readonly MARKET_PADDING_BOTTOM = 45;
+    static readonly MARKET_PADDING_TOP = 156;
+    static readonly MARKET_PADDING_BOTTOM = 42;
     static readonly MARKET_PADDING_LEFT = 45;
     static readonly MARKET_PADDING_RIGHT = 45;
     static readonly MARKET_ITEM_MARGIN = 95;
     static readonly MARKET_WIDTH = 2717;
     static readonly MARKET_HEIGHT = 906;
 
-    static readonly S_SCALE = 0.3;
+    static readonly S_SCALE = 0.33;
 
     static readonly SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
     static readonly SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;

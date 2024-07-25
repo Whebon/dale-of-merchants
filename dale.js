@@ -45,17 +45,17 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.IMAGES_PER_ROW = 6;
         Images.IMAGES_PER_COLUMN = 7;
         Images.SHEET_WIDTH = 2694;
-        Images.SHEET_HEIGHT = 5112;
+        Images.SHEET_HEIGHT = 4907;
         Images.CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_ROW;
         Images.CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_COLUMN;
-        Images.MARKET_PADDING_TOP = 153;
-        Images.MARKET_PADDING_BOTTOM = 45;
+        Images.MARKET_PADDING_TOP = 156;
+        Images.MARKET_PADDING_BOTTOM = 42;
         Images.MARKET_PADDING_LEFT = 45;
         Images.MARKET_PADDING_RIGHT = 45;
         Images.MARKET_ITEM_MARGIN = 95;
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
-        Images.S_SCALE = 0.3;
+        Images.S_SCALE = 0.33;
         Images.SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
         Images.SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
         Images.CARD_WIDTH_S = Images.S_SCALE * Images.CARD_WIDTH;
@@ -75,7 +75,7 @@ define("components/types/CardType", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/DaleCard", ["require", "exports"], function (require, exports) {
+define("components/DaleCard", ["require", "exports", "components/Images"], function (require, exports, Images_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = void 0;
@@ -141,22 +141,28 @@ define("components/DaleCard", ["require", "exports"], function (require, exports
             enumerable: false,
             configurable: true
         });
+        DaleCard.prototype.toDiv = function () {
+            var div = document.createElement("div");
+            div.classList.add("card");
+            div.setAttribute('style', Images_1.Images.getCardStyle(this.type_id));
+            return div;
+        };
         DaleCard.cardIdtoTypeId = new Map();
         return DaleCard;
     }());
     exports.DaleCard = DaleCard;
 });
-define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_1, DaleCard_1) {
+define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_2, DaleCard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
     var Pile = (function () {
         function Pile(page, pile_container_id, pile_name) {
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_1.Images.getCardStyle(), "\">\n                <div class=\"pile-placeholder\" style=\"").concat(Images_1.Images.getCardStyle(), "\"></div>\n                <div class=\"pile-card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_2.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_2.Images.getCardStyle(), "\"></div>\n                <div class=\"card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
-            this.placeholderHTML = $(pile_container_id).querySelector('.pile-placeholder');
-            this.topCardHTML = $(pile_container_id).querySelector('.pile-card');
+            this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
+            this.topCardHTML = $(pile_container_id).querySelector('.card');
             this.sizeHTML = $(pile_container_id).querySelector('.size');
             this.cards = [];
             this.updateHTML();
@@ -167,7 +173,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.topCardHTML.setAttribute('style', "display: none");
             }
             else {
-                this.topCardHTML.setAttribute('style', Images_1.Images.getCardStyle(this.peek().type_id));
+                this.topCardHTML.setAttribute('style', Images_2.Images.getCardStyle(this.peek().type_id));
             }
         };
         Pile.prototype.pushHiddenCards = function (amount) {
@@ -247,7 +253,111 @@ define("components/Pile", ["require", "exports", "components/Images", "component
     }());
     exports.Pile = Pile;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_2, Pile_1, DaleCard_2) {
+define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_2, Images_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.MarketBoard = void 0;
+    var CardSlot = (function () {
+        function CardSlot(container, card) {
+            this._container = container !== null && container !== void 0 ? container : document.createElement("div");
+            this._card = card;
+        }
+        Object.defineProperty(CardSlot.prototype, "id", {
+            get: function () {
+                if (this._container.id == "") {
+                    this._container.id = "card-slot-id-" + CardSlot.UNIQUE_ID++;
+                }
+                return this._container.id;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(CardSlot.prototype, "card", {
+            get: function () {
+                return this._card;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(CardSlot.prototype, "card_div", {
+            get: function () {
+                if (!this.hasCard()) {
+                    throw new Error("An empty slot has no card");
+                }
+                return this._container.firstChild;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        CardSlot.prototype.hasCard = function () {
+            return this._card != undefined;
+        };
+        CardSlot.prototype.insertCard = function (card) {
+            this.removeCard();
+            this._container.appendChild(card.toDiv());
+            this._card = card;
+        };
+        CardSlot.prototype.removeCard = function () {
+            if (this.hasCard()) {
+                var removedCard = this._card;
+                this._container.replaceChildren();
+                this._card = undefined;
+                return removedCard;
+            }
+            return undefined;
+        };
+        CardSlot.UNIQUE_ID = 0;
+        return CardSlot;
+    }());
+    var MarketBoard = (function () {
+        function MarketBoard(page) {
+            this.MAX_SIZE = 5;
+            this.page = page;
+            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_3.Images.MARKET_WIDTH_S - Images_3.Images.MARKET_PADDING_LEFT_S - Images_3.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_3.Images.MARKET_HEIGHT_S - Images_3.Images.MARKET_PADDING_TOP_S - Images_3.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_3.Images.MARKET_WIDTH_S, "px ").concat(Images_3.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_3.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_3.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_3.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_3.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            this.container = $("market-board-background").querySelector("#market-board");
+            this.slots = [];
+            for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
+                var div = document.createElement("div");
+                div.setAttribute('style', "".concat(Images_3.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_3.Images.CARD_WIDTH_S + Images_3.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
+                this.container.appendChild(div);
+                this.slots.push(new CardSlot(div));
+            }
+            this.insertCard(new DaleCard_2.DaleCard(0, 0), 0);
+            this.insertCard(new DaleCard_2.DaleCard(0, 0), 2);
+            this.insertCard(new DaleCard_2.DaleCard(0, 0), 4);
+        }
+        MarketBoard.prototype.insertCard = function (card, pos) {
+            if (pos == undefined)
+                pos = this.MAX_SIZE - 1;
+            if (pos < 0 || pos >= this.MAX_SIZE) {
+                console.warn("".concat(pos, " is an invalid market position."));
+                pos = this.MAX_SIZE - 1;
+            }
+            this.slots[pos].insertCard(card);
+        };
+        MarketBoard.prototype.slideRight = function (duration, delay) {
+            var emptyPos = 0;
+            for (var pos = 0; pos < this.MAX_SIZE; pos++) {
+                if (this.slots[pos].hasCard()) {
+                    if (pos != emptyPos) {
+                        console.log("".concat(pos, " slides to ").concat(emptyPos));
+                        var card = this.slots[pos].removeCard();
+                        this.slots[emptyPos].insertCard(card);
+                        var target = this.slots[emptyPos].card_div;
+                        var source = this.slots[pos].id;
+                        var destination = this.slots[emptyPos].id;
+                        this.page.placeOnObject(target, source);
+                        this.page.slideToObject(target, destination, duration, delay).play();
+                    }
+                    emptyPos++;
+                }
+            }
+        };
+        return MarketBoard;
+    }());
+    exports.MarketBoard = MarketBoard;
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_4, Pile_1, DaleCard_3, MarketBoard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -256,13 +366,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             var _this = _super.call(this) || this;
             _this.marketDeck = null;
             _this.marketDiscard = null;
-            _this.market = new ebg.stock();
+            _this.market = null;
             _this.hand = new ebg.stock();
             console.log('dale constructor');
             return _this;
         }
         Dale.prototype.setup = function (gamedatas) {
-            var _a;
             console.log("Starting game setup");
             console.log("------ GAME DATAS ------");
             console.log(this.gamedatas);
@@ -270,32 +379,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
             }
-            DaleCard_2.DaleCard.init(gamedatas.cardTypes);
+            DaleCard_3.DaleCard.init(gamedatas.cardTypes);
             for (var i in gamedatas.cardTypes) {
                 var type_id = gamedatas.cardTypes[i].type_id;
-                this.market.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
                 this.hand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
             }
-            this.marketDeck = new Pile_1.Pile(this, 'marketdeck', 'Market Deck');
+            this.marketDeck = new Pile_1.Pile(this, 'market-deck', 'Market Deck');
             this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
-            this.marketDiscard = new Pile_1.Pile(this, 'marketdiscard', 'Market Discard');
+            this.marketDiscard = new Pile_1.Pile(this, 'market-discard', 'Market Discard');
             for (var i in gamedatas.marketDiscard) {
                 var card = gamedatas.marketDiscard[i];
-                this.marketDiscard.push(new DaleCard_2.DaleCard(card.id, card.type_arg));
+                this.marketDiscard.push(new DaleCard_3.DaleCard(card.id, card.type_arg));
             }
-            this.market.create(this, $('market'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
-            this.market.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
-            this.market.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
-            this.market.item_margin = Images_2.Images.MARKET_ITEM_MARGIN_S;
-            (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(Images_2.Images.MARKET_WIDTH_S, "px ").concat(Images_2.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_2.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_2.Images.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
-            this.market.addToStockWithId(1, 1);
-            this.market.addToStockWithId(2, 2);
-            this.market.addToStockWithId(3, 3);
-            this.market.addToStockWithId(4, 4);
-            this.market.addToStockWithId(5, 5);
-            this.hand.create(this, $('myhand'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
-            this.hand.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
-            this.hand.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
+            this.market = new MarketBoard_1.MarketBoard(this);
+            this.hand.create(this, $('myhand'), Images_4.Images.CARD_WIDTH, Images_4.Images.CARD_HEIGHT);
+            this.hand.resizeItems(Images_4.Images.CARD_WIDTH_S, Images_4.Images.CARD_HEIGHT_S, Images_4.Images.SHEET_WIDTH_S, Images_4.Images.SHEET_HEIGHT_S);
+            this.hand.image_items_per_row = Images_4.Images.IMAGES_PER_ROW;
             for (var i in gamedatas.hand) {
                 var card_1 = gamedatas.hand[i];
                 this.hand.addToStockWithId(card_1.type_arg, card_1.id);
@@ -356,7 +455,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             else if (arg == 'shuffleToDraw') {
                 (_b = this.marketDiscard) === null || _b === void 0 ? void 0 : _b.shuffleToDrawPile(this.marketDeck);
             }
-            else if (arg == '') {
+            else if (arg == 'slideRight') {
+                this.market.slideRight();
             }
             else if (arg == '') {
             }

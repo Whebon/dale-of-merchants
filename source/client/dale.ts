@@ -20,13 +20,14 @@ import "ebg/stock";
 import { Images } from './components/Images';
 import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
+import { MarketBoard } from './components/MarketBoard'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
 	marketDeck: Pile | null = null;
 	marketDiscard: Pile | null = null;
-	market: Stock = new ebg.stock(); 
+	market: MarketBoard | null = null;
 	hand: Stock = new ebg.stock();
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
@@ -54,36 +55,22 @@ class Dale extends Gamegui
 		DaleCard.init(gamedatas.cardTypes);
 		for (let i in gamedatas.cardTypes) {
 			let type_id = gamedatas.cardTypes[i]!.type_id;
-			this.market.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
 			this.hand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
 		}
 
 		//initialize the market deck
-		this.marketDeck = new Pile(this, 'marketdeck', 'Market Deck');
+		this.marketDeck = new Pile(this, 'market-deck', 'Market Deck');
 		this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
 
 		//initialize the market discard pile
-		this.marketDiscard = new Pile(this, 'marketdiscard', 'Market Discard');
+		this.marketDiscard = new Pile(this, 'market-discard', 'Market Discard');
 		for (let i in gamedatas.marketDiscard) {
 			var card = gamedatas.marketDiscard[i]!;
 			this.marketDiscard.push(new DaleCard(card.id, card.type_arg));
 		}
 		
-		//initialize the market
-		this.market.create( this, $('market'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
-		this.market.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
-		this.market.image_items_per_row = Images.IMAGES_PER_ROW;
-		this.market.item_margin = Images.MARKET_ITEM_MARGIN_S;
-		$('market-background')?.setAttribute("style", `
-			background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
-			padding-top: ${Images.MARKET_PADDING_TOP_S}px;
-			padding-left: ${Images.MARKET_PADDING_LEFT_S}px;
-		`);
-		this.market.addToStockWithId(1, 1); //TODO: use a different data structure for the market
-		this.market.addToStockWithId(2, 2); //cards in a stock cannot be sorted by card id
-		this.market.addToStockWithId(3, 3);
-		this.market.addToStockWithId(4, 4);
-		this.market.addToStockWithId(5, 5);
+		//initialize the market board
+		this.market = new MarketBoard(this);
 
 		//initialize the hand
 		this.hand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
@@ -257,8 +244,8 @@ class Dale extends Gamegui
 		else if (arg == 'shuffleToDraw') {
 			this.marketDiscard?.shuffleToDrawPile(this.marketDeck!)
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'slideRight') {
+			this.market!.slideRight();
 		}
 		else if (arg == '') {
 			

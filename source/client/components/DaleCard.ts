@@ -1,7 +1,10 @@
-import { Animalfolk } from './types/Animalfolk';
 import { Images } from './Images';
+import { Animalfolk } from './types/Animalfolk';
 import { CardType } from './types/CardType';
 
+/**
+ * A Dale of Merchants Card. All information of the card can be retrieved from this object.
+ */
 export class DaleCard {
     static cardTypes: CardType[] //initialized during "setup(gamedatas: Gamedatas)"
     static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>()
@@ -71,5 +74,15 @@ export class DaleCard {
 
     get animalfolk(): Animalfolk {
         return DaleCard.cardTypes[this.type_id]!.animalfolk
+    }
+
+    /**
+     * @returns a new div element representing this card
+     */
+    toDiv(): HTMLElement {
+        let div = document.createElement("div");
+        div.classList.add("card");
+        div.setAttribute('style', Images.getCardStyle(this.type_id));
+        return div;
     }
 }
