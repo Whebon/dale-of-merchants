@@ -113,10 +113,6 @@ export class MarketBoard {
             this.container.appendChild(div);
             this.slots.push(new CardSlot(div));
         }
-
-        this.insertCard(new DaleCard(0, 0), 0);
-        this.insertCard(new DaleCard(0, 0), 2);
-        this.insertCard(new DaleCard(0, 0), 4);
     }
 
     /**

@@ -66,11 +66,15 @@ class Dale extends Gamegui
 		this.marketDiscard = new Pile(this, 'market-discard', 'Market Discard');
 		for (let i in gamedatas.marketDiscard) {
 			var card = gamedatas.marketDiscard[i]!;
-			this.marketDiscard.push(new DaleCard(card.id, card.type_arg));
+			this.marketDiscard.push(DaleCard.of(card));
 		}
 		
 		//initialize the market board
 		this.market = new MarketBoard(this);
+		for (let i in gamedatas.market) {
+			let card = gamedatas.market[i]!;
+			this.market.insertCard(DaleCard.of(card), +card.location_arg);
+		}
 
 		//initialize the hand
 		this.hand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);

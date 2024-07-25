@@ -75,6 +75,10 @@ define("components/types/CardType", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("components/types/DbCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/DaleCard", ["require", "exports", "components/Images"], function (require, exports, Images_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -146,6 +150,9 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
             div.classList.add("card");
             div.setAttribute('style', Images_1.Images.getCardStyle(this.type_id));
             return div;
+        };
+        DaleCard.of = function (card) {
+            return new DaleCard(card.id, card.type_arg);
         };
         DaleCard.cardIdtoTypeId = new Map();
         return DaleCard;
@@ -253,7 +260,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
     }());
     exports.Pile = Pile;
 });
-define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_2, Images_3) {
+define("components/MarketBoard", ["require", "exports", "components/Images"], function (require, exports, Images_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -322,9 +329,6 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot(div));
             }
-            this.insertCard(new DaleCard_2.DaleCard(0, 0), 0);
-            this.insertCard(new DaleCard_2.DaleCard(0, 0), 2);
-            this.insertCard(new DaleCard_2.DaleCard(0, 0), 4);
         }
         MarketBoard.prototype.insertCard = function (card, pos) {
             if (pos == undefined)
@@ -357,7 +361,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_4, Pile_1, DaleCard_3, MarketBoard_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_4, Pile_1, DaleCard_2, MarketBoard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -379,7 +383,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
             }
-            DaleCard_3.DaleCard.init(gamedatas.cardTypes);
+            DaleCard_2.DaleCard.init(gamedatas.cardTypes);
             for (var i in gamedatas.cardTypes) {
                 var type_id = gamedatas.cardTypes[i].type_id;
                 this.hand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
@@ -389,15 +393,19 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.marketDiscard = new Pile_1.Pile(this, 'market-discard', 'Market Discard');
             for (var i in gamedatas.marketDiscard) {
                 var card = gamedatas.marketDiscard[i];
-                this.marketDiscard.push(new DaleCard_3.DaleCard(card.id, card.type_arg));
+                this.marketDiscard.push(DaleCard_2.DaleCard.of(card));
             }
             this.market = new MarketBoard_1.MarketBoard(this);
+            for (var i in gamedatas.market) {
+                var card_1 = gamedatas.market[i];
+                this.market.insertCard(DaleCard_2.DaleCard.of(card_1), +card_1.location_arg);
+            }
             this.hand.create(this, $('myhand'), Images_4.Images.CARD_WIDTH, Images_4.Images.CARD_HEIGHT);
             this.hand.resizeItems(Images_4.Images.CARD_WIDTH_S, Images_4.Images.CARD_HEIGHT_S, Images_4.Images.SHEET_WIDTH_S, Images_4.Images.SHEET_HEIGHT_S);
             this.hand.image_items_per_row = Images_4.Images.IMAGES_PER_ROW;
             for (var i in gamedatas.hand) {
-                var card_1 = gamedatas.hand[i];
-                this.hand.addToStockWithId(card_1.type_arg, card_1.id);
+                var card_2 = gamedatas.hand[i];
+                this.hand.addToStockWithId(card_2.type_arg, card_2.id);
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -473,8 +481,4 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
         return Dale;
     }(Gamegui));
     dojo.setObject("bgagame.dale", Dale);
-});
-define("components/types/DbCard", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });

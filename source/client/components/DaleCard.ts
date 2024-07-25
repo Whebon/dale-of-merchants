@@ -1,6 +1,7 @@
 import { Images } from './Images';
 import { Animalfolk } from './types/Animalfolk';
 import { CardType } from './types/CardType';
+import { DbCard } from './types/DbCard';
 
 /**
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
@@ -9,14 +10,14 @@ export class DaleCard {
     static cardTypes: CardType[] //initialized during "setup(gamedatas: Gamedatas)"
     static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>()
 
-    id: number
+    public id: number
 
     /** 
      * Construct a dale card of a given card id. If this is the first time this card id is constructed, the type_id MUST be provided.
      * @param id unique database id for this card instance.
      * @param type_id id that uniquely defines this card's appearance.
      * */
-    constructor(id: number, type_id?: number) {
+    public constructor(id: number, type_id?: number) {
         this.id = id;
         if (type_id != undefined) {
             let prev_type_id = DaleCard.cardIdtoTypeId.get(id);
@@ -35,7 +36,7 @@ export class DaleCard {
     /** 
      * Statically initialize the card types.
      * */
-    static init(cardTypes: {[type_id: number]: CardType}) {
+    public static init(cardTypes: {[type_id: number]: CardType}) {
         if (DaleCard.cardTypes) {
             throw new Error("Card types are only be initialized once")
         }
@@ -51,7 +52,7 @@ export class DaleCard {
      * Uniquely defines the appearance of a card (not to be confused with tehcnique/passive typing). 
      * Cards with the same type_id are indistinguishable up to their ids.
      * */
-    get type_id(): number {
+    public get type_id(): number {
         let _type_id = DaleCard.cardIdtoTypeId.get(this.id);
         if (_type_id == undefined) {
             console.warn(`id ${this.id} does not have a corresponding type_id`)
@@ -60,29 +61,37 @@ export class DaleCard {
         return _type_id
     }
 
-    get name(): string {
+    public get name(): string {
         return DaleCard.cardTypes[this.type_id]!.name
     }
 
-    get text(): string {
+    public get text(): string {
         return DaleCard.cardTypes[this.type_id]!.text
     }
 
-    get value(): number {
+    public get value(): number {
         return DaleCard.cardTypes[this.type_id]!.value
     }
 
-    get animalfolk(): Animalfolk {
+    public get animalfolk(): Animalfolk {
         return DaleCard.cardTypes[this.type_id]!.animalfolk
     }
 
     /**
      * @returns a new div element representing this card
      */
-    toDiv(): HTMLElement {
-        let div = document.createElement("div");
-        div.classList.add("card");
-        div.setAttribute('style', Images.getCardStyle(this.type_id));
+    public toDiv(): HTMLElement {
+        let div = document.createElement("div")
+        div.classList.add("card")
+        div.setAttribute('style', Images.getCardStyle(this.type_id))
         return div;
+    }
+
+    /**
+     * converts a DbCard (from the database table) to a DaleCard (typescript representation of a card)
+     * @returns DaleCard
+     */
+    public static of(card: DbCard) {
+        return new DaleCard(card.id, card.type_arg)
     }
 }

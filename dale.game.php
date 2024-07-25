@@ -125,6 +125,13 @@ class Dale extends Table
         $this->cards->moveCard(24, 'marketDiscard');
         $this->cards->moveCard(25, 'marketDiscard');
 
+        $this->cards->moveCard(16, 'market', 0);
+        $this->cards->moveCard(17, 'market', 1);
+        $this->cards->moveCard(18, 'market', 2);
+        $this->cards->moveCard(19, 'market', 3);
+        $this->cards->moveCard(20, 'market', 4);
+
+
         $i = 0;
         foreach( $players as $player_id => $player )
         {
