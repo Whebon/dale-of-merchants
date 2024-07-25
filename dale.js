@@ -42,12 +42,12 @@ define("components/Images", ["require", "exports"], function (require, exports) 
             }
             return style;
         };
-        Images.IMAGES_PER_ROW = 7;
-        Images.IMAGES_PER_COLUMN = 6;
+        Images.IMAGES_PER_ROW = 6;
+        Images.IMAGES_PER_COLUMN = 7;
         Images.SHEET_WIDTH = 2694;
         Images.SHEET_HEIGHT = 5112;
-        Images.CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_COLUMN;
-        Images.CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_ROW;
+        Images.CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_ROW;
+        Images.CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_COLUMN;
         Images.MARKET_PADDING_TOP = 153;
         Images.MARKET_PADDING_BOTTOM = 45;
         Images.MARKET_PADDING_LEFT = 45;
@@ -247,10 +247,6 @@ define("components/Pile", ["require", "exports", "components/Images", "component
     }());
     exports.Pile = Pile;
 });
-define("components/types/DbCard", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_2, Pile_1, DaleCard_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -275,37 +271,35 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
                 var player = gamedatas.players[player_id];
             }
             DaleCard_2.DaleCard.init(gamedatas.cardTypes);
-            this.market.create(this, $('market'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
-            this.market.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
-            this.market.image_items_per_row = 6;
-            this.market.item_margin = Images_2.Images.MARKET_ITEM_MARGIN_S;
-            (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(Images_2.Images.MARKET_WIDTH_S, "px ").concat(Images_2.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_2.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_2.Images.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
-            this.marketDeck = new Pile_1.Pile(this, 'marketdeck', 'Market Deck');
-            this.marketDiscard = new Pile_1.Pile(this, 'marketdiscard', 'Market Discard');
-            for (var _i = 0, _b = gamedatas.market; _i < _b.length; _i++) {
-                var card_1 = _b[_i];
-                this.market.addToStockWithId(card_1.id, card_1.type_arg);
+            for (var i in gamedatas.cardTypes) {
+                var type_id = gamedatas.cardTypes[i].type_id;
+                this.market.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+                this.hand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
             }
+            this.marketDeck = new Pile_1.Pile(this, 'marketdeck', 'Market Deck');
             this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
-            for (var i_1 in gamedatas.marketDiscard) {
-                var card = gamedatas.marketDiscard[i_1];
+            this.marketDiscard = new Pile_1.Pile(this, 'marketdiscard', 'Market Discard');
+            for (var i in gamedatas.marketDiscard) {
+                var card = gamedatas.marketDiscard[i];
                 this.marketDiscard.push(new DaleCard_2.DaleCard(card.id, card.type_arg));
             }
-            this.hand.create(this, $('myhand'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
-            this.hand.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
-            this.hand.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
-            for (var i = 0; i < 100; i++) {
-                var card_type_id = i;
-                this.market.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);
-                this.hand.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);
-            }
+            this.market.create(this, $('market'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
+            this.market.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
+            this.market.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
+            this.market.item_margin = Images_2.Images.MARKET_ITEM_MARGIN_S;
+            (_a = $('market-background')) === null || _a === void 0 ? void 0 : _a.setAttribute("style", "\n\t\t\tbackground-size: ".concat(Images_2.Images.MARKET_WIDTH_S, "px ").concat(Images_2.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_2.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_2.Images.MARKET_PADDING_LEFT_S, "px;\n\t\t"));
             this.market.addToStockWithId(1, 1);
             this.market.addToStockWithId(2, 2);
             this.market.addToStockWithId(3, 3);
             this.market.addToStockWithId(4, 4);
             this.market.addToStockWithId(5, 5);
-            this.hand.addToStockWithId(1, 6);
-            this.hand.addToStockWithId(1, 7);
+            this.hand.create(this, $('myhand'), Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
+            this.hand.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
+            this.hand.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
+            for (var i in gamedatas.hand) {
+                var card_1 = gamedatas.hand[i];
+                this.hand.addToStockWithId(card_1.type_arg, card_1.id);
+            }
             this.setupNotifications();
             console.log("Ending game setup");
         };
@@ -345,20 +339,42 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             });
             console.log('notifications subscriptions setup done');
         };
-        Dale.prototype.notif_debugClient = function (notif) {
-            var _a, _b;
-            if (notif.args.index == 0) {
-                (_a = this.marketDeck) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDiscard);
-            }
-            if (notif.args.index == 1) {
-                (_b = this.marketDiscard) === null || _b === void 0 ? void 0 : _b.shuffleToDrawPile(this.marketDeck);
-            }
-        };
         Dale.prototype.notif_reshuffleMarketDeck = function (notif) {
             var _a;
             (_a = this.marketDiscard) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDeck);
         };
+        Dale.prototype.notif_debugClient = function (notif) {
+            var _a, _b;
+            var arg = notif.args.arg;
+            console.log("Debug with argument ".concat(arg));
+            if (arg == 'log') {
+                console.log("RECEIVED A DEBUG NOTIFICATION !");
+            }
+            else if (arg == 'shuffleToDiscard') {
+                (_a = this.marketDeck) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDiscard);
+            }
+            else if (arg == 'shuffleToDraw') {
+                (_b = this.marketDiscard) === null || _b === void 0 ? void 0 : _b.shuffleToDrawPile(this.marketDeck);
+            }
+            else if (arg == '') {
+            }
+            else if (arg == '') {
+            }
+            else if (arg == '') {
+            }
+            else if (arg == '') {
+            }
+            else if (arg == '') {
+            }
+            else {
+                throw new Error("Unknown argument ".concat(notif.args.arg));
+            }
+        };
         return Dale;
     }(Gamegui));
     dojo.setObject("bgagame.dale", Dale);
+});
+define("components/types/DbCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });

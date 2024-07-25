@@ -37,6 +37,11 @@ export class DaleCard {
             throw new Error("Card types are only be initialized once")
         }
         DaleCard.cardTypes = Object.values(cardTypes);
+        // for (let i = 0; i < DaleCard.cardTypes.length; i++) {
+        //     const card = cards[i];
+        //     // Process the card object
+        //     console.log(card);
+        // }
     }
 
     /** 

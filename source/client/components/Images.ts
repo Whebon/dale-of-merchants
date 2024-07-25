@@ -1,13 +1,13 @@
 import { Animalfolk } from "./types/Animalfolk";
 
 export class Images {
-    static readonly IMAGES_PER_ROW = 7;
-    static readonly IMAGES_PER_COLUMN = 6;
+    static readonly IMAGES_PER_ROW = 6;
+    static readonly IMAGES_PER_COLUMN = 7;
 
     static readonly SHEET_WIDTH = 2694;
     static readonly SHEET_HEIGHT = 5112;
-    static readonly CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_COLUMN;
-    static readonly CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_ROW;
+    static readonly CARD_WIDTH = Images.SHEET_WIDTH / Images.IMAGES_PER_ROW;
+    static readonly CARD_HEIGHT = Images.SHEET_HEIGHT / Images.IMAGES_PER_COLUMN;
 
     static readonly MARKET_PADDING_TOP = 153;
     static readonly MARKET_PADDING_BOTTOM = 45;

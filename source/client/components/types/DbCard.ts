@@ -1,16 +1,8 @@
 //Card representation as received from the database
 export interface DbCard {
-    id: number
+    id: number //actually a string (from db)
     type: string
-    type_arg: number
+    type_arg: number //actually a string (from db)
     location: string
-    location_arg: number
+    location_arg: number //actually a string (from db)
 }
-
-// constructor() {
-//     this.id = 0;
-//     this.type = "";
-//     this.type_arg = 0;
-//     this.location = "";
-//     this.location_arg = 0;
-// }

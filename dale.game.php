@@ -99,7 +99,7 @@ class Dale extends Table
         $cards = array();
         foreach ($this->card_types as $type_id => $card_type) {
             // TODO: #animalfolk_sets = #players + 1
-            $cards[] = array ('type' => 'UNUSED','type_arg' => $type_id,'nbr' => $card_type['nbr']);
+            $cards[] = array ('type' => 'UNUSED','type_arg' => $type_id, 'nbr' => $card_type['nbr']);
         }
         $this->cards->createCards($cards, 'marketDeck');
         $this->cards->shuffle('marketDeck');
@@ -125,6 +125,14 @@ class Dale extends Table
         $this->cards->moveCard(24, 'marketDiscard');
         $this->cards->moveCard(25, 'marketDiscard');
 
+        $i = 0;
+        foreach( $players as $player_id => $player )
+        {
+            $this->cards->moveCard(27+$i, 'hand', $player_id);
+            $this->cards->moveCard(28+$i, 'hand', $player_id);
+            $this->cards->moveCard(29+$i, 'hand', $player_id);
+            $i += 3;
+        }
 
 
         // Activate first player (which is in general a good idea :) )
@@ -210,8 +218,9 @@ class Dale extends Table
         In this space, you can put debugging tools
     */
 
-    function debugClient($i = 0) {
-        $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (index = ${index})...'), array('index' => $i));
+    function d($arg) {
+        //debugClient
+        $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
     }
 
     function reshuffleMarketDeck() {

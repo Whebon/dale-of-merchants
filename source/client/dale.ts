@@ -20,7 +20,6 @@ import "ebg/stock";
 import { Images } from './components/Images';
 import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
-import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -43,74 +42,57 @@ class Dale extends Gamegui
 		console.log("------ GAME DATAS ------")
 		console.log(this.gamedatas)
 		console.log("------------------------")
-		
-		// Setting up player boards
+
+		// TODO: Setting up player boards
 		for( var player_id in gamedatas.players )
-		{
-			var player = gamedatas.players[player_id];
-			// TODO: Setting up players boards if needed
-		}
-
-		// TODO: Set up your game interface here, according to "gamedatas"
-
+			{
+				var player = gamedatas.players[player_id];
+				// TODO: Setting up players boards if needed
+			}
+		
 		//initialize the card types
 		DaleCard.init(gamedatas.cardTypes);
+		for (let i in gamedatas.cardTypes) {
+			let type_id = gamedatas.cardTypes[i]!.type_id;
+			this.market.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+			this.hand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+		}
+
+		//initialize the market deck
+		this.marketDeck = new Pile(this, 'marketdeck', 'Market Deck');
+		this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
+
+		//initialize the market discard pile
+		this.marketDiscard = new Pile(this, 'marketdiscard', 'Market Discard');
+		for (let i in gamedatas.marketDiscard) {
+			var card = gamedatas.marketDiscard[i]!;
+			this.marketDiscard.push(new DaleCard(card.id, card.type_arg));
+		}
 		
-		//initialize the market, marketDeck and marketDiscard
+		//initialize the market
 		this.market.create( this, $('market'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
 		this.market.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
-		this.market.image_items_per_row = 6;
+		this.market.image_items_per_row = Images.IMAGES_PER_ROW;
 		this.market.item_margin = Images.MARKET_ITEM_MARGIN_S;
 		$('market-background')?.setAttribute("style", `
 			background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
 			padding-top: ${Images.MARKET_PADDING_TOP_S}px;
 			padding-left: ${Images.MARKET_PADDING_LEFT_S}px;
 		`);
-
-		this.marketDeck = new Pile(this, 'marketdeck', 'Market Deck');
-		this.marketDiscard = new Pile(this, 'marketdiscard', 'Market Discard');
-
-		for (const card of gamedatas.market) {
-			this.market.addToStockWithId(card.id, card.type_arg);
-		}
-
-		this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
-
-		for (let i in gamedatas.marketDiscard) {
-			var card = gamedatas.marketDiscard[i]!;
-			this.marketDiscard.push(new DaleCard(card.id, card.type_arg));
-		}
-
-		// TODO: load hand from DB
-		this.hand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
-		this.hand.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
-		this.hand.image_items_per_row = Images.IMAGES_PER_ROW;
-
-		// Create cards types
-		for (var i = 0; i < 100; i++) {
-			var card_type_id = i; //todo: add more card types, and make [card->number] and [number->card] functions
-			this.market.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);
-			this.hand.addItemType(card_type_id, card_type_id, g_gamethemeurl + 'img/cards.jpg', card_type_id);
-		}
-
-		// just to feel it: add 5 cards to market
-		this.market.addToStockWithId(1, 1);
-		this.market.addToStockWithId(2, 2);
+		this.market.addToStockWithId(1, 1); //TODO: use a different data structure for the market
+		this.market.addToStockWithId(2, 2); //cards in a stock cannot be sorted by card id
 		this.market.addToStockWithId(3, 3);
 		this.market.addToStockWithId(4, 4);
 		this.market.addToStockWithId(5, 5);
 
-		// just to feel it: add 2 cards to hand
-		this.hand.addToStockWithId(1, 6);
-		this.hand.addToStockWithId(1, 7);
-
-		// Todo: initial hand (from server)
-		// for (var i in this.gamedatas.hand) {
-		// 	var card = this.gamedatas.hand[i]!;
-		// 	var color = card.type;
-		// 	var value = card.type_arg;
-		// 	this.playerHand.addToStockWithId(this.getCardUniqueType(color, value), card.id);
-		// }
+		//initialize the hand
+		this.hand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
+		this.hand.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
+		this.hand.image_items_per_row = Images.IMAGES_PER_ROW;
+		for (let i in gamedatas.hand) {
+			let card = gamedatas.hand[i]!;
+			this.hand.addToStockWithId(card.type_arg, card.id);
+		}
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -258,20 +240,41 @@ class Dale extends Gamegui
 	}
 	*/
 
-	notif_debugClient(notif: NotifAs<'debugClient'>) {
-		//this notification only exists for debugging purposes
-		if (notif.args.index == 0) {
-			//debug 0
-			this.marketDeck?.shuffleToDrawPile(this.marketDiscard!);
-		}
-		if (notif.args.index == 1) {
-			//debug 1
-			this.marketDiscard?.shuffleToDrawPile(this.marketDeck!);
-		}
-	}
-	
 	notif_reshuffleMarketDeck(notif: NotifAs<'reshuffleMarketDeck'>) {
 		this.marketDiscard?.shuffleToDrawPile(this.marketDeck!);
+	}
+
+	notif_debugClient(notif: NotifAs<'debugClient'>) {
+		//this notification only exists for debugging purposes
+		let arg = notif.args.arg;
+		console.log(`Debug with argument ${arg}`)
+		if (arg == 'log') {
+			console.log("RECEIVED A DEBUG NOTIFICATION !");
+		}
+		else if (arg == 'shuffleToDiscard') {
+			this.marketDeck?.shuffleToDrawPile(this.marketDiscard!)
+		}
+		else if (arg == 'shuffleToDraw') {
+			this.marketDiscard?.shuffleToDrawPile(this.marketDeck!)
+		}
+		else if (arg == '') {
+			
+		}
+		else if (arg == '') {
+			
+		}
+		else if (arg == '') {
+			
+		}
+		else if (arg == '') {
+			
+		}
+		else if (arg == '') {
+			
+		}
+		else {
+			throw new Error(`Unknown argument ${notif.args.arg}`)
+		}	
 	}
 }
 

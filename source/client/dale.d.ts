@@ -19,7 +19,7 @@ declare global {
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
 		'debugClient': {
-			index: number
+			arg: string
 		}
 		'reshuffleMarketDeck': { 
 			//no args
