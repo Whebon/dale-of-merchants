@@ -159,6 +159,42 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
     }());
     exports.DaleCard = DaleCard;
 });
+define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"], function (require, exports, Stock) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleStock = void 0;
+    var DaleStock = (function (_super) {
+        __extends(DaleStock, _super);
+        function DaleStock() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        DaleStock.prototype.addDaleCardToStock = function (card) {
+            this.addToStockWithId(card.type_id, card.id);
+        };
+        DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
+            var stock = this;
+            for (var i in stock.items) {
+                var item = stock.items[i];
+                if (item.id == id) {
+                    var item_1 = stock.items[i];
+                    if (stock.onItemDelete) {
+                        stock.onItemDelete(stock.getItemDivId(item_1.id), item_1.type, item_1.id);
+                    }
+                    stock.items.splice(i, 1);
+                    var item_id = stock.getItemDivId(item_1.id);
+                    stock.unselectItem(item_1.id);
+                    var item_div = $(item_id);
+                    dojo.destroy(item_div);
+                    stock.updateDisplay();
+                    return true;
+                }
+            }
+            return false;
+        };
+        return DaleStock;
+    }(Stock));
+    exports.DaleStock = DaleStock;
+});
 define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_2, DaleCard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -172,15 +208,17 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.topCardHTML = $(pile_container_id).querySelector('.card');
             this.sizeHTML = $(pile_container_id).querySelector('.size');
             this.cards = [];
+            this._slidingCards = [];
             this.updateHTML();
         }
         Pile.prototype.updateHTML = function () {
             this.sizeHTML.innerText = 'x ' + this.cards.length;
-            if (this.cards.length == 0) {
+            var topCard = this.peek(true);
+            if (topCard == undefined) {
                 this.topCardHTML.setAttribute('style', "display: none");
             }
             else {
-                this.topCardHTML.setAttribute('style', Images_2.Images.getCardStyle(this.peek().type_id));
+                this.topCardHTML.setAttribute('style', Images_2.Images.getCardStyle(topCard.type_id));
             }
         };
         Pile.prototype.pushHiddenCards = function (amount) {
@@ -189,13 +227,33 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             this.updateHTML();
         };
-        Pile.prototype.push = function (card) {
+        Pile.prototype.push = function (card, from, onEnd, duration, delay) {
             this.cards.push(card);
+            if (from != null) {
+                this._slidingCards.push(card);
+                var slidingElement = card.toDiv();
+                this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
+                var thiz_1 = this;
+                var callback = function (node) {
+                    dojo.destroy(node);
+                    var i = thiz_1._slidingCards.indexOf(card);
+                    if (i > -1) {
+                        thiz_1._slidingCards.splice(i, 1);
+                    }
+                    thiz_1.updateHTML();
+                    if (onEnd) {
+                        onEnd(node);
+                    }
+                };
+                this.page.placeOnObject(slidingElement, from);
+                var slideAnimation = this.page.slideToObject(slidingElement, this.placeholderHTML, duration, delay);
+                var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
+                dojo.fx.chain([slideAnimation, fadeAnimation]).play();
+                dojo.addClass(slidingElement, 'to_be_destroyed');
+            }
             this.updateHTML();
         };
         Pile.prototype.pop = function (to, onEnd, duration, delay) {
-            if (duration === void 0) { duration = 500; }
-            if (delay === void 0) { delay = 0; }
             if (this.cards.length == 0) {
                 throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
             }
@@ -203,19 +261,18 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 if (to instanceof Pile) {
                     to = to.placeholderHTML;
                 }
-                var movingElement = this.topCardHTML.cloneNode();
-                this.topCardHTML.insertAdjacentElement('afterend', movingElement);
+                var slidingElement = this.topCardHTML.cloneNode();
+                this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
                 var callback = function (node) {
                     dojo.destroy(node);
                     if (onEnd) {
                         onEnd(node);
                     }
                 };
-                var slideAnimation = this.page.slideToObject(movingElement, to, duration, delay);
-                ;
-                var fadeAnimation = dojo.fadeOut({ node: movingElement, end: callback });
+                var slideAnimation = this.page.slideToObject(slidingElement, to, duration, delay);
+                var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
                 dojo.fx.chain([slideAnimation, fadeAnimation]).play();
-                dojo.addClass(movingElement, 'to_be_destroyed');
+                dojo.addClass(slidingElement, 'to_be_destroyed');
             }
             this.cards.pop();
             this.updateHTML();
@@ -250,11 +307,21 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.pop(drawPile, callback, durationPerPop);
             }
         };
-        Pile.prototype.peek = function () {
+        Pile.prototype.peek = function (exclude_sliding_cards) {
+            if (exclude_sliding_cards === void 0) { exclude_sliding_cards = false; }
             if (this.cards.length == 0) {
-                throw new Error('Cannot peek at an empty Pile.');
+                return undefined;
             }
-            return this.cards[this.cards.length - 1];
+            var i = this.cards.length - 1;
+            if (exclude_sliding_cards) {
+                while (i >= 0 && this._slidingCards.indexOf(this.cards[i]) != -1) {
+                    i--;
+                }
+                if (i == -1) {
+                    return undefined;
+                }
+            }
+            return this.cards[i];
         };
         return Pile;
     }());
@@ -361,17 +428,18 @@ define("components/MarketBoard", ["require", "exports", "components/Images"], fu
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, Images_4, Pile_1, DaleCard_2, MarketBoard_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Images_4, Pile_1, DaleCard_2, MarketBoard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
         __extends(Dale, _super);
         function Dale() {
             var _this = _super.call(this) || this;
-            _this.marketDeck = null;
-            _this.marketDiscard = null;
+            _this.marketDeck = new Pile_1.Pile(_this, 'market-deck', 'Market Deck');
+            _this.marketDiscard = new Pile_1.Pile(_this, 'market-discard', 'Market Discard');
             _this.market = null;
-            _this.hand = new ebg.stock();
+            _this.hand = new DaleStock_1.DaleStock();
+            _this.selectedCardIds = [];
             console.log('dale constructor');
             return _this;
         }
@@ -388,9 +456,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
                 var type_id = gamedatas.cardTypes[i].type_id;
                 this.hand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
             }
-            this.marketDeck = new Pile_1.Pile(this, 'market-deck', 'Market Deck');
             this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
-            this.marketDiscard = new Pile_1.Pile(this, 'market-discard', 'Market Discard');
             for (var i in gamedatas.marketDiscard) {
                 var card = gamedatas.marketDiscard[i];
                 this.marketDiscard.push(DaleCard_2.DaleCard.of(card));
@@ -405,40 +471,81 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             this.hand.image_items_per_row = Images_4.Images.IMAGES_PER_ROW;
             for (var i in gamedatas.hand) {
                 var card_2 = gamedatas.hand[i];
-                this.hand.addToStockWithId(card_2.type_arg, card_2.id);
+                this.hand.addDaleCardToStock(DaleCard_2.DaleCard.of(card_2));
             }
+            dojo.connect(this.hand, 'onChangeSelection', this, 'onHandSelectionChanged');
             this.setupNotifications();
             console.log("Ending game setup");
         };
         Dale.prototype.onEnteringState = function (stateName, args) {
             console.log('Entering state: ' + stateName);
+            this.selectedCardIds = [];
             switch (stateName) {
-                case 'dummmy':
+                case 'inventory':
+                    this.hand.unselectAll();
                     break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
             console.log('Leaving state: ' + stateName);
-            switch (stateName) {
-                case 'dummmy':
-                    break;
-            }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
             switch (stateName) {
-                case 'dummmy':
+                case 'playerTurn':
+                    this.addActionButton("pass-button", _("Pass (inventory action)"), "onRequestInventoryAction");
                     break;
+                case 'inventory':
+                    this.addActionButton("pass-button", _("Done"), "onInventoryAction");
+                    break;
+            }
+        };
+        Dale.prototype.onHandSelectionChanged = function () {
+            var items = this.hand.getSelectedItems();
+            switch (this.gamedatas.gamestate.name) {
+                case 'inventory':
+                    if (items.length > 1) {
+                        this.hand.unselectAll();
+                    }
+                    if (items.length == 1) {
+                        var card_id = items[0].id;
+                        if ($('myhand_item_' + card_id)) {
+                            this.marketDiscard.push(new DaleCard_2.DaleCard(card_id), 'myhand_item_' + card_id);
+                            this.hand.removeFromStockByIdNoAnimation(card_id);
+                        }
+                        else {
+                            throw new Error("Card ".concat(card_id, " does not exist in hand"));
+                        }
+                        this.selectedCardIds.push(card_id);
+                        this.hand.unselectAll();
+                    }
+                    break;
+                case null:
+                    throw new Error("gamestate.name is null");
+            }
+        };
+        Dale.prototype.onRequestInventoryAction = function () {
+            if (this.checkAction('actRequestInventoryAction')) {
+                this.bgaPerformAction('actRequestInventoryAction', {});
+            }
+        };
+        Dale.prototype.onInventoryAction = function () {
+            if (this.checkAction("actInventoryAction")) {
+                console.log("Sending: actInventoryAction, with ids = ".concat(this.selectedCardIds.join(";")));
+                this.bgaPerformAction('actInventoryAction', {
+                    ids: String(this.selectedCardIds.join(";"))
+                });
             }
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
+                ['discardCards', 1],
+                ['reshuffleMarketDeck', 1],
                 ['debugClient', 1],
-                ['reshuffleMarketDeck', 1]
             ];
             notifs.forEach(function (notif) {
                 dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
@@ -446,27 +553,28 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Im
             });
             console.log('notifications subscriptions setup done');
         };
+        Dale.prototype.notif_discardCards = function (notif) {
+        };
         Dale.prototype.notif_reshuffleMarketDeck = function (notif) {
-            var _a;
-            (_a = this.marketDiscard) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDeck);
+            this.marketDiscard.shuffleToDrawPile(this.marketDeck);
         };
         Dale.prototype.notif_debugClient = function (notif) {
-            var _a, _b;
             var arg = notif.args.arg;
             console.log("Debug with argument ".concat(arg));
             if (arg == 'log') {
                 console.log("RECEIVED A DEBUG NOTIFICATION !");
             }
             else if (arg == 'shuffleToDiscard') {
-                (_a = this.marketDeck) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.marketDiscard);
+                this.marketDeck.shuffleToDrawPile(this.marketDiscard);
             }
             else if (arg == 'shuffleToDraw') {
-                (_b = this.marketDiscard) === null || _b === void 0 ? void 0 : _b.shuffleToDrawPile(this.marketDeck);
+                this.marketDiscard.shuffleToDrawPile(this.marketDeck);
             }
             else if (arg == 'slideRight') {
                 this.market.slideRight();
             }
-            else if (arg == '') {
+            else if (arg == 'addCard') {
+                this.hand.addDaleCardToStock(new DaleCard_2.DaleCard(0, 0));
             }
             else if (arg == '') {
             }

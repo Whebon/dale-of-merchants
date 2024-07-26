@@ -16,25 +16,45 @@ interface GameStates {
 		'type': 'manager',
 		'action': 'stGameSetup',
 		'transitions': {
-			'': 2,
+			'': 30,
 		},
 	},
-	2: {
-		'name': 'dummmy',
-		'description': '${actplayer} must play a card or pass',
-		'descriptionmyturn': '${you} must play a card or pass',
+	30: {
+		'name': 'playerTurn',
+		'description': '${actplayer} must take an action',
+		'descriptionmyturn': '${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass',
 		'type': 'activeplayer',
 		'possibleactions': {
-			'playCard': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-			'pass': [],
+			'actRequestInventoryAction': [],
 		},
 		'transitions': {
-			'playCard': 2,
-			'pass': 2,
+			'trInventory': 40,
+		},
+	},
+	40: {
+		'name': 'inventory',
+		'description': '${actplayer} may discard any number of cards',
+		'descriptionmyturn': '${you} may discard any number of cards',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actInventoryAction': [{
+				'name': 'ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trNextPlayer': 41,
+		},
+	},
+	41: {
+		'name': 'nextPlayer',
+		'description': '',
+		'type': 'game',
+		'action': 'stNextPlayer',
+		'updateGameProgression': true,
+		'transitions': {
+			'trNextPlayer': 30,
 		},
 	},
 	99: {

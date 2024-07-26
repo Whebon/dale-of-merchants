@@ -17,6 +17,7 @@ import Stock = require('ebg/stock');
 import "ebg/counter";
 import "ebg/stock"; 
 
+import { DaleStock } from './components/DaleStock'
 import { Images } from './components/Images';
 import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
@@ -25,10 +26,20 @@ import { MarketBoard } from './components/MarketBoard'
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
-	marketDeck: Pile | null = null;
-	marketDiscard: Pile | null = null;
+	/** Pile of hidden cards representing the market deck. */
+	marketDeck: Pile = new Pile(this, 'market-deck', 'Market Deck');
+
+	/** Ordered pile of known cards representing the market discard deck. */
+	marketDiscard: Pile = new Pile(this, 'market-discard', 'Market Discard');
+
+	/** Ordered pile of known cards representing the market discard deck. */
 	market: MarketBoard | null = null;
-	hand: Stock = new ebg.stock();
+
+	/** Cards in this client's player hand */
+	hand: DaleStock = new DaleStock()
+
+	/** State-specific utility array for states that have something to do with sending card ids. WARNING: resets on entering a new state.*/
+	selectedCardIds: number[] = [];
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -59,11 +70,9 @@ class Dale extends Gamegui
 		}
 
 		//initialize the market deck
-		this.marketDeck = new Pile(this, 'market-deck', 'Market Deck');
 		this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
 
 		//initialize the market discard pile
-		this.marketDiscard = new Pile(this, 'market-discard', 'Market Discard');
 		for (let i in gamedatas.marketDiscard) {
 			var card = gamedatas.marketDiscard[i]!;
 			this.marketDiscard.push(DaleCard.of(card));
@@ -82,8 +91,9 @@ class Dale extends Gamegui
 		this.hand.image_items_per_row = Images.IMAGES_PER_ROW;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
-			this.hand.addToStockWithId(card.type_arg, card.id);
+			this.hand.addDaleCardToStock(DaleCard.of(card));
 		}
+		dojo.connect( this.hand, 'onChangeSelection', this, 'onHandSelectionChanged' );
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -98,11 +108,15 @@ class Dale extends Gamegui
 	override onEnteringState(stateName: GameStateName, args: CurrentStateArgs): void
 	{
 		console.log( 'Entering state: '+stateName );
+
+		//reset the selected cards array
+		this.selectedCardIds = [];
 		
 		switch( stateName )
 		{
-		case 'dummmy':
-			break;
+			case 'inventory':
+				this.hand.unselectAll();
+				break;
 		}
 	}
 
@@ -111,11 +125,11 @@ class Dale extends Gamegui
 	{
 		console.log( 'Leaving state: '+stateName );
 		
-		switch( stateName )
-		{
-		case 'dummmy':
-			break;
-		}
+		// switch( stateName )
+		// {
+		// case 'dummmy':
+		// 	break;
+		// }
 	}
 
 	/** @gameSpecific See {@link Gamegui.onUpdateActionButtons} for more information. */
@@ -128,9 +142,13 @@ class Dale extends Gamegui
 
 		switch( stateName )
 		{
-		case 'dummmy':
-			// Add buttons if needed
-			break;
+			case 'playerTurn':
+				// Add buttons if needed
+				this.addActionButton("pass-button", _("Pass (inventory action)"), "onRequestInventoryAction"); 
+				break;
+			case 'inventory':
+				this.addActionButton("pass-button", _("Done"), "onInventoryAction");
+				break;
 		}
 	}
 
@@ -153,6 +171,51 @@ class Dale extends Gamegui
 		- check the action is possible at this game state.
 		- make a call to the game server
 	*/
+
+	onHandSelectionChanged() {
+		let items = this.hand.getSelectedItems();
+
+		switch(this.gamedatas.gamestate.name) {
+			case 'inventory':
+				//move to the discard pile one at a time
+				if (items.length > 1) {
+					this.hand.unselectAll();
+				}
+				if (items.length == 1) {
+					let card_id = items[0]!.id;
+
+					//move the card from the hand to the discard pile
+					if ($('myhand_item_' + card_id)) {
+						this.marketDiscard.push(new DaleCard(card_id), 'myhand_item_' + card_id);
+						this.hand.removeFromStockByIdNoAnimation(card_id);
+					}
+					else {
+						throw new Error(`Card ${card_id} does not exist in hand`)
+					}
+
+					this.selectedCardIds.push(card_id);
+					this.hand.unselectAll();
+				}
+				break;
+			case null:
+				throw new Error("gamestate.name is null")
+		}
+	}
+
+	onRequestInventoryAction() {
+		if( this.checkAction('actRequestInventoryAction') ) {
+			this.bgaPerformAction('actRequestInventoryAction', {})
+		}
+	}
+
+	onInventoryAction() {
+		if( this.checkAction("actInventoryAction") ) {
+			console.log(`Sending: actInventoryAction, with ids = ${this.selectedCardIds.join(";")}`)
+			this.bgaPerformAction('actInventoryAction', {
+				ids: String(this.selectedCardIds.join(";"))
+			})
+		}
+	}
 	
 	/*
 	Example:
@@ -199,8 +262,9 @@ class Dale extends Gamegui
 		// TODO: here, associate your game notifications with local methods
 
 		const notifs: [keyof NotifTypes, number][] = [
+			['discardCards', 1],
+			['reshuffleMarketDeck', 1],
 			['debugClient', 1],
-			['reshuffleMarketDeck', 1]
 		];
 
 		notifs.forEach((notif) => {
@@ -231,8 +295,12 @@ class Dale extends Gamegui
 	}
 	*/
 
+	notif_discardCards(notif: NotifAs<'discardCards'>) {
+		//TODO: discard cards if not done already
+	}
+
 	notif_reshuffleMarketDeck(notif: NotifAs<'reshuffleMarketDeck'>) {
-		this.marketDiscard?.shuffleToDrawPile(this.marketDeck!);
+		this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
 	}
 
 	notif_debugClient(notif: NotifAs<'debugClient'>) {
@@ -243,16 +311,16 @@ class Dale extends Gamegui
 			console.log("RECEIVED A DEBUG NOTIFICATION !");
 		}
 		else if (arg == 'shuffleToDiscard') {
-			this.marketDeck?.shuffleToDrawPile(this.marketDiscard!)
+			this.marketDeck.shuffleToDrawPile(this.marketDiscard!)
 		}
 		else if (arg == 'shuffleToDraw') {
-			this.marketDiscard?.shuffleToDrawPile(this.marketDeck!)
+			this.marketDiscard.shuffleToDrawPile(this.marketDeck!)
 		}
 		else if (arg == 'slideRight') {
 			this.market!.slideRight();
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'addCard') {
+			this.hand.addDaleCardToStock(new DaleCard(0, 0));
 		}
 		else if (arg == '') {
 			

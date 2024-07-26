@@ -24,6 +24,12 @@ declare global {
 		'reshuffleMarketDeck': { 
 			//no args
 		}
+		'discardCards': {
+			player_id: number 
+            player_name: string
+			cards: DbCard[]
+			nbr: number
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */

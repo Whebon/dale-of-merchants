@@ -200,6 +200,65 @@ class Dale extends Table
         return 0;
     }
 
+    
+//////////////////////////////////////////////////////////////////////////////
+//////////// Enforcement functions (unofficial)
+////////////   
+
+    /**
+     * DEPRECATED: this is not needed anymore
+     * Enforces the associative array of cards include the given array of ids.
+     * WARNING: for performance reasons, the check is superficial and only enforces the arrays to be of equal length.
+     * @param string $location_arg Optional. If and only if provided, the cards exactly appear at this location_arg.
+     */
+    function enforceCardsInclude(array $cards, array $card_ids) {
+        $actual = count($cards);
+        $expected = count($card_ids);
+        if($expected != $actual) {
+            $missing_ids_string = "";
+            foreach( $cards as $card ) {
+                $missing = true;
+                foreach ($card_ids as $id) {
+                    if ($id == $card['id']) {
+                        $missing = false;
+                        break;
+                    }
+                }
+                if ($missing) {
+                    $missing_ids_string .= $id;
+                    $missing_ids_string .= ", ";
+                }
+            }
+            $missing_ids_string = substr($missing_ids_string, 0, -2);
+            throw new BgaVisibleSystemException("Cards with ids [$missing_ids_string] don't exist.");
+        }
+    }
+
+    /**
+     * DEPRECATED: this is not needed anymore
+     * Enforces all provided cards are in the expected location.
+     * @param array $cards Optional. If and only if provided, the cards exactly appear at this location_arg.
+     * @param string $location All cards must be in at this location.
+     * @param string $location_arg Optional. If and only if provided, the cards exactly appear at this location_arg.
+     */
+    function enforceCardsAreInLocation(array $cards, string $location, string $location_arg = null) {
+        foreach( $cards as $card ) {
+            if( $card['location'] != $location) {
+                $card_id = $card['id'];
+                $actual_location = $card['location'];
+                $msg = "Card $card_id was expected in location '$location', but is actually in location '$actual_location'";
+                throw new BgaVisibleSystemException($msg);
+            }
+            if ($location_arg != null && $card['location_arg'] != $location_arg) {
+                $card_id = $card['id'];
+                $actual_location_arg = $card['location_arg'];
+                $msg = "Card $card_id was expected in location '$location@$location_arg', but is actually in location '$location@$actual_location_arg'";
+                throw new BgaVisibleSystemException($msg);
+            }
+        }
+    }
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
@@ -210,12 +269,13 @@ class Dale extends Table
     */
 
     function numberListToArray($AT_numberlist){
-        if( substr( $AT_numberlist, -1 ) == ';' )
-            $AT_numberlist = substr( $AT_numberlist, 0, -1 );
         if( $AT_numberlist == '' )
             return array();
+        if( substr( $AT_numberlist, -1 ) == ';' )
+            $AT_numberlist = substr( $AT_numberlist, 0, -1 );
         return explode( ';', $AT_numberlist );
     }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Debug functions
@@ -242,6 +302,36 @@ class Dale extends Table
         Each time a player is doing some game action, one of the methods below is called.
         (note: each method below must match an input method in dale.action.php)
     */
+
+    function actRequestInventoryAction() {
+        $this->checkAction("actRequestInventoryAction");
+        $this->gamestate->nextState("trInventory");
+    }
+
+    function actInventoryAction($card_ids) {
+        $this->checkAction("actInventoryAction");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = self::getCurrentPlayerId();
+
+        //verify that these cards are actually in the player's hand
+        $cards = $this->cards->getCardsFromLocation($card_ids, 'hand', $player_id);
+
+        //move the cards to the discard pile
+        $this->cards->moveCards($card_ids, "marketdiscard"); //todo: player discard pile
+
+        //notify all players
+        $this->notifyAllPlayers('discardCards', clienttranslate('${player_name} discards ${nbr} cards'), array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'cards' => $cards,
+            'nbr' => count($card_ids)
+        ));
+        
+        
+        $this->gamestate->nextState("trNextPlayer");
+    }
+
+
 
     /*
     
@@ -305,6 +395,12 @@ class Dale extends Table
         Here, you can create methods defined as "game state actions" (see "action" property in states.inc.php).
         The action method of state X is called everytime the current game state is set to X.
     */
+
+    function stNextPlayer() {
+        $next_player_id = $this->activeNextPlayer();
+        $this->giveExtraTime($next_player_id);
+        $this->gamestate->nextState("trNextPlayer");
+    }
     
     /*
     

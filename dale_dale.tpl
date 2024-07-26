@@ -25,6 +25,11 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
+<div id="myhand-wrap" class="whiteblock">
+    <h3>{MY_HAND}</h3>
+    <div id="myhand"></div>
+</div>
+
 <div id="market-wrap" class="whiteblock">
     <h3>{MARKET}</h3>
 
@@ -42,11 +47,6 @@
     </div>
 
     <div id="market-board-background"><div id="market-board"></div></div>
-</div>
-
-<div id="myhand-wrap" class="whiteblock">
-    <h3>{MY_HAND}</h3>
-    <div id="myhand"></div>
 </div>
 
 

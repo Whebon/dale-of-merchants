@@ -23,20 +23,59 @@
 		"description": "",
 		"type": "manager",
 		"action": "stGameSetup",
-		"transitions": { "": 2 }
+		"transitions": { "": 30 }
 	},
 
-	// Note: ID=2: your first state
-	"2": {
-		"name": "dummmy",
-		"description": "${actplayer} must play a card or pass",
-		"descriptionmyturn": "${you} must play a card or pass",
+	//////////////// Game Setup (+choosing animalfolk sets) ////////////////
+
+	// "2": {
+	// 	"name": "dummmy",
+	// 	"description": "${actplayer} must play a card or pass",
+	// 	"descriptionmyturn": "${you} must play a card or pass",
+	// 	"type": "activeplayer",
+	// 	"possibleactions": {
+	// 		"playCard": [{ "name": "card_id", "type": "AT_int" }],
+	// 		"pass": []
+	// 	},
+	// 	"transitions": { "playCard": 2, "pass": 2 }
+	// },
+
+	//////////////// Main Cycle ////////////////
+
+	"30": {
+		"name": "playerTurn",
+		"description": "${actplayer} must take an action",
+		"descriptionmyturn": "${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass",
 		"type": "activeplayer",
 		"possibleactions": {
-			"playCard": [{ "name": "card_id", "type": "AT_int" }],
-			"pass": []
+			// "actMarketAction": [],
+			// "actTechniqueAction": [],
+			// "actStallAction": [],
+			"actRequestInventoryAction": []
 		},
-		"transitions": { "playCard": 2, "pass": 2 }
+		"transitions": { "trInventory": 40 }
+	},
+
+	"40": {
+		"name": "inventory",
+		"description": "${actplayer} may discard any number of cards",
+		"descriptionmyturn": "${you} may discard any number of cards",
+		"type": "activeplayer",
+		"possibleactions": {
+			"actInventoryAction": [
+				{"name": "ids", "type": "AT_numberlist"} //TODO: change this
+			]
+		},
+		"transitions": { "trNextPlayer": 41 }
+	},
+
+	"41": {
+		"name": "nextPlayer",
+		"description": "",
+		"type": "game",
+		"action": "stNextPlayer",
+		"updateGameProgression": true,
+		"transitions": { "trNextPlayer": 30 }
 	},
 
 /*

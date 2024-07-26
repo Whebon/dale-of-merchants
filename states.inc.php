@@ -18,7 +18,7 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var dale $game */
-	
+	$game->stNextPlayer();
 }
 
 $machinestates = array(
@@ -28,18 +28,37 @@ $machinestates = array(
 		'type' => 'manager',
 		'action' => 'stGameSetup',
 		'transitions' => array(
-			'' => 2,
+			'' => 30,
 		),
 	),
-	2 => array(
-		'name' => 'dummmy',
-		'description' => clienttranslate('${actplayer} must play a card or pass'),
-		'descriptionmyturn' => clienttranslate('${you} must play a card or pass'),
+	30 => array(
+		'name' => 'playerTurn',
+		'description' => clienttranslate('${actplayer} must take an action'),
+		'descriptionmyturn' => clienttranslate('${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['playCard', 'pass'],
+		'possibleactions' => ['actRequestInventoryAction'],
 		'transitions' => array(
-			'playCard' => 2,
-			'pass' => 2,
+			'trInventory' => 40,
+		),
+	),
+	40 => array(
+		'name' => 'inventory',
+		'description' => clienttranslate('${actplayer} may discard any number of cards'),
+		'descriptionmyturn' => clienttranslate('${you} may discard any number of cards'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actInventoryAction'],
+		'transitions' => array(
+			'trNextPlayer' => 41,
+		),
+	),
+	41 => array(
+		'name' => 'nextPlayer',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stNextPlayer',
+		'updateGameProgression' => true,
+		'transitions' => array(
+			'trNextPlayer' => 30,
 		),
 	),
 	99 => array(
