@@ -21,13 +21,13 @@ declare global {
 		'debugClient': {
 			arg: string
 		}
-		'reshuffleMarketDeck': { 
-			//no args
+		'reshuffleDeck': { 
+			player_id?: number
 		}
-		'discardCards': {
+		'discard': {
 			player_id: number 
             player_name: string
-			cards: DbCard[]
+			cards: {[card_id: number]: DbCard}
 			nbr: number
 		}
 	}
@@ -37,11 +37,8 @@ declare global {
 		// [key: string | number]: Record<keyof any, any>; // Uncomment to remove type safety on game state arguments
 		'cardTypes': {[type_id: number]: CardType}
 
-		'marketDeckSize': number //todo: remove
-		'marketDiscard': DbCard[] //todo: remove
-
 		'discardPiles': {
-			"market": DbCard[]
+			"market": {[card_id: number]: DbCard}
 			[player_id: number]: DbCard[]
 		}
 
@@ -50,8 +47,8 @@ declare global {
 			[player_id: number]: number
 		}
 		
-		'hand': DbCard[]
-		'market': DbCard[]
+		'hand': {[card_id: number]: DbCard}
+		'market': {[card_id: number]: DbCard}
 	}
 
 	//

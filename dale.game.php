@@ -189,9 +189,6 @@ class Dale extends DaleTableBasic
             $result['discardPiles'][$player_id] = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
         }
 
-        $result['marketDeckSize'] = $this->cards->countCardInLocation(DECK.MARKET); //todo: remove
-        $result['marketDiscard'] = $this->cards->getCardsInLocation(DISCARD.MARKET); //todo: remove
-
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
         $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
         
@@ -309,7 +306,19 @@ class Dale extends DaleTableBasic
             $discard_pile = "disc".$player_id;
             $this->cards->moveAllCardsInLocation($discard_pile, $location);
             $this->cards->shuffle($location);
+            if ($player_id == MARKET) {
+                $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling the market discard pile to form a new market deck.'), array(
+                    "player_id" => $player_id
+                ));
+            }
+            else {
+                $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling {player_name}\'s discard pile to form a new deck.'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id)
+                ));
+            }
         }
+        
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -323,10 +332,6 @@ class Dale extends DaleTableBasic
     function d($arg) {
         //debugClient
         $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
-    }
-
-    function reshuffleMarketDeck() {
-        $this->notifyAllPlayers('reshuffleMarketDeck', clienttranslate('Shuffling the market discard pile to form a new market deck.'), array());
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -358,7 +363,7 @@ class Dale extends DaleTableBasic
 
 
         //notify all players
-        $this->notifyAllPlayers('discardCards', clienttranslate('${player_name} discards ${nbr} cards'), array (
+        $this->notifyAllPlayers('discard', clienttranslate('${player_name} discards ${nbr} cards'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'cards' => $cards,
@@ -435,6 +440,27 @@ class Dale extends DaleTableBasic
     */
 
     function stNextPlayer() {
+        //aka the "clean-up phase"
+        
+        //1. fill your hand to the maximum hand size
+        die("TODO!");
+        // $player_id = $this->getActivePlayerId();
+        // $hand_size = $this->cards->countCardsInLocation(HAND.$player_id);
+        // $maximum_hand_size = 5;
+        // $nbr = max(0, $maximum_hand_size - $hand_size);
+        // if ($nbr > 0) {
+        //     $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
+        // }
+
+        // $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
+        // $this->notifyPlayer($player_id, '');
+
+
+
+        //2. fill empty market slots
+        //TODO
+
+        //activate the next player
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
         $this->gamestate->nextState("trNextPlayer");
