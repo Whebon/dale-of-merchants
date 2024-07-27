@@ -25,6 +25,10 @@ class Dale extends DaleTableBasic
     var DaleDeck $cards;
     var $card_types;
 
+    function f($n){
+        $this->cards->getJunk($n);
+    }
+
 	function __construct( )
 	{
         // Your global variables labels:
@@ -99,9 +103,9 @@ class Dale extends DaleTableBasic
         $cards = array();
         foreach ($this->card_types as $type_id => $card_type) {
             // TODO: #animalfolk_sets = #players + 1
-            $cards[] = array ('type' => 'UNUSED','type_arg' => $type_id, 'nbr' => $card_type['nbr']);
+            $cards[] = array ('type' => 'null', 'type_arg' => $type_id, 'nbr' => $card_type['nbr']);
         }
-        $this->cards->createCards($cards, DECK.MARKET, );
+        $this->cards->createCards($cards, DECK.MARKET);
         $this->cards->shuffle(DECK.MARKET);
 
         // // Todo: should be handled by a setup game state
@@ -297,28 +301,30 @@ class Dale extends DaleTableBasic
     /**
      * Callback method for when cards need to be drawn from a location, but the location is empty.
      * This method is expected to increase in number of cards at the specified location.
-     * @param location location in the deck that needs to be supplied with cards.
+     * @param string location location in the deck that needs to be supplied with cards.
      */
     function onLocationExhausted($location) {
         $prefix = substr($location, 0, 4);
         if ($prefix == "deck") {
             $player_id = substr($location, 4);
             $discard_pile = "disc".$player_id;
-            $this->cards->moveAllCardsInLocation($discard_pile, $location);
-            $this->cards->shuffle($location);
-            if ($player_id == MARKET) {
-                $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling the market discard pile to form a new market deck.'), array(
-                    "player_id" => $player_id
-                ));
-            }
-            else {
-                $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling {player_name}\'s discard pile to form a new deck.'), array(
-                    "player_id" => $player_id,
-                    "player_name" => $this->getPlayerNameById($player_id)
-                ));
+            $nbr = $this->cards->countCardsInLocation($discard_pile);
+            if ($nbr > 0) {
+                $this->cards->moveAllCardsInLocation($discard_pile, $location);
+                $this->cards->shuffle($location);
+                if ($player_id == MARKET) {
+                    $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling the market discard pile to form a new market deck'), array(
+                        "player_id" => $player_id
+                    ));
+                }
+                else {
+                    $this->notifyAllPlayers('reshuffleDeck', clienttranslate('${player_name} shuffles their discard pile to form a new deck'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id)
+                    ));
+                }
             }
         }
-        
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -443,15 +449,37 @@ class Dale extends DaleTableBasic
         //aka the "clean-up phase"
         
         //1. fill your hand to the maximum hand size
-        die("TODO!");
-        // $player_id = $this->getActivePlayerId();
-        // $hand_size = $this->cards->countCardsInLocation(HAND.$player_id);
-        // $maximum_hand_size = 5;
-        // $nbr = max(0, $maximum_hand_size - $hand_size);
-        // if ($nbr > 0) {
-        //     $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
-        // }
+        $player_id = $this->getActivePlayerId();
+        $hand_size = $this->cards->countCardsInLocation(HAND.$player_id);
+        $maximum_hand_size = 5;
+        $nbr = max(0, $maximum_hand_size - $hand_size);
+        if ($nbr > 0) {
+            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
+            $nbr_from_deck = count($cards);
 
+            // TODO !!!!!!!!!!!!!!!!!!!!!!!!!
+            // $this->notifyAllPlayers('deckToHand', clienttranslate('{player_name} draws {nbr} cards to refill their hand'), array(
+            //     "player_id" => $player_id,
+            //     "player_name" => $this->getPlayerNameById($player_id),
+            //     "cards" => $cards,
+            //     "nbr" => $nbr_from_deck,
+            // ));
+
+            $nbr_junk_cards = $nbr - $nbr_from_deck;
+            if ($nbr_junk_cards > 0) {
+                $junk_cards = $this->cards->getJunk($nbr_junk_cards);
+                $junk_ids = array_keys($junk_cards);
+                $this->cards->moveCards($junk_ids, HAND.$player_id);
+                $this->notifyAllPlayers('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and obtains ${nbr} junk cards'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "cards" => $junk_cards,
+                    "nbr" => count($junk_cards),
+                ));
+            }
+        }
+
+        //TODO: notify
         // $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
         // $this->notifyPlayer($player_id, '');
 

@@ -293,8 +293,9 @@ class Dale extends Gamegui
 		// TODO: here, associate your game notifications with local methods
 
 		const notifs: [keyof NotifTypes, number][] = [
+			['obtainNewJunkInHand', 1],
 			['discard', 1],
-			['reshuffleDeck', 1],
+			['reshuffleDeck', 1500],
 			['debugClient', 1],
 		];
 
@@ -325,6 +326,16 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+	
+	notif_obtainNewJunkInHand(notif: NotifAs<'obtainNewJunkInHand'>) {
+		//other players are not interested in an animation for this
+		if (notif.args.player_id == this.player_id) {
+			for (let i in notif.args.cards) {
+				let card = notif.args.cards[i]!;
+				this.myHand.addDaleCardToStock(DaleCard.of(card), 'overall_player_board_'+notif.args.player_id);
+			}
+		}
+	}
 
 	notif_discard(notif: NotifAs<'discard'>) {
 		if (notif.args.player_id == this.player_id) {
@@ -351,7 +362,7 @@ class Dale extends Gamegui
 			this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
 		}
 		else {
-			this.playerDiscards[notif.args.player_id]?.shuffleToDrawPile(this.playerDecks[notif.args.player_id]!);
+			this.playerDiscards[notif.args.player_id]!.shuffleToDrawPile(this.playerDecks[notif.args.player_id]!);
 		}
 	}
 

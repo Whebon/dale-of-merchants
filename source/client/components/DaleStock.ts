@@ -9,9 +9,10 @@ export class DaleStock extends Stock {
 	/** 
 	 * Add a `DaleCard` to a stock. Always use this instead of addToStockWithID. This ensures that the type id of the card id is registered in the `DaleCard` class.
 	 * @param card card to add to the stock
+	 * @param from The element to animate the item from. When the `from` parameter is specified, the item will be created at the location of the from element and animate to the stock. The location create is always an absolute position at the top left of the from div. This is optional and can be used to animate the item from a specific location on the page. If this is not specified, the item will be created and placed immediately inside the stock.
 	*/
-	public addDaleCardToStock(card: DaleCard) {
-		this.addToStockWithId(card.type_id, card.id)
+	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
+		this.addToStockWithId(card.type_id, card.id, from);
 	}
 
 	/**

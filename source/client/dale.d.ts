@@ -30,6 +30,12 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			nbr: number
 		}
+		'obtainNewJunkInHand': {
+			player_id: number
+			player_name: string
+			cards: {[card_id: number]: DbCard}
+			nbr: number
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */

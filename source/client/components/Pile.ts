@@ -145,11 +145,14 @@ export class Pile {
     * @param duration (optional) defines the total duration in millisecond of the slide.
     */
     public shuffleToDrawPile(drawPile: Pile, duration: number = 1000) {
+        if (this.cards.length == 0) {
+            return;
+        }
         if (this === drawPile) {
             throw new Error('Cannot shuffle to self.');
         }
         let n = this.cards.length;
-        let durationPerPop = 2*duration/n;
+        let durationPerPop = duration/n;
         let thiz = this;
         let callback = function (node: any) {
             //pop next

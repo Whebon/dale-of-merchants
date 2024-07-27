@@ -168,8 +168,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"],
         function DaleStock() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        DaleStock.prototype.addDaleCardToStock = function (card) {
-            this.addToStockWithId(card.type_id, card.id);
+        DaleStock.prototype.addDaleCardToStock = function (card, from) {
+            this.addToStockWithId(card.type_id, card.id, from);
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
             var stock = this;
@@ -279,11 +279,14 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         };
         Pile.prototype.shuffleToDrawPile = function (drawPile, duration) {
             if (duration === void 0) { duration = 1000; }
+            if (this.cards.length == 0) {
+                return;
+            }
             if (this === drawPile) {
                 throw new Error('Cannot shuffle to self.');
             }
             var n = this.cards.length;
-            var durationPerPop = 2 * duration / n;
+            var durationPerPop = duration / n;
             var thiz = this;
             var callback = function (node) {
                 if (thiz.cards.length > 0) {
@@ -572,8 +575,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
+                ['obtainNewJunkInHand', 1],
                 ['discard', 1],
-                ['reshuffleDeck', 1],
+                ['reshuffleDeck', 1500],
                 ['debugClient', 1],
             ];
             notifs.forEach(function (notif) {
@@ -581,6 +585,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
             console.log('notifications subscriptions setup done');
+        };
+        Dale.prototype.notif_obtainNewJunkInHand = function (notif) {
+            if (notif.args.player_id == this.player_id) {
+                for (var i in notif.args.cards) {
+                    var card = notif.args.cards[i];
+                    this.myHand.addDaleCardToStock(DaleCard_2.DaleCard.of(card), 'overall_player_board_' + notif.args.player_id);
+                }
+            }
         };
         Dale.prototype.notif_discard = function (notif) {
             if (notif.args.player_id == this.player_id) {
@@ -600,12 +612,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.notif_reshuffleDeck = function (notif) {
-            var _a;
             if (notif.args.player_id == null) {
                 this.marketDiscard.shuffleToDrawPile(this.marketDeck);
             }
             else {
-                (_a = this.playerDiscards[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
+                this.playerDiscards[notif.args.player_id].shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
             }
         };
         Dale.prototype.notif_debugClient = function (notif) {

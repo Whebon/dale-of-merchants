@@ -23,6 +23,35 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * Get a specified number of unassigned junk cards
+     * @return array associative array of $nbr free junk cards from the db
+    */
+    function getJunk($nbr = 1) {
+        $junk_cards = $this->getCardsInLocation('junk');
+        $found = count($junk_cards);
+        if ($found >= $nbr) {
+            //found a sufficient amount of free junk cards, return them
+            if ($nbr == 1) {
+                return array_pop($junk_cards); //1 card
+            }
+            while ($found > $nbr) {
+                array_pop($junk_cards);
+                $nbr--;
+            }
+            return $junk_cards; //array of cards
+        }
+
+        //not enough free junk cards exist, create a sufficient amount of new junk cards, then try again
+        $cards = array(array(
+            'type' => 'null', 
+            'type_arg' => 1, //1 is the index for junk. 2, 3, 4 and 5 are junk art variants.
+            'nbr' => $nbr - $found
+        ));
+        $this->createCards($cards, 'junk');
+        return $this->getJunk($nbr);
+    }
+
+    /**
     * Override the original pickCardsForLocation method, but with the $on_location_exhausted_method hook
     * Pick the first card on top of specified deck and give it to specified player
     * Return card infos or null if no card in the specified location
