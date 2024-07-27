@@ -55,7 +55,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_ITEM_MARGIN = 95;
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
-        Images.S_SCALE = 0.33;
+        Images.S_SCALE = 0.28;
         Images.SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
         Images.SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
         Images.CARD_WIDTH_S = Images.S_SCALE * Images.CARD_WIDTH;
@@ -201,7 +201,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
     exports.Pile = void 0;
     var Pile = (function () {
         function Pile(page, pile_container_id, pile_name) {
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h4 class=\"name\">".concat(pile_name, "</h4>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_2.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_2.Images.getCardStyle(), "\"></div>\n                <div class=\"card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_2.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_2.Images.getCardStyle(), "\"></div>\n                <div class=\"card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
@@ -437,6 +437,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _this = _super.call(this) || this;
             _this.marketDeck = new Pile_1.Pile(_this, 'market-deck', 'Market Deck');
             _this.marketDiscard = new Pile_1.Pile(_this, 'market-discard', 'Market Discard');
+            _this.playerDeck = {};
+            _this.playerDiscard = {};
             _this.market = null;
             _this.hand = new DaleStock_1.DaleStock();
             _this.selectedCardIds = [];
@@ -450,6 +452,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("------------------------");
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
+                this.playerDeck[player_id] = new Pile_1.Pile(this, 'deck-' + player_id, 'Deck');
+                this.playerDiscard[player_id] = new Pile_1.Pile(this, 'discard-' + player_id, 'Discard Pile');
             }
             DaleCard_2.DaleCard.init(gamedatas.cardTypes);
             for (var i in gamedatas.cardTypes) {
@@ -482,7 +486,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.selectedCardIds = [];
             switch (stateName) {
                 case 'inventory':
-                    this.hand.unselectAll();
+                    if (this.isCurrentPlayerActive()) {
+                        this.hand.unselectAll();
+                    }
                     break;
             }
         };
@@ -503,24 +509,23 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onHandSelectionChanged = function () {
+            if (!this.isCurrentPlayerActive())
+                return;
             var items = this.hand.getSelectedItems();
             switch (this.gamedatas.gamestate.name) {
                 case 'inventory':
-                    if (items.length > 1) {
-                        this.hand.unselectAll();
-                    }
                     if (items.length == 1) {
                         var card_id = items[0].id;
                         if ($('myhand_item_' + card_id)) {
-                            this.marketDiscard.push(new DaleCard_2.DaleCard(card_id), 'myhand_item_' + card_id);
+                            this.playerDiscard[this.player_id].push(new DaleCard_2.DaleCard(card_id), 'myhand_item_' + card_id);
                             this.hand.removeFromStockByIdNoAnimation(card_id);
                         }
                         else {
                             throw new Error("Card ".concat(card_id, " does not exist in hand"));
                         }
                         this.selectedCardIds.push(card_id);
-                        this.hand.unselectAll();
                     }
+                    this.hand.unselectAll();
                     break;
                 case null:
                     throw new Error("gamestate.name is null");

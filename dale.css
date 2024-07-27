@@ -58,6 +58,7 @@
 }
 .pile-container .name {
   margin: 10px;
+  white-space: nowrap;
 }
 .pile-container .size {
   position: absolute;

@@ -1,0 +1,8 @@
+function pickCardForLocation( $from_location, $to_location, $location_arg=0 ){
+    $card = self::getCardOnTop( $from_location );
+    if( ( $from_location == 'deck' || isset( $this->autoreshuffle_custom[ $from_location ] ) ) && $card == null && $this->autoreshuffle ){
+        // No more cards in deck & reshuffle is active => form another deck
+        self::reformDeckFromDiscard( $from_location );
+        $card = self::getCardOnTop( $from_location );
+    }
+}

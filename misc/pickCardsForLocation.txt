@@ -1,0 +1,24 @@
+function pickCardsForLocation( $nbr, $from_location, $to_location, $location_arg=0, $no_deck_reform=false ) {
+    $cards = self::getCardsOnTop( $nbr, $from_location );
+    $cards_ids = array();
+
+    foreach( $cards as $i => $card ) {
+        $cards_ids[] = $card['id'];
+        $cards[$i]['location'] = $to_location;
+        $cards[$i]['location_arg'] = $location_arg;
+    }
+
+    $sql = "UPDATE ".$this->table." SET card_location='".addslashes($to_location)."', card_location_arg='$location_arg' ";
+    $sql .= "WHERE card_id IN ('".implode( "','", $cards_ids )."') ";
+    self::DbQuery( $sql );
+
+    if( ( $from_location == 'deck' || isset( $this->autoreshuffle_custom[ $from_location ] ) ) && count( $cards ) < $nbr && $this->autoreshuffle && !$no_deck_reform ){
+        // No more cards in deck & reshuffle is active => form another deck
+        $nbr_card_missing = $nbr - count( $cards );
+        self::reformDeckFromDiscard( $from_location );
+        $newcards = self::pickCardsForLocation( $nbr_card_missing, $from_location, $to_location, $location_arg, true ); // Note: block anothr deck reform
+        foreach( $newcards as $card ) {
+            $cards[] = $card;
+        }
+}
+}

@@ -39,11 +39,34 @@ class view_dale_dale extends game_view
   	    // Get players & players number
         $players = $this->game->loadPlayersBasicInfos();
         $players_nbr = count( $players );
+        $template = $this->getGameName() . "_" . $this->getGameName();
 
-        /*********** Place your code below:  ************/
+        // Your stall
+        global $g_user;
+        $current_player = $g_user->get_id();
+        $this->page->begin_block($template, "stall");
+        $this->page->insert_block("stall", array (
+            "PLAYER_ID" => $current_player,
+            "PLAYER_NAME_POSSESSIVE" => $this->_("Your"),
+            "PLAYER_COLOR" => $players[$current_player]['player_color']
+        ));
 
+        // Other players' stalls
+        foreach ($players as $player) {
+            if ($player['player_id'] != $current_player) {
+                $this->page->insert_block("stall", array(
+                    "PLAYER_ID" => $player['player_id'],
+                    "PLAYER_NAME_POSSESSIVE" => $player['player_name']."'s",
+                    "PLAYER_COLOR" => $player['player_color']
+                ));
+            }
+        }
+
+        //Other variables
         $this->tpl['MARKET'] = $this->_("Market");
-        $this->tpl['MY_HAND'] = $this->_("My Hand");
+        $this->tpl['YOUR_HAND'] = $this->_("Your Hand");
+        $this->tpl['BOARD'] = $this->_("Board");
+        $this->tpl['CURRENT_PLAYER_COLOR'] = $players[$current_player]['player_color'];
 
         /*
         

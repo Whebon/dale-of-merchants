@@ -17,13 +17,18 @@
   */
 
 
-require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
+require_once "modules/DaleTableBasic.php";
 
 
-class Dale extends Table
+class Dale extends DaleTableBasic
 {
-    var Deck $cards;
+    var DaleDeck $cards;
     var $card_types;
+
+    function quick($n) {
+        $player_id = self::getCurrentPlayerId();
+        $this->cards->pickCardForLocation('hand'.$player_id, 'deck'.MARKET);
+    }
 
 	function __construct( )
 	{
@@ -44,7 +49,7 @@ class Dale extends Table
             //      ...
         ) );
 
-        $this->cards = $this->getNew( "module.common.deck" );
+        $this->cards = new DaleDeck($this, "onLocationExhausted");
         $this->cards->init("card");
 	}
 	
@@ -101,29 +106,27 @@ class Dale extends Table
             // TODO: #animalfolk_sets = #players + 1
             $cards[] = array ('type' => 'UNUSED','type_arg' => $type_id, 'nbr' => $card_type['nbr']);
         }
-        $this->cards->createCards($cards, 'marketDeck');
-        $this->cards->shuffle('marketDeck');
+        $this->cards->createCards($cards, 'deck'.MARKET, );
+        $this->cards->shuffle('deck'.MARKET);
 
-        // TODO: remove this, this is for debugging purposes only
+        // // Todo: should be handled by a setup game state
 
-        $this->cards->moveCard(8, 'marketDiscard');
-        $this->cards->moveCard(9, 'marketDiscard');
-        $this->cards->moveCard(10, 'marketDiscard');
-        $this->cards->moveCard(11, 'marketDiscard');
-        $this->cards->moveCard(12, 'marketDiscard');
-        $this->cards->moveCard(13, 'marketDiscard');
-        $this->cards->moveCard(14, 'marketDiscard');
-        $this->cards->moveCard(15, 'marketDiscard');
-        $this->cards->moveCard(16, 'marketDiscard');
-        $this->cards->moveCard(17, 'marketDiscard');
-        $this->cards->moveCard(18, 'marketDiscard');
-        $this->cards->moveCard(19, 'marketDiscard');
-        $this->cards->moveCard(20, 'marketDiscard');
-        $this->cards->moveCard(21, 'marketDiscard');
-        $this->cards->moveCard(22, 'marketDiscard');
-        $this->cards->moveCard(23, 'marketDiscard');
-        $this->cards->moveCard(24, 'marketDiscard');
-        $this->cards->moveCard(25, 'marketDiscard');
+        // $players = $this->loadPlayersBasicInfos();
+        // foreach ( $players as $player_id => $player ) {
+            
+        //     // Notify player about his cards
+        //     $this->notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards ));
+        // }
+
+        // $cards = $this->cards->pickCards(3, 'deck'.MARKET, $player_id);
+
+        // //TODOOOOOOOOO
+
+        // $this->cards->moveCards('deck'.MARKET, 'hand'.$player_id);
+
+        // //$this->pickCardForLocation($from_location, $to_location, $location_arg=0 );
+
+        // //$this->deckMove('')
 
         $this->cards->moveCard(16, 'market', 0);
         $this->cards->moveCard(17, 'market', 1);
@@ -132,12 +135,14 @@ class Dale extends Table
         $this->cards->moveCard(20, 'market', 4);
 
 
+
+
         $i = 0;
         foreach( $players as $player_id => $player )
         {
-            $this->cards->moveCard(27+$i, 'hand', $player_id);
-            $this->cards->moveCard(28+$i, 'hand', $player_id);
-            $this->cards->moveCard(29+$i, 'hand', $player_id);
+            $this->cards->moveCard(27+$i, 'hand'.$player_id);
+            $this->cards->moveCard(28+$i, 'hand'.$player_id);
+            $this->cards->moveCard(29+$i, 'hand'.$player_id);
             $i += 3;
         }
 
@@ -168,11 +173,11 @@ class Dale extends Table
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
 
-        $result['marketDeckSize'] = $this->cards->countCardInLocation('marketDeck'); //count the cards in market deck, but don't send them (that information is hidden)
-        $result['marketDiscard'] = $this->cards->getCardsInLocation('marketDiscard');
+        $result['marketDeckSize'] = $this->cards->countCardInLocation('deck'.MARKET); //count the cards in market deck, but don't send them (that information is hidden)
+        $result['marketDiscard'] = $this->cards->getCardsInLocation('disc'.MARKET);
 
         $result['market'] = $this->cards->getCardsInLocation( 'market');
-        $result['hand'] = $this->cards->getCardsInLocation('hand', $current_player_id);
+        $result['hand'] = $this->cards->getCardsInLocation('hand'.$current_player_id);
         
         $result['cardTypes'] = $this->card_types;
 
@@ -276,6 +281,20 @@ class Dale extends Table
         return explode( ';', $AT_numberlist );
     }
 
+    /**
+     * Callback method for when cards need to be drawn from a location, but the location is empty.
+     * This method is expected to increase in number of cards at the specified location.
+     * @param location location in the deck that needs to be supplied with cards.
+     */
+    function onLocationExhausted($location) {
+        $prefix = substr($location, 0, 4);
+        if ($prefix == "deck") {
+            $player_id = substr($location, 4);
+            $discard_pile = "disc".$player_id;
+            $this->cards->moveAllCardsInLocation($discard_pile, $location);
+            $this->cards->shuffle($location);
+        }
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Debug functions
@@ -314,10 +333,13 @@ class Dale extends Table
         $player_id = self::getCurrentPlayerId();
 
         //verify that these cards are actually in the player's hand
-        $cards = $this->cards->getCardsFromLocation($card_ids, 'hand', $player_id);
+        $cards = $this->cards->getCardsFromLocation($card_ids, 'hand'.$player_id);
 
-        //move the cards to the discard pile
-        $this->cards->moveCards($card_ids, "marketdiscard"); //todo: player discard pile
+        //move the cards to the discard pile (ordering matters)
+        foreach ($card_ids as $card_id) {
+            $this->cards->insertCardOnExtremePosition($card_id, "disc".$player_id, true);
+        }
+
 
         //notify all players
         $this->notifyAllPlayers('discardCards', clienttranslate('${player_name} discards ${nbr} cards'), array (

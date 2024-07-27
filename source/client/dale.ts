@@ -32,6 +32,12 @@ class Dale extends Gamegui
 	/** Ordered pile of known cards representing the market discard deck. */
 	marketDiscard: Pile = new Pile(this, 'market-discard', 'Market Discard');
 
+	/** A hidden draw pile for each player */
+	playerDeck: Record<number, Pile> = {};
+
+	/** An open discard pile for each player */
+	playerDiscard: Record<number, Pile> = {};
+
 	/** Ordered pile of known cards representing the market discard deck. */
 	market: MarketBoard | null = null;
 
@@ -55,12 +61,12 @@ class Dale extends Gamegui
 		console.log(this.gamedatas)
 		console.log("------------------------")
 
-		// TODO: Setting up player boards
-		for( var player_id in gamedatas.players )
-			{
-				var player = gamedatas.players[player_id];
-				// TODO: Setting up players boards if needed
-			}
+		//initialize the player boards
+		for(let player_id in gamedatas.players ){
+			let player = gamedatas.players[player_id];
+			this.playerDeck[player_id] = new Pile(this, 'deck-'+player_id, 'Deck');
+			this.playerDiscard[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile');
+		}
 		
 		//initialize the card types
 		DaleCard.init(gamedatas.cardTypes);
@@ -115,7 +121,9 @@ class Dale extends Gamegui
 		switch( stateName )
 		{
 			case 'inventory':
-				this.hand.unselectAll();
+				if (this.isCurrentPlayerActive()) {
+					this.hand.unselectAll();
+				}
 				break;
 		}
 	}
@@ -173,20 +181,18 @@ class Dale extends Gamegui
 	*/
 
 	onHandSelectionChanged() {
+		if (!this.isCurrentPlayerActive()) return;
 		let items = this.hand.getSelectedItems();
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'inventory':
 				//move to the discard pile one at a time
-				if (items.length > 1) {
-					this.hand.unselectAll();
-				}
 				if (items.length == 1) {
 					let card_id = items[0]!.id;
 
 					//move the card from the hand to the discard pile
 					if ($('myhand_item_' + card_id)) {
-						this.marketDiscard.push(new DaleCard(card_id), 'myhand_item_' + card_id);
+						this.playerDiscard[this.player_id]!.push(new DaleCard(card_id), 'myhand_item_' + card_id);
 						this.hand.removeFromStockByIdNoAnimation(card_id);
 					}
 					else {
@@ -194,8 +200,8 @@ class Dale extends Gamegui
 					}
 
 					this.selectedCardIds.push(card_id);
-					this.hand.unselectAll();
 				}
+				this.hand.unselectAll();
 				break;
 			case null:
 				throw new Error("gamestate.name is null")
@@ -203,13 +209,13 @@ class Dale extends Gamegui
 	}
 
 	onRequestInventoryAction() {
-		if( this.checkAction('actRequestInventoryAction') ) {
+		if(this.checkAction('actRequestInventoryAction')) {
 			this.bgaPerformAction('actRequestInventoryAction', {})
 		}
 	}
 
 	onInventoryAction() {
-		if( this.checkAction("actInventoryAction") ) {
+		if(this.checkAction("actInventoryAction")) {
 			console.log(`Sending: actInventoryAction, with ids = ${this.selectedCardIds.join(";")}`)
 			this.bgaPerformAction('actInventoryAction', {
 				ids: String(this.selectedCardIds.join(";"))

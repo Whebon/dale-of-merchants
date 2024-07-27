@@ -1,0 +1,14 @@
+    function reformDeckFromDiscard( $from_location='deck') {
+        $discard_location = 'discard';
+        if( isset( $this->autoreshuffle_custom[ $from_location ] ) ) {
+            $discard_location = $this->autoreshuffle_custom[ $from_location ];
+        }
+        self::moveAllCardsInLocation( $discard_location, $from_location );
+        self::shuffle( $from_location );
+
+        if( $this->autoreshuffle_trigger ){
+            $obj = $this->autoreshuffle_trigger['obj'];
+            $method = $this->autoreshuffle_trigger['method'];
+            $obj->$method( $from_location );
+        }
+    }

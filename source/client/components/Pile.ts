@@ -23,7 +23,7 @@ export class Pile {
 
     constructor(page: Gamegui, pile_container_id: string, pile_name?: string){
         $(pile_container_id).innerHTML = `
-            ${pile_name ? `<h4 class="name">${pile_name}</h4>` : ""}
+            ${pile_name ? `<h3 class="name">${pile_name}</h3>` : ""}
             <div class="pile" style="${Images.getCardStyle()}">
                 <div class="placeholder" style="${Images.getCardStyle()}"></div>
                 <div class="card"></div>

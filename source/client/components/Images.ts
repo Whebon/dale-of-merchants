@@ -17,7 +17,7 @@ export class Images {
     static readonly MARKET_WIDTH = 2717;
     static readonly MARKET_HEIGHT = 906;
 
-    static readonly S_SCALE = 0.33;
+    static readonly S_SCALE = 0.28;
 
     static readonly SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
     static readonly SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;

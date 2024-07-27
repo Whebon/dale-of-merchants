@@ -25,30 +25,29 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-<div id="myhand-wrap" class="whiteblock">
-    <h3>{MY_HAND}</h3>
-    <div id="myhand"></div>
-</div>
-
 <div id="market-wrap" class="whiteblock">
-    <h3>{MARKET}</h3>
-
-    <div id="market-discard" class="pile-container"></div>
-    <div id="market-deck" class="pile-container"></div>
-
-    <div class="cardontable">
-        <div class="card cardontable" id="cardontable"></div>
-
-        <div class="playertablename">
-            {PLAYER_NAME}
-        </div>
-        <div class="playertablecard" id="playertablecard">
-        </div>
+    <!-- Display the name of this area? <h3>{MARKET}</h3> -->
+    <div style="display:flex; align-items: center;">
+        <div id="market-discard" class="pile-container"></div>
+        <div id="market-deck" class="pile-container"></div>
+        <div id="market-board-background"><div id="market-board"></div></div>
     </div>
-
-    <div id="market-board-background"><div id="market-board"></div></div>
 </div>
 
+<div id="myhand-wrap" class="whiteblock">
+    <h3> {YOUR_HAND} </h3>
+    <div id="myhand"></div>
+</div>  
+
+<!-- BEGIN stall -->
+<div class="whiteblock">
+    <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {BOARD} </h3>
+    <div style="display:flex">
+        <div id="discard-{PLAYER_ID}" class="pile-container"></div>
+        <div id="deck-{PLAYER_ID}" class="pile-container"></div>
+    </div>
+</div>
+<!-- END stall -->
 
 <script type="text/javascript">
 
