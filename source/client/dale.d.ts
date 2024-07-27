@@ -37,8 +37,18 @@ declare global {
 		// [key: string | number]: Record<keyof any, any>; // Uncomment to remove type safety on game state arguments
 		'cardTypes': {[type_id: number]: CardType}
 
-		'marketDeckSize': number
-		'marketDiscard': DbCard[]
+		'marketDeckSize': number //todo: remove
+		'marketDiscard': DbCard[] //todo: remove
+
+		'discardPiles': {
+			"market": DbCard[]
+			[player_id: number]: DbCard[]
+		}
+
+		'deckSizes': {
+			"market": number
+			[player_id: number]: number
+		}
 		
 		'hand': DbCard[]
 		'market': DbCard[]

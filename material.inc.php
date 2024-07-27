@@ -22,7 +22,6 @@
  if (!defined('PASSIVE')) {
   define('PASSIVE', 0);
   define('TECHNIQUE', 1);
-  define('MARKET', 'MARKET');
 }
 
 $this->card_types = array(

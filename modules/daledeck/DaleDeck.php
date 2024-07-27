@@ -2,6 +2,16 @@
 
 require_once(APP_GAMEMODULE_PATH.'module/common/deck.game.php');
 
+//deck locations
+if (!defined('HAND')) {
+    define('MARKET', 'market');
+
+    //prefixes
+    define('HAND', 'hand');
+    define('DISCARD', 'disc');
+    define('DECK', 'deck');
+}
+
 class DaleDeck extends Deck {
     private $game;
     public string $on_location_exhausted_method;
@@ -18,7 +28,7 @@ class DaleDeck extends Deck {
     * Return card infos or null if no card in the specified location
     */
     function pickCardForLocation($from_location, $to_location, $location_arg=0) {
-        $card = self::getCardOnTop( $from_location );
+        $card = self::getCardOnTop($from_location);
 
         //hook
         if($card == null) {

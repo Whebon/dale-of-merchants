@@ -33,10 +33,20 @@ class Dale extends Gamegui
 	marketDiscard: Pile = new Pile(this, 'market-discard', 'Market Discard');
 
 	/** A hidden draw pile for each player */
-	playerDeck: Record<number, Pile> = {};
+	playerDecks: Record<number, Pile> = {};
 
 	/** An open discard pile for each player */
-	playerDiscard: Record<number, Pile> = {};
+	playerDiscards: Record<number, Pile> = {};
+
+	/** Current player's draw pile (this client's draw pil) */
+	get myDeck(): Pile {
+		return this.playerDecks[this.player_id]!;
+	}
+
+	/** Current player's discard pile (this client's discard pile) */
+	get myDiscard(): Pile {
+		return this.playerDiscards[this.player_id]!;
+	}
 
 	/** Ordered pile of known cards representing the market discard deck. */
 	market: MarketBoard | null = null;
@@ -64,8 +74,18 @@ class Dale extends Gamegui
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
-			this.playerDeck[player_id] = new Pile(this, 'deck-'+player_id, 'Deck');
-			this.playerDiscard[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile');
+
+			//deck per player
+			this.playerDecks[player_id] = new Pile(this, 'deck-'+player_id, 'Deck');
+			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
+
+			//discard pile per player
+			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile');
+			for (let i in gamedatas.discardPiles[player_id]) {
+				let card = gamedatas.discardPiles[player_id][+i]!;
+				console.log(card);
+				this.playerDiscards[player_id].push(DaleCard.of(card));
+			}
 		}
 		
 		//initialize the card types
@@ -76,11 +96,11 @@ class Dale extends Gamegui
 		}
 
 		//initialize the market deck
-		this.marketDeck.pushHiddenCards(gamedatas.marketDeckSize);
+		this.marketDeck.pushHiddenCards(gamedatas.deckSizes.market);
 
 		//initialize the market discard pile
-		for (let i in gamedatas.marketDiscard) {
-			var card = gamedatas.marketDiscard[i]!;
+		for (let i in gamedatas.discardPiles.market) {
+			let card = gamedatas.discardPiles.market[i]!;
 			this.marketDiscard.push(DaleCard.of(card));
 		}
 		
@@ -192,7 +212,7 @@ class Dale extends Gamegui
 
 					//move the card from the hand to the discard pile
 					if ($('myhand_item_' + card_id)) {
-						this.playerDiscard[this.player_id]!.push(new DaleCard(card_id), 'myhand_item_' + card_id);
+						this.playerDiscards[this.player_id]!.push(new DaleCard(card_id), 'myhand_item_' + card_id);
 						this.hand.removeFromStockByIdNoAnimation(card_id);
 					}
 					else {

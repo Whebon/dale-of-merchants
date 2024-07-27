@@ -25,11 +25,6 @@ class Dale extends DaleTableBasic
     var DaleDeck $cards;
     var $card_types;
 
-    function quick($n) {
-        $player_id = self::getCurrentPlayerId();
-        $this->cards->pickCardForLocation('hand'.$player_id, 'deck'.MARKET);
-    }
-
 	function __construct( )
 	{
         // Your global variables labels:
@@ -106,8 +101,8 @@ class Dale extends DaleTableBasic
             // TODO: #animalfolk_sets = #players + 1
             $cards[] = array ('type' => 'UNUSED','type_arg' => $type_id, 'nbr' => $card_type['nbr']);
         }
-        $this->cards->createCards($cards, 'deck'.MARKET, );
-        $this->cards->shuffle('deck'.MARKET);
+        $this->cards->createCards($cards, DECK.MARKET, );
+        $this->cards->shuffle(DECK.MARKET);
 
         // // Todo: should be handled by a setup game state
 
@@ -118,21 +113,21 @@ class Dale extends DaleTableBasic
         //     $this->notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards ));
         // }
 
-        // $cards = $this->cards->pickCards(3, 'deck'.MARKET, $player_id);
+        // $cards = $this->cards->pickCards(3, DECK.MARKET, $player_id);
 
         // //TODOOOOOOOOO
 
-        // $this->cards->moveCards('deck'.MARKET, 'hand'.$player_id);
+        // $this->cards->moveCards(DECK.MARKET, HAND.$player_id);
 
         // //$this->pickCardForLocation($from_location, $to_location, $location_arg=0 );
 
         // //$this->deckMove('')
 
-        $this->cards->moveCard(16, 'market', 0);
-        $this->cards->moveCard(17, 'market', 1);
-        $this->cards->moveCard(18, 'market', 2);
-        $this->cards->moveCard(19, 'market', 3);
-        $this->cards->moveCard(20, 'market', 4);
+        $this->cards->moveCard(16, MARKET, 0);
+        $this->cards->moveCard(17, MARKET, 1);
+        $this->cards->moveCard(18, MARKET, 2);
+        $this->cards->moveCard(19, MARKET, 3);
+        $this->cards->moveCard(20, MARKET, 4);
 
 
 
@@ -140,9 +135,9 @@ class Dale extends DaleTableBasic
         $i = 0;
         foreach( $players as $player_id => $player )
         {
-            $this->cards->moveCard(27+$i, 'hand'.$player_id);
-            $this->cards->moveCard(28+$i, 'hand'.$player_id);
-            $this->cards->moveCard(29+$i, 'hand'.$player_id);
+            $this->cards->moveCard(27+$i, HAND.$player_id);
+            $this->cards->moveCard(28+$i, HAND.$player_id);
+            $this->cards->moveCard(29+$i, HAND.$player_id);
             $i += 3;
         }
 
@@ -165,19 +160,40 @@ class Dale extends DaleTableBasic
     protected function getAllDatas()
     {
         $result = array();
-    
-        $current_player_id = $this->getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $current_player_id = $this->getCurrentPlayerId();
+
+        //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleDeck will not work as intended)
+        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4) {
+            throw new AssertionError("DECK, DISCARD and HAND prefixes must be of length 4");
+        }
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
+        $players = $this->loadPlayersBasicInfos();
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
 
-        $result['marketDeckSize'] = $this->cards->countCardInLocation('deck'.MARKET); //count the cards in market deck, but don't send them (that information is hidden)
-        $result['marketDiscard'] = $this->cards->getCardsInLocation('disc'.MARKET);
+        //count the cards in each deck, but don't send the content (that information is hidden)
+        $result['deckSizes'] = array(
+            'market' => $this->cards->countCardInLocation(DECK.MARKET)
+        );
+        foreach ( $players as $player_id => $player ) {
+            $result['deckSizes'][$player_id] = $this->cards->countCardInLocation(DECK.$player_id);
+        }
 
-        $result['market'] = $this->cards->getCardsInLocation( 'market');
-        $result['hand'] = $this->cards->getCardsInLocation('hand'.$current_player_id);
+        //all discard piles are public information
+        $result['discardPiles'] = array(
+            'market' => $this->cards->getCardsInLocation(DISCARD.MARKET, null, 'location_arg')
+        );
+        foreach ( $players as $player_id => $player ) {
+            $result['discardPiles'][$player_id] = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
+        }
+
+        $result['marketDeckSize'] = $this->cards->countCardInLocation(DECK.MARKET); //todo: remove
+        $result['marketDiscard'] = $this->cards->getCardsInLocation(DISCARD.MARKET); //todo: remove
+
+        $result['market'] = $this->cards->getCardsInLocation(MARKET);
+        $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
         
         $result['cardTypes'] = $this->card_types;
 
@@ -333,11 +349,11 @@ class Dale extends DaleTableBasic
         $player_id = self::getCurrentPlayerId();
 
         //verify that these cards are actually in the player's hand
-        $cards = $this->cards->getCardsFromLocation($card_ids, 'hand'.$player_id);
+        $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
 
         //move the cards to the discard pile (ordering matters)
         foreach ($card_ids as $card_id) {
-            $this->cards->insertCardOnExtremePosition($card_id, "disc".$player_id, true);
+            $this->cards->insertCardOnExtremePosition($card_id, DISCARD.$player_id, true);
         }
 
 
