@@ -23,8 +23,17 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
+.clickable {
+	transition: all .2s ease-in-out; 
+}
+
+.clickable:hover {
+	cursor: pointer;
+	transform: scale(1.05); 
+}
+
 .stockitem {
-	z-index: 5;
+	z-index: 6;
 	border-radius: 10px;
 }
 

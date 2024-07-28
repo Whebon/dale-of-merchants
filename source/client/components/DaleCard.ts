@@ -18,11 +18,11 @@ export class DaleCard {
      * @param type_id id that uniquely defines this card's appearance.
      * */
     public constructor(id: number, type_id?: number) {
-        this.id = id;
+        this.id = +id;
         if (type_id != undefined) {
             let prev_type_id = DaleCard.cardIdtoTypeId.get(id);
             if (prev_type_id == undefined) {
-                DaleCard.cardIdtoTypeId.set(id, type_id);
+                DaleCard.cardIdtoTypeId.set(+id, +type_id);
             }
             else if (prev_type_id != type_id) {
                 throw new Error(`Card id ${id} with type_id ${prev_type_id} cannot be set to a different type_id ${type_id}.`)

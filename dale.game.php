@@ -123,7 +123,7 @@ class Dale extends DaleTableBasic
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameById($player_id),
                 "nbr" => count($cards),
-                "private" => array(
+                "_private" => array(
                     "cards" => $cards
                 )
             ));
@@ -290,7 +290,7 @@ class Dale extends DaleTableBasic
 
 
     /**
-     * Send a notification to all players, but only the active player receives args["private"]
+     * Send a notification to all players, but only the active player receives args["_private"]
      */
     function notifyAllPlayersWithPrivateArguments($type, $message, $args) {
         //the active player receives the notification with the private arguments
@@ -298,7 +298,7 @@ class Dale extends DaleTableBasic
         $this->notifyPlayer($active_player_id, $type, $message, $args);
 
         //all the other players receive the notification without the private arguments
-        unset($args["private"]);
+        unset($args["_private"]);
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $player_id => $player ) {
             if ($player_id != $active_player_id) {
@@ -510,7 +510,7 @@ class Dale extends DaleTableBasic
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameById($player_id),
                 "nbr" => $nbr_from_deck,
-                "private" => array(
+                "_private" => array(
                     "cards" => $cards
                 )
             ));

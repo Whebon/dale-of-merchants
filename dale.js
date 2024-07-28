@@ -88,11 +88,11 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
     exports.DaleCard = void 0;
     var DaleCard = (function () {
         function DaleCard(id, type_id) {
-            this.id = id;
+            this.id = +id;
             if (type_id != undefined) {
                 var prev_type_id = DaleCard.cardIdtoTypeId.get(id);
                 if (prev_type_id == undefined) {
-                    DaleCard.cardIdtoTypeId.set(id, type_id);
+                    DaleCard.cardIdtoTypeId.set(+id, +type_id);
                 }
                 else if (prev_type_id != type_id) {
                     throw new Error("Card id ".concat(id, " with type_id ").concat(prev_type_id, " cannot be set to a different type_id ").concat(type_id, "."));
@@ -277,8 +277,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 dojo.fx.chain([slideAnimation, fadeAnimation]).play();
                 dojo.addClass(slidingElement, 'to_be_destroyed');
             }
-            this.cards.pop();
+            var card = this.cards.pop();
             this.updateHTML();
+            return card;
         };
         Pile.prototype.shuffleToDrawPile = function (drawPile, duration) {
             if (duration === void 0) { duration = 1000; }
@@ -333,14 +334,19 @@ define("components/Pile", ["require", "exports", "components/Images", "component
     }());
     exports.Pile = Pile;
 });
-define("components/MarketBoard", ["require", "exports", "components/Images"], function (require, exports, Images_3) {
+define("components/CardSlot", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MarketBoard = void 0;
+    exports.CardSlot = void 0;
     var CardSlot = (function () {
-        function CardSlot(container, card) {
+        function CardSlot(parent, pos, container, card) {
+            this.parent = parent;
+            this.pos = pos;
             this._container = container !== null && container !== void 0 ? container : document.createElement("div");
             this._card = card;
+            if (this._container.onclick != null) {
+                console.warn("CardSlot is given a container that already has an onclick handler. This handler will may be overwritten.");
+            }
         }
         Object.defineProperty(CardSlot.prototype, "id", {
             get: function () {
@@ -386,9 +392,28 @@ define("components/MarketBoard", ["require", "exports", "components/Images"], fu
             }
             return undefined;
         };
+        CardSlot.prototype.setClickable = function (enable) {
+            if (enable) {
+                var thiz_2 = this;
+                this._container.onclick = function () {
+                    thiz_2.parent.onCardSlotClick(thiz_2);
+                };
+                this._container.classList.add("clickable");
+            }
+            else {
+                this._container.classList.remove("clickable");
+                this._container.onclick = null;
+            }
+        };
         CardSlot.UNIQUE_ID = 0;
         return CardSlot;
     }());
+    exports.CardSlot = CardSlot;
+});
+define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_3, CardSlot_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.MarketBoard = void 0;
     var MarketBoard = (function () {
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
@@ -398,10 +423,12 @@ define("components/MarketBoard", ["require", "exports", "components/Images"], fu
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var div = document.createElement("div");
+                div.classList.add('grow');
                 div.setAttribute('style', "".concat(Images_3.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_3.Images.CARD_WIDTH_S + Images_3.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
                 this.container.appendChild(div);
-                this.slots.push(new CardSlot(div));
+                this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
+            this.selectionMode = 0;
         }
         MarketBoard.prototype.insertCard = function (card, pos) {
             if (pos == undefined)
@@ -428,6 +455,24 @@ define("components/MarketBoard", ["require", "exports", "components/Images"], fu
                     }
                     emptyPos++;
                 }
+            }
+        };
+        MarketBoard.prototype.setSelectionMode = function (mode) {
+            if (this.selectionMode == mode)
+                return;
+            this.selectionMode = mode;
+            var clickable = mode != 0;
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var slot = _a[_i];
+                slot.setClickable(clickable);
+            }
+        };
+        MarketBoard.prototype.onCardSlotClick = function (slot) {
+            if (slot.hasCard()) {
+                this.page.onMarketCardClick(slot.card, slot.pos);
+            }
+            else {
+                this.page.showMessage(_("This card is sold out!"), 'error');
             }
         };
         return MarketBoard;
@@ -477,7 +522,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerDiscards[player_id] = new Pile_1.Pile(this, 'discard-' + player_id, 'Discard Pile');
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
-                    console.log(card);
                     this.playerDiscards[player_id].push(DaleCard_2.DaleCard.of(card));
                 }
             }
@@ -509,12 +553,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onEnteringState = function (stateName, args) {
             console.log('Entering state: ' + stateName);
+            if (!this.isCurrentPlayerActive()) {
+                this.market.setSelectionMode(0);
+                this.myHand.setSelectionMode(0);
+                return;
+            }
             this.selectedCardIds = [];
             switch (stateName) {
+                case 'playerTurn':
+                    this.market.setSelectionMode(1);
+                    this.myHand.setSelectionMode(1);
+                    break;
+                case 'nextPlayer':
+                    break;
                 case 'inventory':
-                    if (this.isCurrentPlayerActive()) {
-                        this.myHand.unselectAll();
-                    }
+                    this.myHand.setSelectionMode(1);
                     break;
             }
         };
@@ -544,16 +597,59 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 throw new Error("Card ".concat(card_id, " does not exist in hand"));
             }
         };
+        Dale.prototype.pileToHand = function (card_id, pile, assert_existence) {
+            if (assert_existence === void 0) { assert_existence = true; }
+            if (!(typeof card_id === 'number')) {
+                card_id = card_id.id;
+            }
+            this.myHand.addDaleCardToStock(new DaleCard_2.DaleCard(card_id), pile.placeholderHTML);
+            if (assert_existence && pile.pop().id != card_id) {
+                throw new Error("Card ".concat(card_id, " was not found on top of the pile"));
+            }
+        };
+        Dale.prototype.addUndoButton = function () {
+            var buttonId = "undo-selectedCardIds-button";
+            if (!$(buttonId)) {
+                var thiz_3 = this;
+                var returnSelectedCardIdsToHand = function () {
+                    var _a;
+                    for (var i = thiz_3.selectedCardIds.length - 1; i >= 0; i--) {
+                        var card_id = thiz_3.selectedCardIds[i];
+                        thiz_3.pileToHand(card_id, thiz_3.myDiscard);
+                    }
+                    thiz_3.selectedCardIds = [];
+                    (_a = $(buttonId)) === null || _a === void 0 ? void 0 : _a.remove();
+                };
+                this.addActionButton(buttonId, _("Undo"), returnSelectedCardIdsToHand, undefined, false, 'gray');
+            }
+        };
+        Dale.prototype.onMarketCardClick = function (card, pos) {
+            if (pos < 0 || pos >= 5) {
+                console.error("Market position ".concat(pos, " does not exist, using position 0 instead"));
+                pos = 0;
+            }
+            switch (this.gamedatas.gamestate.name) {
+                case 'playerTurn':
+                    console.log("Animalfolk ".concat(card.animalfolk, " in pos ").concat(pos));
+                    break;
+            }
+        };
         Dale.prototype.onHandSelectionChanged = function () {
-            if (!this.isCurrentPlayerActive())
-                return;
             var items = this.myHand.getSelectedItems();
             switch (this.gamedatas.gamestate.name) {
+                case 'playerTurn':
+                    if (items.length == 1) {
+                        var card_id = items[0].id;
+                        this.showMessage(_("actPlayCard: NOT IMPLEMENTED EXCEPTION"), 'error');
+                    }
+                    this.myHand.unselectAll();
+                    break;
                 case 'inventory':
                     if (items.length == 1) {
                         var card_id = items[0].id;
                         this.handToPile(card_id, this.myDiscard);
                         this.selectedCardIds.push(card_id);
+                        this.addUndoButton();
                     }
                     this.myHand.unselectAll();
                     break;
@@ -592,9 +688,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_draw = function (notif) {
             var _a;
-            if (notif.args.private) {
-                for (var i in (_a = notif.args.private) === null || _a === void 0 ? void 0 : _a.cards) {
-                    var card = notif.args.private.cards[i];
+            if (notif.args._private) {
+                for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
+                    var card = notif.args._private.cards[i];
                     this.myHand.addDaleCardToStock(DaleCard_2.DaleCard.of(card), this.myDeck.placeholderHTML);
                     this.myDeck.pop();
                 }

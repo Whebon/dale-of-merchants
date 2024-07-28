@@ -1,94 +1,23 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
 import { Images } from './Images';
+import { CardSlot, CardSlotManager } from './CardSlot';
 
 declare function $(text: string | Element): HTMLElement;
 
-/**
- * Designated space designed to hold a single card or remain empty.
- */
-class CardSlot {
-    static UNIQUE_ID: number = 0;
-
-    private _container: HTMLElement;
-    private _card: DaleCard | undefined;
-
-    constructor(container?: HTMLElement, card?: DaleCard){
-        this._container = container ?? document.createElement("div");
-        this._card = card
-    }
-
-    /**
-     * Returns the id of this slot's container. If it doesn't have an idea, it is given a new unique id.
-    * @returns HTML id of the slot's container.
-    */
-    public get id(): string {
-        if (this._container.id == ""){
-            this._container.id = "card-slot-id-"+CardSlot.UNIQUE_ID++;
-        }
-        return this._container.id;
-    }
-
-    /**
-    * @returns card in this slot.
-    */
-    public get card(): DaleCard | undefined {
-        return this._card;
-    }
-
-    /**
-    * @returns div representation of the card in this slot.
-    */
-    public get card_div(): HTMLElement {
-        if (!this.hasCard()) {
-            throw new Error("An empty slot has no card")
-        }
-        return this._container.firstChild as HTMLElement;
-    }
-
-    /**
-    * @returns `true` if the slot contains a card.
-    */
-    public hasCard() {
-        return this._card != undefined;
-    }
- 
-    /**
-    * Insert a card in the slot. If there already was one, the previous card is removed.
-    * @param card card to put in the slot.
-    */
-    public insertCard(card: DaleCard){
-        this.removeCard();
-        this._container.appendChild(card.toDiv());
-        this._card = card;
-    }
-
-    /**
-     * Remove the card in this slot, if there was any.
-     * @return removed card.
-     */
-    public removeCard(): DaleCard | undefined {
-        if (this.hasCard()) {
-            let removedCard = this._card;
-            this._container.replaceChildren();
-            this._card = undefined;
-            return removedCard;
-        }
-        return undefined;
-    }
-}
 
 /**
  * Singleton component for the dale of merchants market board.
  */
-export class MarketBoard {
+export class MarketBoard implements CardSlotManager {
     readonly MAX_SIZE: number = 5;
 
     private page: Gamegui;
     private container: HTMLElement;
     private slots: CardSlot[];
+    private selectionMode: 0 | 1 | 2;
 
-    constructor(page: Gamegui){
+    constructor(page: Gamegui) {
         //set the background for the market board
         this.page = page;
         $("market-board-background").setAttribute("style", `
@@ -106,13 +35,17 @@ export class MarketBoard {
         this.slots = []
         for (let pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
             let div = document.createElement("div");
+            div.classList.add('grow');
             div.setAttribute('style', `${Images.getCardStyle()};
                 position: absolute;
                 left: ${pos*(Images.CARD_WIDTH_S + Images.MARKET_ITEM_MARGIN_S)}px
             `);
             this.container.appendChild(div);
-            this.slots.push(new CardSlot(div));
+            this.slots.push(new CardSlot(this, 4-pos, div));
         }
+
+        //by default, market slots cannot be clicked
+        this.selectionMode = 0;
     }
 
     /**
@@ -152,6 +85,31 @@ export class MarketBoard {
                 }
                 emptyPos++;
             }
+        }
+    }
+
+    /**
+     * You can specify a selection mode similar like for a Stock.
+     * @param mode
+     * 0: no item can be selected by the player.
+     * 1: a maximum of one item can be selected by the player at a time.
+     * 2: multiple items can be selected by the player at the same time.
+    */
+    setSelectionMode(mode: 0 | 1 | 2) {
+        //TODO: make a distinction between selectionMode 1 and 2
+        if( this.selectionMode == mode ) return;
+        this.selectionMode = mode;
+        let clickable = mode != 0;
+        for (let slot of this.slots) {
+            slot.setClickable(clickable);
+        }
+    }
+
+    onCardSlotClick(slot: CardSlot): void {
+        if (slot.hasCard()) {
+            (this.page as any).onMarketCardClick(slot.card, slot.pos);
+        } else {
+            this.page.showMessage(_("This card is sold out!"), 'error');
         }
     }
 }

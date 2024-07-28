@@ -109,7 +109,7 @@ export class Pile {
     * @param duration (optional) defines the duration in millisecond of the slide. The default is 500 milliseconds.
     * @param delay (optional) defines the delay in millisecond before the slide is executed. The default is 0 milliseconds.
     */
-    public pop(to?: string | HTMLElement | Pile, onEnd?: Function | null, duration?: number, delay?: number) {
+    public pop(to?: string | HTMLElement | Pile, onEnd?: Function | null, duration?: number, delay?: number): DaleCard {
         if (this.cards.length == 0) {
             throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
         }
@@ -136,8 +136,9 @@ export class Pile {
         }
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
-        this.cards.pop()!;
+        let card = this.cards.pop()!;
         this.updateHTML();
+        return card;
     }
 
     /**

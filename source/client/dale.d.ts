@@ -40,7 +40,7 @@ declare global {
 			player_id: number 
             player_name: string
 			nbr: number
-			private?: {
+			_private?: {
 				cards: {[card_id: number]: DbCard}
 			}
 		}

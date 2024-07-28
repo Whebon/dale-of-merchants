@@ -22,6 +22,7 @@ import { Images } from './components/Images';
 import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
+import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -83,7 +84,6 @@ class Dale extends Gamegui
 			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile');
 			for (let i in gamedatas.discardPiles[player_id]) {
 				let card = gamedatas.discardPiles[player_id][+i]!;
-				console.log(card);
 				this.playerDiscards[player_id].push(DaleCard.of(card));
 			}
 		}
@@ -135,15 +135,23 @@ class Dale extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 
+		if (!this.isCurrentPlayerActive()) {
+			this.market!.setSelectionMode(0);
+			this.myHand.setSelectionMode(0);
+			return;
+		}
+
 		//reset the selected cards array
 		this.selectedCardIds = [];
-		
-		switch( stateName )
-		{
+		switch( stateName ){
+			case 'playerTurn':
+				this.market!.setSelectionMode(1);
+				this.myHand.setSelectionMode(1);
+				break;
+			case 'nextPlayer':
+				break;
 			case 'inventory':
-				if (this.isCurrentPlayerActive()) {
-					this.myHand.unselectAll();
-				}
+				this.myHand.setSelectionMode(1);
 				break;
 		}
 	}
@@ -199,7 +207,41 @@ class Dale extends Gamegui
 			this.myHand.removeFromStockByIdNoAnimation(card_id);
 		}
 		else if(assert_existence) {
-			throw new Error(`Card ${card_id} does not exist in hand`)
+			throw new Error(`Card ${card_id} does not exist in hand`);
+		}
+	}
+
+	/**
+	 * Move a card from the top of the specified pile to the hand
+	 * @param card_id card id to move
+	 * @param assert_existence (optional) default true. throw an exception if the specified card does not exist on top of the pile
+	*/
+	pileToHand(card_id: number | DbCard, pile: Pile, assert_existence = true) {
+		if (!(typeof card_id === 'number')) {
+			card_id = card_id.id;
+		}
+		this.myHand.addDaleCardToStock(new DaleCard(card_id), pile.placeholderHTML);
+		if(assert_existence && pile.pop().id != card_id) {
+			throw new Error(`Card ${card_id} was not found on top of the pile`);
+		}
+	}
+
+	/**
+	 * Add an undo button that returns the selectedCardIds to the draw pile
+	*/
+	addUndoButton() {
+		let buttonId = "undo-selectedCardIds-button";
+		if (!$(buttonId)) {
+			let thiz = this;
+			let returnSelectedCardIdsToHand  = function() {
+				for (let i = thiz.selectedCardIds.length - 1; i >= 0; i--) {
+					const card_id = thiz.selectedCardIds[i]!;
+					thiz.pileToHand(card_id, thiz.myDiscard);
+				}
+				thiz.selectedCardIds = []
+				$(buttonId)?.remove();
+			}
+			this.addActionButton(buttonId, _("Undo"), returnSelectedCardIdsToHand, undefined, false, 'gray');
 		}
 	}
 
@@ -214,17 +256,42 @@ class Dale extends Gamegui
 		- make a call to the game server
 	*/
 
+	onMarketCardClick(card: DaleCard, pos: number) {
+		if (pos < 0 || pos >= 5 ){
+			console.error(`Market position ${pos} does not exist, using position 0 instead`)
+			pos = 0;
+		}
+
+		switch(this.gamedatas.gamestate.name) {
+			case 'playerTurn':
+				console.log(`Animalfolk ${card.animalfolk} in pos ${pos}`);
+				break;
+		}
+	}
+
 	onHandSelectionChanged() {
-		if (!this.isCurrentPlayerActive()) return;
+		//if (!this.isCurrentPlayerActive()) return;
 		let items = this.myHand.getSelectedItems();
 
 		switch(this.gamedatas.gamestate.name) {
+			case 'playerTurn':
+				//play cards
+				if (items.length == 1) {
+					let card_id = items[0]!.id;
+					this.showMessage( _("actPlayCard: NOT IMPLEMENTED EXCEPTION"), 'error');
+					// if(this.checkAction('actPlayCard')) {
+					// 	this.bgaPerformAction('actPlayCard', {})
+					// }
+				}
+				this.myHand.unselectAll();
+				break;
 			case 'inventory':
 				//move to the discard pile one at a time
 				if (items.length == 1) {
 					let card_id = items[0]!.id;
 					this.handToPile(card_id, this.myDiscard);
 					this.selectedCardIds.push(card_id);
+					this.addUndoButton();
 				}
 				this.myHand.unselectAll();
 				break;
@@ -327,10 +394,10 @@ class Dale extends Gamegui
 	*/
 
 	notif_draw(notif: NotifAs<'draw'>) {
-		if (notif.args.private) {
+		if (notif.args._private) {
 			//you drew the cards
-			for (let i in notif.args.private?.cards) {
-				let card = notif.args.private.cards[i]!;
+			for (let i in notif.args._private?.cards) {
+				let card = notif.args._private.cards[i]!;
 				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
 				this.myDeck.pop();
 			}
