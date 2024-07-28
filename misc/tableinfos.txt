@@ -1,0 +1,489 @@
+/**
+
+* tableinfos.game.php
+
+*
+
+*
+
+* Basic informations on a table read & write with cache feature
+
+* (Note: to be used with table on PLAY status only)
+
+*
+
+*/
+<
+
+/
+/*
+T
+TableInfos object structure:
+<
+
+a
+array(
+
+id
+
+game_id
+
+players => array(
+
+id_player => array(
+
+id
+
+name
+
+avatar
+
+color
+
+canal
+
+is_admin
+
+player_zombie
+
+player_eliminated
+
+player_next_notif_no
+
+player_ai
+
+player_beginner
+
+)
+
+)
+
+globals => array(
+
+key => value
+
+....
+
+(note: all globals)
+
+)
+)
+)
+<
+
+<
+
+*
+*/
+<
+
+
+
+c
+class TableInfos extends APP_GameClass
+{
+{
+
+private $table_id = null;
+
+static $tables_infos = array();
+
+
+
+function __construct()
+
+{
+
+}
+
+
+
+function setTable( $table_id )
+
+{
+
+$this->table_id = $table_id;
+
+}
+
+
+
+// Get the table infos.
+
+// Get the tableinfos object from cache, if available
+
+function get( bool $bSelectGlobalsForUpdate = false )
+
+{
+
+if( $this->table_id == null )
+
+throw new feException( "Table not set" );
+
+
+
+if( isset( self::$tables_infos[ $this->table_id ] ) )
+
+return self::$tables_infos[ $this->table_id ]; // Table informations has been generated already => return the object
+
+
+
+// We have to generate table infos:
+<
+
+
+// 1. Get informations available from APC cache
+
+$key = 'tableinfos_'.$this->table_id;
+
+self::$tables_infos[ $this->table_id ] = self::cache_fetch( $key );
+
+if( self::$tables_infos[ $this->table_id ] === null )
+
+{
+
+// There is nothing in the cache
+
+self::db_load( );
+
+$to_store = self::$tables_infos[ $this->table_id ];
+
+unset( $to_store['globals'] );
+
+self::cache_store( $key, $to_store, 600 ); // 10 mn
+
+}
+
+
+
+// 2. Get dynamic informations (not stored in the cache)
+
+if( ! isset( self::$tables_infos[ $this->table_id ]['globals'] ) )
+
+self::$tables_infos[ $this->table_id ]['globals'] = self::getGlobalsFromDB( $bSelectGlobalsForUpdate );
+
+
+
+return self::$tables_infos[ $this->table_id ];
+
+}
+<
+
+
+// Force table info reload (ex: after game initialization)
+
+function reload()
+
+{
+
+$key = 'tableinfos_'.$this->table_id;
+
+self::db_load();
+
+$to_store = self::$tables_infos[ $this->table_id ];
+
+unset( $to_store['globals'] );
+
+self::cache_store( $key, $to_store, 600 ); // 10 mn
+
+if( ! isset( self::$tables_infos[ $this->table_id ]['globals'] ) )
+
+self::$tables_infos[ $this->table_id ]['globals'] = self::getGlobalsFromDB();
+
+}
+
+
+
+// Complete reload the tableinfos object from DB
+
+// Note: "current DB agnostic"
+
+function db_load( )
+
+{
+
+self::$tables_infos[ $this->table_id ] = array( 'id' => $this->table_id );
+
+$table_id = $this->table_id;
+
+
+
+// Globals
+
+$admin_player = null;
+
+self::$tables_infos[ $this->table_id ]['globals'] = self::getGlobalsFromDB();
+
+if( isset( self::$tables_infos[ $this->table_id ]['globals'][5] ) )
+
+$admin_player = self::$tables_infos[ $this->table_id ]['globals'][5];
+
+
+
+if( isset( self::$tables_infos[ $this->table_id ]['globals'][4] ) )
+
+self::$tables_infos[ $this->table_id ]['game_id'] = self::$tables_infos[ $this->table_id ]['globals'][4]; // 4 = GAMESTATE_GAME_ID
+<
+
+
+$beginners = self::getCollectionFromDB( "SELECT player_id, player_beginner FROM player", true );
+
+
+
+// Players basic infos
+
+self::$tables_infos[ $this->table_id ][ 'players' ] = array();
+
+$sql = "SELECT player_id, player_name, player_no, player_avatar, player_color, player_canal, (player_id='$admin_player') player_is_admin, player_zombie, player_eliminated, player_next_notif_no, player_enter_game, player_ai, HEX( player_beginner ) player_beginner ";
+
+$sql .= "FROM player ";
+
+$sql .= "WHERE 1 ORDER BY player_no ";
+
+try {
+
+$dbres = self::DbQuery( $sql );
+
+}
+
+catch( Exception $e )
+
+{
+
+if( strpos( $e->getmessage(), "Unknown column 'player_ai'" ) )
+
+{
+
+self::DbQuery( "ALTER TABLE `player` ADD `player_ai` TINYINT NOT NULL DEFAULT '0'" );
+
+try {
+
+
+
+self::DbQuery( "ALTER TABLE `zz_replay1_player` ADD `player_ai` TINYINT NOT NULL DEFAULT '0'" );
+
+self::DbQuery( "ALTER TABLE `zz_replay2_player` ADD `player_ai` TINYINT NOT NULL DEFAULT '0'" );
+
+self::DbQuery( "ALTER TABLE `zz_replay3_player` ADD `player_ai` TINYINT NOT NULL DEFAULT '0'" );
+
+self::DbQuery( "ALTER TABLE `zz_savepoint_player` ADD `player_ai` TINYINT NOT NULL DEFAULT '0'" );
+
+}
+
+catch( Exception $e )
+
+{
+
+// May fail if does not exists already
+
+}
+
+$dbres = self::DbQuery( $sql );
+
+}
+
+}
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+$row['concede'] = ( $row['player_zombie']<0 ) ? 1 : 0;
+
+$row['player_zombie'] = ( $row['player_zombie']==1 ) ? 1 : 0;
+
+$row['player_eliminated'] = ( $row['player_eliminated']==1 ) ? 1 : 0;
+
+self::$tables_infos[ $this->table_id ][ 'players' ][ $row['player_id'] ] = $row;
+
+}
+
+}
+
+
+
+function getGlobalsFromDB( bool $forUpdate = false )
+
+{
+
+$result = array();
+
+$sql = "SELECT global_id, global_value FROM global WHERE 1 ";
+
+if ($forUpdate) {
+
+$sql .= "FOR UPDATE";
+
+}
+
+$dbres = self::DbQuery( $sql );
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+$result[ $row['global_id'] ] = $row['global_value'];
+
+}
+
+return $result;
+
+}
+<
+
+
+// Table infos update methods /////////////
+
+
+
+function setGlobal( $global_id, $global_value )
+
+{
+
+
+
+if( isset( self::$tables_infos[ $this->table_id ][ 'globals' ][ $global_id ] ) )
+
+{
+
+// Update in DB
+
+$sql = "UPDATE global SET global_value='".addslashes( $global_value )."' WHERE global_id='$global_id' ";
+
+self::DbQuery( $sql );
+
+}
+
+else
+
+{
+
+// New value
+
+$sql = "INSERT INTO global (global_id, global_value) VALUES
+
+( '$global_id', '".addslashes( $global_value )."')
+
+ON DUPLICATE KEY UPDATE global_value='".addslashes( $global_value )."'";
+
+self::DbQuery( $sql );
+
+}
+<
+
+
+if( isset( self::$tables_infos[ $this->table_id ] ) )
+
+self::$tables_infos[ $this->table_id ][ 'globals' ][ $global_id ] = $global_value;
+
+}
+
+function incGlobal( $global_id, $increment )
+
+{
+
+if( isset( self::$tables_infos[ $this->table_id ][ 'globals' ][ $global_id ] ) )
+
+{
+
+// Update in DB
+
+$sql = "UPDATE global SET global_value=global_value+'".addslashes( $increment )."' WHERE global_id='$global_id' ";
+
+self::DbQuery( $sql );
+<
+
+
+if( isset( self::$tables_infos[ $this->table_id ] ) )
+
+self::$tables_infos[ $this->table_id ][ 'globals' ][ $global_id ] = ( self::$tables_infos[ $this->table_id ][ 'globals' ][ $global_id ]+$increment );
+
+}
+
+else
+
+{
+
+// New value
+
+$sql = "INSERT INTO global (global_id, global_value) VALUES
+
+( '$global_id', '".addslashes( $increment )."')
+
+ON DUPLICATE KEY UPDATE global_value='".addslashes( $increment )."'";
+
+self::DbQuery( $sql );
+<
+
+
+if( isset( self::$tables_infos[ $this->table_id ] ) )
+
+self::$tables_infos[ $this->table_id ][ 'globals' ][ $global_id ] = $increment ;
+
+}
+
+}
+
+function setZombie( $player_id, $bMakeZombie=true )
+
+{
+
+$newValue = ( $bMakeZombie ? 1 : 0 );
+
+
+
+$key = 'tableinfos_'.$this->table_id;
+
+$tableinfos = self::get();
+
+$tableinfos['players'][$player_id]['player_zombie'] = $newValue ;
+<
+
+
+// Update in DB
+
+$sql = "UPDATE player SET player_zombie='$newValue' WHERE player_id='$player_id' ";
+
+self::DbQuery( $sql );
+
+
+
+self::$tables_infos[ $this->table_id ][ 'players' ][ $player_id]['player_zombie'] = $newValue;
+
+$tableinfos['players'][$player_id]['player_zombie'] = $newValue;
+
+unset( $tableinfos['globals'] );
+
+self::cache_store( $key, $tableinfos );
+
+}
+<
+
+
+function setConcede( $player_id, $neutralize_score=false )
+
+{
+
+// fundamental to neutralize score for coop games where score 0 == loss always
+
+if ($neutralize_score) {
+
+$sql = "UPDATE player SET player_zombie='-1', player_score=0 WHERE player_id='$player_id' ";
+
+} else {
+
+$sql = "UPDATE player SET player_zombie='-1' WHERE player_id='$player_id' ";
+
+}
+<
+
+
+// Update in DB
+
+self::DbQuery( $sql );
+
+}
+<
+
+}
+}

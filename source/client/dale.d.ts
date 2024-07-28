@@ -27,14 +27,22 @@ declare global {
 		'discard': {
 			player_id: number 
             player_name: string
-			cards: {[card_id: number]: DbCard}
 			nbr: number
+			cards: {[card_id: number]: DbCard}
 		}
 		'obtainNewJunkInHand': {
 			player_id: number
 			player_name: string
 			cards: {[card_id: number]: DbCard}
 			nbr: number
+		}
+		'draw': {
+			player_id: number 
+            player_name: string
+			nbr: number
+			private?: {
+				cards: {[card_id: number]: DbCard}
+			}
 		}
 	}
 

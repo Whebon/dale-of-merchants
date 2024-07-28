@@ -17,6 +17,9 @@ export class Images {
     static readonly MARKET_WIDTH = 2717;
     static readonly MARKET_HEIGHT = 906;
 
+    static readonly Z_INDEX_CARDBACK = 4;
+    static readonly Z_INDEX_CARDFRONT = 5;
+
     static readonly S_SCALE = 0.28;
 
     static readonly SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
@@ -46,7 +49,8 @@ export class Images {
             if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
                 let x = card_type_id % Images.IMAGES_PER_ROW;
                 let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
-                style += `background-position:-${x}00% -${y}00%`;
+                style += `background-position:-${x}00% -${y}00%;`;
+                style += `z-index: ${card_type_id == 0 ? Images.Z_INDEX_CARDBACK : Images.Z_INDEX_CARDFRONT};`;
             }
             else {
                 console.error(`Card with type id ${card_type_id} does not exist!`);

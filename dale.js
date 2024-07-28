@@ -34,7 +34,8 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                 if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
                     var x = card_type_id % Images.IMAGES_PER_ROW;
                     var y = (card_type_id - x) / Images.IMAGES_PER_ROW;
-                    style += "background-position:-".concat(x, "00% -").concat(y, "00%");
+                    style += "background-position:-".concat(x, "00% -").concat(y, "00%;");
+                    style += "z-index: ".concat(card_type_id == 0 ? Images.Z_INDEX_CARDBACK : Images.Z_INDEX_CARDFRONT, ";");
                 }
                 else {
                     console.error("Card with type id ".concat(card_type_id, " does not exist!"));
@@ -55,6 +56,8 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_ITEM_MARGIN = 95;
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
+        Images.Z_INDEX_CARDBACK = 4;
+        Images.Z_INDEX_CARDFRONT = 5;
         Images.S_SCALE = 0.28;
         Images.SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
         Images.SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
@@ -575,8 +578,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
+                ['draw', 100],
                 ['obtainNewJunkInHand', 1],
-                ['discard', 1],
+                ['discard', 100],
                 ['reshuffleDeck', 1500],
                 ['debugClient', 1],
             ];
@@ -585,6 +589,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
             console.log('notifications subscriptions setup done');
+        };
+        Dale.prototype.notif_draw = function (notif) {
+            var _a;
+            if (notif.args.private) {
+                for (var i in (_a = notif.args.private) === null || _a === void 0 ? void 0 : _a.cards) {
+                    var card = notif.args.private.cards[i];
+                    this.myHand.addDaleCardToStock(DaleCard_2.DaleCard.of(card), this.myDeck.placeholderHTML);
+                    this.myDeck.pop();
+                }
+            }
+            else {
+                for (var i = 0; i < notif.args.nbr; i++) {
+                    this.playerDecks[notif.args.player_id].pop();
+                }
+            }
         };
         Dale.prototype.notif_obtainNewJunkInHand = function (notif) {
             if (notif.args.player_id == this.player_id) {

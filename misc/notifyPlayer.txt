@@ -1,0 +1,46 @@
+function notifyPlayer($player_id, $notification_type, $notification_log, $notification_args)
+{
+    if ($notification_log === null) {
+        throw new feException(
+            "Can't notify with null notification log message - please use an empty string instead"
+        );
+    }
+
+    $notification = [
+        'uid' => uniqid(),
+        'type' => $notification_type,
+        'log' => $notification_log,
+        'args' => $notification_args,
+    ];
+
+    if ($player_id != 'all') {
+        // Synchronization between player channel and main channel
+        $mainchannel_synchro_id = 0;
+
+        if (isset($this->target_to_notification_packet['all'])) {
+            if (isset($this->notifications[$this->target_to_notification_packet['all']])) {
+                $mainchannel_synchro_id = count($this->notifications[$this->target_to_notification_packet['all']]);
+            }
+        }
+
+        $notification['synchro'] = $mainchannel_synchro_id;
+    }
+
+    $packet_id = null;
+
+    if (!isset($this->target_to_notification_packet[$player_id])) {
+        // There is no current notifications packet for this target => create it
+        $packet_id = $this->next_notification_packet_id;
+        $this->next_notification_packet_id++;
+
+        $this->notifications[$packet_id] = [];
+        $this->target_to_notification_packet[$player_id] = $packet_id;
+        $this->notification_packet_to_target[$packet_id] = $player_id;
+    } else {
+        $packet_id = $this->target_to_notification_packet[$player_id];
+    }
+
+    // self::dump( "Publishing notification", $notification );
+
+    $this->notifications[$packet_id][] = $notification;
+}

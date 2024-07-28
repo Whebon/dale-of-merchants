@@ -290,11 +290,10 @@ class Dale extends Gamegui
 	{
 		console.log( 'notifications subscriptions setup2' );
 		
-		// TODO: here, associate your game notifications with local methods
-
 		const notifs: [keyof NotifTypes, number][] = [
+			['draw', 100],
 			['obtainNewJunkInHand', 1],
-			['discard', 1],
+			['discard', 100],
 			['reshuffleDeck', 1500],
 			['debugClient', 1],
 		];
@@ -326,6 +325,23 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_draw(notif: NotifAs<'draw'>) {
+		if (notif.args.private) {
+			//you drew the cards
+			for (let i in notif.args.private?.cards) {
+				let card = notif.args.private.cards[i]!;
+				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
+				this.myDeck.pop();
+			}
+		}
+		else {
+			//another player drew cards
+			for (let i = 0; i < notif.args.nbr; i++) {
+				this.playerDecks[notif.args.player_id]!.pop();
+			}
+		}
+	}
 	
 	notif_obtainNewJunkInHand(notif: NotifAs<'obtainNewJunkInHand'>) {
 		//other players are not interested in an animation for this

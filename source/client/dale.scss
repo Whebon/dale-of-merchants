@@ -24,6 +24,7 @@
 */
 
 .stockitem {
+	z-index: 5;
 	border-radius: 10px;
 }
 
@@ -65,6 +66,7 @@
 	}
 
 	.size {
+		z-index: 10;
 		position: absolute;
 		font-weight: bold;
 		top: 4%;	

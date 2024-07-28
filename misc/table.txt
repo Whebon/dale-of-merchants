@@ -1,0 +1,9671 @@
+/**
+
+* table.game.php
+
+*
+
+* Base classe for all games main table class
+
+*/
+a
+abstract class Table extends APP_GameClass
+{
+{
+
+var $players = [];
+
+var $table_id = null;
+
+var $gamename;
+
+var $gameid = null;
+
+var $gamestate = null;
+
+var $o_tableinfos = null;
+
+var $bGameAbandonForced = false;
+
+var $bGameAbandonForcedByMetasite = false;
+
+var $bGameAbandonByTournamentTimeout = false;
+
+var $bZombieTurnWarningSent = false;
+
+var $nbrZombieTurnCycle = 0;
+
+var $activePlayersWhenActionStarted = [];
+
+var $setupPlayersInfos = null;
+
+public $ajaxSpecialResult = null;
+
+var $bIndependantMultiactiveTable = false;
+
+var $bSelectGlobalsForUpdate = false;
+<
+
+
+public \Bga\GameFramework\Db\Globals $globals;
+<
+
+
+// Report gamename for translation function
+
+abstract protected function getGameName();
+<
+
+
+// Translation function using appropriate gettext domain
+
+protected function _($text)
+
+{
+
+if ($text == '') {
+
+return '';
+
+}
+
+// Note: avoid void gettext ("display gettext info") bug
+
+else {
+
+return dcgettext(static::getGameName(), $text, LC_MESSAGES);
+
+}
+
+}
+<
+
+
+public $tie_breaker_description = '';
+<
+
+
+// Notifications packets (1 packet = notifications send together in 1 cometD packet)
+
+// packet_id => array of notifications
+
+private $notifications = [];
+<
+
+
+// If "true" : we are undoing the latest notifications (get back in time)
+
+protected $notifications_undo = false;
+<
+
+
+// Current notification packet for this target (target = player_id or 'all')
+
+private $target_to_notification_packet = [];
+
+private $next_notification_packet_id = 1;
+<
+
+
+// Target for this notification packet
+
+private $notification_packet_to_target = [];
+<
+
+
+private $undoSaveOnMoveEnd = false;
+<
+
+
+var $private_notification = false; // Next notification to be sent privacy
+
+var $chatmessage_notification = false; // Next notification is a chat message (higher priority & different warning sound)
+
+var $not_a_move_notification = false; // Next notification is not a move and shouldn't increase the move counter
+
+var $gamestate_labels = [
+
+'last_move_timestamp' => 0,
+
+'next_move_id' => 3,
+
+'reflexion_time_profile' => 200,
+
+'bgaranking_mode' => 201,
+
+'playerturn_nbr' => 6,
+
+'gameprogression' => 7,
+
+'initial_reflexion_time' => 8,
+
+'additional_reflexion_time' => 9,
+
+];
+
+var $lock_uuid = null;
+<
+
+
+// Return the BGA environment this table is running on
+
+static function getBgaEnvironment()
+
+{
+
+global $g_config;
+
+$split_domain = explode('.', $g_config['app_domain']);
+<
+
+
+// Get the significant domain (discard numeric prefix for gameservers)
+
+$bga_env = is_numeric($split_domain[0]) ? $split_domain[1] : $split_domain[0];
+<
+
+
+// Translate to env name
+
+$map_env = [
+
+'far' => 'dev',
+
+'studio' => 'studio',
+
+'preprod' => 'preprod',
+
+'boardgamearena' => 'prod',
+
+];
+
+return isset($map_env[$bga_env]) ? $map_env[$bga_env] : 'unknown';
+
+}
+<
+
+
+function __construct()
+
+{
+
+if (!$this->isSandBoxGame()) {
+
+if (file_exists(APP_GAMES_PATH . $this->getGameName() . '/current/material.inc.php')) {
+
+require APP_GAMES_PATH . $this->getGameName() . '/current/material.inc.php';
+
+} elseif (file_exists(APP_GAMEMODULE_PATH . 'module/' . $this->getGameName() . '/material.inc.php')) {
+
+require APP_GAMEMODULE_PATH . 'module/' . $this->getGameName() . '/material.inc.php';
+
+}
+
+}
+<
+
+
+$this->globals = new \Bga\GameFramework\Db\Globals();
+
+}
+<
+
+
+// First function to be call: setup the object
+
+// (Note: the "basic" setup is used for the table creation, where there is no player and no game state)
+
+function setTable($table_id, $gamename, $gameid, $basicSetup = false)
+
+{
+
+self::trace('setTable');
+
+$this->table_id = $table_id;
+
+$this->gamename = $gamename;
+
+$this->gameid = $gameid;
+<
+
+
+global $g_config;
+<
+
+
+if ($basicSetup) {
+
+$this->v8_time_limit = 1000;
+
+}
+
+// During table creation, extend v8 limit time
+
+else {
+
+$this->v8_time_limit = $g_config['v8js_time_limit'];
+
+}
+<
+
+
+$this->o_tableinfos = self::getNew('module.table.tableinfos');
+
+$this->o_tableinfos->setTable($this->table_id);
+<
+
+
+$this->gamestate = self::getNewUnique('module.table.gamestate');
+
+$this->gamestate->loadStateMachine($this, $this->gamename, $this->table_id, $this->isSandBoxGame());
+<
+
+
+if (!$basicSetup) {
+
+// Upgrade game DB structure if needed
+
+$db_version = intval(self::getGameStateValue('game_db_version'));
+
+$game_version = self::gameVersionToDbVersion(getCurrentGameVersion($this->getGameName(), true));
+<
+
+
+if (
+
+($game_version == 999999999 ? 9999999999 : $game_version) >
+
+($db_version == 999999999 ? 9999999999 : $db_version)
+
+) {
+
+// We need some adjustment for patch testing on the local version since the value is adjusted to fit into an int(11)
+
+$this->upgradeTableDbInternal($db_version, $game_version);
+<
+
+
+// Done ! Mark this DB as updated
+
+self::setGameStateValue('game_db_version', $game_version);
+<
+
+
+// Make sure to bust the statemachine cache if any (sandbox games)
+
+apcu_delete('statemachine_' . $table_id);
+
+}
+<
+
+
+$this->activePlayersWhenActionStarted = $this->gamestate->getActivePlayerList();
+
+}
+<
+
+
+$this->initTable();
+
+}
+<
+
+
+function applyDbUpgradeToAllDB($sql)
+
+{
+
+self::DbQuery(str_replace('DBPREFIX_', '', $sql));
+<
+
+
+try {
+
+// Note: these tables may not exists
+
+self::DbQuery(str_replace('DBPREFIX_', 'zz_savepoint_', $sql));
+
+self::DbQuery(str_replace('DBPREFIX_', 'zz_replay1_', $sql));
+
+self::DbQuery(str_replace('DBPREFIX_', 'zz_replay2_', $sql));
+
+self::DbQuery(str_replace('DBPREFIX_', 'zz_replay3_', $sql));
+
+} catch (feException $e) {
+
+// ... so ignore the errors it this is the case !
+
+}
+
+}
+<
+
+
+protected function initTable()
+
+{
+
+}
+<
+
+
+// Get all datas of the game for a complete setup or reset
+
+// Note: NEVER return any admin/moderation/sensible data here since it can be accessed using identity spoofing using replaysavepoint
+
+public function getAllTableDatas($bOnlyCurrentGameState = false)
+
+{
+
+global $g_user;
+
+$result = $this->getAllDatas();
+<
+
+
+// Add game state
+
+$state = $this->gamestate->state(false, $bOnlyCurrentGameState ? false : true);
+
+if ($state) {
+
+// Adding current game state to result
+<
+
+
+// (note: filter private infos if any)
+
+if (isset($state['args']['_private'])) {
+
+$state_args_for_player = null;
+
+foreach ($state['args']['_private'] as $target_id => $state_args) {
+
+if (is_numeric($target_id)) {
+
+if ($target_id == $g_user->get_id()) {
+
+$state_args_for_player = $state_args;
+
+}
+
+} elseif ($target_id == 'active') {
+
+if ($this->gamestate->isPlayerActive($g_user->get_id())) {
+
+$state_args_for_player = $state_args;
+
+}
+
+}
+
+}
+<
+
+
+unset($state['args']['_private']);
+
+if (isset($state_args_for_player)) {
+
+$state['args']['_private'] = $state_args_for_player;
+
+}
+
+}
+<
+
+
+$result['gamestate'] = $state;
+
+$result['gamestate']['updateGameProgression'] = min(100, max(0, round($this->getGameProgression()))); // Note: add the game progression if it is not compute on this state
+<
+
+
+if (array_key_exists('private_states', $state) && sizeof($state['private_states']) > 0) {
+
+//remove private states of other players
+
+$privateStates = $state['private_states'];
+<
+
+
+$result['gamestate']['private_state'] = null;
+
+if (array_key_exists($g_user->get_id(), $privateStates)) {
+
+$result['gamestate']['private_state'] = $privateStates[$g_user->get_id()];
+
+}
+
+unset($result['gamestate']['private_states']);
+
+}
+
+}
+<
+
+
+// Table speed
+
+$result['tablespeed'] = self::getGameStateValue('reflexion_time_profile');
+<
+
+
+$result['game_result_neutralized'] = self::getGameStateValue('game_result_neutralized');
+
+$result['neutralized_player_id'] = self::getGameStateValue('neutralized_player_id');
+<
+
+
+// Add players information
+
+$this->loadPlayersBasicInfos();
+
+foreach ($this->players as $player_id => $player) {
+
+$result['players'][$player_id]['color'] = $player['player_color'];
+
+$result['players'][$player_id]['color_back'] = self::color_to_color_back($player['player_color']);
+
+$result['players'][$player_id]['name'] = $player['player_name'];
+
+$result['players'][$player_id]['avatar'] = $player['player_avatar'];
+
+$result['players'][$player_id]['zombie'] = $player['player_zombie'];
+
+$result['players'][$player_id]['eliminated'] = $player['player_eliminated'];
+
+$result['players'][$player_id]['is_ai'] = $player['player_ai'];
+
+$result['players'][$player_id]['beginner'] = $player['player_beginner'] !== null;
+
+}
+<
+
+
+// Player ordering
+
+$players = self::loadPlayersBasicInfos();
+
+$nextPlayer = self::createNextPlayerTable(array_keys($players));
+
+if ($g_user->is_logged() && isset($players[$g_user->get_id()])) {
+
+// Is part of the game
+
+$player_order = [$g_user->get_id()];
+
+$current_player = $g_user->get_id();
+
+$this_player_id = $current_player;
+
+$current_player = $nextPlayer[$current_player];
+
+while ($current_player != $g_user->get_id()) {
+
+$player_order[] = $current_player;
+
+$current_player = $nextPlayer[$current_player];
+
+}
+
+} else {
+
+// Is a spectator
+
+$this_player_id = -1;
+
+$current_player = $nextPlayer[0];
+
+$player_order = [$current_player];
+
+$firstPlayer = $current_player;
+
+while ($current_player != $firstPlayer) {
+
+$player_order[] = $current_player;
+
+$current_player = $nextPlayer[$current_player];
+
+}
+
+}
+
+$result['playerorder'] = $player_order;
+<
+
+
+if (!$bOnlyCurrentGameState) {
+
+// Add machine states
+
+$result['gamestates'] = $this->gamestate->states;
+
+}
+<
+
+
+// Add notification no datas
+
+$result['notifications'] = self::getCurrentNotificationNextNo($this_player_id);
+<
+
+
+return $result;
+
+}
+<
+
+
+abstract protected function getAllDatas();
+<
+
+
+// Indicates if the user accessing the game is a spectator (not part of the game)
+
+public function isSpectator()
+
+{
+
+global $g_user;
+
+$players = self::loadPlayersBasicInfos();
+
+return !($g_user->is_logged() && isset($players[$g_user->get_id()]));
+
+}
+<
+
+
+// Launch a complete setup of this game, including a removal of all pre existing datas
+
+// players contains the (ordered) list of "player_id => array( player_id, player_name, player_canal, player_is_admin )" for the table,
+
+// and a reinitialization of game state machine.
+
+// Note: if player array is null: reset game with same players
+
+public function setupNewGameTable(
+
+$game_id,
+
+$players = [],
+
+$options = [],
+
+$bIsRematchSwappingPlayerOrder = false,
+
+$player_prefs = []
+
+) {
+
+self::trace('setupNewGameTable');
+<
+
+
+if (count($players) == 0) {
+
+self::trace('Reset game with same players');
+
+$players = self::loadPlayersBasicInfos();
+
+}
+<
+
+
+// Regenerate player's canals & get admin
+
+$admin_player = null;
+
+foreach ($players as $player_id => $player) {
+
+$players[$player_id]['player_canal'] = md5(uniqid(mt_rand(), true));
+<
+
+
+if ($player['player_is_admin']) {
+
+$admin_player = $player_id;
+
+}
+
+}
+<
+
+
+self::enableMultiQueries(); //////////////// Multiple SQL query <<====
+<
+
+
+// Reset globals
+
+self::DbQuery('DELETE FROM global WHERE 1 ');
+<
+
+
+// Add game_id globals
+
+$this->o_tableinfos->setGlobal(GAMESTATE_GAME_ID, $game_id);
+<
+
+
+// Add game version
+
+$game_version = getCurrentGameVersion($this->getGameName(), true);
+
+$db_version = self::gameVersionToDbVersion($game_version);
+
+$this->o_tableinfos->setGlobal(GAMESTATE_GAMEVERSION, $db_version);
+<
+
+
+$this->o_tableinfos->setGlobal(GAMESTATE_GAME_RESULT_NEUTRALIZED, 0);
+
+$this->o_tableinfos->setGlobal(GAMESTATE_NEUTRALIZED_PLAYER_ID, 0);
+
+$this->o_tableinfos->setGlobal(GAMESTATE_UNDO_MOVES_STORED, 0);
+
+$this->o_tableinfos->setGlobal(GAMESTATE_UNDO_MOVES_PLAYER, 0);
+<
+
+
+$this->gamestate->resetGameState($admin_player);
+<
+
+
+// Add game options
+
+$options[GAMESTATE_LAST_MOVE] = 0;
+
+$options[GAMESTATE_GAMEPROGRESSION] = 0;
+
+$options[GAMESTATE_PLAYERTURN_NBR] = 0;
+
+foreach ($options as $option_id => $option_value) {
+
+$this->gamestate->table_globals[$option_id] = $option_value;
+
+$this->o_tableinfos->setGlobal($option_id, $option_value);
+
+}
+<
+
+
+self::sendMultiQueries(); //////////////// Multiple SQL query =====>>
+<
+
+
+if ($this->bIndependantMultiactiveTable) {
+
+$sql =
+
+"INSERT INTO playermultiactive (ma_player_id) VALUES ('" .
+
+implode("'),('", array_keys($players)) .
+
+"')";
+
+self::DbQuery($sql);
+
+}
+<
+
+
+$this->setupPlayersInfos = $players;
+
+$this->player_preferences = $player_prefs;
+
+$this->setupNewGame($players, $options);
+<
+
+
+self::undoAndReplayInit();
+<
+
+
+// Initialize statistics common to all games
+
+self::initStat('player', 'reflexion_time', 0);
+<
+
+
+global $g_config;
+
+if ($g_config['common_time_counter']) {
+
+self::DbQuery('UPDATE player SET player_start_reflexion_time=NOW()');
+
+}
+<
+
+
+// Notify all players that a new game has started
+
+self::notifyAllPlayers('gameStateChange', '', $this->gamestate->state());
+<
+
+
+if ($bIsRematchSwappingPlayerOrder) {
+
+self::notifyAllPlayers(
+
+'simpleNote',
+
+clienttranslate('Rematch with the exact same players detected: starting player has been rotated.'),
+
+$this->gamestate->state()
+
+);
+
+}
+<
+
+
+// Start game
+
+$this->start();
+<
+
+
+// Then, send notifications created during the startup process
+
+self::sendNotifications();
+
+}
+<
+
+
+// Transform game string version into DB integer version
+
+private function gameVersionToDbVersion($game_version)
+
+{
+
+if ($game_version == '999999-9999') {
+
+return intval(999999999);
+
+} else {
+
+$game_version = str_replace('-', '', $game_version); // Transform into INT
+
+return intval($game_version);
+
+}
+
+}
+<
+
+
+// Method to override to set up each game
+
+abstract protected function setupNewGame($players, $options = []);
+<
+
+
+static function getTimeOptions()
+
+{
+
+return [
+
+// Don't forget to update getTimeLimits (gamestate.game.php) with the corresponding time profiles
+
+0 => [
+
+'name' => _('Realtime &bull; Fast speed'),
+
+'shortname' => _('Realtime &bull; Fast'),
+
+'tinyname' => _('Fast'),
+
+],
+
+1 => [
+
+'name' => _('Realtime &bull; Normal speed'),
+
+'shortname' => _('Realtime &bull; Normal'),
+
+'tinyname' => _('Normal'),
+
+],
+
+2 => [
+
+'name' => _('Realtime &bull; Slow speed'),
+
+'shortname' => _('Realtime &bull; Slow'),
+
+'tinyname' => _('Slow'),
+
+],
+<
+
+
+5 => [
+
+'name' => _('Realtime &bull; Fixed time limit'),
+
+'no_player_selection' => true,
+
+'shortname' => _('Realtime'),
+
+],
+<
+
+
+// Note: no time limit "realtime" => only for training mode
+
+9 => [
+
+'name' => _('No time limit &bull; with friends only'),
+
+'no_player_selection' => true,
+
+'shortname' => _('No time limit &bull; with friends only'),
+
+],
+<
+
+
+10 => [
+
+'name' => _('Fast Turn-based &bull; 24 moves per day'),
+
+'shortname' => _('Fast Turn-based &bull; 24 moves per day'),
+
+'tinyname' => str_replace('${n}', '24', _('${n} moves per day')),
+
+],
+
+11 => [
+
+'name' => _('Fast Turn-based &bull; 12 moves per day'),
+
+'shortname' => _('Fast Turn-based &bull; 12 moves per day'),
+
+'tinyname' => str_replace('${n}', '12', _('${n} moves per day')),
+
+],
+
+12 => [
+
+'name' => _('Fast Turn-based &bull; 8 moves per day'),
+
+'shortname' => _('Fast Turn-based &bull; 8 moves per day'),
+
+'tinyname' => str_replace('${n}', '8', _('${n} moves per day')),
+
+],
+<
+
+
+13 => [
+
+'name' => _('Turn-based &bull; 4 moves per day'),
+
+'shortname' => _('Turn-based &bull; 4 moves per day'),
+
+'tinyname' => str_replace('${n}', '4', _('${n} moves per day')),
+
+],
+
+14 => [
+
+'name' => _('Turn-based &bull; 3 moves per day'),
+
+'shortname' => _('Turn-based &bull; 3 moves per day'),
+
+'tinyname' => str_replace('${n}', '3', _('${n} moves per day')),
+
+],
+
+15 => [
+
+'name' => _('Turn-based &bull; 2 moves per day'),
+
+'shortname' => _('Turn-based &bull; 2 moves per day'),
+
+'tinyname' => str_replace('${n}', '2', _('${n} moves per day')),
+
+],
+
+17 => [
+
+'name' => _('Turn-based &bull; 1 move per day'),
+
+'shortname' => _('Turn-based &bull; 1 move per day'),
+
+'tinyname' => _('1 move per day'),
+
+],
+
+19 => [
+
+'name' => _('Turn-based &bull; 1 move per 2 days'),
+
+'shortname' => _('Turn-based &bull; 1 move per 2 days'),
+
+'tinyname' => _('1 move every 2 days'),
+
+],
+<
+
+
+20 => [
+
+'name' => _('No time limit &bull; with friends only'),
+
+'shortname' => _('No time limit &bull; with friends only'),
+
+],
+<
+
+
+21 => [
+
+'name' => _('Turn-based &bull; Fixed time limit'),
+
+'no_player_selection' => true,
+
+'shortname' => _('Turn-based'),
+
+],
+
+];
+
+}
+<
+
+
+static function getTableOptionsForGame($game_name, $bTranslate = true)
+
+{
+
+global $g, $g_config, $g_user;
+<
+
+
+$o_gamemetadata = $g->getNewUnique('module.mainsite.gamemetadata');
+<
+
+
+$result = [];
+<
+
+
+$gameinfos = self::getGameInfosForGame($game_name);
+<
+
+
+if ($gameinfos === null) {
+
+throw new feException('Unknown game name: ' . $game_name);
+
+}
+<
+
+
+$additional_gameoptions = [];
+<
+
+
+$additional_gameoptions[GAMESTATE_RATING_MODE] = [
+
+'name' => clienttranslate('Game mode'),
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'values' => [
+
+0 => ['name' => clienttranslate('Normal mode')],
+
+1 => ['name' => clienttranslate('Training mode')],
+
+2 => ['name' => clienttranslate('Arena mode'), 'no_player_selection' => true], // clienttranslate('Arena mode')
+
+],
+
+];
+<
+
+
+if ($g_config['dev_mode']) {
+
+unset($additional_gameoptions[GAMESTATE_RATING_MODE]['values'][2]['no_player_selection']);
+
+}
+<
+
+
+// Add these strings translation on serverside too
+
+$dummy = _('Game mode');
+
+$dummy = _('Normal mode');
+
+$dummy = _('Training mode');
+
+$dummy = _('Arena mode');
+<
+
+
+if (!$g_config['active_async_mode']) {
+
+$additional_gameoptions[GAMESTATE_CLOCK_MODE] = [
+
+'name' => clienttranslate('Game speed'),
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'displaycondition' => [
+
+// Note: do not display this option until these conditions are met
+
+['type' => 'otheroption', 'id' => GAMESTATE_RATING_MODE, 'value' => [0, 2]],
+
+],
+
+'values' => [
+
+0 => ['name' => clienttranslate('Fast')],
+
+1 => ['name' => clienttranslate('Normal')],
+
+2 => ['name' => clienttranslate('Slow')],
+
+3 => ['name' => clienttranslate('No time limit (not recommended)')],
+
+5 => [
+
+'name' => clienttranslate('Realtime &bull; Fixed time limit'),
+
+'no_player_selection' => true,
+
+'shortname' => clienttranslate('Realtime'),
+
+],
+
+],
+
+'default' => 1,
+
+];
+<
+
+
+// Add these strings translation on serverside too
+
+$dummy = _('Game speed');
+
+$dummy = _('Fast');
+
+$dummy = _('Normal');
+
+$dummy = _('Slow');
+
+$dummy = _('No time limit (not recommended)');
+
+} else {
+
+$additional_gameoptions[GAMESTATE_CLOCK_MODE] = [
+
+'name' => clienttranslate('Game speed'),
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'displaycondition' => [
+
+// Note: do not display this option until these conditions are met
+
+['type' => 'otheroption', 'id' => GAMESTATE_RATING_MODE, 'value' => [0, 2]],
+
+],
+
+'values' => self::getTimeOptions(),
+
+'default' => 1,
+
+];
+
+}
+<
+
+
+$additional_gameoptions[GAMESTATE_CLOCK_MODE_ARG] = [
+
+'name' => clienttranslate('Time alloted by player'),
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'template' => ['namearg' => clienttranslate('%s minutes'), 'default' => 0],
+
+'displaycondition' => [
+
+// Note: do not display this option until these conditions are met
+
+['type' => 'otheroption', 'id' => GAMESTATE_CLOCK_MODE, 'value' => [5, 21]],
+
+],
+
+];
+<
+
+
+// Add these strings translation on serverside too
+
+$dummy = _('Time alloted by player');
+
+$dummy = _('%s minutes');
+<
+
+
+$additional_gameoptions[GAMESTATE_CLOCK_NIGHT] = [
+
+'name' => clienttranslate('Playing hours'),
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'default' => 0,
+
+'displaycondition' => [
+
+// Note: do not display this option until these conditions are met
+
+['type' => 'otheroption', 'id' => GAMESTATE_CLOCK_MODE, 'value' => [10, 11, 12, 21]],
+
+],
+
+'values' => [
+
+0 => ['name' => clienttranslate('24 hours a day (no playing hours)'), 'disable' => true],
+
+1 => ['name' => '00:00 &rarr; 12:00'],
+
+2 => ['name' => '01:00 &rarr; 13:00'],
+
+3 => ['name' => '02:00 &rarr; 14:00'],
+
+4 => ['name' => '03:00 &rarr; 15:00'],
+
+5 => ['name' => '04:00 &rarr; 16:00'],
+
+6 => ['name' => '04:00 &rarr; 17:00'],
+
+7 => ['name' => '06:00 &rarr; 18:00'],
+
+8 => ['name' => '07:00 &rarr; 19:00'],
+
+9 => ['name' => '08:00 &rarr; 20:00'],
+
+10 => ['name' => '09:00 &rarr; 21:00'],
+
+11 => ['name' => '10:00 &rarr; 22:00'],
+
+12 => ['name' => '11:00 &rarr; 23:00'],
+
+13 => ['name' => '12:00 &rarr; 00:00'],
+
+14 => ['name' => '13:00 &rarr; 01:00'],
+
+15 => ['name' => '14:00 &rarr; 02:00'],
+
+16 => ['name' => '15:00 &rarr; 03:00'],
+
+17 => ['name' => '16:00 &rarr; 04:00'],
+
+18 => ['name' => '17:00 &rarr; 05:00'],
+
+19 => ['name' => '18:00 &rarr; 06:00'],
+
+20 => ['name' => '19:00 &rarr; 07:00'],
+
+21 => ['name' => '20:00 &rarr; 08:00'],
+
+22 => ['name' => '21:00 &rarr; 09:00'],
+
+23 => ['name' => '22:00 &rarr; 10:00'],
+
+24 => ['name' => '23:00 &rarr; 11:00'],
+
+],
+
+];
+<
+
+
+// Add these strings translation on serverside too
+
+$dummy = _('Playing hours');
+
+$dummy = _('24 hours a day (no playing hours)');
+<
+
+
+if (isset($gameinfos['is_sandbox']) && $gameinfos['is_sandbox'] == true) {
+
+// Sandbox games "undo" feature
+
+$additional_gameoptions[GAMESTATE_SANDBOX_UNDO_MODE] = [
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'name' => clienttranslate('Undo moves'),
+
+'values' => [
+
+0 => ['name' => clienttranslate('Not allowed')],
+
+1 => ['name' => clienttranslate('Allowed')],
+
+2 => ['name' => clienttranslate('(disrecommended) Allowed even when it distorts the game')],
+
+],
+
+'default' => 1,
+
+];
+
+}
+<
+
+
+// Add these strings translation on serverside too
+
+$dummy = _('Undo moves');
+
+$dummy = _('Not allowed');
+
+$dummy = _('Allowed');
+
+$dummy = _('(disrecommended) Allowed even when it distorts the game');
+<
+
+
+if (isset($gameinfos['language_dependency']) && is_array($gameinfos['language_dependency'])) {
+
+// Add these strings translation on serverside too
+
+$dummy = _('Game language');
+<
+
+
+// Build lang option array
+
+$lang_values = [];
+
+foreach ($gameinfos['language_dependency'] as $value => $lang) {
+
+$lang_values[$value] = ['name' => ucFirst(Locale::getLanguage($lang)['name']), 'code' => $lang];
+
+}
+<
+
+
+// Language dependency options list
+
+$additional_gameoptions[GAMESTATE_GAME_LANG] = [
+
+'name' => clienttranslate('Game language'),
+
+'level' => 'global',
+
+'type' => 'choice',
+
+'values' => $lang_values,
+
+];
+
+}
+<
+
+
+$gamespecific = [];
+<
+
+
+$game_options = $o_gamemetadata->getGameOptions($game_name, $bTranslate);
+<
+
+
+if ($bTranslate) {
+
+foreach ($additional_gameoptions as &$option) {
+
+$option['name'] = _($option['name']);
+<
+
+
+if (isset($option['values'])) {
+
+foreach ($option['values'] as $value_id => $value) {
+
+if (isset($option['values'][$value_id]['name'])) {
+
+$option['values'][$value_id]['name'] = _($option['values'][$value_id]['name']);
+
+}
+
+}
+
+}
+
+}
+
+}
+<
+
+
+$result = $additional_gameoptions + $game_options;
+<
+
+
+// Unset options depending on config
+
+if (isset($g_config['hide_games_option'][$game_name])) {
+
+foreach ($g_config['hide_games_option'][$game_name] as $option_id => $to_hide) {
+
+if (is_array($to_hide)) {
+
+// Hide only given value
+
+foreach ($to_hide as $value_id) {
+
+unset($result[$option_id]['values'][$value_id]);
+
+}
+
+} else {
+
+// Hide the whole option
+
+unset($result[$option_id]);
+
+}
+
+}
+
+}
+<
+
+
+return $result;
+
+}
+<
+
+
+function getTableOptions()
+
+{
+
+return Table::getTableOptionsForGame($this->getGameName());
+
+}
+<
+
+
+static function getTablePreferencesForGame($game_name)
+
+{
+
+global $g;
+
+$o_gamemetadata = $g->getNewUnique('module.mainsite.gamemetadata');
+<
+
+
+$gamepreferences = [];
+
+unset($game_preferences);
+<
+
+
+$game_preferences = $o_gamemetadata->getGamePreferences($game_name);
+<
+
+
+// Append generic game preferences
+
+$generic_game_preferences = [
+
+GAMEPREFERENCE_DISPLAYTOOLTIPS => [
+
+'name' => totranslate('Display tooltips'),
+
+'needReload' => false,
+
+'generic' => true,
+
+'values' => [
+
+0 => ['name' => totranslate('Enabled')],
+
+1 => ['name' => totranslate('Disabled')],
+
+],
+
+],
+
+];
+<
+
+
+if (isset($game_preferences)) {
+
+$gamepreferences = $generic_game_preferences + $game_preferences;
+
+} else {
+
+$gamepreferences = $generic_game_preferences;
+
+}
+<
+
+
+return $gamepreferences;
+
+}
+<
+
+
+function getTablePreferences()
+
+{
+
+return Table::getTablePreferencesForGame($this->getGameName());
+
+}
+<
+
+
+function random_log($label, $infos)
+
+{
+
+global $g_trace;
+
+$g_trace->random_log($this->getGameName() . '#' . $this->table_id . ': ' . $label . ': ' . $infos);
+
+}
+<
+
+
+static function getGameInfosForGame($game_name)
+
+{
+
+unset($gameinfos);
+<
+
+
+$optionfile = '';
+
+if (file_exists(APP_GAMES_PATH . $game_name . '/current/gameinfos.inc.php')) {
+
+$optionfile = APP_GAMES_PATH . $game_name . '/current/gameinfos.inc.php';
+
+}
+<
+
+
+if ($optionfile != '') {
+
+try {
+
+require $optionfile;
+
+} catch (\Throwable $e) {
+
+// TO-DO: How to report invalid file ?
+
+}
+<
+
+
+if (isset($gameinfos)) {
+
+return $gameinfos;
+
+}
+
+}
+<
+
+
+return null;
+
+}
+
+function getGameinfos()
+
+{
+
+return self::getGameInfosForGame($this->getGameName());
+
+}
+<
+
+
+// Note: to be override
+
+function getGameOptionsInfos()
+
+{
+
+return [];
+
+}
+<
+
+
+// Start a new game (from game setup)
+
+public function start()
+
+{
+
+self::trace('Starting game');
+<
+
+
+$this->gamestate->bGameCreationRequest = true;
+<
+
+
+if (self::getGameStateValue('lock_screen_timestamp') == 0) {
+
+// No lock screen
+
+$this->gamestate->nextState('startingGameSpecialTransition');
+
+}
+
+}
+<
+
+
+public function stMakeEveryoneActive()
+
+{
+
+$this->gamestate->setAllPlayersMultiactive();
+
+}
+<
+
+
+// Load players basic informations (names) for use in all game views
+
+function loadPlayersBasicInfos()
+
+{
+
+if (count($this->players) == 0) {
+
+// Now, we get players basic infos from Tableinfos object
+
+$tableinfos = $this->o_tableinfos->get();
+<
+
+
+if (!isset($tableinfos['players'])) {
+
+throw new feException(
+
+'Table ' . $this->table_id . ' : error : loadPlayersBasicInfos didnt return any infos on players!'
+
+);
+
+}
+<
+
+
+$this->players = $tableinfos['players'];
+
+}
+
+return $this->players;
+
+}
+
+function reloadPlayersBasicInfos()
+
+{
+
+$this->players = [];
+<
+
+
+if ($this->setupPlayersInfos) {
+
+// Initial players infos hasn't been setup yet => must do this first
+
+$this->initSetupPlayersInfos();
+
+$this->setupPlayersInfos = null;
+
+}
+<
+
+
+$this->o_tableinfos->reload();
+
+}
+<
+
+
+function reattributeColorsBasedOnPreferences($players, $all_colors)
+
+{
+
+$colors_available = [];
+
+foreach ($all_colors as $color) {
+
+$colors_available[$color] = true;
+
+}
+<
+
+
+$players_colors_prefs = [];
+
+$players_with_color_prefs = [];
+
+$table_administrator = null;
+
+foreach ($players as $player_id => $player) {
+
+if ($player['player_is_admin']) {
+
+$table_administrator = $player_id;
+
+}
+<
+
+
+if (isset($player['player_colorprefs'])) {
+
+if (count($player['player_colorprefs']) > 0) {
+
+$players_with_color_prefs[$player_id] = $players[$player_id]['player_name'];
+
+}
+
+$players_colors_prefs[$player_id] = $player['player_colorprefs'];
+
+} else {
+
+$players_colors_prefs[$player_id] = [];
+
+}
+
+}
+<
+
+
+$player_to_color = [];
+<
+
+
+// At first, attribute a color to the table administrator if it has some colors prefereces
+
+if ($table_administrator !== null && count($players_colors_prefs[$table_administrator]) > 0) {
+
+$color = $this->getBestColorFromColorPrefs($colors_available, $players_colors_prefs[$table_administrator]);
+
+unset($colors_available[$color]);
+
+$player_to_color[$table_administrator] = $color;
+
+}
+<
+
+
+// Then, attribute a color to each player with colors preferences
+
+// Shuffle first so that there is no bias towards low user id
+
+$player_ids = array_keys($players_colors_prefs);
+
+shuffle($player_ids);
+
+foreach ($player_ids as $player_id) {
+
+$color_prefs = $players_colors_prefs[$player_id];
+
+if ($player_id != $table_administrator && count($color_prefs) > 0) {
+
+$color = $this->getBestColorFromColorPrefs($colors_available, $color_prefs);
+<
+
+
+unset($colors_available[$color]);
+
+$player_to_color[$player_id] = $color;
+
+}
+
+}
+<
+
+
+// Finally, attribute remaining colors to remaining players
+
+foreach ($players_colors_prefs as $player_id => $color_prefs) {
+
+if (!isset($player_to_color[$player_id])) {
+
+if (count($colors_available) === 0) {
+
+$color = '000000';
+
+} else {
+
+reset($colors_available);
+
+$color = key($colors_available);
+
+unset($colors_available[$color]);
+
+}
+
+$player_to_color[$player_id] = $color;
+
+}
+
+}
+<
+
+
+// Then, we can update DB
+
+foreach ($player_to_color as $player_id => $color) {
+
+self::DbQuery("UPDATE player SET player_color='$color' WHERE player_id='$player_id'");
+<
+
+
+if (isset($players_with_color_prefs[$player_id])) {
+
+$players_with_color_prefs[$player_id] =
+
+'<span style="color:#' . $color . '">' . $players_with_color_prefs[$player_id] . '</span>';
+
+}
+
+}
+<
+
+
+if (count($players_with_color_prefs) > 0) {
+
+$log = clienttranslate(
+
+'Colors of ${players} have been chosen according to their preferences. ${change_preferences}'
+
+);
+<
+
+
+if (count($players_with_color_prefs) == 1) {
+
+$log = clienttranslate(
+
+'Color of ${players} has been chosen according to his/her preferences. ${change_preferences}'
+
+);
+
+}
+<
+
+
+self::notifyAllPlayers('simpleNote', $log, [
+
+'players' => '<b>' . implode('</b>, <b>', $players_with_color_prefs) . '</b>',
+
+'change_preferences' => [
+
+'log' => '<a href="' . self::getMasterNodeUrl() . '/preferences" target="_blank">${label}</a>',
+
+'args' => [
+
+'i18n' => ['label'],
+
+'label' => clienttranslate('Change my preferences.'),
+
+],
+
+],
+
+]);
+
+}
+
+}
+<
+
+
+/**
+
+* Returns an array of user preference colors to game colors.
+
+* Game colors must be among those which are passed to reattributeColorsBasedOnPreferences()
+
+* Each game color can be an array of suitable colors, or a single color:
+
+* [
+
+* // The first available color chosen:
+
+* 'ff0000' => ['990000', 'aa1122'],
+
+* // This color is chosen, if available
+
+* '0000ff' => '000099',
+
+* ]
+
+* If no color can be matched from this array, then the default implementation is used.
+
+*/
+
+function getSpecificColorPairings(): array
+
+{
+
+return [];
+
+}
+<
+
+
+private function getBestColorFromColorPrefs(array $colorsAvailable, array $colorPrefs): string
+
+{
+
+if (count($colorsAvailable) === 0) {
+
+// No colours left
+
+if (count($colorPrefs) > 0) {
+
+// Just give the player their first preference
+
+return $colorPrefs[0];
+
+} else {
+
+// Black
+
+return '000000';
+
+}
+
+}
+
+$specificColorPairings = $this->getSpecificColorPairings();
+
+foreach ($colorPrefs as $prefColor) {
+
+if (isset($specificColorPairings[$prefColor])) {
+
+$colorSuggestions = (array) $specificColorPairings[$prefColor];
+
+// Take the first suggested color available
+
+foreach ($colorSuggestions as $suggestedColor) {
+
+if (isset($colorsAvailable[$suggestedColor])) {
+
+return $suggestedColor;
+
+}
+
+}
+
+}
+
+}
+
+return $this->getDefaultBestColorFromColorPrefs($colorsAvailable, $colorPrefs);
+
+}
+<
+
+
+private function getDefaultBestColorFromColorPrefs($colors_available, $color_prefs)
+
+{
+
+if (count($colors_available) == 1) {
+
+// Only one possible choice
+
+reset($colors_available);
+
+return key($colors_available);
+
+}
+<
+
+
+// Give a score to each available colors
+
+// (Note : the least the score is, the better the color)
+
+$color_to_score = [];
+<
+
+
+// When measuring distances of primary colours, we also check pastel variants and take the minimum
+
+// This is because pastel versions of these colours are often too far away to be considered
+
+// In essense "ff0000" should be considered "I want the colour offered by the boardgame which is most red"
+
+$primaryColorVariants = [
+
+'ff0000' => ['ff6961'],
+
+'008000' => ['77dd77'],
+
+'0000ff' => ['009fe0'],
+
+];
+<
+
+
+foreach ($colors_available as $color => $dummy) {
+
+$color_pref_malus = 0;
+<
+
+
+foreach ($color_prefs as $colorpref) {
+
+// Compute distance between this color and preference
+
+// (note : 0 means "identical color")
+
+$distance = colorDiff($color, $colorpref);
+
+if (isset($primaryColorVariants[$colorpref])) {
+
+foreach ($primaryColorVariants[$colorpref] as $variant) {
+
+$distance = min($distance, colorDiff($color, $variant));
+
+}
+
+}
+<
+
+
+if (!isset($color_to_score[$color])) {
+
+$color_to_score[$color] = $distance + $color_pref_malus;
+
+} else {
+
+$color_to_score[$color] = min($distance + $color_pref_malus, $color_to_score[$color]);
+
+}
+<
+
+
+// Note : a distance of 128 in a color component
+
+// = a distance of 16000 of score
+
+// = a rank in color preference
+
+$color_pref_malus += 7000;
+
+}
+
+}
+<
+
+
+return getKeyWithMaximum($color_to_score, false, false);
+
+}
+<
+
+
+function initSetupPlayersInfos()
+
+{
+
+foreach ($this->setupPlayersInfos as $player_id => $player) {
+
+if ($player['player_is_ai'] == 1) {
+
+// Mark it as "AI"
+
+self::DbQuery("UPDATE player SEt player_ai='1' WHERE player_id='$player_id'");
+
+}
+<
+
+
+if ($player['beginner'] == 1 && $player['player_is_ai'] != 1) {
+
+// Note: AI is NEVER a beginner
+
+self::DbQuery(
+
+"UPDATE player SET player_beginner=0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF WHERE player_id='$player_id'"
+
+);
+
+}
+
+}
+
+}
+<
+
+
+function getPlayersNumber()
+
+{
+
+if (count($this->players) == 0) {
+
+self::loadPlayersBasicInfos();
+
+}
+
+return count($this->players);
+
+}
+<
+
+
+// Check if action is valid regarding current game state (exception if fails)
+
+// if "bThrowException" is set to "false", the function return false in case of failure instead of throwing and exception
+
+function checkAction($actionName, $bThrowException = true)
+
+{
+
+return $this->gamestate->checkPlayerAction($actionName, $bThrowException);
+
+}
+<
+
+
+// Check if it is the first time player enter in the game
+
+function checkGameStart()
+
+{
+
+global $g_user;
+
+$player_id = $g_user->get_id();
+
+$sql = "SELECT player_id,player_enter_game FROM player WHERE player_id='$player_id'";
+
+$dbres = self::DbQuery($sql);
+
+$row = mysql_fetch_assoc($dbres);
+
+if ($row) {
+
+if ($row['player_enter_game'] == 0) {
+
+// Update in DB
+
+$sql = "UPDATE player SET player_enter_game='1' WHERE player_id='$player_id' ";
+
+self::DbQuery($sql);
+<
+
+
+return true;
+
+}
+
+}
+<
+
+
+return false;
+
+}
+<
+
+
+// Return a color more suitable for display on a light surface
+
+// DEPRECIATED: keep for compatibility. Use global function defined in "utilities" instead.
+
+function color_to_color_back($color)
+
+{
+
+return color_to_color_back($color);
+
+}
+<
+
+
+///////////////////////////////////////////////////////////
+
+/// Game state value
+<
+
+
+// Setup correspondance "labels to id"
+
+function initGameStateLabels($labels)
+
+{
+
+$this->gamestate_labels = $labels;
+<
+
+
+// Game standard options
+
+$this->gamestate_labels['reflexion_time_profile'] = 200;
+
+$this->gamestate_labels['bgaranking_mode'] = 201;
+
+$this->gamestate_labels['gameprogression'] = 7;
+
+$this->gamestate_labels['initial_reflexion_time'] = 8;
+
+$this->gamestate_labels['additional_reflexion_time'] = 9;
+
+$this->gamestate_labels['next_move_id'] = 3;
+
+$this->gamestate_labels['playerturn_nbr'] = 6;
+
+$this->gamestate_labels['game_db_version'] = GAMESTATE_GAMEVERSION;
+<
+
+
+$this->gamestate_labels['game_language'] = GAMESTATE_GAME_LANG;
+<
+
+
+$this->gamestate_labels['game_result_neutralized'] = GAMESTATE_GAME_RESULT_NEUTRALIZED;
+
+$this->gamestate_labels['neutralized_player_id'] = GAMESTATE_NEUTRALIZED_PLAYER_ID;
+
+$this->gamestate_labels['undo_moves_stored'] = GAMESTATE_UNDO_MOVES_STORED;
+
+$this->gamestate_labels['undo_moves_player'] = GAMESTATE_UNDO_MOVES_PLAYER;
+<
+
+
+$this->gamestate_labels['lock_screen_timestamp'] = GAMESTATE_LOCK_TIMESTAMP;
+
+}
+
+function setGameStateInitialValue($value_label, $value_value)
+
+{
+
+$value_id = $this->gamestate_labels[$value_label];
+
+if (!$value_id) {
+
+throw new feException('Unknown gamestate label: ' . $value_label);
+
+}
+<
+
+
+$this->gamestate->table_globals[$value_id] = $value_value;
+
+$this->o_tableinfos->setGlobal($value_id, $value_value);
+
+}
+
+function getGameStateValue($value_label, $default = null)
+
+{
+
+$value_id = $this->gamestate_labels[$value_label];
+
+if (!$value_id) {
+
+throw new feException('Unknown gamestate label: ' . $value_label);
+
+}
+<
+
+
+if (!isset($this->gamestate->table_globals[$value_id])) {
+
+if ($default === null) {
+
+return 0;
+
+}
+
+// Now, we consider that a game state value is 0 until it has been set for the first time
+
+else {
+
+return $default;
+
+}
+
+}
+<
+
+
+return $this->gamestate->table_globals[$value_id];
+
+}
+
+function setGameStateValue($value_label, $value_value)
+
+{
+
+$value_id = $this->gamestate_labels[$value_label];
+
+if (!$value_id) {
+
+throw new feException('Unknown gamestate label: ' . $value_label);
+
+}
+<
+
+
+if (!isset($this->gamestate->table_globals[$value_id])) {
+
+// Init this game state value first
+
+self::setGameStateInitialValue($value_label, $value_value);
+
+}
+<
+
+
+$this->gamestate->table_globals[$value_id] = $value_value;
+<
+
+
+$this->o_tableinfos->setGlobal($value_id, $value_value);
+
+}
+
+function incGameStateValue($value_label, $increment)
+
+{
+
+$value_id = $this->gamestate_labels[$value_label];
+
+if (!$value_id) {
+
+throw new feException('Unknown gamestate label: ' . $value_label);
+
+}
+<
+
+
+if (!isset($this->gamestate->table_globals[$value_id])) {
+
+// Init this game state value first
+
+self::setGameStateInitialValue($value_label, 0);
+
+$value = 0;
+
+} else {
+
+$value = $this->gamestate->table_globals[$value_id];
+
+}
+<
+
+
+$this->gamestate->table_globals[$value_id] = $value + $increment;
+
+$this->o_tableinfos->incGlobal($value_id, $increment);
+<
+
+
+return $value + $increment;
+
+}
+<
+
+
+///////////////////////////////////////////////////////////
+
+/// Test mode DEPRECIATED
+<
+
+
+// Return true/false if we are or not in test mode. If we are, return the good test mode data object
+
+protected function is_testmode()
+
+{
+
+return false;
+
+}
+<
+
+
+protected function testmodedatas()
+
+{
+
+return null;
+
+}
+<
+
+
+// Run all sql request stored as an array at specific "fixture_name" index of testmodedatas
+
+protected function applyTestModeDbFixture($fixture_name)
+
+{
+
+}
+
+/////////////////////////////////////////////////////////
+<
+
+
+// Get the "active_player", whatever what is the current state type
+
+// Note: it does NOT mean that this player is active right now, because state type could be "game" or "multiplayer"
+
+public function getActivePlayerId()
+
+{
+
+return $this->gamestate->getPlayerActiveThisTurn();
+
+}
+
+public function getActivePlayerName()
+
+{
+
+$players = self::loadPlayersBasicInfos();
+
+return $players[self::getActivePlayerId()]['player_name'];
+
+}
+
+protected function getCurrentPlayerId($bReturnNullIfNotLogged = false)
+
+{
+
+global $g_user;
+
+return $g_user->get_id(false, $bReturnNullIfNotLogged);
+
+}
+
+protected function getCurrentPlayerName($bReturnEmptyIfNotLogged = false)
+
+{
+
+global $g_user;
+
+$players = self::loadPlayersBasicInfos();
+
+$player_id = $g_user->get_id(true);
+<
+
+
+if ($player_id === null && $bReturnEmptyIfNotLogged) {
+
+return '';
+
+}
+<
+
+
+if (!isset($players[$player_id])) {
+
+throw new feException(
+
+'Player ' . $g_user->get_id() . ' is not playing here on table #' . $this->table_id . ' (1)'
+
+);
+
+}
+
+return $players[$g_user->get_id()]['player_name'];
+
+}
+
+protected function getCurrentPlayerColor()
+
+{
+
+global $g_user;
+
+$players = self::loadPlayersBasicInfos();
+
+if (!isset($players[$g_user->get_id()])) {
+
+throw new feException(
+
+'Player ' . $g_user->get_id() . ' is not playing here on table #' . $this->table_id . ' (2)'
+
+);
+
+}
+
+return $players[$g_user->get_id()]['player_color'];
+
+}
+
+protected function isCurrentPlayerZombie()
+
+{
+
+global $g_user;
+
+$players = self::loadPlayersBasicInfos();
+
+if (!isset($players[$g_user->get_id()])) {
+
+throw new feException(
+
+'Player ' . $g_user->get_id() . ' is not playing here on table #' . $this->table_id . ' (3)'
+
+);
+
+}
+<
+
+
+return $players[$g_user->get_id()]['player_zombie'] == 1;
+
+}
+<
+
+
+protected function getPlayerCount()
+
+{
+
+$players = self::loadPlayersBasicInfos();
+
+return count($players);
+
+}
+<
+
+
+public function getPlayerNameById($player_id)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+
+return $players[$player_id]['player_name'];
+
+}
+
+public function getPlayerNoById($player_id)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+
+return $players[$player_id]['player_no'];
+
+}
+
+public function getPlayerColorById($player_id)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+
+return $players[$player_id]['player_color'];
+
+}
+<
+
+
+public function getTableAdminPlayerId()
+
+{
+
+return self::getUniqueValueFromDB('SELECT global_value value FROM global WHERE global_id = 5');
+
+}
+<
+
+
+// Take a list of players id and return a table "player => next player"
+
+// If bLoop = false: add "last player => null" entry instead of "last player => first player"
+
+protected function createNextPlayerTable($players, $bLoop = true)
+
+{
+
+$next_player = [];
+<
+
+
+$prev = null;
+
+$first = null;
+
+foreach ($players as $player_id) {
+
+if ($prev != null) {
+
+$next_player[$prev] = $player_id;
+
+}
+
+if ($first == null) {
+
+$first = $player_id;
+
+}
+
+$prev = $player_id;
+
+}
+<
+
+
+if ($bLoop) {
+
+$next_player[$player_id] = $first;
+
+}
+
+// Loop
+
+else {
+
+$next_player[$player_id] = null;
+
+} // No loop
+<
+
+
+$next_player[0] = $first; // If no active player => the first one
+<
+
+
+return $next_player;
+
+}
+<
+
+
+function getNextPlayerTable()
+
+{
+
+$players = $this->loadPlayersBasicInfos();
+
+return self::createNextPlayerTable(array_keys($players));
+
+}
+<
+
+
+protected function createPrevPlayerTable($players)
+
+{
+
+$result = self::createNextPlayerTable($players);
+
+unset($result[0]);
+
+$result = array_flip($result);
+
+return $result;
+
+}
+<
+
+
+function getPrevPlayerTable()
+
+{
+
+$players = $this->loadPlayersBasicInfos();
+
+return self::createPrevPlayerTable(array_keys($players));
+
+}
+<
+
+
+function getPlayerAfter($player_id)
+
+{
+
+$next_player_table = self::getNextPlayerTable();
+
+return $next_player_table[$player_id];
+
+}
+
+function getPlayerBefore($player_id)
+
+{
+
+$prev_player_table = self::getPrevPlayerTable();
+
+return $prev_player_table[$player_id];
+
+}
+
+// Make the next player active
+
+protected function activeNextPlayer()
+
+{
+
+self::trace('activeNextPlayer');
+<
+
+
+$players = $this->loadPlayersBasicInfos();
+
+$state = $this->gamestate->state();
+<
+
+
+// Build next player table
+
+$next_player = self::createNextPlayerTable(array_keys($players));
+<
+
+
+// Make next player active
+
+$active_player = $next_player[$state['active_player']];
+
+$this->gamestate->changeActivePlayer($active_player);
+<
+
+
+return $active_player;
+
+}
+<
+
+
+// Make the previous player active
+
+protected function activePrevPlayer()
+
+{
+
+self::trace('activePrevPlayer');
+<
+
+
+$players = $this->loadPlayersBasicInfos();
+
+$state = $this->gamestate->state();
+<
+
+
+// Build next player table
+
+$prev_player = self::createPrevPlayerTable(array_keys($players));
+<
+
+
+// Make next player active
+
+$active_player = $prev_player[$state['active_player']];
+
+$this->gamestate->changeActivePlayer($active_player);
+<
+
+
+return $active_player;
+
+}
+<
+
+
+// Forcing the end of game on GS side
+
+// return true if this generated a "gameResult" back to MS
+
+function forceEndOfGame($reason)
+
+{
+
+self::notifyAllPlayers(
+
+'simpleNote',
+
+clienttranslate('All players (with a positive clock) choosed to abandon this game.'),
+
+[]
+
+);
+<
+
+
+// Force end of game so that no action can be possible (ex: afer an abandon)
+
+$this->bGameAbandonForced = true;
+
+$this->GameAbandonReason = $reason;
+<
+
+
+// This table is currently in destruction (destroyTable) on MS side
+
+$this->bGameAbandonForcedByMetasite = true;
+<
+
+
+// Save that the game has been abandonned:
+
+// _ all players scores to ZERO
+
+// _ all players auxiliary scores to -4242
+
+self::DbQuery("UPDATE player SET player_score='0', player_score_aux='-4242'");
+<
+
+
+self::reloadPlayersBasicInfos();
+
+$this->gamestate->jumpToState(99);
+<
+
+
+if (isset($this->bGameResultSendToMS) && $this->bGameResultSendToMS) {
+
+return true;
+
+} else {
+
+return false;
+
+}
+
+}
+<
+
+
+////////////////////////////////////////
+
+//// Reflexion time action
+<
+
+
+// Give standard extra time to this player
+
+// (standard extra time is a game option)
+
+function giveExtraTime($player_id, $specific_time = null)
+
+{
+
+global $g_config;
+
+if (!self::isAsync() && !$g_config['common_time_counter']) {
+
+if ($specific_time === null) {
+
+$additional_time = self::getGameStateValue('additional_reflexion_time');
+
+} else {
+
+$additional_time = $specific_time;
+
+}
+<
+
+
+// We must call "reflexionTimeUpdate" here for the following reason:
+
+// - we are going to update the "player_remaining_reflexion_time"
+
+// - however, some time may has been spent from the beginning of the move (ie: player_start_reflexion_time is far away)
+
+// - thus, if we do not update the "player_start_reflexion_time" the extratime may have zero effect since there is a upper limit
+
+// for the remaining reflexion time
+
+// - when we call giveExtraTime, we explitely want to give more time to a player. We do not want his time to be over the max, but we
+
+// want that this maximum could be reached
+
+// - as a consequence, we need "player_start_reflexion_time" to be reseted to "now()" by a call to "reflexionTimeUpdate"
+
+$this->gamestate->reflexionTimeUpdate();
+<
+
+
+// Initial reflexion time is also the maximum possible reflexion time
+
+$maximum_time = self::getGameStateValue('initial_reflexion_time');
+<
+
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if (!isset($players[$player_id])) {
+
+throw new feException('Tried to give extratime to non-existent player ' . $player_id);
+
+}
+<
+
+
+if ($players[$player_id]['player_beginner'] !== null) {
+
+// Beginner => time is x2
+
+//$maximum_time *= 2; // We do not double maximum time anymore for beginners (only additional time)
+
+$additional_time *= 2;
+
+}
+<
+
+
+$sql = "UPDATE player SET player_remaining_reflexion_time=LEAST( $maximum_time, player_remaining_reflexion_time+$additional_time ) WHERE player_id='$player_id' ";
+
+self::DbQuery($sql);
+<
+
+
+$this->gamestate->incReflexionTime($player_id, $additional_time, $maximum_time);
+<
+
+
+if ($specific_time === null) {
+
+$this->incStat(1, 'time_bonus_nbr', $player_id);
+
+}
+
+}
+<
+
+
+// Note: reflexion time for async mode is a completely different story
+
+// (see sendAsyncTableMove in gamestate.game.php)
+
+}
+<
+
+
+////////////////////////////////////////
+
+//// Zombie players
+<
+
+
+// Check if it is a zombie turn. If so, trigger the zombie action
+
+// Now: check also AI turn
+
+function checkZombieTurn()
+
+{
+
+// Note: zombie turn are something with a weak fiability
+
+// => we cannot be sure that this function will succeed
+
+// BUT, if it fails it is blocking the game
+
+// => catch any exception and makes everyone quits the table is someone quit the game
+
+$last_zombie_player = null;
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+try {
+
+self::trace('checkZombieTurn');
+<
+
+
+// Protection against infinite loop (could happend in some cases)
+
+$this->nbrZombieTurnCycle++;
+
+if ($this->nbrZombieTurnCycle > 100) {
+
+throw new feException('Zombie infinite loop');
+
+}
+<
+
+
+$state = $this->gamestate->state();
+
+$active_player_list = $this->gamestate->getActivePlayerList();
+<
+
+
+self::trace('action player number = ' . count($active_player_list));
+
+foreach ($active_player_list as $active_player) {
+
+if (
+
+$players[$active_player]['player_zombie'] == 1 ||
+
+$players[$active_player]['player_eliminated'] == 1
+
+) {
+
+self::trace('Zombie turn, player ' . $active_player);
+<
+
+
+global $g_user;
+
+$g_user->setTemporaryMasquerade($active_player);
+
+$last_zombie_player = $active_player;
+
+$this->zombieTurn($state, $active_player);
+
+$g_user->setTemporaryMasquerade(null);
+
+} elseif ($players[$active_player]['player_ai'] == 1) {
+
+try {
+
+// This is an AI player, and he must play
+
+$this->aiPlayer($active_player);
+
+} catch (feException $exception) {
+
+$exception->aiException = true;
+
+throw $exception;
+
+}
+
+}
+
+}
+<
+
+
+if ($last_zombie_player !== null) {
+
+// Note: if at least 1 zombie has played
+
+self::checkReturnState();
+
+}
+
+} catch (feException $exception) {
+
+if ($this->bGameAbandonForced == true) {
+
+// Work already done
+
+} elseif ($this->bZombieTurnWarningSent == true) {
+
+throw $exception;
+
+} elseif (isset($exception->aiException)) {
+
+// Ai exception => must be processed like any AI exception
+
+throw $exception;
+
+} else {
+
+// Zombie code is sometimes weird or incomplete, so we introduce some tolerance here:
+<
+
+
+// 1°) if there is an error in zombie code, at first we log it anyway so we can check it and fix it
+
+global $g_trace;
+
+$g_trace->logFatalException($exception);
+<
+
+
+// ... and make sure the following code is executed only once even we are in nested checkZombieTurn
+
+$this->bZombieTurnWarningSent = true;
+<
+
+
+// 2°) then we signal the current player that the zombie code has failed.
+<
+
+
+if (!self::isAsync()) {
+
+$this->notifications = [];
+
+self::notifyAllPlayers(
+
+'zombieModeFail',
+
+clienttranslate('Error during Skip turn execution : you may need to abandon the game.'),
+
+[]
+
+);
+
+$this->sendNotifications();
+<
+
+
+throw new feException($exception);
+
+} else {
+
+// This code was deprecated, and REINTRODUCED in Jan 2016 for TURN BASED
+
+// Reason : on turn based, in case zombie code failed, the turn of other players NEVER comes. We then have to abandon game, and mail players so they can undertand what happened
+<
+
+
+global $g_user;
+
+if ($g_user->is_logged() || isset($this->bEndLockScreenCase)) {
+
+// Note about bEndLockScreenCase: this make sure the game is abandonned in case there is a unlock screen after a player left the game + zombie code fail (= unrecoverable solution)
+
+global $g_config;
+<
+
+
+// 3°) Is this the first request to fail ?
+
+// (note : we cannot introduce a "confirmation" because the player who was expelled really quits the game with changed COMMITED, so we cannot do this action again)
+
+$this->notifications = [];
+
+self::notifyAllPlayers(
+
+'zombieModeFail',
+
+clienttranslate(
+
+'Error during Skip turn execution : this game has been cancelled. Please leave the game.'
+
+),
+
+[]
+
+);
+
+$this->sendNotifications();
+<
+
+
+$this->bGameAbandonForced = true;
+<
+
+
+self::masterNodeRequest('forceAbandon', [
+
+'table_id' => $this->table_id,
+
+'player' => $last_zombie_player,
+
+'players' => array_keys($players),
+
+]);
+
+} else {
+
+// Specific case: this action is trigged by a cronjob.
+
+// At now we throw an exception.
+
+throw $exception;
+
+}
+
+}
+
+}
+
+}
+
+}
+<
+
+
+function skipPlayersOutOfTime($bWarn = false, $bNoWarn = false)
+
+{
+
+// Skipping turn (using Zombie method) of ONE player who are currently active and out of time (the one which is the MOST out of time)
+<
+
+
+$playersinfos = self::loadPlayersBasicInfos();
+
+$player_count = count($playersinfos);
+
+$zombie_count = 0;
+
+$delay_to_play = 20;
+
+foreach ($playersinfos as $player_id => $player) {
+
+if ($player['player_zombie'] == 1) {
+
+$zombie_count++;
+
+}
+
+}
+<
+
+
+global $g_config;
+
+if ($g_config['enable_warning_before_expel'] == false) {
+
+$bWarn = false;
+
+} // If no warning before expel, remove the warning phase
+<
+
+
+// Get current player timer
+
+$player_id = self::getCurrentPlayerId();
+
+$playerinfos = self::getObjectFromDB("SELECT player_zombie, player_start_reflexion_time, UNIX_TIMESTAMP( NOW() ) - UNIX_TIMESTAMP( player_start_reflexion_time ) think_since, player_remaining_reflexion_time
+
+FROM player WHERE player_id='$player_id'");
+<
+
+
+$current_player_remaining_time = 0;
+
+if ($playerinfos['player_zombie'] == 1) {
+
+throw new feException(_('You cannot skip turn of other players while your own turns are skipped'), true);
+
+} else {
+
+if ($playerinfos['player_start_reflexion_time'] === null) {
+
+// Not his turn: reflexion time = remaining reflexion time
+
+$current_player_remaining_time = $playerinfos['player_remaining_reflexion_time'];
+
+} else {
+
+// On his turn: reflexion time = remaining reflexion time - think time this move
+
+$current_player_remaining_time =
+
+$playerinfos['player_remaining_reflexion_time'] - $playerinfos['think_since'];
+
+}
+
+}
+<
+
+
+// Get all players out of time at now (that are not already zombies)
+
+$players = self::getObjectListFromDB("SELECT player_id, player_name, player_zombie, player_remaining_reflexion_time - UNIX_TIMESTAMP( NOW() ) + UNIX_TIMESTAMP( player_start_reflexion_time ) remaining_time FROM player
+
+WHERE player_start_reflexion_time IS NOT NULL AND player_zombie='0'
+
+AND UNIX_TIMESTAMP( NOW() ) - UNIX_TIMESTAMP( player_start_reflexion_time ) > player_remaining_reflexion_time
+
+ORDER BY remaining_time ASC LIMIT 0,1");
+<
+
+
+$bFirstPlayer = true;
+
+$to_be_expelled = [];
+<
+
+
+if (count($players) > 0) {
+
+foreach ($players as $player) {
+
+if ($player['remaining_time'] > $current_player_remaining_time) {
+
+// The player who tries to skip turn has even LESS time than the targetted player !
+<
+
+
+// => throw a violent exception
+
+throw new feException(
+
+_(
+
+'You have LESS time than the player you try to skip turn. Please wait that the active player clock decrease below your clock to skip his turn.'
+
+),
+
+true
+
+);
+
+} else {
+
+$key =
+
+'expel_notice_' .
+
+$player['player_id'] .
+
+'_' .
+
+$this->table_id .
+
+'_' .
+
+self::getGameStateValue('next_move_id');
+
+$delay_to_play = 20; // 20 seconds
+<
+
+
+// IF the player has been warned during a previous move while it was still his turn, the delay is reduced
+
+// => get the past moves where the same player is active
+
+$sql =
+
+"SELECT gamelog_move_id FROM `gamelog`
+
+where gamelog_move_id >
+
+(
+
+SELECT MAX(gamelog_move_id) FROM `gamelog`
+
+where gamelog_current_player!='" .
+
+$player['player_id'] .
+
+"'
+
+)";
+
+$last_move_same_player = self::getObjectListFromDb($sql, true);
+<
+
+
+foreach ($last_move_same_player as $recent_move_id) {
+
+$last_move_key =
+
+'expel_notice_' . $player['player_id'] . '_' . $this->table_id . '_' . $recent_move_id;
+
+if (apcu_fetch($last_move_key) !== false) {
+
+// The player has been warned on a previous move, and no one else has played since (= consecutive moves from the same player)
+
+// In this case, we divide the delay per 2, and when 0 there is no more warning (=> 20 => 10 => 5 => 2 => 1 => 0)
+
+$delay_to_play /= 2;
+
+$delay_to_play = floor($delay_to_play);
+
+}
+
+}
+<
+
+
+if ($delay_to_play == 0) {
+
+// Too much abuse of the system => immediate expel
+
+$bWarn = false;
+
+$bNoWarn = true;
+
+}
+<
+
+
+if ($bWarn && !self::isAsync()) {
+
+// Note : this warning delay is only for realtime play
+
+// Only send a warning to this player
+<
+
+
+if (apcu_fetch($key) === false) {
+
+// Note : we are using "notifyNow" here to avoid incrementing move_id
+
+self::notifyNow(
+
+'/table/t' . $this->table_id,
+
+'skipTurnOfPlayerWarning',
+
+clienttranslate(
+
+'${player_name} is out of time and is warned : in ${delay} seconds he/she will be expelled from the game if he/she does not play.'
+
+),
+
+[
+
+'player_name' => $player['player_name'],
+
+'player_id' => $player['player_id'],
+
+'delay' => $delay_to_play,
+
+]
+
+);
+<
+
+
+apcu_add($key, time(), 60 * 10); // For 10mn, we are storing that this player has been warned at this table + this move
+
+}
+<
+
+
+$to_be_expelled[] = $player['player_name'];
+
+} else {
+
+if (!$bNoWarn) {
+
+if (!self::isAsync() && $g_config['enable_warning_before_expel']) {
+
+$warning_timestamp = apcu_fetch($key);
+<
+
+
+if ($warning_timestamp === false) {
+
+throw new feException(
+
+'It looks that this played has played : you should refresh the page.'
+
+);
+
+} else {
+
+if (time() > $warning_timestamp + $delay_to_play) {
+
+// Okay, more than 20 sec! (or the appropriate delay)
+
+} else {
+
+throw new feException("You must wait $delay_to_play seconds.");
+
+}
+
+}
+
+}
+
+}
+<
+
+
+global $g_user;
+
+if ($g_user->is_logged()) {
+
+self::notifyAllPlayers(
+
+'skipTurnOfPlayer',
+
+clienttranslate('${player_name} is out of time, so ${player_name2} skips his/her turn'),
+
+[
+
+'player_name' => $player['player_name'],
+
+'player_name2' => self::getCurrentPlayerName(),
+
+'player_id' => $player['player_id'],
+
+'zombie' => !self::isAsync(),
+
+]
+
+);
+
+} else {
+
+self::notifyAllPlayers(
+
+'skipTurnOfPlayer',
+
+clienttranslate('${player_name} is out of time, so the system skips his/her turn'),
+
+[
+
+'player_name' => $player['player_name'],
+
+'player_id' => $player['player_id'],
+
+'zombie' => !self::isAsync(),
+
+]
+
+);
+
+}
+<
+
+
+$to_be_expelled[] = $player['player_name'];
+<
+
+
+$this->sendNotifications();
+
+self::CommitAllAndRestart(); // Note: expelOutOfTimePlayer is coming back on GS as a "zombie" MS->GS call. If we do not commit,
+
+// this "zombie" call is causing a deadlock. As we didn't do anything important on GS side until now,
+
+// we can afford an earlier commit here.
+
+// Okay, expel this player from the game
+
+self::masterNodeRequest('expelOutOfTimePlayer', [
+
+'table_id' => $this->table_id,
+
+'player_id' => $player['player_id'],
+
+]);
+<
+
+
+if ($g_config['expel_current_player_when_expelling']) {
+
+// (mindlab request)
+
+// Make current player quit as well
+<
+
+
+self::masterNodeRequest('expelOutOfTimePlayer', [
+
+'table_id' => $this->table_id,
+
+'player_id' => $player_id,
+
+]);
+<
+
+
+// $this->gamestate->jumpToState( 99 );
+
+}
+<
+
+
+/*
+
+$state = $this->gamestate->state();
+
+$initialState = $state;
+<
+
+<
+
+
+// If make zombie the last player in the game => the game has no more sense and should be abandonned
+
+if( $zombie_count+1 >= $player_count )
+
+{
+
+$this->notifications = array();
+
+self::notifyAllPlayers("allPlayersAreZombie", clienttranslate("All players are over time limit and all turns are skipped: game is abandonned."), array());
+
+$this->sendNotifications();
+<
+
+
+self::masterNodeRequest( 'clockPenalty', array(
+
+'player_id' => $player['player_id'],
+
+'table_id' => $this->table_id
+
+) );
+<
+
+<
+
+
+self::masterNodeRequest( 'forceAbandon', array( 'table_id' => $this->table_id,
+
+'player' => null,
+
+'players' => array_keys( $playersinfos ) ) );
+<
+
+
+$this->bGameAbandonForced = true;
+
+}
+
+else
+
+{
+
+// Play as this player
+<
+
+
+$this->o_tableinfos->setZombie( $player['player_id'] );
+
+self::reloadPlayersBasicInfos();
+<
+
+<
+
+
+if( ! self::isAsync() )
+
+{
+
+// Mark this player as "zombie" so all his turn can be skipped (until he decides to get back in the game)
+
+// Note: we don't do this for turnbased mode: in turn based mode the player always has a chance to get back when it's time is positive again.
+
+$zombie_count++;
+
+}
+<
+
+<
+
+
+$g_user->setTemporaryMasquerade( $player['player_id'] );
+<
+
+
+self::masterNodeRequest( 'clockPenalty', array(
+
+'player_id' => $player['player_id'],
+
+'table_id' => $this->table_id
+
+) );
+<
+
+
+try {
+
+$this->checkZombieTurn();
+
+// $this->zombieTurn( $state, $player['player_id'] );
+
+}
+
+catch( feException $e )
+
+{
+
+// In case of an error with an async table, we MUST at least do not set player as zombie
+
+if( self::isAsync() )
+
+{
+
+$this->o_tableinfos->setZombie( $player_id, false );
+
+self::reloadPlayersBasicInfos();
+
+}
+<
+
+
+throw $e;
+
+}
+<
+
+
+$g_user->setTemporaryMasquerade( null );
+<
+
+
+if( self::isAsync() )
+
+{
+
+$this->o_tableinfos->setZombie( $player_id, false );
+
+self::reloadPlayersBasicInfos();
+
+}
+<
+
+
+$this->checkActivePlayersChange();
+
+}*/
+
+}
+
+}
+
+}
+
+} else {
+
+// TO-DO: this should not happen. Kill the game instead of just throwing an error ?
+
+throw new feException('No players are out of time at now');
+
+}
+<
+
+
+return [
+
+'names' => $to_be_expelled,
+
+'delay' => $delay_to_play,
+
+];
+
+}
+<
+
+
+function onPlayerHasBeenZombified($player_id)
+
+{
+
+// Note: called when some player has been zombified because he quits the game (or have been "skipped")
+<
+
+
+// Is this the first turn to be skipped on this game?
+
+if (self::getGameStateValue('game_result_neutralized') == 0) {
+
+// Yes: make sure the game is neutralized
+
+$progression = min(100, max(1, $this->getGameProgression()));
+
+self::setGameStateValue('game_result_neutralized', $progression);
+
+self::setGameStateValue('neutralized_player_id', $player_id);
+<
+
+
+$players = self::loadPlayersBasicInfos();
+
+self::notifyAllPlayers(
+
+'gameResultNeutralized',
+
+clienttranslate('${player_name} has quit the game and is going to lose this game whatever happens.'),
+
+[
+
+'progression' => $progression,
+
+'player_id' => $player_id,
+
+'player_name' => $players[$player_id]['player_name'],
+
+]
+
+);
+
+} else {
+
+$players = self::loadPlayersBasicInfos();
+
+self::notifyAllPlayers(
+
+'gameQuitWithNoPenalty',
+
+clienttranslate('${player_name} quitted the game after someone else quit the game (= no penalties).'),
+
+[
+
+'player_id' => $player_id,
+
+'player_name' => $players[$player_id]['player_name'],
+
+]
+
+);
+
+}
+
+}
+<
+
+
+function forceAbandon()
+
+{
+
+$playersinfos = self::loadPlayersBasicInfos();
+<
+
+
+self::masterNodeRequest('forceAbandon', [
+
+'table_id' => $this->table_id,
+
+'player' => null,
+
+'players' => array_keys($playersinfos),
+
+]);
+<
+
+
+$this->bGameAbandonForced = true;
+
+}
+<
+
+
+function zombieBack()
+
+{
+
+// Current player wants to get back in the game
+
+global $g_user;
+
+$player_id = $g_user->get_id();
+<
+
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+// Check this is a zombie
+
+$playerinfos = self::getObjectFromDB("SELECT player_zombie, player_start_reflexion_time, UNIX_TIMESTAMP( NOW() ) - UNIX_TIMESTAMP( player_start_reflexion_time ) think_since, player_remaining_reflexion_time
+
+FROM player WHERE player_id='$player_id'");
+<
+
+
+if ($playerinfos['player_zombie'] == 1) {
+
+if ($playerinfos['player_start_reflexion_time'] === null) {
+
+// Not his turn: reflexion time = remaining reflexion time
+
+if ($playerinfos['player_remaining_reflexion_time'] < 0) {
+
+throw new feException(
+
+_("You cannot get back into the game while your time to think hasn't get back above 0."),
+
+true
+
+);
+
+}
+
+} else {
+
+// On his turn: reflexion time = remaining reflexion time - think time this move
+
+if ($playerinfos['player_remaining_reflexion_time'] - $playerinfos['think_since'] < 0) {
+
+throw new feException(
+
+_("You cannot get back into the game while your time to think hasn't get back above 0."),
+
+true
+
+);
+
+}
+
+}
+<
+
+
+$this->o_tableinfos->setZombie($player_id, false);
+<
+
+
+self::notifyAllPlayers('zombieBack', clienttranslate('${player_name} gets back in the game'), [
+
+'player_id' => $player_id,
+
+'player_name' => $players[$player_id]['player_name'],
+
+]);
+
+}
+
+}
+<
+
+
+function aiPlayer($player_id)
+
+{
+
+global $g_config;
+
+$ai_url = apcu_fetch('aiinfos_' . $this->gameid . '_' . $player_id);
+<
+
+
+if ($ai_url === false) {
+
+$ai_url = self::masterNodeRequest('getAiInfos', ['ai' => $player_id, 'game' => $this->gameid]);
+
+}
+<
+
+
+if (!$ai_url) {
+
+throw new feException("No AI set for player $player_id and game " . $this->gameid);
+
+}
+<
+
+
+apcu_store('aiinfos_' . $this->gameid . '_' . $player_id, $ai_url);
+<
+
+
+// Indicate to the AI webservice that this is its turn to play
+<
+
+
+$data = $this->getAllTableDatas(true);
+<
+
+
+$gameserver_id = '';
+
+if (isset($g_config['cluster_gameserver_id'])) {
+
+$gameserver_id = $g_config['cluster_gameserver_id'] . '/';
+
+}
+<
+
+
+$url =
+
+'http://' .
+
+$g_config['app_domain'] .
+
+'/' .
+
+$gameserver_id .
+
+$this->getGameName() .
+
+'/' .
+
+$this->getGameName() .
+
+'/';
+<
+
+
+$args = [
+
+'player_id' => $player_id,
+
+'table_id' => $this->table_id,
+
+'data' => $data,
+
+'url' => $url,
+
+];
+<
+
+
+$res = self::bgaCallUrl($ai_url . '/play', 'debug', $args, true);
+<
+
+
+if ($res != 'ok') {
+
+throw new feException(self::_('The AI reported an error') . ': ' . $res);
+
+} else {
+
+// Okay, AI is going to think !
+
+}
+
+}
+<
+
+
+function aiNotPlaying()
+
+{
+
+self::checkZombieTurn();
+
+}
+<
+
+
+function aiError($error)
+
+{
+
+self::notifyNow('/table/t' . $this->table_id, 'aiError', '', ['error' => $error]);
+
+}
+<
+
+
+// To be override by each game !
+
+// function zombieTurn( $state, $active_player )
+
+// {
+
+//
+
+// }
+<
+
+
+////////////////////////////////////////
+
+//// Common actions for all games
+<
+
+
+// Say something in the chatroom
+
+function say($message)
+
+{
+
+self::trace("Saying: '" . $message . "'");
+<
+
+
+if ($message == '') {
+
+return;
+
+}
+<
+
+
+global $g_user, $g_config;
+<
+
+
+if (strlen($message) > 300) {
+
+$message = substr($message, 0, 300) . '...';
+
+}
+<
+
+
+$this->chatmessage_notification = true;
+
+if ($g_config['debug_from_chat']) {
+
+if (self::debugChat($message)) {
+
+$this->chatmessage_notification = false;
+
+} // Otherwise the whole notification packet is considered as "chat" and synchronous are skipped
+
+}
+
+if ($this->sandboxDebugChat($message)) {
+
+$this->chatmessage_notification = false;
+
+} // Otherwise the whole notification packet is considered as "chat" and synchronous are skipped
+<
+
+
+if (!self::ensure_enough_time_since_last_action('privatechat', $g_user->get_id(), 1)) {
+
+throw new feException(sprintf(_('There is a minimum of %s seconds between messages'), 1), true);
+
+}
+<
+
+
+$o_grade = self::getNewUnique('module.mainsite.grade');
+
+$o_grade->checkRight('chat_speak');
+<
+
+
+// note: nothing to do except sending notifications
+<
+
+
+$this->private_notification = true;
+<
+
+
+$o_player = self::getNewUnique('module.player.player');
+
+$player = $o_player->get($g_user->get_id());
+<
+
+
+if ($g_config['prevent_spectator_chat']) {
+
+$players = self::loadPlayersBasicInfos();
+
+if (!isset($players[$g_user->get_id()])) {
+
+if ($o_grade->hasRight('moderator_panel_access')) {
+
+// Judges can speak anyway
+
+} else {
+
+throw new feException(_('Spectators are not authorized to speak'), true);
+
+}
+
+}
+
+}
+<
+
+
+self::notifyAllPlayers('chatmessage', '${player_name} ${message}', [
+
+'player_name' => $player['fullname'],
+
+'player_id' => $g_user->get_id(),
+
+'message' => $this->adaptMessage($message, $g_user->get_id(), $o_grade),
+
+]);
+<
+
+
+global $g_trace;
+
+$g_trace->chat_log($message, 'T' . $this->table_id);
+
+}
+<
+
+
+// logTextForModeration
+
+// This function do the exact same as "say()", but without sending any notification
+
+// The goal is to be able to moderate this message using the usual tool.
+
+// This function should be used by all games developers, as soon as there is some free text that the players can use in the game, which
+
+// is visible by all players.
+
+function logTextForModeration($player_id, $message)
+
+{
+
+if ($message == '') {
+
+return;
+
+}
+<
+
+
+if (strlen($message) > 300) {
+
+$message = substr($message, 0, 300) . '...';
+
+}
+<
+
+
+$players = self::loadPlayersBasicInfos();
+
+if (!isset($players[$player_id])) {
+
+throw new feException('logText for moderation: this player is not at this table');
+
+}
+<
+
+
+$res = self::masterNodeRequest('logTextForModeration', [
+
+'player' => $player_id,
+
+'table_id' => $this->table_id,
+
+'game_id' => $this->gameid,
+
+'message' => $message,
+
+]);
+
+}
+<
+
+
+protected function adaptMessage($message, $player_id, $o_grade)
+
+{
+
+// To be overriden by games
+
+return $message;
+
+}
+<
+
+
+// Note: return a number between 0 and 100 describing the game progression
+
+function getGameProgression()
+
+{
+
+// To be override by games
+
+return 0;
+
+}
+<
+
+
+////////////////////////////////////////
+
+//// Statistics methods
+<
+
+
+// Get the "stat_type" object
+
+static function getStatTypesForGame($game_name)
+
+{
+
+global $g;
+
+$o_gamemetadata = $g->getNewUnique('module.mainsite.gamemetadata');
+
+return $o_gamemetadata->getGameStats($game_name);
+
+}
+<
+
+
+function getStatTypes()
+
+{
+
+return Table::getStatTypesForGame($this->getGameName());
+
+}
+<
+
+
+// Convert a type id in its label
+
+function stat_type_id_to_name($table_or_player, $type_id)
+
+{
+
+$stat_types = self::getStatTypes();
+
+if ($table_or_player != 'table' && $table_or_player != 'player') {
+
+throw new feException('Wrong statistic type');
+
+}
+<
+
+
+foreach ($stat_types[$table_or_player] as $label => $infos) {
+
+if ($infos['id'] == $type_id) {
+
+return $label;
+
+}
+
+}
+<
+
+
+//throw new feException( "Unknown statistic id:".$table_or_player." ".$type_id );
+
+//Flexibility in order not to break games if the stat has been removed; we just don't want to display it anymore, even if it exists in the database for this game.
+
+return null;
+
+}
+<
+
+
+// Create a statistic entry for the specified statistics with a default value
+
+// In case of a "player" entry, if player_id is not specified, all players are set to the same value
+
+function initStat($table_or_player, $name, $value, $player_id = null)
+
+{
+
+$stat_types = self::getStatTypes();
+<
+
+
+$sql = 'INSERT INTO stats (stats_type, stats_player_id, stats_value) VALUES ';
+<
+
+
+if ($table_or_player == 'table') {
+
+if (!isset($stat_types['table'][$name])) {
+
+throw new feException('Unknown statistic id: ' . $table_or_player . ' ' . $name);
+
+}
+<
+
+
+$values[] =
+
+"('" .
+
+$stat_types['table'][$name]['id'] .
+
+"',NULL,'" .
+
+self::escapeStringForDB(doublecheck($value)) .
+
+"')";
+
+} elseif ($table_or_player == 'player') {
+
+// Players stats
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if (!isset($stat_types['player'][$name])) {
+
+throw new feException('Unknown statistic id: ' . $table_or_player . ' ' . $name);
+
+}
+<
+
+
+if ($player_id == null) {
+
+foreach ($players as $id => $player) {
+
+$values[] =
+
+"('" .
+
+$stat_types['player'][$name]['id'] .
+
+"','$id','" .
+
+self::escapeStringForDB(doublecheck($value)) .
+
+"')";
+
+}
+
+} else {
+
+$values[] =
+
+"('" .
+
+$stat_types['player'][$name]['id'] .
+
+"','$player_id','" .
+
+self::escapeStringForDB(doublecheck($value)) .
+
+"')";
+
+}
+
+} else {
+
+throw new feException('Wrong table_or_player type');
+
+}
+<
+
+
+$sql .= implode(',', $values);
+
+self::DbQuery($sql);
+
+}
+<
+
+
+// Get current statistic value
+
+// (avoid using this method)
+
+function getStat($name, $player_id = null)
+
+{
+
+$stat_type = self::getStatTypes();
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id == null) {
+
+if (!isset($stat_type['table'][$name])) {
+
+throw new feException('(table) statistic does not exists: ' . $name);
+
+}
+
+} else {
+
+if (!isset($stat_type['player'][$name])) {
+
+throw new feException('(player) statistic does not exists: ' . $name);
+
+}
+
+if (!isset($players[$player_id])) {
+
+throw new feException('getStat: Unknown player id: ' . $player_id);
+
+}
+
+}
+<
+
+
+if ($player_id == null) {
+
+$type_id = $stat_type['table'][$name]['id'];
+
+$sql = "SELECT stats_value FROM stats WHERE stats_type='$type_id' AND stats_player_id IS NULL ";
+
+} else {
+
+$type_id = $stat_type['player'][$name]['id'];
+
+$sql = "SELECT stats_value FROM stats WHERE stats_type='$type_id' AND stats_player_id='$player_id' ";
+
+}
+<
+
+
+$dbres = self::DbQuery($sql);
+
+$row = mysql_fetch_assoc($dbres);
+
+if (!$row) {
+
+return 0;
+
+}
+<
+
+
+return $row['stats_value'];
+
+}
+<
+
+
+// Set statistic value
+
+function setStat($value, $name, $player_id = null, $bDoNotLoop = false)
+
+{
+
+$stat_type = self::getStatTypes();
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id == null) {
+
+if (!isset($stat_type['table'][$name])) {
+
+throw new feException('(table) statistic does not exists: ' . $name);
+
+}
+
+$type_id = $stat_type['table'][$name]['id'];
+
+$sql =
+
+"UPDATE stats SET stats_value='" .
+
+doublecheck($value) .
+
+"' WHERE stats_type='$type_id' AND stats_player_id IS NULL ";
+
+} else {
+
+if (!isset($stat_type['player'][$name])) {
+
+throw new feException('(player) statistic does not exists: ' . $name);
+
+}
+
+if (!isset($players[$player_id])) {
+
+throw new feException('setStat: Unknown player id: ' . $player_id);
+
+}
+<
+
+
+$type_id = $stat_type['player'][$name]['id'];
+
+$sql =
+
+"UPDATE stats SET stats_value='" .
+
+doublecheck($value) .
+
+"' WHERE stats_type='$type_id' AND stats_player_id='$player_id' ";
+
+}
+<
+
+
+self::DbQuery($sql);
+<
+
+
+if (self::DbAffectedRow() == 0) {
+
+if ($bDoNotLoop) {
+
+throw new feException('setStat: failed to auto init statistics ' . $name);
+
+}
+<
+
+
+// Init stat first
+
+if ($player_id == null) {
+
+if (
+
+self::getUniqueValueFromDB(
+
+"SELECT stats_value FROM stats WHERE stats_type='$type_id' AND stats_player_id IS NULL "
+
+) === null
+
+) {
+
+self::initStat('table', $name, $value);
+
+return; // Job has been done
+
+} else {
+
+return;
+
+} // This is just a setStat call that did not change the current value
+
+} else {
+
+if (
+
+self::getUniqueValueFromDB(
+
+"SELECT stats_value FROM stats WHERE stats_type='$type_id' AND stats_player_id='$player_id' "
+
+) === null
+
+) {
+
+self::initStat('player', $name, $value);
+
+return; // Job has been done
+
+} else {
+
+return;
+
+} // This is just a setStat call that did not change the current value
+
+}
+<
+
+
+// ... then loop (DEPRECATED)
+
+self::setStat($value, $name, $player_id, true);
+
+}
+
+}
+<
+
+
+function setStatForAllPlayers($value, $name)
+
+{
+
+$stat_type = self::getStatTypes();
+
+$type_id = $stat_type['player'][$name]['id'];
+
+$sql = "UPDATE stats SET stats_value='" . doublecheck($value) . "' WHERE stats_type='$type_id' ";
+
+self::DbQuery($sql);
+
+}
+<
+
+
+// Increment (or decrement) specified value
+
+function incStat($delta, $name, $player_id = null, $bDoNotLoop = false)
+
+{
+
+if ($delta != 0) {
+
+$stat_type = self::getStatTypes();
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id == null) {
+
+if (!isset($stat_type['table'][$name])) {
+
+throw new feException('Unknown table statistic: ' . $name);
+
+}
+<
+
+
+$type_id = $stat_type['table'][$name]['id'];
+
+$sql =
+
+"UPDATE stats SET stats_value=stats_value+'" .
+
+doublecheck($delta) .
+
+"' WHERE stats_type='$type_id' AND stats_player_id IS NULL ";
+
+} else {
+
+if (!isset($stat_type['player'][$name])) {
+
+throw new feException('Unknown player statistic: ' . $name);
+
+}
+
+if (!isset($players[$player_id])) {
+
+throw new feException('incStat: Unknown player id: ' . $player_id);
+
+}
+<
+
+
+$type_id = $stat_type['player'][$name]['id'];
+
+$sql =
+
+"UPDATE stats SET stats_value=stats_value+'" .
+
+doublecheck($delta) .
+
+"' WHERE stats_type='$type_id' AND stats_player_id='$player_id' ";
+
+}
+<
+
+
+self::DbQuery($sql);
+<
+
+
+if (self::DbAffectedRow() == 0) {
+
+if ($bDoNotLoop) {
+
+throw new feException('incStat: failed to auto init statistics ' . $name);
+
+}
+<
+
+
+// Init stat first
+
+if ($player_id == null) {
+
+self::initStat('table', $name, 0);
+
+} else {
+
+self::initStat('player', $name, 0);
+
+}
+<
+
+
+// ... then loop
+
+self::incStat($delta, $name, $player_id, true);
+
+}
+
+}
+
+}
+
+function getStatFromResult(&$result, $name, $player_id = null)
+
+{
+
+$stats_type = self::getStatTypes();
+
+if ($player_id == null) {
+
+return $result['table']['stats'][$stats_type['table'][$name]['id']];
+
+} else {
+
+foreach ($result['result'] as $index => $player) {
+
+if ($player['player'] == $player_id) {
+
+return $result['result'][$index]['stats'][$stats_type['player'][$name]['id']];
+
+}
+
+}
+<
+
+
+throw new feException('Player not found in getStatFromResult');
+
+}
+
+}
+<
+
+
+// Note: 'i' is the position of the player in $result object
+
+function setStatOnResult(&$result, $value, $name, $i = null)
+
+{
+
+self::trace('setStatOnResult: ' . $name . ' for ' . $i);
+
+$stats_type = self::getStatTypes();
+<
+
+
+if ($i === null) {
+
+self::trace('setStatOnResult on table');
+
+$result['table']['stats'][$stats_type['table'][$name]['id']] = $value;
+
+} else {
+
+if (!isset($result['result'][$i])) {
+
+throw new feException('setStatOnResult: non existing player index');
+
+}
+
+$result['result'][$i]['stats'][$stats_type['player'][$name]['id']] = $value;
+
+}
+
+}
+
+function setStatOnResultForPlayer(&$result, $value, $name, $player_id)
+
+{
+
+foreach ($result['result'] as $index => $player) {
+
+if ($player['player'] == $player_id) {
+
+self::setStatOnResult($result, $value, $name, $index);
+
+return;
+
+}
+
+}
+<
+
+
+throw new feException('setStatOnResultForPlayer: non existing player');
+
+}
+<
+
+
+////////////////////////////////////////
+
+//// End of game management
+<
+
+
+/**
+
+* returns assoc array containing all the useful data for recording game results and calculating ELO rating
+
+* @return array{
+
+* table: array{
+
+* stats: array{...table stats}
+
+* concede: boolean
+
+* disagreement: boolean
+
+* neutralized: boolean
+
+* abandon_reason: string
+
+* abandon_forced_by_metasite: boolean
+
+* abandon_forced_by_tournament: boolean
+
+* },
+
+* result: array<playerId, array{
+
+* id: int
+
+* name: string
+
+* color: string
+
+* score: int
+
+* score_aux: int
+
+* concede: bool
+
+* rank: int
+
+* tie: bool
+
+* stats: array{...player stats}
+
+* color_back: string
+
+* }
+
+* }
+
+*
+
+* should not be public, but older game adaptation directly reference it (see getGameRankInfos for more)
+
+*/
+
+public function getStandardGameResultObject(): array
+
+{
+
+$neutralized_progression = self::getGameStateValue('game_result_neutralized');
+
+$game_results_neutralized = $neutralized_progression != 0;
+
+$neutralized_player_id = self::getGameStateValue('neutralized_player_id');
+
+$sandbox_game_disagreement = isset($this->sandbox_game_disagreement);
+<
+
+
+if ($game_results_neutralized) {
+
+// Set generic scores (neutralized game)
+
+self::DbQuery(
+
+"UPDATE player SET player_score='1',player_score_aux='0' WHERE player_id!='$neutralized_player_id'"
+
+);
+
+self::DbQuery(
+
+"UPDATE player SET player_score='0',player_score_aux='0' WHERE player_id='$neutralized_player_id'"
+
+);
+
+}
+<
+
+
+$result = [
+
+// global result data
+
+'table' => [
+
+'stats' => [],
+
+'concede' => false,
+
+'disagreement' => $sandbox_game_disagreement,
+
+'neutralized' => $neutralized_progression,
+
+],
+<
+
+
+// players result
+
+'result' => [],
+
+];
+<
+
+
+$sql = "SELECT
+
+player_id id,
+
+player_id player,
+
+player_name name,
+
+player_color color,
+
+player_score score,
+
+player_score_aux score_aux,
+
+player_zombie zombie,
+
+(player_zombie < 0) concede
+
+FROM player
+
+ORDER BY concede ASC, player_score DESC, player_score_aux DESC";
+<
+
+
+$current_rank = 0; // lowest -> winner
+
+$tie_players_of_rank_count = 1; // used to increment rank. so if first two players are tied, rank distance between first players and third player is preserved (useful for elo calc)
+<
+
+
+// store previous player to check ties
+
+$previous_player = null;
+<
+
+
+$best_score = null; // for stats
+
+$total_score = 0; // for stats, to calc average score later
+<
+
+
+foreach (self::getCollectionFromDb($sql) as $player_id => $player) {
+
+$is_first_of_rank = false;
+<
+
+
+if (!isset($previous_player)) {
+
+// is first player of the list
+
+$is_first_of_rank = true;
+
+} else {
+
+// if compared to previous player
+
+if ($previous_player['score'] !== $player['score']) {
+
+// has different score
+
+$is_first_of_rank = true;
+
+}
+
+if ($previous_player['score_aux'] !== $player['score_aux']) {
+
+// has different aux score
+
+$is_first_of_rank = true;
+
+}
+
+if (!$previous_player['concede'] && $player['concede']) {
+
+// has conceded while previous has not
+
+$is_first_of_rank = true;
+
+}
+
+}
+<
+
+
+// set player rank
+
+if ($is_first_of_rank) {
+
+$current_rank += $tie_players_of_rank_count; // increase rank by ties on this rank
+<
+
+
+$player['tie'] = false; // initialize tie flag (might change later if player after has equal ranking score)
+<
+
+
+$previous_player = $player;
+<
+
+
+// reset tie count of rank
+
+$tie_players_of_rank_count = 1;
+
+} else {
+
+// player ties with previous one
+<
+
+
+$player['tie'] = true; // set this player tie flag
+
+$result['result'][$previous_player['id']]['tie'] = true; // set previous player to tie too
+<
+
+
+$tie_players_of_rank_count++;
+
+}
+<
+
+
+// set player results + additional data
+
+$player['rank'] = $current_rank;
+<
+
+
+$player['stats'] = [];
+
+$player['color_back'] = self::color_to_color_back($player['color']);
+<
+
+
+$result['result'][$player_id] = $player;
+<
+
+
+// update global score data
+
+$best_score = $best_score === null ? $player['score'] : max($best_score, $player['score']);
+
+$total_score += $player['score'];
+<
+
+
+if ($player['concede']) {
+
+$result['table']['concede'] = true;
+
+}
+
+}
+<
+
+
+// get game specific stats
+
+$stats_types = self::getStatTypes();
+<
+
+
+// calc default stats
+
+$players_count = count($result['result']);
+<
+
+
+$result['table']['stats'] = [
+
+$stats_types['table']['player_number']['id'] => $players_count,
+
+$stats_types['table']['avg_points']['id'] => $total_score / $players_count,
+
+$stats_types['table']['best_score']['id'] => $best_score,
+
+];
+<
+
+
+$sql = 'SELECT stats_type, stats_player_id, stats_value FROM stats';
+
+foreach (self::getObjectListFromDb($sql) as $stat) {
+
+if ($stat['stats_player_id'] == null) {
+
+// stat is of table
+
+$type_id = self::stat_type_id_to_name('table', $stat['stats_type']);
+
+if ($type_id !== null) {
+
+$stat_id = $stats_types['table'][$type_id]['id'];
+
+$result['table']['stats'][$stat_id] = $stat['stats_value'];
+
+}
+
+} else {
+
+// stat is of player
+
+$type_id = self::stat_type_id_to_name('player', $stat['stats_type']);
+
+if ($type_id !== null) {
+
+$stat_id = $stats_types['player'][$type_id]['id'];
+
+$player_id = $stat['stats_player_id'];
+
+$result['result'][$player_id]['stats'][$stat_id] = $stat['stats_value'];
+
+}
+
+}
+
+}
+<
+
+
+if ($this->bGameAbandonForcedByMetasite) {
+
+$result['table']['abandon_forced_by_metasite'] = true;
+
+}
+<
+
+
+if ($this->bGameAbandonByTournamentTimeout) {
+
+$result['table']['abandon_forced_by_tournament'] = true;
+
+}
+<
+
+
+if (isset($this->GameAbandonReason)) {
+
+$result['table']['abandon_reason'] = $this->GameAbandonReason;
+
+}
+<
+
+
+// return list of players result data as pure array (remove player_id index)
+
+// this also matches legacy result object structure
+
+$result['result'] = array_values($result['result']);
+<
+
+
+return $result;
+
+}
+<
+
+
+function notifyConcede($player_id, $concede_all = false)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($concede_all) {
+
+self::notifyAllPlayers(
+
+'allPlayersConcedeGame',
+
+clienttranslate('All players have decided to concede this game.'),
+
+[]
+
+);
+
+return;
+
+}
+<
+
+
+self::notifyAllPlayers('playerConcedeGame', clienttranslate('${player_name} concedes this game.'), [
+
+'player_name' => $players[$player_id]['player_name'],
+
+'player_id' => $player_id,
+
+]);
+
+}
+<
+
+
+/**
+
+* LEGACY method to expose structure of gameResultObect and allow game code to alter its content.
+
+* historically, it was primarily used by BGA game adaptations to add statistics to the game object at game end (i never got to undestand why exactly this was needed)
+
+* this was also mentioned in the studio doc (fr only) for some time, but was never really adopted by BGA devs.
+
+* there are some exceptional implementations (hardback) that utilize this method to hack the framework for better game result display
+
+*
+
+* this SHOULD be deprecated, as it perpetrates dependencies with game adaptations that use it.
+
+* buy since it guarantees retrocompatibility with older implementation, we MUST keep using.
+
+*/
+
+protected function getGameRankInfos()
+
+{
+
+return self::getStandardGameResultObject();
+
+}
+<
+
+
+// This function must be called at the end of each game at gameEnd state
+
+// it returns datas suitable for a display on the score dialog
+
+function argGameEnd()
+
+{
+
+return $this->getGameRankInfos();
+
+}
+<
+
+
+// This function must be called at the end of each game at gameEnd state
+
+// It record the result of the game in website loging tables
+
+function stGameEnd()
+
+{
+
+if ($this->bGameAbandonForced == true && self::getGameStateValue('game_result_neutralized') == 0) {
+
+return null;
+
+}
+<
+
+
+self::setReflexionTimeStandardDeviation();
+<
+
+
+global $g_config;
+<
+
+
+$result = $this->getGameRankInfos();
+<
+
+
+// End of game message coherent with game result display & email sent to players for async
+
+$winners = [];
+
+$notwinners = [];
+
+$one_positive_score = false;
+<
+
+
+foreach ($result['result'] as $player_id => $res) {
+
+if ($res['rank'] == 1) {
+
+$winners[] = $res['name'];
+
+} else {
+
+$notwinners[] = $res['name'];
+
+}
+<
+
+
+if ($res['score'] > 0) {
+
+$one_positive_score = $one_positive_score || true;
+
+}
+
+}
+<
+
+
+if (count($notwinners) == 0) {
+
+// Cooperative or solo games: if scores are <= 0, it's a defeat; otherwise it's a victory
+
+$gameinfos = self::getGameinfos();
+
+if ((isset($gameinfos['is_coop']) && $gameinfos['is_coop'] != 0) || count($result['result']) == 1) {
+
+if ($one_positive_score) {
+
+self::notifyAllPlayers('simpleNode', clienttranslate('End of game (victory)'), []);
+
+} else {
+
+self::notifyAllPlayers('simpleNode', clienttranslate('End of game (defeat)'), []);
+
+}
+
+} else {
+
+// Tie
+
+self::notifyAllPlayers('simpleNode', clienttranslate('End of game (tie)'), []);
+
+}
+
+} else {
+
+if (count($winners) === 1) {
+
+$firstPlayer = reset($result['result']);
+
+self::notifyAllPlayers('simpleNode', clienttranslate('End of game : ${player_name} wins!'), [
+
+'player_name' => $firstPlayer['name'],
+
+]);
+
+} elseif (count($winners) === 2) {
+
+self::notifyAllPlayers(
+
+'simpleNode',
+
+clienttranslate('The end of the game: ${player_name} and ${player_name2} win!'),
+
+[
+
+'player_name' => $winners[0],
+
+'player_name2' => $winners[1],
+
+]
+
+);
+
+} elseif (count($winners) === 3) {
+
+self::notifyAllPlayers(
+
+'simpleNode',
+
+clienttranslate('The end of the game: ${player_name}, ${player_name2} and ${player_name3} win!'),
+
+[
+
+'player_name' => $winners[0],
+
+'player_name2' => $winners[1],
+
+'player_name3' => $winners[2],
+
+]
+
+);
+
+} else {
+
+$logComponents = [];
+
+$args = [];
+
+$i = '';
+
+foreach ($winners as $winner) {
+
+$logComponents[] = "\${player_name$i}";
+
+$args["player_name$i"] = $winner;
+
+if ($i === '') {
+
+$i = 2;
+
+} else {
+
+$i++;
+
+}
+
+}
+
+self::notifyAllPlayers(
+
+'simpleNode',
+
+clienttranslate('The end of the game: ${comma_separated_player_names} win!'),
+
+[
+
+'comma_separated_player_names' => [
+
+'log' => implode(', ', $logComponents),
+
+'args' => $args,
+
+],
+
+]
+
+);
+
+}
+
+}
+<
+
+
+global $g_config;
+<
+
+
+if (isset($g_config['endgame_notification_url'])) {
+
+// Mindlab endgame notification service
+<
+
+
+$result_type = 'normal';
+
+if (isset($result['table']['concede']) && $result['table']['concede']) {
+
+$result_type = 'concede';
+
+}
+<
+
+
+$postData = [
+
+'result' => $result_type,
+
+'table_id' => $this->table_id,
+
+'results' => $result['result'],
+
+];
+<
+
+
+$notif_service_res = self::bgaCallUrl(
+
+$g_config['endgame_notification_url'],
+
+'cluster_long',
+
+$postData,
+
+true
+
+);
+<
+
+
+// For now, ignoring the result
+
+}
+<
+
+
+// Write this result on GS central database
+
+$this->bGameResultSendToMS = true;
+
+self::recordTableResult($result);
+<
+
+
+// Note: we do not have to trigger checkActivePlayersChange this turn because:
+
+// _ it cause GS => MS request
+
+// _ it will come AFTER the gameResult, so after the game has ended => there is no use for this, and it causes some deadlocks on MS during gameResult => disable it
+
+$this->bDoNotTriggercheckActivePlayersChange = true;
+<
+
+
+if (
+
+(isset($g_config['webpush_enabled']) && $g_config['webpush_enabled']) ||
+
+(isset($g_config['androidpush_enabled']) && $g_config['androidpush_enabled'])
+
+) {
+
+// Web push notification for the end of the game
+
+$o_webpush = new ebgWebPush();
+
+$o_androidpush = new ebgAndroidPush();
+<
+
+
+// Get gameserver number
+
+$fragmented_domain = explode('.', $g_config['app_domain']);
+
+$gameserver = array_shift($fragmented_domain);
+<
+
+
+// Get current locale to restore it later
+
+$locale_to_restore = Locale::GetLocalization();
+<
+
+
+// Get players infos
+
+$players_infos = apcu_fetch('players_infos_table_' . $this->table_id); // Can come from createGame or from a previous call to getGenericGameinfos
+<
+
+
+if ($players_infos === false) {
+
+$players = $this->loadPlayersBasicInfos();
+<
+
+
+$gamePageInfos = self::masterNodeRequest('getGenericGameinfos', [
+
+'table_id' => $this->table_id,
+
+'player_ids' => array_keys($players),
+
+'playersInfosOnly' => true,
+
+]);
+<
+
+
+// Cache players infos
+
+apcu_store('players_infos_table_' . $this->table_id, $gamePageInfos['players'], 24 * 3600);
+<
+
+
+$players_infos = $gamePageInfos['players'];
+
+}
+<
+
+
+$table_players = array_keys($players_infos);
+<
+
+
+if (count($table_players) > 1) {
+
+// No notifications for solo games: the player knows!
+
+foreach ($table_players as $table_player_id) {
+
+// Set proper locale for the player to be notified into the correct language
+
+if (isset($players_infos[$table_player_id]['language'])) {
+
+Locale::SetLocalizationFromShortCode($players_infos[$table_player_id]['language']);
+
+}
+<
+
+
+// Prepare notification content
+
+$url = 'table?table=' . $this->table_id; // Default = url on the mainsite
+<
+
+
+// If we have a gameserver, get the full url
+
+if (is_numeric($gameserver)) {
+
+$url = get_table_url($this->gamename, $gameserver, $this->table_id);
+
+}
+<
+
+
+// Opponents
+
+$against = '';
+
+$first_opponent = '';
+
+foreach ($players_infos as $player_info_id => $player_info) {
+
+if ($player_info_id == $table_player_id) {
+
+continue;
+
+}
+<
+
+
+if ($first_opponent == '') {
+
+$first_opponent = $player_info['player_name'];
+
+} else {
+
+$second_opponent = $player_info['player_name'];
+
+break;
+
+}
+
+}
+
+if (count($players_infos) == 2) {
+
+$against = ' ' . str_replace('${opponent}', $first_opponent, _('(against ${opponent})'));
+
+}
+
+if (count($players_infos) == 3) {
+
+$against =
+
+' ' .
+
+str_replace(
+
+['${first_opponent}', '${second_opponent}'],
+
+[$first_opponent, $second_opponent],
+
+_('(against ${first_opponent} and ${second_opponent})')
+
+);
+
+}
+
+if (count($players_infos) > 3) {
+
+$against =
+
+' ' .
+
+str_replace(
+
+['${first_opponent}', '${number}'],
+
+[$first_opponent, count($players_infos) - 2],
+
+_('(against ${first_opponent} and ${number} other players)')
+
+);
+
+}
+<
+
+
+// Notify
+
+if (
+
+isset($g_config['webpush_enabled']) &&
+
+$g_config['webpush_enabled'] &&
+
+isset($players_infos[$table_player_id]['browserSubscriptions']) &&
+
+count($players_infos[$table_player_id]['browserSubscriptions']) > 0 &&
+
+$players_infos[$table_player_id]['tableNotifications'] == 1
+
+) {
+
+$notifContent = [
+
+'title' => _('Game ends!'),
+
+'options' => [
+
+'body' =>
+
+"\n" .
+
+str_replace(
+
+['${table_id}', '${game_name}'],
+
+[$this->table_id . $against, _($this->gamename . '_displayed')],
+
+_('Your "${game_name}" table #${table_id} has ended. Thanks for playing!')
+
+) .
+
+"\n\n",
+
+'tag' => 'bgaTableNotification',
+
+'requireInteraction' =>
+
+isset($players_infos[$table_player_id]['stickyNotifications']) &&
+
+$players_infos[$table_player_id]['stickyNotifications'],
+
+'data' => [
+
+'url' => $url, // Will bring back the user to the appropriate tab or reopen it if needed
+
+'type' => 'notification-table-end', // Analytics category
+
+],
+
+],
+
+];
+<
+
+
+//NB: this call makes a self::CommitAllAndRestart(); so that the cron webpush process can see the notifications to send
+
+$o_webpush->pushNotificationToBrowsers(
+
+$players_infos[$table_player_id]['browserSubscriptions'],
+
+$notifContent
+
+);
+
+}
+
+if (
+
+isset($g_config['androidpush_enabled']) &&
+
+$g_config['androidpush_enabled'] &&
+
+isset($players_infos[$table_player_id]['androidSubscriptions']) &&
+
+isset($players_infos[$table_player_id]['androidSubscriptions'][$this->gamename]) &&
+
+count($players_infos[$table_player_id]['androidSubscriptions'][$this->gamename]) > 0 &&
+
+isset($g_config['androidpush_authkey_' . $this->gamename])
+
+) {
+
+$notifContent = [
+
+'notification' => [
+
+'title' => _('Game ends!'),
+
+'body' =>
+
+"\n" .
+
+str_replace(
+
+['${table_id}', '${game_name}'],
+
+[$this->table_id . $against, _($this->gamename . '_displayed')],
+
+_('Your "${game_name}" table #${table_id} has ended. Thanks for playing!')
+
+) .
+
+"\n\n",
+
+'tag' => 'bgaTableNotification',
+
+],
+
+'data' => [
+
+'url' => $url, // Will bring back the user to the appropriate tab or reopen it if needed
+
+'type' => 'notification-table-end', // Analytics category
+
+'table' => $this->table_id,
+
+],
+
+];
+<
+
+
+//NB: this call makes a self::CommitAllAndRestart(); so that the cron androidpush process can see the notifications to send
+
+$o_androidpush->pushNotificationToDevices(
+
+$players_infos[$table_player_id]['androidSubscriptions'][$this->gamename],
+
+$notifContent
+
+);
+
+}
+
+}
+
+}
+<
+
+
+// Restore previous locale
+
+Locale::SetLocalization($locale_to_restore);
+
+}
+<
+
+
+return $result;
+
+}
+<
+
+
+function recordTableResult($result)
+
+{
+
+global $g_config;
+
+$playerturn_nbr = self::getGameStateValue('playerturn_nbr');
+<
+
+
+if ($g_config['asynchronous_results_upload']) {
+
+$json_result = json_encode($result);
+
+$sql =
+
+'REPLACE INTO `' .
+
+$g_config['gameserver_global_database'] .
+
+"`.results (results_table_id, results_game_id, results_turn_nbr, result, result_date)
+
+VALUES
+
+('" .
+
+$this->table_id .
+
+"','" .
+
+$this->gameid .
+
+"','$playerturn_nbr', '" .
+
+self::escapeStringForDB($json_result) .
+
+"',NOW())";
+
+self::DbQuery($sql);
+<
+
+
+self::CommitAllAndRestart(); // So the cron GS posting result process can see the result
+
+apcu_delete('crongs_nothing_to_check'); // So the cron GS know that there is something to check
+
+} else {
+
+$res = self::masterNodeRequest('gameResult', [
+
+'result' => $result,
+
+'table_id' => $this->table_id,
+
+'game_id' => $this->gameid,
+
+'turn_nbr' => $playerturn_nbr,
+
+]);
+<
+
+
+self::notifyNow('/table/t' . $this->table_id, 'resultsAvailable', '', []);
+
+}
+
+}
+<
+
+
+function stTutorialStart()
+
+{
+
+// Active all beginners
+
+$players = self::loadPlayersBasicInfos();
+
+$player_ids = [];
+<
+
+
+foreach ($players as $player_id => $player) {
+
+if ($player['player_beginner'] !== null) {
+
+$player_ids[] = $player_id;
+
+}
+
+}
+<
+
+
+$this->gamestate->setPlayersMultiactive($player_ids, 'activeTutorial');
+
+}
+<
+
+
+function isSoloGame()
+
+{
+
+// Is this a solo game (= all opponents are AI?)
+<
+
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+$nb_real_player = 0;
+
+foreach ($players as $player) {
+
+if ($player['player_ai'] == 1) {
+
+// This is an AI
+
+} else {
+
+$nb_real_player++;
+
+}
+
+}
+<
+
+
+return $nb_real_player == 1;
+
+}
+<
+
+
+////////////////////////////////////////
+
+//// Notification system
+<
+
+
+// Note:
+
+// _ notification type: a comprehensive string that explain what is the notification for.
+
+// _ notification log: some piece of HTML that can be displayed on player's log window on the bottom right.
+
+// (note: logs can contains references to notification_args using dojo template system notation)
+
+// _ notification args: notification arguments.
+
+//
+
+function notifyAllPlayers($notification_type, $notification_log, $notification_args)
+
+{
+
+self::notifyPlayer('all', $notification_type, $notification_log, $notification_args);
+
+}
+
+function notifyPlayer($player_id, $notification_type, $notification_log, $notification_args)
+
+{
+
+if ($notification_log === null) {
+
+throw new feException(
+
+"Can't notify with null notification log message - please use an empty string instead"
+
+);
+
+}
+<
+
+
+$notification = [
+
+'uid' => uniqid(),
+
+'type' => $notification_type,
+
+'log' => $notification_log,
+
+'args' => $notification_args,
+
+];
+<
+
+
+if ($player_id != 'all') {
+
+// Synchronization between player channel and main channel
+
+$mainchannel_synchro_id = 0;
+
+if (isset($this->target_to_notification_packet['all'])) {
+
+if (isset($this->notifications[$this->target_to_notification_packet['all']])) {
+
+$mainchannel_synchro_id = count($this->notifications[$this->target_to_notification_packet['all']]);
+
+}
+
+}
+
+$notification['synchro'] = $mainchannel_synchro_id;
+
+}
+<
+
+
+$packet_id = null;
+
+if (!isset($this->target_to_notification_packet[$player_id])) {
+
+// There is no current notifications packet for this target => create it
+
+$packet_id = $this->next_notification_packet_id;
+
+$this->next_notification_packet_id++;
+<
+
+
+$this->notifications[$packet_id] = [];
+
+$this->target_to_notification_packet[$player_id] = $packet_id;
+
+$this->notification_packet_to_target[$packet_id] = $player_id;
+
+} else {
+
+$packet_id = $this->target_to_notification_packet[$player_id];
+
+}
+<
+
+
+// self::dump( "Publishing notification", $notification );
+<
+
+
+$this->notifications[$packet_id][] = $notification;
+
+}
+<
+
+
+// To be override (called just before "sendNotifications" request
+
+function onEndAjaxAction()
+
+{
+
+}
+<
+
+
+// Check that at the end of our game action we are in a safe state:
+
+// _ active player is not a zombie
+
+// _ current state is an active one (not a "game" one)
+
+// _ ... and in case we are in async mode, signal active players to metasite
+
+function checkReturnState()
+
+{
+
+if (!$this->bGameAbandonForced) {
+
+$state = $this->gamestate->state(true, false, true);
+
+$state_id = $this->gamestate->state_id();
+<
+
+
+$active_player_list = $this->gamestate->getActivePlayerList();
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($state['type'] == 'activeplayer' || $state['type'] == 'multipleactiveplayer') {
+
+// Check active player is not a zombie
+
+foreach ($active_player_list as $active_player) {
+
+if ($players[$active_player]['player_zombie'] == 1) {
+
+throw new feException("Can't manage zombie player in this game state (" . $state_id . ')');
+
+}
+
+}
+
+} elseif ($state['type'] == 'game') {
+
+throw new feException('Unexpected final game state (' . $state_id . ')');
+
+}
+
+}
+
+}
+<
+
+
+// Send notifications to player. This method is called at the end of each AJAX action, but can
+
+// be called more often if long operations are beeing performed.
+
+function sendNotifications()
+
+{
+
+if (count($this->notifications) > 0) {
+
+self::trace('Sending notifications');
+<
+
+
+global $g_config;
+<
+
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+// If there are some notifications to send to main channel, all private channels must be synchronized with this one.
+
+if (
+
+isset($this->target_to_notification_packet['all']) &&
+
+!$this->chatmessage_notification &&
+
+!$this->not_a_move_notification
+
+) {
+
+// Note: to avoid conflicts between processes when updating next notification no, we must
+
+// increment the "counter" first and read it after to ensure it is impossible that 2 transactions
+
+// update it at the same time
+<
+
+
+$next_move_index = $this->gamestate_labels['next_move_id'];
+<
+
+
+$increment = 1;
+
+if ($this->notifications_undo) {
+
+$increment = -1;
+
+}
+<
+
+
+$subsql = "UPDATE global SET global_value=global_value+$increment WHERE global_id='$next_move_index' ";
+
+self::DbQuery($subsql);
+<
+
+
+$subsql = "SELECT global_value FROM global WHERE global_id='$next_move_index' ";
+
+$dbres = self::DbQuery($subsql);
+
+$row = mysql_fetch_assoc($dbres);
+
+if (!$row) {
+
+throw new feException('FATAL: did not retrieve current move_id counter');
+
+}
+<
+
+
+$move_id = $row['global_value'] - 1;
+
+} else {
+
+$move_id = null;
+
+}
+<
+
+
+// At first, send player channel notifications
+
+foreach ($this->notifications as $packet_id => $notifications) {
+
+$player_id = $this->notification_packet_to_target[$packet_id];
+<
+
+
+if ($player_id != 'all') {
+
+// Specific player notification
+
+$this->sendNotificationPacket($player_id, $move_id, $notifications);
+
+}
+
+}
+<
+
+
+// Then, send table notifications
+
+foreach ($this->notifications as $packet_id => $notifications) {
+
+$player_id = $this->notification_packet_to_target[$packet_id];
+<
+
+
+if ($player_id == 'all') {
+
+// Broadcast to all players
+
+$this->sendNotificationPacket($player_id, $move_id, $notifications);
+
+}
+
+}
+<
+
+
+// Empty notifications
+
+$this->notifications = [];
+<
+
+
+if ($this->undoSaveOnMoveEnd) {
+
+self::doUndoSavePoint();
+
+}
+
+}
+
+}
+<
+
+
+// Send the specified notifications bunch to the specified player (or to ALL players if player_id=all)
+
+private function sendNotificationPacket($player_id, $move_id, $notifications)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id == 'all') {
+
+$channel = '/table/t' . $this->table_id;
+
+} else {
+
+$channel = '/player/p' . $player_id;
+
+}
+<
+
+
+global $g_user;
+
+$current_player_id = 0;
+<
+
+
+if ($g_user->is_logged()) {
+
+$current_player_id = $g_user->get_id();
+
+}
+<
+
+
+$is_private = $this->chatmessage_notification ? 1 : 0; // Note: private notifications can't be accessed with replay
+<
+
+
+reset($notifications);
+
+$first = key($notifications);
+
+end($notifications);
+
+$last = key($notifications);
+<
+
+
+if ($this->lock_uuid) {
+
+// Interface lock: adding it in the last notification
+
+$notifications[$last]['lock_uuid'] = $this->lock_uuid;
+
+}
+<
+
+
+if (isset($players[$current_player_id]) && $move_id !== null) {
+
+// Add hash about the query sent (play moves in replay feature)
+
+$notifications[$first]['h'] = self::getPlayerQueryHash($current_player_id, $move_id);
+
+}
+<
+
+
+// Insert into gamelog and get the corresponding packet id
+<
+
+
+if ($notifications[$last]['type'] == 'resetInterfaceWithAllDatas') {
+
+// Do not log anything in gamelog for UNDO
+
+$notif_string = self::escapeStringForDB(json_encode([]));
+
+} else {
+
+$notif_string = self::escapeStringForDB(json_encode($notifications));
+
+}
+<
+
+
+// DEPRECATED : no need to remove invisible character since we are now using utf8mb4 for gamenotif table
+
+// $notif_string = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $notif_string);
+<
+
+
+if (strlen($notif_string) >= 131072) {
+
+// Limit notification string to 128k
+
+throw new feException(
+
+'Error: generated notifications are larger than 128k (' . strlen($notif_string) . ')'
+
+);
+
+}
+<
+
+
+if ($current_player_id < 0) {
+
+// We should not register a move for a visitor
+
+throw new feException('Error: registering a move for a visitor should not happen');
+
+}
+<
+
+
+if (!$this->notifications_undo) {
+
+$sql =
+
+"INSERT INTO gamelog (gamelog_move_id, gamelog_private, gamelog_time, gamelog_player, gamelog_current_player, gamelog_notification)
+
+VALUES
+
+( " .
+
+($move_id === null ? 'NULL' : "'$move_id'") .
+
+", '$is_private', NOW(), " .
+
+($player_id == 'all' ? 'NULL' : "'$player_id'") .
+
+",'$current_player_id', '$notif_string')";
+
+self::DbQuery($sql);
+
+} else {
+
+// We are UNDOING a move => remove all we placed in the gamelog before corresponding to the previous move
+
+$sql =
+
+"UPDATE gamelog SET gamelog_notification='" .
+
+self::escapeStringForDB(serialize([])) .
+
+"' WHERE gamelog_move_id='" .
+
+($move_id + 1) .
+
+"'";
+
+self::DbQuery($sql);
+<
+
+
+// Insert a dummy packet in gamelog just to make sure we increase the notifpacket counter
+
+$sql =
+
+"INSERT INTO gamelog (gamelog_move_id, gamelog_private, gamelog_time, gamelog_player, gamelog_current_player, gamelog_notification)
+
+VALUES
+
+( NULL, '0', NOW(), " .
+
+($player_id == 'all' ? 'NULL' : "'$player_id'") .
+
+",'$current_player_id', '" .
+
+self::escapeStringForDB(serialize([])) .
+
+"')";
+
+self::DbQuery($sql);
+
+}
+<
+
+
+$notif_packet_id = self::DbGetLastId();
+<
+
+
+$prevpacket = self::getCollectionFromDB(
+
+"SELECT COALESCE( gamelog_player, 0 ), MAX( gamelog_packet_id )
+
+FROM gamelog
+
+WHERE gamelog_packet_id<$notif_packet_id
+
+GROUP BY gamelog_player",
+
+true
+
+);
+<
+
+
+// Push notification data to client using phomet
+
+$cometd = ebgBayeux::getGsBayeux($this->table_id, self::isRealtime());
+
+$cometd->publish(
+
+$channel,
+
+$notifications,
+
+'sequence',
+
+$notif_packet_id,
+
+$this->chatmessage_notification,
+
+false,
+
+$move_id,
+
+$prevpacket,
+
+$this->table_id,
+
+$this->gamename
+
+);
+
+}
+<
+
+
+// Return table next notification no and player next notification no:
+
+//
+
+function getCurrentNotificationNextNo($player_id = -1)
+
+{
+
+return self::getObjectFromDB("SELECT COALESCE( MAX( gamelog_packet_id ), 0 ) last_packet_id,
+
+COALESCE( MAX( gamelog_move_id ), 0 ) move_nbr
+
+FROM gamelog
+
+WHERE gamelog_player IS NULL OR gamelog_player='$player_id'");
+
+}
+<
+
+
+function getPlayerQueryHash($player_id, $move_id)
+
+{
+
+$query = $_GET + $_POST;
+<
+
+
+// Remove unnecessary things
+
+unset($query['module']);
+
+unset($query['class']);
+
+unset($query['dojo_preventCache']);
+
+unset($query['testuser']);
+
+unset($query['lock']);
+
+unset($query['noerrortracking']);
+<
+
+
+// Note : we keep table_id, so you cannot use the hash to determine what move has been played from one table to another
+<
+
+
+// Note : we add move_id, so you cannot use the hash to determine what move has been played from one move to another
+
+$query['__move_id__'] = $move_id;
+<
+
+
+// Note : we add player_id, because we have to remember which player we are
+
+$query['__player_id__'] = $player_id;
+<
+
+
+ksort($query);
+<
+
+
+$json = json_encode($query, JSON_NUMERIC_CHECK);
+
+$hash = md5($json);
+<
+
+
+return substr($hash, 0, 6);
+
+}
+<
+
+
+///////////// Logs history
+<
+
+
+public function getNotificationHistory($from_notif, $to_notif, $private_included, $archive, $bHistoryIncluded)
+
+{
+
+global $g_user;
+
+$player_id = null;
+
+if ($g_user->is_logged()) {
+
+$player_id = $g_user->get_id();
+
+}
+<
+
+
+if ($archive != '') {
+
+global $g_config;
+
+if ($archive != $g_config['job_password']) {
+
+throw new feException('Cannot access notification archives: wrong credentials');
+
+}
+
+}
+<
+
+
+$players = self::loadPlayersBasicInfos();
+
+$bSpectator = false;
+
+if (!isset($players[$player_id])) {
+
+$bSpectator = true;
+
+}
+<
+
+
+$retrieve_notif_from = $from_notif;
+
+if ($bHistoryIncluded) {
+
+$retrieve_notif_from -= 200;
+
+} //// Retrieve 200 more packets just to fill notification history => we only load 200 last because otherwise games with a lot of notif may be really slow (see below)
+
+// $retrieve_notif_from = 0; //// Retrieve ALL packets from the beginning =====> was causing games load to be really slow https://boardgamearena.com/bug?id=24727
+<
+
+
+$sql =
+
+'SELECT gamelog_packet_id, gamelog_move_id, gamelog_player, gamelog_notification, UNIX_TIMESTAMP( gamelog_time ) time ';
+
+$sql .= 'FROM gamelog ';
+
+$sql .= "WHERE gamelog_packet_id >= $retrieve_notif_from ";
+<
+
+
+if ($to_notif != 0) {
+
+$sql .= "AND gamelog_packet_id <= $to_notif ";
+
+}
+<
+
+
+if ($bSpectator || !$private_included) {
+
+$sql .= " AND gamelog_private='0' ";
+
+} // Spectators (including game reviewer) are not allowed to see private notifications
+<
+
+
+if (!$archive) {
+
+$sql .= "AND ( gamelog_player IS NULL OR gamelog_player='$player_id')";
+
+}
+<
+
+
+$sql .= ' ORDER BY gamelog_packet_id ASC ';
+<
+
+
+$dbres = self::DbQuery($sql);
+
+$result = [];
+<
+
+
+while ($row = mysql_fetch_assoc($dbres)) {
+
+$notif_data = unserialize_game_notifs($row['gamelog_notification']);
+<
+
+
+$packet_history_type = $row['gamelog_packet_id'] >= $from_notif ? 'resend' : 'history';
+<
+
+
+if ($packet_history_type == 'history') {
+
+// This will only be used to display logs => we can remove all notifications with no logs
+<
+
+
+$simplified_notif_data = [];
+<
+
+
+foreach ($notif_data as $single_notif) {
+
+if (isset($single_notif['log']) && $single_notif['log'] != '') {
+
+// Simplify args : do not take args that are not used in "log"
+
+// (except 'i18n' that is needed for correct internationalization)
+
+// (except: player_id for chatlog that is used on client side)
+
+if (isset($single_notif['args'])) {
+
+$simplified_args = [];
+
+foreach ($single_notif['args'] as $arg_id => $arg_content) {
+
+$listOfArgsToPreserve = ['i18n', 'player_id'];
+<
+
+
+if (
+
+array_key_exists('preserve', $single_notif['args']) &&
+
+is_array($single_notif['args']['preserve'])
+
+) {
+
+$listOfArgsToPreserve = array_merge(
+
+$listOfArgsToPreserve,
+
+$single_notif['args']['preserve']
+
+);
+
+}
+<
+
+
+$shouldBePreserved = array_search($arg_id, $listOfArgsToPreserve) !== false;
+<
+
+
+if (strpos($single_notif['log'], $arg_id) !== false || $shouldBePreserved) {
+
+$simplified_args[$arg_id] = $arg_content;
+
+}
+
+}
+
+$single_notif['args'] = $simplified_args;
+
+}
+<
+
+
+$simplified_notif_data[] = $single_notif;
+
+}
+
+}
+<
+
+
+$notif_data = $simplified_notif_data;
+
+}
+<
+
+
+if (count($notif_data) > 0) {
+
+$result[] = [
+
+'channel' =>
+
+$row['gamelog_player'] == null
+
+? '/table/t' . $this->table_id
+
+: '/player/p' . $row['gamelog_player'],
+
+'table_id' => $this->table_id,
+
+'packet_id' => $row['gamelog_packet_id'],
+
+'packet_type' => $packet_history_type,
+
+'move_id' => $row['gamelog_move_id'],
+
+'time' => $row['time'],
+
+'data' => $notif_data,
+
+];
+
+}
+
+}
+<
+
+
+return $result;
+
+}
+<
+
+
+function getReplayDatas($from_move)
+
+{
+
+}
+<
+
+
+// Debug from chat: launch a PHP method of the current game for debugging purpose
+
+function debugChat($message)
+
+{
+
+if (substr($message, 0, 1) == ':') {
+
+return false;
+
+} // Could be a sandbox script debug
+<
+
+
+preg_match("/^(.*)\((.*)\)$/", $message, $res);
+<
+
+
+if (count($res) == 3) {
+
+$method = $res[1];
+
+$args = $res[2];
+
+$args = explode(',', $args);
+
+if (method_exists($this, $method)) {
+
+self::notifyAllPlayers('simplenotif', "DEBUG: running $method().", []);
+<
+
+
+call_user_func_array([$this, $method], $args);
+
+return true;
+
+} else {
+
+self::notifyAllPlayers(
+
+'simplenotif',
+
+"DEBUG: method $method() does not exists in your PHP game class.",
+
+[]
+
+);
+
+}
+
+}
+
+return false;
+
+}
+
+function sandboxDebugChat($message)
+
+{
+
+// To be override
+
+return false;
+
+}
+<
+
+
+// DEBUG function: make current player in timeout so its turn can be skipped
+
+function timeout()
+
+{
+
+$active_player = self::getActivePlayerId();
+
+$sql = 'UPDATE player SET player_remaining_reflexion_time=-1 WHERE player_start_reflexion_time IS NOT NULL ';
+
+self::DbQuery($sql);
+
+self::CommitAllAndRestart();
+
+$this->skipPlayersOutOfTime(false, true);
+
+}
+
+function timeover()
+
+{
+
+$active_player = self::getActivePlayerId();
+
+$sql = 'UPDATE player SET player_remaining_reflexion_time=-1 WHERE player_start_reflexion_time IS NOT NULL ';
+
+self::DbQuery($sql);
+
+self::CommitAllAndRestart();
+
+}
+<
+
+
+////////////// Player elimination
+<
+
+
+function eliminatePlayer($player_id)
+
+{
+
+// Check if player is playing at this table and is not active
+<
+
+
+$player = self::getObjectFromDB(
+
+"SELECT player_name, player_start_reflexion_time, player_eliminated, player_zombie FROM player WHERE player_id='$player_id'"
+
+);
+<
+
+
+if ($player == null) {
+
+throw new feException('Try to eliminate a player that is not playing at this table');
+
+}
+<
+
+
+if ($player['player_eliminated'] == 1) {
+
+// Already been eliminated => nothing to do
+
+return;
+
+}
+<
+
+
+if ($player['player_start_reflexion_time'] != null) {
+
+throw new feException("Can't eliminate an active player");
+
+}
+<
+
+
+// Check there are at least 2 non-eliminated player still at table
+
+$bMustCloseTableImmediately = false;
+
+if (self::getUniqueValueFromDB("SELECT COUNT( player_id ) FROM player WHERE player_eliminated='0'") <= 1) {
+
+$bMustCloseTableImmediately = true;
+
+}
+<
+
+
+if ($player['player_zombie'] == 1) {
+
+// If the player is a zombie, they have already been put out of the game on the mainsite
+
+} else {
+
+// Signal mainsite that this player has been eliminated
+
+self::masterNodeRequest('eliminatePlayer', [
+
+'table_id' => $this->table_id,
+
+'player_id' => $player_id,
+
+'current' => self::getCurrentPlayerId(true),
+
+]);
+
+}
+<
+
+
+// Okay, we can eliminate this player on the gs side
+
+self::DbQuery("UPDATE player SET player_eliminated='1' WHERE player_id='$player_id'");
+
+self::notifyAllPlayers(
+
+'playerEliminated',
+
+clienttranslate('${player_name} has been eliminated from the game'),
+
+[
+
+'player_name' => $player['player_name'],
+
+'who_quits' => $player_id,
+
+]
+
+);
+<
+
+
+// Reset players basic infos in order in can be updated
+
+$this->reloadPlayersBasicInfos();
+<
+
+
+if ($bMustCloseTableImmediately) {
+
+$this->gamestate->jumpToState(99);
+
+}
+
+}
+<
+
+
+function getGameLanguage()
+
+{
+
+return self::getGameStateValue('game_language');
+
+}
+<
+
+
+function isAsync()
+
+{
+
+$time_profile = self::getGameStateValue('reflexion_time_profile');
+
+return $time_profile >= 10;
+
+}
+<
+
+
+function isRealtime()
+
+{
+
+return !self::isAsync();
+
+}
+<
+
+
+// Central method to set all time limits for tables, depending on time profile
+
+static function getTimeLimits($time_profile, $game_name = null)
+
+{
+
+require_once APP_GAMEMODULE_PATH . 'module/table/gamestate.game.php';
+
+return Gamestate::getTimeLimits($time_profile, $game_name);
+
+}
+<
+
+
+// According to current time profile, return time limits of current table
+
+function getAsyncTimeLimits()
+
+{
+
+$time_profile = self::getGameStateValue('reflexion_time_profile');
+<
+
+
+if ($time_profile < 10) {
+
+throw new feException('getAsyncTimeLimits called with a realtime table');
+
+}
+<
+
+
+return self::getTimeLimits($time_profile);
+
+}
+<
+
+
+function checkActivePlayersChange($bOnTableCreation = false)
+
+{
+
+if (isset($this->bDoNotTriggercheckActivePlayersChange)) {
+
+return;
+
+}
+<
+
+
+$activePlayerWhenActionEnd = $this->gamestate->getActivePlayerList();
+<
+
+
+$new_active_players = array_diff($activePlayerWhenActionEnd, $this->activePlayersWhenActionStarted);
+
+$new_inactive_players = array_diff($this->activePlayersWhenActionStarted, $activePlayerWhenActionEnd);
+<
+
+
+if (count($new_active_players) != 0 || count($new_inactive_players) != 0) {
+
+if (self::isAsync()) {
+
+// Must send an asyncTableMove !
+
+$this->gamestate->sendAsyncTableMove([
+
+'new_active' => $new_active_players,
+
+'new_inactive' => $new_inactive_players,
+
+'new_table' => $bOnTableCreation,
+
+]);
+
+} else {
+
+global $g_config;
+
+if (
+
+(isset($g_config['webpush_enabled']) && $g_config['webpush_enabled']) ||
+
+(isset($g_config['androidpush_enabled']) && $g_config['androidpush_enabled'])
+
+) {
+
+// Web push notification to new active players that it's their turn to play
+
+$o_webpush = new ebgWebPush();
+
+$o_androidpush = new ebgAndroidPush();
+<
+
+
+// Get gameserver number
+
+$fragmented_domain = explode('.', $g_config['app_domain']);
+
+$gameserver = array_shift($fragmented_domain);
+<
+
+
+// Get current locale to restore it later
+
+$locale_to_restore = Locale::GetLocalization();
+<
+
+
+// Get players infos
+
+$players_infos = apcu_fetch('players_infos_table_' . $this->table_id); // Can come from createGame or from a previous call to getGenericGameinfos
+<
+
+
+if ($players_infos === false) {
+
+$players = $this->loadPlayersBasicInfos();
+<
+
+
+$gamePageInfos = self::masterNodeRequest('getGenericGameinfos', [
+
+'table_id' => $this->table_id,
+
+'player_ids' => array_keys($players),
+
+'playersInfosOnly' => true,
+
+]);
+<
+
+
+// Cache players infos
+
+apcu_store('players_infos_table_' . $this->table_id, $gamePageInfos['players'], 24 * 3600);
+<
+
+
+$players_infos = $gamePageInfos['players'];
+
+}
+<
+
+
+if (count($players_infos) > 1) {
+
+// No notifications for solo games: the player knows!
+
+foreach ($new_active_players as $table_player_id) {
+
+if (!isset($players_infos[$table_player_id])) {
+
+self::trace(
+
+"Players infos missing for player $table_player_id, could not decide if we should send web push notification or not."
+
+);
+
+continue;
+
+}
+<
+
+
+// Set proper locale for the player to be notified into the proper language
+
+if (isset($players_infos[$table_player_id]['language'])) {
+
+Locale::SetLocalizationFromShortCode($players_infos[$table_player_id]['language']);
+
+}
+<
+
+
+// Prepare notification content
+
+$url = 'table?table=' . $this->table_id; // Default = url on the mainsite
+<
+
+
+// If we have a gameserver, get the full url
+
+if (is_numeric($gameserver)) {
+
+$url = get_table_url($this->gamename, $gameserver, $this->table_id);
+
+}
+<
+
+
+// Opponents
+
+$against = '';
+
+$first_opponent = '';
+
+foreach ($players_infos as $player_info_id => $player_info) {
+
+if ($player_info_id == $table_player_id) {
+
+continue;
+
+}
+<
+
+
+if ($first_opponent == '') {
+
+$first_opponent = $player_info['player_name'];
+
+} else {
+
+$second_opponent = $player_info['player_name'];
+
+break;
+
+}
+
+}
+
+if (count($players_infos) == 2) {
+
+$against =
+
+' ' . str_replace('${opponent}', $first_opponent, _('(against ${opponent})'));
+
+}
+
+if (count($players_infos) == 3) {
+
+$against =
+
+' ' .
+
+str_replace(
+
+['${first_opponent}', '${second_opponent}'],
+
+[$first_opponent, $second_opponent],
+
+_('(against ${first_opponent} and ${second_opponent})')
+
+);
+
+}
+
+if (count($players_infos) > 3) {
+
+$against =
+
+' ' .
+
+str_replace(
+
+['${first_opponent}', '${number}'],
+
+[$first_opponent, count($players_infos) - 2],
+
+_('(against ${first_opponent} and ${number} other players)')
+
+);
+
+}
+<
+
+
+// Notify
+
+if (
+
+isset($g_config['webpush_enabled']) &&
+
+$g_config['webpush_enabled'] &&
+
+isset($players_infos[$table_player_id]['browserSubscriptions']) &&
+
+count($players_infos[$table_player_id]['browserSubscriptions']) > 0 &&
+
+$players_infos[$table_player_id]['yourTurnRTNotifications'] == 1
+
+) {
+
+$notifContent = [
+
+'title' => _("It's your turn to play!"),
+
+'options' => [
+
+'body' =>
+
+"\n" .
+
+str_replace(
+
+['${table_id}', '${game_name}'],
+
+[$this->table_id . $against, _($this->gamename . '_displayed')],
+
+_('You are expected at "${game_name}" real-time table #${table_id}.')
+
+) .
+
+"\n\n",
+
+'tag' => 'bgaYourTurnNotification',
+
+'requireInteraction' =>
+
+isset($players_infos[$table_player_id]['stickyNotifications']) &&
+
+$players_infos[$table_player_id]['stickyNotifications'],
+
+'data' => [
+
+'url' => $url, // Will bring back the user to the appropriate tab or reopen it if needed
+
+'type' => 'notification-yourturn-realtime', // Analytics category
+
+],
+
+],
+
+];
+<
+
+
+//NB: this call makes a self::CommitAllAndRestart(); so that the cron webpush process can see the notifications to send
+
+$o_webpush->pushNotificationToBrowsers(
+
+$players_infos[$table_player_id]['browserSubscriptions'],
+
+$notifContent
+
+);
+
+}
+<
+
+
+if (
+
+isset($g_config['androidpush_enabled']) &&
+
+$g_config['androidpush_enabled'] &&
+
+isset($players_infos[$table_player_id]['androidSubscriptions']) &&
+
+isset($players_infos[$table_player_id]['androidSubscriptions'][$this->gamename]) &&
+
+count($players_infos[$table_player_id]['androidSubscriptions'][$this->gamename]) > 0 &&
+
+isset($g_config['androidpush_authkey_' . $this->gamename])
+
+) {
+
+$notifContent = [
+
+'notification' => [
+
+'title' => _("It's your turn to play!"),
+
+'body' =>
+
+"\n" .
+
+str_replace(
+
+['${table_id}', '${game_name}'],
+
+[$this->table_id . $against, _($this->gamename . '_displayed')],
+
+_('You are expected at "${game_name}" real-time table #${table_id}.')
+
+) .
+
+"\n\n",
+
+'tag' => 'bgaYourTurnNotification',
+
+],
+
+'data' => [
+
+'url' => $url, // Will bring back the user to the appropriate tab or reopen it if needed
+
+'type' => 'notification-yourturn-realtime', // Analytics category
+
+'table' => $this->table_id,
+
+],
+
+];
+<
+
+
+//NB: this call makes a self::CommitAllAndRestart(); so that the cron androidpush process can see the notifications to send
+
+$o_androidpush->pushNotificationToDevices(
+
+$players_infos[$table_player_id]['androidSubscriptions'][$this->gamename],
+
+$notifContent
+
+);
+
+}
+
+}
+
+}
+<
+
+
+// Restore previous locale
+
+Locale::SetLocalization($locale_to_restore);
+
+}
+
+}
+
+}
+<
+
+
+if (count($new_active_players) != 0) {
+
+if (self::isAsync()) {
+
+// Note: used as a counter for turn based interactions
+
+self::incStat(1, 'interaction_nbr');
+
+}
+
+}
+
+}
+<
+
+
+function upgradeTableDbInternal(int $from_version, int $game_version)
+
+{
+
+// add the table for globals, for game tables not already having it (tables created before 240710-1000)
+
+$this->applyDbUpgradeToAllDB("CREATE TABLE IF NOT EXISTS `DBPREFIX_bga_globals` (`name` varchar(50) NOT NULL, `value` json, PRIMARY KEY (`name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+<
+
+
+$this->upgradeTableDb($from_version);
+<
+
+
+if ($from_version <= 2200000000 && $game_version >= 2200000000) {
+
+$sql = 'ALTER TABLE `DBPREFIX_global` MODIFY COLUMN `global_value` BIGINT(11) NOT NULL';
+
+$this->applyDbUpgradeToAllDB($sql);
+
+}
+
+}
+<
+
+
+function upgradeTableDb($from_version)
+
+{
+
+// To be override by games
+
+}
+<
+
+
+///////////////////////////////////////////////////////////////////////////////////////////:
+
+//// Replay from savepoint feature
+<
+
+
+// Return all current replay points with an array: "slot => move"
+
+function getReplayPoints()
+
+{
+
+$last_move_global_id = GAMESTATE_NEXT_NOTIF_NO;
+
+return self::getCollectionFromDB(
+
+"( SELECT 1 AS slot, global_value-1 move FROM zz_replay1_global WHERE global_id='$last_move_global_id' )
+
+UNION ( SELECT 2 AS slot, global_value-1 move FROM zz_replay2_global WHERE global_id='$last_move_global_id' )
+
+UNION ( SELECT 3 AS slot, global_value-1 move FROM zz_replay3_global WHERE global_id='$last_move_global_id' )
+
+",
+
+true
+
+);
+
+}
+<
+
+
+// Note: this method is here to check if we should use the old zz_replay tables or the new replaysavepoint system for "replay from move X" feature
+
+// It should be removed at some point in the future when the replaysavepoint will be everywhere
+
+function isReplaySavePointTableExists()
+
+{
+
+try {
+
+self::getUniqueValueFromDB('SELECT rsp_player_id FROM replaysavepoint LIMIT 0,1');
+
+} catch (feException $e) {
+
+return false;
+
+}
+<
+
+
+return true;
+
+}
+<
+
+
+function saveReplayPoint($move_id)
+
+{
+
+if (self::isReplaySavePointTableExists()) {
+
+$this->saveReplayPointAfterNotificationsSending = $move_id;
+
+} else {
+
+// zz_replay based method (DEPRECATED )
+<
+
+
+$save_every = $this->gamestate->save_every;
+<
+
+
+$slot = (floor($move_id / $save_every) % 3) + 1;
+<
+
+
+// Copy all tables to zz_replay<slot>
+
+$tables = self::getObjectListFromDB('SHOW TABLES', true);
+
+$prefix = 'zz_savepoint_';
+
+$other_prefix = 'zz_replay';
+<
+
+
+global $g_config;
+
+if (isset($g_config['disable_save_replay_point']) && $g_config['disable_save_replay_point']) {
+
+return;
+
+}
+<
+
+
+foreach ($tables as $table) {
+
+if (substr($table, 0, strlen($prefix)) == $prefix) {
+
+// Save point => do not copy
+
+} elseif (substr($table, 0, strlen($other_prefix)) == $other_prefix) {
+
+// Save point => do not copy
+
+} elseif ($table == 'replaysavepoint') {
+
+// New way to handle replay save point (so do not copy)
+
+} elseif ($table == 'bga_user_preferences') {
+
+// cache of user preferences (so do not copy)
+
+} else {
+
+// This table must be saved into its copy
+
+$copy = 'zz_replay' . $slot . '_' . $table;
+
+self::DbQuery("DELETE FROM $copy");
+
+$fields = self::getFieldsListOfTable($table);
+
+try {
+
+self::DbQuery("INSERT INTO $copy ($fields) SELECT $fields FROM $table");
+
+} catch (Exception $ex) {
+
+//after introducing private parallel states there was a problem with undo
+
+$fields = str_replace(',`player_state`', '', $fields);
+
+self::DbQuery("INSERT INTO $copy ($fields) SELECT $fields FROM $table");
+
+}
+
+}
+
+}
+
+}
+
+}
+<
+
+
+function saveReplayPointUsingReplaySavePoint()
+
+{
+
+if (isset($this->saveReplayPointAfterNotificationsSending)) {
+
+$move_id = $this->saveReplayPointAfterNotificationsSending;
+<
+
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+global $g_user;
+<
+
+
+foreach ($players as $player_id => $player) {
+
+$g_user->setTemporaryMasquerade($player_id);
+
+$gamedatas = self::getAllTableDatas();
+
+$g_user->temporary_masquerade = null; // Note: we should modify directly the variable here, because a call to setTemporaryMasquerade would kill the session
+<
+
+
+$gamedatas_json = json_encode($gamedatas);
+<
+
+
+$sql =
+
+"REPLACE INTO replaysavepoint
+
+(rsp_player_id,rsp_move_id,rsp_gamedatas)
+
+VALUES
+
+('$player_id','$move_id','" .
+
+self::escapeStringForDB($gamedatas_json) .
+
+"')";
+<
+
+
+self::DbQuery($sql);
+<
+
+
+// Remove savepoint more than 31 moves old
+
+// (because they are not likely to be used and are taking a lot of space)
+
+$move_limit = $move_id - 30;
+
+$sql = "DELETE FROM replaysavepoint WHERE rsp_move_id <= $move_limit";
+
+self::DbQuery($sql);
+
+}
+
+}
+
+}
+<
+
+
+///////////////////////////////////////////////////////////////////////////////////////////:
+
+//// Undo feature
+<
+
+
+function undoAndReplayInit()
+
+{
+
+$gameinfos = self::getGameinfos();
+<
+
+
+$prefixes = [];
+<
+
+
+// This is only temporary, to make the switch to savereplaypoint easier, and should be removed afterwards
+
+if (!self::isReplaySavePointTableExists()) {
+
+// Not savereplaypoint => must created zz_replay like before
+<
+
+
+$prefixes[] = 'zz_replay1_';
+
+$prefixes[] = 'zz_replay2_';
+
+$prefixes[] = 'zz_replay3_';
+
+}
+<
+
+
+if (isset($gameinfos['db_undo_support'])) {
+
+$prefixes[] = 'zz_savepoint_';
+
+}
+<
+
+
+if (count($prefixes) > 0) {
+
+// Copy all tables to their respective savepoints
+
+$tables = self::getObjectListFromDB('SHOW TABLES', true);
+<
+
+
+self::enableMultiQueries();
+
+foreach ($tables as $table) {
+
+foreach ($prefixes as $prefix) {
+
+if ($table != 'replaysavepoint' && $table != 'bga_user_preferences') {
+
+// Do not copy these ones
+
+$copy = $prefix . $table;
+
+self::DbQuery("CREATE TABLE $copy LIKE `$table`");
+
+}
+
+}
+
+}
+
+self::sendMultiQueries();
+<
+
+
+foreach ($tables as $table) {
+
+foreach ($prefixes as $prefix) {
+
+// Must remove auto_increment from tables
+
+$copy = $prefix . $table;
+
+//self::removeAutoIncrementFromTable( $copy ); // DEPRECATED: causing too much "SHOW COLUMNS" and taking too much time during table creation
+
+}
+
+}
+
+}
+
+}
+<
+
+
+// DEPRECATED: causing too much "SHOW COLUMNS" and taking too much time during table creation
+
+function removeAutoIncrementFromTable($table)
+
+{
+
+$fields = self::getObjectListFromDB("SHOW COLUMNS FROM $table");
+
+$auto_increment_field = null;
+
+$aifield = null;
+
+foreach ($fields as $field) {
+
+if ($field['Extra'] == 'auto_increment') {
+
+$aifield = $field;
+
+}
+
+}
+<
+
+
+if ($aifield !== null) {
+
+$sql =
+
+"ALTER TABLE $table CHANGE " .
+
+$aifield['Field'] .
+
+' ' .
+
+$aifield['Field'] .
+
+' ' .
+
+$aifield['Type'] .
+
+' UNSIGNED ';
+<
+
+
+if ($aifield['Null'] == 'NO') {
+
+$sql .= 'NOT NULL';
+
+}
+<
+
+
+self::DbQuery($sql);
+
+}
+
+}
+<
+
+
+function getFieldsListOfTable($table)
+
+{
+
+$db_version = intval(self::getGameStateValue('game_db_version'));
+
+$key = $this->getGameName() . '_' . $db_version . '_' . $table;
+<
+
+
+if ($result = apcu_fetch($key)) {
+
+return $result;
+
+} else {
+
+$result = [];
+
+$fields = self::getObjectListFromDB("SHOW COLUMNS FROM $table");
+<
+
+
+foreach ($fields as $field) {
+
+if ($field != 'player_bowl1' && $field != 'player_bowl2' && $field != 'player_bowl3') {
+
+// TMP fix for terra mystica
+
+$result[] = $field['Field'];
+
+}
+
+}
+<
+
+
+$result = '`' . implode('`,`', $result) . '`';
+<
+
+
+apcu_add($key, $result);
+<
+
+
+return $result;
+
+}
+
+}
+<
+
+
+// Return true / false depending if the current game situation correspond to the savepoint (because a savepoint or an undo has just been done)
+
+function undoIsCurrentlyOnSavepoint()
+
+{
+
+$current_move_id = self::getUniqueValueFromDB("SELECT global_value FROM global WHERE global_id='3'");
+<
+
+
+if (count($this->notifications) > 0) {
+
+// Some notifications are waiting to be sent, so in reality we are at "move+1"
+
+$current_move_id++;
+
+}
+<
+
+
+try {
+
+$saved_move_id = self::getUniqueValueFromDB(
+
+"SELECT global_value FROM zz_savepoint_global WHERE global_id='3'"
+
+);
+
+} catch (feException $e) {
+
+// May failed if the undo has not been configured yet
+
+// => in this case, ignore it and pretend that we are in UNDO point (this was no UNDO button is displayed on interface, as this is the most common usage of this method)
+
+return true;
+
+}
+<
+
+
+if ($saved_move_id != $current_move_id) {
+
+return false;
+
+} else {
+
+return true;
+
+}
+
+}
+<
+
+
+function undoInit()
+
+{
+
+// For compatibility => to remove once TTA has been updated at least once
+
+}
+<
+
+
+function undoSavepoint()
+
+{
+
+// if( self::isAsync() )
+
+$this->undoSaveOnMoveEnd = true;
+
+}
+<
+
+
+function doUndoSavePoint()
+
+{
+
+// if( self::isAsync() )
+
+$state = $this->gamestate->state();
+
+if ($state['type'] == 'multipleactiveplayer') {
+
+throw new feException('UNDO cannot be used for multiple active players game states');
+
+}
+<
+
+
+/*
+<
+
+
+///// Use mysqldump instead of zz tables
+
+///// Note : this is too slow during restore => removed from now
+<
+
+
+$undo_moves_stored = self::getGameStateValue( 'undo_moves_stored' );
+
+$undo_moves_player = self::getGameStateValue( 'undo_moves_player' );
+<
+
+
+if( $undo_moves_player != self::getActivePlayerId() )
+
+{
+
+// Active player changed since the last savepoint => there is NO MORE valid save points
+
+$undo_moves_stored = 0;
+
+self::setGameStateValue( 'undo_moves_player', self::getActivePlayerId() );
+
+}
+<
+
+
+$this_undo_number = $undo_moves_stored +1; // 1, 2, 3, 4, ...
+<
+
+
+$this->saveCurrentGameDbTo( "undo_".$this_undo_number );
+<
+
+
+self::setGameStateValue( 'undo_moves_stored', $this_undo_number );
+
+*/
+<
+
+
+// Copy all tables to their respective savepoints
+<
+
+
+$tables = self::getObjectListFromDB('SHOW TABLES', true);
+
+$prefix = 'zz_savepoint_';
+
+$other_prefix = 'zz_replay';
+
+self::setGameStateValue('undo_moves_player', self::getActivePlayerId());
+<
+
+
+// Check that undo tables exists
+
+$bUndoConfigured = false;
+
+foreach ($tables as $table) {
+
+if (substr($table, 0, strlen($prefix)) == $prefix) {
+
+$bUndoConfigured = true;
+
+}
+
+}
+<
+
+
+if (!$bUndoConfigured) {
+
+// Undo has not been configured
+
+// (may be because we added undo AFTER the game has been released)
+
+// => ignore the doUndoSave saving
+
+return;
+
+}
+<
+
+
+foreach ($tables as $table) {
+
+if (substr($table, 0, strlen($prefix)) == $prefix) {
+
+// Save point => do not copy
+
+} elseif (substr($table, 0, strlen($other_prefix)) == $other_prefix) {
+
+} elseif ($table == 'replaysavepoint' || $table == 'bga_user_preferences') {
+
+} else {
+
+// This table must be saved into its copy
+
+$copy = $prefix . $table;
+
+self::DbQuery("DELETE FROM $copy");
+
+$fields = self::getFieldsListOfTable($table);
+
+try {
+
+self::DbQuery("INSERT INTO $copy ($fields) SELECT $fields FROM $table");
+
+} catch (Exception $ex) {
+
+//after introducing private parallel states there was a problem with undo
+
+$fields = str_replace(',`player_state`', '', $fields);
+
+self::DbQuery("INSERT INTO $copy ($fields) SELECT $fields FROM $table");
+
+}
+
+}
+
+}
+
+}
+<
+
+
+function saveCurrentGameDbTo($file)
+
+{
+
+// Directory
+
+$target_file = APP_DATA_PATH . 'gamearchive/' . $this->table_id . '/' . $file . '.sql';
+<
+
+
+$dbname = 'ebd_' . $this->gamename . '_' . $this->table_id;
+<
+
+
+global $g_config;
+
+// $command = "mysqldump --opt --databases --add-drop-database -u ".$g_config['db_user']." -p".$g_config['db_password']." $dbname >".$target_file;
+
+$command =
+
+'mysqldump --opt --add-drop-table --extended-insert --no-autocommit --skip-comments --databases -u ' .
+
+$g_config['db_user'] .
+
+' -p' .
+
+$g_config['db_password'] .
+
+" $dbname >" .
+
+$target_file .
+
+' 2>&1';
+<
+
+
+self::CommitAllAndRestart(); // Note : we are at the very end of a successfull request, after notifications has been sent so we can do this.
+
+$output = '';
+
+$ret = '';
+
+$result = exec($command, $output, $ret);
+<
+
+
+if ($result !== null) {
+
+if ($result != '') {
+
+throw new feException('Error during saveCurrentGameDbTo ' . $result, false, false);
+
+}
+
+}
+
+}
+
+function loadCurrentGameDbFrom($file)
+
+{
+
+$source_file = APP_DATA_PATH . 'gamearchive/' . $this->table_id . '/' . $file . '.sql';
+<
+
+
+$dbname = 'ebd_' . $this->gamename . '_' . $this->table_id;
+<
+
+
+global $g_config;
+<
+
+
+$command =
+
+'cat ' . $source_file . ' | mysql -u ' . $g_config['db_user'] . ' -p' . $g_config['db_password'] . ' 2>&1';
+<
+
+
+self::CommitAllAndRestart(); // Note : we are going to remove all the database anyway, so we can commit all.
+
+$output = '';
+
+$ret = '';
+
+$result = exec($command, $output, $ret);
+<
+
+
+if ($result !== null) {
+
+if ($result != '') {
+
+throw new feException('Error during loadCurrentGameDbTo ' . $result, false, false);
+
+}
+
+}
+
+}
+<
+
+
+function undoRestorePoint()
+
+{
+
+// if( self::isAsync() )
+
+self::notifyAllPlayers('undoRestorePoint', clienttranslate('${player_name} takes back his move'), [
+
+'player_name' => self::getActivePlayerName(),
+
+]);
+<
+
+
+//$undo_moves_stored = self::getGameStateValue( 'undo_moves_stored' );
+<
+
+
+// if( $undo_moves_stored == 0 )
+
+// throw new feException( "No UNDO is stored at now" );
+<
+
+
+$undo_moves_player = self::getGameStateValue('undo_moves_player');
+
+if ($undo_moves_player != self::getActivePlayerId()) {
+
+throw new feException("The stored UNDO corresponds to another player's turn : you cannot restore it");
+
+}
+<
+
+
+$state = $this->gamestate->state();
+
+if ($state['type'] == 'multipleactiveplayer') {
+
+throw new feException('UNDO cannot be used for multiple active players game states');
+
+}
+<
+
+
+//self::incGameStateValue( 'undo_moves_stored', -1 ); // Unstack the move
+<
+
+
+// Restore from mysqldump : Way too slow, so not used at now
+
+// $this->loadCurrentGameDbFrom( 'undo_'.$undo_moves_stored );
+<
+
+
+// Copy all savepoints tables back to their respective table
+
+$tables = self::getObjectListFromDB('SHOW TABLES', true);
+
+$prefix = 'zz_savepoint_';
+
+$other_prefix = 'zz_replay';
+<
+
+
+// Check that undo tables exists
+
+$bUndoConfigured = false;
+
+foreach ($tables as $table) {
+
+if (substr($table, 0, strlen($prefix)) == $prefix) {
+
+$bUndoConfigured = true;
+
+}
+
+}
+<
+
+
+if (!$bUndoConfigured) {
+
+// Undo has not been configured
+
+// (may be because we added undo AFTER the game has been released)
+
+throw new feException(
+
+self::_(
+
+'Sorry, this undo function has just been introduced and will be available for your next game only.'
+
+),
+
+true
+
+);
+
+}
+<
+
+
+// Particular case: keep current "zombie" states and reflexion time
+
+// Note: for the ACTIVE player we must NOT keep reflexion time values (start and remaining) for the case where some extra time has been added between
+
+// the save and the restore. If some extra time has been added, keeping the time can lead to infinite loop (action => extratime => undo)
+
+// where the player can accumulate as much time as he wants
+
+self::DbQuery(
+
+"UPDATE zz_savepoint_player, player
+
+SET zz_savepoint_player.player_zombie=player.player_zombie,
+
+zz_savepoint_player.player_start_reflexion_time=player.player_start_reflexion_time,
+
+zz_savepoint_player.player_remaining_reflexion_time=player.player_remaining_reflexion_time
+
+WHERE zz_savepoint_player.player_id=player.player_id
+
+AND zz_savepoint_player.player_id!=" . self::getActivePlayerId()
+
+);
+<
+
+
+// Another particular case: keep globals that cannot be undone
+
+// GAMESTATE_GAME_RESULT_NEUTRALIZED
+
+// GAMESTATE_NEUTRALIZED_PLAYER_ID
+
+self::DbQuery("UPDATE zz_savepoint_global, `global`
+
+SET zz_savepoint_global.global_value=`global`.global_value
+
+WHERE zz_savepoint_global.global_id=`global`.global_id
+
+AND `global`.global_id IN (301, 302)");
+<
+
+
+foreach ($tables as $table) {
+
+if (substr($table, 0, strlen($prefix)) == $prefix) {
+
+// Save point => must be restored
+
+$original = substr($table, strlen($prefix));
+
+$copy = $table;
+<
+
+
+if ($original == 'gamelog') {
+
+// Particular case: keep private messages
+
+self::DbQuery("DELETE FROM $original WHERE gamelog_private!='1'");
+
+self::DbQuery("INSERT INTO $original SELECT * FROM $copy WHERE gamelog_private!='1'");
+
+} else {
+
+self::DbQuery("DELETE FROM $original");
+
+$fields = self::getFieldsListOfTable($original);
+
+try {
+
+self::DbQuery("INSERT INTO $original ($fields) SELECT $fields FROM $copy");
+
+} catch (Exception $ex) {
+
+//after introducing private parallel states there was a problem with undo
+
+$fields = str_replace(',`player_state`', '', $fields);
+
+self::DbQuery("INSERT INTO $original ($fields) SELECT $fields FROM $copy");
+
+}
+
+}
+
+} elseif (substr($table, 0, strlen($other_prefix)) == $other_prefix) {
+
+// Don't touch this other table too
+
+} else {
+
+// This table is an original and must be restored
+
+}
+
+}
+<
+
+
+// After restoring the savepoint data, we must reload the gamestate to clear cached values.
+
+// WARNING: this breaks games changing game states after the redo as it can change the state too. So it should NOT be done systematically as it hasn't been done from the start.
+
+// (it's documented instead for devs who would need it)
+
+//$this->gamestate->reloadState();
+<
+
+
+// Notify all players with their respective getAllDatas so they can restore their interfaces
+
+/* $players = self::loadPlayersBasicInfos();
+
+global $g_user;
+
+foreach( $players as $player_id => $player )
+
+{
+
+$g_user->setTemporaryMasquerade( $player_id );
+
+$newGameDatas = $this->getAllTableDatas();
+<
+
+
+self::notifyPlayer( $player_id, 'resetInterfaceWithAllDatas', '', $newGameDatas );
+<
+
+
+$g_user->setTemporaryMasquerade( null );
+
+}*/
+<
+
+
+// At the end of the undo, we must erase the old savepoint by the new one.
+
+// This may be paradoxal, but this way we ensure that the savepoint gets all the recent updates that was not concerned by the undo,
+
+// including the latest notifications "undoRestorePoint".
+
+// Also, it allows us to have a reliable undoIsCurrentlyOnSavepoint
+
+self::undoSavepoint();
+
+// else
+
+// throw new feException( "Undo function is not available in realtime" );
+
+}
+<
+
+
+/////////////////////////////////////////////////////////////////
+
+////// Tutorial
+<
+
+
+function showTutorial($tutorial_id, $player_id, $text, $attachement = null, $call_to_action = null, $delay = 0)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($tutorial_id >= 256 || $tutorial_id < 0) {
+
+throw new feException('Invalid tutorial string id: ' . $tutorial_id);
+
+}
+<
+
+
+$player_ids = [];
+
+if ($player_id !== null) {
+
+if ($player_id == 'opponents') {
+
+foreach ($players as $thisplayer_id => $player) {
+
+if ($thisplayer_id != self::getActivePlayerId()) {
+
+$player_ids[] = $thisplayer_id;
+
+}
+
+}
+
+} else {
+
+if (isset($players[$player_id])) {
+
+$player_ids = [$player_id];
+
+}
+
+}
+
+} else {
+
+$player_ids = array_keys($players);
+
+}
+<
+
+
+foreach ($player_ids as $player_id) {
+
+if ($players[$player_id]['player_beginner'] !== null) {
+
+$player_beginner = beginnerHexStringToArray($players[$player_id]['player_beginner']);
+<
+
+
+$section = floor($tutorial_id / 64);
+
+$bit_nbr = $tutorial_id % 64;
+<
+
+
+$place = 1 << $bit_nbr;
+
+if ($player_beginner[$section] & $place) {
+
+// this player did not see this tutorial yet.
+
+// => show him
+
+self::notifyPlayer($player_id, 'showTutorial', '', [
+
+'id' => $tutorial_id,
+
+'attachement' => $attachement,
+
+'text' => $text,
+
+'calltoaction' => $call_to_action,
+
+'delay' => $delay,
+
+]);
+
+}
+
+}
+
+}
+
+}
+<
+
+
+function seenTutorial($tutorial_id)
+
+{
+
+if ($tutorial_id >= 256 || $tutorial_id < 0) {
+
+throw new feException('Invalid tutorial string id: ' . $tutorial_id);
+
+}
+<
+
+
+$player_id = self::getCurrentPlayerId();
+<
+
+
+$current = self::getUniqueValueFromDB("SELECT HEX( player_beginner ) FROM player WHERE player_id='$player_id'");
+<
+
+
+$current = beginnerHexStringToArray($current);
+<
+
+
+$section = floor($tutorial_id / 64);
+
+$bit_nbr = $tutorial_id % 64;
+
+$place = 1 << $bit_nbr;
+
+$current[$section] = $current[$section] & ~$place;
+<
+
+
+$current = beginnerArrayToHexString($current);
+<
+
+
+self::DbQuery('UPDATE player SET player_beginner=0x' . $current . " WHERE player_id='$player_id'");
+
+self::reloadPlayersBasicInfos();
+
+}
+<
+
+
+function activeTutorial($bActive)
+
+{
+
+$player_id = self::getCurrentPlayerId();
+<
+
+
+if (!$bActive) {
+
+self::DbQuery("UPDATE player SET player_beginner=NULL WHERE player_id='$player_id'");
+
+self::reloadPlayersBasicInfos();
+
+}
+<
+
+
+$this->gamestate->setPlayerNonMultiactive($player_id, 'activeTutorial');
+
+}
+<
+
+
+function forceGameTournamendEnd()
+
+{
+
+// We must close this table NOW because this is a tournament order.
+
+// We order players depending on their remaining TIME, then we stop the game immediately
+<
+
+
+$this->bGameAbandonByTournamentTimeout = true;
+<
+
+
+// At first, make sure times are up to date
+
+$this->gamestate->reflexionTimeUpdate();
+<
+
+
+$sql = "SELECT player_id, player_remaining_reflexion_time
+
+FROM player ";
+<
+
+
+$player_to_time = self::getCollectionFromDB($sql, true);
+<
+
+
+asort($player_to_time);
+<
+
+
+$score = 0;
+
+foreach ($player_to_time as $player_id => $time) {
+
+$sql = "UPDATE player SET player_score='$score',player_score_aux='-4243' WHERE player_id='$player_id'";
+
+self::DbQuery($sql);
+<
+
+
+$score++;
+
+}
+<
+
+
+self::reloadPlayersBasicInfos();
+
+$this->gamestate->jumpToState(99);
+
+}
+<
+
+
+/**
+
+* used during Arena End of Season procedure to manage ongoing turn based games
+
+* partial result is:
+
+* - player with most thinking time loses
+
+* - everybody else wins (but don't gain Arena or ELO)
+
+* this is done to avoid stalling the game by not playing when you arena is close to ending, to avoid losing.
+
+* @return array{
+
+* game: (int)gameId,
+
+* player: array<playerId, scoreRank>
+
+* }
+
+*/
+
+public function getTablePartialArenaResult(): array
+
+{
+
+// make sure times are up to date
+
+$this->gamestate->reflexionTimeUpdate();
+<
+
+
+// get player with more thinking time spent
+
+$sql = "SELECT stats_player_id
+
+FROM `stats`
+
+WHERE `stats_type` = 1 AND stats_player_id IS NOT NULL
+
+ORDER BY stats_value DESC";
+
+$players = self::getObjectListFromDb($sql, true);
+
+$loser = $players[0];
+<
+
+
+// everyone wins (rank = 1)
+
+$players = array_fill_keys($players, 1);
+
+// except for the player who used most time (first in returned)
+
+$players[$loser] = 2;
+<
+
+
+// set table to training mode and no time limit
+
+self::setGameStateValue('bgaranking_mode', 1); // training mode
+
+self::setGameStateValue('reflexion_time_profile', 20); // turn based + no time limit
+<
+
+
+// notify everybody
+
+self::notifyAllPlayers('simpleNote', '<b>' . clienttranslate('The arena season has just ended!') . '</b>', []);
+
+self::notifyAllPlayers(
+
+'simpleNote',
+
+clienttranslate(
+
+'${player_name} is the player who consumed most thinking time and thus will be considered the loser of the game (${see_more_link}).'
+
+),
+
+[
+
+'player_name' => self::getPlayerNameById($loser),
+
+'see_more_link' => [
+
+'log' =>
+
+'<a href="' .
+
+self::getMasterNodeUrl() .
+
+'/faq?anchor=faq_arena_arenaturnbasedendseason" target="_blank">${label}</a>',
+
+'args' => [
+
+'i18n' => ['label'],
+
+'label' => clienttranslate('see more'),
+
+],
+
+],
+
+]
+
+);
+
+self::notifyAllPlayers(
+
+'simpleNote',
+
+clienttranslate('Note: you can continue to play in Training mode or leave the game with no penalty.'),
+
+[]
+
+);
+<
+
+
+return [
+
+'game' => $this->gameid,
+
+'players' => $players,
+
+];
+
+}
+<
+
+
+function simulateGameEnd($args)
+
+{
+
+// use new refactored method to get game results
+
+$result = $this->getGameRankInfos();
+<
+
+
+self::masterNodeRequest('gameResult', [
+
+'result' => $result,
+
+'table_id' => $this->table_id,
+
+'game_id' => $this->gameid,
+
+'is_simulated_result' => $args['is_simulated_result'],
+
+'fake_arena_mode' => $args['fake_arena_mode'],
+
+]);
+
+}
+<
+
+
+function showCursor($infos)
+
+{
+
+global $g_user;
+
+self::notifyNow('/table/t' . $this->table_id, 'showCursor', '', [
+
+'path' => $infos,
+
+'player_id' => $g_user->get_id(),
+
+]);
+
+}
+<
+
+
+function showCursorClick($infos)
+
+{
+
+global $g_user;
+
+self::notifyNow('/table/t' . $this->table_id, 'showCursorClick', '', [
+
+'path' => $infos,
+
+'player_id' => $g_user->get_id(),
+
+]);
+
+}
+<
+
+
+public function getCurrentGameName()
+
+{
+
+return $this->getGameName();
+
+}
+<
+
+
+public function isSandBoxGame()
+
+{
+
+return false;
+
+}
+
+public function getSandboxMachineStates()
+
+{
+
+return [];
+
+}
+<
+
+
+public function endLockScreen()
+
+{
+
+$state = $this->gamestate->state();
+<
+
+
+if ($state['name'] != 'gameSetup') {
+
+return false;
+
+} // Return false to make sure client stop sending requests
+<
+
+
+$lockScreenTime = self::getGameStateValue('lock_screen_timestamp');
+
+if (time() > $lockScreenTime) {
+
+$this->bEndLockScreenCase = true;
+
+$this->gamestate->nextState('startingGameSpecialTransition');
+
+return false; // Return false to make sure client stop sending requests
+
+} else {
+
+// Too early :
+
+// Do nothing and return true to make sure the client continue to send requests
+
+return true;
+
+}
+
+}
+<
+
+
+function switchToTurnbased()
+
+{
+
+// Adjust time to think
+
+$this->setGameStateValue('initial_reflexion_time', 6 * 8 * 3600);
+
+$this->setGameStateValue('additional_reflexion_time', 8 * 3600);
+<
+
+
+// Give every player 6*8 hours (time profile 14 (= 3 moves / day))
+
+$players = self::loadPlayersBasicInfos();
+
+foreach ($players as $player_id => $player) {
+
+self::giveExtraTime($player_id, 6 * 8 * 3600);
+
+}
+<
+
+
+// Change current time profile to 14 (= 3 moves / day)
+
+$this->setGameStateValue('reflexion_time_profile', 14);
+<
+
+
+// Notify everyone
+
+self::notifyAllPlayers(
+
+'switchToTurnbased',
+
+clienttranslate('This Realtime table has been switched to Turnbased table.'),
+
+[]
+
+);
+<
+
+
+$this->activePlayersWhenActionStarted = []; // Make the system believe that no one was active before, so the active player can be notified of the change
+
+$this->checkActivePlayersChange();
+
+}
+<
+
+
+function wakeupPlayers()
+
+{
+
+// Received when it seems that some player "A" is not knowing that it is his turn
+
+// As he may have miss a notification, we send an empty notification to enabled the "notification resynchro" on player "A" client and make sure he knows this is his turn.
+<
+
+
+$this->not_a_move_notification = true; // note: do not increase the move counter
+
+self::notifyAllPlayers('wakeupPlayers', '', []);
+
+}
+<
+
+
+function setReflexionTimeStandardDeviation()
+
+{
+
+$maximum_time = self::getGameStateValue('initial_reflexion_time');
+<
+
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+$player_turn_delta = [];
+
+$player_turn_lasttime = [];
+
+$player_to_time_serie = [];
+
+foreach ($players as $player_id => $player) {
+
+$player_turn_lasttime[$player_id] = $maximum_time;
+
+$player_turn_delta[$player_id] = 0;
+
+$player_to_time_serie[$player_id] = [];
+
+}
+<
+
+
+$sql = "SELECT gamelog_notification
+
+FROM gamelog
+
+ORDER BY gamelog_packet_id ASC";
+<
+
+
+$packets = self::getObjectListFromDB($sql, true);
+<
+
+
+foreach ($packets as $packet) {
+
+$notifs = json_decode($packet, true);
+<
+
+
+foreach ($notifs as $notif) {
+
+if ($notif['type'] == 'gameStateChange') {
+
+foreach ($notif['args']['reflexion']['total'] as $player_id => $time) {
+
+if ($time !== null) {
+
+if ($time < $player_turn_lasttime[$player_id]) {
+
+// Some time has been consumed
+
+$player_turn_delta[$player_id] += $player_turn_lasttime[$player_id] - $time;
+
+$player_turn_lasttime[$player_id] = $time;
+
+} elseif ($time > $player_turn_lasttime[$player_id]) {
+
+// Some time has been credited!
+
+// this is a turn end !
+
+$player_to_time_serie[$player_id][] = $player_turn_delta[$player_id];
+
+$player_turn_lasttime[$player_id] = $time;
+
+$player_turn_delta[$player_id] = 0;
+
+}
+
+}
+
+}
+
+}
+
+}
+
+}
+<
+
+
+// Final turn
+<
+
+
+foreach ($player_turn_delta as $player_id => $delta) {
+
+if ($delta > 0) {
+
+$player_to_time_serie[$player_id][] = $delta;
+
+}
+
+}
+<
+
+
+foreach ($player_to_time_serie as $player_id => $serie) {
+
+$dev = standard_deviation($serie);
+<
+
+
+self::setStat($dev, 'reflexion_time_sd', $player_id);
+
+}
+
+}
+<
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////// Game "legacy" data management ////////////////////////////////
+<
+
+
+// Store some data associated with $key for the given user / current game
+
+// In the opposite of all other game data, this data will PERSIST after the end of this table, and can be re-used
+
+// in a future table with the same game.
+
+// IMPORTANT: The only possible place where you can use this method is when the game is over at your table (last game action). Otherwise, there is a risk of conflicts between ongoing games.
+
+// TTL is a time-to-live: the maximum, and default, is 365 days.
+
+// In any way, the total data (= all keys) you can store for a given user+game is 64k (note: data is store serialized as JSON data)
+
+function storeLegacyData($player_id, $key, $data, $ttl = 365)
+
+{
+
+// Check if this player is at current table
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id != 0 && !isset($players[$player_id])) {
+
+throw new feException("storeLegacyData: $player_id is not playing at this table");
+
+}
+<
+
+
+if ($key != preg_replace('/[^a-zA-Z0-9]+/', '', $key)) {
+
+throw new feException('storeLegacyData: Key must only contain a-z, A-Z or 0-9');
+
+}
+<
+
+
+if (strlen($key) < 1 or strlen($key) > 16) {
+
+throw new feException('storeLegacyData: Key must contains between 1 and 16 characters');
+
+}
+<
+
+
+// GS => MS request
+
+self::masterNodeRequest('storeLegacyData', [
+
+'table_id' => $this->table_id,
+
+'player' => $player_id,
+
+'key' => $key,
+
+'data' => $data,
+
+'ttl' => $ttl,
+
+]);
+
+}
+<
+
+
+// Same as storeLegacyData, except that it stores some data for the whole team within the current table
+
+// Ie: if players A, B and C are at a table, the legacy data will be saved for future table with (exactly) A, B and C on the table.
+
+// This is useful for games which are intended to be played several time by the same team.
+
+// Note: the data total size is still limited, so you must implement catch the FEX_legacy_size_exceeded exception if it happens
+
+function storeLegacyTeamData($data, $ttl = 365)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+// Get all the players ids
+
+$player_ids = array_keys($players);
+
+sort($player_ids);
+
+$key = implode('_', $player_ids);
+
+$key = substr(md5($key), 0, 16); // Note: we are using md5+substr to get a unique key name for this group of players
+<
+
+
+$first_player = reset($player_ids); // Note: data is stored in the player with the lowest ID
+<
+
+
+$this->storeLegacyData($first_player, $key, $data, $ttl);
+
+}
+<
+
+
+// Get data associated with $key for the current game
+
+// This data is common to ALL tables from the same game for this player, and persist from one table to another.
+
+// Note: calling this function has an important cost => please call it few times (possibly: only ONCE) for each player for 1 game if possible
+
+// Note: you can use '%' in $key to retrieve all keys matching the given patterns
+
+function retrieveLegacyData($player_id, $key)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id != 0 && !isset($players[$player_id])) {
+
+throw new feException("storeLegacyData: $player_id is not playing at this table");
+
+}
+<
+
+
+// GS => MS request
+
+$result = self::masterNodeRequest('retrieveLegacyData', [
+
+'table_id' => $this->table_id,
+
+'player' => $player_id,
+
+'key' => $key,
+
+]);
+<
+
+
+return $result;
+
+}
+<
+
+
+// Same as retrieveLegacyData, except that it retrieves some data for the whole team within the current table (set by storeLegacyTeamData)
+
+// (see storeLegacyTeamData for more infos)
+
+function retrieveLegacyTeamData()
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+// Get all the players ids
+
+$player_ids = array_keys($players);
+
+sort($player_ids);
+
+$key = implode('_', $player_ids);
+
+$key = substr(md5($key), 0, 16); // Note: we are using md5+substr to get a unique key name for this group of players
+<
+
+
+$first_player = reset($player_ids); // Note: data is stored in the player with the lowest ID
+<
+
+
+$result = $this->retrieveLegacyData($first_player, $key);
+
+if (count($result) > 0) {
+
+return reset($result);
+
+} else {
+
+return $result;
+
+}
+
+}
+<
+
+
+// Remove some legacy data with the given key
+
+// (useful to free some data to avoid going over 64k)
+
+function removeLegacyData($player_id, $key)
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+if ($player_id != 0 && !isset($players[$player_id])) {
+
+throw new feException("storeLegacyData: $player_id is not playing at this table");
+
+}
+<
+
+
+// GS => MS request
+
+$result = self::masterNodeRequest('removeLegacyData', [
+
+'table_id' => $this->table_id,
+
+'player' => $player_id,
+
+'key' => $key,
+
+]);
+
+}
+<
+
+
+// Same as removeLegacyData, except that it remove some data for the whole team within the current table (set by storeLegacyTeamData)
+
+// (see storeLegacyTeamData for more infos)
+
+function removeLegacyTeamData()
+
+{
+
+$players = self::loadPlayersBasicInfos();
+<
+
+
+// Get all the players ids
+
+$player_ids = array_keys($players);
+
+sort($player_ids);
+
+$key = implode('_', $player_ids);
+
+$key = substr(md5($key), 0, 16); // Note: we are using md5+substr to get a unique key name for this group of players
+<
+
+
+$first_player = reset($player_ids); // Note: data is stored in the player with the lowest ID
+<
+
+
+$result = $this->removeLegacyData($first_player, $key);
+
+}
+<
+
+
+/**
+
+* Gets the value of a user preference for a player (cached in game DB). Null if unset.
+
+*/
+
+function getGameUserPreference(int $playerId, int $prefId): ?int
+
+{
+
+if ($playerId < 0) {
+
+return null;
+
+}
+<
+
+
+$value = $this->getUniqueValueFromDB(
+
+"SELECT pgp_value FROM bga_user_preferences WHERE pgp_player='$playerId' AND pgp_preference_id='$prefId' ",
+
+true
+
+);
+
+return $value !== null ? (int) $value : null;
+
+}
+<
+
+
+/**
+
+* Updates the cache of user preferences.
+
+* Called when a player changes a user preference (updated on the current table), or when the table is opened (for running turn-based games).
+
+*/
+
+function updateGameUserPreference(int $playerId, int $prefId, int $prefValue): void
+
+{
+
+if ($playerId < 0) {
+
+return;
+
+}
+<
+
+
+static $tableExists = null;
+
+if ($tableExists === null) {
+
+$tableExists = boolval($this->getUniqueValueFromDB("SHOW TABLES LIKE 'bga_user_preferences'"));
+
+}
+
+if (!$tableExists) {
+
+// in case the game was created before the framework update, we create it
+
+$this->DbQuery(
+
+'CREATE TABLE IF NOT EXISTS `bga_user_preferences` ( `pgp_player` int(10) UNSIGNED NOT NULL, `pgp_preference_id` int(10) UNSIGNED NOT NULL, `pgp_value` int(11) NOT NULL, PRIMARY KEY (`pgp_player`, `pgp_preference_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
+
+);
+
+$tableExists = true;
+
+}
+<
+
+
+$this->DbQuery(
+
+"REPLACE INTO bga_user_preferences (pgp_player, pgp_preference_id, pgp_value) VALUES ($playerId, $prefId, $prefValue)"
+
+);
+
+}
+}
+}

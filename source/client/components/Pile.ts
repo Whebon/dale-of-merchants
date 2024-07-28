@@ -12,9 +12,10 @@ export class Pile {
     private page: Gamegui;
     private cards: DaleCard[];
     private containerHTML: HTMLElement;
-    private placeholderHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private topCardHTML: HTMLElement;
+
+    public placeholderHTML: HTMLElement;
 
     /**
      * Array of cards that are in the pile (they should be in `cards`), but are still animating towards the pile

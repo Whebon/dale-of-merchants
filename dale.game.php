@@ -97,54 +97,40 @@ class Dale extends DaleTableBasic
         //$this->initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //$this->initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
-        // TODO: setup the initial game situation here
-       
+        // TODO: decide which animalfolk sets to play with
         //Create the market deck
         $cards = array();
         foreach ($this->card_types as $type_id => $card_type) {
-            // TODO: #animalfolk_sets = #players + 1
             $cards[] = array ('type' => 'null', 'type_arg' => $type_id, 'nbr' => $card_type['nbr']);
+            if (count($cards) > 11) break; //todo: remove this
         }
         $this->cards->createCards($cards, DECK.MARKET);
         $this->cards->shuffle(DECK.MARKET);
 
-        // // Todo: should be handled by a setup game state
-
-        // $players = $this->loadPlayersBasicInfos();
-        // foreach ( $players as $player_id => $player ) {
-            
-        //     // Notify player about his cards
-        //     $this->notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards ));
-        // }
-
-        // $cards = $this->cards->pickCards(3, DECK.MARKET, $player_id);
-
-        // //TODOOOOOOOOO
-
-        // $this->cards->moveCards(DECK.MARKET, HAND.$player_id);
-
-        // //$this->pickCardForLocation($from_location, $to_location, $location_arg=0 );
-
-        // //$this->deckMove('')
-
-        $this->cards->moveCard(16, MARKET, 0);
-        $this->cards->moveCard(17, MARKET, 1);
-        $this->cards->moveCard(18, MARKET, 2);
-        $this->cards->moveCard(19, MARKET, 3);
-        $this->cards->moveCard(20, MARKET, 4);
-
-
-
-
-        $i = 0;
-        foreach( $players as $player_id => $player )
-        {
-            $this->cards->moveCard(27+$i, HAND.$player_id);
-            $this->cards->moveCard(28+$i, HAND.$player_id);
-            $this->cards->moveCard(29+$i, HAND.$player_id);
-            $i += 3;
+        //TODO: set-up ACTUAL initial player decks
+        $junk = array(array('type' => 'null', 'type_arg' => 1, 'nbr' => 5));
+        foreach( $players as $player_id => $player ){
+            $this->cards->createCards($junk, DECK.$player_id);
+            $this->cards->createCards($cards, DECK.$player_id);
+            $this->cards->shuffle(DECK.$player_id);
         }
 
+        //TODO: move this to a setup game state
+        //each player draws an initial hand of 5 cards
+        foreach($players as $player_id => $player) {
+            $cards = $this->cards->pickCardsForLocation(5, DECK.$player_id, HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('${player_name} draws their initial hand of ${nbr} cards'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "nbr" => count($cards),
+                "private" => array(
+                    "cards" => $cards
+                )
+            ));
+        }
+
+        //fill the initial market
+        $this->refillMarket(true);
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -286,17 +272,41 @@ class Dale extends DaleTableBasic
 //////////// Utility functions
 ////////////    
 
-    /*
-        In this space, you can put any utility methods useful for your game logic
-    */
-
+    /**
+     * @param string $AT_numberlist
+     * @return array
+     * @example example
+     * numberListToArray("1;2;3;4;") = array(1, 2, 3, 4)
+     * @example example
+     * numberListToArray("1;2;3;4") = array(1, 2, 3, 4)
+     */
     function numberListToArray($AT_numberlist){
         if( $AT_numberlist == '' )
             return array();
         if( substr( $AT_numberlist, -1 ) == ';' )
             $AT_numberlist = substr( $AT_numberlist, 0, -1 );
-        return explode( ';', $AT_numberlist );
+        return explode(';', $AT_numberlist);
     }
+
+
+    /**
+     * Send a notification to all players, but only the active player receives args["private"]
+     */
+    function notifyAllPlayersWithPrivateArguments($type, $message, $args) {
+        //the active player receives the notification with the private arguments
+        $active_player_id = $this->getActivePlayerId();
+        $this->notifyPlayer($active_player_id, $type, $message, $args);
+
+        //all the other players receive the notification without the private arguments
+        unset($args["private"]);
+        $players = $this->loadPlayersBasicInfos();
+        foreach ( $players as $player_id => $player ) {
+            if ($player_id != $active_player_id) {
+                $this->notifyPlayer($player_id, $type, $message, $args);
+            }
+        }
+    }
+
 
     /**
      * Callback method for when cards need to be drawn from a location, but the location is empty.
@@ -324,6 +334,47 @@ class Dale extends DaleTableBasic
                     ));
                 }
             }
+        }
+    }
+
+    /**
+     * Fills all the empty slots in the market
+     * @param bool $move if true, first move all cards to the right, then refillMarket
+    */
+    function refillMarket(bool $move){
+        $cards = $this->cards->getCardsInLocation(MARKET, null, 'location_arg');
+        if (count($cards) > 5) {
+            throw new BgaVisibleSystemException("The market has more than 5 cards");
+        }
+        $free_slots = array();
+        $first_free_slot = 0;
+        if ($move) {
+            //move all cards to the right
+            foreach ($cards as $card) {
+                $this->cards->moveCard($card['id'], MARKET, $first_free_slot);
+                $first_free_slot++;
+            }
+        }
+        else {
+            //store gaps in $free_slots
+            foreach ($cards as $card) {
+                if ($card['location_arg'] >= 5) {
+                    throw new BgaVisibleSystemException("Some card in the market is at an illegal position");
+                }
+                while($first_free_slot < $card['location_arg']) {
+                    $free_slots[] = $first_free_slot;
+                    $first_free_slot++;
+                }
+                $first_free_slot++;
+            }
+        }
+        //store leading $free_slots
+        for($i = $first_free_slot; $i < 5; $i++) {
+            $free_slots[] = $i;
+        }
+        //put a card in each free slot
+        foreach ( $free_slots as $location_arg ) {
+            $this->cards->pickCardForLocation(DECK.MARKET, MARKET, $location_arg);
         }
     }
 
@@ -379,8 +430,6 @@ class Dale extends DaleTableBasic
         
         $this->gamestate->nextState("trNextPlayer");
     }
-
-
 
     /*
     
@@ -447,24 +496,26 @@ class Dale extends DaleTableBasic
 
     function stNextPlayer() {
         //aka the "clean-up phase"
-        
+
         //1. fill your hand to the maximum hand size
         $player_id = $this->getActivePlayerId();
         $hand_size = $this->cards->countCardsInLocation(HAND.$player_id);
         $maximum_hand_size = 5;
         $nbr = max(0, $maximum_hand_size - $hand_size);
         if ($nbr > 0) {
+            //draw cards from deck
             $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
             $nbr_from_deck = count($cards);
+            $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "nbr" => $nbr_from_deck,
+                "private" => array(
+                    "cards" => $cards
+                )
+            ));
 
-            // TODO !!!!!!!!!!!!!!!!!!!!!!!!!
-            // $this->notifyAllPlayers('deckToHand', clienttranslate('{player_name} draws {nbr} cards to refill their hand'), array(
-            //     "player_id" => $player_id,
-            //     "player_name" => $this->getPlayerNameById($player_id),
-            //     "cards" => $cards,
-            //     "nbr" => $nbr_from_deck,
-            // ));
-
+            //draw cards from junk reserve
             $nbr_junk_cards = $nbr - $nbr_from_deck;
             if ($nbr_junk_cards > 0) {
                 $junk_cards = $this->cards->getJunk($nbr_junk_cards);
@@ -479,14 +530,8 @@ class Dale extends DaleTableBasic
             }
         }
 
-        //TODO: notify
-        // $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
-        // $this->notifyPlayer($player_id, '');
-
-
-
         //2. fill empty market slots
-        //TODO
+        $this->refillMarket(true);
 
         //activate the next player
         $next_player_id = $this->activeNextPlayer();
