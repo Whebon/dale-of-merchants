@@ -64,7 +64,7 @@ class DaleDeck extends Deck {
         //not enough free junk cards exist, create a sufficient amount of new junk cards, then try again
         $cards = array(array(
             'type' => 'null', 
-            'type_arg' => 1, //1 is the index for junk. 2, 3, 4 and 5 are junk art variants.
+            'type_arg' => CT_JUNK,
             'nbr' => $nbr - $found
         ));
         $this->createCards($cards, 'junk');

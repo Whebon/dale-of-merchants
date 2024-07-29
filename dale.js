@@ -790,6 +790,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             for (var i = 0; i < cards.length; i++) {
                 this.market.insertCard(DaleCard_2.DaleCard.of(cards[i]), positions[i], this.marketDeck.placeholderHTML);
+                this.marketDeck.pop();
             }
         };
         Dale.prototype.notif_marketSlideRight = function (notif) {

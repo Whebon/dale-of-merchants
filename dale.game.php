@@ -457,9 +457,55 @@ class Dale extends DaleTableBasic
         In this space, you can put debugging tools
     */
 
-    // function spawn($card_name) {
+    function destroyDeck() {
+        //requires refresh
+        $player_id = $this->getCurrentPlayerId();
+        $this->cards->moveAllCardsInLocation(DECK.$player_id, 'destroyed');
+    }
 
-    // }
+    function destroyAllCards() {
+        $location_dict = $this->cards->countCardsInLocations();
+        foreach($location_dict as $location => $count ) {
+            $this->cards->moveAllCardsInLocation($location, 'destroyed');
+        }
+    }
+
+    function spawn(string $name) {
+        $player_id = $this->getCurrentPlayerId();
+        $type_id = $this->nameToTypeId($name);
+        $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1));
+        $this->cards->createCards($cards, 'spawned'); //TODO: "createCards" should not be used during the game. Find a suitable replacement for this function.
+        $cards = $this->cards->getCardsInLocation('spawned');
+        $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('DEBUG: spawn in a card in hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "nbr" => count($cards),
+            "_private" => array(
+                "cards" => $cards
+            )
+        ));
+    }
+
+    /**
+     * Return the first type id of a card type with the given prefix
+     * @example example
+     * stringToTypeId("coo") = CT_COOKIES
+     */
+    function nameToTypeId(string $prefix): int {
+        $len = strlen($prefix);
+        $f = function($name) use ($len) {
+            $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
+            return substr($uppercase, 0, $len);
+        };
+        foreach ($this->card_types as $type_id => $card) {
+            if ($f($card['name']) == $f($prefix)) {
+                return $type_id;
+            }
+        }
+        die("No card name matches prefix '$prefix'");
+        return -1;
+    }
 
     function d($arg) {
         //debugClient

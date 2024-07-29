@@ -468,6 +468,7 @@ class Dale extends Gamegui
 		}
 		for (let i = 0; i < cards.length; i++) {
 			this.market!.insertCard(DaleCard.of(cards[i]!), positions[i]!, this.marketDeck.placeholderHTML);
+			this.marketDeck.pop();
 		}
 	}
 
