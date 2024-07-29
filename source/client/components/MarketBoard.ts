@@ -12,7 +12,7 @@ declare function $(text: string | Element): HTMLElement;
 export class MarketBoard implements CardSlotManager {
     readonly MAX_SIZE: number = 5;
 
-    private page: Gamegui;
+    public page: Gamegui;
     private container: HTMLElement;
     private slots: CardSlot[];
     private selectionMode: 0 | 1 | 2;
@@ -49,17 +49,38 @@ export class MarketBoard implements CardSlotManager {
     }
 
     /**
-     * Instantly (without animation) spawn a card at the given position.
-     * @param card the card to add to the market.
-     * @param pos (optional) position in the market to add to card to. The default position is the leftmost position: +4.
-     */
-    insertCard(card: DaleCard, pos?: number) {
-        if (pos == undefined) pos = this.MAX_SIZE - 1;
-        if (pos < 0 || pos >= this.MAX_SIZE) {
-            console.warn(`${pos} is an invalid market position.`)
+     * converts any position to a valid market position
+     * @param pos any market position
+     * @param valid valid market position: 4, 3, 2, 1 or 0
+    */
+    getValidPos(pos?: number): number {
+        if (pos == undefined || pos < 0 || pos >= this.MAX_SIZE) {
+            console.warn(`${pos} is an invalid market position. Using market position ${this.MAX_SIZE - 1} instead.`)
             pos = this.MAX_SIZE - 1;
         }
-        this.slots[pos]!.insertCard(card);
+        return pos;
+    }
+
+    /**
+     * Insert a card at the given position. Overwrites any card that was previously in that slot.
+     * @param card the card to add to the market.
+     * @param pos (optional) position in the market to add to card to. The default position is the leftmost position: +4.
+     * @param from (optional) animate the card from the provided location
+     */
+    insertCard(card: DaleCard, pos?: number, from?: HTMLElement | string): void {
+        pos = this.getValidPos(pos);
+        this.slots[pos]!.insertCard(card, from);
+    }
+
+    /**
+     * Remove the card at the given position.
+     * @param pos position in the market to add to card to. The default position is the leftmost position: +4.
+     * @param to (optional) if a card was present, move it to this location, then destroy it
+     * @return removed card
+    */
+    removeCard(pos: number, to?: HTMLElement | string): DaleCard | undefined {
+        pos = this.getValidPos(pos);
+        return this.slots[pos]!.removeCard(to);
     }
 
     /**
@@ -68,6 +89,7 @@ export class MarketBoard implements CardSlotManager {
      * @param delay (optional) delay of the animation.
      */
     slideRight(duration?: number, delay?: number) {
+        this.unselectAll();
         let emptyPos = 0;
         for (let pos = 0; pos < this.MAX_SIZE; pos++) {
             if (this.slots[pos]!.hasCard()) {
@@ -86,6 +108,15 @@ export class MarketBoard implements CardSlotManager {
                 emptyPos++;
             }
         }
+    }
+
+    /**
+     * @return html id of the market slot at position pos
+     * @param pos valid market position: 4, 3, 2, 1 or 0
+    */
+    getSlotId(pos: number): string {
+        pos = this.getValidPos(pos);
+        return this.slots[pos]!.id;
     }
 
     /**
@@ -108,14 +139,11 @@ export class MarketBoard implements CardSlotManager {
 
     /**
      * Select a slot in the market
-     * @param pos valid market position (0, 1, 2, 3 or 4)
+     * @param pos valid market position: 4, 3, 2, 1 or 0
      * @param enable (optional) default true. enable/disable the `selected` property.
      */
     setSelected(pos: number, enable: boolean = true) {
-        if (pos < 0 || pos >= 5){
-			console.error(`select: Market position ${pos} does not exist, using position 0 instead`)
-			pos = 0;
-		}
+        pos = this.getValidPos(pos);
         this.slots[pos]!.setSelected(enable);
     }
 

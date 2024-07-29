@@ -24,6 +24,21 @@ declare global {
 		'reshuffleDeck': { 
 			player_id?: number
 		}
+		'marketSlideRight': {
+			//no args
+		}
+		'fillEmptyMarketSlots': {
+			positions: number[]
+			cards: DbCard[] //actually an array, not an object
+		}
+		'marketToHand': {
+			// i18n: any
+			// player_name: string
+			// card_name: string
+			player_id: number
+			market_card_id: number
+			pos: number
+		}
 		'discard': {
 			player_id: number 
             player_name: string

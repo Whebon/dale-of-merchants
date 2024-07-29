@@ -362,6 +362,7 @@ class Dale extends DaleTableBasic
                 $this->cards->moveCard($card['id'], MARKET, $first_free_slot);
                 $first_free_slot++;
             }
+            $this->notifyAllPlayers('marketSlideRight', clienttranslate('Cards in the market move to the right'), array());
         }
         else {
             //store gaps in $free_slots
@@ -380,9 +381,23 @@ class Dale extends DaleTableBasic
         for($i = $first_free_slot; $i < 5; $i++) {
             $free_slots[] = $i;
         }
-        //put a card in each free slot
-        foreach ( $free_slots as $location_arg ) {
-            $this->cards->pickCardForLocation(DECK.MARKET, MARKET, $location_arg);
+        //put a card in each free slot (1 by 1, because (a) the location arg matters; and (b) picking cards must trigger reshuffle;)
+        $new_cards = [];
+        foreach ($free_slots as $index => $location_arg) {
+            $card = $this->cards->pickCardForLocation(DECK.MARKET, MARKET, $location_arg);
+            if ($card === null) {
+                //unfortunately, not all free slots can be filled
+                $free_slots = array_slice($free_slots, 0, $index);
+                break;
+            } else {
+                $new_cards[] = $card;
+            }
+        }
+        if (count($new_cards) > 0) {
+            $this->notifyAllPlayers('fillEmptyMarketSlots', clienttranslate('Empty market slots get filled'), array(
+                "positions" => $free_slots,
+                "cards" => $new_cards
+            ));
         }
     }
 
@@ -401,7 +416,7 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Returns the cost of a given dbcard. Asserts that the card is at the market
+     * Returns the cost of a given dbcard. Asserts that the card is at the market.
      * @param array $dbcard card to calculate the cost of
     */
     function getCost($dbcard) {
@@ -425,6 +440,15 @@ class Dale extends DaleTableBasic
         return $this->card_types[$type_id]['value'];
     }
 
+    /**
+     * Returns the name of the card
+     * @param array $dbcard card to get the name of
+    */
+    function getCardName($dbcard) {
+        $type_id = $dbcard['type_arg'];
+        return $this->card_types[$type_id]['name'];
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Debug functions
 ////////////    
@@ -432,6 +456,10 @@ class Dale extends DaleTableBasic
     /*
         In this space, you can put debugging tools
     */
+
+    // function spawn($card_name) {
+
+    // }
 
     function d($arg) {
         //debugClient
@@ -493,11 +521,9 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("Overpaying is not allowed")." ($total_value)");
         }
 
-        throw new BgaUserException($this->_("Good")." [$total_value]");
-
         //Discard the funds
         $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discard', clienttranslate('${player_name} pays ${nbr} cards'), array (
+        $this->notifyAllPlayers('discard', clienttranslate('${player_name} pays ${nbr} card(s)'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_ids' => $funds_card_ids,
@@ -506,8 +532,17 @@ class Dale extends DaleTableBasic
         ));
 
         //Obtain the market card
-        //TODO
+        $this->cards->moveCard($market_card_id, HAND.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${card_name}'), array (
+            'i18n' => array('card_name'),
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($market_card),
+            'market_card_id' => $market_card_id,
+            'pos' => $market_card["location_arg"],
+        ));
 
+        //end turn
         $this->gamestate->nextState("trNextPlayer");
     }
 

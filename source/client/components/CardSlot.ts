@@ -5,6 +5,7 @@ import { DaleCard } from './DaleCard';
  * Responsible for managing a collection of CardSlots
  */
 export interface CardSlotManager {
+    page: Gamegui;
     onCardSlotClick(slot: CardSlot): void;
 }
 
@@ -69,22 +70,32 @@ export class CardSlot {
     /**
     * Insert a card in the slot. If there already was one, the previous card is removed.
     * @param card card to put in the slot.
+    * @param from (optional) animate the card from the provided location
     */
-    public insertCard(card: DaleCard){
+    public insertCard(card: DaleCard, from?: HTMLElement | string): void {
         this.removeCard();
-        this._container.appendChild(card.toDiv());
+        const cardDiv = card.toDiv();
+        this._container.appendChild(cardDiv);
         this._card = card;
+        if (from) {
+            this.parent.page.placeOnObject(cardDiv, from);
+            this.parent.page.slideToObject(cardDiv, this._container).play();
+        }
     }
 
     /**
      * Remove the card in this slot, if there was any.
+     * @param to (optional) if a card was present, move it to this location, then destroy it
      * @return removed card.
      */
-    public removeCard(): DaleCard | undefined {
+    public removeCard(to?: HTMLElement | string): DaleCard | undefined {
         if (this.hasCard()) {
             let removedCard = this._card;
             this._container.replaceChildren();
             this._card = undefined;
+            if (removedCard && to) {
+                this.parent.page.slideTemporaryObject(removedCard.toDiv(), this._container, this._container, to);
+            }
             return removedCard;
         }
         return undefined;

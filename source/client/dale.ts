@@ -173,6 +173,9 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				break;
+			case 'purchase':
+				this.market!.unselectAll();
+				break;
 		}
 	}
 
@@ -299,10 +302,7 @@ class Dale extends Gamegui
 	*/
 
 	onMarketCardClick(card: DaleCard, pos: number) {
-		if (pos < 0 || pos >= 5 ){
-			console.error(`Market position ${pos} does not exist, using position 0 instead`)
-			pos = 0;
-		}
+		pos = this.market!.getValidPos(pos);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
@@ -420,9 +420,12 @@ class Dale extends Gamegui
 		console.log( 'notifications subscriptions setup2' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
-			['draw', 100],
-			['obtainNewJunkInHand', 1],
-			['discard', 100],
+			['fillEmptyMarketSlots', 1],
+			['marketSlideRight', 500],
+			['marketToHand', 1500],
+			['draw', 250],
+			['obtainNewJunkInHand', 500],
+			['discard', 500],
 			['reshuffleDeck', 1500],
 			['debugClient', 1],
 		];
@@ -454,6 +457,38 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
+		console.log("notif_fillEmptyMarketSlots");
+		console.log(notif.args);
+		const cards = notif.args.cards;
+		const positions = notif.args.positions;
+		if (cards.length != positions.length) {
+			throw new Error("notif_fillEmptyMarketSlots got invalid arguments")
+		}
+		for (let i = 0; i < cards.length; i++) {
+			this.market!.insertCard(DaleCard.of(cards[i]!), positions[i]!, this.marketDeck.placeholderHTML);
+		}
+	}
+
+	notif_marketSlideRight(notif: NotifAs<'marketSlideRight'>) {
+		this.market!.slideRight();
+	}
+
+	notif_marketToHand(notif: NotifAs<'marketToHand'>) {
+		let daleCard = new DaleCard(notif.args.market_card_id);
+		let slotId = this.market!.getSlotId(notif.args.pos);
+		this.market!.unselectAll();
+		if (notif.args.player_id == this.player_id) {
+			//move card from market to hand
+			this.market!.removeCard(notif.args.pos);
+			this.myHand.addDaleCardToStock(daleCard, slotId)
+		}
+		else {
+			//move card to the overall player board
+			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
+		}
+	}
 
 	notif_draw(notif: NotifAs<'draw'>) {
 		if (notif.args._private) {

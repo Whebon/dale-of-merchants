@@ -382,16 +382,24 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
         CardSlot.prototype.hasCard = function () {
             return this._card != undefined;
         };
-        CardSlot.prototype.insertCard = function (card) {
+        CardSlot.prototype.insertCard = function (card, from) {
             this.removeCard();
-            this._container.appendChild(card.toDiv());
+            var cardDiv = card.toDiv();
+            this._container.appendChild(cardDiv);
             this._card = card;
+            if (from) {
+                this.parent.page.placeOnObject(cardDiv, from);
+                this.parent.page.slideToObject(cardDiv, this._container).play();
+            }
         };
-        CardSlot.prototype.removeCard = function () {
+        CardSlot.prototype.removeCard = function (to) {
             if (this.hasCard()) {
                 var removedCard = this._card;
                 this._container.replaceChildren();
                 this._card = undefined;
+                if (removedCard && to) {
+                    this.parent.page.slideTemporaryObject(removedCard.toDiv(), this._container, this._container, to);
+                }
                 return removedCard;
             }
             return undefined;
@@ -445,16 +453,23 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             }
             this.selectionMode = 0;
         }
-        MarketBoard.prototype.insertCard = function (card, pos) {
-            if (pos == undefined)
-                pos = this.MAX_SIZE - 1;
-            if (pos < 0 || pos >= this.MAX_SIZE) {
-                console.warn("".concat(pos, " is an invalid market position."));
+        MarketBoard.prototype.getValidPos = function (pos) {
+            if (pos == undefined || pos < 0 || pos >= this.MAX_SIZE) {
+                console.warn("".concat(pos, " is an invalid market position. Using market position ").concat(this.MAX_SIZE - 1, " instead."));
                 pos = this.MAX_SIZE - 1;
             }
-            this.slots[pos].insertCard(card);
+            return pos;
+        };
+        MarketBoard.prototype.insertCard = function (card, pos, from) {
+            pos = this.getValidPos(pos);
+            this.slots[pos].insertCard(card, from);
+        };
+        MarketBoard.prototype.removeCard = function (pos, to) {
+            pos = this.getValidPos(pos);
+            return this.slots[pos].removeCard(to);
         };
         MarketBoard.prototype.slideRight = function (duration, delay) {
+            this.unselectAll();
             var emptyPos = 0;
             for (var pos = 0; pos < this.MAX_SIZE; pos++) {
                 if (this.slots[pos].hasCard()) {
@@ -472,6 +487,10 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                 }
             }
         };
+        MarketBoard.prototype.getSlotId = function (pos) {
+            pos = this.getValidPos(pos);
+            return this.slots[pos].id;
+        };
         MarketBoard.prototype.setSelectionMode = function (mode) {
             if (this.selectionMode == mode)
                 return;
@@ -485,10 +504,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         };
         MarketBoard.prototype.setSelected = function (pos, enable) {
             if (enable === void 0) { enable = true; }
-            if (pos < 0 || pos >= 5) {
-                console.error("select: Market position ".concat(pos, " does not exist, using position 0 instead"));
-                pos = 0;
-            }
+            pos = this.getValidPos(pos);
             this.slots[pos].setSelected(enable);
         };
         MarketBoard.prototype.unselectAll = function () {
@@ -614,6 +630,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     break;
+                case 'purchase':
+                    this.market.unselectAll();
+                    break;
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -682,10 +701,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
         };
         Dale.prototype.onMarketCardClick = function (card, pos) {
-            if (pos < 0 || pos >= 5) {
-                console.error("Market position ".concat(pos, " does not exist, using position 0 instead"));
-                pos = 0;
-            }
+            pos = this.market.getValidPos(pos);
             switch (this.gamedatas.gamestate.name) {
                 case 'playerTurn':
                     if (this.checkAction('actRequestMarketAction')) {
@@ -749,9 +765,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
-                ['draw', 100],
-                ['obtainNewJunkInHand', 1],
-                ['discard', 100],
+                ['fillEmptyMarketSlots', 1],
+                ['marketSlideRight', 500],
+                ['marketToHand', 1500],
+                ['draw', 250],
+                ['obtainNewJunkInHand', 500],
+                ['discard', 500],
                 ['reshuffleDeck', 1500],
                 ['debugClient', 1],
             ];
@@ -760,6 +779,33 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
             console.log('notifications subscriptions setup done');
+        };
+        Dale.prototype.notif_fillEmptyMarketSlots = function (notif) {
+            console.log("notif_fillEmptyMarketSlots");
+            console.log(notif.args);
+            var cards = notif.args.cards;
+            var positions = notif.args.positions;
+            if (cards.length != positions.length) {
+                throw new Error("notif_fillEmptyMarketSlots got invalid arguments");
+            }
+            for (var i = 0; i < cards.length; i++) {
+                this.market.insertCard(DaleCard_2.DaleCard.of(cards[i]), positions[i], this.marketDeck.placeholderHTML);
+            }
+        };
+        Dale.prototype.notif_marketSlideRight = function (notif) {
+            this.market.slideRight();
+        };
+        Dale.prototype.notif_marketToHand = function (notif) {
+            var daleCard = new DaleCard_2.DaleCard(notif.args.market_card_id);
+            var slotId = this.market.getSlotId(notif.args.pos);
+            this.market.unselectAll();
+            if (notif.args.player_id == this.player_id) {
+                this.market.removeCard(notif.args.pos);
+                this.myHand.addDaleCardToStock(daleCard, slotId);
+            }
+            else {
+                this.market.removeCard(notif.args.pos, 'overall_player_board_' + notif.args.player_id);
+            }
         };
         Dale.prototype.notif_draw = function (notif) {
             var _a;
