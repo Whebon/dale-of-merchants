@@ -16,12 +16,14 @@ export class CardSlot {
     
     public parent: CardSlotManager;
     public pos: number;
+    public selected: boolean;
     protected _container: HTMLElement;
     protected _card: DaleCard | undefined;
 
     constructor(parent: CardSlotManager, pos: number, container?: HTMLElement, card?: DaleCard){
         this.parent = parent;
         this.pos = pos;
+        this.selected = false;
         this._container = container ?? document.createElement("div");
         this._card = card;
         if (this._container.onclick != null) {
@@ -89,8 +91,23 @@ export class CardSlot {
     }
 
     /**
+     * (Un)set this slots's selected property
+     * @param enable
+    */
+    public setSelected(enable: boolean){
+        if (this.selected == enable) return;
+        if (enable) {
+            this._container.classList.add("card-slot-selected");
+        }
+        else {
+            this._container.classList.remove("card-slot-selected");
+        }
+        this.selected = enable;
+    }
+
+    /**
      * (Un)assigns the "onCardSlotClick" handler of the slot manager
-     * @param clickable
+     * @param enable
      */
     public setClickable(enable: boolean) {
         if (enable){

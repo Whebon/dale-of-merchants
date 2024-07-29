@@ -572,12 +572,12 @@ class Dale extends DaleTableBasic
 ////////////
 
     /*
-        Here, you can create methods defargSelectedCardWithCostined as "game state arguments" (see "args" property in states.inc.php).
+        Here, you can create methods defined as "game state arguments" (see "args" property in states.inc.php).
         These methods function is to return some additional information that is specific to the current
         game state.
     */
 
-    function argSelectedCardWithCost(){
+    function argSelectedCardInMarket(){
         $card_id = $this->getGameStateValue('selectedCard');
         $card = $this->cards->getCard($card_id);
         $type_id = $card['type_arg'];
@@ -585,7 +585,8 @@ class Dale extends DaleTableBasic
             'i18n' => array('card_name'),
             'card_name' => $this->card_types[$type_id]['name'],
             'card_id' => $card['type_arg'],
-            'cost' => $this->getCost($card)
+            'cost' => $this->getCost($card),
+            'pos' => $card['location_arg']
         );
     }
 

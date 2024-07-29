@@ -152,6 +152,7 @@ class Dale extends Gamegui
 				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
 				console.log(purchaseArgs);
 				this.myHand.setSelectionMode(2);
+				this.market!.setSelected(purchaseArgs.pos, true);
 				break;
 			case 'nextPlayer':
 				break;

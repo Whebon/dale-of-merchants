@@ -98,10 +98,33 @@ export class MarketBoard implements CardSlotManager {
     setSelectionMode(mode: 0 | 1 | 2) {
         //TODO: make a distinction between selectionMode 1 and 2
         if( this.selectionMode == mode ) return;
+        this.unselectAll();
         this.selectionMode = mode;
         let clickable = mode != 0;
         for (let slot of this.slots) {
             slot.setClickable(clickable);
+        }
+    }
+
+    /**
+     * Select a slot in the market
+     * @param pos valid market position (0, 1, 2, 3 or 4)
+     * @param enable (optional) default true. enable/disable the `selected` property.
+     */
+    setSelected(pos: number, enable: boolean = true) {
+        if (pos < 0 || pos >= 5){
+			console.error(`select: Market position ${pos} does not exist, using position 0 instead`)
+			pos = 0;
+		}
+        this.slots[pos]!.setSelected(enable);
+    }
+
+    /**
+     * For each card slot, set `selected` to false.
+    */
+    unselectAll() {
+        for (let slot of this.slots) {
+            slot.setSelected(false);
         }
     }
 

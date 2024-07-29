@@ -345,6 +345,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
         function CardSlot(parent, pos, container, card) {
             this.parent = parent;
             this.pos = pos;
+            this.selected = false;
             this._container = container !== null && container !== void 0 ? container : document.createElement("div");
             this._card = card;
             if (this._container.onclick != null) {
@@ -394,6 +395,17 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
                 return removedCard;
             }
             return undefined;
+        };
+        CardSlot.prototype.setSelected = function (enable) {
+            if (this.selected == enable)
+                return;
+            if (enable) {
+                this._container.classList.add("card-slot-selected");
+            }
+            else {
+                this._container.classList.remove("card-slot-selected");
+            }
+            this.selected = enable;
         };
         CardSlot.prototype.setClickable = function (enable) {
             if (enable) {
@@ -463,11 +475,26 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         MarketBoard.prototype.setSelectionMode = function (mode) {
             if (this.selectionMode == mode)
                 return;
+            this.unselectAll();
             this.selectionMode = mode;
             var clickable = mode != 0;
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var slot = _a[_i];
                 slot.setClickable(clickable);
+            }
+        };
+        MarketBoard.prototype.setSelected = function (pos, enable) {
+            if (enable === void 0) { enable = true; }
+            if (pos < 0 || pos >= 5) {
+                console.error("select: Market position ".concat(pos, " does not exist, using position 0 instead"));
+                pos = 0;
+            }
+            this.slots[pos].setSelected(enable);
+        };
+        MarketBoard.prototype.unselectAll = function () {
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var slot = _a[_i];
+                slot.setSelected(false);
             }
         };
         MarketBoard.prototype.onCardSlotClick = function (slot) {
@@ -571,6 +598,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var purchaseArgs = args.args;
                     console.log(purchaseArgs);
                     this.myHand.setSelectionMode(2);
+                    this.market.setSelected(purchaseArgs.pos, true);
                     break;
                 case 'nextPlayer':
                     break;
@@ -601,7 +629,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'inventory':
-                    this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
+                    this.addActionButton("pass-button", _("Done"), "onInventoryAction");
                     this.addActionButtonCancel();
                     break;
             }

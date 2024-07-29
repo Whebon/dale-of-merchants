@@ -43,6 +43,11 @@
 	position: absolute;
 }
 
+.card-slot-selected {
+	border-radius: 10px;
+	border: 1px solid black;
+}
+
 .card {
 	background-image: url('img/cards.jpg');
 	border-radius: 10px;

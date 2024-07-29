@@ -42,11 +42,12 @@ interface GameStates {
 		'description': '${actplayer} must pay ${cost} for ${card_name}',
 		'descriptionmyturn': '${you} must pay ${cost} for ${card_name}',
 		'type': 'activeplayer',
-		'args': 'argSelectedCardWithCost',
+		'args': 'argSelectedCardInMarket',
 		'argsType': {
 			'card_name': string,
 			'card_id': number,
 			'cost': number,
+			'pos': number,
 		},
 		'possibleactions': {
 			'actPurchase': [{
