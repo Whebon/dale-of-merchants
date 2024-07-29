@@ -25,6 +25,8 @@ class Dale extends DaleTableBasic
     var DaleDeck $cards;
     var $card_types;
 
+    var $card_id_to_type_id; //cache
+
     function f($n){
         $this->cards->getJunk($n);
     }
@@ -39,7 +41,8 @@ class Dale extends DaleTableBasic
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        $this->initGameStateLabels( array( 
+        $this->initGameStateLabels( array(
+            "selectedCard" => 10
             //    "my_first_global_variable" => 10,
             //    "my_second_global_variable" => 11,
             //      ...
@@ -50,6 +53,7 @@ class Dale extends DaleTableBasic
 
         $this->cards = new DaleDeck($this, "onLocationExhausted");
         $this->cards->init("card");
+        $this->card_id_to_type_id = array();
 	}
 	
     protected function getGameName( )
@@ -91,6 +95,7 @@ class Dale extends DaleTableBasic
 
         // Init global values with their initial values
         //$this->setGameStateInitialValue( 'my_first_global_variable', 0 );
+        $this->setGameStateInitialValue( 'selectedCard', 0 );
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -291,6 +296,9 @@ class Dale extends DaleTableBasic
 
     /**
      * Send a notification to all players, but only the active player receives args["_private"]
+     * @param mixed $type
+     * @param mixed $message
+     * @param mixed $args
      */
     function notifyAllPlayersWithPrivateArguments($type, $message, $args) {
         //the active player receives the notification with the private arguments
@@ -315,9 +323,9 @@ class Dale extends DaleTableBasic
      */
     function onLocationExhausted($location) {
         $prefix = substr($location, 0, 4);
-        if ($prefix == "deck") {
+        if ($prefix == DECK) {
             $player_id = substr($location, 4);
-            $discard_pile = "disc".$player_id;
+            $discard_pile = DISCARD.$player_id;
             $nbr = $this->cards->countCardsInLocation($discard_pile);
             if ($nbr > 0) {
                 $this->cards->moveAllCardsInLocation($discard_pile, $location);
@@ -378,6 +386,45 @@ class Dale extends DaleTableBasic
         }
     }
 
+    /**
+     * WARNING: NEVER USED, NEVER TESTED
+     * Returns the card type id of a card. If it is unknown, it will be fetched from the db
+     * @param int $card_id card id of the card to get the type id of
+    */
+    function getTypeId($card_id) {
+        if (array_key_exists($card_id, $this->card_id_to_type_id)) {
+            return $this->card_id_to_type_id[$card_id];
+        }
+        $card = $this->cards->getCard($card_id);
+        $this->card_id_to_type_id[$card_id] = $card['type_arg'];
+        return $this->getTypeId($card_id);
+    }
+
+    /**
+     * Returns the cost of a given dbcard. Asserts that the card is at the market
+     * @param array $dbcard card to calculate the cost of
+    */
+    function getCost($dbcard) {
+        $type_id = $dbcard['type_arg'];
+        if ($dbcard['location'] != MARKET) {
+            //TODO: market discovery
+            $name = $this->card_types[$type_id]['name'];
+            throw new BgaVisibleSystemException("'$name' is not in the market! Therefore, the cost cannot be calculated!");
+        }
+        $base_cost = $this->card_types[$type_id]['value'];
+        $additional_cost = $dbcard['location_arg'];
+        return $base_cost + $additional_cost;
+    }
+
+    /**
+     * Returns the value of a card when 'used' (accounts for modifications such as 'Flashy Show').
+     * @param array $dbcard card to get the value of
+    */
+    function getValue($dbcard) {
+        $type_id = $dbcard['type_arg'];
+        return $this->card_types[$type_id]['value'];
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Debug functions
 ////////////    
@@ -400,12 +447,76 @@ class Dale extends DaleTableBasic
         (note: each method below must match an input method in dale.action.php)
     */
 
+    function actRequestMarketAction(int $market_card_id) {
+        $this->checkAction("actRequestMarketAction");
+        $this->cards->getCardsFromLocation([$market_card_id], MARKET);
+
+        //TODO: check if maximum available funds are sufficient
+
+        $this->setGameStateValue( "selectedCard", $market_card_id );
+        $this->gamestate->nextState("trPurchase");
+    }
+
+    function actCancel() {
+        $this->checkAction("actCancel");
+        $this->gamestate->nextState("trCancel");
+    }
+
+    function actPurchase(string $funds_card_ids) {
+        $this->checkAction("actPurchase");
+        $funds_card_ids = $this->numberListToArray($funds_card_ids);
+
+        //Get information about the funds
+        $player_id = $this->getActivePlayerId();
+        $funds_cards = $this->cards->getCardsFromLocation($funds_card_ids, HAND.$player_id);
+        $total_value = 0;
+        $lowest_value = 1000;
+        foreach ($funds_cards as $card) {
+            $value = $this->getValue($card);
+            $lowest_value = min($lowest_value, $value);
+            $total_value += $value;
+        }
+
+        //Get information about the market card
+        $market_card_id = $this->getGameStateValue('selectedCard');
+        $market_card = $this->cards->getCard($market_card_id);
+        $cost = $this->getCost($market_card);
+
+        //Check if funds are sufficient
+        if ($total_value < $cost) {
+            throw new BgaUserException($this->_("Insufficient funds")." ($total_value)");
+        }
+
+        //Check for overpaying
+        if (($total_value - $lowest_value) >= $cost) {
+            //TODO: 'Stock Clearance'
+            throw new BgaUserException($this->_("Overpaying is not allowed")." ($total_value)");
+        }
+
+        throw new BgaUserException($this->_("Good")." [$total_value]");
+
+        //Discard the funds
+        $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
+        $this->notifyAllPlayers('discard', clienttranslate('${player_name} pays ${nbr} cards'), array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_ids' => $funds_card_ids,
+            'cards' => $funds_cards,
+            'nbr' => count($funds_cards)
+        ));
+
+        //Obtain the market card
+        //TODO
+
+        $this->gamestate->nextState("trNextPlayer");
+    }
+
     function actRequestInventoryAction() {
         $this->checkAction("actRequestInventoryAction");
         $this->gamestate->nextState("trInventory");
     }
 
-    function actInventoryAction($card_ids) {
+    function actInventoryAction(string $card_ids) {
         $this->checkAction("actInventoryAction");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = self::getCurrentPlayerId();
@@ -414,15 +525,13 @@ class Dale extends DaleTableBasic
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
 
         //move the cards to the discard pile (ordering matters)
-        foreach ($card_ids as $card_id) {
-            $this->cards->insertCardOnExtremePosition($card_id, DISCARD.$player_id, true);
-        }
-
+        $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
 
         //notify all players
         $this->notifyAllPlayers('discard', clienttranslate('${player_name} discards ${nbr} cards'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
+            'card_ids' => $card_ids,
             'cards' => $cards,
             'nbr' => count($card_ids)
         ));
@@ -463,10 +572,22 @@ class Dale extends DaleTableBasic
 ////////////
 
     /*
-        Here, you can create methods defined as "game state arguments" (see "args" property in states.inc.php).
+        Here, you can create methods defargSelectedCardWithCostined as "game state arguments" (see "args" property in states.inc.php).
         These methods function is to return some additional information that is specific to the current
         game state.
     */
+
+    function argSelectedCardWithCost(){
+        $card_id = $this->getGameStateValue('selectedCard');
+        $card = $this->cards->getCard($card_id);
+        $type_id = $card['type_arg'];
+        return array(
+            'i18n' => array('card_name'),
+            'card_name' => $this->card_types[$type_id]['name'],
+            'card_id' => $card['type_arg'],
+            'cost' => $this->getCost($card)
+        );
+    }
 
     /*
     

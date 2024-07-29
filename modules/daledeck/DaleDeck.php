@@ -23,6 +23,26 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * Move 1 card on top of the provided location
+     * @param mixed $card_id string or int representing the card id of the card to move
+     * @param string $location location to put the card
+     */
+    function moveCardOnTop($card_id, string $location) {
+        $this->insertCardOnExtremePosition($card_id, $location, true);
+    }
+
+    /**
+     * Move cards on top of the provided location
+     * @param array $card_ids cards to move
+     * @param string $location location to put the card
+     */
+    function moveCardsOnTop(array $card_ids, string $location) {
+        foreach ($card_ids as $card_id) {
+            $this->moveCardOnTop($card_id, $location);
+        }
+    }
+
+    /**
      * Get a specified number of unassigned junk cards
      * @return array associative array of $nbr free junk cards from the db
     */

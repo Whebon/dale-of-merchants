@@ -17,18 +17,21 @@ export class DaleCard {
      * @param id unique database id for this card instance.
      * @param type_id id that uniquely defines this card's appearance.
      * */
-    public constructor(id: number, type_id?: number) {
-        this.id = +id;
+    public constructor(id: number | string, type_id?: number | string) {
+        id = +id;
+        this.id = id;
         if (type_id != undefined) {
             let prev_type_id = DaleCard.cardIdtoTypeId.get(id);
             if (prev_type_id == undefined) {
-                DaleCard.cardIdtoTypeId.set(+id, +type_id);
+                DaleCard.cardIdtoTypeId.set(id, +type_id);
             }
             else if (prev_type_id != type_id) {
                 throw new Error(`Card id ${id} with type_id ${prev_type_id} cannot be set to a different type_id ${type_id}.`)
             }
         }
         else if (!DaleCard.cardIdtoTypeId.has(id)) {
+            console.log("cardIdtoTypeId");
+            console.log(DaleCard.cardIdtoTypeId);
             throw new Error(`The type_id of card_id ${id} is unknown. Therefore, a card with id ${id} cannot be instantiated.`)
         }
     }

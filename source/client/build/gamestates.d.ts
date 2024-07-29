@@ -25,10 +25,40 @@ interface GameStates {
 		'descriptionmyturn': '${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass',
 		'type': 'activeplayer',
 		'possibleactions': {
+			'actRequestMarketAction': [{
+				'name': 'market_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
 			'actRequestInventoryAction': [],
 		},
 		'transitions': {
+			'trPurchase': 31,
 			'trInventory': 40,
+		},
+	},
+	31: {
+		'name': 'purchase',
+		'description': '${actplayer} must pay ${cost} for ${card_name}',
+		'descriptionmyturn': '${you} must pay ${cost} for ${card_name}',
+		'type': 'activeplayer',
+		'args': 'argSelectedCardWithCost',
+		'argsType': {
+			'card_name': string,
+			'card_id': number,
+			'cost': number,
+		},
+		'possibleactions': {
+			'actPurchase': [{
+				'name': 'funds_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trNextPlayer': 41,
 		},
 	},
 	40: {
@@ -42,8 +72,10 @@ interface GameStates {
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],
+			'actCancel': [],
 		},
 		'transitions': {
+			'trCancel': 30,
 			'trNextPlayer': 41,
 		},
 	},

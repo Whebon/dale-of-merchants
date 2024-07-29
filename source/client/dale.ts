@@ -148,6 +148,11 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				this.myHand.setSelectionMode(1);
 				break;
+			case 'purchase':
+				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
+				console.log(purchaseArgs);
+				this.myHand.setSelectionMode(2);
+				break;
 			case 'nextPlayer':
 				break;
 			case 'inventory':
@@ -161,11 +166,13 @@ class Dale extends Gamegui
 	{
 		console.log( 'Leaving state: '+stateName );
 		
-		// switch( stateName )
-		// {
-		// case 'dummmy':
-		// 	break;
-		// }
+		switch( stateName )
+		{
+			case 'playerTurn':
+				this.market!.setSelectionMode(0);
+				this.myHand.setSelectionMode(0);
+				break;
+		}
 	}
 
 	/** @gameSpecific See {@link Gamegui.onUpdateActionButtons} for more information. */
@@ -180,10 +187,15 @@ class Dale extends Gamegui
 		{
 			case 'playerTurn':
 				// Add buttons if needed
-				this.addActionButton("pass-button", _("Pass (inventory action)"), "onRequestInventoryAction"); 
+				this.addActionButton("pass-button", _("Pass (inventory action)"), "onRequestInventoryAction");
+				break;
+			case 'purchase':
+				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
+				this.addActionButtonCancel();
 				break;
 			case 'inventory':
 				this.addActionButton("pass-button", _("Done"), "onInventoryAction");
+				this.addActionButtonCancel();
 				break;
 		}
 	}
@@ -226,6 +238,27 @@ class Dale extends Gamegui
 		}
 	}
 
+    /**
+	 * If array is not a number array, extract the `id` properties of a list of objects.
+     * @param array
+     * @return AT_numberlist
+     * @example
+     * arrayToNumberList([1, 2, 3, 4]) = "1;2;3;4"
+	 * @example
+     * arrayToNumberList([DbCard(1), DbCard(2), DbCard(3), DbCard(4)]) = "1;2;3;4"
+	 * @example
+     * arrayToNumberList([DaleCard(1), DaleCard(2), DaleCard(3), DaleCard(4)]) = "1;2;3;4"
+	 * @example
+     * arrayToNumberList([StockItem(1), StockItem(2), StockItem(3), StockItem(4)]) = "1;2;3;4"
+     */
+    arrayToNumberList(array: number[] | {id: number}[]): string {
+		if (array.length == 0) return "";
+		if (typeof array[0] !== "number") {
+			array = array.map(item => (item as {id: number}).id)
+		}
+		return array.join(";");
+	}
+
 	/**
 	 * Add an undo button that returns the selectedCardIds to the draw pile
 	*/
@@ -244,6 +277,14 @@ class Dale extends Gamegui
 			this.addActionButton(buttonId, _("Undo"), returnSelectedCardIdsToHand, undefined, false, 'gray');
 		}
 	}
+
+	/**
+	 * Add a cancel button (The state must have an "actCancel" action and "trCancel" transition)
+	*/
+	addActionButtonCancel() {
+		this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
+	}
+	
 
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -264,7 +305,12 @@ class Dale extends Gamegui
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
-				console.log(`Animalfolk ${card.animalfolk} in pos ${pos}`);
+				if(this.checkAction('actRequestMarketAction')) {
+					//TODO: check if maximum available funds are sufficient
+					this.bgaPerformAction('actRequestMarketAction', {
+						market_card_id: card.id
+					})
+				}
 				break;
 		}
 	}
@@ -300,6 +346,21 @@ class Dale extends Gamegui
 		}
 	}
 
+	onPurchase() {
+		let items = this.myHand.getSelectedItems();
+		if(this.checkAction('actPurchase')) {
+			this.bgaPerformAction('actPurchase', {
+				funds_card_ids: this.arrayToNumberList(items)
+			})
+		}
+	}
+
+	onCancel() {
+		if(this.checkAction('actCancel')) {
+			this.bgaPerformAction('actCancel', {})
+		}
+	}
+
 	onRequestInventoryAction() {
 		if(this.checkAction('actRequestInventoryAction')) {
 			this.bgaPerformAction('actRequestInventoryAction', {})
@@ -310,7 +371,7 @@ class Dale extends Gamegui
 		if(this.checkAction("actInventoryAction")) {
 			console.log(`Sending: actInventoryAction, with ids = ${this.selectedCardIds.join(";")}`)
 			this.bgaPerformAction('actInventoryAction', {
-				ids: String(this.selectedCardIds.join(";"))
+				ids: this.arrayToNumberList(this.selectedCardIds)
 			})
 		}
 	}
@@ -423,8 +484,8 @@ class Dale extends Gamegui
 	notif_discard(notif: NotifAs<'discard'>) {
 		if (notif.args.player_id == this.player_id) {
 			//discard cards from hand if not done already
-			for (let i in notif.args.cards) {
-				let card = notif.args.cards[i]!;
+			for (let id of notif.args.card_ids) {
+				let card = notif.args.cards[id]!;
 				this.handToPile(card.id, this.myDiscard, false);
 			}
 		}
@@ -432,8 +493,8 @@ class Dale extends Gamegui
 			//animate from overall player board
 			let otherDiscard = this.playerDiscards[notif.args.player_id];
 			let delay = 0;
-			for (let i in notif.args.cards) {
-				let card = notif.args.cards[i]!;
+			for (let id of notif.args.card_ids) {
+				let card = notif.args.cards[id]!;
 				otherDiscard?.push(DaleCard.of(card), 'overall_player_board_'+notif.args.player_id, undefined, undefined, delay);
 				delay += 250;
 			}

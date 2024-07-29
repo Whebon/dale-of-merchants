@@ -27,11 +27,41 @@ class action_dale extends APP_GameAction
 		}
 	}
 
+	public function actRequestMarketAction()
+	{
+		self::setAjaxMode();
+
+		/** @var int $market_card_id */
+		$market_card_id = self::getArg('market_card_id', AT_int, true);
+
+		$this->game->actRequestMarketAction( $market_card_id );
+		self::ajaxResponse();
+	}
+
 	public function actRequestInventoryAction()
 	{
 		self::setAjaxMode();
 
 		$this->game->actRequestInventoryAction(  );
+		self::ajaxResponse();
+	}
+
+	public function actPurchase()
+	{
+		self::setAjaxMode();
+
+		/** @var string $funds_card_ids */
+		$funds_card_ids = self::getArg('funds_card_ids', AT_numberlist, true);
+
+		$this->game->actPurchase( $funds_card_ids );
+		self::ajaxResponse();
+	}
+
+	public function actCancel()
+	{
+		self::setAjaxMode();
+
+		$this->game->actCancel(  );
 		self::ajaxResponse();
 	}
 

@@ -36,9 +36,22 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take an action'),
 		'descriptionmyturn' => clienttranslate('${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actRequestInventoryAction'],
+		'possibleactions' => ['actRequestMarketAction', 'actRequestInventoryAction'],
 		'transitions' => array(
+			'trPurchase' => 31,
 			'trInventory' => 40,
+		),
+	),
+	31 => array(
+		'name' => 'purchase',
+		'description' => clienttranslate('${actplayer} must pay ${cost} for ${card_name}'),
+		'descriptionmyturn' => clienttranslate('${you} must pay ${cost} for ${card_name}'),
+		'type' => 'activeplayer',
+		'args' => 'argSelectedCardWithCost',
+		'possibleactions' => ['actPurchase', 'actCancel'],
+		'transitions' => array(
+			'trCancel' => 30,
+			'trNextPlayer' => 41,
 		),
 	),
 	40 => array(
@@ -46,8 +59,9 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} may discard any number of cards'),
 		'descriptionmyturn' => clienttranslate('${you} may discard any number of cards'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actInventoryAction'],
+		'possibleactions' => ['actInventoryAction', 'actCancel'],
 		'transitions' => array(
+			'trCancel' => 30,
 			'trNextPlayer' => 41,
 		),
 	),

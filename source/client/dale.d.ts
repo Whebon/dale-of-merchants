@@ -29,6 +29,7 @@ declare global {
             player_name: string
 			nbr: number
 			cards: {[card_id: number]: DbCard}
+			card_ids: number[] //because ordering matters
 		}
 		'obtainNewJunkInHand': {
 			player_id: number
