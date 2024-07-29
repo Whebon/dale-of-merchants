@@ -33,7 +33,7 @@
 }
 
 .stockitem {
-	z-index: 6;
+	z-index: 3;
 	border-radius: 10px;
 }
 
@@ -80,7 +80,7 @@
 	}
 
 	.size {
-		z-index: 10;
+		z-index: 500; //must be higher than all sliding cards
 		position: absolute;
 		font-weight: bold;
 		top: 4%;	

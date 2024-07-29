@@ -56,8 +56,9 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_ITEM_MARGIN = 95;
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
-        Images.Z_INDEX_CARDBACK = 4;
-        Images.Z_INDEX_CARDFRONT = 5;
+        Images.Z_INDEX_CARDBACK = 1;
+        Images.Z_INDEX_CARDFRONT = 2;
+        Images.Z_INDEX_SLIDING_CARD = 4;
         Images.S_SCALE = 0.28;
         Images.SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
         Images.SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
@@ -172,8 +173,33 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"],
     var DaleStock = (function (_super) {
         __extends(DaleStock, _super);
         function DaleStock() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            _this.orderedSelectedCardIds = [];
+            _this.onChangeSelection = function (control_name, item_id) {
+                item_id = +item_id;
+                var isSelected = this.isSelected(item_id);
+                var index = this.orderedSelectedCardIds.indexOf(item_id);
+                if (!item_id) {
+                    this.orderedSelectedCardIds = [];
+                }
+                else if (isSelected && index == -1) {
+                    this.orderedSelectedCardIds.push(item_id);
+                }
+                else if (!isSelected && index != -1) {
+                    this.orderedSelectedCardIds.splice(index, 1);
+                }
+                else {
+                    console.warn("orderedSelectedCardIds might be broken: " + this.orderedSelectedCardIds);
+                    this.orderedSelectedCardIds = [];
+                }
+                console.log(this.orderedSelectedCardIds);
+            };
+            return _this;
         }
+        DaleStock.prototype.setSelectionMode = function (mode) {
+            _super.prototype.setSelectionMode.call(this, mode);
+            this.orderedSelectedCardIds = [];
+        };
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.type_id, card.id, from);
         };
@@ -227,6 +253,11 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.topCardHTML.setAttribute('style', Images_2.Images.getCardStyle(topCard.type_id));
             }
         };
+        Pile.prototype.setZIndex = function (slidingElement) {
+            var z_index = Images_2.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
+            var style = slidingElement.getAttribute('style');
+            slidingElement.setAttribute('style', style + "z-index: ".concat(z_index, ";"));
+        };
         Pile.prototype.pushHiddenCards = function (amount) {
             for (var i = 0; i < amount; i++) {
                 this.cards.push(new DaleCard_1.DaleCard(0, 0));
@@ -256,6 +287,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
                 dojo.fx.chain([slideAnimation, fadeAnimation]).play();
                 dojo.addClass(slidingElement, 'to_be_destroyed');
+                this.setZIndex(slidingElement);
             }
             this.updateHTML();
         };
@@ -279,6 +311,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
                 dojo.fx.chain([slideAnimation, fadeAnimation]).play();
                 dojo.addClass(slidingElement, 'to_be_destroyed');
+                this.setZIndex(slidingElement);
             }
             var card = this.cards.pop();
             this.updateHTML();
@@ -538,7 +571,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.playerDiscards = {};
             _this.market = null;
             _this.myHand = new DaleStock_1.DaleStock();
-            _this.selectedCardIds = [];
             console.log('dale constructor');
             return _this;
         }
@@ -604,7 +636,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myHand.setSelectionMode(0);
                 return;
             }
-            this.selectedCardIds = [];
             switch (stateName) {
                 case 'playerTurn':
                     this.market.setSelectionMode(1);
@@ -619,7 +650,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'nextPlayer':
                     break;
                 case 'inventory':
-                    this.myHand.setSelectionMode(1);
+                    this.myHand.setSelectionMode(2);
                     break;
             }
         };
@@ -648,7 +679,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'inventory':
-                    this.addActionButton("pass-button", _("Done"), "onInventoryAction");
+                    this.addActionButton("confirm-button", _("Done"), "onInventoryAction");
                     this.addActionButtonCancel();
                     break;
             }
@@ -681,22 +712,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             return array.join(";");
         };
-        Dale.prototype.addUndoButton = function () {
-            var buttonId = "undo-selectedCardIds-button";
-            if (!$(buttonId)) {
-                var thiz_3 = this;
-                var returnSelectedCardIdsToHand = function () {
-                    var _a;
-                    for (var i = thiz_3.selectedCardIds.length - 1; i >= 0; i--) {
-                        var card_id = thiz_3.selectedCardIds[i];
-                        thiz_3.pileToHand(card_id, thiz_3.myDiscard);
-                    }
-                    thiz_3.selectedCardIds = [];
-                    (_a = $(buttonId)) === null || _a === void 0 ? void 0 : _a.remove();
-                };
-                this.addActionButton(buttonId, _("Undo"), returnSelectedCardIdsToHand, undefined, false, 'gray');
-            }
-        };
         Dale.prototype.addActionButtonCancel = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
         };
@@ -712,7 +727,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
         };
-        Dale.prototype.onHandSelectionChanged = function () {
+        Dale.prototype.onHandSelectionChanged = function (yeah, yeah2) {
             var items = this.myHand.getSelectedItems();
             switch (this.gamedatas.gamestate.name) {
                 case 'playerTurn':
@@ -722,24 +737,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     this.myHand.unselectAll();
                     break;
-                case 'inventory':
-                    if (items.length == 1) {
-                        var card_id = items[0].id;
-                        this.handToPile(card_id, this.myDiscard);
-                        this.selectedCardIds.push(card_id);
-                        this.addUndoButton();
-                    }
-                    this.myHand.unselectAll();
-                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
         };
         Dale.prototype.onPurchase = function () {
-            var items = this.myHand.getSelectedItems();
             if (this.checkAction('actPurchase')) {
                 this.bgaPerformAction('actPurchase', {
-                    funds_card_ids: this.arrayToNumberList(items)
+                    funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
                 });
             }
         };
@@ -755,9 +760,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onInventoryAction = function () {
             if (this.checkAction("actInventoryAction")) {
-                console.log("Sending: actInventoryAction, with ids = ".concat(this.selectedCardIds.join(";")));
                 this.bgaPerformAction('actInventoryAction', {
-                    ids: this.arrayToNumberList(this.selectedCardIds)
+                    ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
                 });
             }
         };

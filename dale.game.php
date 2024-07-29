@@ -474,7 +474,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getCurrentPlayerId();
         $type_id = $this->nameToTypeId($name);
         $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1));
-        $this->cards->createCards($cards, 'spawned'); //TODO: "createCards" should not be used during the game. Find a suitable replacement for this function.
+        $this->cards->createCards($cards, 'spawned');
         $cards = $this->cards->getCardsInLocation('spawned');
         $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
         $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('DEBUG: spawn in a card in hand'), array(

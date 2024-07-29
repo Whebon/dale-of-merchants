@@ -6,6 +6,38 @@ import { DaleCard } from './DaleCard';
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock {
+	/** Keeps track of the order in which cards in are selected */
+	public orderedSelectedCardIds: number[];
+
+	constructor(){
+		super();
+		this.orderedSelectedCardIds = [];
+		this.onChangeSelection = function(control_name: string, item_id: number) {
+			item_id = +item_id;
+			const isSelected = this.isSelected(item_id);
+			const index = this.orderedSelectedCardIds.indexOf(item_id);
+			if (!item_id) {
+				this.orderedSelectedCardIds = [];
+			}
+			else if (isSelected && index == -1) {
+				this.orderedSelectedCardIds.push(item_id);
+			}
+			else if (!isSelected && index != -1) {
+				this.orderedSelectedCardIds.splice(index, 1);
+			}
+			else {
+				console.warn("orderedSelectedCardIds might be broken: " + this.orderedSelectedCardIds);
+				this.orderedSelectedCardIds = [];
+			}
+			console.log(this.orderedSelectedCardIds);
+		}
+	}
+
+	override setSelectionMode(mode: 0 | 1 | 2): void {
+		super.setSelectionMode(mode);
+		this.orderedSelectedCardIds = [];
+	}
+
 	/** 
 	 * Add a `DaleCard` to a stock. Always use this instead of addToStockWithID. This ensures that the type id of the card id is registered in the `DaleCard` class.
 	 * @param card card to add to the stock

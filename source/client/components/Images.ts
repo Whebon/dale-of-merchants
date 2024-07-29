@@ -17,8 +17,9 @@ export class Images {
     static readonly MARKET_WIDTH = 2717;
     static readonly MARKET_HEIGHT = 906;
 
-    static readonly Z_INDEX_CARDBACK = 4;
-    static readonly Z_INDEX_CARDFRONT = 5;
+    static readonly Z_INDEX_CARDBACK = 1;
+    static readonly Z_INDEX_CARDFRONT = 2;
+    static readonly Z_INDEX_SLIDING_CARD = 4;
 
     static readonly S_SCALE = 0.28;
 

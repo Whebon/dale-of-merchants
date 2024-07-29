@@ -55,9 +55,6 @@ class Dale extends Gamegui
 	/** Cards in this client's player hand */
 	myHand: DaleStock = new DaleStock()
 
-	/** State-specific utility array for states that have something to do with sending card ids. WARNING: resets on entering a new state.*/
-	selectedCardIds: number[] = [];
-
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
@@ -142,7 +139,6 @@ class Dale extends Gamegui
 		}
 
 		//reset the selected cards array
-		this.selectedCardIds = [];
 		switch( stateName ){
 			case 'playerTurn':
 				this.market!.setSelectionMode(1);
@@ -157,7 +153,7 @@ class Dale extends Gamegui
 			case 'nextPlayer':
 				break;
 			case 'inventory':
-				this.myHand.setSelectionMode(1);
+				this.myHand.setSelectionMode(2);
 				break;
 		}
 	}
@@ -198,7 +194,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'inventory':
-				this.addActionButton("pass-button", _("Done"), "onInventoryAction");
+				this.addActionButton("confirm-button", _("Done"), "onInventoryAction");
 				this.addActionButtonCancel();
 				break;
 		}
@@ -264,25 +260,6 @@ class Dale extends Gamegui
 	}
 
 	/**
-	 * Add an undo button that returns the selectedCardIds to the draw pile
-	*/
-	addUndoButton() {
-		let buttonId = "undo-selectedCardIds-button";
-		if (!$(buttonId)) {
-			let thiz = this;
-			let returnSelectedCardIdsToHand  = function() {
-				for (let i = thiz.selectedCardIds.length - 1; i >= 0; i--) {
-					const card_id = thiz.selectedCardIds[i]!;
-					thiz.pileToHand(card_id, thiz.myDiscard);
-				}
-				thiz.selectedCardIds = []
-				$(buttonId)?.remove();
-			}
-			this.addActionButton(buttonId, _("Undo"), returnSelectedCardIdsToHand, undefined, false, 'gray');
-		}
-	}
-
-	/**
 	 * Add a cancel button (The state must have an "actCancel" action and "trCancel" transition)
 	*/
 	addActionButtonCancel() {
@@ -316,7 +293,7 @@ class Dale extends Gamegui
 		}
 	}
 
-	onHandSelectionChanged() {
+	onHandSelectionChanged(yeah: any, yeah2: any) {
 		//if (!this.isCurrentPlayerActive()) return;
 		let items = this.myHand.getSelectedItems();
 
@@ -332,26 +309,15 @@ class Dale extends Gamegui
 				}
 				this.myHand.unselectAll();
 				break;
-			case 'inventory':
-				//move to the discard pile one at a time
-				if (items.length == 1) {
-					let card_id = items[0]!.id;
-					this.handToPile(card_id, this.myDiscard);
-					this.selectedCardIds.push(card_id);
-					this.addUndoButton();
-				}
-				this.myHand.unselectAll();
-				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
 	}
 
 	onPurchase() {
-		let items = this.myHand.getSelectedItems();
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
-				funds_card_ids: this.arrayToNumberList(items)
+				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
 			})
 		}
 	}
@@ -370,9 +336,8 @@ class Dale extends Gamegui
 
 	onInventoryAction() {
 		if(this.checkAction("actInventoryAction")) {
-			console.log(`Sending: actInventoryAction, with ids = ${this.selectedCardIds.join(";")}`)
 			this.bgaPerformAction('actInventoryAction', {
-				ids: this.arrayToNumberList(this.selectedCardIds)
+				ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
 			})
 		}
 	}

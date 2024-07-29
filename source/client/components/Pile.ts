@@ -54,6 +54,15 @@ export class Pile {
         }
     }
 
+    /**
+     * Set the z-index for sliding cards. The z-index must be 1 higher for each other sliding card.
+     */
+    private setZIndex(slidingElement: HTMLElement) {
+        const z_index = Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
+        const style = slidingElement.getAttribute('style');
+        slidingElement.setAttribute('style', style+`z-index: ${z_index};`);
+    }
+
      /**
      * Push dummy cards onto the pile. The content of these cards is unknown to the client.
      * @param amount: number of cards to push.
@@ -98,6 +107,7 @@ export class Pile {
             var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
             dojo.fx.chain([slideAnimation, fadeAnimation]).play();
             dojo.addClass( slidingElement, 'to_be_destroyed' );
+            this.setZIndex(slidingElement);
         }
         this.updateHTML();
     }
@@ -133,6 +143,7 @@ export class Pile {
             var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
             dojo.fx.chain([slideAnimation, fadeAnimation]).play();
             dojo.addClass( slidingElement, 'to_be_destroyed' );
+            this.setZIndex(slidingElement);
         }
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
