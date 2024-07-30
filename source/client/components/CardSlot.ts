@@ -21,11 +21,18 @@ export class CardSlot {
     protected _container: HTMLElement;
     protected _card: DaleCard | undefined;
 
-    constructor(parent: CardSlotManager, pos: number, container?: HTMLElement, card?: DaleCard){
+    /**
+     * Designated space designed to hold a single card or remain empty.
+     * @param parent CardSlotManager object that manages this slot
+     * @param pos uniquely defines this slot in the scope of the CardSlotManager
+     * @param container DomElement to turn into the slot
+     * @param card (Optional) - immediately fill the slot with a card
+     */
+    constructor(parent: CardSlotManager, pos: number, container: HTMLElement, card?: DaleCard){
         this.parent = parent;
         this.pos = pos;
         this.selected = false;
-        this._container = container ?? document.createElement("div");
+        this._container = container;
         this._card = card;
         if (this._container.onclick != null) {
             console.warn("CardSlot is given a container that already has an onclick handler. This handler will may be overwritten.");

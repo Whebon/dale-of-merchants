@@ -22,6 +22,7 @@ import { Images } from './components/Images';
 import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
+import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
@@ -38,6 +39,9 @@ class Dale extends Gamegui
 
 	/** An open discard pile for each player */
 	playerDiscards: Record<number, Pile> = {};
+
+	/** A stall for each player */
+	playerStalls: Record<number, Stall> = {};
 
 	/** Current player's draw pile (this client's draw pil) */
 	get myDeck(): Pile {
@@ -90,6 +94,9 @@ class Dale extends Gamegui
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));
 			}
+
+			//stall per player
+			this.playerStalls[player_id] = new Stall(this, +player_id);
 		}
 
 		//initialize the market deck

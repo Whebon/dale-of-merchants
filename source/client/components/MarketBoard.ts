@@ -35,7 +35,6 @@ export class MarketBoard implements CardSlotManager {
         this.slots = []
         for (let pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
             let div = document.createElement("div");
-            div.classList.add('grow');
             div.setAttribute('style', `${Images.getCardStyle()};
                 position: absolute;
                 left: ${pos*(Images.CARD_WIDTH_S + Images.MARKET_ITEM_MARGIN_S)}px

@@ -45,6 +45,10 @@
     <div style="display:flex">
         <div id="discard-{PLAYER_ID}" class="pile-container"></div>
         <div id="deck-{PLAYER_ID}" class="pile-container"></div>
+        <div class="stall-wrap">
+            <h3 class="name"> {STALL} </h3>
+            <div id="stall-{PLAYER_ID}" class="stall-container"></div>
+        </div>  
     </div>
 </div>
 <!-- END stall -->

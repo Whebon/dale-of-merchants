@@ -400,7 +400,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
             this.parent = parent;
             this.pos = pos;
             this.selected = false;
-            this._container = container !== null && container !== void 0 ? container : document.createElement("div");
+            this._container = container;
             this._card = card;
             if (this._container.onclick != null) {
                 console.warn("CardSlot is given a container that already has an onclick handler. This handler will may be overwritten.");
@@ -500,7 +500,6 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var div = document.createElement("div");
-                div.classList.add('grow');
                 div.setAttribute('style', "".concat(Images_3.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_3.Images.CARD_WIDTH_S + Images_3.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
@@ -579,7 +578,110 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Images_4, Pile_1, DaleCard_2, MarketBoard_1) {
+define("components/Stall", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_4, CardSlot_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Stall = void 0;
+    var Stall = (function () {
+        function Stall(page, player_id) {
+            this.MAX_STACK_SIZE = 100;
+            this.MAX_STACKS = 8;
+            this.page = page;
+            this.player_id = player_id;
+            this.container = $("stall-" + player_id);
+            this.stackContainers = [];
+            this.selectionMode = 0;
+            this.selectionModeSlotType = "filled";
+            this.slots = [];
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+            this.createNewStack();
+        }
+        Stall.prototype.createNewStack = function () {
+            var stackContainer = document.createElement("div");
+            stackContainer.classList.add("stack-container");
+            stackContainer.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), "; position: relative;"));
+            stackContainer.classList.add("placeholder");
+            this.container.appendChild(stackContainer);
+            this.stackContainers.push(stackContainer);
+            this.slots.push([]);
+            this.createNewSlot(this.slots.length - 1);
+            this.createNewSlot(this.slots.length - 1);
+            this.createNewSlot(this.slots.length - 1);
+        };
+        Stall.prototype.createNewSlot = function (stack_index, card) {
+            if (stack_index < 0 || stack_index >= this.slots.length || stack_index >= this.stackContainers.length) {
+                throw new Error("Cannot make a slot in non-existing stack ".concat(stack_index));
+            }
+            var stackContainer = this.stackContainers[stack_index];
+            var stack = this.slots[stack_index];
+            var index = stack.length;
+            var div = document.createElement("div");
+            div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(20 * index, "%\n        "));
+            stackContainer.appendChild(div);
+            var pos = this.getPos(stack_index, index);
+            stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
+        };
+        Stall.prototype.getNumberOfStacks = function () {
+            return this.slots.length;
+        };
+        Stall.prototype.getPos = function (stack_index, index) {
+            return stack_index * this.MAX_STACK_SIZE + index;
+        };
+        Stall.prototype.getSlot = function (stack_index, index) {
+            if (stack_index < 0 || stack_index >= this.slots.length) {
+                throw new Error("Cannot access stack_index ".concat(stack_index, ". Player ").concat(this.player_id, " only has ").concat(this.slots.length, " stacks."));
+            }
+            var stack = this.slots[stack_index];
+            if (index < 0 || index >= stack.length) {
+                throw new Error("Cannot access index ".concat(index, " of a stack of size ").concat(stack.length, "."));
+            }
+            return stack[index];
+        };
+        Stall.prototype.getSlotId = function (stack_index, index) {
+            return this.getSlot(stack_index, index).id;
+        };
+        Stall.prototype.setSelectionMode = function (mode, slot_type) {
+            if (slot_type === void 0) { slot_type = "filled"; }
+            if (this.selectionMode == mode)
+                return;
+            this.unselectAll();
+            this.selectionMode = mode;
+            this.selectionModeSlotType = slot_type;
+            var clickable = mode != 0;
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var stack = _a[_i];
+                for (var _b = 0, stack_1 = stack; _b < stack_1.length; _b++) {
+                    var slot = stack_1[_b];
+                    slot.setClickable(clickable);
+                }
+            }
+        };
+        Stall.prototype.unselectAll = function () {
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var stack = _a[_i];
+                for (var _b = 0, stack_2 = stack; _b < stack_2.length; _b++) {
+                    var slot = stack_2[_b];
+                    slot.setSelected(false);
+                }
+            }
+        };
+        Stall.prototype.onCardSlotClick = function (slot) {
+            var index = slot.pos % this.MAX_STACKS;
+            var stack = (slot.pos - index) % this.MAX_STACKS;
+            console.log("Clicked on CardStack[".concat(stack, ", ").concat(index, "]"));
+        };
+        return Stall;
+    }());
+    exports.Stall = Stall;
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Images_5, Pile_1, DaleCard_2, MarketBoard_1, Stall_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -590,6 +692,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.marketDiscard = new Pile_1.Pile(_this, 'market-discard', 'Market Discard');
             _this.playerDecks = {};
             _this.playerDiscards = {};
+            _this.playerStalls = {};
             _this.market = null;
             _this.myHand = new DaleStock_1.DaleStock();
             console.log('dale constructor');
@@ -628,6 +731,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var card = gamedatas.discardPiles[player_id][+i];
                     this.playerDiscards[player_id].push(DaleCard_2.DaleCard.of(card));
                 }
+                this.playerStalls[player_id] = new Stall_1.Stall(this, +player_id);
             }
             this.marketDeck.pushHiddenCards(gamedatas.deckSizes.market);
             for (var i in gamedatas.discardPiles.market) {
@@ -639,9 +743,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card = gamedatas.market[i];
                 this.market.insertCard(DaleCard_2.DaleCard.of(card), +card.location_arg);
             }
-            this.myHand.create(this, $('myhand'), Images_4.Images.CARD_WIDTH, Images_4.Images.CARD_HEIGHT);
-            this.myHand.resizeItems(Images_4.Images.CARD_WIDTH_S, Images_4.Images.CARD_HEIGHT_S, Images_4.Images.SHEET_WIDTH_S, Images_4.Images.SHEET_HEIGHT_S);
-            this.myHand.image_items_per_row = Images_4.Images.IMAGES_PER_ROW;
+            this.myHand.create(this, $('myhand'), Images_5.Images.CARD_WIDTH, Images_5.Images.CARD_HEIGHT);
+            this.myHand.resizeItems(Images_5.Images.CARD_WIDTH_S, Images_5.Images.CARD_HEIGHT_S, Images_5.Images.SHEET_WIDTH_S, Images_5.Images.SHEET_HEIGHT_S);
+            this.myHand.image_items_per_row = Images_5.Images.IMAGES_PER_ROW;
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
                 this.myHand.addDaleCardToStock(DaleCard_2.DaleCard.of(card));

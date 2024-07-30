@@ -19,11 +19,8 @@
  *
  */
 
-if (!defined('PASSIVE')) {
-  define('PASSIVE', 0);
-  define('TECHNIQUE', 1);
-
-  //define all Card Types (CT)
+ //define all Card Types (CT)
+if (!defined('CT_CARDBACK')) {
   define('CT_CARDBACK', 0);
   define('CT_JUNK', 1);
   define('CT_JUNK2', 2);
