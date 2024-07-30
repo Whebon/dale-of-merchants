@@ -22,15 +22,6 @@
 
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
-.clickable {
-  transition: all 0.2s ease-in-out;
-}
-
-.clickable:hover {
-  cursor: pointer;
-  transform: scale(1.05);
-}
-
 .stockitem {
   z-index: 3;
   border-radius: 10px;
@@ -44,7 +35,7 @@
 
 .card-slot-selected {
   border-radius: 10px;
-  border: 1px solid black;
+  border: 1px solid red;
 }
 
 .card {
@@ -57,6 +48,13 @@
   background-image: url(img/shop_day.jpg);
   background-repeat: no-repeat;
   position: relative;
+}
+#market-board-background .clickable {
+  transition: all 0.2s ease-in-out;
+}
+#market-board-background .clickable:hover {
+  cursor: pointer;
+  transform: scale(1.05);
 }
 
 #market-board {
@@ -91,6 +89,10 @@
 .stall-wrap .name {
   margin: 10px;
   white-space: nowrap;
+}
+.stall-wrap .clickable:hover {
+  cursor: pointer;
+  left: 3px;
 }
 
 .pile-container {

@@ -133,7 +133,8 @@ export class CardSlot {
     public setClickable(enable: boolean) {
         if (enable){
             let thiz = this;
-            this._container.onclick = function() {
+            this._container.onclick = function(evt: MouseEvent) {
+                evt.stopPropagation();
                 thiz.parent.onCardSlotClick(thiz);
             };
             this._container.classList.add("clickable");

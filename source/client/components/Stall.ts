@@ -5,8 +5,6 @@ import { CardSlot, CardSlotManager } from './CardSlot';
 
 declare function $(text: string | Element): HTMLElement;
 
-
-
 /** 
  * "none": nothing is clickable
  * "single": select single non-empty card slot
@@ -33,14 +31,13 @@ export class Stall implements CardSlotManager {
         this.player_id = player_id;
         this.container = $("stall-"+player_id);
         this.stackContainers = [];
-        this.selectionMode = "build";
+        this.selectionMode = "none";
         this.slots = [];
         //TODO: this can safely be removed
         // this.buildIcon = document.createElement("div");
         // this.buildIcon.classList.add("build-icon");
         // this.buildIcon.setAttribute('style', `${Images.getCardStyle()};`);
         this.createNewStack();
-        this.setSelectionMode("build");
     }
 
     /**
@@ -75,7 +72,7 @@ export class Stall implements CardSlotManager {
 
     /**
      * Create a new slot on top of the specified stack
-     * @param stack_index stack index that points to an aleadying existing stack
+     * @param stack_index stack index that points to an already existing stack
      * @param card (Optional) - fill the slot with a specified card
      */
     createNewSlot(stack_index: number, card?: DaleCard) {
@@ -100,9 +97,6 @@ export class Stall implements CardSlotManager {
         //add the slot to the collection of slots
         const pos = this.getPos(stack_index, index);
         stack.push(new CardSlot(this, pos, div, card));
-
-        //reset the selectionMode
-        this.setSelectionMode(this.selectionMode);
     }
 
     /**
@@ -146,10 +140,7 @@ export class Stall implements CardSlotManager {
 
     /**
      * You can specify a selection mode similar like for a Stock.
-     * @param mode
-     * 0: no item can be selected by the player.
-     * 1: a maximum of one item can be selected by the player at a time.
-     * 2: multiple items can be selected by the player at the same time.
+     * @param mode see StallSelectionMode
      * @param type (optional) - default "filled". type of card slots that can be selected
     */
     setSelectionMode(mode: StallSelectionMode) {
@@ -162,7 +153,7 @@ export class Stall implements CardSlotManager {
             for (let slot of stack) {
                 switch(mode) {
                     case "none":
-                        slot.setClickable(slot.hasCard());
+                        slot.setClickable(false);
                         break;
                     case "single":
                         slot.setClickable(slot.hasCard());
@@ -171,7 +162,7 @@ export class Stall implements CardSlotManager {
                         slot.setClickable(slot.hasCard());
                         break;
                     case "build":
-                        slot.setClickable(slot.hasCard() == false);
+                        slot.setClickable(!slot.hasCard());
                         break;
                 }
             }

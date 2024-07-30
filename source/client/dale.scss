@@ -23,15 +23,6 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
-.clickable {
-	transition: all .2s ease-in-out; 
-}
-
-.clickable:hover {
-	cursor: pointer;
-	transform: scale(1.05); 
-}
-
 .stockitem {
 	z-index: 3;
 	border-radius: 10px;
@@ -45,7 +36,7 @@
 
 .card-slot-selected {
 	border-radius: 10px;
-	border: 1px solid black;
+	border: 1px solid red;
 }
 
 .card {
@@ -60,6 +51,15 @@
 	position: relative;
 	//min-width: 3000px; //large enough to always fit the full the background image (2717px) + a little bit of margin for right item_margin of the right card
     // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
+
+	.clickable {
+		transition: all .2s ease-in-out; 
+	}
+	
+	.clickable:hover {
+		cursor: pointer;
+		transform: scale(1.05); 
+	}
 }
 
 #market-board {
@@ -96,6 +96,12 @@
 	.name {
 		margin: 10px;
 		white-space: nowrap;
+	}
+	
+	.clickable:hover {
+		//growing animation glitches in stacks (maybe try z-index?)
+		cursor: pointer;
+		left: 3px;
 	}
 
 	//TODO: this can safely be removed 
@@ -149,7 +155,7 @@
 	}
 }
 
-.card-tooltip{
+.card-tooltip {
 	.text {
 		max-width: 300px;
 	}

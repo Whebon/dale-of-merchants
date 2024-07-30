@@ -155,6 +155,7 @@ class Dale extends Gamegui
 			case 'playerTurn':
 				this.market!.setSelectionMode(1);
 				this.myHand.setSelectionMode(1);
+				this.myStall.setSelectionMode("build");
 				break;
 			case 'purchase':
 				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
@@ -180,6 +181,7 @@ class Dale extends Gamegui
 			case 'playerTurn':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
+				this.myStall.setSelectionMode("none");
 				break;
 			case 'purchase':
 				this.market!.unselectAll();
@@ -206,7 +208,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'inventory':
-				this.addActionButton("confirm-button", _("Discard Selected Cards"), "onInventoryAction");
+				this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
 				this.addActionButtonCancel();
 				break;
 		}

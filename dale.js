@@ -477,7 +477,8 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
         CardSlot.prototype.setClickable = function (enable) {
             if (enable) {
                 var thiz_2 = this;
-                this._container.onclick = function () {
+                this._container.onclick = function (evt) {
+                    evt.stopPropagation();
                     thiz_2.parent.onCardSlotClick(thiz_2);
                 };
                 this._container.classList.add("clickable");
@@ -594,10 +595,9 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
             this.player_id = player_id;
             this.container = $("stall-" + player_id);
             this.stackContainers = [];
-            this.selectionMode = "build";
+            this.selectionMode = "none";
             this.slots = [];
             this.createNewStack();
-            this.setSelectionMode("build");
         }
         Stall.prototype.createNewStack = function () {
             if (this.stackContainers.length > 0) {
@@ -630,7 +630,6 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
-            this.setSelectionMode(this.selectionMode);
         };
         Stall.prototype.getNumberOfStacks = function () {
             return this.slots.length;
@@ -660,7 +659,7 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
                     var slot = stack_1[_b];
                     switch (mode) {
                         case "none":
-                            slot.setClickable(slot.hasCard());
+                            slot.setClickable(false);
                             break;
                         case "single":
                             slot.setClickable(slot.hasCard());
@@ -669,7 +668,7 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
                             slot.setClickable(slot.hasCard());
                             break;
                         case "build":
-                            slot.setClickable(slot.hasCard() == false);
+                            slot.setClickable(!slot.hasCard());
                             break;
                     }
                 }
@@ -784,6 +783,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'playerTurn':
                     this.market.setSelectionMode(1);
                     this.myHand.setSelectionMode(1);
+                    this.myStall.setSelectionMode("build");
                     break;
                 case 'purchase':
                     var purchaseArgs = args.args;
@@ -804,6 +804,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'playerTurn':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
+                    this.myStall.setSelectionMode("none");
                     break;
                 case 'purchase':
                     this.market.unselectAll();
@@ -823,7 +824,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'inventory':
-                    this.addActionButton("confirm-button", _("Discard Selected Cards"), "onInventoryAction");
+                    this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
                     this.addActionButtonCancel();
                     break;
             }
