@@ -17,6 +17,8 @@ export class Pile {
 
     public placeholderHTML: HTMLElement;
 
+    public static UNIQUE_PILE_ID = 0;
+
     /**
      * Array of cards that are in the pile (they should be in `cards`), but are still animating towards the pile
      */
@@ -35,6 +37,7 @@ export class Pile {
         this.containerHTML = $(pile_container_id);
         this.placeholderHTML = $(pile_container_id).querySelector('.placeholder')!;
         this.topCardHTML = $(pile_container_id).querySelector('.card')!;
+        this.topCardHTML.id = `pile-${Pile.UNIQUE_PILE_ID++}-top-card`;
         this.sizeHTML = $(pile_container_id).querySelector('.size')!;
         this.cards = [];
         this._slidingCards = [];
@@ -84,6 +87,7 @@ export class Pile {
      */
     public push(card: DaleCard, from?: string | HTMLElement, onEnd?: Function | null, duration?: number, delay?: number) {
         this.cards.push(card);
+        card.addTooltip(this.topCardHTML.id);
         if (from != null) {
             this._slidingCards.push(card);
             let slidingElement = card.toDiv();

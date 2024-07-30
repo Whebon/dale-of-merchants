@@ -69,6 +69,13 @@ class Dale extends Gamegui
 		console.log(this.gamedatas)
 		console.log("------------------------")
 
+		//initialize the card types
+		DaleCard.init(gamedatas.cardTypes);
+		for (let i in gamedatas.cardTypes) {
+			let type_id = gamedatas.cardTypes[i]!.type_id;
+			this.myHand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+		}
+
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
@@ -83,13 +90,6 @@ class Dale extends Gamegui
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));
 			}
-		}
-		
-		//initialize the card types
-		DaleCard.init(gamedatas.cardTypes);
-		for (let i in gamedatas.cardTypes) {
-			let type_id = gamedatas.cardTypes[i]!.type_id;
-			this.myHand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
 		}
 
 		//initialize the market deck
@@ -194,7 +194,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'inventory':
-				this.addActionButton("confirm-button", _("Done"), "onInventoryAction");
+				this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
 				this.addActionButtonCancel();
 				break;
 		}

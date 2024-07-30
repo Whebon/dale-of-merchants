@@ -1,1 +1,1 @@
-export type Animalfolk = null | "macaws" | "pandas" | "raccoons" | "squirrels" | "ocelots" | "chameleons";
+export type Animalfolk = null | "Macaws" | "Pandas" | "Raccoons" | "Squirrels" | "Ocelots" | "Chameleons";

@@ -9,6 +9,7 @@ import { DbCard } from './types/DbCard';
 export class DaleCard {
     static cardTypes: CardType[] //initialized during "setup(gamedatas: Gamedatas)"
     static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>()
+    static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
 
     public id: number
 
@@ -64,14 +65,6 @@ export class DaleCard {
         return _type_id
     }
 
-    public get name(): string {
-        return DaleCard.cardTypes[this.type_id]!.name
-    }
-
-    public get text(): string {
-        return DaleCard.cardTypes[this.type_id]!.text
-    }
-
     public get value(): number {
         return DaleCard.cardTypes[this.type_id]!.value
     }
@@ -80,13 +73,53 @@ export class DaleCard {
         return DaleCard.cardTypes[this.type_id]!.animalfolk
     }
 
+    private getTooltipContent(): string {
+        const cardType = DaleCard.cardTypes[this.type_id]!;
+        const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
+        return `<div class="card-tooltip">
+            <h3>${cardType.name}</h3>
+            <hr>
+            ${cardType.value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
+            <br><br>
+            <div class="text">${cardType.text}</div>
+        </div>`
+	}
+
+    /**
+     * Add a tooltip to the specified tooltip_parent_id. WARNING: each DaleCard card_id can have at most 1 tooltip.
+     * @param tooltip_parent_id parent id to attach the tooltip to.
+     */
+    public addTooltip(tooltip_parent_id: string) {
+        if (this.id == 0) return; //card back doesn't have a tooltip
+        const parent = $(tooltip_parent_id)
+        if (!parent) {
+            throw new Error(`DomElement with id '$tooltip_parent_id' does not exist. Cannot add a tooltip to non-existing parent.`)
+        }
+        const tooltip = new dijit.Tooltip({
+            connectId: [tooltip_parent_id],
+            label: this.getTooltipContent(),
+            showDelay: 400,
+        });
+        dojo.connect(parent, "mouseleave", () => {
+            tooltip.close();
+        });
+        DaleCard.tooltips.get(this.id)?.destroy()
+        DaleCard.tooltips.set(this.id, tooltip);
+    }
+
     /**
      * @returns a new div element representing this card
+     * @param tooltip_parent_id (optional) - if specified, the div will be added to the parent, and it will have a tooltip
      */
-    public toDiv(): HTMLElement {
+    public toDiv(tooltip_parent_id?: string): HTMLElement {
         let div = document.createElement("div")
+        div.id = "dale-card-"+this.id
         div.classList.add("card")
         div.setAttribute('style', Images.getCardStyle(this.type_id))
+        if (tooltip_parent_id) {
+            $(tooltip_parent_id)?.appendChild(div)
+            this.addTooltip(tooltip_parent_id);
+        }
         return div;
     }
 

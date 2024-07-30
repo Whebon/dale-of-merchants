@@ -45,6 +45,7 @@ export class DaleStock extends Stock {
 	*/
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
 		this.addToStockWithId(card.type_id, card.id, from);
+		card.addTooltip(this.control_name+'_item_'+card.id);
 	}
 
 	/**

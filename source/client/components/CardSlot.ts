@@ -74,7 +74,7 @@ export class CardSlot {
     */
     public insertCard(card: DaleCard, from?: HTMLElement | string): void {
         this.removeCard();
-        const cardDiv = card.toDiv();
+        const cardDiv = card.toDiv(this.id);
         this._container.appendChild(cardDiv);
         this._card = card;
         if (from) {

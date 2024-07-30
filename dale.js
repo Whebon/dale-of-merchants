@@ -124,20 +124,6 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(DaleCard.prototype, "name", {
-            get: function () {
-                return DaleCard.cardTypes[this.type_id].name;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(DaleCard.prototype, "text", {
-            get: function () {
-                return DaleCard.cardTypes[this.type_id].text;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(DaleCard.prototype, "value", {
             get: function () {
                 return DaleCard.cardTypes[this.type_id].value;
@@ -152,16 +138,47 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
             enumerable: false,
             configurable: true
         });
-        DaleCard.prototype.toDiv = function () {
+        DaleCard.prototype.getTooltipContent = function () {
+            var cardType = DaleCard.cardTypes[this.type_id];
+            var animalfolkWithBull = cardType.animalfolk_displayed ? " • " + cardType.animalfolk_displayed : "";
+            return "<div class=\"card-tooltip\">\n            <h3>".concat(cardType.name, "</h3>\n            <hr>\n            ").concat(cardType.value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text, "</div>\n        </div>");
+        };
+        DaleCard.prototype.addTooltip = function (tooltip_parent_id) {
+            var _a;
+            if (this.id == 0)
+                return;
+            var parent = $(tooltip_parent_id);
+            if (!parent) {
+                throw new Error("DomElement with id '$tooltip_parent_id' does not exist. Cannot add a tooltip to non-existing parent.");
+            }
+            var tooltip = new dijit.Tooltip({
+                connectId: [tooltip_parent_id],
+                label: this.getTooltipContent(),
+                showDelay: 400,
+            });
+            dojo.connect(parent, "mouseleave", function () {
+                tooltip.close();
+            });
+            (_a = DaleCard.tooltips.get(this.id)) === null || _a === void 0 ? void 0 : _a.destroy();
+            DaleCard.tooltips.set(this.id, tooltip);
+        };
+        DaleCard.prototype.toDiv = function (tooltip_parent_id) {
+            var _a;
             var div = document.createElement("div");
+            div.id = "dale-card-" + this.id;
             div.classList.add("card");
             div.setAttribute('style', Images_1.Images.getCardStyle(this.type_id));
+            if (tooltip_parent_id) {
+                (_a = $(tooltip_parent_id)) === null || _a === void 0 ? void 0 : _a.appendChild(div);
+                this.addTooltip(tooltip_parent_id);
+            }
             return div;
         };
         DaleCard.of = function (card) {
             return new DaleCard(card.id, card.type_arg);
         };
         DaleCard.cardIdtoTypeId = new Map();
+        DaleCard.tooltips = new Map();
         return DaleCard;
     }());
     exports.DaleCard = DaleCard;
@@ -202,6 +219,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"],
         };
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.type_id, card.id, from);
+            card.addTooltip(this.control_name + '_item_' + card.id);
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
             var stock = this;
@@ -238,6 +256,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
             this.topCardHTML = $(pile_container_id).querySelector('.card');
+            this.topCardHTML.id = "pile-".concat(Pile.UNIQUE_PILE_ID++, "-top-card");
             this.sizeHTML = $(pile_container_id).querySelector('.size');
             this.cards = [];
             this._slidingCards = [];
@@ -266,6 +285,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         };
         Pile.prototype.push = function (card, from, onEnd, duration, delay) {
             this.cards.push(card);
+            card.addTooltip(this.topCardHTML.id);
             if (from != null) {
                 this._slidingCards.push(card);
                 var slidingElement = card.toDiv();
@@ -366,6 +386,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             return this.cards[i];
         };
+        Pile.UNIQUE_PILE_ID = 0;
         return Pile;
     }());
     exports.Pile = Pile;
@@ -417,7 +438,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
         };
         CardSlot.prototype.insertCard = function (card, from) {
             this.removeCard();
-            var cardDiv = card.toDiv();
+            var cardDiv = card.toDiv(this.id);
             this._container.appendChild(cardDiv);
             this._card = card;
             if (from) {
@@ -593,6 +614,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("------ GAME DATAS ------");
             console.log(this.gamedatas);
             console.log("------------------------");
+            DaleCard_2.DaleCard.init(gamedatas.cardTypes);
+            for (var i in gamedatas.cardTypes) {
+                var type_id = gamedatas.cardTypes[i].type_id;
+                this.myHand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+            }
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
                 this.playerDecks[player_id] = new Pile_1.Pile(this, 'deck-' + player_id, 'Deck');
@@ -602,11 +628,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var card = gamedatas.discardPiles[player_id][+i];
                     this.playerDiscards[player_id].push(DaleCard_2.DaleCard.of(card));
                 }
-            }
-            DaleCard_2.DaleCard.init(gamedatas.cardTypes);
-            for (var i in gamedatas.cardTypes) {
-                var type_id = gamedatas.cardTypes[i].type_id;
-                this.myHand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
             }
             this.marketDeck.pushHiddenCards(gamedatas.deckSizes.market);
             for (var i in gamedatas.discardPiles.market) {
@@ -679,7 +700,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'inventory':
-                    this.addActionButton("confirm-button", _("Done"), "onInventoryAction");
+                    this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
                     this.addActionButtonCancel();
                     break;
             }

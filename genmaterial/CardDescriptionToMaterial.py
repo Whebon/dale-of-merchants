@@ -2,6 +2,34 @@ import pandas as pd
 import math
 import numbers
 
+def type_displayed(row):
+    if (row['is_technique'] == "X"):
+        return 'clienttranslate("Technique")'
+    if (string_literal(row['animalfolk']) == "null"):
+        return 'clienttranslate("Rubbish")'
+    return 'clienttranslate("Passive")'
+
+def is_technique(row):
+    if (row['is_technique'] == "X"):
+        return "true"
+    return "false"
+
+def has_plus(row):
+    if (row['is_technique'] == "X"):
+        if (row['has_plus'] == "X"):
+            return "true"
+        return "false"
+    # Only techniques can have a plus
+    return "false"
+
+def playable(row):
+    if (row['is_technique'] == "X"):
+        # All techniques are playable 
+        return "true"
+    if (row['playable'] == "X"):
+        return "true"
+    return "false"
+
 def string_literal(str):
     if (str == "" or str == "null" or str== "nan" or str == None or isinstance(str, numbers.Number)):
         return "null";
@@ -17,15 +45,19 @@ card_types = {}
 # Iterate over the rows in the dataframe
 for index, row in df.iterrows():
     type_id = row['type_id']
+    animalfolk = string_literal(row['animalfolk'])
     card_types[type_id] = {
         'type_id': row['type_id'],
         'name': f"clienttranslate(\"{row['name']}\")",
         'text': f"clienttranslate(\"{row['text']}\")",
-        'has_plus': row['has_plus'],
-        'type': row['type'],
+        'type_displayed': type_displayed(row),
+        'is_technique': is_technique(row),
+        'has_plus': has_plus(row),
+        'playable': playable(row),
         'value': row['value'],
         'nbr': row['nbr'],
-        'animalfolk': string_literal(row['animalfolk'])
+        'animalfolk': animalfolk,
+        'animalfolk_displayed': '""' if animalfolk == "null" else f"clienttranslate({animalfolk})"
     }
 
 
