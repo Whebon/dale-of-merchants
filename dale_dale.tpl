@@ -42,14 +42,26 @@
 <!-- BEGIN stall -->
 <div class="whiteblock">
     <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {BOARD} </h3>
-    <div style="display:flex">
+    <div style="display:flex; width: 100%;">
         <div id="discard-{PLAYER_ID}" class="pile-container"></div>
         <div id="deck-{PLAYER_ID}" class="pile-container"></div>
         <div class="stall-wrap">
             <h3 class="name"> {STALL} </h3>
             <div id="stall-{PLAYER_ID}" class="stall-container"></div>
-        </div>  
+            <!-- <div class="stall-container">
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+                <div class="stack-container"></div>
+            </div> -->
+        </div>
     </div>
+    <br>
+    
 </div>
 <!-- END stall -->
 

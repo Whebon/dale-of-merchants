@@ -72,20 +72,25 @@
   margin-left: 10px;
   margin-right: 10px;
   padding-top: 0px;
-  max-width: fit-content;
+  flex: 1 1;
+}
+.stall-wrap .stall-container {
+  width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
+  display: flex;
+  flex: 1 1;
+  justify-content: left;
+}
+.stall-wrap .stall-container .stack-container {
+  flex: 1 1; /* Allow items to grow and shrink */
+  background-color: red;
+  border: 2px solid black;
+  margin-left: 5px;
+  min-width: 0; /* Ensure items can shrink below their content width */
+  position: relative;
 }
 .stall-wrap .name {
   margin: 10px;
   white-space: nowrap;
-}
-.stall-wrap .stall-container {
-  display: flex;
-  justify-content: space-between;
-  max-width: fit-content;
-}
-.stall-wrap .stack-container {
-  flex: 1 1;
-  min-width: 0; /* Ensure items can shrink below their content width */
 }
 
 .pile-container {

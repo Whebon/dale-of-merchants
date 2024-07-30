@@ -17,6 +17,8 @@ export class Images {
     static readonly MARKET_WIDTH = 2717;
     static readonly MARKET_HEIGHT = 906;
 
+    static readonly VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
+
     static readonly Z_INDEX_CARDBACK = 1;
     static readonly Z_INDEX_CARDFRONT = 2;
     static readonly Z_INDEX_SLIDING_CARD = 4;
@@ -34,6 +36,7 @@ export class Images {
     static readonly MARKET_ITEM_MARGIN_S = Images.S_SCALE * Images.MARKET_ITEM_MARGIN;
     static readonly MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
     static readonly MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
+    static readonly VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
 
     /**
      * Returns the style of the card of the given id. 

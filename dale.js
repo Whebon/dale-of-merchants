@@ -56,6 +56,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_ITEM_MARGIN = 95;
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
+        Images.VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
         Images.Z_INDEX_CARDBACK = 1;
         Images.Z_INDEX_CARDFRONT = 2;
         Images.Z_INDEX_SLIDING_CARD = 4;
@@ -71,6 +72,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_ITEM_MARGIN_S = Images.S_SCALE * Images.MARKET_ITEM_MARGIN;
         Images.MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
         Images.MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
+        Images.VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
         return Images;
     }());
     exports.Images = Images;
@@ -401,7 +403,10 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
             this.pos = pos;
             this.selected = false;
             this._container = container;
-            this._card = card;
+            this._card = undefined;
+            if (card) {
+                this.insertCard(card);
+            }
             if (this._container.onclick != null) {
                 console.warn("CardSlot is given a container that already has an onclick handler. This handler will may be overwritten.");
             }
@@ -585,34 +590,30 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
     var Stall = (function () {
         function Stall(page, player_id) {
             this.MAX_STACK_SIZE = 100;
-            this.MAX_STACKS = 8;
             this.page = page;
             this.player_id = player_id;
             this.container = $("stall-" + player_id);
             this.stackContainers = [];
-            this.selectionMode = 0;
-            this.selectionModeSlotType = "filled";
+            this.selectionMode = "build";
             this.slots = [];
             this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
-            this.createNewStack();
+            this.setSelectionMode("build");
         }
         Stall.prototype.createNewStack = function () {
+            if (this.stackContainers.length > 0) {
+                var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
+                prevStackContainer.setAttribute('style', "max-width: ".concat(Images_4.Images.CARD_WIDTH_S, "px;"));
+            }
             var stackContainer = document.createElement("div");
             stackContainer.classList.add("stack-container");
-            stackContainer.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), "; position: relative;"));
-            stackContainer.classList.add("placeholder");
+            stackContainer.setAttribute('style', "min-width: ".concat(Images_4.Images.CARD_WIDTH_S, "px;"));
+            var placeholder = document.createElement("div");
+            placeholder.classList.add("placeholder");
+            placeholder.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";"));
+            stackContainer.appendChild(placeholder);
             this.container.appendChild(stackContainer);
             this.stackContainers.push(stackContainer);
             this.slots.push([]);
-            this.createNewSlot(this.slots.length - 1);
-            this.createNewSlot(this.slots.length - 1);
             this.createNewSlot(this.slots.length - 1);
         };
         Stall.prototype.createNewSlot = function (stack_index, card) {
@@ -622,11 +623,14 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
             var stackContainer = this.stackContainers[stack_index];
             var stack = this.slots[stack_index];
             var index = stack.length;
+            var y_offset = Images_4.Images.VERTICAL_STACK_OFFSET_S * index;
             var div = document.createElement("div");
-            div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(20 * index, "%\n        "));
+            div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
+            stackContainer.setAttribute('style', stackContainer.getAttribute('style') + "height: ".concat(Images_4.Images.CARD_HEIGHT_S + y_offset, "px;"));
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
+            this.setSelectionMode(this.selectionMode);
         };
         Stall.prototype.getNumberOfStacks = function () {
             return this.slots.length;
@@ -647,19 +651,27 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
         Stall.prototype.getSlotId = function (stack_index, index) {
             return this.getSlot(stack_index, index).id;
         };
-        Stall.prototype.setSelectionMode = function (mode, slot_type) {
-            if (slot_type === void 0) { slot_type = "filled"; }
-            if (this.selectionMode == mode)
-                return;
+        Stall.prototype.setSelectionMode = function (mode) {
             this.unselectAll();
             this.selectionMode = mode;
-            this.selectionModeSlotType = slot_type;
-            var clickable = mode != 0;
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var stack = _a[_i];
                 for (var _b = 0, stack_1 = stack; _b < stack_1.length; _b++) {
                     var slot = stack_1[_b];
-                    slot.setClickable(clickable);
+                    switch (mode) {
+                        case "none":
+                            slot.setClickable(slot.hasCard());
+                            break;
+                        case "single":
+                            slot.setClickable(slot.hasCard());
+                            break;
+                        case "multiple":
+                            slot.setClickable(slot.hasCard());
+                            break;
+                        case "build":
+                            slot.setClickable(slot.hasCard() == false);
+                            break;
+                    }
                 }
             }
         };
@@ -673,9 +685,9 @@ define("components/Stall", ["require", "exports", "components/Images", "componen
             }
         };
         Stall.prototype.onCardSlotClick = function (slot) {
-            var index = slot.pos % this.MAX_STACKS;
-            var stack = (slot.pos - index) % this.MAX_STACKS;
-            console.log("Clicked on CardStack[".concat(stack, ", ").concat(index, "]"));
+            var index = slot.pos % this.MAX_STACK_SIZE;
+            var stack_index = (slot.pos - index) / this.MAX_STACK_SIZE;
+            this.page.onStallCardClick(slot.card, stack_index, index);
         };
         return Stall;
     }());
@@ -708,6 +720,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Object.defineProperty(Dale.prototype, "myDiscard", {
             get: function () {
                 return this.playerDiscards[this.player_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Dale.prototype, "myStall", {
+            get: function () {
+                return this.playerStalls[this.player_id];
             },
             enumerable: false,
             configurable: true
@@ -804,7 +823,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'inventory':
-                    this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
+                    this.addActionButton("confirm-button", _("Discard Selected Cards"), "onInventoryAction");
                     this.addActionButtonCancel();
                     break;
             }
@@ -839,6 +858,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.addActionButtonCancel = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
+        };
+        Dale.prototype.onStallCardClick = function (card, stack_index, index) {
+            this.myStall.createNewSlot(stack_index, new DaleCard_2.DaleCard(0, 0));
+            this.myStall.createNewSlot(stack_index, new DaleCard_2.DaleCard(0, 0));
+            this.myStall.createNewStack();
+            console.log("Clicked on CardStack[".concat(stack_index, ", ").concat(index, "]"));
         };
         Dale.prototype.onMarketCardClick = function (card, pos) {
             pos = this.market.getValidPos(pos);

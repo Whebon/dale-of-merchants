@@ -53,6 +53,11 @@ class Dale extends Gamegui
 		return this.playerDiscards[this.player_id]!;
 	}
 
+	/** Current player's stall (this client's discard pile) */
+	get myStall(): Stall {
+		return this.playerStalls[this.player_id]!;
+	}
+
 	/** Ordered pile of known cards representing the market discard deck. */
 	market: MarketBoard | null = null;
 
@@ -201,7 +206,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'inventory':
-				this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
+				this.addActionButton("confirm-button", _("Discard Selected Cards"), "onInventoryAction");
 				this.addActionButtonCancel();
 				break;
 		}
@@ -284,6 +289,13 @@ class Dale extends Gamegui
 		- check the action is possible at this game state.
 		- make a call to the game server
 	*/
+
+	onStallCardClick(card: DaleCard, stack_index: number, index: number) {
+		this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
+        this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
+        this.myStall.createNewStack();
+        console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
+	}
 
 	onMarketCardClick(card: DaleCard, pos: number) {
 		pos = this.market!.getValidPos(pos);

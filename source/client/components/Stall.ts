@@ -5,53 +5,71 @@ import { CardSlot, CardSlotManager } from './CardSlot';
 
 declare function $(text: string | Element): HTMLElement;
 
+
+
+/** 
+ * "none": nothing is clickable
+ * "single": select single non-empty card slot
+ * "multiple": select multiple non-empty card slots
+ * "build": click on an empty slot to build a new stack
+ */
+type StallSelectionMode = "none" | "single" | "multiple" | "build";
+
 /**
  * Major Dale of Merchants game component. Players must build 8 stacks in their Stall to win the game.
  */
 export class Stall implements CardSlotManager {
     readonly MAX_STACK_SIZE: number = 100;
-    readonly MAX_STACKS: number = 8;
 
     public page: Gamegui;
     private player_id: number;
     private container: HTMLElement;
     private stackContainers: HTMLElement[];
     private slots: CardSlot[][];
-    private selectionMode: 0 | 1 | 2;
-    private selectionModeSlotType: "filled" | "empty";
+    private selectionMode: StallSelectionMode;
 
     constructor(page: Gamegui, player_id: number) {
         this.page = page;
         this.player_id = player_id;
         this.container = $("stall-"+player_id);
         this.stackContainers = [];
-        this.selectionMode = 0;
-        this.selectionModeSlotType = "filled";
+        this.selectionMode = "build";
         this.slots = [];
+        //TODO: this can safely be removed
+        // this.buildIcon = document.createElement("div");
+        // this.buildIcon.classList.add("build-icon");
+        // this.buildIcon.setAttribute('style', `${Images.getCardStyle()};`);
         this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
-        this.createNewStack();
+        this.setSelectionMode("build");
     }
 
     /**
      * Create a new empty stack in the stall with a single empty slot.
     */
     createNewStack() {
-        let stackContainer = document.createElement("div");
+        if (this.stackContainers.length > 0) {
+            const prevStackContainer = this.stackContainers[this.stackContainers.length - 1]!;
+            prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S}px;`); //the last stack containers has a max width (to stay in bounds)
+        }
+        const stackContainer = document.createElement("div");
         stackContainer.classList.add("stack-container");
-        stackContainer.setAttribute('style', `${Images.getCardStyle()}; position: relative;`);
-        stackContainer.classList.add("placeholder");
+        stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;`); //stack containers have a min width (to stay left aligned)
+        const placeholder = document.createElement("div");
+        placeholder.classList.add("placeholder");
+        placeholder.setAttribute('style', `${Images.getCardStyle()};`);
+        stackContainer.appendChild(placeholder);
+        //TODO: this can safely be removed
+        // stackContainer.appendChild(this.buildIcon);
+        // const buildIconWidth = Images.CARD_WIDTH_S;
+        // this.buildIcon.setAttribute('style', `
+        //     width: ${buildIconWidth}px;
+        //     height: ${buildIconWidth}px;
+        //     left: ${Images.CARD_WIDTH_S / 2}px;
+        //     top: ${Images.CARD_HEIGHT_S / 2}px;
+        // `);
         this.container.appendChild(stackContainer);
         this.stackContainers.push(stackContainer);
         this.slots.push([]);
-        this.createNewSlot(this.slots.length - 1);
-        this.createNewSlot(this.slots.length - 1);
         this.createNewSlot(this.slots.length - 1);
     }
 
@@ -70,16 +88,21 @@ export class Stall implements CardSlotManager {
         const index = stack.length;
 
         //create a div container for the new slot
+        const y_offset = Images.VERTICAL_STACK_OFFSET_S * index;
         let div = document.createElement("div");
         div.setAttribute('style', `${Images.getCardStyle()};
             position: absolute;
-            top: ${20*index}%
+            top: ${y_offset}px
         `);
+        stackContainer.setAttribute('style', stackContainer.getAttribute('style')+`height: ${Images.CARD_HEIGHT_S + y_offset}px;`);
         stackContainer.appendChild(div);
 
         //add the slot to the collection of slots
         const pos = this.getPos(stack_index, index);
         stack.push(new CardSlot(this, pos, div, card));
+
+        //reset the selectionMode
+        this.setSelectionMode(this.selectionMode);
     }
 
     /**
@@ -129,16 +152,28 @@ export class Stall implements CardSlotManager {
      * 2: multiple items can be selected by the player at the same time.
      * @param type (optional) - default "filled". type of card slots that can be selected
     */
-    setSelectionMode(mode: 0 | 1 | 2, slot_type: "filled" | "empty" = "filled") {
+    setSelectionMode(mode: StallSelectionMode) {
+        //important: setSelectionMode is also used as a refresh when the number of slots changes
+        //therefore, we can not shortcircuit when this.selectionMode == mode
         //TODO: make a distinction between selectionMode 1 and 2
-        if( this.selectionMode == mode ) return;
         this.unselectAll();
         this.selectionMode = mode;
-        this.selectionModeSlotType = slot_type;
-        let clickable = mode != 0;
         for (let stack of this.slots) {
             for (let slot of stack) {
-                slot.setClickable(clickable);
+                switch(mode) {
+                    case "none":
+                        slot.setClickable(slot.hasCard());
+                        break;
+                    case "single":
+                        slot.setClickable(slot.hasCard());
+                        break;
+                    case "multiple":
+                        slot.setClickable(slot.hasCard());
+                        break;
+                    case "build":
+                        slot.setClickable(slot.hasCard() == false);
+                        break;
+                }
             }
         }
     }
@@ -152,13 +187,8 @@ export class Stall implements CardSlotManager {
     }
 
     onCardSlotClick(slot: CardSlot): void {
-        const index = slot.pos % this.MAX_STACKS;
-        const stack = (slot.pos-index) % this.MAX_STACKS;
-        console.log(`Clicked on CardStack[${stack}, ${index}]`);
-        // if (slot.hasCard()) {
-        //     (this.page as any).onMarketCardClick(slot.card, slot.pos);
-        // } else {
-        //     this.page.showMessage(_("This card is sold out!"), 'error');
-        // }
+        const index = slot.pos % this.MAX_STACK_SIZE;
+        const stack_index = (slot.pos-index) / this.MAX_STACK_SIZE;
+        (this.page as any).onStallCardClick(slot.card, stack_index, index);
     }
 }

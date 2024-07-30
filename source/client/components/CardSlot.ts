@@ -33,7 +33,10 @@ export class CardSlot {
         this.pos = pos;
         this.selected = false;
         this._container = container;
-        this._card = card;
+        this._card = undefined;
+        if (card) {
+            this.insertCard(card);
+        }
         if (this._container.onclick != null) {
             console.warn("CardSlot is given a container that already has an onclick handler. This handler will may be overwritten.");
         }
