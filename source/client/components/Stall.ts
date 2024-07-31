@@ -19,6 +19,7 @@ type StallSelectionMode = "none" | "single" | "multiple" | "build";
  */
 export class Stall implements CardSlotManager {
     static readonly MAX_STACK_SIZE: number = 1000; //must be the same as on the server side
+    static readonly MAX_STACKS: number = 8; //must be the same as on the server side
 
     public page: Gamegui;
     private player_id: number;
@@ -120,7 +121,10 @@ export class Stall implements CardSlotManager {
      * @param from
      */
     insertCard(card: DaleCard, stack_index: number, index?: number, from?: HTMLElement | string) {
-        while (stack_index >= this.slots.length - 1) { //-1 because we always need a trailing empty stack
+        if (stack_index >= Stall.MAX_STACKS) {
+            throw new Error(`Cannot build beyond the maximum number of ${Stall.MAX_STACKS} stacks`);
+        }
+        while (stack_index >= this.slots.length - 1 && this.slots.length < Stall.MAX_STACKS) { //-1 because we always need a trailing empty stack
             this.createNewStack();
         }
         const stack = this.slots[stack_index]!;
@@ -138,7 +142,7 @@ export class Stall implements CardSlotManager {
     }
 
     /**
-     * @return number of stacks in this stall. Players must build 8 stacks in their Stall to win the game.
+     * @return number of stacks in this stall.
     */
     getNumberOfStacks() {
         return this.slots.length;

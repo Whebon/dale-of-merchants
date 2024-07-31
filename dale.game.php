@@ -213,7 +213,7 @@ class Dale extends DaleTableBasic
             $next_stack_index = $this->cards->getNextStackIndex($player_id);
             $highest_stack_index = max($highest_stack_index, $next_stack_index);
         }
-        return 100 * $highest_stack_index/8;
+        return 100 * $highest_stack_index / MAX_STACKS;
     }
 
     
@@ -666,7 +666,7 @@ class Dale extends DaleTableBasic
             else if ($set == null) {
                 $set = $animalfolk;
             }
-            else {
+            else if ($set != $animalfolk) {
                 $multiple_sets_used = true;
             }
             switch($type) {
@@ -697,16 +697,29 @@ class Dale extends DaleTableBasic
             $pos = $stack_index * MAX_STACK_SIZE + $i;
             $this->cards->moveCard($stack_card_ids[$i], STALL.$player_id, $pos);
         }
+
+        //Update the player score
+        $stack_index_plus_1 = $stack_index + 1;
+        $sql = "UPDATE player SET player_score=$stack_index_plus_1 WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
+
+        //Notify players
         $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
-            "stack_index_plus_1" => $stack_index + 1,
+            "stack_index_plus_1" => $stack_index_plus_1,
             "stack_index" => $stack_index,
             "cards" => $stack_cards
         ));
 
         //End turn
-        $this->gamestate->nextState("trNextPlayer");
+        //TODO: alternative win conditions: charm and winter is coming
+        if ($stack_index_plus_1 >= MAX_STACKS) { //+1, because stack indices are 0-indexed
+            $this->gamestate->nextState("trGameEnd");
+        }
+        else {
+            $this->gamestate->nextState("trNextPlayer");
+        }
     }
 
     function actRequestInventoryAction() {

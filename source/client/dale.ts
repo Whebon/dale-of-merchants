@@ -500,6 +500,7 @@ class Dale extends Gamegui
 				stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
 			}
 		}
+		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {

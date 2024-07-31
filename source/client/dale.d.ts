@@ -65,6 +65,7 @@ declare global {
 			player_id: number 
             player_name: string
 			stack_index: number 
+			stack_index_plus_1: number
             cards: {[card_id: number]: DbCard}
 		}
 	}

@@ -91,7 +91,7 @@
 			],
 			"actCancel" : []
 		},
-		"transitions": { "trCancel" : 30, "trNextPlayer": 41 }
+		"transitions": { "trCancel" : 30, "trNextPlayer": 41, "trGameEnd": 99 }
 	},
 
 	"40": {
@@ -132,6 +132,7 @@
 		"type": "manager",
 		"action": "stGameEnd",
 		"args": "argGameEnd",
+		"updateGameProgression": true, //modified
 		/* TODO: get the arguments that are passed at the end of a game.. */
 		"argsType": "object"
 	}

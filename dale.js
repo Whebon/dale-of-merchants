@@ -638,7 +638,10 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         };
         Stall.prototype.insertCard = function (card, stack_index, index, from) {
             var _a;
-            while (stack_index >= this.slots.length - 1) {
+            if (stack_index >= Stall.MAX_STACKS) {
+                throw new Error("Cannot build beyond the maximum number of ".concat(Stall.MAX_STACKS, " stacks"));
+            }
+            while (stack_index >= this.slots.length - 1 && this.slots.length < Stall.MAX_STACKS) {
                 this.createNewStack();
             }
             var stack = this.slots[stack_index];
@@ -712,6 +715,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             this.page.onStallCardClick(slot.card, stack_index, index);
         };
         Stall.MAX_STACK_SIZE = 1000;
+        Stall.MAX_STACKS = 8;
         return Stall;
     }());
     exports.Stall = Stall;
@@ -990,6 +994,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log('notifications subscriptions setup done');
         };
         Dale.prototype.notif_buildStack = function (notif) {
+            var _a;
             console.log("notif_buildStack");
             var stall = this.playerStalls[notif.args.player_id];
             for (var i in notif.args.cards) {
@@ -1007,6 +1012,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_' + notif.args.player_id);
                 }
             }
+            (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.toValue(notif.args.stack_index_plus_1);
         };
         Dale.prototype.notif_fillEmptyMarketSlots = function (notif) {
             console.log("notif_fillEmptyMarketSlots");

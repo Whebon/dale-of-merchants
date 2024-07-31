@@ -81,6 +81,7 @@ interface GameStates {
 		'transitions': {
 			'trCancel': 30,
 			'trNextPlayer': 41,
+			'trGameEnd': 99,
 		},
 	},
 	40: {
@@ -117,6 +118,7 @@ interface GameStates {
 		'type': 'manager',
 		'action': 'stGameEnd',
 		'args': 'argGameEnd',
+		'updateGameProgression': true,
 		'argsType': object,
 	},
 }

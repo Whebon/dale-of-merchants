@@ -65,6 +65,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trCancel' => 30,
 			'trNextPlayer' => 41,
+			'trGameEnd' => 99,
 		),
 	),
 	40 => array(
@@ -94,5 +95,6 @@ $machinestates = array(
 		'type' => 'manager',
 		'action' => 'stGameEnd',
 		'args' => 'argGameEnd',
+		'updateGameProgression' => true,
 	),
 );
