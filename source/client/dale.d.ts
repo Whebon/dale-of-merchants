@@ -20,6 +20,7 @@ declare global {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
 		'debugClient': {
 			arg: string
+			msg: string
 		}
 		'reshuffleDeck': { 
 			player_id?: number

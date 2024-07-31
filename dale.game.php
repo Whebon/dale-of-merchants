@@ -25,8 +25,6 @@ class Dale extends DaleTableBasic
     var DaleDeck $cards;
     var $card_types;
 
-    var $card_id_to_type_id; //cache
-
     function f($n){
         $this->cards->getJunk($n);
     }
@@ -53,7 +51,6 @@ class Dale extends DaleTableBasic
 
         $this->cards = new DaleDeck($this, "onLocationExhausted");
         $this->cards->init("card");
-        $this->card_id_to_type_id = array();
 	}
 	
     protected function getGameName( )
@@ -408,25 +405,29 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * WARNING: NEVER USED, NEVER TESTED
-     * Returns the card type id of a card. If it is unknown, it will be fetched from the db
-     * @param int $card_id card id of the card to get the type id of
+     * Returns the effective animalfolk of a dbcard. null represents rubbish/junk.
+     * @param array $dbcard dbcard object
     */
-    function getTypeId($card_id) {
-        if (array_key_exists($card_id, $this->card_id_to_type_id)) {
-            return $this->card_id_to_type_id[$card_id];
-        }
-        $card = $this->cards->getCard($card_id);
-        $this->card_id_to_type_id[$card_id] = $card['type_arg'];
-        return $this->getTypeId($card_id);
+    function getAnimalfolk(array $dbcard): string | null {
+        $type_id = $this->getTypeId($dbcard);
+        return $this->card_types[$type_id]['animalfolk'];
     }
 
     /**
-     * Returns the cost of a given dbcard. Asserts that the card is at the market.
+     * Returns the effective card type of a dbcard. "effective" suggests the chameleons might have modified the type_id.
+     * @param array $dbcard dbcard object
+    */
+    function getTypeId(array $dbcard): string {
+        //TODO: chameleons
+        return $dbcard['type_arg'];
+    }
+
+    /**
+     * Returns the effective cost of a given dbcard. Asserts that the card is at the market.
      * @param array $dbcard card to calculate the cost of
     */
-    function getCost($dbcard) {
-        $type_id = $dbcard['type_arg'];
+    function getCost(array $dbcard) {
+        $type_id = $this->getTypeId($dbcard);
         if ($dbcard['location'] != MARKET) {
             //TODO: market discovery
             $name = $this->card_types[$type_id]['name'];
@@ -438,20 +439,20 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Returns the value of a card when 'used' (accounts for modifications such as 'Flashy Show').
+     * Returns the effective value of a card (accounts for modifications such as 'Flashy Show').
      * @param array $dbcard card to get the value of
     */
-    function getValue($dbcard) {
-        $type_id = $dbcard['type_arg'];
+    function getValue(array $dbcard): int {
+        $type_id = $this->getTypeId($dbcard);
         return $this->card_types[$type_id]['value'];
     }
 
     /**
-     * Returns the name of the card
+     * Returns the effective name of the card.
      * @param array $dbcard card to get the name of
     */
-    function getCardName($dbcard) {
-        $type_id = $dbcard['type_arg'];
+    function getCardName(array $dbcard): string {
+        $type_id = $this->getTypeId($dbcard);
         return $this->card_types[$type_id]['name'];
     }
 
@@ -538,6 +539,13 @@ class Dale extends DaleTableBasic
         }
         die("No card name matches prefix '$prefix'");
         return -1;
+    }
+
+    /**
+     * Print a message in the client's console
+     */
+    function clientConsoleLog($msg) {
+        $this->notifyAllPlayers('debugClient', $msg, array('arg' => 'clientConsoleLog', 'msg' => $msg));
     }
 
     function d($arg) {
@@ -641,6 +649,40 @@ class Dale extends DaleTableBasic
         foreach ($stack_cards as $card) {
             $value = $this->getValue($card);
             $total_value += $value;
+        }
+
+        //Check if the animalfolk sets are correct
+        $multiple_sets_used = false;
+        $junk_used = false;
+        $set = null;
+        $contains_stashingvendor = false;
+        $contains_emptychest = false;
+        foreach ($stack_cards as $card) {
+            $type = $this->getTypeId($card);
+            $animalfolk = $this->getAnimalfolk($card);
+            if ($animalfolk == null) {
+                $junk_used = true;
+            }
+            else if ($set == null) {
+                $set = $animalfolk;
+            }
+            else {
+                $multiple_sets_used = true;
+            }
+            switch($type) {
+                case CT_STASHINGVENDOR:
+                    $contains_stashingvendor = true;
+                    break;
+                case CT_EMPTYCHEST:
+                    $contains_emptychest = true;
+                    break;
+            }
+        }
+        if ($junk_used && !$contains_stashingvendor) {
+            throw new BgaUserException("Junk cards cannot be included in a stack");
+        }
+        if ($multiple_sets_used && !$contains_emptychest) {
+            throw new BgaUserException("Cards in the stack must be of the same animalfolk set");
         }
 
         //Check if the value is correct

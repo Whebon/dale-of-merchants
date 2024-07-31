@@ -611,6 +611,9 @@ class Dale extends Gamegui
 		else if (arg == 'addCard') {
 			this.myHand.addDaleCardToStock(new DaleCard(0, 0));
 		}
+		else if (arg == 'clientConsoleLog') {
+			console.log(notif.args.msg);
+		}
 		else if (arg == '') {
 			
 		}

@@ -1105,6 +1105,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else if (arg == 'addCard') {
                 this.myHand.addDaleCardToStock(new DaleCard_3.DaleCard(0, 0));
             }
+            else if (arg == 'clientConsoleLog') {
+                console.log(notif.args.msg);
+            }
             else if (arg == '') {
             }
             else if (arg == '') {
