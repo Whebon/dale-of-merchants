@@ -2,6 +2,7 @@ import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
+import { DbCard } from './types/DbCard';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -17,7 +18,7 @@ type StallSelectionMode = "none" | "single" | "multiple" | "build";
  * Major Dale of Merchants game component. Players must build 8 stacks in their Stall to win the game.
  */
 export class Stall implements CardSlotManager {
-    readonly MAX_STACK_SIZE: number = 100;
+    static readonly MAX_STACK_SIZE: number = 1000; //must be the same as on the server side
 
     public page: Gamegui;
     private player_id: number;
@@ -100,6 +101,43 @@ export class Stall implements CardSlotManager {
     }
 
     /**
+     * Insert a card from the db into the stall at the correct position as described by the db card's location arg.
+     * @param card card as received from the db.
+     * @param from
+     */
+    insertDbCard(card: DbCard, from?: HTMLElement | string) {
+        const pos = +card.location_arg;
+        const index = pos % Stall.MAX_STACK_SIZE;
+        const stack_index = (pos - index) / Stall.MAX_STACK_SIZE;
+        this.insertCard(DaleCard.of(card), stack_index, index, from);
+    }
+
+    /**
+     * Insert a card at a given location. By default the card is automatically placed in the first empty slot within the stack.
+     * @param card card to insert
+     * @param stack_index index of the stack
+     * @param index (optional) when provided, place the card at a specific index within the stack
+     * @param from
+     */
+    insertCard(card: DaleCard, stack_index: number, index?: number, from?: HTMLElement | string) {
+        while (stack_index >= this.slots.length - 1) { //-1 because we always need a trailing empty stack
+            this.createNewStack();
+        }
+        const stack = this.slots[stack_index]!;
+        if (index == undefined) {
+            index = 0;
+            while (stack[index]?.hasCard()) {
+                index++;
+            }
+        }
+        while (index >= stack.length) {
+            this.createNewSlot(stack_index);
+        }
+        console.log(`insertCard(stack_index=${stack_index}, index=${index})`);
+        stack[index]!.insertCard(card, from);
+    }
+
+    /**
      * @return number of stacks in this stall. Players must build 8 stacks in their Stall to win the game.
     */
     getNumberOfStacks() {
@@ -112,7 +150,7 @@ export class Stall implements CardSlotManager {
      * @return single number that uniquely defines a location in the stall
     */
     getPos(stack_index: number, index: number): number {
-        return stack_index*this.MAX_STACK_SIZE + index;
+        return stack_index*Stall.MAX_STACK_SIZE + index;
     }
 
     /**
@@ -178,8 +216,8 @@ export class Stall implements CardSlotManager {
     }
 
     onCardSlotClick(slot: CardSlot): void {
-        const index = slot.pos % this.MAX_STACK_SIZE;
-        const stack_index = (slot.pos-index) / this.MAX_STACK_SIZE;
+        const index = slot.pos % Stall.MAX_STACK_SIZE;
+        const stack_index = (slot.pos-index) / Stall.MAX_STACK_SIZE;
         (this.page as any).onStallCardClick(slot.card, stack_index, index);
     }
 }

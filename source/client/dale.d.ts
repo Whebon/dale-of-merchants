@@ -60,6 +60,12 @@ declare global {
 				cards: {[card_id: number]: DbCard}
 			}
 		}
+		'buildStack': {
+			player_id: number 
+            player_name: string
+			stack_index: number 
+            cards: {[card_id: number]: DbCard}
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
@@ -69,12 +75,16 @@ declare global {
 
 		'discardPiles': {
 			"market": {[card_id: number]: DbCard}
-			[player_id: number]: DbCard[]
+			[player_id: number]: {[card_id: number]: DbCard}
 		}
 
 		'deckSizes': {
 			"market": number
 			[player_id: number]: number
+		}
+
+		'stalls': {
+			[player_id: number]: {[card_id: number]: DbCard}
 		}
 		
 		'hand': {[card_id: number]: DbCard}

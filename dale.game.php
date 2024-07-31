@@ -184,14 +184,16 @@ class Dale extends DaleTableBasic
             $result['discardPiles'][$player_id] = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
         }
 
+        //get stalls
+        foreach ( $players as $player_id => $player ) {
+            $result['stalls'][$player_id] = $this->cards->getCardsInLocation(STALL.$player_id, null, 'location_arg');
+        }
+
+        //other
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
         $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
         
         $result['cardTypes'] = $this->card_types;
-
-        //TODO: player decks, discards and hands
-
-        //TODO: stacks and stalls
   
         return $result;
     }
@@ -208,9 +210,13 @@ class Dale extends DaleTableBasic
     */
     function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        $highest_stack_index = 0;
+        $players = $this->loadPlayersBasicInfos();
+        foreach ( $players as $player_id => $player ) {
+            $next_stack_index = $this->cards->getNextStackIndex($player_id);
+            $highest_stack_index = max($highest_stack_index, $next_stack_index);
+        }
+        return 100 * $highest_stack_index/8;
     }
 
     
@@ -457,6 +463,24 @@ class Dale extends DaleTableBasic
         In this space, you can put debugging tools
     */
 
+    function spawnStall(int $pos, string $name = "emptychest") {
+        //spawn a card in a stall position
+        $player_id = $this->getCurrentPlayerId();
+        $index = $pos % MAX_STACK_SIZE;
+        $stack_index = ($pos - $index) / MAX_STACK_SIZE;
+        $spawned_cards = $this->spawn($name);
+        foreach ($spawned_cards as $index => $card) {
+            $this->cards->moveCard($card["id"], STALL.$player_id, $pos);
+        }
+        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "stack_index_plus_1" => $stack_index + 1,
+            "stack_index" => $stack_index,
+            "cards" => $spawned_cards
+        ));
+    }
+
     function destroyDeck() {
         //requires refresh
         $player_id = $this->getCurrentPlayerId();
@@ -464,16 +488,24 @@ class Dale extends DaleTableBasic
     }
 
     function destroyAllCards() {
+        //requires refresh
         $location_dict = $this->cards->countCardsInLocations();
         foreach($location_dict as $location => $count ) {
             $this->cards->moveAllCardsInLocation($location, 'destroyed');
         }
     }
 
-    function spawn(string $name) {
+    /**
+     * Spawn a number of new cards out of thin air and place it in the current player's hand
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawn(string $name, int $nbr = 1) {
+        //spawn a card in hand (warning: breaks deck size counter)
         $player_id = $this->getCurrentPlayerId();
         $type_id = $this->nameToTypeId($name);
-        $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1));
+        $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $nbr));
         $this->cards->createCards($cards, 'spawned');
         $cards = $this->cards->getCardsInLocation('spawned');
         $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
@@ -485,6 +517,7 @@ class Dale extends DaleTableBasic
                 "cards" => $cards
             )
         ));
+        return $cards;
     }
 
     /**
@@ -592,6 +625,48 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
+    function actRequestStallAction() {
+        $this->checkAction("actRequestStallAction");
+        $this->gamestate->nextState("trBuild");
+    }
+
+    function actBuild(string $stack_card_ids) {
+        $this->checkAction("actBuild");
+        $stack_card_ids = $this->numberListToArray($stack_card_ids);
+
+        //Get information about the stack cards
+        $player_id = $this->getActivePlayerId();
+        $stack_cards = $this->cards->getCardsFromLocation($stack_card_ids, HAND.$player_id);
+        $total_value = 0;
+        foreach ($stack_cards as $card) {
+            $value = $this->getValue($card);
+            $total_value += $value;
+        }
+
+        //Check if the value is correct
+        $stack_index = $this->cards->getNextStackIndex($player_id);
+        if ($total_value != $stack_index + 1) {
+            //TODO: Squirrelzzz
+            throw new BgaUserException($this->_("Stack value is incorrect")." ($total_value)");
+        }
+
+        //Move the cards into the stall
+        for ($i=0; $i < count($stack_card_ids); $i++) {
+            $pos = $stack_index * MAX_STACK_SIZE + $i;
+            $this->cards->moveCard($stack_card_ids[$i], STALL.$player_id, $pos);
+        }
+        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "stack_index_plus_1" => $stack_index + 1,
+            "stack_index" => $stack_index,
+            "cards" => $stack_cards
+        ));
+
+        //End turn
+        $this->gamestate->nextState("trNextPlayer");
+    }
+
     function actRequestInventoryAction() {
         $this->checkAction("actRequestInventoryAction");
         $this->gamestate->nextState("trInventory");
@@ -668,6 +743,13 @@ class Dale extends DaleTableBasic
             'card_id' => $card['type_arg'],
             'cost' => $this->getCost($card),
             'pos' => $card['location_arg']
+        );
+    }
+
+    function argStackIndex(){
+        $player_id = $this->getActivePlayerId();
+        return array(
+            'stack_index_plus_1' => $this->cards->getNextStackIndex($player_id) + 1
         );
     }
 

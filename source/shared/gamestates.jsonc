@@ -52,10 +52,10 @@
 				{"name": "market_card_id", "type": "AT_int"}
 			],
 			// "actTechniqueAction": [],
-			// "actStallAction": [],
+			"actRequestStallAction": [],
 			"actRequestInventoryAction": []
 		},
-		"transitions": { "trPurchase": 31, "trInventory": 40 }
+		"transitions": { "trPurchase": 31, "trBuild": 35, "trInventory": 40 }
 	},
 
 	"31": {
@@ -73,6 +73,21 @@
 		"possibleactions": {
 			"actPurchase": [
 				{"name": "funds_card_ids", "type": "AT_numberlist"}
+			],
+			"actCancel" : []
+		},
+		"transitions": { "trCancel" : 30, "trNextPlayer": 41 }
+	},
+
+	"35": {
+		"name": "build",
+		"description": "${actplayer} must select cards to build in stack ${stack_index_plus_1}",
+		"descriptionmyturn": "${you} must select cards to build in stack ${stack_index_plus_1}",
+		"type": "activeplayer",
+		"args": "argStackIndex",
+		"possibleactions": {
+			"actBuild": [
+				{"name": "stack_card_ids", "type": "AT_numberlist"}
 			],
 			"actCancel" : []
 		},
@@ -102,27 +117,12 @@
 		"transitions": { "trNextPlayer": 30 }
 	},
 
-/*
-	// Examples:
-	
-	"2": {
-		"name": "nextPlayer",
-		"description": "",
-		"type": "game",
-		"action": "stNextPlayer",
-		"updateGameProgression": true,
-		"transitions": { "endGame": 99, "nextPlayer": 10 }
-	},
+	//////////////// TECHNIQUES ////////////////
 
-	"10": {
-		"name": "playerTurn",
-		"description": "${actplayer} must play a card or pass",
-		"descriptionmyturn": "${you} must play a card or pass",
-		"type": "activeplayer",
-		"possibleactions": [ "playCard", "pass" ],
-		"transitions": { "playCard": 2, "pass": 2 }
-	},
-*/
+
+
+
+	//////////////// BGA Final State ////////////////
 
 	// Final state.
 	// Please do not modify (and do not overload action/args methods}.

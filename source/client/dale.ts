@@ -102,6 +102,10 @@ class Dale extends Gamegui
 
 			//stall per player
 			this.playerStalls[player_id] = new Stall(this, +player_id);
+			for (let i in gamedatas.stalls[player_id]) {
+				let card = gamedatas.stalls[player_id][+i]!;
+				this.playerStalls[player_id].insertDbCard(card);
+			}
 		}
 
 		//initialize the market deck
@@ -163,11 +167,12 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(2);
 				this.market!.setSelected(purchaseArgs.pos, true);
 				break;
-			case 'nextPlayer':
+			case 'build':
+				this.myHand.setSelectionMode(2);
 				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(2);
-				break;
+				break;;
 		}
 	}
 
@@ -184,7 +189,14 @@ class Dale extends Gamegui
 				this.myStall.setSelectionMode("none");
 				break;
 			case 'purchase':
+				this.myHand.setSelectionMode(0);
 				this.market!.unselectAll();
+				break;
+			case 'build':
+				this.myHand.setSelectionMode(0);
+				break;
+			case 'inventory':
+				this.myHand.setSelectionMode(0);
 				break;
 		}
 	}
@@ -201,14 +213,18 @@ class Dale extends Gamegui
 		{
 			case 'playerTurn':
 				// Add buttons if needed
-				this.addActionButton("pass-button", _("Pass (inventory action)"), "onRequestInventoryAction");
+				this.addActionButton("confirm-button", _("Pass"), "onRequestInventoryAction");
 				break;
 			case 'purchase':
 				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
 				this.addActionButtonCancel();
 				break;
+			case 'build':
+				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+				this.addActionButtonCancel();
+				break;
 			case 'inventory':
-				this.addActionButton("confirm-button", _("Confirm Selection"), "onInventoryAction");
+				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
 				this.addActionButtonCancel();
 				break;
 		}
@@ -244,7 +260,7 @@ class Dale extends Gamegui
 	*/
 	pileToHand(card_id: number | DbCard, pile: Pile, assert_existence = true) {
 		if (!(typeof card_id === 'number')) {
-			card_id = card_id.id;
+			card_id = +card_id.id;
 		}
 		this.myHand.addDaleCardToStock(new DaleCard(card_id), pile.placeholderHTML);
 		if(assert_existence && pile.pop().id != card_id) {
@@ -293,10 +309,18 @@ class Dale extends Gamegui
 	*/
 
 	onStallCardClick(card: DaleCard, stack_index: number, index: number) {
-		this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
-        this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
-        this.myStall.createNewStack();
         console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
+		// this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
+        // this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
+        // this.myStall.createNewStack();
+
+		switch(this.gamedatas.gamestate.name) {
+			case 'playerTurn':
+				if(this.checkAction('actRequestStallAction')) {
+					this.bgaPerformAction('actRequestStallAction', {})
+				}
+				break;
+		}
 	}
 
 	onMarketCardClick(card: DaleCard, pos: number) {
@@ -339,6 +363,15 @@ class Dale extends Gamegui
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
 				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
+			})
+		}
+	}
+
+	onBuild() {
+		const autoSortedCards = this.myHand.getSelectedItems();
+		if(this.checkAction('actBuild')) {
+			this.bgaPerformAction('actBuild', {
+				stack_card_ids: this.arrayToNumberList(autoSortedCards)
 			})
 		}
 	}
@@ -406,6 +439,7 @@ class Dale extends Gamegui
 		console.log( 'notifications subscriptions setup2' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
+			['buildStack', 1500],
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 500],
 			['marketToHand', 1500],
@@ -444,6 +478,30 @@ class Dale extends Gamegui
 	}
 	*/
 
+	notif_buildStack(notif: NotifAs<'buildStack'>) {
+		console.log("notif_buildStack");
+		const stall = this.playerStalls[notif.args.player_id]!;
+		for (let i in notif.args.cards) {
+			const card = DaleCard.of(notif.args.cards[i]!);
+			// const newLocationArg = String(Stall.MAX_STACK_SIZE * notif.args.stack_index + index);
+			// console.log(`Build stack: [${card.location}@${card.location_arg}] -> [<current_players_stall>@${newLocationArg}]`);
+			// card.location_arg = newLocationArg;
+			//stall.insertDbCard(card, 'myhand_item_' + card.id);
+			if (notif.args.player_id == this.player_id) {
+				if ($('myhand_item_' + card.id)) {
+					stall.insertCard(card, notif.args.stack_index, undefined, 'myhand_item_' + card.id)
+					this.myHand.removeFromStockByIdNoAnimation(+card.id);
+				}
+				else {
+					throw new Error(`Cannot build a stack. Card ${card.id} does not exist in hand.`);
+				}
+			}
+			else {
+				stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
+			}
+		}
+	}
+
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
 		console.log("notif_fillEmptyMarketSlots");
 		console.log(notif.args);
@@ -478,6 +536,7 @@ class Dale extends Gamegui
 	}
 
 	notif_draw(notif: NotifAs<'draw'>) {
+		console.log("notif_draw");
 		if (notif.args._private) {
 			//you drew the cards
 			for (let i in notif.args._private?.cards) {
@@ -509,7 +568,7 @@ class Dale extends Gamegui
 			//discard cards from hand if not done already
 			for (let id of notif.args.card_ids) {
 				let card = notif.args.cards[id]!;
-				this.handToPile(card.id, this.myDiscard, false);
+				this.handToPile(+card.id, this.myDiscard, false);
 			}
 		}
 		else {

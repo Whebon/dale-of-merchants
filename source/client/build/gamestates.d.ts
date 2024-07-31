@@ -30,10 +30,12 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
+			'actRequestStallAction': [],
 			'actRequestInventoryAction': [],
 		},
 		'transitions': {
 			'trPurchase': 31,
+			'trBuild': 35,
 			'trInventory': 40,
 		},
 	},
@@ -52,6 +54,25 @@ interface GameStates {
 		'possibleactions': {
 			'actPurchase': [{
 				'name': 'funds_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trNextPlayer': 41,
+		},
+	},
+	35: {
+		'name': 'build',
+		'description': '${actplayer} must select cards to build in stack ${stack_index_plus_1}',
+		'descriptionmyturn': '${you} must select cards to build in stack ${stack_index_plus_1}',
+		'type': 'activeplayer',
+		'args': 'argStackIndex',
+		'possibleactions': {
+			'actBuild': [{
+				'name': 'stack_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],

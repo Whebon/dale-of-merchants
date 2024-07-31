@@ -4,12 +4,17 @@ require_once(APP_GAMEMODULE_PATH.'module/common/deck.game.php');
 
 //deck locations
 if (!defined('HAND')) {
+    //location
     define('MARKET', 'market');
 
-    //prefixes
+    //prefixes (IMPORTANT: prefixes must be of length 4)
     define('HAND', 'hand');
     define('DISCARD', 'disc');
     define('DECK', 'deck');
+    define('STALL', 'stal');
+
+    //global variables
+    define('MAX_STACK_SIZE', 1000); //must be the same as on the client side
 }
 
 class DaleDeck extends Deck {
@@ -69,6 +74,26 @@ class DaleDeck extends Deck {
         ));
         $this->createCards($cards, 'junk');
         return $this->getJunk($nbr);
+    }
+
+    /**
+     * Get the index of the next empty stack
+     * @param mixed $player_id
+     * @return int 0 <= stack_index <= 8 (8 means the player won)
+    */
+    function getNextStackIndex(string $player_id) {
+        // Example: 
+        // Suppose a stall has cards at locations: [0, 1, 2, 1000, 1001, 2000] with MAX_STACK_SIZE = 1000
+        // This means this player has 3 stacks: [0, 1, 2], [0, 1] and [0]
+        // The next stall_index will be 3
+        $topCard = $this->getCardOnTop(STALL.$player_id);
+        if ($topCard == null) {
+            return 0;
+        }
+        $extremePos = $topCard["location_arg"];
+        $index = $extremePos % MAX_STACK_SIZE;
+        $stack_index = ($extremePos - $index) / MAX_STACK_SIZE;
+        return $stack_index + 1;
     }
 
     /**

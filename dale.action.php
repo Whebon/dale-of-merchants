@@ -38,6 +38,14 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actRequestStallAction()
+	{
+		self::setAjaxMode();
+
+		$this->game->actRequestStallAction(  );
+		self::ajaxResponse();
+	}
+
 	public function actRequestInventoryAction()
 	{
 		self::setAjaxMode();
@@ -62,6 +70,17 @@ class action_dale extends APP_GameAction
 		self::setAjaxMode();
 
 		$this->game->actCancel(  );
+		self::ajaxResponse();
+	}
+
+	public function actBuild()
+	{
+		self::setAjaxMode();
+
+		/** @var string $stack_card_ids */
+		$stack_card_ids = self::getArg('stack_card_ids', AT_numberlist, true);
+
+		$this->game->actBuild( $stack_card_ids );
 		self::ajaxResponse();
 	}
 
