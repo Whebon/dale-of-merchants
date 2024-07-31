@@ -40,26 +40,44 @@ declare global {
 			market_card_id: number
 			pos: number
 		}
-		'discard': {
+		'throwAway': {
 			player_id: number 
-            player_name: string
-			nbr: number
+			card: DbCard
+		}
+		'throwAwayMultiple': {
+			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
+		}
+		'discard': {
+			player_id: number 
+			card: DbCard
+			discard_id?: number //by default, this is the same as player_id
+		}
+		'discardMultiple': {
+			player_id: number 
+			cards: {[card_id: number]: DbCard}
+			card_ids: number[] //because ordering matters
+			discard_id?: number //by default, this is the same as player_id
+		}
+		'draw': {
+			player_id: number 
+			_private?: {
+				card: DbCard
+			}
+		}
+		'drawMultiple': {
+			player_id: number 
+			nbr: number
+			_private?: {
+				cards: {[card_id: number]: DbCard}
+			}
 		}
 		'obtainNewJunkInHand': {
 			player_id: number
 			player_name: string
 			cards: {[card_id: number]: DbCard}
 			nbr: number
-		}
-		'draw': {
-			player_id: number 
-            player_name: string
-			nbr: number
-			_private?: {
-				cards: {[card_id: number]: DbCard}
-			}
 		}
 		'buildStack': {
 			player_id: number 

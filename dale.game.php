@@ -121,7 +121,7 @@ class Dale extends DaleTableBasic
         //each player draws an initial hand of 5 cards
         foreach($players as $player_id => $player) {
             $cards = $this->cards->pickCardsForLocation(5, DECK.$player_id, HAND.$player_id);
-            $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('${player_name} draws their initial hand of ${nbr} cards'), array(
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws their initial hand of ${nbr} cards'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameById($player_id),
                 "nbr" => count($cards),
@@ -298,21 +298,21 @@ class Dale extends DaleTableBasic
 
 
     /**
-     * Send a notification to all players, but only the active player receives args["_private"]
-     * @param mixed $type
-     * @param mixed $message
-     * @param mixed $args
+     * Send a notification to all players, but only player args["player_id"] receives args["_private"]
+     * @param string $type
+     * @param string $message
+     * @param array $args requires at least "player_id" and "_private" keys
      */
     function notifyAllPlayersWithPrivateArguments($type, $message, $args) {
         //the active player receives the notification with the private arguments
-        $active_player_id = $this->getActivePlayerId();
-        $this->notifyPlayer($active_player_id, $type, $message, $args);
+        $private_player_id = $args["player_id"];
+        $this->notifyPlayer($private_player_id, $type, $message, $args);
 
         //all the other players receive the notification without the private arguments
         unset($args["_private"]);
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $player_id => $player ) {
-            if ($player_id != $active_player_id) {
+            if ($player_id != $private_player_id) {
                 $this->notifyPlayer($player_id, $type, $message, $args);
             }
         }
@@ -510,7 +510,7 @@ class Dale extends DaleTableBasic
         $this->cards->createCards($cards, 'spawned');
         $cards = $this->cards->getCardsInLocation('spawned');
         $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('DEBUG: spawn in a card in hand'), array(
+        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('DEBUG: spawn cards in hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "nbr" => count($cards),
@@ -610,7 +610,7 @@ class Dale extends DaleTableBasic
 
         //Discard the funds
         $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discard', clienttranslate('${player_name} pays ${nbr} card(s)'), array (
+        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays ${nbr} card(s)'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_ids' => $funds_card_ids,
@@ -631,6 +631,48 @@ class Dale extends DaleTableBasic
 
         //end turn
         $this->gamestate->nextState("trNextPlayer");
+    }
+
+    function actPlayCard($card_id) {
+        $this->checkAction("actPlayCard");
+        $player_id = $this->getActivePlayerId();
+        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $type_id = $this->getTypeId($card);
+        switch($type_id) {
+            case CT_SWIFTBROKER:
+                break;
+            case CT_SHATTEREDRELIC:
+                $this->gamestate->nextState("trShatteredRelic");
+                break;
+            default:
+                $name = $this->getCardName($card);
+                throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
+        }
+    }
+
+    function actShatteredRelic($card_id) {
+        $this->checkAction("actShatteredRelic");
+        $player_id = $this->getActivePlayerId();
+        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+
+        //throw away a card
+        $this->cards->moveCardOnTop($card_id, DISCARD.MARKET);
+        $this->notifyAllPlayers('throwAway', clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($card), //TODO: i18n for card names
+            "card" => $card
+        ));
+
+        //draw a card
+        $card = $this->cards->pickCardForLocation(DECK.$player_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Shattered Relic: ${player_name} draws 1 card'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "_private" => array(
+                "card" => $card
+            )
+        ));
     }
 
     function actRequestStallAction() {
@@ -739,7 +781,7 @@ class Dale extends DaleTableBasic
         $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
 
         //notify all players
-        $this->notifyAllPlayers('discard', clienttranslate('${player_name} discards ${nbr} cards'), array (
+        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} discards ${nbr} cards'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_ids' => $card_ids,
@@ -846,7 +888,7 @@ class Dale extends DaleTableBasic
             //draw cards from deck
             $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
             $nbr_from_deck = count($cards);
-            $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameById($player_id),
                 "nbr" => $nbr_from_deck,

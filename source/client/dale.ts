@@ -172,7 +172,10 @@ class Dale extends Gamegui
 				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(2);
-				break;;
+				break;
+			case 'shatteredRelic':
+				this.myHand.setSelectionMode(1);
+				break;
 		}
 	}
 
@@ -196,6 +199,9 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'inventory':
+				this.myHand.setSelectionMode(0);
+				break;
+			case 'shatteredRelic':
 				this.myHand.setSelectionMode(0);
 				break;
 		}
@@ -227,6 +233,9 @@ class Dale extends Gamegui
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
 				this.addActionButtonCancel();
 				break;
+			case 'shatteredRelic':
+				this.addActionButtonCancel();
+				break;
 		}
 	}
 
@@ -239,32 +248,48 @@ class Dale extends Gamegui
 	*/
 
 	/**
-	 * Move a card from the hand to the specified pile
-	 * @param card_id card id to move
-	 * @param assert_existence (optional) default true. throw an exception if the specified card does not exist in the players' hand.
+	 * Move a card from my hand to the specified pile
+	 * @param card card to move
+	 * @param pile pile to move to
+	 * @param delay
 	*/
-	handToPile(card_id: number, pile: Pile, assert_existence = true) {
+	myHandToPile(card: DbCard, pile: Pile, delay: number = 0) {
+		const card_id = card.id;
 		if ($('myhand_item_' + card_id)) {
-			pile.push(new DaleCard(card_id), 'myhand_item_' + card_id);
-			this.myHand.removeFromStockByIdNoAnimation(card_id);
+			pile.push(new DaleCard(card_id), 'myhand_item_' + card_id, undefined, undefined, delay);
+			this.myHand.removeFromStockByIdNoAnimation(+card_id);
 		}
-		else if(assert_existence) {
-			throw new Error(`Card ${card_id} does not exist in hand`);
+		else {
+			throw new Error(`Card ${card_id} does not exist in my hand`);
+		}
+	}
+
+	/**
+	 * Move a card from any player's hand to the specified pile
+	 * @param card card to move
+	 * @param player_id owner of the hand to move from
+	 * @param pile pile to move to
+	 * @param delay
+	*/
+	anyHandToPile(card: DbCard, player_id: number, pile: Pile, delay: number = 0) {
+		if (+player_id == this.player_id) {
+			this.myHandToPile(card, pile, delay);
+		}
+		else {
+			pile.push(DaleCard.of(card), 'overall_player_board_'+player_id);
 		}
 	}
 
 	/**
 	 * Move a card from the top of the specified pile to the hand
-	 * @param card_id card id to move
-	 * @param assert_existence (optional) default true. throw an exception if the specified card does not exist on top of the pile
+	 * @param card card to move
+	 * @param pile pile to move from
 	*/
-	pileToHand(card_id: number | DbCard, pile: Pile, assert_existence = true) {
-		if (!(typeof card_id === 'number')) {
-			card_id = +card_id.id;
-		}
-		this.myHand.addDaleCardToStock(new DaleCard(card_id), pile.placeholderHTML);
-		if(assert_existence && pile.pop().id != card_id) {
-			throw new Error(`Card ${card_id} was not found on top of the pile`);
+	pileToMyHand(card: DbCard, pile: Pile) {
+		//WARNING: UNTESTED & NEVER USED
+		this.myHand.addDaleCardToStock(DaleCard.of(card), pile.placeholderHTML);
+		if(pile.pop().id != +card.id) {
+			throw new Error(`Card ${+card.id} was not found on top of the pile`);
 		}
 	}
 
@@ -338,19 +363,29 @@ class Dale extends Gamegui
 		}
 	}
 
-	onHandSelectionChanged(yeah: any, yeah2: any) {
-		//if (!this.isCurrentPlayerActive()) return;
+	onHandSelectionChanged() {
 		let items = this.myHand.getSelectedItems();
+		if (!items[0]) return;
+		const card = new DaleCard(items[0].id);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
-				//play cards
-				if (items.length == 1) {
-					let card_id = items[0]!.id;
-					this.showMessage( _("actPlayCard: NOT IMPLEMENTED EXCEPTION"), 'error');
-					// if(this.checkAction('actPlayCard')) {
-					// 	this.bgaPerformAction('actPlayCard', {})
-					// }
+				//play card action (technique or active passive)
+				if (!card.isPlayable()) {
+					this.showMessage(_("This card cannot be played"), 'error');
+				}
+				else if(this.checkAction('actPlayCard')) {
+					this.bgaPerformAction('actPlayCard', {
+						card_id: card.id
+					})
+				}
+				this.myHand.unselectAll();
+				break;
+			case 'shatteredRelic':
+				if(this.checkAction('actShatteredRelic')) {
+					this.bgaPerformAction('actShatteredRelic', {
+						card_id: card.id
+					})
 				}
 				this.myHand.unselectAll();
 				break;
@@ -444,8 +479,12 @@ class Dale extends Gamegui
 			['marketSlideRight', 500],
 			['marketToHand', 1500],
 			['draw', 250],
+			['drawMultiple', 250],
 			['obtainNewJunkInHand', 500],
+			['throwAway', 500],
+			['throwAwayMultiple', 750],
 			['discard', 500],
+			['discardMultiple', 750],
 			['reshuffleDeck', 1500],
 			['debugClient', 1],
 		];
@@ -535,24 +574,6 @@ class Dale extends Gamegui
 			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
 		}
 	}
-
-	notif_draw(notif: NotifAs<'draw'>) {
-		console.log("notif_draw");
-		if (notif.args._private) {
-			//you drew the cards
-			for (let i in notif.args._private?.cards) {
-				let card = notif.args._private.cards[i]!;
-				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
-				this.myDeck.pop();
-			}
-		}
-		else {
-			//another player drew cards
-			for (let i = 0; i < notif.args.nbr; i++) {
-				this.playerDecks[notif.args.player_id]!.pop();
-			}
-		}
-	}
 	
 	notif_obtainNewJunkInHand(notif: NotifAs<'obtainNewJunkInHand'>) {
 		//other players are not interested in an animation for this
@@ -564,22 +585,64 @@ class Dale extends Gamegui
 		}
 	}
 
+	notif_throwAway(notif: NotifAs<'throwAway'>) {
+		this.anyHandToPile(notif.args.card, notif.args.player_id, this.marketDiscard);
+	}
+
+	notif_throwAwayMultiple(notif: NotifAs<'throwAwayMultiple'>) {
+		let delay = 0;
+		for (let id of notif.args.card_ids) {
+			let card = notif.args.cards[id]!;
+			this.anyHandToPile(card, notif.args.player_id, this.marketDiscard, delay);
+			delay += 75; //delay indicates that ordering matters
+		}
+	}
+
 	notif_discard(notif: NotifAs<'discard'>) {
-		if (notif.args.player_id == this.player_id) {
-			//discard cards from hand if not done already
-			for (let id of notif.args.card_ids) {
-				let card = notif.args.cards[id]!;
-				this.handToPile(+card.id, this.myDiscard, false);
+		const discard_id = notif.args.discard_id ?? notif.args.player_id;
+		const discardPile = this.playerDiscards[discard_id]!;
+		this.anyHandToPile( notif.args.card, notif.args.player_id, discardPile);
+	}
+
+	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
+		const discard_id = notif.args.discard_id ?? notif.args.player_id;
+		const discardPile = this.playerDiscards[discard_id]!;
+		let delay = 0;
+		for (let id of notif.args.card_ids) {
+			let card = notif.args.cards[id]!;
+			this.anyHandToPile(card, notif.args.player_id, discardPile, delay);
+			delay += 75; //delay indicates that ordering matters
+		}
+	}
+	
+	notif_draw(notif: NotifAs<'draw'>) {
+		console.log("notif_draw");
+		if (notif.args._private) {
+			//you drew the cards
+			let card = notif.args._private.card
+			this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
+			this.myDeck.pop();
+		}
+		else {
+			//another player drew cards, just remove a card from the deck
+			this.playerDecks[notif.args.player_id]!.pop();
+		}
+	}
+	
+	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
+		console.log("notif_drawMultiple");
+		if (notif.args._private) {
+			//you drew the cards
+			for (let i in notif.args._private?.cards) {
+				let card = notif.args._private.cards[i]!;
+				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
+				this.myDeck.pop();
 			}
 		}
 		else {
-			//animate from overall player board
-			let otherDiscard = this.playerDiscards[notif.args.player_id];
-			let delay = 0;
-			for (let id of notif.args.card_ids) {
-				let card = notif.args.cards[id]!;
-				otherDiscard?.push(DaleCard.of(card), 'overall_player_board_'+notif.args.player_id, undefined, undefined, delay);
-				delay += 250;
+			//another player drew cards, just remove cards from the deck
+			for (let i = 0; i < notif.args.nbr; i++) {
+				this.playerDecks[notif.args.player_id]!.pop();
 			}
 		}
 	}

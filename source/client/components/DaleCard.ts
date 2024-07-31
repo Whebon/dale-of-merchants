@@ -73,6 +73,10 @@ export class DaleCard {
         return DaleCard.cardTypes[this.type_id]!.animalfolk
     }
 
+    public isPlayable(): boolean {
+        return DaleCard.cardTypes[this.type_id]!.playable
+    }
+
     private getTooltipContent(): string {
         const cardType = DaleCard.cardTypes[this.type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""

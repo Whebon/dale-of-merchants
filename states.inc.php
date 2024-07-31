@@ -36,11 +36,13 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take an action'),
 		'descriptionmyturn' => clienttranslate('${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actRequestMarketAction', 'actRequestStallAction', 'actRequestInventoryAction'],
+		'possibleactions' => ['actRequestMarketAction', 'actPlayCard', 'actRequestStallAction', 'actRequestInventoryAction'],
 		'transitions' => array(
 			'trPurchase' => 31,
 			'trBuild' => 35,
 			'trInventory' => 40,
+			'trNextPlayer' => 41,
+			'trShatteredRelic' => 50,
 		),
 	),
 	31 => array(
@@ -87,6 +89,17 @@ $machinestates = array(
 		'updateGameProgression' => true,
 		'transitions' => array(
 			'trNextPlayer' => 30,
+		),
+	),
+	50 => array(
+		'name' => 'shatteredRelic',
+		'description' => clienttranslate('Shattered Relic: ${actplayer} must throw away a card'),
+		'descriptionmyturn' => clienttranslate('Shattered Relic: ${you} must throw away a card'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actShatteredRelic', 'actCancel'],
+		'transitions' => array(
+			'trCancel' => 30,
+			'trNextPlayer' => 41,
 		),
 	),
 	99 => array(

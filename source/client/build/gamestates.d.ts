@@ -30,6 +30,11 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
+			'actPlayCard': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
 			'actRequestStallAction': [],
 			'actRequestInventoryAction': [],
 		},
@@ -37,6 +42,8 @@ interface GameStates {
 			'trPurchase': 31,
 			'trBuild': 35,
 			'trInventory': 40,
+			'trNextPlayer': 41,
+			'trShatteredRelic': 50,
 		},
 	},
 	31: {
@@ -110,6 +117,24 @@ interface GameStates {
 		'updateGameProgression': true,
 		'transitions': {
 			'trNextPlayer': 30,
+		},
+	},
+	50: {
+		'name': 'shatteredRelic',
+		'description': 'Shattered Relic: ${actplayer} must throw away a card',
+		'descriptionmyturn': 'Shattered Relic: ${you} must throw away a card',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actShatteredRelic': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trNextPlayer': 41,
 		},
 	},
 	99: {

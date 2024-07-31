@@ -98,6 +98,17 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * getCards, but with a location specified. Raises an exception if the cards are not in the specified location.
+     */
+    function getCardFromLocation($card_id, $location) {
+        $card = $this->getCard($card_id);
+        if ($card["location"] != $location) {
+            throw new BgaVisibleSystemException("getCardFromLocation: some card was not found at its expected location");
+        }
+        return $card;
+    }
+
+    /**
     * Override the original pickCardsForLocation method, but with the $on_location_exhausted_method hook
     * Pick the first card on top of specified deck and give it to specified player
     * Return card infos or null if no card in the specified location
