@@ -43,7 +43,8 @@ interface GameStates {
 			'trBuild': 35,
 			'trInventory': 40,
 			'trNextPlayer': 41,
-			'trShatteredRelic': 50,
+			'trSwiftBroker': 50,
+			'trShatteredRelic': 51,
 		},
 	},
 	31: {
@@ -120,6 +121,24 @@ interface GameStates {
 		},
 	},
 	50: {
+		'name': 'swiftBroker',
+		'description': 'Swift Broker: ${actplayer} must discard their hand',
+		'descriptionmyturn': 'Swift Broker: ${you} must discard your hand. You may select which card(s) to put on top of your discard pile.',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actSwiftBroker': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trSamePlayer': 30,
+		},
+	},
+	51: {
 		'name': 'shatteredRelic',
 		'description': 'Shattered Relic: ${actplayer} must throw away a card',
 		'descriptionmyturn': 'Shattered Relic: ${you} must throw away a card',
@@ -134,7 +153,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCancel': 30,
-			'trNextPlayer': 41,
+			'trSamePlayer': 30,
 		},
 	},
 	99: {

@@ -40,13 +40,8 @@ class Dale extends DaleTableBasic
         parent::__construct();
         
         $this->initGameStateLabels( array(
-            "selectedCard" => 10
-            //    "my_first_global_variable" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
+            "selectedCard" => 10,
+            "resolvingCard" => 11
         ) );
 
         $this->cards = new DaleDeck($this, "onLocationExhausted");
@@ -92,7 +87,8 @@ class Dale extends DaleTableBasic
 
         // Init global values with their initial values
         //$this->setGameStateInitialValue( 'my_first_global_variable', 0 );
-        $this->setGameStateInitialValue( 'selectedCard', 0 );
+        $this->setGameStateInitialValue("selectedCard", -1);
+        $this->setGameStateInitialValue("resolvingCard", -1);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -221,65 +217,6 @@ class Dale extends DaleTableBasic
         return 100 * $highest_stack_index / MAX_STACKS;
     }
 
-    
-//////////////////////////////////////////////////////////////////////////////
-//////////// Enforcement functions (unofficial)
-////////////   
-
-    /**
-     * DEPRECATED: this is not needed anymore
-     * Enforces the associative array of cards include the given array of ids.
-     * WARNING: for performance reasons, the check is superficial and only enforces the arrays to be of equal length.
-     * @param string $location_arg Optional. If and only if provided, the cards exactly appear at this location_arg.
-     */
-    function enforceCardsInclude(array $cards, array $card_ids) {
-        $actual = count($cards);
-        $expected = count($card_ids);
-        if($expected != $actual) {
-            $missing_ids_string = "";
-            foreach( $cards as $card ) {
-                $missing = true;
-                foreach ($card_ids as $id) {
-                    if ($id == $card['id']) {
-                        $missing = false;
-                        break;
-                    }
-                }
-                if ($missing) {
-                    $missing_ids_string .= $id;
-                    $missing_ids_string .= ", ";
-                }
-            }
-            $missing_ids_string = substr($missing_ids_string, 0, -2);
-            throw new BgaVisibleSystemException("Cards with ids [$missing_ids_string] don't exist.");
-        }
-    }
-
-    /**
-     * DEPRECATED: this is not needed anymore
-     * Enforces all provided cards are in the expected location.
-     * @param array $cards Optional. If and only if provided, the cards exactly appear at this location_arg.
-     * @param string $location All cards must be in at this location.
-     * @param string $location_arg Optional. If and only if provided, the cards exactly appear at this location_arg.
-     */
-    function enforceCardsAreInLocation(array $cards, string $location, string $location_arg = null) {
-        foreach( $cards as $card ) {
-            if( $card['location'] != $location) {
-                $card_id = $card['id'];
-                $actual_location = $card['location'];
-                $msg = "Card $card_id was expected in location '$location', but is actually in location '$actual_location'";
-                throw new BgaVisibleSystemException($msg);
-            }
-            if ($location_arg != null && $card['location_arg'] != $location_arg) {
-                $card_id = $card['id'];
-                $actual_location_arg = $card['location_arg'];
-                $msg = "Card $card_id was expected in location '$location@$location_arg', but is actually in location '$location@$actual_location_arg'";
-                throw new BgaVisibleSystemException($msg);
-            }
-        }
-    }
-
-
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
@@ -300,7 +237,6 @@ class Dale extends DaleTableBasic
             $AT_numberlist = substr( $AT_numberlist, 0, -1 );
         return explode(';', $AT_numberlist);
     }
-
 
     /**
      * Send a notification to all players, but only player args["player_id"] receives args["_private"]
@@ -462,11 +398,11 @@ class Dale extends DaleTableBasic
     }
 
 //////////////////////////////////////////////////////////////////////////////
-//////////// Debug functions
-////////////    
+//////////// Resolving functions / Scheduling functions
+////////////  
 
     /*
-        In this space, you can put debugging tools
+        Here I place all function related to resolving and/or scheduling techniques
     */
 
     /**
@@ -477,7 +413,7 @@ class Dale extends DaleTableBasic
      */
     function scheduleCard(string $player_id, array $dbcard){
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
-        $this->notifyAllPlayers('scheduleTechnique', clienttranslate('${player_name} schedules a ${card_name}'), array(
+        $this->notifyAllPlayers('scheduleTechnique', clienttranslate('${player_name} schedules their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameById($player_id),
             'card_name' => $this->getCardName($dbcard),
@@ -486,27 +422,87 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Discard a scheduled card and notify all players.
-     * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule.
+     * Begin resolving a scheduled card by storing it in "resolvingCard" and notifying all players. Makes 2 db calls.
+     * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule. Typically called after a "scheduleCard".
+     * @param array $dbcard card to be scheduled
+    */
+    function beginToResolveCard(string $player_id, array $dbcard) {
+        $previous = $this->getGameStateValue("resolvingCard");
+        if ($previous != -1) {
+            throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
+        }
+        $this->notifyAllPlayers('message', clienttranslate('${player_name} begins to resolve their ${card_name}'), array(
+            'player_name' => $this->getPlayerNameById($player_id),
+            'card_name' => $this->getCardName($dbcard),
+        ));
+        $this->setGameStateValue("resolvingCard", $dbcard["id"]);
+    }
+
+    /**
+     * Discard the resolved card stored in "resolvingCard" and notify all players. Makes 3 db calls.
      * @param mixed $player_id id of the owner of the scheduled card
-     * @param array $card currently scheduled card
+     * @param int $ct card that that is expected to resolve at this moment
+     * @return string transition after resolving, either "trSamePlayer" or "trNextPlayer"
      */
-    function fullyResolveCard(string $player_id, array $dbcard){
+    function fullyResolveCard(string $player_id) {
+        //fully resolve the card from the schedule
+        $card_id = $this->getGameStateValue("resolvingCard");
+        if ($card_id == -1) {
+            throw new Error("Trying to 'fullyResolveCard' without 'beginToResolveCard'");
+        }
+        $dbcard = $this->cards->getCard($card_id);
         $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
-        $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} FULLY resolves ${card_name}'), array(
+        $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $this->getCardName($dbcard),
             'card' => $dbcard,
         ));
+        $this->setGameStateValue("resolvingCard", -1);
+
+        //get the transition
+        $type_id = $this->getTypeId($dbcard);
+        if ($this->card_types[$type_id]["has_plus"]) {
+            return "trSamePlayer";
+        }
+        return "trNextPlayer";
     }
+
+    /**
+     * If there is an ongoing resolving card, abort the resolving process.
+     */
+    function abortResolvingCard() {
+        $card_id = $this->getGameStateValue("resolvingCard");
+        if ($card_id != -1) {
+            //cancelling involves aborting an already initiated resolving card
+            $player_id = $this->getActivePlayerId();
+            $dbcard = $this->cards->getCard($card_id);
+            $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+            $this->notifyAllPlayers('cancelTechnique', clienttranslate('${player_name} cancels resolving their ${card_name}'), array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($dbcard),
+                'card' => $dbcard,
+            ));
+            $this->setGameStateValue("resolvingCard", -1);
+        }
+    }
+
+//////////////////////////////////////////////////////////////////////////////
+//////////// Debug functions
+////////////    
+
+    /*
+        In this space, you can put debugging tools
+    */
 
     function testSchedule() {
         $player_id = $this->getCurrentPlayerId();
         $cards = $this->spawn("Swift");
         $card = reset($cards);
         $this->scheduleCard($player_id, $card);
-        $this->fullyResolveCard($player_id, $card);
+        $this->beginToResolveCard($player_id, $card);
+        $this->fullyResolveCard($player_id);
     }
 
     function spawnStall(int $pos, string $name = "emptychest") {
@@ -601,6 +597,16 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * Information about the card that is currently being resolving
+     */
+    function getResolvingCard(){
+        $resolvingCard = $this->getGameStateValue("resolvingCard");
+        $card = $this->cards->getCard($resolvingCard);
+        $name = $this->getCardName($card);
+        $this->clientConsoleLog("Currently resolving a $name (card $resolvingCard)");
+    }
+
+    /**
      * Print a message in the client's console
      */
     function clientConsoleLog($msg) {
@@ -633,6 +639,7 @@ class Dale extends DaleTableBasic
 
     function actCancel() {
         $this->checkAction("actCancel");
+        $this->abortResolvingCard();
         $this->gamestate->nextState("trCancel");
     }
 
@@ -652,7 +659,7 @@ class Dale extends DaleTableBasic
         }
 
         //Get information about the market card
-        $market_card_id = $this->getGameStateValue('selectedCard');
+        $market_card_id = $this->getGameStateValue("selectedCard");
         $market_card = $this->cards->getCard($market_card_id);
         $cost = $this->getCost($market_card);
 
@@ -704,8 +711,11 @@ class Dale extends DaleTableBasic
         $this->scheduleCard($player_id, $card);
         switch($type_id) {
             case CT_SWIFTBROKER:
+                $this->beginToResolveCard($player_id, $card);
+                $this->gamestate->nextState("trSwiftBroker");
                 break;
             case CT_SHATTEREDRELIC:
+                $this->beginToResolveCard($player_id, $card);
                 $this->gamestate->nextState("trShatteredRelic");
                 break;
             default:
@@ -737,6 +747,9 @@ class Dale extends DaleTableBasic
                 "card" => $card
             )
         ));
+
+        $transition = $this->fullyResolveCard($player_id);
+        $this->gamestate->nextState($transition);
     }
 
     function actRequestStallAction() {
@@ -857,31 +870,58 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    /*
-    
-    Example:
+    function actSwiftBroker(string $card_ids) {
+        $this->checkAction("actSwiftBroker");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = self::getCurrentPlayerId();
 
-    function playCard( $card_id )
-    {
-        // Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
-        $this->checkAction( 'playCard' ); 
-        
-        $player_id = $this->getActivePlayerId();
-        
-        // Add your game logic to play a card there 
-        ...
-        
-        // Notify all players about the card played
-        $this->notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
+        //get the non-selected cards and selected cards
+        $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+
+        //move the non-selected cards to the discard pile (ordering doesn't matter)
+        $non_selected_card_ids = array_keys($non_selected_cards);
+        $this->cards->moveCardsOnTop($non_selected_card_ids, DISCARD.$player_id);
+        $this->notifyAllPlayers('discardMultiple', '', array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
-            'card_name' => $card_name,
-            'card_id' => $card_id
-        ) );
-          
+            'card_ids' => $non_selected_card_ids,
+            'cards' => $non_selected_cards,
+            'nbr' => count($non_selected_cards)
+        ));
+
+        //move the selected cards to the discard pile (ordering matters)
+        $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
+        $nbr = count($card_ids);
+        $this->notifyAllPlayers('discardMultiple', clienttranslate('Swift Broker: ${player_name} discards their hand'), array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_ids' => $card_ids,
+            'cards' => $selected_cards,
+            'nbr' => count($selected_cards)
+        ));
+
+        //draw an equal amount of new cards
+        $nbr = count($selected_cards) + count($non_selected_cards);
+        $new_cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
+        if ($nbr != count($new_cards)) {
+            throw new Error("Swift Broker Invariant Exception: unable to pick enough cards from deck, even though this is guaranteed to be possible");
+        }
+        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "nbr" => $nbr,
+            "_private" => array(
+                "cards" => $new_cards
+            )
+        ));
+        
+        $transition = $this->fullyResolveCard($player_id);
+        $this->gamestate->nextState($transition);
     }
-    
-    */
 
     
 //////////////////////////////////////////////////////////////////////////////
@@ -895,7 +935,7 @@ class Dale extends DaleTableBasic
     */
 
     function argSelectedCardInMarket(){
-        $card_id = $this->getGameStateValue('selectedCard');
+        $card_id = $this->getGameStateValue("selectedCard");
         $card = $this->cards->getCard($card_id);
         $type_id = $card['type_arg'];
         return array(
@@ -967,7 +1007,7 @@ class Dale extends DaleTableBasic
                 $junk_cards = $this->cards->getJunk($nbr_junk_cards);
                 $junk_ids = array_keys($junk_cards);
                 $this->cards->moveCards($junk_ids, HAND.$player_id);
-                $this->notifyAllPlayers('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and obtains ${nbr} junk cards'), array(
+                $this->notifyAllPlayers('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and receives ${nbr} junk cards'), array(
                     "player_id" => $player_id,
                     "player_name" => $this->getPlayerNameById($player_id),
                     "cards" => $junk_cards,

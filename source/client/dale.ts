@@ -145,13 +145,14 @@ class Dale extends Gamegui
 				//append color styling to new cards in the schedule
 				itemDiv.setAttribute('style', itemDiv.getAttribute('style')+`;
 					background-blend-mode: overlay;
-					background-color: #${color}30;`
+					background-color: #${color}20;`
 				);
 			}
 			this.playerSchedules[player_id] = new DaleStock();
 			this.playerSchedules[player_id].init(this, container, wrap, recolor);
 			this.playerSchedules[player_id].setSelectionMode(0);
 			this.playerSchedules[player_id].autowidth = true;
+			this.playerSchedules[player_id].duration = 500;
 			for (let card_id in gamedatas.schedules[player_id]) {
 				const card = gamedatas.schedules[+player_id]![+card_id]!;
 				this.playerSchedules[player_id]!.addDaleCardToStock(DaleCard.of(card));
@@ -197,6 +198,9 @@ class Dale extends Gamegui
 			case 'inventory':
 				this.myHand.setSelectionMode(2);
 				break;
+			case 'swiftBroker':
+				this.myHand.setSelectionMode(2);
+				break;
 			case 'shatteredRelic':
 				this.myHand.setSelectionMode(1);
 				break;
@@ -223,6 +227,9 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'inventory':
+				this.myHand.setSelectionMode(0);
+				break;
+			case 'swiftBroker':
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'shatteredRelic':
@@ -255,6 +262,10 @@ class Dale extends Gamegui
 				break;
 			case 'inventory':
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+				this.addActionButtonCancel();
+				break;
+			case 'swiftBroker':
+				this.addActionButton("confirm-button", _("Discard All"), "onSwiftBroker");
 				this.addActionButtonCancel();
 				break;
 			case 'shatteredRelic':
@@ -458,40 +469,14 @@ class Dale extends Gamegui
 			})
 		}
 	}
-	
-	/*
-	Example:
-	onMyMethodToCall1( evt: Event )
-	{
-		console.log( 'onMyMethodToCall1' );
 
-		// Preventing default browser reaction
-		evt.preventDefault();
-
-		//	With base Gamegui class...
-
-		// Check that this action is possible (see "possibleactions" in states.inc.php)
-		if(!this.checkAction( 'myAction' ))
-			return;
-
-		this.ajaxcall( "/yourgamename/yourgamename/myAction.html", { 
-			lock: true, 
-			myArgument1: arg1,
-			myArgument2: arg2,
-		}, this, function( result ) {
-			// What to do after the server call if it succeeded
-			// (most of the time: nothing)
-		}, function( is_error) {
-
-			// What to do after the server call in anyway (success or failure)
-			// (most of the time: nothing)
-		} );
-
-
-		//	With GameguiCookbook::Common...
-		this.ajaxAction( 'myAction', { myArgument1: arg1, myArgument2: arg2 }, (is_error) => {} );
+	onSwiftBroker() {
+		if(this.checkAction("actSwiftBroker")) {
+			this.bgaPerformAction('actSwiftBroker', {
+				card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
+			})
+		}
 	}
-	*/
 
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
@@ -504,18 +489,20 @@ class Dale extends Gamegui
 		const notifs: [keyof NotifTypes, number][] = [
 			['scheduleTechnique', 1000],
 			['resolveTechnique', 1000],
+			['cancelTechnique', 1000],
 			['buildStack', 1500],
 			['fillEmptyMarketSlots', 1],
-			['marketSlideRight', 500],
+			['marketSlideRight', 1000],
 			['marketToHand', 1500],
-			['draw', 250],
-			['drawMultiple', 250],
-			['obtainNewJunkInHand', 500],
-			['throwAway', 500],
-			['throwAwayMultiple', 750],
-			['discard', 500],
-			['discardMultiple', 750],
+			['draw', 1000],
+			['drawMultiple', 1000],
+			['obtainNewJunkInHand', 1000],
+			['throwAway', 1000],
+			['throwAwayMultiple', 1000],
+			['discard', 1000],
+			['discardMultiple', 1000],
 			['reshuffleDeck', 1500],
+			['message', 1],
 			['debugClient', 1],
 		];
 
@@ -548,6 +535,7 @@ class Dale extends Gamegui
 	*/
 
 	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
+		//hand to schedule
 		if (notif.args.player_id == this.player_id) {
 			//animate from my hand
 			const card_id = +notif.args.card.id;
@@ -566,12 +554,33 @@ class Dale extends Gamegui
 		}
 	}
 
+	notif_cancelTechnique(notif: NotifAs<'cancelTechnique'>) {
+		//schedule to hand
+		if (notif.args.player_id == this.player_id) {
+			//animate from my hand
+			const card_id = +notif.args.card.id;
+			if ($(this.mySchedule.control_name+'_item_' + card_id)) {
+				this.myHand.addDaleCardToStock(DaleCard.of(notif.args.card), this.mySchedule.control_name+'_item_' + card_id)
+				this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				throw new Error(`Unable to cancel a techqniue. Techqniue card ${card_id} does not exist in the schedule.`);
+			}
+		}
+		else {
+			//animate from player board
+			const schedule = this.playerSchedules[notif.args.player_id]!;
+			schedule.removeFromStockById(+notif.args.card.id, 'overall_player_board_'+notif.args.player_id);
+		}
+	}
+
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
+		//schedule to discard
 		console.log(this.playerSchedules);
 		const schedule = this.playerSchedules[notif.args.player_id]!;
 		const card = DaleCard.of(notif.args.card);
 		const from = schedule.control_name+'_item_'+card.id;
-		this.playerDiscards[notif.args.player_id]!.push(card, from);
+		this.playerDiscards[notif.args.player_id]!.push(card, from, null, schedule.duration);
 		schedule.removeFromStockByIdNoAnimation(card.id);
 	}
 
@@ -689,6 +698,7 @@ class Dale extends Gamegui
 	
 	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
 		console.log("notif_drawMultiple");
+		console.log(notif.args);
 		if (notif.args._private) {
 			//you drew the cards
 			for (let i in notif.args._private?.cards) {
@@ -712,6 +722,10 @@ class Dale extends Gamegui
 		else {
 			this.playerDiscards[notif.args.player_id]!.shuffleToDrawPile(this.playerDecks[notif.args.player_id]!);
 		}
+	}
+
+	notif_message(notif: NotifAs<'message'>) {
+		return;
 	}
 
 	notif_debugClient(notif: NotifAs<'debugClient'>) {

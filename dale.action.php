@@ -106,6 +106,17 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actSwiftBroker()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actSwiftBroker( $card_ids );
+		self::ajaxResponse();
+	}
+
 	public function actShatteredRelic()
 	{
 		self::setAjaxMode();

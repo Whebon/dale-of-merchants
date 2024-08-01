@@ -21,10 +21,17 @@ declare global {
 		'scheduleTechnique': {
 			player_id: number
 			card: DbCard
+		},
+		'cancelTechnique': {
+			player_id: number
+			card: DbCard
 		}
 		'resolveTechnique': {
 			player_id: number
 			card: DbCard
+		}
+		'message': {
+			//no args
 		}
 		'debugClient': {
 			arg: string

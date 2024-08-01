@@ -42,7 +42,8 @@ $machinestates = array(
 			'trBuild' => 35,
 			'trInventory' => 40,
 			'trNextPlayer' => 41,
-			'trShatteredRelic' => 50,
+			'trSwiftBroker' => 50,
+			'trShatteredRelic' => 51,
 		),
 	),
 	31 => array(
@@ -92,6 +93,17 @@ $machinestates = array(
 		),
 	),
 	50 => array(
+		'name' => 'swiftBroker',
+		'description' => clienttranslate('Swift Broker: ${actplayer} must discard their hand'),
+		'descriptionmyturn' => clienttranslate('Swift Broker: ${you} must discard your hand. You may select which card(s) to put on top of your discard pile.'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actSwiftBroker', 'actCancel'],
+		'transitions' => array(
+			'trCancel' => 30,
+			'trSamePlayer' => 30,
+		),
+	),
+	51 => array(
 		'name' => 'shatteredRelic',
 		'description' => clienttranslate('Shattered Relic: ${actplayer} must throw away a card'),
 		'descriptionmyturn' => clienttranslate('Shattered Relic: ${you} must throw away a card'),
@@ -99,7 +111,7 @@ $machinestates = array(
 		'possibleactions' => ['actShatteredRelic', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
-			'trNextPlayer' => 41,
+			'trSamePlayer' => 30,
 		),
 	),
 	99 => array(

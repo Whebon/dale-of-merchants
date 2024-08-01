@@ -850,12 +850,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var wrap = $('schedule-wrap-' + player_id);
                 var color = (_b = (_a = gamedatas.players[player_id]) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : 'white';
                 var recolor = function (itemDiv, typeId, itemId) {
-                    itemDiv.setAttribute('style', itemDiv.getAttribute('style') + ";\n\t\t\t\t\tbackground-blend-mode: overlay;\n\t\t\t\t\tbackground-color: #".concat(color, "30;"));
+                    itemDiv.setAttribute('style', itemDiv.getAttribute('style') + ";\n\t\t\t\t\tbackground-blend-mode: overlay;\n\t\t\t\t\tbackground-color: #".concat(color, "20;"));
                 };
                 this_1.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this_1.playerSchedules[player_id].init(this_1, container, wrap, recolor);
                 this_1.playerSchedules[player_id].setSelectionMode(0);
                 this_1.playerSchedules[player_id].autowidth = true;
+                this_1.playerSchedules[player_id].duration = 500;
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];
                     this_1.playerSchedules[player_id].addDaleCardToStock(DaleCard_3.DaleCard.of(card));
@@ -893,6 +894,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'inventory':
                     this.myHand.setSelectionMode(2);
                     break;
+                case 'swiftBroker':
+                    this.myHand.setSelectionMode(2);
+                    break;
                 case 'shatteredRelic':
                     this.myHand.setSelectionMode(1);
                     break;
@@ -914,6 +918,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode(0);
                     break;
                 case 'inventory':
+                    this.myHand.setSelectionMode(0);
+                    break;
+                case 'swiftBroker':
                     this.myHand.setSelectionMode(0);
                     break;
                 case 'shatteredRelic':
@@ -939,6 +946,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'inventory':
                     this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+                    this.addActionButtonCancel();
+                    break;
+                case 'swiftBroker':
+                    this.addActionButton("confirm-button", _("Discard All"), "onSwiftBroker");
                     this.addActionButtonCancel();
                     break;
                 case 'shatteredRelic':
@@ -1069,24 +1080,33 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 });
             }
         };
+        Dale.prototype.onSwiftBroker = function () {
+            if (this.checkAction("actSwiftBroker")) {
+                this.bgaPerformAction('actSwiftBroker', {
+                    card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
+                });
+            }
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
                 ['scheduleTechnique', 1000],
                 ['resolveTechnique', 1000],
+                ['cancelTechnique', 1000],
                 ['buildStack', 1500],
                 ['fillEmptyMarketSlots', 1],
-                ['marketSlideRight', 500],
+                ['marketSlideRight', 1000],
                 ['marketToHand', 1500],
-                ['draw', 250],
-                ['drawMultiple', 250],
-                ['obtainNewJunkInHand', 500],
-                ['throwAway', 500],
-                ['throwAwayMultiple', 750],
-                ['discard', 500],
-                ['discardMultiple', 750],
+                ['draw', 1000],
+                ['drawMultiple', 1000],
+                ['obtainNewJunkInHand', 1000],
+                ['throwAway', 1000],
+                ['throwAwayMultiple', 1000],
+                ['discard', 1000],
+                ['discardMultiple', 1000],
                 ['reshuffleDeck', 1500],
+                ['message', 1],
                 ['debugClient', 1],
             ];
             notifs.forEach(function (notif) {
@@ -1111,12 +1131,28 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 schedule.addDaleCardToStock(DaleCard_3.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
             }
         };
+        Dale.prototype.notif_cancelTechnique = function (notif) {
+            if (notif.args.player_id == this.player_id) {
+                var card_id = +notif.args.card.id;
+                if ($(this.mySchedule.control_name + '_item_' + card_id)) {
+                    this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(notif.args.card), this.mySchedule.control_name + '_item_' + card_id);
+                    this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
+                }
+                else {
+                    throw new Error("Unable to cancel a techqniue. Techqniue card ".concat(card_id, " does not exist in the schedule."));
+                }
+            }
+            else {
+                var schedule = this.playerSchedules[notif.args.player_id];
+                schedule.removeFromStockById(+notif.args.card.id, 'overall_player_board_' + notif.args.player_id);
+            }
+        };
         Dale.prototype.notif_resolveTechnique = function (notif) {
             console.log(this.playerSchedules);
             var schedule = this.playerSchedules[notif.args.player_id];
             var card = DaleCard_3.DaleCard.of(notif.args.card);
             var from = schedule.control_name + '_item_' + card.id;
-            this.playerDiscards[notif.args.player_id].push(card, from);
+            this.playerDiscards[notif.args.player_id].push(card, from, null, schedule.duration);
             schedule.removeFromStockByIdNoAnimation(card.id);
         };
         Dale.prototype.notif_buildStack = function (notif) {
@@ -1220,6 +1256,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_drawMultiple = function (notif) {
             var _a;
             console.log("notif_drawMultiple");
+            console.log(notif.args);
             if (notif.args._private) {
                 for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
                     var card = notif.args._private.cards[i];
@@ -1240,6 +1277,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else {
                 this.playerDiscards[notif.args.player_id].shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
             }
+        };
+        Dale.prototype.notif_message = function (notif) {
+            return;
         };
         Dale.prototype.notif_debugClient = function (notif) {
             var arg = notif.args.arg;
