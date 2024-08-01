@@ -23,7 +23,6 @@ import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
-import { CardRow } from './components/CardRow'
 import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
@@ -44,6 +43,9 @@ class Dale extends Gamegui
 	/** A stall for each player */
 	playerStalls: Record<number, Stall> = {};
 
+	/** A schedule for each player */
+	playerSchedules: Record<number, DaleStock> = {};
+
 	/** Current player's draw pile (this client's draw pil) */
 	get myDeck(): Pile {
 		return this.playerDecks[this.player_id]!;
@@ -59,14 +61,16 @@ class Dale extends Gamegui
 		return this.playerStalls[this.player_id]!;
 	}
 
+	/** Current player's schedule (this client's discard pile) */
+	get mySchedule(): DaleStock {
+		return this.playerSchedules[this.player_id]!;
+	}
+
 	/** Ordered pile of known cards representing the market discard deck. */
 	market: MarketBoard | null = null;
 
 	/** Cards in this client's player hand */
 	myHand: DaleStock = new DaleStock();
-
-	/** Cards in all schedules */
-	schedule: CardRow = new CardRow(this, 'schedule', 'Schedule');
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -84,10 +88,6 @@ class Dale extends Gamegui
 
 		//initialize the card types
 		DaleCard.init(gamedatas.cardTypes);
-		for (let i in gamedatas.cardTypes) {
-			let type_id = gamedatas.cardTypes[i]!.type_id;
-			this.myHand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
-		}
 
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
@@ -129,20 +129,32 @@ class Dale extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand.create( this, $('myhand'), Images.CARD_WIDTH, Images.CARD_HEIGHT);
-		this.myHand.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
-		this.myHand.image_items_per_row = Images.IMAGES_PER_ROW;
+		this.myHand.init(this, $('myhand')!);
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
 		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
 
-		//initialize the schedule
+		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
+			const container = $('schedule-'+player_id)!
+			const wrap = $('schedule-wrap-'+player_id)!
+			const color = gamedatas.players[player_id]?.color ?? 'white';
+			const recolor = (itemDiv: HTMLElement, typeId: number, itemId: number) => {
+				//append color styling to new cards in the schedule
+				itemDiv.setAttribute('style', itemDiv.getAttribute('style')+`;
+					background-blend-mode: overlay;
+					background-color: #${color}30;`
+				);
+			}
+			this.playerSchedules[player_id] = new DaleStock();
+			this.playerSchedules[player_id].init(this, container, wrap, recolor);
+			this.playerSchedules[player_id].setSelectionMode(0);
+			this.playerSchedules[player_id].autowidth = true;
 			for (let card_id in gamedatas.schedules[player_id]) {
 				const card = gamedatas.schedules[+player_id]![+card_id]!;
-				this.schedule.append(DaleCard.of(card), +player_id);
+				this.playerSchedules[player_id]!.addDaleCardToStock(DaleCard.of(card));
 			}
 		}
 
@@ -490,8 +502,8 @@ class Dale extends Gamegui
 		console.log( 'notifications subscriptions setup2' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
-			['scheduleTechnique', 500],
-			['resolveTechnique', 500],
+			['scheduleTechnique', 1000],
+			['resolveTechnique', 1000],
 			['buildStack', 1500],
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 500],
@@ -540,7 +552,7 @@ class Dale extends Gamegui
 			//animate from my hand
 			const card_id = +notif.args.card.id;
 			if ($('myhand_item_' + card_id)) {
-				this.schedule.append(DaleCard.of(notif.args.card), notif.args.player_id, 'myhand_item_' + card_id);
+				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), 'myhand_item_' + card_id)
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -549,15 +561,18 @@ class Dale extends Gamegui
 		}
 		else {
 			//animate from player board
-			this.schedule.append(DaleCard.of(notif.args.card), notif.args.player_id, 'overall_player_board_'+notif.args.player_id);
+			const schedule = this.playerSchedules[notif.args.player_id]!;
+			schedule.addDaleCardToStock(DaleCard.of(notif.args.card), 'overall_player_board_'+notif.args.player_id)
 		}
 	}
 
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
+		console.log(this.playerSchedules);
+		const schedule = this.playerSchedules[notif.args.player_id]!;
 		const card = DaleCard.of(notif.args.card);
-		const from = this.schedule.getHTMLId(card);
+		const from = schedule.control_name+'_item_'+card.id;
 		this.playerDiscards[notif.args.player_id]!.push(card, from);
-		this.schedule.remove(card);
+		schedule.removeFromStockByIdNoAnimation(card.id);
 	}
 
 	notif_buildStack(notif: NotifAs<'buildStack'>) {

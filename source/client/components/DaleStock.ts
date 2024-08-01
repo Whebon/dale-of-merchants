@@ -1,6 +1,8 @@
+import Gamegui = require('ebg/core/gamegui');
 import Stock = require('ebg/stock'); 
 import "ebg/stock"; 
 import { DaleCard } from './DaleCard';
+import { Images } from './Images';
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -32,7 +34,49 @@ export class DaleStock extends Stock {
 			console.log(this.orderedSelectedCardIds);
 		}
 	}
+	
+	/**
+	 * Initialize everything that is needed for a Stock
+	 * @param page Gamegui
+	 * @param container The div element to attach the stock to. This element should be empty.
+	 * @param hideOuterContainer (optional) This element will be hidden iff the stock is empty.
+	 * @param onItemCreate (optional) Callback function to execute when a new item is added to the stock
+	 * @param onItemDelete (optional) Callback function to execute when a new item is removed from the stock
+	 */
+	init(page: Gamegui, container: Element, hideOuterContainer?: Element, onItemCreate?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void, onItemDelete?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void) {
+		//configure card types
+		for (let i in page.gamedatas.cardTypes) {
+			let type_id = page.gamedatas.cardTypes[i]!.type_id;
+			this.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+		}
+		this.create( page, container, Images.CARD_WIDTH, Images.CARD_HEIGHT);
+		this.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
+		this.image_items_per_row = Images.IMAGES_PER_ROW;
+		
+		//configure callback functions
+		this.onItemCreate = function(itemDiv: HTMLElement, typeId: number, itemId: number) {
+			if (hideOuterContainer) {
+				hideOuterContainer.classList.remove("hidden");
+			}
+			if (onItemCreate) {
+				onItemCreate(itemDiv, typeId, itemId);
+			}
+		}
+		this.onItemDelete = function(itemDiv: HTMLElement, typeId: number, itemId: number) {
+			if (hideOuterContainer && this.count() <= 1) {
+				hideOuterContainer.classList.add("hidden");
+			}
+			if (onItemDelete) {
+				onItemDelete(itemDiv, typeId, itemId);
+			}
+		}
+		hideOuterContainer?.classList.add("hidden");
+	}
 
+	/**
+	 * Sets the selection mode for the stock. The selection mode determines how the user can interact with the items in the stock.
+	 * Additionally, it resets the 'orderedSelectedCardIds', which is needed to track the order in the selection
+	 */
 	override setSelectionMode(mode: 0 | 1 | 2): void {
 		super.setSelectionMode(mode);
 		this.orderedSelectedCardIds = [];

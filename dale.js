@@ -188,7 +188,7 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
     }());
     exports.DaleCard = DaleCard;
 });
-define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"], function (require, exports, Stock) {
+define("components/DaleStock", ["require", "exports", "ebg/stock", "components/Images", "ebg/stock"], function (require, exports, Stock, Images_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleStock = void 0;
@@ -218,6 +218,32 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"],
             };
             return _this;
         }
+        DaleStock.prototype.init = function (page, container, hideOuterContainer, onItemCreate, onItemDelete) {
+            for (var i in page.gamedatas.cardTypes) {
+                var type_id = page.gamedatas.cardTypes[i].type_id;
+                this.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+            }
+            this.create(page, container, Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
+            this.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
+            this.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
+            this.onItemCreate = function (itemDiv, typeId, itemId) {
+                if (hideOuterContainer) {
+                    hideOuterContainer.classList.remove("hidden");
+                }
+                if (onItemCreate) {
+                    onItemCreate(itemDiv, typeId, itemId);
+                }
+            };
+            this.onItemDelete = function (itemDiv, typeId, itemId) {
+                if (hideOuterContainer && this.count() <= 1) {
+                    hideOuterContainer.classList.add("hidden");
+                }
+                if (onItemDelete) {
+                    onItemDelete(itemDiv, typeId, itemId);
+                }
+            };
+            hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("hidden");
+        };
         DaleStock.prototype.setSelectionMode = function (mode) {
             _super.prototype.setSelectionMode.call(this, mode);
             this.orderedSelectedCardIds = [];
@@ -250,13 +276,13 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "ebg/stock"],
     }(Stock));
     exports.DaleStock = DaleStock;
 });
-define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_2, DaleCard_1) {
+define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_3, DaleCard_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
     var Pile = (function () {
         function Pile(page, pile_container_id, pile_name) {
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_2.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_2.Images.getCardStyle(), "\"></div>\n                <div class=\"card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div class=\"card\"></div>\n                <div class=\"size\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
@@ -274,11 +300,11 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.topCardHTML.setAttribute('style', "display: none");
             }
             else {
-                this.topCardHTML.setAttribute('style', Images_2.Images.getCardStyle(topCard.type_id));
+                this.topCardHTML.setAttribute('style', Images_3.Images.getCardStyle(topCard.type_id));
             }
         };
         Pile.prototype.setZIndex = function (slidingElement) {
-            var z_index = Images_2.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
+            var z_index = Images_3.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
             var style = slidingElement.getAttribute('style');
             slidingElement.setAttribute('style', style + "z-index: ".concat(z_index, ";"));
         };
@@ -509,7 +535,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_3, CardSlot_1) {
+define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_4, CardSlot_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -517,12 +543,12 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
             this.page = page;
-            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_3.Images.MARKET_WIDTH_S - Images_3.Images.MARKET_PADDING_LEFT_S - Images_3.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_3.Images.MARKET_HEIGHT_S - Images_3.Images.MARKET_PADDING_TOP_S - Images_3.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_3.Images.MARKET_WIDTH_S, "px ").concat(Images_3.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_3.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_3.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_3.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_3.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_4.Images.MARKET_WIDTH_S - Images_4.Images.MARKET_PADDING_LEFT_S - Images_4.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_4.Images.MARKET_HEIGHT_S - Images_4.Images.MARKET_PADDING_TOP_S - Images_4.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_4.Images.MARKET_WIDTH_S, "px ").concat(Images_4.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_4.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_4.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_4.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_4.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
             this.container = $("market-board-background").querySelector("#market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var div = document.createElement("div");
-                div.setAttribute('style', "".concat(Images_3.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_3.Images.CARD_WIDTH_S + Images_3.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
+                div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_4.Images.CARD_WIDTH_S + Images_4.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
@@ -600,7 +626,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot"], function (require, exports, DaleCard_2, Images_4, CardSlot_2) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot"], function (require, exports, DaleCard_2, Images_5, CardSlot_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -617,14 +643,14 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         Stall.prototype.createNewStack = function () {
             if (this.stackContainers.length > 0) {
                 var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                prevStackContainer.setAttribute('style', "max-width: ".concat(Images_4.Images.CARD_WIDTH_S, "px;"));
+                prevStackContainer.setAttribute('style', "max-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;"));
             }
             var stackContainer = document.createElement("div");
             stackContainer.classList.add("stack-container");
-            stackContainer.setAttribute('style', "min-width: ".concat(Images_4.Images.CARD_WIDTH_S, "px;"));
+            stackContainer.setAttribute('style', "min-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;"));
             var placeholder = document.createElement("div");
             placeholder.classList.add("placeholder");
-            placeholder.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";"));
+            placeholder.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";"));
             stackContainer.appendChild(placeholder);
             this.container.appendChild(stackContainer);
             this.stackContainers.push(stackContainer);
@@ -638,10 +664,10 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var stackContainer = this.stackContainers[stack_index];
             var stack = this.slots[stack_index];
             var index = stack.length;
-            var y_offset = Images_4.Images.VERTICAL_STACK_OFFSET_S * index;
+            var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * index;
             var div = document.createElement("div");
-            div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
-            stackContainer.setAttribute('style', stackContainer.getAttribute('style') + "height: ".concat(Images_4.Images.CARD_HEIGHT_S + y_offset, "px;"));
+            div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
+            stackContainer.setAttribute('style', stackContainer.getAttribute('style') + "height: ".concat(Images_5.Images.CARD_HEIGHT_S + y_offset, "px;"));
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
@@ -736,87 +762,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
     }());
     exports.Stall = Stall;
 });
-define("components/CardRow", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_5, CardSlot_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.CardRow = void 0;
-    var CardRow = (function () {
-        function CardRow(page, container_id, name) {
-            this.page = page;
-            this.outer_container = $(container_id);
-            this.outer_container.classList.add('hidden');
-            this.outer_container.innerHTML = "\n            ".concat(name ? "<h3 class=\"name\">".concat(name, "</h3>") : "", "\n            <div class=\"card-row-container\"></div>\n        ");
-            this.container = this.outer_container.querySelector('.card-row-container');
-            this.slots = [];
-        }
-        CardRow.prototype.append = function (card, player_id, from) {
-            var _a, _b;
-            var pos = this.slots.length;
-            var div = document.createElement("div");
-            div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";"));
-            div.classList.add('card-row-slot');
-            this.container.appendChild(div);
-            this.outer_container.classList.remove('hidden');
-            this.slots.push(new CardSlot_3.CardSlot(this, pos, div));
-            this.insertCard(card, pos, from);
-            console.log("Caller: inserting card at position ".concat(pos));
-            var color = (_b = (_a = this.page.gamedatas.players[player_id !== null && player_id !== void 0 ? player_id : this.page.player_id]) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : 'white';
-            var cardDiv = this.slots[pos].card_div;
-            cardDiv.setAttribute('style', cardDiv.getAttribute('style') + ";;\n            background-blend-mode: overlay;\n            background-color: #".concat(color, "40;\n        "));
-        };
-        CardRow.prototype.getHTMLId = function (card) {
-            var index = this.indexOf(card);
-            return this.slots[index].id;
-        };
-        CardRow.prototype.indexOf = function (card) {
-            var _a, _b, _c;
-            for (var i = 0; i < this.slots.length; i++) {
-                if (((_b = (_a = this.slots[i]) === null || _a === void 0 ? void 0 : _a.card) === null || _b === void 0 ? void 0 : _b.id) == card.id) {
-                    if (((_c = this.slots[i]) === null || _c === void 0 ? void 0 : _c.pos) != i) {
-                        console.warn("CardRow invariant violation.");
-                    }
-                    return i;
-                }
-            }
-            throw new Error("Card ".concat(card.id, " does not exist in the CardRow."));
-        };
-        CardRow.prototype.remove = function (card) {
-            var index = this.indexOf(card);
-            this.slots[index].remove();
-            for (var i = index + 1; i < this.slots.length; i++) {
-                var slot = this.slots[i];
-                slot.pos -= 1;
-            }
-            this.slots.splice(index, 1);
-            if (this.slots.length == 0) {
-                this.outer_container.classList.add('hidden');
-            }
-            return index;
-        };
-        CardRow.prototype.getValidPos = function (pos) {
-            if (pos < 0 || pos >= this.slots.length) {
-                console.warn("".concat(pos, " is an invalid row position. The position should be in range [0, ").concat(this.slots.length - 1, "] Using position 0 instead."));
-                pos = 0;
-            }
-            return pos;
-        };
-        CardRow.prototype.insertCard = function (card, pos, from) {
-            pos = this.getValidPos(pos);
-            this.slots[pos].insertCard(card, from, function (node) {
-            });
-        };
-        CardRow.prototype.removeCard = function (pos, to) {
-            pos = this.getValidPos(pos);
-            return this.slots[pos].removeCard(to);
-        };
-        CardRow.prototype.onCardSlotClick = function (slot) {
-            console.error("onCardSlotClick NOT IMPLEMENTED");
-        };
-        return CardRow;
-    }());
-    exports.CardRow = CardRow;
-});
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Images", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/CardRow", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Images_6, Pile_1, DaleCard_3, MarketBoard_1, Stall_1, CardRow_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_1, DaleCard_3, MarketBoard_1, Stall_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -828,9 +774,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.playerDecks = {};
             _this.playerDiscards = {};
             _this.playerStalls = {};
+            _this.playerSchedules = {};
             _this.market = null;
             _this.myHand = new DaleStock_1.DaleStock();
-            _this.schedule = new CardRow_1.CardRow(_this, 'schedule', 'Schedule');
             console.log('dale constructor');
             return _this;
         }
@@ -855,16 +801,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Dale.prototype, "mySchedule", {
+            get: function () {
+                return this.playerSchedules[this.player_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
         Dale.prototype.setup = function (gamedatas) {
+            var _a, _b;
             console.log("Starting game setup");
             console.log("------ GAME DATAS ------");
             console.log(this.gamedatas);
             console.log("------------------------");
             DaleCard_3.DaleCard.init(gamedatas.cardTypes);
-            for (var i in gamedatas.cardTypes) {
-                var type_id = gamedatas.cardTypes[i].type_id;
-                this.myHand.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
-            }
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
                 this.playerDecks[player_id] = new Pile_1.Pile(this, 'deck-' + player_id, 'Deck');
@@ -890,19 +840,31 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card = gamedatas.market[i];
                 this.market.insertCard(DaleCard_3.DaleCard.of(card), +card.location_arg);
             }
-            this.myHand.create(this, $('myhand'), Images_6.Images.CARD_WIDTH, Images_6.Images.CARD_HEIGHT);
-            this.myHand.resizeItems(Images_6.Images.CARD_WIDTH_S, Images_6.Images.CARD_HEIGHT_S, Images_6.Images.SHEET_WIDTH_S, Images_6.Images.SHEET_HEIGHT_S);
-            this.myHand.image_items_per_row = Images_6.Images.IMAGES_PER_ROW;
+            this.myHand.init(this, $('myhand'));
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
                 this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(card));
             }
             dojo.connect(this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged');
-            for (var player_id in gamedatas.schedules) {
+            var _loop_1 = function (player_id) {
+                var container = $('schedule-' + player_id);
+                var wrap = $('schedule-wrap-' + player_id);
+                var color = (_b = (_a = gamedatas.players[player_id]) === null || _a === void 0 ? void 0 : _a.color) !== null && _b !== void 0 ? _b : 'white';
+                var recolor = function (itemDiv, typeId, itemId) {
+                    itemDiv.setAttribute('style', itemDiv.getAttribute('style') + ";\n\t\t\t\t\tbackground-blend-mode: overlay;\n\t\t\t\t\tbackground-color: #".concat(color, "30;"));
+                };
+                this_1.playerSchedules[player_id] = new DaleStock_1.DaleStock();
+                this_1.playerSchedules[player_id].init(this_1, container, wrap, recolor);
+                this_1.playerSchedules[player_id].setSelectionMode(0);
+                this_1.playerSchedules[player_id].autowidth = true;
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];
-                    this.schedule.append(DaleCard_3.DaleCard.of(card), +player_id);
+                    this_1.playerSchedules[player_id].addDaleCardToStock(DaleCard_3.DaleCard.of(card));
                 }
+            };
+            var this_1 = this;
+            for (var player_id in gamedatas.schedules) {
+                _loop_1(player_id);
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -1112,8 +1074,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _this = this;
             console.log('notifications subscriptions setup2');
             var notifs = [
-                ['scheduleTechnique', 500],
-                ['resolveTechnique', 500],
+                ['scheduleTechnique', 1000],
+                ['resolveTechnique', 1000],
                 ['buildStack', 1500],
                 ['fillEmptyMarketSlots', 1],
                 ['marketSlideRight', 500],
@@ -1138,7 +1100,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (notif.args.player_id == this.player_id) {
                 var card_id = +notif.args.card.id;
                 if ($('myhand_item_' + card_id)) {
-                    this.schedule.append(DaleCard_3.DaleCard.of(notif.args.card), notif.args.player_id, 'myhand_item_' + card_id);
+                    this.mySchedule.addDaleCardToStock(DaleCard_3.DaleCard.of(notif.args.card), 'myhand_item_' + card_id);
                     this.myHand.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -1146,14 +1108,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
             else {
-                this.schedule.append(DaleCard_3.DaleCard.of(notif.args.card), notif.args.player_id, 'overall_player_board_' + notif.args.player_id);
+                var schedule = this.playerSchedules[notif.args.player_id];
+                schedule.addDaleCardToStock(DaleCard_3.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
             }
         };
         Dale.prototype.notif_resolveTechnique = function (notif) {
+            console.log(this.playerSchedules);
+            var schedule = this.playerSchedules[notif.args.player_id];
             var card = DaleCard_3.DaleCard.of(notif.args.card);
-            var from = this.schedule.getHTMLId(card);
+            var from = schedule.control_name + '_item_' + card.id;
             this.playerDiscards[notif.args.player_id].push(card, from);
-            this.schedule.remove(card);
+            schedule.removeFromStockByIdNoAnimation(card.id);
         };
         Dale.prototype.notif_buildStack = function (notif) {
             var _a;

@@ -40,7 +40,12 @@
             <h3> {YOUR_HAND} </h3>
             <div id="myhand"></div>
         </div> 
-        <div id="schedule"></div>
+        <!-- BEGIN schedule -->
+        <div id="schedule-wrap-{PLAYER_ID}" class="schedule-wrap">
+            <h3> {SCHEDULE} </h3>
+            <div id="schedule-{PLAYER_ID}"></div>
+        </div>
+        <!-- END schedule -->
     </div>
 </div>  
 

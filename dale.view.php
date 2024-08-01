@@ -62,6 +62,23 @@ class view_dale_dale extends game_view
             }
         }
 
+        // Your schedule
+        $this->page->begin_block($template, "schedule");
+        $this->page->insert_block("schedule", array (
+            "PLAYER_ID" => $current_player,
+            "SCHEDULE" => "Your Schedule",
+        ));
+
+        // Other players' schedules
+        foreach ($players as $player) {
+            if ($player['player_id'] != $current_player) {
+                $this->page->insert_block("schedule", array(
+                    "PLAYER_ID" => $player['player_id'],
+                    "SCHEDULE" => "Opponent's Schedule",
+                ));
+            }
+        }
+
         //Other variables
         $this->tpl['MARKET'] = $this->_("Market");
         $this->tpl['YOUR_HAND'] = $this->_("Your Hand");

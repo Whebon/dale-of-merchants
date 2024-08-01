@@ -1,7 +1,9 @@
-import Gamegui = require('ebg/core/gamegui');
+//import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
+
+type Gamegui = any;
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -44,14 +46,6 @@ export class CardRow implements CardSlotManager {
         this.slots.push(new CardSlot(this, pos, div));
         this.insertCard(card, pos, from);
         console.log(`Caller: inserting card at position ${pos}`)
-
-        //TODO: Move coloring out of [CardRow], and into a [Schedule <: CardRow] class
-        const color = this.page.gamedatas.players[player_id ?? this.page.player_id]?.color ?? 'white';
-        const cardDiv = this.slots[pos]!.card_div;
-        cardDiv.setAttribute('style', cardDiv.getAttribute('style') + `;;
-            background-blend-mode: overlay;
-            background-color: #${color}40;
-        `)
     }
 
     /**
