@@ -34,15 +34,20 @@
     </div>
 </div>
 
-<div id="myhand-wrap" class="whiteblock">
-    <h3> {YOUR_HAND} </h3>
-    <div id="myhand"></div>
+<div class="whiteblock">
+    <div class="horizontal-flex">
+        <div class="myhand-wrap">
+            <h3> {YOUR_HAND} </h3>
+            <div id="myhand"></div>
+        </div> 
+        <div id="schedule"></div>
+    </div>
 </div>  
 
 <!-- BEGIN stall -->
 <div class="whiteblock">
     <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {BOARD} </h3>
-    <div style="display:flex; width: 100%;">
+    <div class="horizontal-flex">
         <div id="discard-{PLAYER_ID}" class="pile-container"></div>
         <div id="deck-{PLAYER_ID}" class="pile-container"></div>
         <div class="stall-wrap">

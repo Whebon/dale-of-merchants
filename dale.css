@@ -61,6 +61,19 @@
   position: relative;
 }
 
+.horizontal-flex {
+  display: flex;
+  width: 100%;
+}
+
+.myhand-wrap {
+  flex: 1 1;
+}
+
+#schedule {
+  flex: 0 1;
+}
+
 .stall-wrap {
   display: flex;
   flex-direction: column;
@@ -129,6 +142,18 @@
 }
 .pile-container .pile {
   position: relative;
+}
+
+.hidden {
+  display: none;
+}
+
+.card-row-container {
+  display: flex;
+}
+
+.card-row-slot {
+  margin-left: 5px;
 }
 
 .card-tooltip .text {

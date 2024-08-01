@@ -66,6 +66,19 @@
 	position: relative;
 }
 
+.horizontal-flex {
+	display:flex; 
+	width: 100%;
+}
+
+.myhand-wrap {
+	flex: 1 1;
+}
+
+#schedule {
+	flex: 0 1;
+}
+
 .stall-wrap {
 	display: flex;
 	flex-direction: column;
@@ -154,6 +167,28 @@
 		position: relative;
 	}
 }
+
+.hidden {
+	display: none;
+}
+
+.card-row-container {
+	display: flex;
+}
+
+.card-row-slot {
+	margin-left: 5px;
+}
+
+//TODO: can be safely deleted
+// .schedule-slot {
+// 	background-color: white;
+// 	margin-left: 5px;
+// 	border-radius: 10px;
+// 	.card {
+// 		opacity: 0.8;
+// 	}
+// }
 
 .card-tooltip {
 	.text {

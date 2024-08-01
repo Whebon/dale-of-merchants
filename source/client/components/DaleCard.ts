@@ -97,7 +97,7 @@ export class DaleCard {
         if (this.id == 0) return; //card back doesn't have a tooltip
         const parent = $(tooltip_parent_id)
         if (!parent) {
-            throw new Error(`DomElement with id '$tooltip_parent_id' does not exist. Cannot add a tooltip to non-existing parent.`)
+            throw new Error(`DomElement with id '${tooltip_parent_id}' does not exist. Cannot add a tooltip to non-existing parent.`)
         }
         const tooltip = new dijit.Tooltip({
             connectId: [tooltip_parent_id],

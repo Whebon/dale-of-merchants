@@ -18,6 +18,14 @@ declare global {
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
+		'scheduleTechnique': {
+			player_id: number
+			card: DbCard
+		}
+		'resolveTechnique': {
+			player_id: number
+			card: DbCard
+		}
 		'debugClient': {
 			arg: string
 			msg: string
@@ -101,6 +109,10 @@ declare global {
 		'deckSizes': {
 			"market": number
 			[player_id: number]: number
+		}
+
+		'schedules': {
+			[player_id: number]: {[card_id: number]: DbCard}
 		}
 
 		'stalls': {

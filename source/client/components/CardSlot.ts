@@ -81,15 +81,25 @@ export class CardSlot {
     * Insert a card in the slot. If there already was one, the previous card is removed.
     * @param card card to put in the slot.
     * @param from (optional) animate the card from the provided location
+    * @param callback (optional) requires `from`. Callback function to execute upon arival
     */
-    public insertCard(card: DaleCard, from?: HTMLElement | string): void {
+    public insertCard(card: DaleCard, from?: HTMLElement | string, callback?: (node: HTMLElement)=>void): void {
+        console.log(`Callee: inserting card at position ${this.pos}`)
         this.removeCard();
         const cardDiv = card.toDiv(this.id);
         this._container.appendChild(cardDiv);
         this._card = card;
         if (from) {
             this.parent.page.placeOnObject(cardDiv, from);
-            this.parent.page.slideToObject(cardDiv, this._container).play();
+            const animSlide = this.parent.page.slideToObject(cardDiv, this._container);
+            if (callback) {
+                const animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: callback });
+                const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
+                anim.play();
+            }
+            else {
+                animSlide.play();
+            }
         }
     }
 
@@ -109,6 +119,14 @@ export class CardSlot {
             return removedCard;
         }
         return undefined;
+    }
+
+    /**
+     * Delete the entire slot.
+     */
+    public remove() {
+        this.removeCard();
+        this._container.remove();
     }
 
     /**

@@ -23,6 +23,7 @@ import { Pile } from './components/Pile';
 import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
+import { CardRow } from './components/CardRow'
 import { DbCard } from './components/types/DbCard';
 
 /** The root for all of your game code. */
@@ -62,7 +63,10 @@ class Dale extends Gamegui
 	market: MarketBoard | null = null;
 
 	/** Cards in this client's player hand */
-	myHand: DaleStock = new DaleStock()
+	myHand: DaleStock = new DaleStock();
+
+	/** Cards in all schedules */
+	schedule: CardRow = new CardRow(this, 'schedule', 'Schedule');
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -133,6 +137,14 @@ class Dale extends Gamegui
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
 		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
+
+		//initialize the schedule
+		for (let player_id in gamedatas.schedules) {
+			for (let card_id in gamedatas.schedules[player_id]) {
+				const card = gamedatas.schedules[+player_id]![+card_id]!;
+				this.schedule.append(DaleCard.of(card), +player_id);
+			}
+		}
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -321,7 +333,6 @@ class Dale extends Gamegui
 		this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
 	}
 	
-
 	///////////////////////////////////////////////////
 	//// Player's action
 	
@@ -361,6 +372,11 @@ class Dale extends Gamegui
 				}
 				break;
 		}
+	}
+	
+	onScheduleSelectionChanged() {
+		//should not be possible at the moment
+		console.log("You click on a card in the... schedule...?");
 	}
 
 	onHandSelectionChanged() {
@@ -474,6 +490,8 @@ class Dale extends Gamegui
 		console.log( 'notifications subscriptions setup2' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
+			['scheduleTechnique', 500],
+			['resolveTechnique', 500],
 			['buildStack', 1500],
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 500],
@@ -516,6 +534,31 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
+		if (notif.args.player_id == this.player_id) {
+			//animate from my hand
+			const card_id = +notif.args.card.id;
+			if ($('myhand_item_' + card_id)) {
+				this.schedule.append(DaleCard.of(notif.args.card), notif.args.player_id, 'myhand_item_' + card_id);
+				this.myHand.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				throw new Error(`Card ${card_id} does not exist in my hand`);
+			}
+		}
+		else {
+			//animate from player board
+			this.schedule.append(DaleCard.of(notif.args.card), notif.args.player_id, 'overall_player_board_'+notif.args.player_id);
+		}
+	}
+
+	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
+		const card = DaleCard.of(notif.args.card);
+		const from = this.schedule.getHTMLId(card);
+		this.playerDiscards[notif.args.player_id]!.push(card, from);
+		this.schedule.remove(card);
+	}
 
 	notif_buildStack(notif: NotifAs<'buildStack'>) {
 		console.log("notif_buildStack");

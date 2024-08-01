@@ -155,8 +155,8 @@ class Dale extends DaleTableBasic
         $current_player_id = $this->getCurrentPlayerId();
 
         //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleDeck will not work as intended)
-        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4) {
-            throw new AssertionError("DECK, DISCARD and HAND prefixes must be of length 4");
+        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(SCHEDULE) != 4) {
+            throw new AssertionError("DECK, DISCARD, HAND, STALL and SCHEDULE prefixes must be of length 4");
         }
     
         // Get information about players
@@ -184,6 +184,11 @@ class Dale extends DaleTableBasic
         //get stalls
         foreach ( $players as $player_id => $player ) {
             $result['stalls'][$player_id] = $this->cards->getCardsInLocation(STALL.$player_id, null, 'location_arg');
+        }
+
+        //get schedules
+        foreach ( $players as $player_id => $player ) {
+            $result['schedules'][$player_id] = $this->cards->getCardsInLocation(SCHEDULE.$player_id, null, 'location_arg');
         }
 
         //other
@@ -464,6 +469,46 @@ class Dale extends DaleTableBasic
         In this space, you can put debugging tools
     */
 
+    /**
+     * Schedule a card from hand for a player and notify all players. 
+     * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
+     * @param string $player_id player to schedule a card for
+     * @param array $dbcard card to be scheduled
+     */
+    function scheduleCard(string $player_id, array $dbcard){
+        $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
+        $this->notifyAllPlayers('scheduleTechnique', clienttranslate('${player_name} schedules a ${card_name}'), array(
+            'player_id' => $player_id,
+            'player_name' => $this->getPlayerNameById($player_id),
+            'card_name' => $this->getCardName($dbcard),
+            'card' => $dbcard,
+        ));
+    }
+
+    /**
+     * Discard a scheduled card and notify all players.
+     * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule.
+     * @param mixed $player_id id of the owner of the scheduled card
+     * @param array $card currently scheduled card
+     */
+    function fullyResolveCard(string $player_id, array $dbcard){
+        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
+        $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} FULLY resolves ${card_name}'), array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($dbcard),
+            'card' => $dbcard,
+        ));
+    }
+
+    function testSchedule() {
+        $player_id = $this->getCurrentPlayerId();
+        $cards = $this->spawn("Swift");
+        $card = reset($cards);
+        $this->scheduleCard($player_id, $card);
+        $this->fullyResolveCard($player_id, $card);
+    }
+
     function spawnStall(int $pos, string $name = "emptychest") {
         //spawn a card in a stall position
         $player_id = $this->getCurrentPlayerId();
@@ -482,13 +527,27 @@ class Dale extends DaleTableBasic
         ));
     }
 
+    function destroySchedule() {
+        //requires refresh
+        $players = $this->loadPlayersBasicInfos();
+        foreach ( $players as $player_id => $player ) {
+            $this->cards->moveAllCardsInLocation(SCHEDULE.$player_id, 'destroyed');
+        }   
+    }
+
+    function destroyHand() {
+        //requires refresh
+        $player_id = $this->getCurrentPlayerId();
+        $this->cards->moveAllCardsInLocation(HAND.$player_id, 'destroyed');
+    }
+
     function destroyDeck() {
         //requires refresh
         $player_id = $this->getCurrentPlayerId();
         $this->cards->moveAllCardsInLocation(DECK.$player_id, 'destroyed');
     }
 
-    function destroyAllCards() {
+    function destroyAll() {
         //requires refresh
         $location_dict = $this->cards->countCardsInLocations();
         foreach($location_dict as $location => $count ) {
@@ -638,6 +697,11 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $type_id = $this->getTypeId($card);
+        if ($this->card_types[$type_id]['playable'] == false) {
+            throw new BgaUserException("That card is not playable!");
+        }
+
+        $this->scheduleCard($player_id, $card);
         switch($type_id) {
             case CT_SWIFTBROKER:
                 break;
