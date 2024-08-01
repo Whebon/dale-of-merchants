@@ -471,7 +471,6 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
             return this._card != undefined;
         };
         CardSlot.prototype.insertCard = function (card, from, callback) {
-            console.log("Callee: inserting card at position ".concat(this.pos));
             this.removeCard();
             var cardDiv = card.toDiv(this.id);
             this._container.appendChild(cardDiv);

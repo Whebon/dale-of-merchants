@@ -84,7 +84,6 @@ export class CardSlot {
     * @param callback (optional) requires `from`. Callback function to execute upon arival
     */
     public insertCard(card: DaleCard, from?: HTMLElement | string, callback?: (node: HTMLElement)=>void): void {
-        console.log(`Callee: inserting card at position ${this.pos}`)
         this.removeCard();
         const cardDiv = card.toDiv(this.id);
         this._container.appendChild(cardDiv);
