@@ -290,6 +290,72 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * @param mixed $player_id
+     * @param array $hand_cards array of dbcards that are currently in the player's hand
+     * @return int maximum hand size
+     */
+    function getMaximumHandSize($player_id, array $hand_cards): int {
+        return 5 + $this->countTypeId($hand_cards, CT_COOKIES);
+    }
+
+    /**
+     * Refills your hand to the maximum hand size.
+    */
+    function refillHand() {
+        $player_id = $this->getActivePlayerId();
+        $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+        $maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
+        $new_hand_cards = array();
+        while (count($hand_cards) < $maximum_hand_size) {
+            //draw cards from deck
+            $nbr = $maximum_hand_size - count($hand_cards);
+            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
+            $new_hand_cards = array_merge($new_hand_cards, $cards);
+            $hand_cards = array_merge($hand_cards, $cards);
+            
+            //recompute the maximum hand size
+            $new_maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
+            if ($maximum_hand_size == $new_maximum_hand_size) {
+                break;
+            }
+            $maximum_hand_size = $new_maximum_hand_size;
+        }
+
+        //notify players about cookies
+        $number_of_cookies = $this->countTypeId($hand_cards, CT_COOKIES);
+        if ($number_of_cookies > 0) {
+            $this->notifyAllPlayers('message', clienttranslate('Cookies: ${player_name} increases their hand size by ${nbr}'), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "nbr" => $number_of_cookies
+            ));
+        }
+
+        //notify about the new cards from deck
+        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "nbr" => count($new_hand_cards),
+            "_private" => array(
+                "cards" => $new_hand_cards
+            )
+        ));
+
+        //draw missing cards from junk reserve
+        $nbr_junk_cards = $maximum_hand_size - count($hand_cards);
+        if ($nbr_junk_cards > 0) {
+            $junk_cards = $this->cards->getJunk($nbr_junk_cards);
+            $junk_ids = array_keys($junk_cards);
+            $this->cards->moveCards($junk_ids, HAND.$player_id);
+            $this->notifyAllPlayers('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and receives ${nbr} junk cards'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "cards" => $junk_cards,
+                "nbr" => $nbr_junk_cards,
+            ));
+        }
+    }
+
+    /**
      * Fills all the empty slots in the market
      * @param bool $move if true, first move all cards to the right, then refillMarket
     */
@@ -343,6 +409,35 @@ class Dale extends DaleTableBasic
                 "cards" => $new_cards
             ));
         }
+    }
+
+    /**
+     * @param array $dbcards array of dbcards to scan
+     * @param string $card_type effective card type to look for
+     * @return boolean true if the card_type was found
+     */
+    function containsTypeId(array $dbcards, int $card_type): int {
+        foreach ($dbcards as $dbcard) {
+            if ($this->getTypeId($dbcard) == $card_type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param array $dbcards array of dbcards to scan
+     * @param string $card_type effective card type to look for
+     * @return int number of occurrences
+     */
+    function countTypeId(array $dbcards, int $card_type): int {
+        $count = 0;
+        foreach ($dbcards as $dbcard) {
+            if ($this->getTypeId($dbcard) == $card_type) {
+                $count += 1;
+            }
+        }
+        return $count;
     }
 
     /**
@@ -984,37 +1079,7 @@ class Dale extends DaleTableBasic
         //aka the "clean-up phase"
 
         //1. fill your hand to the maximum hand size
-        $player_id = $this->getActivePlayerId();
-        $hand_size = $this->cards->countCardsInLocation(HAND.$player_id);
-        $maximum_hand_size = 5;
-        $nbr = max(0, $maximum_hand_size - $hand_size);
-        if ($nbr > 0) {
-            //draw cards from deck
-            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
-            $nbr_from_deck = count($cards);
-            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
-                "player_id" => $player_id,
-                "player_name" => $this->getPlayerNameById($player_id),
-                "nbr" => $nbr_from_deck,
-                "_private" => array(
-                    "cards" => $cards
-                )
-            ));
-
-            //draw cards from junk reserve
-            $nbr_junk_cards = $nbr - $nbr_from_deck;
-            if ($nbr_junk_cards > 0) {
-                $junk_cards = $this->cards->getJunk($nbr_junk_cards);
-                $junk_ids = array_keys($junk_cards);
-                $this->cards->moveCards($junk_ids, HAND.$player_id);
-                $this->notifyAllPlayers('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and receives ${nbr} junk cards'), array(
-                    "player_id" => $player_id,
-                    "player_name" => $this->getPlayerNameById($player_id),
-                    "cards" => $junk_cards,
-                    "nbr" => count($junk_cards),
-                ));
-            }
-        }
+        $this->refillHand();
 
         //2. fill empty market slots
         $this->refillMarket(true);
