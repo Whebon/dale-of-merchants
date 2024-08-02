@@ -138,6 +138,7 @@ class Dale extends Gamegui
 			let card = gamedatas.hand[i]!;
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
+		this.myHand.setSelectionMode(0);
 		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
 
 		//initialize the temporary zone
@@ -218,6 +219,9 @@ class Dale extends Gamegui
 			case 'shatteredRelic':
 				this.myHand.setSelectionMode(1);
 				break;
+			case 'spyglass':
+				this.myTemporary.setSelectionMode(2);
+				break;
 		}
 	}
 
@@ -248,6 +252,9 @@ class Dale extends Gamegui
 				break;
 			case 'shatteredRelic':
 				this.myHand.setSelectionMode(0);
+				break;
+			case 'spyglass':
+				this.myTemporary.setSelectionMode(0);
 				break;
 		}
 	}
@@ -284,6 +291,9 @@ class Dale extends Gamegui
 				break;
 			case 'shatteredRelic':
 				this.addActionButtonCancel();
+				break;
+			case 'spyglass':
+				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
 				break;
 		}
 	}
@@ -559,6 +569,19 @@ class Dale extends Gamegui
 		}
 	}
 
+	onSpyglass() {
+		console.log("Sending "+this.arrayToNumberList(this.myTemporary.orderedSelectedCardIds));
+		if (this.myTemporary.orderedSelectedCardIds.length == 0) {
+			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
+			return;
+		}
+		if(this.checkAction("actSpyglass")) {
+			this.bgaPerformAction('actSpyglass', {
+				card_ids: this.arrayToNumberList(this.myTemporary.orderedSelectedCardIds)
+			})
+		}
+	}
+
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
 
@@ -583,6 +606,7 @@ class Dale extends Gamegui
 			['throwAwayMultiple', 1000],
 			['discard', 1000],
 			['discardMultiple', 1000],
+			['placeOnDeckMultiple', 1000],
 			['reshuffleDeck', 1500],
 			['message', 1],
 			['debugClient', 1],
@@ -729,7 +753,8 @@ class Dale extends Gamegui
 		if (notif.args._private) {
 			const card_id = +notif.args._private.card.id;
 			if ($(this.myTemporary.control_name+'_item_' + card_id)) {
-				this.myHand.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.mySchedule.control_name+'_item_' + card_id)
+				console.log(notif.args);
+				this.myHand.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.myTemporary.control_name+'_item_' + card_id)
 				this.myTemporary.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -799,13 +824,31 @@ class Dale extends Gamegui
 			delay += 75; //delay indicates that ordering matters
 		}
 	}
+
+	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
+		console.log("placeOnDeckMultiple");
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		if (notif.args._private) {
+			//you GIVE the cards
+			for (let id of notif.args._private.card_ids) {
+				const card = notif.args._private.cards[id]!;
+				const deck = this.playerDecks[notif.args.deck_player_id]!;
+				this.stockToPile(card, stock, deck);
+			}
+		}
+		else {
+			//increase deck size
+			this.myDeck.pushHiddenCards(1);
+		}
+	}
 	
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
+		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
 		if (notif.args._private) {
 			//you drew the cards
 			let card = notif.args._private.card
-			this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
+			stock.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
 			this.myDeck.pop();
 		}
 		else {
@@ -817,11 +860,12 @@ class Dale extends Gamegui
 	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
 		console.log("notif_drawMultiple");
 		console.log(notif.args);
+		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
 		if (notif.args._private) {
 			//you drew the cards
 			for (let i in notif.args._private?.cards) {
 				let card = notif.args._private.cards[i]!;
-				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
+				stock.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
 				this.myDeck.pop();
 			}
 		}

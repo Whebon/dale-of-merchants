@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var dale $game */
+	$game->stFullyResolveTechnique();
 	$game->stNextPlayer();
 }
 
@@ -39,11 +40,13 @@ $machinestates = array(
 		'possibleactions' => ['actRequestMarketAction', 'actPlayCard', 'actRequestStallAction', 'actRequestInventoryAction'],
 		'transitions' => array(
 			'trPurchase' => 31,
+			'trFullyResolveTechnique' => 33,
 			'trBuild' => 35,
 			'trInventory' => 40,
 			'trNextPlayer' => 41,
 			'trSwiftBroker' => 50,
 			'trShatteredRelic' => 51,
+			'trSpyglass' => 52,
 		),
 	),
 	31 => array(
@@ -55,6 +58,16 @@ $machinestates = array(
 		'possibleactions' => ['actPurchase', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
+			'trNextPlayer' => 41,
+		),
+	),
+	33 => array(
+		'name' => 'fullyResolveTechnique',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stFullyResolveTechnique',
+		'transitions' => array(
+			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
 		),
 	),
@@ -105,12 +118,22 @@ $machinestates = array(
 	),
 	51 => array(
 		'name' => 'shatteredRelic',
-		'description' => clienttranslate('Shattered Relic: ${actplayer} must throw away a card'),
-		'descriptionmyturn' => clienttranslate('Shattered Relic: ${you} must throw away a card'),
+		'description' => clienttranslate('Shattered Relic: ${actplayer} must throw away a card from their hand'),
+		'descriptionmyturn' => clienttranslate('Shattered Relic: ${you} must throw away a card from your hand'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actShatteredRelic', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
+			'trSamePlayer' => 30,
+		),
+	),
+	52 => array(
+		'name' => 'spyglass',
+		'description' => clienttranslate('Spyglass: ${actplayer} must choose a card to place into their hand'),
+		'descriptionmyturn' => clienttranslate('Spyglass: ${you} must choose a card to place into your hand'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actSpyglass'],
+		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
 	),

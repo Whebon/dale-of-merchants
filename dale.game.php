@@ -260,6 +260,88 @@ class Dale extends DaleTableBasic
         }
     }
 
+    /**
+     * Place multiple cards on top of a player's deck
+     * @param int $deck_player_id player that will receive the cards on top of the deck
+     * @param string $msg notification message for all players
+     * @param array $card_ids cards_ids to be placed on top in that order
+     * @param array $cards array with exactly the same keys as $card_ids
+     * @param array $unordered_cards (optional) - if provided, first place this collection of unordered cards on top of the deck
+     * @param bool $from_temporary (optional) - default false. If `false`, place from hand. If `true`, place from temporary.
+     */
+    function placeOnDeckMultiple(int $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_temporary = false) {
+        //1: move the unordered cards on top of the deck (no message)
+        $nbr_unordered_cards = 0;
+        if ($unordered_cards) {
+            $nbr_unordered_cards = count($unordered_cards);
+            $unordered_card_ids = array_keys($unordered_cards);
+            $this->cards->moveCardsOnTop($unordered_card_ids, DECK.$deck_player_id);
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array (
+                'player_id' => $this->getActivePlayerId(),
+                'player_name' => $this->getActivePlayerName(),
+                "_private" => array(
+                    'card_ids' => $unordered_card_ids,
+                    'cards' => $unordered_cards,
+                ),
+                'deck_player_id' => $deck_player_id,
+                'nbr' => $nbr_unordered_cards,
+                'from_temporary' => $from_temporary
+            ));
+        }
+        
+        //2: move the ordered cards on top of the deck
+        $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
+        $this->notifyAllPlayers('placeOnDeckMultiple', $msg, array (
+            'player_id' => $this->getActivePlayerId(),
+            'player_name' => $this->getActivePlayerName(),
+            "_private" => array(
+                'card_ids' => $card_ids,
+                'cards' => $cards,
+            ),
+            'deck_player_id' => $deck_player_id,
+            'nbr' => count($cards) + $nbr_unordered_cards,
+            'from_temporary' => $from_temporary
+        ));
+    }
+
+    /**
+     * Discard multiple cards for a player in the given order
+     * @param int $player_id player that will discard the cards from hand
+     * @param string $msg notification message for all players
+     * @param array $card_ids cards_ids to be discarded in that order
+     * @param array $cards array with exactly the same keys as $card_ids
+     * @param array $unordered_cards (optional) - if provided, first discard this collection of unordered cards
+     * @param bool $from_temporary (optional) - default false. If `false`, discard from hand. If `true`, discard from temporary.
+     */
+    function discardMultiple(int $player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_temporary = false) {
+        //1: move the unordered cards to the discard pile (no message)
+        $nbr_unordered_cards = 0;
+        if ($unordered_cards) {
+            $nbr_unordered_cards = count($unordered_cards);
+            $unordered_card_ids = array_keys($unordered_cards);
+            $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.$player_id);
+            $this->notifyAllPlayers('discardMultiple', '', array (
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $unordered_card_ids,
+                'cards' => $unordered_cards,
+                'nbr' => $nbr_unordered_cards,
+                'from_temporary' => $from_temporary
+            ));
+        }
+        
+        //2: move the ordered cards to the discard pile
+        $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
+        $this->notifyAllPlayers('discardMultiple', $msg, array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_ids' => $card_ids,
+            'cards' => $cards,
+            'nbr' => count($cards) + $nbr_unordered_cards,
+            'from_temporary' => $from_temporary
+        ));
+    }
+
 
     /**
      * Callback method for when cards need to be drawn from a location, but the location is empty.
@@ -823,10 +905,95 @@ class Dale extends DaleTableBasic
                 $this->beginToResolveCard($player_id, $card);
                 $this->gamestate->nextState("trShatteredRelic");
                 break;
+            case CT_SPYGLASS:
+                $cards = $this->cards->pickCardsForLocation(3, DECK.$player_id, TEMPORARY.$player_id);
+                $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('Spyglass: ${player_name} draws 3 card'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "nbr" => count($cards),
+                    "_private" => array(
+                        "cards" => $cards
+                    ),
+                    "to_temporary" => true
+                ));
+                $this->beginToResolveCard($player_id, $card);
+                if (count($cards) == 0) {
+                    //skyglass has no effect
+                    $this->gamestate->nextState("trFullyResolveTechnique");
+                }
+                else {
+                    //resolve spyglass
+                    $this->gamestate->nextState("trSpyglass");
+                }
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
         }
+    }
+
+    function actSwiftBroker(string $card_ids) {
+        $this->checkAction("actSwiftBroker");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getCurrentPlayerId();
+
+        //get the non-selected cards and selected cards
+        $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+
+        //discard all
+        $this->discardMultiple(
+            $player_id, 
+            clienttranslate('Swift Broker: ${player_name} discards their hand'),
+            $card_ids, 
+            $selected_cards, 
+            $non_selected_cards
+        );
+        
+
+        //TODO: safely delete
+        // //move the non-selected cards to the discard pile (ordering doesn't matter)
+        // $non_selected_card_ids = array_keys($non_selected_cards);
+        // $this->cards->moveCardsOnTop($non_selected_card_ids, DISCARD.$player_id);
+        // $this->notifyAllPlayers('discardMultiple', '', array (
+        //     'player_id' => $player_id,
+        //     'player_name' => $this->getActivePlayerName(),
+        //     'card_ids' => $non_selected_card_ids,
+        //     'cards' => $non_selected_cards,
+        //     'nbr' => count($non_selected_cards)
+        // ));
+
+        // //move the selected cards to the discard pile (ordering matters)
+        // $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
+        // $nbr = count($card_ids);
+        // $this->notifyAllPlayers('discardMultiple', clienttranslate('Swift Broker: ${player_name} discards their hand'), array (
+        //     'player_id' => $player_id,
+        //     'player_name' => $this->getActivePlayerName(),
+        //     'card_ids' => $card_ids,
+        //     'cards' => $selected_cards,
+        //     'nbr' => count($selected_cards)
+        // ));
+
+        //draw an equal amount of new cards
+        $nbr = count($selected_cards) + count($non_selected_cards);
+        $new_cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
+        if ($nbr != count($new_cards)) {
+            throw new Error("Swift Broker Invariant Exception: unable to pick enough cards from deck, even though this is guaranteed to be possible");
+        }
+        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "nbr" => $nbr,
+            "_private" => array(
+                "cards" => $new_cards
+            )
+        ));
+        
+        $transition = $this->fullyResolveCard($player_id);
+        $this->gamestate->nextState($transition);
     }
 
     function actShatteredRelic($card_id) {
@@ -853,6 +1020,51 @@ class Dale extends DaleTableBasic
                 "card" => $card
             )
         ));
+
+        $transition = $this->fullyResolveCard($player_id);
+        $this->gamestate->nextState($transition);
+    }
+
+    function actSpyglass($card_ids) {
+        $this->checkAction("actSpyglass");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+
+        //get the card to draw (first card from the card_ids array)
+        if (count($card_ids) == 0) {
+            throw new BgaUserException("You must select at least 1 card to place into your hand");
+        }
+        $draw_card_id = array_shift($card_ids);
+        $draw_card = $this->cards->getCardFromLocation($draw_card_id, TEMPORARY.$player_id);
+
+        //get the non-selected cards and selected cards to discard
+        $non_selected_cards = $this->cards->getCardsInLocation(TEMPORARY.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, TEMPORARY.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+        unset($non_selected_cards[$draw_card_id]);
+
+        //TODO !!!!!!!!!!!!!!! BUG WITH THIS NOTIFICATION!
+        //1. place the selected card into the hand
+        $this->cards->moveCard($draw_card_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('temporaryToHand', clienttranslate('Spyglass: ${player_name} places 1 card into their hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "_private" => array(
+                "card" => $draw_card
+            )
+        ));
+
+        //2. place the rest on top of the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Spyglass: ${player_name} places ${nbr} cards on top of their deck'),
+            $card_ids, 
+            $selected_cards, 
+            $non_selected_cards,
+            true
+        );
 
         $transition = $this->fullyResolveCard($player_id);
         $this->gamestate->nextState($transition);
@@ -955,7 +1167,7 @@ class Dale extends DaleTableBasic
     function actInventoryAction(string $card_ids) {
         $this->checkAction("actInventoryAction");
         $card_ids = $this->numberListToArray($card_ids);
-        $player_id = self::getCurrentPlayerId();
+        $player_id = $this->getActivePlayerId();
 
         //verify that these cards are actually in the player's hand
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
@@ -974,59 +1186,6 @@ class Dale extends DaleTableBasic
         
         
         $this->gamestate->nextState("trNextPlayer");
-    }
-
-    function actSwiftBroker(string $card_ids) {
-        $this->checkAction("actSwiftBroker");
-        $card_ids = $this->numberListToArray($card_ids);
-        $player_id = self::getCurrentPlayerId();
-
-        //get the non-selected cards and selected cards
-        $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
-        $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
-        foreach ($selected_cards as $card_id => $card) {
-            unset($non_selected_cards[$card_id]);
-        }
-
-        //move the non-selected cards to the discard pile (ordering doesn't matter)
-        $non_selected_card_ids = array_keys($non_selected_cards);
-        $this->cards->moveCardsOnTop($non_selected_card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discardMultiple', '', array (
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_ids' => $non_selected_card_ids,
-            'cards' => $non_selected_cards,
-            'nbr' => count($non_selected_cards)
-        ));
-
-        //move the selected cards to the discard pile (ordering matters)
-        $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
-        $nbr = count($card_ids);
-        $this->notifyAllPlayers('discardMultiple', clienttranslate('Swift Broker: ${player_name} discards their hand'), array (
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_ids' => $card_ids,
-            'cards' => $selected_cards,
-            'nbr' => count($selected_cards)
-        ));
-
-        //draw an equal amount of new cards
-        $nbr = count($selected_cards) + count($non_selected_cards);
-        $new_cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
-        if ($nbr != count($new_cards)) {
-            throw new Error("Swift Broker Invariant Exception: unable to pick enough cards from deck, even though this is guaranteed to be possible");
-        }
-        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameById($player_id),
-            "nbr" => $nbr,
-            "_private" => array(
-                "cards" => $new_cards
-            )
-        ));
-        
-        $transition = $this->fullyResolveCard($player_id);
-        $this->gamestate->nextState($transition);
     }
 
     
@@ -1086,6 +1245,13 @@ class Dale extends DaleTableBasic
         The action method of state X is called everytime the current game state is set to X.
     */
 
+    function stFullyResolveTechnique() {
+        //a technique fizzled and needs to be resolved without any effects
+        $player_id = $this->getActivePlayerId();
+        $transition = $this->fullyResolveCard($player_id);
+        $this->gamestate->nextState($transition);
+    }
+
     function stNextPlayer() {
         //aka the "clean-up phase"
 
@@ -1100,19 +1266,7 @@ class Dale extends DaleTableBasic
         $this->giveExtraTime($next_player_id);
         $this->gamestate->nextState("trNextPlayer");
     }
-    
-    /*
-    
-    Example for game state "MyGameState":
 
-    function stMyGameState()
-    {
-        // Do some stuff ...
-        
-        // (very often) go to another gamestate
-        $this->gamestate->nextState( 'some_gamestate_transition' );
-    }    
-    */
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie

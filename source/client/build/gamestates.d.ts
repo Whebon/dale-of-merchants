@@ -40,11 +40,13 @@ interface GameStates {
 		},
 		'transitions': {
 			'trPurchase': 31,
+			'trFullyResolveTechnique': 33,
 			'trBuild': 35,
 			'trInventory': 40,
 			'trNextPlayer': 41,
 			'trSwiftBroker': 50,
 			'trShatteredRelic': 51,
+			'trSpyglass': 52,
 		},
 	},
 	31: {
@@ -69,6 +71,16 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCancel': 30,
+			'trNextPlayer': 41,
+		},
+	},
+	33: {
+		'name': 'fullyResolveTechnique',
+		'description': '',
+		'type': 'game',
+		'action': 'stFullyResolveTechnique',
+		'transitions': {
+			'trSamePlayer': 30,
 			'trNextPlayer': 41,
 		},
 	},
@@ -140,8 +152,8 @@ interface GameStates {
 	},
 	51: {
 		'name': 'shatteredRelic',
-		'description': 'Shattered Relic: ${actplayer} must throw away a card',
-		'descriptionmyturn': 'Shattered Relic: ${you} must throw away a card',
+		'description': 'Shattered Relic: ${actplayer} must throw away a card from their hand',
+		'descriptionmyturn': 'Shattered Relic: ${you} must throw away a card from your hand',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actShatteredRelic': [{
@@ -153,6 +165,22 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCancel': 30,
+			'trSamePlayer': 30,
+		},
+	},
+	52: {
+		'name': 'spyglass',
+		'description': 'Spyglass: ${actplayer} must choose a card to place into their hand',
+		'descriptionmyturn': 'Spyglass: ${you} must choose a card to place into your hand',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actSpyglass': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
 			'trSamePlayer': 30,
 		},
 	},

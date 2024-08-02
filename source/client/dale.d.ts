@@ -79,11 +79,22 @@ declare global {
 			discard_id?: number //by default, this is the same as player_id
 			from_temporary?: boolean
 		}
+		'placeOnDeckMultiple': {
+			player_id: number
+			_private?: {
+				card_ids: number[] //because ordering matters
+				cards: {[card_id: number]: DbCard}
+			}
+			deck_player_id: number
+			nbr: number
+			from_temporary?: boolean
+		}
 		'draw': {
 			player_id: number 
 			_private?: {
 				card: DbCard
 			}
+			to_temporary?: boolean
 		}
 		'drawMultiple': {
 			player_id: number 
@@ -91,6 +102,7 @@ declare global {
 			_private?: {
 				cards: {[card_id: number]: DbCard}
 			}
+			to_temporary?: boolean
 		}
 		'temporaryToHand': {
 			player_id: number 

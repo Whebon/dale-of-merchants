@@ -127,4 +127,15 @@ class action_dale extends APP_GameAction
 		$this->game->actShatteredRelic( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actSpyglass()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actSpyglass( $card_ids );
+		self::ajaxResponse();
+	}
 }

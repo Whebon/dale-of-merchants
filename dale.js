@@ -848,6 +848,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card = gamedatas.hand[i];
                 this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(card));
             }
+            this.myHand.setSelectionMode(0);
             dojo.connect(this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged');
             this.myTemporary.init(this, $('mytemporary'), $('mytemporary-wrap'));
             for (var i in gamedatas.temporary) {
@@ -912,6 +913,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'shatteredRelic':
                     this.myHand.setSelectionMode(1);
                     break;
+                case 'spyglass':
+                    this.myTemporary.setSelectionMode(2);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -937,6 +941,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'shatteredRelic':
                     this.myHand.setSelectionMode(0);
+                    break;
+                case 'spyglass':
+                    this.myTemporary.setSelectionMode(0);
                     break;
             }
         };
@@ -966,6 +973,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'shatteredRelic':
                     this.addActionButtonCancel();
+                    break;
+                case 'spyglass':
+                    this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
                     break;
             }
         };
@@ -1119,6 +1129,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 });
             }
         };
+        Dale.prototype.onSpyglass = function () {
+            console.log("Sending " + this.arrayToNumberList(this.myTemporary.orderedSelectedCardIds));
+            if (this.myTemporary.orderedSelectedCardIds.length == 0) {
+                this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
+                return;
+            }
+            if (this.checkAction("actSpyglass")) {
+                this.bgaPerformAction('actSpyglass', {
+                    card_ids: this.arrayToNumberList(this.myTemporary.orderedSelectedCardIds)
+                });
+            }
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup2');
@@ -1138,6 +1160,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['throwAwayMultiple', 1000],
                 ['discard', 1000],
                 ['discardMultiple', 1000],
+                ['placeOnDeckMultiple', 1000],
                 ['reshuffleDeck', 1500],
                 ['message', 1],
                 ['debugClient', 1],
@@ -1242,7 +1265,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (notif.args._private) {
                 var card_id = +notif.args._private.card.id;
                 if ($(this.myTemporary.control_name + '_item_' + card_id)) {
-                    this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(notif.args._private.card), this.mySchedule.control_name + '_item_' + card_id);
+                    console.log(notif.args);
+                    this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(notif.args._private.card), this.myTemporary.control_name + '_item_' + card_id);
                     this.myTemporary.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -1308,11 +1332,27 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 delay += 75;
             }
         };
+        Dale.prototype.notif_placeOnDeckMultiple = function (notif) {
+            console.log("placeOnDeckMultiple");
+            var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+            if (notif.args._private) {
+                for (var _i = 0, _a = notif.args._private.card_ids; _i < _a.length; _i++) {
+                    var id = _a[_i];
+                    var card = notif.args._private.cards[id];
+                    var deck = this.playerDecks[notif.args.deck_player_id];
+                    this.stockToPile(card, stock, deck);
+                }
+            }
+            else {
+                this.myDeck.pushHiddenCards(1);
+            }
+        };
         Dale.prototype.notif_draw = function (notif) {
             console.log("notif_draw");
+            var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
             if (notif.args._private) {
                 var card = notif.args._private.card;
-                this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(card), this.myDeck.placeholderHTML);
+                stock.addDaleCardToStock(DaleCard_3.DaleCard.of(card), this.myDeck.placeholderHTML);
                 this.myDeck.pop();
             }
             else {
@@ -1323,10 +1363,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             console.log("notif_drawMultiple");
             console.log(notif.args);
+            var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
             if (notif.args._private) {
                 for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
                     var card = notif.args._private.cards[i];
-                    this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(card), this.myDeck.placeholderHTML);
+                    stock.addDaleCardToStock(DaleCard_3.DaleCard.of(card), this.myDeck.placeholderHTML);
                     this.myDeck.pop();
                 }
             }
