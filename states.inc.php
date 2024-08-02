@@ -112,8 +112,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actSwiftBroker', 'actCancel'],
 		'transitions' => array(
-			'trCancel' => 30,
-			'trSamePlayer' => 30,
+			'trFullyResolveTechnique' => 33,
 		),
 	),
 	51 => array(
@@ -123,8 +122,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actShatteredRelic', 'actCancel'],
 		'transitions' => array(
-			'trCancel' => 30,
-			'trSamePlayer' => 30,
+			'trFullyResolveTechnique' => 33,
 		),
 	),
 	52 => array(
@@ -134,7 +132,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
-			'trSamePlayer' => 30,
+			'trFullyResolveTechnique' => 33,
 		),
 	),
 	99 => array(

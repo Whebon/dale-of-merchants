@@ -291,7 +291,7 @@ class Dale extends DaleTableBasic
         
         //2: move the ordered cards on top of the deck
         $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
-        $this->notifyAllPlayers('placeOnDeckMultiple', $msg, array (
+        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', $msg, array (
             'player_id' => $this->getActivePlayerId(),
             'player_name' => $this->getActivePlayerName(),
             "_private" => array(
@@ -629,7 +629,7 @@ class Dale extends DaleTableBasic
      * Discard the resolved card stored in "resolvingCard" and notify all players. Makes 3 db calls.
      * @param mixed $player_id id of the owner of the scheduled card
      * @param int $ct card that that is expected to resolve at this moment
-     * @return string transition after resolving, either "trSamePlayer" or "trNextPlayer"
+     * @return array dbcard that just resolved
      */
     function fullyResolveCard(string $player_id) {
         //fully resolve the card from the schedule
@@ -646,13 +646,7 @@ class Dale extends DaleTableBasic
             'card' => $dbcard,
         ));
         $this->setGameStateValue("resolvingCard", -1);
-
-        //get the transition
-        $type_id = $this->getTypeId($dbcard);
-        if ($this->card_types[$type_id]["has_plus"]) {
-            return "trSamePlayer";
-        }
-        return "trNextPlayer";
+        return $dbcard;
     }
 
     /**
@@ -992,8 +986,7 @@ class Dale extends DaleTableBasic
             )
         ));
         
-        $transition = $this->fullyResolveCard($player_id);
-        $this->gamestate->nextState($transition);
+        $this->gamestate->nextState("trFullyResolveTechnique");
     }
 
     function actShatteredRelic($card_id) {
@@ -1021,8 +1014,7 @@ class Dale extends DaleTableBasic
             )
         ));
 
-        $transition = $this->fullyResolveCard($player_id);
-        $this->gamestate->nextState($transition);
+        $this->gamestate->nextState("trFullyResolveTechnique");
     }
 
     function actSpyglass($card_ids) {
@@ -1066,8 +1058,7 @@ class Dale extends DaleTableBasic
             true
         );
 
-        $transition = $this->fullyResolveCard($player_id);
-        $this->gamestate->nextState($transition);
+        $this->gamestate->nextState("trFullyResolveTechnique");
     }
 
     function actRequestStallAction() {
@@ -1246,10 +1237,18 @@ class Dale extends DaleTableBasic
     */
 
     function stFullyResolveTechnique() {
-        //a technique fizzled and needs to be resolved without any effects
+        //resolve the current resolvingCard
         $player_id = $this->getActivePlayerId();
-        $transition = $this->fullyResolveCard($player_id);
-        $this->gamestate->nextState($transition);
+        $dbcard = $this->fullyResolveCard($player_id);
+        
+        //decide if the player can go again
+        $type_id = $this->getTypeId($dbcard);
+        if ($this->card_types[$type_id]["has_plus"]) {
+            $this->gamestate->nextState("trSamePlayer");
+        }
+        else {
+            $this->gamestate->nextState("trNextPlayer");
+        }
     }
 
     function stNextPlayer() {

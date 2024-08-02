@@ -146,8 +146,7 @@ interface GameStates {
 			'actCancel': [],
 		},
 		'transitions': {
-			'trCancel': 30,
-			'trSamePlayer': 30,
+			'trFullyResolveTechnique': 33,
 		},
 	},
 	51: {
@@ -164,8 +163,7 @@ interface GameStates {
 			'actCancel': [],
 		},
 		'transitions': {
-			'trCancel': 30,
-			'trSamePlayer': 30,
+			'trFullyResolveTechnique': 33,
 		},
 	},
 	52: {
@@ -181,7 +179,7 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
-			'trSamePlayer': 30,
+			'trFullyResolveTechnique': 33,
 		},
 	},
 	99: {
