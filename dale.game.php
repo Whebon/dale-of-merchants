@@ -151,8 +151,8 @@ class Dale extends DaleTableBasic
         $current_player_id = $this->getCurrentPlayerId();
 
         //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleDeck will not work as intended)
-        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(SCHEDULE) != 4) {
-            throw new AssertionError("DECK, DISCARD, HAND, STALL and SCHEDULE prefixes must be of length 4");
+        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(SCHEDULE) != 4 || strlen(TEMPORARY) != 4) {
+            throw new AssertionError("DECK, DISCARD, HAND, STALL, SCHEDULE and TEMPORARY prefixes must be of length 4");
         }
     
         // Get information about players
@@ -190,6 +190,7 @@ class Dale extends DaleTableBasic
         //other
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
         $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
+        $result['temporary'] = $this->cards->getCardsInLocation(TEMPORARY.$current_player_id);
         
         $result['cardTypes'] = $this->card_types;
   

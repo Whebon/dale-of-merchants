@@ -13,6 +13,7 @@ if (!defined('HAND')) {
     define('DECK', 'deck');
     define('STALL', 'stal');
     define('SCHEDULE', 'sche');
+    define('TEMPORARY', 'temp');
 
     //global variables
     define('MAX_STACK_SIZE', 1000); //must be the same as on the client side

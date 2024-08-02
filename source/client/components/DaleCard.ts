@@ -73,6 +73,10 @@ export class DaleCard {
         return DaleCard.cardTypes[this.type_id]!.animalfolk
     }
 
+    public isJunk(): boolean {
+        return (this.type_id >= 1 && this.type_id <= 5);
+    }
+
     public isPlayable(): boolean {
         return DaleCard.cardTypes[this.type_id]!.playable
     }

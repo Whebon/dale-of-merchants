@@ -25,6 +25,7 @@ import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
 
+
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
@@ -71,6 +72,9 @@ class Dale extends Gamegui
 
 	/** Cards in this client's player hand */
 	myHand: DaleStock = new DaleStock();
+
+	/** Cards in this client's temporary card stock */
+	myTemporary: DaleStock = new DaleStock();
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -135,6 +139,16 @@ class Dale extends Gamegui
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
 		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
+
+		//initialize the temporary zone
+		this.myTemporary.init(this, $('mytemporary')!, $('mytemporary-wrap')!);
+		for (let i in gamedatas.temporary) {
+			const card = gamedatas.temporary[i]!;
+			this.myTemporary.addDaleCardToStock(DaleCard.of(card));
+		}
+		this.myTemporary.setSelectionMode(0);
+		this.myTemporary.autowidth = true;
+		dojo.connect( this.myTemporary, 'onChangeSelection', this, 'onTemporarySelectionChanged' );
 
 		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
@@ -282,36 +296,92 @@ class Dale extends Gamegui
 		script.
 	*/
 
+	//TODO: safely delete this
+	// /**
+	//  * Move a card from my hand to the specified pile
+	//  * @param card card to move
+	//  * @param pile pile to move to
+	//  * @param delay
+	// */
+	// myHandToPile(card: DbCard, pile: Pile, delay: number = 0) {
+	// 	const card_id = card.id;
+	// 	if ($('myhand_item_' + card_id)) {
+	// 		pile.push(new DaleCard(card_id), 'myhand_item_' + card_id, undefined, undefined, delay);
+	// 		this.myHand.removeFromStockByIdNoAnimation(+card_id);
+	// 	}
+	// 	else {
+	// 		throw new Error(`Card ${card_id} does not exist in my hand`);
+	// 	}
+	// }
+
+	//TODO: sately delete this
+	// /**
+	//  * Move a card from any player's hand to the specified pile
+	//  * @param card card to move
+	//  * @param player_id owner of the hand to move from
+	//  * @param pile pile to move to
+	//  * @param delay
+	// */
+	// handToPile(card: DbCard, player_id: number, pile: Pile, delay: number = 0) {
+	// 	this.playerStockToPile(card, this.myHand, player_id, pile, delay);
+	// }
+
 	/**
-	 * Move a card from my hand to the specified pile
+	 * Move a card from the specified stock to the specified pile
 	 * @param card card to move
+	 * @param stock stock to move from
 	 * @param pile pile to move to
 	 * @param delay
 	*/
-	myHandToPile(card: DbCard, pile: Pile, delay: number = 0) {
+	stockToPile(card: DbCard, stock: DaleStock, pile: Pile, delay: number = 0) {
 		const card_id = card.id;
-		if ($('myhand_item_' + card_id)) {
-			pile.push(new DaleCard(card_id), 'myhand_item_' + card_id, undefined, undefined, delay);
-			this.myHand.removeFromStockByIdNoAnimation(+card_id);
+		const item_name = stock.control_name + '_item_' + card_id;
+		if ($(item_name)) {
+			pile.push(new DaleCard(card_id), item_name, undefined, undefined, delay);
+			stock.removeFromStockByIdNoAnimation(+card_id);
 		}
 		else {
-			throw new Error(`Card ${card_id} does not exist in my hand`);
+			throw new Error(`Card ${card_id} does not exist in `+stock.control_name);
 		}
 	}
 
 	/**
-	 * Move a card from any player's hand to the specified pile
+	 * Move a card from the overall player board to the specified pile
 	 * @param card card to move
-	 * @param player_id owner of the hand to move from
+	 * @param player_id specific
 	 * @param pile pile to move to
 	 * @param delay
 	*/
-	anyHandToPile(card: DbCard, player_id: number, pile: Pile, delay: number = 0) {
+	overallPlayerBoardToPile(card: DbCard, player_id: number, pile: Pile, delay: number = 0) {
+		pile.push(DaleCard.of(card), 'overall_player_board_'+player_id);
+	}
+
+	/**
+	 * Move a card from the player-specific stock to the specified pile
+	 * @param card card to move
+	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
+	 * @param player_id owner of the stock
+	 * @param pile pile to move to
+	 * @param delay
+	*/
+	playerStockToPile(card: DbCard, stock: DaleStock, player_id: number, pile: Pile, delay: number = 0) {
 		if (+player_id == this.player_id) {
-			this.myHandToPile(card, pile, delay);
+			this.stockToPile(card, stock, pile, delay);
 		}
 		else {
-			pile.push(DaleCard.of(card), 'overall_player_board_'+player_id);
+			this.overallPlayerBoardToPile(card, player_id, pile);
+		}
+	}
+
+	/**
+	 * Remove a card from a player-specific stock (fade out)
+	 * @param card card to remove from hand
+	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
+	 * @param player_id owner of the hand
+	*/
+	playerStockRemove(card: DbCard, stock: DaleStock, player_id: number){
+		if (+player_id == this.player_id) {
+			stock.removeFromStockById(+card.id);
 		}
 	}
 
@@ -433,6 +503,17 @@ class Dale extends Gamegui
 		}
 	}
 
+	onTemporarySelectionChanged() {
+		let items = this.myHand.getSelectedItems();
+		if (!items[0]) return;
+		const card = new DaleCard(items[0].id);
+		
+		switch(this.gamedatas.gamestate.name) {
+			case null:
+				throw new Error("gamestate.name is null")
+		}
+	}
+
 	onPurchase() {
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
@@ -496,6 +577,7 @@ class Dale extends Gamegui
 			['marketToHand', 1500],
 			['draw', 1000],
 			['drawMultiple', 1000],
+			['temporaryToHand', 1000],
 			['obtainNewJunkInHand', 1000],
 			['throwAway', 1000],
 			['throwAwayMultiple', 1000],
@@ -641,26 +723,60 @@ class Dale extends Gamegui
 			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
 		}
 	}
+
+	notif_temporaryToHand(notif: NotifAs<'temporaryToHand'>) {
+		console.log("notif_temporaryToHand");
+		if (notif.args._private) {
+			const card_id = +notif.args._private.card.id;
+			if ($(this.myTemporary.control_name+'_item_' + card_id)) {
+				this.myHand.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.mySchedule.control_name+'_item_' + card_id)
+				this.myTemporary.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				throw new Error(`Card ${card_id} does not exist in myTemporary.`);
+			}
+		}
+		else {
+			//TODO: increase player hand size
+			return;
+		}
+	}
 	
 	notif_obtainNewJunkInHand(notif: NotifAs<'obtainNewJunkInHand'>) {
-		//other players are not interested in an animation for this
 		if (notif.args.player_id == this.player_id) {
+			//junk to hand
 			for (let i in notif.args.cards) {
 				let card = notif.args.cards[i]!;
 				this.myHand.addDaleCardToStock(DaleCard.of(card), 'overall_player_board_'+notif.args.player_id);
 			}
 		}
+		else {
+			//TODO: increase player hand size
+			return;
+		}
 	}
 
 	notif_throwAway(notif: NotifAs<'throwAway'>) {
-		this.anyHandToPile(notif.args.card, notif.args.player_id, this.marketDiscard);
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		if (DaleCard.of(notif.args.card).isJunk()) {
+			this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
+		}
+		else {
+			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard);
+		}
 	}
 
 	notif_throwAwayMultiple(notif: NotifAs<'throwAwayMultiple'>) {
 		let delay = 0;
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		for (let id of notif.args.card_ids) {
-			let card = notif.args.cards[id]!;
-			this.anyHandToPile(card, notif.args.player_id, this.marketDiscard, delay);
+			const card = notif.args.cards[id]!;
+			if (DaleCard.of(card).isJunk()) {
+				this.playerStockRemove(card, stock, notif.args.player_id);
+			}
+			else {
+				this.playerStockToPile(card, stock, notif.args.player_id, this.marketDiscard, delay);
+			}
 			delay += 75; //delay indicates that ordering matters
 		}
 	}
@@ -668,16 +784,18 @@ class Dale extends Gamegui
 	notif_discard(notif: NotifAs<'discard'>) {
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
-		this.anyHandToPile( notif.args.card, notif.args.player_id, discardPile);
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile);
 	}
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
-			this.anyHandToPile(card, notif.args.player_id, discardPile, delay);
+			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
 			delay += 75; //delay indicates that ordering matters
 		}
 	}

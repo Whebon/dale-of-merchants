@@ -82,6 +82,7 @@ class view_dale_dale extends game_view
         //Other variables
         $this->tpl['MARKET'] = $this->_("Market");
         $this->tpl['YOUR_HAND'] = $this->_("Your Hand");
+        $this->tpl['CARD_CHOICE'] = $this->_("Card Choice");
         $this->tpl['BOARD'] = $this->_("Board");
         $this->tpl['STALL'] = $this->_("Stall");
         $this->tpl['CURRENT_PLAYER_COLOR'] = $players[$current_player]['player_color'];

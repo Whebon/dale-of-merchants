@@ -40,8 +40,12 @@
             <h3> {YOUR_HAND} </h3>
             <div id="myhand"></div>
         </div> 
+        <div id="mytemporary-wrap" class="margin-left-wrap">
+            <h3> {CARD_CHOICE} </h3>
+            <div id="mytemporary"></div>
+        </div>
         <!-- BEGIN schedule -->
-        <div id="schedule-wrap-{PLAYER_ID}" class="schedule-wrap">
+        <div id="schedule-wrap-{PLAYER_ID}" class="margin-left-wrap">
             <h3> {SCHEDULE} </h3>
             <div id="schedule-{PLAYER_ID}"></div>
         </div>

@@ -58,22 +58,26 @@ declare global {
 		'throwAway': {
 			player_id: number 
 			card: DbCard
+			from_temporary?: boolean //by default, throw away from hand. if specified, throw away from temporary instead
 		}
 		'throwAwayMultiple': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
+			from_temporary?: boolean
 		}
 		'discard': {
 			player_id: number 
 			card: DbCard
 			discard_id?: number //by default, this is the same as player_id
+			from_temporary?: boolean
 		}
 		'discardMultiple': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 			discard_id?: number //by default, this is the same as player_id
+			from_temporary?: boolean
 		}
 		'draw': {
 			player_id: number 
@@ -86,6 +90,12 @@ declare global {
 			nbr: number
 			_private?: {
 				cards: {[card_id: number]: DbCard}
+			}
+		}
+		'temporaryToHand': {
+			player_id: number 
+			_private?: {
+				card: DbCard
 			}
 		}
 		'obtainNewJunkInHand': {
@@ -127,6 +137,7 @@ declare global {
 		}
 		
 		'hand': {[card_id: number]: DbCard}
+		'temporary': {[card_id: number]: DbCard}
 		'market': {[card_id: number]: DbCard}
 	}
 
