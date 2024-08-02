@@ -12,6 +12,7 @@ if (!defined('HAND')) {
     define('DISCARD', 'disc');
     define('DECK', 'deck');
     define('STALL', 'stal');
+    define('JUNKRESERVE', 'junk');
     define('SCHEDULE', 'sche');
     define('TEMPORARY', 'temp');
 
@@ -55,7 +56,7 @@ class DaleDeck extends Deck {
      * @return array associative array of $nbr free junk cards from the db
     */
     function getJunk($nbr = 1) {
-        $junk_cards = $this->getCardsInLocation('junk');
+        $junk_cards = $this->getCardsInLocation(JUNKRESERVE);
         $found = count($junk_cards);
         if ($found >= $nbr) {
             //found a sufficient amount of free junk cards, return them
@@ -75,7 +76,7 @@ class DaleDeck extends Deck {
             'type_arg' => CT_JUNK,
             'nbr' => $nbr - $found
         ));
-        $this->createCards($cards, 'junk');
+        $this->createCards($cards, JUNKRESERVE);
         return $this->getJunk($nbr);
     }
 

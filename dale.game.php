@@ -151,8 +151,8 @@ class Dale extends DaleTableBasic
         $current_player_id = $this->getCurrentPlayerId();
 
         //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleDeck will not work as intended)
-        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(SCHEDULE) != 4 || strlen(TEMPORARY) != 4) {
-            throw new AssertionError("DECK, DISCARD, HAND, STALL, SCHEDULE and TEMPORARY prefixes must be of length 4");
+        if (strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(JUNKRESERVE) != 4 || strlen(SCHEDULE) != 4 || strlen(TEMPORARY) != 4) {
+            throw new AssertionError("DECK, DISCARD, HAND, STALL, JUNKRESERVE, SCHEDULE and TEMPORARY prefixes must be of length 4");
         }
     
         // Get information about players
@@ -493,6 +493,15 @@ class Dale extends DaleTableBasic
         return $this->card_types[$type_id]['name'];
     }
 
+
+    /**
+     * Returns true iff the card is a junk card
+     */
+    function isJunk(array $dbcard): bool {
+        $card_id = $dbcard["id"];
+        return ($card_id >= 1) && ($card_id <= 5);
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Resolving functions / Scheduling functions
 ////////////  
@@ -826,7 +835,8 @@ class Dale extends DaleTableBasic
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
 
         //throw away a card
-        $this->cards->moveCardOnTop($card_id, DISCARD.MARKET);
+        $destination = $this->isJunk($card) ? JUNKRESERVE : DISCARD.MARKET;
+        $this->cards->moveCardOnTop($card_id, $destination);
         $this->notifyAllPlayers('throwAway', clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
