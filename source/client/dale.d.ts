@@ -89,6 +89,11 @@ declare global {
 			nbr: number
 			from_temporary?: boolean
 		}
+		'discardToHand': {
+			player_id: number
+			discard_id?: number
+			card: DbCard
+		}
 		'draw': {
 			player_id: number 
 			_private?: {

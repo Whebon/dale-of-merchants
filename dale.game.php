@@ -982,6 +982,20 @@ class Dale extends DaleTableBasic
                 ));
                 $this->gamestate->nextState("trFullyResolveTechnique");
                 break;
+            case CT_FAVORITETOY:
+                $this->beginToResolveCard($player_id, $card);
+                $recovered_card = $this->cards->getCardOnTop(DISCARD.$player_id);
+                if ($recovered_card != null) {
+                    $this->cards->moveCard($recovered_card["id"], HAND.$player_id);
+                    $this->notifyAllPlayers('discardToHand', clienttranslate('Favorite Toy: ${player_name} places their ${card_name} from their discard pile into their hand'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "card_name" => $this->getCardName($recovered_card),
+                        "card" => $recovered_card
+                    ));
+                }
+                $this->gamestate->nextState("trFullyResolveTechnique");
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

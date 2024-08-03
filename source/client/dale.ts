@@ -396,15 +396,32 @@ class Dale extends Gamegui
 	}
 
 	/**
-	 * Move a card from the top of the specified pile to the hand
+	 * Move a card from the top of the specified pile to a stock
 	 * @param card card to move
 	 * @param pile pile to move from
+	 * @param stock stock to move to
 	*/
-	pileToMyHand(card: DbCard, pile: Pile) {
-		//WARNING: UNTESTED & NEVER USED
-		this.myHand.addDaleCardToStock(DaleCard.of(card), pile.placeholderHTML);
+	pileToStock(card: DbCard, pile: Pile, stock: DaleStock) {
+		stock.addDaleCardToStock(DaleCard.of(card), pile.placeholderHTML);
 		if(pile.pop().id != +card.id) {
 			throw new Error(`Card ${+card.id} was not found on top of the pile`);
+		}
+	}
+
+	/**
+	 * Move a card from the top of the specified pile to a player-specific stock
+	 * @param card card to move
+	 * @param pile pile to move from
+	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
+	 * @param player_id owner of the stock
+	*/
+	pileToPlayerStock(card: DbCard, pile: Pile, stock: DaleStock, player_id: number) {
+		if (+player_id == this.player_id) {
+			console.log("TO MY HAND!");
+			this.pileToStock(card, pile, stock);
+		}
+		else {
+			pile.pop('overall_player_board_'+player_id);
 		}
 	}
 
@@ -598,6 +615,7 @@ class Dale extends Gamegui
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 1000],
 			['marketToHand', 1500],
+			['discardToHand', 1000],
 			['draw', 1000],
 			['drawMultiple', 1000],
 			['temporaryToHand', 1000],
@@ -840,6 +858,12 @@ class Dale extends Gamegui
 			//increase deck size
 			this.myDeck.pushHiddenCards(1);
 		}
+	}
+
+	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
+		console.log("notif_discardToHand");
+		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
+		this.pileToPlayerStock(notif.args.card, discardPile, this.myHand, notif.args.player_id);
 	}
 	
 	notif_draw(notif: NotifAs<'draw'>) {

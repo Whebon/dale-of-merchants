@@ -1009,10 +1009,19 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 stock.removeFromStockById(+card.id);
             }
         };
-        Dale.prototype.pileToMyHand = function (card, pile) {
-            this.myHand.addDaleCardToStock(DaleCard_3.DaleCard.of(card), pile.placeholderHTML);
+        Dale.prototype.pileToStock = function (card, pile, stock) {
+            stock.addDaleCardToStock(DaleCard_3.DaleCard.of(card), pile.placeholderHTML);
             if (pile.pop().id != +card.id) {
                 throw new Error("Card ".concat(+card.id, " was not found on top of the pile"));
+            }
+        };
+        Dale.prototype.pileToPlayerStock = function (card, pile, stock, player_id) {
+            if (+player_id == this.player_id) {
+                console.log("TO MY HAND!");
+                this.pileToStock(card, pile, stock);
+            }
+            else {
+                pile.pop('overall_player_board_' + player_id);
             }
         };
         Dale.prototype.arrayToNumberList = function (array) {
@@ -1152,6 +1161,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['fillEmptyMarketSlots', 1],
                 ['marketSlideRight', 1000],
                 ['marketToHand', 1500],
+                ['discardToHand', 1000],
                 ['draw', 1000],
                 ['drawMultiple', 1000],
                 ['temporaryToHand', 1000],
@@ -1346,6 +1356,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else {
                 this.myDeck.pushHiddenCards(1);
             }
+        };
+        Dale.prototype.notif_discardToHand = function (notif) {
+            var _a;
+            console.log("notif_discardToHand");
+            var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : this.player_id];
+            this.pileToPlayerStock(notif.args.card, discardPile, this.myHand, notif.args.player_id);
         };
         Dale.prototype.notif_draw = function (notif) {
             console.log("notif_draw");
