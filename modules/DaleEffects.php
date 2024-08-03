@@ -2,11 +2,6 @@
 
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
-// `effect_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-// `card_id` int(10) unsigned NOT NULL,
-// `type_id` int(11) NOT NULL,
-// `target` int(11) NOT NULL,
-
 /**
  * Card Effect Management
  * 
@@ -18,6 +13,7 @@ class DaleEffects {
 
     function __construct(Table $game) {
         $this->game = $game;
+        $this->loadFromDb();
     }
 
     /**

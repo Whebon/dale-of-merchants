@@ -565,7 +565,8 @@ class Dale extends DaleTableBasic
     */
     function getValue(array $dbcard): int {
         $type_id = $this->getTypeId($dbcard);
-        return $this->card_types[$type_id]['value'];
+        $flashy_show = $this->effects->countEffectsOfTypeId(CT_FLASHYSHOW);
+        return $this->card_types[$type_id]['value'] + $flashy_show;
     }
 
     /**
@@ -973,6 +974,14 @@ class Dale extends DaleTableBasic
                     $this->gamestate->nextState("trSpyglass");
                 }
                 break;
+            case CT_FLASHYSHOW:
+                $this->beginToResolveCard($player_id, $card);
+                $this->effects->insert($card["id"], CT_FLASHYSHOW);
+                $this->notifyAllPlayers('message', clienttranslate('Flashy Show: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                $this->gamestate->nextState("trFullyResolveTechnique");
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -1312,6 +1321,9 @@ class Dale extends DaleTableBasic
 
         //2. fill empty market slots
         $this->refillMarket(true);
+
+        //delete all effects that last until end of turn
+        $this->effects->endTurn();
 
         //activate the next player
         $next_player_id = $this->activeNextPlayer();
