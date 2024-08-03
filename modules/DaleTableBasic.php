@@ -1,7 +1,7 @@
 <?php
 
-require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
-require_once "daledeck/DaleDeck.php";
+require_once "DaleDeck.php";
+require_once "DaleEffects.php";
 
 
 abstract class DaleTableBasic extends Table {

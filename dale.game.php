@@ -23,6 +23,7 @@ require_once "modules/DaleTableBasic.php";
 class Dale extends DaleTableBasic
 {
     var DaleDeck $cards;
+    var DaleEffects $effects;
     var $card_types;
 
     function f($n){
@@ -46,6 +47,7 @@ class Dale extends DaleTableBasic
 
         $this->cards = new DaleDeck($this, "onLocationExhausted");
         $this->cards->init("card");
+        $this->effects = new DaleEffects($this);
 	}
 	
     protected function getGameName( )
@@ -676,6 +678,57 @@ class Dale extends DaleTableBasic
     /*
         In this space, you can put debugging tools
     */
+
+    function testEffects() {
+        foreach (array(false, true) as $reload) { //reloading yes or no should not make a difference
+            $reload_msg = $reload ? " (reload TRUE)" : " (reload FALSE)";
+            $this->effects->endTurn();
+            $target = 33;
+            $this->effects->insert(41, 0);
+            $this->effects->insert(42, 0);
+            if ($reload) $this->effects->loadFromDb();
+            $this->effects->insert(43, 7);
+            $this->effects->insert(44, 0);
+            if ($reload) $this->effects->loadFromDb();
+            $this->effects->insert(101, 7);
+            $this->effects->insert(102, 7);
+            $this->effects->insert(103, 0);
+            $this->effects->updateTargetByCardId(43, $target);
+            if ($reload) $this->effects->loadFromDb();
+
+            $effect = $this->effects->getEffectByCardId(42);
+            if ($effect["target"] != -1) {
+                die("TEST FAILED: getEffectByCardId(42), the default target should be -1".$reload_msg);
+            }
+            $effect = $this->effects->getEffectByCardId(43);
+            if ($effect["target"] != $target) {
+                die("TEST FAILED: updateTargetByCardId(43, target) and getEffectByCardId(43), target not updated".$reload_msg);
+            }
+            $effects = $this->effects->getEffectsByTypeId(7);
+            if (count($effects) != 3) {
+                $actual = count($effects);
+                die("TEST FAILED: getEffectsByTypeId(7), expected 3, actually $actual".$reload_msg);
+            }
+            $count = $this->effects->countEffectsOfTypeId(7);
+            if ($count != 3) {
+                die("TEST FAILED: countEffectsOfTypeId(7), expected 3, actually $count".$reload_msg);
+            }
+            $contains_card_id_7 = $this->effects->containsCardId(7);
+            if ($contains_card_id_7 != false) {
+                die("TEST FAILED: containsCardId(7), expected false".$reload_msg);
+            }
+            $contains_card_id_42 = $this->effects->containsCardId(42);
+            if ($contains_card_id_42 != true) {
+                die("TEST FAILED: containsCardId(42), expected true".$reload_msg);
+            }
+            $contains_card_id_43 = $this->effects->containsCardId(43);
+            if ($contains_card_id_43 != true) {
+                die("TEST FAILED: containsCardId(43), expected true".$reload_msg);
+            }
+        }
+        die("SUCCESS ! TESTS PASSED !");
+        die(print_r($this->effects->cache));
+    }
 
     function testSchedule() {
         $player_id = $this->getCurrentPlayerId();
