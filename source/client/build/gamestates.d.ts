@@ -100,6 +100,28 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCancel': 30,
+			'trBuildWithNostalgicItem': 36,
+			'trNextPlayer': 41,
+			'trGameEnd': 99,
+		},
+	},
+	36: {
+		'name': 'buildWithNostalgicItem',
+		'description': 'Nostalgic Item: ${actplayer} may include a card from their discard pile to include in stack ${stack_index}',
+		'descriptionmyturn': 'Nostalgic Item: ${you} may include a card from your discard pile to include in stack ${stack_index}',
+		'type': 'activeplayer',
+		'args': 'argStackIndex',
+		'possibleactions': {
+			'actBuildWithNostalgicItem': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+			'actCancelStack': [],
+		},
+		'transitions': {
+			'trCancelStack': 35,
+			'trBuildWithNostalgicItem': 36,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
 		},
@@ -146,6 +168,7 @@ interface GameStates {
 			'actCancel': [],
 		},
 		'transitions': {
+			'trCancel': 30,
 			'trFullyResolveTechnique': 33,
 		},
 	},
@@ -163,6 +186,7 @@ interface GameStates {
 			'actCancel': [],
 		},
 		'transitions': {
+			'trCancel': 30,
 			'trFullyResolveTechnique': 33,
 		},
 	},

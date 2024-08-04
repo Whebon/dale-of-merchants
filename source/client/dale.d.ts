@@ -11,6 +11,7 @@
 import { Animalfolk } from './components/types/Animalfolk';
 import { CardType } from './components/types/CardType';
 import { DbCard } from './components/types/DbCard';
+import { DbLocationPrefix } from './components/types/DbLocationPrefix';
 
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
@@ -55,6 +56,12 @@ declare global {
 			market_card_id: number
 			pos: number
 		}
+		'removeFromStall': {
+			player_id: number
+			cards: {[card_id: number]: DbCard}
+			to: DbLocationPrefix
+			discard_location_arg?: string
+		}
 		'throwAway': {
 			player_id: number 
 			card: DbCard
@@ -93,6 +100,13 @@ declare global {
 			player_id: number
 			discard_id?: number
 			card: DbCard
+			from_temporary?: boolean
+		}
+		'discardToHandMultiple': {
+			player_id: number
+			discard_id?: number
+			cards: {[card_id: number]: DbCard} //location_arg matters!
+			from_temporary?: boolean
 		}
 		'draw': {
 			player_id: number 
@@ -127,6 +141,8 @@ declare global {
 			stack_index: number 
 			stack_index_plus_1: number
             cards: {[card_id: number]: DbCard}
+			from: DbLocationPrefix
+			partial?: boolean //true if this notification only partially builds the stack
 		}
 	}
 

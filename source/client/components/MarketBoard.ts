@@ -73,7 +73,7 @@ export class MarketBoard implements CardSlotManager {
 
     /**
      * Remove the card at the given position.
-     * @param pos position in the market to add to card to. The default position is the leftmost position: +4.
+     * @param pos position in the market to remove the card from. The default position is the leftmost position: +4.
      * @param to (optional) if a card was present, move it to this location, then destroy it
      * @return removed card
     */

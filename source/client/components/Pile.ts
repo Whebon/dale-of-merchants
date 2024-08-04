@@ -44,6 +44,10 @@ export class Pile {
         this.updateHTML();
 	}
 
+    public get size() {
+        return this.cards.length;
+    }
+
     private updateHTML() {
         this.sizeHTML.innerText = 'x '+this.cards.length;
         let topCard = this.peek(true);
@@ -64,6 +68,37 @@ export class Pile {
         const z_index = Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
         const style = slidingElement.getAttribute('style');
         slidingElement.setAttribute('style', style+`z-index: ${z_index};`);
+    }
+
+    /**
+     * Remove a card from the pile at an specific index. Animations are not supported.
+     * @param index index in range [0, this.cards.length-1]
+     */
+    public removeAt(index: number): DaleCard {
+        if (index > this.cards.length - 1) {
+            throw new Error(`Cannot remove a card in pile of size ${this.cards.length} at index ${index}`)
+        }
+        else if (index == this.cards.length - 1) {
+            return this.pop();
+        }
+        return this.cards.splice(index, 1)[0]!;
+    }
+    
+    /**
+     * Insert a card in the pile at a specific index. Animations are not supported.
+     * @param card: card to insert in the pile.
+     * @param index: location within the pile. Should be in range [0, this.cards.length]
+     */
+    public insert(card: DaleCard, index: number) {
+        if (index > this.cards.length) {
+            throw new Error(`Cannot insert a card in pile of size ${this.cards.length} at index ${index}`)
+        }
+        else if (index == this.cards.length) {
+            this.push(card);
+        }
+        else {
+            this.cards.splice(index, 0, card);
+        }
     }
 
      /**

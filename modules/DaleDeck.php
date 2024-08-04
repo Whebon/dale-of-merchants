@@ -2,12 +2,11 @@
 
 require_once(APP_GAMEMODULE_PATH.'module/common/deck.game.php');
 
-//deck locations
 if (!defined('HAND')) {
-    //location
-    define('MARKET', 'market');
-
-    //prefixes (IMPORTANT: prefixes must be of length 4)
+    //deck location prefixes
+    //IMPORTANT: all locations must have length 4
+    //IMPORTANT: all literals must be exactly the same as on the client-side (DbLocationPrefix.ts)
+    define('MARKET', 'mark');
     define('HAND', 'hand');
     define('DISCARD', 'disc');
     define('DECK', 'deck');
@@ -29,6 +28,53 @@ class DaleDeck extends Deck {
         parent::__construct();
         $this->game = $game;
         $this->on_location_exhausted_method = $on_location_exhausted_method;
+    }
+
+    /**
+     * Get all cards in the specified stack of the specified stall
+     * @param string $stall_location location to move to cards to (must be a stall)
+     * @param int $stack_index index of a stack in the stall to put the cards on
+     */
+    function getCardsInStall(string $stall_location, int $stack_index) {
+        $prefix = substr($stall_location, 0, 4);
+        if ($prefix != STALL) {
+            throw new BgaVisibleSystemException("getCardsInStall must be called with a stall location");
+        }
+        $min = MAX_STACK_SIZE * $stack_index;
+        $max = MAX_STACK_SIZE * ($stack_index + 1);
+        $order_by = 'location_arg';
+        $result = array();
+
+        $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
+        $sql .= "FROM " . $this->table;
+        $sql .= " WHERE card_location='" . addslashes($stall_location) . "' ";
+        $sql .= " AND card_location_arg >= $min AND card_location_arg < $max ";
+        $sql .= " ORDER BY $order_by";
+        $dbres = self::DbQuery($sql);
+        while ($row = mysql_fetch_assoc($dbres)) {
+            $result[$row['id']] = $row;
+        }
+        if ($order_by !== null) {
+            $result = array_merge(array(), $result); // Note: this trick resets the array keys to 0, 1, 2 in order to keep this order in JS
+        }
+        return $result;
+    }
+
+    /**
+     * Move cards on top of a stack in a stall
+     * @param mixed $card_ids cards to move
+     * @param string $stall_location location to move to cards to (must be a stall)
+     * @param int $stack_index index of a stack in the stall to put the cards on
+     */
+    function moveCardsToStall(array $card_ids, string $stall_location, int $stack_index){
+        $prefix = substr($stall_location, 0, 4);
+        if ($prefix != STALL) {
+            throw new BgaVisibleSystemException("moveCardsToStall must be called with a stall location");
+        }
+        for ($i=0; $i < count($card_ids); $i++) {
+            $pos = $stack_index * MAX_STACK_SIZE + $i;
+            $this->moveCard($card_ids[$i], $stall_location, $pos);
+        }
     }
 
     /**

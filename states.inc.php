@@ -80,6 +80,21 @@ $machinestates = array(
 		'possibleactions' => ['actBuild', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
+			'trBuildWithNostalgicItem' => 36,
+			'trNextPlayer' => 41,
+			'trGameEnd' => 99,
+		),
+	),
+	36 => array(
+		'name' => 'buildWithNostalgicItem',
+		'description' => clienttranslate('Nostalgic Item: ${actplayer} may include a card from their discard pile to include in stack ${stack_index}'),
+		'descriptionmyturn' => clienttranslate('Nostalgic Item: ${you} may include a card from your discard pile to include in stack ${stack_index}'),
+		'type' => 'activeplayer',
+		'args' => 'argStackIndex',
+		'possibleactions' => ['actBuildWithNostalgicItem', 'actCancelStack'],
+		'transitions' => array(
+			'trCancelStack' => 35,
+			'trBuildWithNostalgicItem' => 36,
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
 		),
@@ -112,6 +127,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actSwiftBroker', 'actCancel'],
 		'transitions' => array(
+			'trCancel' => 30,
 			'trFullyResolveTechnique' => 33,
 		),
 	),
@@ -122,6 +138,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actShatteredRelic', 'actCancel'],
 		'transitions' => array(
+			'trCancel' => 30,
 			'trFullyResolveTechnique' => 33,
 		),
 	),

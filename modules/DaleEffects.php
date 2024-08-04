@@ -2,6 +2,15 @@
 
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
+//TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//decide what to do with the whole 'until_end_of_turn' and 'until_end_of_build' effect lifetimes
+
+if (!defined('EXPIRES_NEVER')) {
+    define('EXPIRES_NEVER', 0);
+    define('EXPIRES_ON_END_OF_TURN', 1);
+    define('EXPIRES_ON_END_OF_BUILD', 2);
+}
+
 /**
  * Card Effect Management
  * 
@@ -30,21 +39,23 @@ class DaleEffects {
      * @param int $card_id the card that caused the effect
      * @param int $type_id the effective type of the card that caused the effect (CT).
      * @param int $target (optional) default -1. If the card effect has some kind of target (typically another card_id), use this column to store that information
-     * @param bool $delete_on_turn_end (optonal) default true. If true, delete this effect at the end of the turn
+     * @param int $expires (optonal) default EXPIRES_ON_END_OF_TURN. Describes when this effect will wear off
+     * @param int $arg (optonal) default -1. Can be used to store additional information about the effect. Very rarely used
      */
-    function insert(int $card_id, int $type_id, int $target=-1, bool $until_end_of_turn = true) {
-        $sql = "INSERT INTO effect (card_id, type_id, target, until_end_of_turn) VALUES ($card_id, $type_id, $target, $until_end_of_turn) ";
+    function insert(int $card_id, int $type_id, int $target = -1, int $expires = EXPIRES_ON_END_OF_TURN, int $arg = -1) {
+        $sql = "INSERT INTO effect (card_id, type_id, target, expires, arg) VALUES ($card_id, $type_id, $target, $expires, $arg) ";
         $this->game->DbQuery($sql);
         $this->cache[] = array(
             "card_id" => $card_id,
             "type_id" => $type_id,
             "target" => $target,
-            "until_end_of_turn" => $until_end_of_turn
+            "expires" => $expires,
+            "arg" => $arg
         );
     }
 
     /**
-     * Update the card effect into the db
+     * Update the card effect's target
      * @param int $card_id the card that caused the effect
      * @param int $target new value for the target
      */
@@ -64,11 +75,29 @@ class DaleEffects {
     }
 
     /**
+     * Update the card effect's 'arg' property. 'arg' is a very rare property that is currently only used by CT_NOSTALGICITEM to store the location in the discard pile
+     * @param int $card_id the card that caused the effect
+     * @param int $target new value for the target
+     */
+    function updateArgByCardId(int $card_id, int $arg) {
+        $sql = "UPDATE effect SET arg=$arg WHERE card_id=$card_id";
+        $found = false;
+        $this->game->DbQuery($sql);
+        foreach ($this->cache as $index => $row) {
+            if ($row["card_id"] == $card_id) {
+                $this->cache[$index]["arg"] = $arg;
+                $found = true;
+            }
+        }
+        if ($found == false) {
+            throw new BgaVisibleSystemException("Card id $card_id has no active effect, so the effect cannot be updated");
+        }
+    }
+
+    /**
      * Return true if a row with the given card_id exists
      */
-    function containsCardId($card_id) {
-        //Linear scan over the cache to find rows with the desired card_id
-        //Is this faster than a SELECT query...? The wiki says db queries are very slow. 
+    function contains(int $card_id) {
         foreach ($this->cache as $row) {
             if ($row["card_id"] == $card_id) {
                 return true;
@@ -78,11 +107,23 @@ class DaleEffects {
     }
 
     /**
+     * Return true if a row with the given card_id exists
+     * @param int $card_id
+     * @param int $target (optional) the card must have target exactly this target
+     */
+    function containsEffectOfCardId(int $card_id, int $target = null) {
+        foreach ($this->cache as $row) {
+            if ($row["card_id"] == $card_id && ($target == null || $target == $row["target"])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return the FIRST effect of the given card id. If none was found, return null
      */
-    function getEffectByCardId($card_id) {
-        //Linear scan over the cache to find rows with the desired type_id
-        //Is this faster than a SELECT query...? The wiki says db queries are very slow. 
+    function getEffectByCardId(int $card_id) {
         foreach ($this->cache as $row) {
             if ($row["card_id"] == $card_id) {
                 return $row;
@@ -92,11 +133,23 @@ class DaleEffects {
     }
 
     /**
+     * Return true if a row with the given type_id exists
+     * @param int $type_id
+     * @param int $target (optional) the card must have target exactly this target
+     */
+    function containsEffectOfTypeId(int $type_id, int $target = null) {
+        foreach ($this->cache as $row) {
+            if ($row["type_id"] == $type_id && ($target == null || $target == $row["target"])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return the number of active effects of the given card type
      */
-    function countEffectsOfTypeId($type_id) {
-        //Linear scan over the cache to find rows with the desired type_id
-        //Is this faster than a SELECT query...? The wiki says db queries are very slow. 
+    function countEffectsOfTypeId(int $type_id) {
         $nbr = 0;
         foreach ($this->cache as $row) {
             if ($row["type_id"] == $type_id) {
@@ -108,13 +161,13 @@ class DaleEffects {
 
     /**
      * Return all the active effects of the given card type
+     * @param int $type_id
+     * @param int $target (optional) the card must have target exactly this target
      */
-    function getEffectsByTypeId($type_id) {
-        //Linear scan over the cache to find rows with the desired type_id
-        //Is this faster than a SELECT query...? The wiki says db queries are very slow. 
+    function getEffectsByTypeId(int $type_id, int $target = null) {
         $effects = array();
         foreach ($this->cache as $row) {
-            if ($row["type_id"] == $type_id) {
+            if ($row["type_id"] == $type_id && ($target == null || $target == $row["target"])) {
                 $effects[] = $row;
             }
         }
@@ -122,11 +175,68 @@ class DaleEffects {
     }
 
     /**
-     * Delete all "until_end_of_turn" effects
+     * Return all the targets of a given card type (includes invalid targets (-1)).
+     * @param int $type_id
      */
-    function endTurn() {
-        $sql = "DELETE FROM effect WHERE until_end_of_turn = true";
+    function getTargetsByTypeId(int $type_id) {
+        $targets = array();
+        foreach ($this->cache as $row) {
+            if ($row["type_id"] == $type_id) {
+                $targets[] = $row["target"];
+            }
+        }
+        return $targets;
+    }
+
+    /**
+     * Expire all effects with EXPIRES_ON_END_OF_TURN
+     */
+    function expireEndOfTurn() {
+        $sql = "DELETE FROM effect WHERE expires = ".EXPIRES_ON_END_OF_TURN;
         $this->game->DbQuery($sql);
         $this->loadFromDb();
     }
+
+    /**
+     * Expire all effects with EXPIRES_ON_END_OF_BUILD.
+     * @param bool $return (optional) default false. If true, return the deleted effects.
+     */
+    function expireEndOfBuild(bool $return = false) {
+        if ($return) {
+            $deleted_effects = array();
+            foreach ($this->cache as $row) {
+                if ($row["expires"] == EXPIRES_ON_END_OF_BUILD) {
+                    $deleted_effects[] = $row;
+                }
+            }
+        }
+        else {
+            $deleted_effects = null;
+        }
+        $sql = "DELETE FROM effect WHERE expires = ".EXPIRES_ON_END_OF_BUILD;
+        $this->game->DbQuery($sql);
+        $this->loadFromDb();
+        return $deleted_effects;
+    }
+
+    //TODO: safely delete this
+    // /**
+    //  * Delete all build-related effects. Should be called when a build phase is ended
+    //  */
+    // function endBuildPhase() {
+    //     //1. cancel nostalgic item effects
+    //     $effects = $this->getEffectsByTypeId(CT_NOSTALGICITEM);
+    //     foreach ($effects as $effect) {
+    //         if ($effect["target"] != -1) {
+    //             $this->updateTargetByCardId($effect["card_id"], -1);
+    //             return $effect;
+    //         }
+    //     }
+
+    //     //no more effects to undo, delete all stack-related effects
+    //     $stack_related_effects = array(CT_NOSTALGICITEM, CT_ACCORDION);
+    //     $sql = "DELETE FROM effect WHERE type_id IN ".implode(",", $stack_related_effects)."";
+    //     $this->game->DbQuery($sql);
+    //     $this->loadFromDb();
+    // }
 }

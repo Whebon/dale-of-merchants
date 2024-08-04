@@ -1,0 +1,32 @@
+    $result = array();
+
+    $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
+    $sql .= "FROM " . $this->table;
+
+    if (is_array($location)) {
+        // Multiple location case
+        $sql .= " WHERE card_location IN ('" . implode("','", $location) . "') ";
+    } else {
+        // Simple (and normal) case
+        $sql .= " WHERE card_location='" . addslashes($location) . "' ";
+    }
+
+    if ($location_arg !== null) {
+        $sql .= " AND card_location_arg='$location_arg' ";
+    }
+
+    if ($order_by !== null) {
+        $sql .= " ORDER BY $order_by";
+    }
+
+    $dbres = self::DbQuery($sql);
+
+    while ($row = mysql_fetch_assoc($dbres)) {
+        $result[$row['id']] = $row;
+    }
+
+    if ($order_by !== null) {
+        $result = array_merge(array(), $result); // Note: this trick resets the array keys to 0, 1, 2 in order to keep this order in JS
+    }
+
+    return $result;

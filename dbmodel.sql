@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS `effect` (
   `card_id` int(10) unsigned NOT NULL,
   `type_id` int(11) NOT NULL,
   `target` int(11) NOT NULL,
-  `until_end_of_turn` boolean NOT NULL,
+  `expires` boolean NOT NULL,
+  `arg` int(11) NOT NULL,
   PRIMARY KEY (`effect_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 

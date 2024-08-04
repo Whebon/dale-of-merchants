@@ -24,6 +24,7 @@ import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
+import { CardSlot } from './components/CardSlot';
 
 
 /** The root for all of your game code. */
@@ -114,6 +115,7 @@ class Dale extends Gamegui
 				let card = gamedatas.stalls[player_id][+i]!;
 				this.playerStalls[player_id].insertDbCard(card);
 			}
+			this.playerStalls[player_id].createNewStack() //we always need a trailing empty stack
 		}
 
 		//initialize the market deck
@@ -210,6 +212,9 @@ class Dale extends Gamegui
 			case 'build':
 				this.myHand.setSelectionMode(2);
 				break;
+			case 'buildWithNostalgicItem':
+				this.myTemporary.setSelectionMode(1);
+				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(2);
 				break;
@@ -243,6 +248,9 @@ class Dale extends Gamegui
 				break;
 			case 'build':
 				this.myHand.setSelectionMode(0);
+				break;
+			case 'buildWithNostalgicItem':
+				this.myTemporary.setSelectionMode(0);
 				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(0);
@@ -280,6 +288,10 @@ class Dale extends Gamegui
 			case 'build':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
 				this.addActionButtonCancel();
+				break;
+			case 'buildWithNostalgicItem':
+				this.addActionButton("confirm-button", _("Skip"), "onSkipNostalgicItem");
+				this.addActionButtonCancelStack();
 				break;
 			case 'inventory':
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
@@ -400,11 +412,21 @@ class Dale extends Gamegui
 	 * @param card card to move
 	 * @param pile pile to move from
 	 * @param stock stock to move to
+	 * @param location_arg (optional) the card needs to be retrieved from a specific location of the pile
 	*/
-	pileToStock(card: DbCard, pile: Pile, stock: DaleStock) {
+	pileToStock(card: DbCard, pile: Pile, stock: DaleStock, location_arg?: number) {
 		stock.addDaleCardToStock(DaleCard.of(card), pile.placeholderHTML);
-		if(pile.pop().id != +card.id) {
-			throw new Error(`Card ${+card.id} was not found on top of the pile`);
+		if (location_arg !== undefined) {
+			//remove from index
+			if (pile.removeAt(location_arg).id != +card.id) {
+				throw new Error(`Card ${+card.id} was not found at index ${location_arg} in the pile of size ${pile.size}`);
+			}
+		}
+		else {
+			//remove from top
+			if(pile.pop().id != +card.id) {
+				throw new Error(`Card ${+card.id} was not found on top of the pile`);
+			}
 		}
 	}
 
@@ -414,8 +436,9 @@ class Dale extends Gamegui
 	 * @param pile pile to move from
 	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
 	 * @param player_id owner of the stock
+	 * @param location_arg (optional) the card needs to be retrieved from a specific location of the pile
 	*/
-	pileToPlayerStock(card: DbCard, pile: Pile, stock: DaleStock, player_id: number) {
+	pileToPlayerStock(card: DbCard, pile: Pile, stock: DaleStock, player_id: number, location_arg?: number) {
 		if (+player_id == this.player_id) {
 			console.log("TO MY HAND!");
 			this.pileToStock(card, pile, stock);
@@ -451,6 +474,13 @@ class Dale extends Gamegui
 	*/
 	addActionButtonCancel() {
 		this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
+	}
+
+	/**
+	 * Add a cancel button (The state must have an "actCancel" action and "trCancel" transition)
+	*/
+	addActionButtonCancelStack() {
+		this.addActionButton("cancel-button", _("Cancel"), "onCancelStack", undefined, false, 'gray');
 	}
 	
 	///////////////////////////////////////////////////
@@ -517,6 +547,14 @@ class Dale extends Gamegui
 				}
 				this.myHand.unselectAll();
 				break;
+			case 'buildWithNostalgicItem':
+				if(this.checkAction('actBuildWithNostalgicItem')) {
+					this.bgaPerformAction('actBuildWithNostalgicItem', {
+						card_id: card.id
+					})
+				}
+				this.myHand.unselectAll();
+				break;
 			case 'shatteredRelic':
 				if(this.checkAction('actShatteredRelic')) {
 					this.bgaPerformAction('actShatteredRelic', {
@@ -558,9 +596,23 @@ class Dale extends Gamegui
 		}
 	}
 
+	onSkipNostalgicItem() {
+		if(this.checkAction('actBuildWithNostalgicItem')) {
+			this.bgaPerformAction('actBuildWithNostalgicItem', {
+				card_id: -1
+			})
+		}
+	}
+
 	onCancel() {
 		if(this.checkAction('actCancel')) {
 			this.bgaPerformAction('actCancel', {})
+		}
+	}
+
+	onCancelStack() {
+		if(this.checkAction('actCancelStack')) {
+			this.bgaPerformAction('actCancelStack', {})
 		}
 	}
 
@@ -615,7 +667,9 @@ class Dale extends Gamegui
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 1000],
 			['marketToHand', 1500],
+			['removeFromStall', 1000],
 			['discardToHand', 1000],
+			['discardToHandMultiple', 1000],
 			['draw', 1000],
 			['drawMultiple', 1000],
 			['temporaryToHand', 1000],
@@ -730,7 +784,11 @@ class Dale extends Gamegui
 				stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
 			}
 		}
-		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
+		if (!notif.args.partial) {
+			//the build is complete (not partial), update the score and create a new empty stack
+			stall.createNewStack();
+			this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
+		}
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
@@ -752,8 +810,8 @@ class Dale extends Gamegui
 	}
 
 	notif_marketToHand(notif: NotifAs<'marketToHand'>) {
-		let daleCard = new DaleCard(notif.args.market_card_id);
-		let slotId = this.market!.getSlotId(notif.args.pos);
+		const daleCard = new DaleCard(notif.args.market_card_id);
+		const slotId = this.market!.getSlotId(notif.args.pos);
 		this.market!.unselectAll();
 		if (notif.args.player_id == this.player_id) {
 			//move card from market to hand
@@ -763,6 +821,41 @@ class Dale extends Gamegui
 		else {
 			//move card to the overall player board
 			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
+		}
+	}
+	
+	notif_removeFromStall(notif: NotifAs<'removeFromStall'>) {
+		const stall = this.playerStalls[notif.args.player_id]!;
+		for (let i in notif.args.cards) {
+			const daleCard = DaleCard.of(notif.args.cards[i]!);
+			const pos = +notif.args.cards[i]!.location_arg;
+			const slotId = stall.getSlotId(pos);
+			switch(notif.args.to) {
+				case 'hand':
+					if (notif.args.player_id == this.player_id) {
+						//move card from market to hand
+						this.myHand.addDaleCardToStock(daleCard, slotId);
+						stall.removeCard(pos);
+					}
+					else {
+						//move card to the overall player board
+						stall.removeCard(pos);
+					}
+					break;
+				case 'disc':
+					const discardPile = this.playerDiscards[notif.args.player_id]!;
+					if (notif.args.discard_location_arg) {
+						discardPile.insert(daleCard, +notif.args.discard_location_arg);
+					}
+					else {
+						discardPile.push(daleCard);
+					}
+					stall.removeCard(pos, discardPile.placeholderHTML);
+					break;
+				default:
+					console.error(`Invalid argument for removeFromStall: to = '${notif.args.to}'`)
+					break;
+			}
 		}
 	}
 
@@ -862,10 +955,21 @@ class Dale extends Gamegui
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.log("notif_discardToHand");
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
-		this.pileToPlayerStock(notif.args.card, discardPile, this.myHand, notif.args.player_id);
+		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
 	}
 	
+	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
+		console.log("notif_discardToHandMultiple");
+		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
+		for (let i in notif.args.cards) {
+			const card = notif.args.cards[i]!;
+			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
+		}
+	}
+
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
 		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
