@@ -40,17 +40,15 @@ class DaleEffects {
      * @param int $type_id the effective type of the card that caused the effect (CT).
      * @param int $target (optional) default -1. If the card effect has some kind of target (typically another card_id), use this column to store that information
      * @param int $expires (optonal) default EXPIRES_ON_END_OF_TURN. Describes when this effect will wear off
-     * @param int $arg (optonal) default -1. Can be used to store additional information about the effect. Very rarely used
      */
-    function insert(int $card_id, int $type_id, int $target = -1, int $expires = EXPIRES_ON_END_OF_TURN, int $arg = -1) {
-        $sql = "INSERT INTO effect (card_id, type_id, target, expires, arg) VALUES ($card_id, $type_id, $target, $expires, $arg) ";
+    function insert(int $card_id, int $type_id, int $target = -1, int $expires = EXPIRES_ON_END_OF_TURN) {
+        $sql = "INSERT INTO effect (card_id, type_id, target, expires) VALUES ($card_id, $type_id, $target, $expires) ";
         $this->game->DbQuery($sql);
         $this->cache[] = array(
             "card_id" => $card_id,
             "type_id" => $type_id,
             "target" => $target,
-            "expires" => $expires,
-            "arg" => $arg
+            "expires" => $expires
         );
     }
 
@@ -66,26 +64,6 @@ class DaleEffects {
         foreach ($this->cache as $index => $row) {
             if ($row["card_id"] == $card_id) {
                 $this->cache[$index]["target"] = $target;
-                $found = true;
-            }
-        }
-        if ($found == false) {
-            throw new BgaVisibleSystemException("Card id $card_id has no active effect, so the effect cannot be updated");
-        }
-    }
-
-    /**
-     * Update the card effect's 'arg' property. 'arg' is a very rare property that is currently only used by CT_NOSTALGICITEM to store the location in the discard pile
-     * @param int $card_id the card that caused the effect
-     * @param int $target new value for the target
-     */
-    function updateArgByCardId(int $card_id, int $arg) {
-        $sql = "UPDATE effect SET arg=$arg WHERE card_id=$card_id";
-        $found = false;
-        $this->game->DbQuery($sql);
-        foreach ($this->cache as $index => $row) {
-            if ($row["card_id"] == $card_id) {
-                $this->cache[$index]["arg"] = $arg;
                 $found = true;
             }
         }
@@ -218,25 +196,4 @@ class DaleEffects {
         $this->loadFromDb();
         return $deleted_effects;
     }
-
-    //TODO: safely delete this
-    // /**
-    //  * Delete all build-related effects. Should be called when a build phase is ended
-    //  */
-    // function endBuildPhase() {
-    //     //1. cancel nostalgic item effects
-    //     $effects = $this->getEffectsByTypeId(CT_NOSTALGICITEM);
-    //     foreach ($effects as $effect) {
-    //         if ($effect["target"] != -1) {
-    //             $this->updateTargetByCardId($effect["card_id"], -1);
-    //             return $effect;
-    //         }
-    //     }
-
-    //     //no more effects to undo, delete all stack-related effects
-    //     $stack_related_effects = array(CT_NOSTALGICITEM, CT_ACCORDION);
-    //     $sql = "DELETE FROM effect WHERE type_id IN ".implode(",", $stack_related_effects)."";
-    //     $this->game->DbQuery($sql);
-    //     $this->loadFromDb();
-    // }
 }

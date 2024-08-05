@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS `effect` (
   `type_id` int(11) NOT NULL,
   `target` int(11) NOT NULL,
   `expires` boolean NOT NULL,
-  `arg` int(11) NOT NULL,
   PRIMARY KEY (`effect_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 

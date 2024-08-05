@@ -216,9 +216,6 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(2);
 				this.myDiscard.setSelectionMode('multiple', 0);
 				break;
-			case 'buildWithNostalgicItem':
-				this.myTemporary.setSelectionMode(1);
-				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(2);
 				break;
@@ -253,9 +250,6 @@ class Dale extends Gamegui
 			case 'build':
 				this.myHand.setSelectionMode(0);
 				this.myDiscard.setSelectionMode('none');
-				break;
-			case 'buildWithNostalgicItem':
-				this.myTemporary.setSelectionMode(0);
 				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(0);
@@ -293,10 +287,6 @@ class Dale extends Gamegui
 			case 'build':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
 				this.addActionButtonCancel();
-				break;
-			case 'buildWithNostalgicItem':
-				this.addActionButton("confirm-button", _("Skip"), "onSkipNostalgicItem");
-				this.addActionButtonCancelStack();
 				break;
 			case 'inventory':
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
@@ -571,14 +561,6 @@ class Dale extends Gamegui
 			case 'build':
 				this.onBuildSelectionChanged();
 				break;
-			case 'buildWithNostalgicItem':
-				if(this.checkAction('actBuildWithNostalgicItem')) {
-					this.bgaPerformAction('actBuildWithNostalgicItem', {
-						card_id: card.id
-					})
-				}
-				this.myHand.unselectAll();
-				break;
 			case 'shatteredRelic':
 				if(this.checkAction('actShatteredRelic')) {
 					this.bgaPerformAction('actShatteredRelic', {
@@ -643,23 +625,9 @@ class Dale extends Gamegui
 		}
 	}
 
-	onSkipNostalgicItem() {
-		if(this.checkAction('actBuildWithNostalgicItem')) {
-			this.bgaPerformAction('actBuildWithNostalgicItem', {
-				card_id: -1
-			})
-		}
-	}
-
 	onCancel() {
 		if(this.checkAction('actCancel')) {
 			this.bgaPerformAction('actCancel', {})
-		}
-	}
-
-	onCancelStack() {
-		if(this.checkAction('actCancelStack')) {
-			this.bgaPerformAction('actCancelStack', {})
 		}
 	}
 
@@ -885,6 +853,7 @@ class Dale extends Gamegui
 	}
 	
 	notif_removeFromStall(notif: NotifAs<'removeFromStall'>) {
+		//TODO: currently unused, but could be used for CT_ACORN
 		const stall = this.playerStalls[notif.args.player_id]!;
 		for (let i in notif.args.cards) {
 			const daleCard = DaleCard.of(notif.args.cards[i]!);
@@ -901,16 +870,6 @@ class Dale extends Gamegui
 						//move card to the overall player board
 						stall.removeCard(pos);
 					}
-					break;
-				case 'disc':
-					const discardPile = this.playerDiscards[notif.args.player_id]!;
-					if (notif.args.discard_location_arg) {
-						discardPile.insert(daleCard, +notif.args.discard_location_arg);
-					}
-					else {
-						discardPile.push(daleCard);
-					}
-					stall.removeCard(pos, discardPile.placeholderHTML);
 					break;
 				default:
 					console.error(`Invalid argument for removeFromStall: to = '${notif.args.to}'`)

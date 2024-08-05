@@ -71,7 +71,8 @@ export class Stall implements CardSlotManager {
         if (this.slots.length < Stall.MAX_STACKS) {
             if (this.stackContainers.length > 0) {
                 const prevStackContainer = this.stackContainers[this.stackContainers.length - 1]!;
-                prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S}px;`); //the last stack containers has a max width (to stay in bounds)
+                const height = Images.CARD_HEIGHT_S + Images.VERTICAL_STACK_OFFSET_S * (this.slots[this.slots.length - 1]!.length - 1);
+                prevStackContainer.setAttribute('style', `height: ${height}px; max-width: ${Images.CARD_WIDTH_S}px;`); //the last stack containers has a max width (to stay in bounds)
             }
             const stackContainer = document.createElement("div");
             stackContainer.classList.add("stack-container");
@@ -117,8 +118,6 @@ export class Stall implements CardSlotManager {
             position: absolute;
             top: ${y_offset}px
         `);
-        const prevStyleWithoutHeight = stackContainer.getAttribute('style')?.replace('height:.*px;', '');
-        stackContainer.setAttribute('style', prevStyleWithoutHeight+`height: ${Images.CARD_HEIGHT_S + y_offset}px;`);
         stackContainer.appendChild(div);
 
         //add the slot to the collection of slots

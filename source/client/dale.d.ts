@@ -61,7 +61,6 @@ declare global {
 			player_id: number
 			cards: {[card_id: number]: DbCard}
 			to: DbLocationPrefix
-			discard_location_arg?: string
 		}
 		'throwAway': {
 			player_id: number 

@@ -399,22 +399,6 @@ class Dale extends DaleTableBasic
         }
     }
 
-    //TODO: safely delete this
-    // /**
-    //  * @param int $stack_index the stack that needs to be build
-    //  * @param array $stack_cards dbcards that are already build in the new stack
-    //  * @param int $added_value (optional) default 0. adds an external amount of value to the stack (CT_NOSTALGIC_ITEM)
-    //  * @return bool true if the total stack value suffices to build the stack of the specified index
-    //  */
-    // function checkStackValue(int $stack_index, array $stack_cards, int $added_value = 0){
-    //     $total_value = $this->getValueSum($stack_cards) + $added_value;
-    //     $nbr_accordion = $this->effects->countEffectsOfTypeId(CT_ACCORDION);
-    //     $min_value = $stack_index + 1 - $nbr_accordion;
-    //     $max_value = $stack_index + 1 + $nbr_accordion;
-    //     return ($total_value >= $min_value && $total_value <= $max_value);
-    // }
-
-
     /**
      * @param mixed $player_id
      * @param array $hand_cards array of dbcards that are currently in the player's hand
@@ -791,34 +775,12 @@ class Dale extends DaleTableBasic
      * @param array $cards_from_hand cards to add to the stack from hand
      * @param array $cards_from_discard (optional) - cards to add to the stack from discard
      * @return string game state transition to take after building. One of:
-     * * trBuildWithNostalgicItem
      * * trGameEnd
      * * trNextPlayer
      */
     function build(int $stack_index, array $cards_from_hand, array $cards_from_discard = null) {
         //Get the current player
         $player_id = $this->getActivePlayerId();
-
-        //TODO: safely delete this
-        // //Create unassigned nostalgic item effects
-        // foreach ($cards_from_hand as $card) {
-        //     if ($this->getTypeId($card) == CT_NOSTALGICITEM) {
-        //         $this->effects->insert($card["id"], CT_NOSTALGICITEM, -1, EXPIRES_ON_END_OF_BUILD);
-        //     }
-        // }
-        // //Partially build the stack with an unassigned nostalgic item
-        // if ($this->effects->containsEffectOfTypeId(CT_NOSTALGICITEM, -1)) {
-        //     $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} uses their Nostalgic Item'), array(
-        //         "player_id" => $player_id,
-        //         "player_name" => $this->getPlayerNameById($player_id),
-        //         "stack_index_plus_1" => $stack_index + 1, //+1, because stack indices are 0-indexed
-        //         "stack_index" => $stack_index,
-        //         "cards" => $cards_from_hand,
-        //         "from" => $from,
-        //         "partial" => true
-        //     ));
-        //     return "trBuildWithNostalgicItem";
-        // }
 
         //Apply the rules for a valid stack
         $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
@@ -1125,55 +1087,6 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trCancel");
     }
 
-    function actCancelStack() {
-        $this->checkAction("actCancelStack");
-        $player_id = $this->getActivePlayerId();
-        $stack_index = $this->cards->getNextStackIndex($player_id) - 1;
-
-        //undo all effects that were caused during the build phase
-        $effects_to_undo = $this->effects->expireEndOfBuild(true);
-        foreach ($effects_to_undo as $effect) {
-            switch($effect["type_id"]) {
-                case CT_NOSTALGICITEM:
-                    $target_id = $effect["target"]; //-1: no target. -2: no target, but intentional
-                    if ($target_id >= 0) {
-                        $location_arg = $effect["arg"];
-                        if ($location_arg == -1) {
-                            throw new BgaVisibleSystemException("Failed to undo CT_NOSTALGICITEM. The location within the discard pile is unkown.");
-                        }
-                        $this->cards->insertCard($target_id, DISCARD.$player_id, $location_arg); //insert the card back into the correct position
-                        $target = $this->cards->getCard($target_id);
-                        $this->notifyAllPlayers('removeFromStall', clienttranslate('${player_name} takes back their Nostalgic Item'), array (
-                            'player_id' => $player_id,
-                            'player_name' => $this->getActivePlayerName(),
-                            'cards' => array($target),
-                            'to' => DISCARD,
-                            'discard_location_arg' => $location_arg
-                        ));
-                    }
-                    break;
-                default:
-                    $card_id = $effect["card_id"];
-                    $type_id = $effect["type_id"];
-                    throw new BgaVisibleSystemException("NOT IMPLEMENTED: Cannot undo effect caused by card $card_id of type $type_id");
-                    break;
-            }
-        }
-
-        //move the remaining cards (of a regular build) in the stack back into the player hand
-        $cards = $this->cards->getCardsInStall(STALL.$player_id, $stack_index);
-        if (count($cards) > 0) {
-            $this->cards->moveCards($this->toCardIds($cards), HAND.$player_id);
-            $this->notifyAllPlayers('removeFromStall', clienttranslate('${player_name} cancels building their stack'), array (
-                'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
-                'cards' => $cards,
-                'to' => HAND
-            ));
-        }
-        $this->gamestate->nextState("trCancelStack");
-    }
-
     function actPurchase(string $funds_card_ids) {
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
@@ -1465,34 +1378,6 @@ class Dale extends DaleTableBasic
 
         //Build the stack
         $transition = $this->build($stack_index, $stack_cards, $stack_cards_from_discard);
-        $this->gamestate->nextState($transition);
-    }
-
-    function actBuildWithNostalgicItem(int $card_id) {
-        $this->checkAction("actBuildWithNostalgicItem");
-        $player_id = $this->getActivePlayerId();
-
-        //Get the nostalgic item that caused the effect
-        $effects = $this->effects->getEffectsByTypeId(CT_NOSTALGICITEM, -1);
-        $nostalgic_item_card_id = array_pop($effects)["card_id"];
-
-        //Get the new card(s) to add to the stack (0 or 1)
-        $new_cards = array();
-        if ($card_id == -1) {
-            $this->effects->updateTargetByCardId($nostalgic_item_card_id, -2); //-1: no target, -2: no target (intentionally skipped)
-        }
-        else {
-            $new_cards[] = $this->cards->getCardFromLocation($card_id, DISCARD.$player_id);
-            $this->effects->updateTargetByCardId($nostalgic_item_card_id, $new_cards[0]["id"]);
-            $this->effects->updateArgByCardId($nostalgic_item_card_id, $new_cards[0]["location_arg"]); //where in the discard pile did this card come from?
-        }
-
-        //Get information about the partially built stack
-        $stack_index = $this->cards->getNextStackIndex($player_id) - 1;
-        $built_cards = $this->cards->getCardsInStall(STALL.$player_id, $stack_index);
-
-        //Build the stack
-        $transition = $this->build($stack_index, $new_cards, $built_cards, DISCARD);
         $this->gamestate->nextState($transition);
     }
 

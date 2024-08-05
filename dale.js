@@ -838,7 +838,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (this.slots.length < Stall.MAX_STACKS) {
                 if (this.stackContainers.length > 0) {
                     var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;"));
+                    var height = Images_5.Images.CARD_HEIGHT_S + Images_5.Images.VERTICAL_STACK_OFFSET_S * (this.slots[this.slots.length - 1].length - 1);
+                    prevStackContainer.setAttribute('style', "height: ".concat(height, "px; max-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;"));
                 }
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("stack-container");
@@ -854,7 +855,6 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             }
         };
         Stall.prototype.createNewSlot = function (stack_index, card) {
-            var _a;
             if (stack_index < 0 || stack_index >= this.slots.length || stack_index >= this.stackContainers.length) {
                 throw new Error("Cannot make a slot in non-existing stack ".concat(stack_index));
             }
@@ -864,8 +864,6 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * index;
             var div = document.createElement("div");
             div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
-            var prevStyleWithoutHeight = (_a = stackContainer.getAttribute('style')) === null || _a === void 0 ? void 0 : _a.replace('height:.*px;', '');
-            stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_5.Images.CARD_HEIGHT_S + y_offset, "px;"));
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
@@ -1134,9 +1132,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode(2);
                     this.myDiscard.setSelectionMode('multiple', 0);
                     break;
-                case 'buildWithNostalgicItem':
-                    this.myTemporary.setSelectionMode(1);
-                    break;
                 case 'inventory':
                     this.myHand.setSelectionMode(2);
                     break;
@@ -1167,9 +1162,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode(0);
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'buildWithNostalgicItem':
-                    this.myTemporary.setSelectionMode(0);
-                    break;
                 case 'inventory':
                     this.myHand.setSelectionMode(0);
                     break;
@@ -1199,10 +1191,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'build':
                     this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
                     this.addActionButtonCancel();
-                    break;
-                case 'buildWithNostalgicItem':
-                    this.addActionButton("confirm-button", _("Skip"), "onSkipNostalgicItem");
-                    this.addActionButtonCancelStack();
                     break;
                 case 'inventory':
                     this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
@@ -1345,14 +1333,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'build':
                     this.onBuildSelectionChanged();
                     break;
-                case 'buildWithNostalgicItem':
-                    if (this.checkAction('actBuildWithNostalgicItem')) {
-                        this.bgaPerformAction('actBuildWithNostalgicItem', {
-                            card_id: card.id
-                        });
-                    }
-                    this.myHand.unselectAll();
-                    break;
                 case 'shatteredRelic':
                     if (this.checkAction('actShatteredRelic')) {
                         this.bgaPerformAction('actShatteredRelic', {
@@ -1412,21 +1392,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 });
             }
         };
-        Dale.prototype.onSkipNostalgicItem = function () {
-            if (this.checkAction('actBuildWithNostalgicItem')) {
-                this.bgaPerformAction('actBuildWithNostalgicItem', {
-                    card_id: -1
-                });
-            }
-        };
         Dale.prototype.onCancel = function () {
             if (this.checkAction('actCancel')) {
                 this.bgaPerformAction('actCancel', {});
-            }
-        };
-        Dale.prototype.onCancelStack = function () {
-            if (this.checkAction('actCancelStack')) {
-                this.bgaPerformAction('actCancelStack', {});
             }
         };
         Dale.prototype.onRequestInventoryAction = function () {
@@ -1610,16 +1578,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         else {
                             stall.removeCard(pos);
                         }
-                        break;
-                    case 'disc':
-                        var discardPile = this.playerDiscards[notif.args.player_id];
-                        if (notif.args.discard_location_arg) {
-                            discardPile.insert(daleCard, +notif.args.discard_location_arg);
-                        }
-                        else {
-                            discardPile.push(daleCard);
-                        }
-                        stall.removeCard(pos, discardPile.placeholderHTML);
                         break;
                     default:
                         console.error("Invalid argument for removeFromStall: to = '".concat(notif.args.to, "'"));
