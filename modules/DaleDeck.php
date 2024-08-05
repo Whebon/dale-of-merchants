@@ -61,7 +61,7 @@ class DaleDeck extends Deck {
     }
 
     /**
-     * Move cards on top of a stack in a stall
+     * Build a new stack in a stall
      * @param mixed $card_ids cards to move
      * @param string $stall_location location to move to cards to (must be a stall)
      * @param int $stack_index index of a stack in the stall to put the cards on
@@ -75,6 +75,49 @@ class DaleDeck extends Deck {
             $pos = $stack_index * MAX_STACK_SIZE + $i;
             $this->moveCard($card_ids[$i], $stall_location, $pos);
         }
+    }
+
+    /**
+     * Get cards from a specific "pile" location where cards are ordered. Decrements the indices of cards to ensure the pile indices remain adjacent
+     * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
+     * @param mixed $card_ids multiple card ids to get
+     * @param string $location location to remove the card from
+     * @return
+     * @example example
+     * Let a pair (A, 1) denote `(card_id, location_arg)`
+     * 
+     * pile before: [(F, 1), (B, 2), (A, 3), (C, 4), (E, 5), (D, 6)]
+     * 
+     * removeCardsFromPile([B, C], pile) --> [(B, 2), (C, 4)]
+     * 
+     * pile after: [(F, 1), (B, 2), (A, 2), (C, 3), (E, 3), (D, 4)]
+     * 
+     * Objects B and C are now expected to be moved away from the pile by another function
+     */
+    function removeCardsFromPile(array $card_ids, string $location) {
+        $cards = array();
+        foreach ($card_ids as $card_id) {
+            $cards[] = $this->removeCardFromPile($card_id, $location);
+        }
+        return $cards;
+    }
+
+    /**
+     * Get cards from a specific "pile" location where cards are ordered. Decrements the indices of cards on the right by 1
+     * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
+     * @param mixed $card_ids multiple card ids to get
+     * @param string $location location to remove the card from
+     * @return array dbcard
+     */
+    function removeCardFromPile(mixed $card_id, string $location) {
+        $card = $this->getCardFromLocation($card_id, $location);
+        $location_arg = $card["location_arg"];
+        $sql = "UPDATE ".$this->table." ";
+        $sql .= "SET card_location_arg=card_location_arg-1 ";
+        $sql .= "WHERE card_location='".addslashes( $location )."' ";
+        $sql .= "AND card_location_arg>=".$location_arg;
+        self::DbQuery( $sql );
+        return $card;
     }
 
     /**

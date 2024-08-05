@@ -99,11 +99,11 @@ class Dale extends Gamegui
 			let player = gamedatas.players[player_id];
 
 			//deck per player
-			this.playerDecks[player_id] = new Pile(this, 'deck-'+player_id, 'Deck');
+			this.playerDecks[player_id] = new Pile(this, 'deck-'+player_id, 'Deck', +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
 
 			//discard pile per player
-			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile');
+			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile', +player_id);
 			for (let i in gamedatas.discardPiles[player_id]) {
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));
@@ -142,9 +142,11 @@ class Dale extends Gamegui
 		}
 		this.myHand.setSelectionMode(0);
 		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
+		const myHand = this.myHand;
+		const myHandUpdateDisplay = ()=>{setTimeout(function() {myHand.updateDisplay()}, 1)}; //TODO: only update display on hide/appear?
 
 		//initialize the temporary zone
-		this.myTemporary.init(this, $('mytemporary')!, $('mytemporary-wrap')!);
+		this.myTemporary.init(this, $('mytemporary')!, $('mytemporary-wrap')!, myHandUpdateDisplay, myHandUpdateDisplay);
 		for (let i in gamedatas.temporary) {
 			const card = gamedatas.temporary[i]!;
 			this.myTemporary.addDaleCardToStock(DaleCard.of(card));
@@ -164,9 +166,10 @@ class Dale extends Gamegui
 					background-blend-mode: overlay;
 					background-color: #${color}20;`
 				);
+				myHandUpdateDisplay();
 			}
 			this.playerSchedules[player_id] = new DaleStock();
-			this.playerSchedules[player_id].init(this, container, wrap, recolor);
+			this.playerSchedules[player_id].init(this, container, wrap, recolor, myHandUpdateDisplay);
 			this.playerSchedules[player_id].setSelectionMode(0);
 			this.playerSchedules[player_id].autowidth = true;
 			this.playerSchedules[player_id].duration = 500;
@@ -211,6 +214,7 @@ class Dale extends Gamegui
 				break;
 			case 'build':
 				this.myHand.setSelectionMode(2);
+				this.myDiscard.setSelectionMode('multiple', 0);
 				break;
 			case 'buildWithNostalgicItem':
 				this.myTemporary.setSelectionMode(1);
@@ -248,6 +252,7 @@ class Dale extends Gamegui
 				break;
 			case 'build':
 				this.myHand.setSelectionMode(0);
+				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'buildWithNostalgicItem':
 				this.myTemporary.setSelectionMode(0);
@@ -529,10 +534,26 @@ class Dale extends Gamegui
 		console.log("You click on a card in the... schedule...?");
 	}
 
+	onPileSelectionChanged(pile: Pile, card: DaleCard) {
+		console.log("onPileSelectionChanged");
+		if (pile === this.myDiscard) {
+			this.onMyDiscardPileSelectionChanged(pile, card);
+		} 
+	}
+
+	onMyDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
+		console.log("onMyDiscardPileSelectionChanged");
+		switch(this.gamedatas.gamestate.name) {
+			case 'build':
+				this.onBuildSelectionChanged();
+				break;
+		}
+	}
+
 	onHandSelectionChanged() {
 		let items = this.myHand.getSelectedItems();
-		if (!items[0]) return;
-		const card = new DaleCard(items[0].id);
+		if (!items[0] && this.myHand.selectionMode == 1) return;
+		const card = items[0] ? new DaleCard(items[0].id) : null!;
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
@@ -546,6 +567,9 @@ class Dale extends Gamegui
 					})
 				}
 				this.myHand.unselectAll();
+				break;
+			case 'build':
+				this.onBuildSelectionChanged();
 				break;
 			case 'buildWithNostalgicItem':
 				if(this.checkAction('actBuildWithNostalgicItem')) {
@@ -587,11 +611,34 @@ class Dale extends Gamegui
 		}
 	}
 
+	onBuildSelectionChanged(){
+		console.log("onBuildSelectionChanged");
+		//TODO: this client-side tip ignores chameleons!
+		const items = this.myHand.getSelectedItems();
+		let count_nostalgic_items = 0;
+		for (let item of items) {
+			if (DaleCard.hasType(item.id, DaleCard.CT_NOSTALGICITEM)) {
+				count_nostalgic_items++;
+			}
+		}
+		if (count_nostalgic_items > 0) {
+			//you need at least 1 nostalgic item in hand to start counting nostalgic items from discard
+			for (let card_id of this.myDiscard.orderedSelectedCardIds) {
+				if (DaleCard.hasType(card_id, DaleCard.CT_NOSTALGICITEM)) {
+					count_nostalgic_items++;
+				}
+			}
+		}
+		console.log("count_nostalgic_items = "+count_nostalgic_items);
+		this.myDiscard.setSelectionMode('multiple', count_nostalgic_items);
+	}
+
 	onBuild() {
 		const autoSortedCards = this.myHand.getSelectedItems();
 		if(this.checkAction('actBuild')) {
 			this.bgaPerformAction('actBuild', {
-				stack_card_ids: this.arrayToNumberList(autoSortedCards)
+				stack_card_ids: this.arrayToNumberList(autoSortedCards),
+				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds)
 			})
 		}
 	}
@@ -766,29 +813,42 @@ class Dale extends Gamegui
 		console.log("notif_buildStack");
 		const stall = this.playerStalls[notif.args.player_id]!;
 		for (let i in notif.args.cards) {
-			const card = DaleCard.of(notif.args.cards[i]!);
+			const dbcard = notif.args.cards[i]!
+			const card = DaleCard.of(dbcard);
 			// const newLocationArg = String(Stall.MAX_STACK_SIZE * notif.args.stack_index + index);
 			// console.log(`Build stack: [${card.location}@${card.location_arg}] -> [<current_players_stall>@${newLocationArg}]`);
 			// card.location_arg = newLocationArg;
 			//stall.insertDbCard(card, 'myhand_item_' + card.id);
-			if (notif.args.player_id == this.player_id) {
-				if ($('myhand_item_' + card.id)) {
-					stall.insertCard(card, notif.args.stack_index, undefined, 'myhand_item_' + card.id)
-					this.myHand.removeFromStockByIdNoAnimation(+card.id);
-				}
-				else {
-					throw new Error(`Cannot build a stack. Card ${card.id} does not exist in hand.`);
-				}
+			switch(notif.args.from){
+				case 'hand':
+					if (notif.args.player_id == this.player_id) {
+						if ($('myhand_item_' + card.id)) {
+							stall.insertCard(card, notif.args.stack_index, undefined, 'myhand_item_' + card.id)
+							this.myHand.removeFromStockByIdNoAnimation(+card.id);
+						}
+						else {
+							throw new Error(`Cannot build a stack. Card ${card.id} does not exist in hand.`);
+						}
+					}
+					else {
+						stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
+					}
+					break;
+				case 'disc':
+					//WARNING: dbcard.location_arg does not correspond to absolute indices in a pile.
+					//[1, 3, 5, 6, 8] is a valid sequence of location_args, but location arg 5 is at pile index 2.
+					const discard = this.playerDiscards[notif.args.player_id]!;
+					const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed
+					//TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					stall.insertCard(card, notif.args.stack_index, undefined, discard.placeholderHTML)
+					console.log("index = "+index);
+					discard.removeAt(index); 
+					break;
 			}
-			else {
-				stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
-			}
+
 		}
-		if (!notif.args.partial) {
-			//the build is complete (not partial), update the score and create a new empty stack
-			stall.createNewStack();
-			this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
-		}
+		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
+		stall.createNewStack();
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
@@ -1040,8 +1100,8 @@ class Dale extends Gamegui
 		else if (arg == 'clientConsoleLog') {
 			console.log(notif.args.msg);
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'increaseDeckSize') {
+			this.myDeck.pushHiddenCards(notif.args.nbr);
 		}
 		else if (arg == '') {
 			

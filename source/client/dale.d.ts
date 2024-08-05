@@ -37,6 +37,7 @@ declare global {
 		'debugClient': {
 			arg: string
 			msg: string
+			nbr: number
 		}
 		'reshuffleDeck': { 
 			player_id?: number
@@ -142,7 +143,6 @@ declare global {
 			stack_index_plus_1: number
             cards: {[card_id: number]: DbCard}
 			from: DbLocationPrefix
-			partial?: boolean //true if this notification only partially builds the stack
 		}
 	}
 

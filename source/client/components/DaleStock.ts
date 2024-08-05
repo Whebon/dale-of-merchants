@@ -11,6 +11,10 @@ export class DaleStock extends Stock {
 	/** Keeps track of the order in which cards in are selected */
 	public orderedSelectedCardIds: number[];
 
+	public get selectionMode() {
+		return (this as any).selectable;
+	}
+
 	constructor(){
 		super();
 		this.orderedSelectedCardIds = [];

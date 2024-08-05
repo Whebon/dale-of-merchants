@@ -11,6 +11,49 @@ export class DaleCard {
     static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>()
     static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
 
+    static readonly CT_CARDBACK: number = 0;
+    static readonly CT_JUNK: number = 1;
+    static readonly CT_JUNK2: number = 2;
+    static readonly CT_JUNK3: number = 3;
+    static readonly CT_JUNK4: number = 4;
+    static readonly CT_JUNK5: number = 5;
+    static readonly CT_SWIFTBROKER: number = 6;
+    static readonly CT_COOKIES: number = 7;
+    static readonly CT_SHATTEREDRELIC: number = 8;
+    static readonly CT_SPYGLASS: number = 9;
+    static readonly CT_FLASHYSHOW: number = 10;
+    static readonly CT_FAVORITETOY: number = 11;
+    static readonly CT_LOYALPARTNER: number = 12;
+    static readonly CT_PREPAIDFOOD: number = 13;
+    static readonly CT_ESSENTIALPURCHASE: number = 14;
+    static readonly CT_MARKETDISCOVERY: number = 15;
+    static readonly CT_SPECIALOFFER: number = 16;
+    static readonly CT_STOCKCLEARANCE: number = 17;
+    static readonly CT_WILYFELLOW: number = 18;
+    static readonly CT_NUISANCE: number = 19;
+    static readonly CT_ROTTENFOOD: number = 20;
+    static readonly CT_DIRTYEXCHANGE: number = 21;
+    static readonly CT_SABOTAGE: number = 22;
+    static readonly CT_TREASUREHUNTER: number = 23;
+    static readonly CT_STASHINGVENDOR: number = 24;
+    static readonly CT_EMPTYCHEST: number = 25;
+    static readonly CT_NOSTALGICITEM: number = 26;
+    static readonly CT_ACORN: number = 27;
+    static readonly CT_ACCORDION: number = 28;
+    static readonly CT_WINTERISCOMING: number = 29;
+    static readonly CT_BOLDHAGGLER: number = 30;
+    static readonly CT_NEWSEASON: number = 31;
+    static readonly CT_WHIRLIGIG: number = 32;
+    static readonly CT_CHARM: number = 33;
+    static readonly CT_GAMBLE: number = 34;
+    static readonly CT_BLINDFOLD: number = 35;
+    static readonly CT_FLEXIBLESHOPKEEPER: number = 36;
+    static readonly CT_REFLECTION: number = 37;
+    static readonly CT_GOODOLDTIMES: number = 38;
+    static readonly CT_GIFTVOUCHER: number = 39;
+    static readonly CT_TRENDSETTING: number = 40;
+    static readonly CT_SEEINGDOUBLES: number = 41;
+
     public id: number
 
     /** 
@@ -94,6 +137,13 @@ export class DaleCard {
 	}
 
     /**
+     * Destroy the tooltip for this card (where-ever it is attached to)
+     */
+    public destroyTooltip() {
+        DaleCard.tooltips.get(this.id)?.destroy();
+    }
+
+    /**
      * Add a tooltip to the specified tooltip_parent_id. WARNING: each DaleCard card_id can have at most 1 tooltip.
      * @param tooltip_parent_id parent id to attach the tooltip to.
      */
@@ -111,7 +161,7 @@ export class DaleCard {
         dojo.connect(parent, "mouseleave", () => {
             tooltip.close();
         });
-        DaleCard.tooltips.get(this.id)?.destroy()
+        this.destroyTooltip();
         DaleCard.tooltips.set(this.id, tooltip);
     }
 
@@ -126,7 +176,8 @@ export class DaleCard {
         div.setAttribute('style', Images.getCardStyle(this.type_id))
         if (tooltip_parent_id) {
             $(tooltip_parent_id)?.appendChild(div)
-            this.addTooltip(tooltip_parent_id);
+            this.addTooltip(div.id);
+            //this.addTooltip(tooltip_parent_id); //don't add the tooltip to the container, but to the card div itself
         }
         return div;
     }
@@ -137,5 +188,14 @@ export class DaleCard {
      */
     public static of(card: DbCard) {
         return new DaleCard(card.id, card.type_arg)
+    }
+
+    /**
+     * @param card_id
+     * @param type_id
+     * @return `true` if a card with id `card_id` is of type `type_id`
+     */
+    public static hasType(card_id: number, type_id: number){
+        return DaleCard.cardIdtoTypeId.get(card_id) == type_id;
     }
 }

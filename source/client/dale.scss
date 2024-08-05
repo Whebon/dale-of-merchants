@@ -34,7 +34,11 @@
 	position: absolute;
 }
 
-.card-slot-selected {
+.clickable {
+	cursor: pointer;
+}
+
+.selected {
 	border-radius: 10px;
 	border: 1px solid red;
 }
@@ -43,6 +47,11 @@
 	background-image: url('img/cards.jpg');
 	border-radius: 10px;
 	position: absolute;
+}
+
+.card.relative {
+	margin: 5px;
+	position: relative !important;
 }
 
 #market-board-background {
@@ -171,6 +180,29 @@
 		position: relative;
 	}
 }
+
+.popin-card-container {
+	display: flex;
+	flex-wrap: wrap;
+
+	.clickable {
+		transition: all .2s ease-in-out; 
+	}
+	
+	.clickable:hover {
+		cursor: pointer;
+		transform: scale(1.05); 
+	}
+}
+
+//TODO: safely delete this
+// .show-icon {
+// 	position: absolute;
+// 	z-index: 500; //must be higher than all sliding cards
+// 	height: 25px;
+// 	width: 25px;
+// 	background-color: red;
+// }
 
 .hidden {
 	display: none;

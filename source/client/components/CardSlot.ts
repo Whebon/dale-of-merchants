@@ -135,10 +135,10 @@ export class CardSlot {
     public setSelected(enable: boolean){
         if (this.selected == enable) return;
         if (enable) {
-            this._container.classList.add("card-slot-selected");
+            this._container.classList.add("selected");
         }
         else {
-            this._container.classList.remove("card-slot-selected");
+            this._container.classList.remove("selected");
         }
         this.selected = enable;
     }

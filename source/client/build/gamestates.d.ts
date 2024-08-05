@@ -95,6 +95,10 @@ interface GameStates {
 				'name': 'stack_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}, {
+				'name': 'stack_card_ids_from_discard',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 			'actCancel': [],
 		},
