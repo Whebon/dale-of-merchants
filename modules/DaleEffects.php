@@ -8,7 +8,6 @@ require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 if (!defined('EXPIRES_NEVER')) {
     define('EXPIRES_NEVER', 0);
     define('EXPIRES_ON_END_OF_TURN', 1);
-    define('EXPIRES_ON_END_OF_BUILD', 2);
 }
 
 /**
@@ -173,27 +172,5 @@ class DaleEffects {
         $sql = "DELETE FROM effect WHERE expires = ".EXPIRES_ON_END_OF_TURN;
         $this->game->DbQuery($sql);
         $this->loadFromDb();
-    }
-
-    /**
-     * Expire all effects with EXPIRES_ON_END_OF_BUILD.
-     * @param bool $return (optional) default false. If true, return the deleted effects.
-     */
-    function expireEndOfBuild(bool $return = false) {
-        if ($return) {
-            $deleted_effects = array();
-            foreach ($this->cache as $row) {
-                if ($row["expires"] == EXPIRES_ON_END_OF_BUILD) {
-                    $deleted_effects[] = $row;
-                }
-            }
-        }
-        else {
-            $deleted_effects = null;
-        }
-        $sql = "DELETE FROM effect WHERE expires = ".EXPIRES_ON_END_OF_BUILD;
-        $this->game->DbQuery($sql);
-        $this->loadFromDb();
-        return $deleted_effects;
     }
 }

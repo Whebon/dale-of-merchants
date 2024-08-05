@@ -303,7 +303,7 @@ class Dale extends DaleTableBasic
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DECK.$deck_player_id);
-            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array (
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', $cards ? '' : $msg, array (
                 'player_id' => $this->getActivePlayerId(),
                 'player_name' => $this->getActivePlayerName(),
                 "_private" => array(
@@ -317,18 +317,20 @@ class Dale extends DaleTableBasic
         }
         
         //2: move the ordered cards on top of the deck
-        $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
-        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', $msg, array (
-            'player_id' => $this->getActivePlayerId(),
-            'player_name' => $this->getActivePlayerName(),
-            "_private" => array(
-                'card_ids' => $card_ids,
-                'cards' => $cards,
-            ),
-            'deck_player_id' => $deck_player_id,
-            'nbr' => count($cards) + $nbr_unordered_cards,
-            'from_temporary' => $from_temporary
-        ));
+        if ($cards) {
+            $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', $msg, array (
+                'player_id' => $this->getActivePlayerId(),
+                'player_name' => $this->getActivePlayerName(),
+                "_private" => array(
+                    'card_ids' => $card_ids,
+                    'cards' => $cards,
+                ),
+                'deck_player_id' => $deck_player_id,
+                'nbr' => count($cards) + $nbr_unordered_cards,
+                'from_temporary' => $from_temporary
+            ));
+        }
     }
 
     /**
@@ -347,7 +349,7 @@ class Dale extends DaleTableBasic
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.$player_id);
-            $this->notifyAllPlayers('discardMultiple', '', array (
+            $this->notifyAllPlayers('discardMultiple', $cards ? '' : $msg, array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $unordered_card_ids,
@@ -358,15 +360,17 @@ class Dale extends DaleTableBasic
         }
         
         //2: move the ordered cards to the discard pile
-        $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discardMultiple', $msg, array (
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_ids' => $card_ids,
-            'cards' => $cards,
-            'nbr' => count($cards) + $nbr_unordered_cards,
-            'from_temporary' => $from_temporary
-        ));
+        if ($cards) {
+            $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
+            $this->notifyAllPlayers('discardMultiple', $msg, array (
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $card_ids,
+                'cards' => $cards,
+                'nbr' => count($cards) + $nbr_unordered_cards,
+                'from_temporary' => $from_temporary
+            ));
+        }
     }
 
 
@@ -785,9 +789,6 @@ class Dale extends DaleTableBasic
         //Apply the rules for a valid stack
         $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
 
-        //Expire all build effects
-        $this->effects->expireEndOfBuild();
-
         //Add the cards to the stack
         if ($cards_from_discard) {
             $this->cards->moveCardsToStall($this->toCardIds($cards_from_discard), STALL.$player_id, $stack_index);
@@ -871,7 +872,6 @@ class Dale extends DaleTableBasic
     function testEffects() {
         foreach (array(false, true) as $reload) { //reloading yes or no should not make a difference
             $reload_msg = $reload ? " (reload TRUE)" : " (reload FALSE)";
-            $this->effects->expireEndOfBuild();
             $this->effects->expireEndOfTurn();
             $target = 33;
             $this->effects->insert(41, 0);
@@ -1231,30 +1231,6 @@ class Dale extends DaleTableBasic
             $selected_cards, 
             $non_selected_cards
         );
-        
-
-        //TODO: safely delete
-        // //move the non-selected cards to the discard pile (ordering doesn't matter)
-        // $non_selected_card_ids = array_keys($non_selected_cards);
-        // $this->cards->moveCardsOnTop($non_selected_card_ids, DISCARD.$player_id);
-        // $this->notifyAllPlayers('discardMultiple', '', array (
-        //     'player_id' => $player_id,
-        //     'player_name' => $this->getActivePlayerName(),
-        //     'card_ids' => $non_selected_card_ids,
-        //     'cards' => $non_selected_cards,
-        //     'nbr' => count($non_selected_cards)
-        // ));
-
-        // //move the selected cards to the discard pile (ordering matters)
-        // $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
-        // $nbr = count($card_ids);
-        // $this->notifyAllPlayers('discardMultiple', clienttranslate('Swift Broker: ${player_name} discards their hand'), array (
-        //     'player_id' => $player_id,
-        //     'player_name' => $this->getActivePlayerName(),
-        //     'card_ids' => $card_ids,
-        //     'cards' => $selected_cards,
-        //     'nbr' => count($selected_cards)
-        // ));
 
         //draw an equal amount of new cards
         $nbr = count($selected_cards) + count($non_selected_cards);
