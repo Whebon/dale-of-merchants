@@ -447,6 +447,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.updateHTML();
         };
         Pile.prototype.pop = function (to, onEnd, duration, delay) {
+            var _a;
             if (this.cards.length == 0) {
                 throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
             }
@@ -469,6 +470,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.setZIndex(slidingElement);
             }
             var card = this.cards.pop();
+            card.destroyTooltip();
+            (_a = this.peek()) === null || _a === void 0 ? void 0 : _a.addTooltip(this.topCardHTML.id);
             this.updateHTML();
             return card;
         };

@@ -223,6 +223,8 @@ export class Pile {
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
         let card = this.cards.pop()!;
+        card.destroyTooltip();
+        this.peek()?.addTooltip(this.topCardHTML.id);
         this.updateHTML();
         return card;
     }
