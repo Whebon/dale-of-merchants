@@ -92,7 +92,7 @@ export class DaleStock extends Stock {
 	 * @param from The element to animate the item from. When the `from` parameter is specified, the item will be created at the location of the from element and animate to the stock. The location create is always an absolute position at the top left of the from div. This is optional and can be used to animate the item from a specific location on the page. If this is not specified, the item will be created and placed immediately inside the stock.
 	*/
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
-		this.addToStockWithId(card.type_id, card.id, from);
+		this.addToStockWithId(card.effective_type_id, card.id, from);
 		card.addTooltip(this.control_name+'_item_'+card.id);
 	}
 

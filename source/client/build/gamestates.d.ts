@@ -34,6 +34,14 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}, {
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 			'actRequestStallAction': [],
 			'actRequestInventoryAction': [],

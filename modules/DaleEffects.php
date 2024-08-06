@@ -54,56 +54,33 @@ class DaleEffects {
     /**
      * Update the card effect's target
      * @param int $card_id the card that caused the effect
+     * @param int $type_id the type of effect
      * @param int $target new value for the target
      */
-    function updateTargetByCardId(int $card_id, int $target) {
-        $sql = "UPDATE effect SET target=$target WHERE card_id=$card_id";
-        $found = false;
+    function updateTarget(int $card_id, int $type_id, int $target) {
+        $sql = "UPDATE effect SET target=$target WHERE card_id=$card_id AND type_id=$type_id";
         $this->game->DbQuery($sql);
+        $found = false;
         foreach ($this->cache as $index => $row) {
-            if ($row["card_id"] == $card_id) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id) {
                 $this->cache[$index]["target"] = $target;
                 $found = true;
             }
         }
         if ($found == false) {
-            throw new BgaVisibleSystemException("Card id $card_id has no active effect, so the effect cannot be updated");
+            throw new BgaVisibleSystemException("Card id $card_id has no active effect with type_id $type_id, so the effect cannot be updated");
         }
     }
 
     /**
-     * Return true if a row with the given card_id exists
-     */
-    function contains(int $card_id) {
-        foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Return true if a row with the given card_id exists
+     * Return the target of the FIRST effect of the given card id. If none was found, return null
      * @param int $card_id
-     * @param int $target (optional) the card must have target exactly this target
+     * @param int $type_id (optional) - if provided, the effect must be of exactly the given type id
      */
-    function containsEffectOfCardId(int $card_id, int $target = null) {
+    function getTarget(int $card_id, int $type_id = null) {
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && ($target == null || $target == $row["target"])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Return the FIRST effect of the given card id. If none was found, return null
-     */
-    function getEffectByCardId(int $card_id) {
-        foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id) {
-                return $row;
+            if ($row["card_id"] == $card_id && ($type_id == null || $type_id == $row["type_id"])) {
+                return $row["target"];
             }
         }
         return null;

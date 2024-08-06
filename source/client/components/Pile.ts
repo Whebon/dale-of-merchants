@@ -90,7 +90,7 @@ export class Pile {
         }
         else {
             //the pile is non-empty and its content is known, draw the top card of the pile
-            this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.type_id));
+            this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
         }
     }
 

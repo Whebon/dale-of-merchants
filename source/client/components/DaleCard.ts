@@ -7,8 +7,10 @@ import { DbCard } from './types/DbCard';
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
  */
 export class DaleCard {
-    static cardTypes: CardType[] //initialized during "setup(gamedatas: Gamedatas)"
-    static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>()
+    static cardTypes: CardType[]; //initialized during "setup(gamedatas: Gamedatas)"
+    private static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>();
+    private static readonly cardIdtoEffectiveTypeId: Map<number, number> = new Map<number, number>();
+    private static readonly cardIdtoEffectiveTypeIdLocal: Map<number, number> = new Map<number, number>();
     static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
 
     static readonly CT_CARDBACK: number = 0;
@@ -74,7 +76,7 @@ export class DaleCard {
             }
         }
         else if (!DaleCard.cardIdtoTypeId.has(id)) {
-            console.log("cardIdtoTypeId");
+            console.log("cardId2TypeId");
             console.log(DaleCard.cardIdtoTypeId);
             throw new Error(`The type_id of card_id ${id} is unknown. Therefore, a card with id ${id} cannot be instantiated.`)
         }
@@ -96,10 +98,10 @@ export class DaleCard {
     }
 
     /** 
-     * Uniquely defines the appearance of a card (not to be confused with tehcnique/passive typing). 
+     * Uniquely defines the original appearance of a card (not to be confused with tehcnique/passive typing). 
      * Cards with the same type_id are indistinguishable up to their ids.
      * */
-    public get type_id(): number {
+    public get original_type_id(): number {
         let _type_id = DaleCard.cardIdtoTypeId.get(this.id);
         if (_type_id == undefined) {
             console.warn(`id ${this.id} does not have a corresponding type_id`)
@@ -108,24 +110,90 @@ export class DaleCard {
         return _type_id
     }
 
+    /** 
+     * Returns the effective type_id of this card (after applying chameleon targets)
+     * */
+    public get effective_type_id(): number {
+        let _type_id = DaleCard.cardIdtoEffectiveTypeId.get(this.id);
+        if (_type_id == undefined) {
+            _type_id = DaleCard.cardIdtoEffectiveTypeIdLocal.get(this.id)
+        }
+        if (_type_id == undefined) {
+            return this.original_type_id;
+        }
+        return _type_id
+    }
+
+    /**
+     * Bind an effective type to this card. The bind still needs to be commited to the server later.
+     * @param effective_type_id new type id this card should be bound to
+     */
+    public bindChameleonLocal(effective_type_id: number) {
+        DaleCard.cardIdtoEffectiveTypeIdLocal.set(this.id, effective_type_id);
+        console.log(DaleCard.cardIdtoEffectiveTypeIdLocal);
+    }
+
+    /**
+     * Bind an effective type to a card id. Maps `card_id` -> `effective_type_id`.
+     * @param card_id card id to bind
+     * @param effective_type_id type id the card should assume
+     */
+    public static bindChameleonFromServer(card_id: number, effective_type_id: number) {
+        DaleCard.cardIdtoEffectiveTypeId.set(card_id, effective_type_id);
+    }
+
+    /**
+     * Unbinds all locally stored chameleon bindings.
+     */
+    public static unbindAllChameleonsLocal() {
+        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+    }
+
+    /**
+     * Returns the locally stored chameleon mapping in a format that can be send to the server. Then, unbinds the local changes.
+     * @return ordered arrays that represents the local mapping: `card_ids` -> `type_ids`
+     * @example example {card_ids: "1;3;4;8", type_ids: "28;9;15;17"}
+     */
+    public static commitLocalChameleons(): {chameleon_card_ids: string, chameleon_type_ids: string} {
+        const card_ids = [] as number[];
+        const type_ids = [] as number[];
+        DaleCard.cardIdtoEffectiveTypeIdLocal.forEach((type_id: number, card_id: number) => {
+            card_ids.push(card_id);
+            type_ids.push(type_id);
+        });
+        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+        return {
+            chameleon_card_ids: card_ids.join(";"),
+            chameleon_type_ids: type_ids.join(";")
+        };
+    }
+
+    /**
+     * Unbinds all chameleon cards.
+     */
+    public static unbindAllChameleons() {
+        DaleCard.cardIdtoEffectiveTypeId.clear();
+        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+    }
+
     public get value(): number {
-        return DaleCard.cardTypes[this.type_id]!.value
+        return DaleCard.cardTypes[this.effective_type_id]!.value
     }
 
     public get animalfolk(): Animalfolk {
-        return DaleCard.cardTypes[this.type_id]!.animalfolk
+        return DaleCard.cardTypes[this.effective_type_id]!.animalfolk
     }
 
     public isJunk(): boolean {
-        return (this.type_id >= 1 && this.type_id <= 5);
+        return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
     }
 
     public isPlayable(): boolean {
-        return DaleCard.cardTypes[this.type_id]!.playable
+        return DaleCard.cardTypes[this.effective_type_id]!.playable
     }
 
     private getTooltipContent(): string {
-        const cardType = DaleCard.cardTypes[this.type_id]!;
+        const cardType = DaleCard.cardTypes[this.effective_type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
         return `<div class="card-tooltip">
             <h3>${cardType.name}</h3>
@@ -173,7 +241,7 @@ export class DaleCard {
         let div = document.createElement("div")
         div.id = "dale-card-"+this.id
         div.classList.add("card")
-        div.setAttribute('style', Images.getCardStyle(this.type_id))
+        div.setAttribute('style', Images.getCardStyle(this.effective_type_id))
         if (tooltip_parent_id) {
             $(tooltip_parent_id)?.appendChild(div)
             this.addTooltip(div.id);
@@ -190,12 +258,13 @@ export class DaleCard {
         return new DaleCard(card.id, card.type_arg)
     }
 
-    /**
-     * @param card_id
-     * @param type_id
-     * @return `true` if a card with id `card_id` is of type `type_id`
-     */
-    public static hasType(card_id: number, type_id: number){
-        return DaleCard.cardIdtoTypeId.get(card_id) == type_id;
-    }
+    //TODO: safely delete this
+    // /**
+    //  * @param card_id
+    //  * @param type_id
+    //  * @return `true` if a card with id `card_id` is of type `type_id`
+    //  */
+    // public static hasType(card_id: number, type_id: number){
+    //     return DaleCard.cardIdtoTypeId.get(card_id) == type_id;
+    // }
 }

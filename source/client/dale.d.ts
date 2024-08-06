@@ -8,10 +8,15 @@
  * -----
  */
 
-import { Animalfolk } from './components/types/Animalfolk';
+import { DaleCard } from './components/DaleCard';
 import { CardType } from './components/types/CardType';
 import { DbCard } from './components/types/DbCard';
+import { DbEffect } from './components/types/DbEffect';
 import { DbLocationPrefix } from './components/types/DbLocationPrefix';
+import { Pile } from './components/Pile';
+import { DaleStock } from './components/DaleStock';
+import { MarketBoard } from './components/MarketBoard';
+import { Stall } from './components/Stall';
 
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
@@ -30,6 +35,10 @@ declare global {
 		'resolveTechnique': {
 			player_id: number
 			card: DbCard
+		}
+		'bindChameleon': {
+			card_id: string,
+			type_id: string
 		}
 		'message': {
 			//no args
@@ -171,6 +180,12 @@ declare global {
 		'hand': {[card_id: number]: DbCard}
 		'temporary': {[card_id: number]: DbCard}
 		'market': {[card_id: number]: DbCard}
+		'effects': {[_index: number]: DbEffect}
+	}
+
+	/** @gameSpecific Add game specific client game states */
+	interface ClientGameState {
+		'client_trendsetting': {}
 	}
 
 	//
