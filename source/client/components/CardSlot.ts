@@ -29,6 +29,7 @@ export class CardSlot {
      * @param card (Optional) - immediately fill the slot with a card
      */
     constructor(parent: CardSlotManager, pos: number, container: HTMLElement, card?: DaleCard){
+        (parent.page as any).allCardSlots.push(this);
         this.parent = parent;
         this.pos = pos;
         this.selected = false;
@@ -68,6 +69,16 @@ export class CardSlot {
             throw new Error("An empty slot has no card")
         }
         return this._container.firstChild as HTMLElement;
+    }
+
+    /**
+     * Recreated the html of this slot by removing and inserting the card in the slot
+     */
+    public updateHTML() {
+        const card = this.removeCard();
+        if (card) {
+            this.insertCard(card);
+        }
     }
 
     /**
@@ -124,6 +135,11 @@ export class CardSlot {
      * Delete the entire slot.
      */
     public remove() {
+        const allCardSlots: CardSlot[] = (this.parent.page as any).allCardSlots;
+        const index = allCardSlots.indexOf(this);
+        if (index > -1) {
+            allCardSlots.splice(index, 1);
+        }
         this.removeCard();
         this._container.remove();
     }

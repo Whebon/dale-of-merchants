@@ -24,10 +24,20 @@ import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
 import { ChameleonClientStateArgs } from './components/types/ChameleonClientStateArgs';
+import { CardSlot } from './components/CardSlot';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
+	/** For conveniene, each new Pile will add a reference to itself in this array*/
+	allPiles: Pile[] = [];
+
+	/** For conveniene, each new DaleStock will add a reference to itself in this array*/
+	allDaleStocks: DaleStock[] = [];
+
+	/** For conveniene, each new DaleStock will add a reference to itself in this array*/
+	allCardSlots: CardSlot[] = [];
+
 	/** Pile of hidden cards representing the market deck. */
 	marketDeck: Pile = new Pile(this, 'market-deck', 'Market Deck');
 
@@ -94,6 +104,27 @@ class Dale extends Gamegui
 
 		//initialize the card types
 		DaleCard.init(gamedatas.cardTypes);
+
+		//display any effects on the client-side (currently, only chameleon effects are used)
+		console.log("DbEffects:");
+		for (let i in gamedatas.effects) {
+			const effect = gamedatas.effects[i]!;
+			switch(+effect.type_id) {
+				case DaleCard.CT_FLEXIBLESHOPKEEPER:
+				case DaleCard.CT_REFLECTION:
+				case DaleCard.CT_GOODOLDTIMES:
+				case DaleCard.CT_TRENDSETTING:
+				case DaleCard.CT_SEEINGDOUBLES:
+					if (+effect.target != -1) {
+						console.log(`Bind Chameleon: ${+effect.card_id} -> ${+effect.target}`);
+						DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
+					}
+					break;
+				default:
+					break;
+			}
+			console.log(effect);
+		}
 
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
@@ -180,27 +211,6 @@ class Dale extends Gamegui
 			}
 		}
 
-		//display any effects on the client-side (currently, only chameleon effects are used)
-		console.log("DbEffects:");
-		for (let i in gamedatas.effects) {
-			const effect = gamedatas.effects[i]!;
-			switch(+effect.type_id) {
-				case DaleCard.CT_FLEXIBLESHOPKEEPER:
-				case DaleCard.CT_REFLECTION:
-				case DaleCard.CT_GOODOLDTIMES:
-				case DaleCard.CT_TRENDSETTING:
-				case DaleCard.CT_SEEINGDOUBLES:
-					if (+effect.target != -1) {
-						console.log(`Bind Chameleon: ${+effect.card_id} -> ${+effect.target}`);
-						DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
-					}
-					break;
-				default:
-					break;
-			}
-			console.log(effect);
-		}
-
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
 
@@ -257,6 +267,15 @@ class Dale extends Gamegui
 			case 'nextPlayer':
 				console.log("nextPlayer, expire all effects that last until end of turn (chameleon bindings)");
 				DaleCard.unbindAllChameleons();
+				for (let pile of this.allPiles) {
+					pile.updateHTML();
+				}
+				for (let cardSlot of this.allCardSlots) {
+					cardSlot.updateHTML();
+				}
+				for (let stock of this.allDaleStocks) {
+					stock.updateHTML();
+				}
 				break;
 		}
 	}

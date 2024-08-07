@@ -49,6 +49,7 @@ export class DaleStock extends Stock {
 	 */
 	init(page: Gamegui, container: Element, hideOuterContainer?: Element, onItemCreate?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void, onItemDelete?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void) {
 		//configure card types
+		(page as any).allDaleStocks.push(this);
 		for (let i in page.gamedatas.cardTypes) {
 			let type_id = page.gamedatas.cardTypes[i]!.type_id;
 			this.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
@@ -86,6 +87,24 @@ export class DaleStock extends Stock {
 		this.orderedSelectedCardIds = [];
 	}
 
+	/**
+	 * Function to be called after unbinding chameleon cards. All bound chameleon cards are removed and readded to the stock.
+	 */
+	public updateHTML() {
+		const chameleonIcons = this.container_div.querySelectorAll('.chameleon-icon');
+		chameleonIcons.forEach(icon => {
+			if (icon.parentElement) {
+				const html_id = icon.parentElement.id;
+				const match = html_id.match(/\d+$/);
+				if (match) {
+					const card_id = +match[0];
+					this.removeFromStockById(card_id);
+					this.addDaleCardToStock(new DaleCard(card_id))
+				}
+			}
+		});
+	}
+
 	/** 
 	 * Add a `DaleCard` to a stock. Always use this instead of addToStockWithID. This ensures that the type id of the card id is registered in the `DaleCard` class.
 	 * @param card card to add to the stock
@@ -93,6 +112,9 @@ export class DaleStock extends Stock {
 	*/
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
 		this.addToStockWithId(card.effective_type_id, card.id, from);
+		if (card.isBoundChameleon()) {
+			$(this.control_name+"_item_"+card.id)?.appendChild(DaleCard.createChameleonIcon());
+		}
 		card.addTooltip(this.control_name+'_item_'+card.id);
 	}
 

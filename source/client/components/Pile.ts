@@ -37,6 +37,7 @@ export class Pile {
     private _slidingCards: DaleCard[];
 
     constructor(page: Gamegui, pile_container_id: string, pile_name?: string, player_id?: number){
+        (page as any).allPiles.push(this);
         this.pile_container_id = pile_container_id;
         this.pile_name = pile_name;
         this.player_id = player_id;
@@ -67,7 +68,7 @@ export class Pile {
         return this.cards.length;
     }
 
-    private updateHTML() {
+    public updateHTML() {
         //TODO: safely remove this
         // if (this.orderedSelectedCardIds.length == 0) {
         //     this.topCardHTML.classList.remove("selected");
@@ -90,7 +91,11 @@ export class Pile {
         }
         else {
             //the pile is non-empty and its content is known, draw the top card of the pile
+            this.topCardHTML.innerHTML = ''; //delete previous badges
             this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
+            if (topCard.isBoundChameleon()) {
+                this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
+            }
         }
     }
 
@@ -223,7 +228,6 @@ export class Pile {
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
         let card = this.cards.pop()!;
-        card.destroyTooltip();
         this.peek()?.addTooltip(this.topCardHTML.id);
         this.updateHTML();
         return card;

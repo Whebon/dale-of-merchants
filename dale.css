@@ -47,6 +47,19 @@
   border: 2px solid #1d7a2a !important;
 }
 
+.chameleon-icon {
+  pointer-events: none;
+  background-image: url("img/chameleon_icon.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  top: 10%;
+  left: 5%;
+  opacity: 50%;
+}
+
 .card {
   background-image: url("img/cards.jpg");
   border-radius: 10px;
@@ -186,6 +199,10 @@
   margin-left: 5px;
 }
 
+.card-tooltip .chameleon-name {
+  text-decoration: line-through;
+  color: #1d7a2a;
+}
 .card-tooltip .text {
   max-width: 300px;
 }

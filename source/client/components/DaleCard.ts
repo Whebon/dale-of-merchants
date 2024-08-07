@@ -125,6 +125,13 @@ export class DaleCard {
     }
 
     /**
+     * @returns true if this is a chameleon card that has already copied a card earlier this turn
+     */
+    public isBoundChameleon(){
+        return DaleCard.cardIdtoEffectiveTypeIdLocal.has(this.id) || DaleCard.cardIdtoEffectiveTypeId.has(this.id);
+    }
+
+    /**
      * Bind an effective type to this card. The bind still needs to be commited to the server later.
      * @param effective_type_id new type id this card should be bound to
      */
@@ -176,6 +183,15 @@ export class DaleCard {
         DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
     }
 
+    /**
+     * Returns a badge that can be attached to a card div to indicate it is a chameleon card
+     */
+    public static createChameleonIcon() {
+        let div = document.createElement("div");
+        div.classList.add("chameleon-icon");
+        return div;
+    }
+
     public get value(): number {
         return DaleCard.cardTypes[this.effective_type_id]!.value
     }
@@ -195,12 +211,14 @@ export class DaleCard {
     private getTooltipContent(): string {
         const cardType = DaleCard.cardTypes[this.effective_type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
+        const chameleonName = this.isBoundChameleon() ? `<span class=chameleon-name>${DaleCard.cardTypes[this.original_type_id]!.name}</span> ` : ""
         return `<div class="card-tooltip">
-            <h3>${cardType.name}</h3>
+            <h3>${chameleonName}${cardType.name}</h3>
             <hr>
             ${cardType.value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
             <div class="text">${cardType.text}</div>
+            <br style="line-height: 10px" />
         </div>`
 	}
 
@@ -246,6 +264,9 @@ export class DaleCard {
             $(tooltip_parent_id)?.appendChild(div)
             this.addTooltip(div.id);
             //this.addTooltip(tooltip_parent_id); //don't add the tooltip to the container, but to the card div itself
+        }
+        if (this.isBoundChameleon()) {
+            div.appendChild(DaleCard.createChameleonIcon());
         }
         return div;
     }
