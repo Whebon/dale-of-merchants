@@ -1428,7 +1428,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (requiresPlayable === void 0) { requiresPlayable = false; }
             if (saveSelection === void 0) { saveSelection = false; }
             callback = callback.bind(this);
-            if (!card) {
+            if (!card || !this.checkLock()) {
                 callback();
                 return;
             }
@@ -1643,13 +1643,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onPlayCard = function (card) {
             if (!card) {
                 console.warn("Attempted to play 'undefined' card");
-                return;
             }
-            if (!card.isPlayable()) {
+            else if (!card.isPlayable()) {
                 this.showMessage(_("This card cannot be played"), 'error');
-                return;
             }
-            if (this.checkAction('actPlayCard')) {
+            else if (this.checkAction('actPlayCard')) {
                 this.bgaPerformAction('actPlayCard', __assign({ card_id: card.id }, DaleCard_4.DaleCard.getLocalChameleons()));
             }
             this.myHand.unselectAll();

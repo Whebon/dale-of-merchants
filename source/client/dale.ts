@@ -373,7 +373,7 @@ class Dale extends Gamegui
 	 */
 	handleChameleonCard(card: DaleCard | undefined, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, saveSelection: boolean = false) {
 		callback = callback.bind(this);
-		if (!card) {
+		if (!card || !this.checkLock()) {
 			callback();
 			return;
 		}
@@ -721,13 +721,11 @@ class Dale extends Gamegui
 	onPlayCard(card?: DaleCard) {
 		if (!card) {
 			console.warn("Attempted to play 'undefined' card");
-			return;
 		}
-		if (!card.isPlayable()) {
+		else if (!card.isPlayable()) {
 			this.showMessage(_("This card cannot be played"), 'error');
-			return;
 		}
-		if(this.checkAction('actPlayCard')) {
+		else if(this.checkAction('actPlayCard')) {
 			this.bgaPerformAction('actPlayCard', {
 				card_id: card.id, 
 				...DaleCard.getLocalChameleons()
