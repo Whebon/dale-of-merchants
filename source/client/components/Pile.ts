@@ -68,14 +68,14 @@ export class Pile {
         return this.cards.length;
     }
 
-    public updateHTML() {
-        //TODO: safely remove this
-        // if (this.orderedSelectedCardIds.length == 0) {
-        //     this.topCardHTML.classList.remove("selected");
-        // }
-        // else {
-        //     this.topCardHTML.classList.add("selected");
-        // }
+    /**
+     * @param card (optional) - if provided, only update this html elements of this card
+     */
+    public updateHTML(card?: DaleCard) {
+        let topCard = this.peek(true);
+        if (card != undefined && card.id != topCard?.id) {
+            return;
+        }
         if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
             this.selectedSizeHTML.classList.remove("hidden");
             this.selectedSizeHTML.innerHTML = `<span style="color: red;">(x ${this.orderedSelectedCardIds.length})</span>`;
@@ -84,7 +84,6 @@ export class Pile {
             this.selectedSizeHTML.classList.add("hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
-        let topCard = this.peek(true);
         if (topCard == undefined) {
             //the pile is empty, hide the top card so we can see the placeholder
             this.topCardHTML.setAttribute('style', "display: none");

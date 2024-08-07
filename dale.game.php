@@ -250,7 +250,7 @@ class Dale extends DaleTableBasic
         foreach ($AT_numberlists as $AT_numberlist) {
             $arrays[] = $this->numberListToArray($AT_numberlist);
         }
-        return array_merge($arrays);
+        return array_merge(...$arrays);
     }
 
     /**
@@ -712,9 +712,8 @@ class Dale extends DaleTableBasic
         $used_card_ids = $this->numberListsToArray(...$raw_used_card_ids);
 
         //enforce the (chameleon) card_ids are a subset of the used_card_ids
-        if (!$this->isSubset($used_card_ids, $used_card_ids)) {
-            die("a".print_r($used_card_ids)."b.".print_r($used_card_ids));
-            throw new BgaVisibleSystemException("Unable to bind chameleon cards that are not being used in the action");
+        if (!$this->isSubset($card_ids, $used_card_ids)) {
+            throw new BgaUserException("Bound chameleon cards must be used in the action");
         }
         
         //enforce the card_ids and type_ids are of equal length
@@ -1268,9 +1267,9 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPlayCard($card_id, $chameleon_card_ids, $chameleon_type_ids) {
-        $this->checkAction("actPlayCard");
+    function actPlayCard($chameleon_card_ids, $chameleon_type_ids, $card_id) {
         $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $card_id);
+        $this->checkAction("actPlayCard");
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $type_id = $this->getTypeId($card);
@@ -1453,7 +1452,8 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trBuild");
     }
 
-    function actBuild(string $stack_card_ids, string $stack_card_ids_from_discard) {
+    function actBuild(string $chameleon_card_ids, string $chameleon_type_ids, string $stack_card_ids, string $stack_card_ids_from_discard) {
+        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
         $stack_card_ids = $this->numberListToArray($stack_card_ids);
         $stack_card_ids_from_discard = $this->numberListToArray($stack_card_ids_from_discard);

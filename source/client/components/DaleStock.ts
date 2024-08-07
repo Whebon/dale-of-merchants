@@ -89,20 +89,32 @@ export class DaleStock extends Stock {
 
 	/**
 	 * Function to be called after unbinding chameleon cards. All bound chameleon cards are removed and readded to the stock.
+	 * @param card (optional) - if provided, only update this html elements of this card
 	 */
-	public updateHTML() {
-		const chameleonIcons = this.container_div.querySelectorAll('.chameleon-icon');
-		chameleonIcons.forEach(icon => {
-			if (icon.parentElement) {
-				const html_id = icon.parentElement.id;
-				const match = html_id.match(/\d+$/);
-				if (match) {
-					const card_id = +match[0];
-					this.removeFromStockById(card_id);
-					this.addDaleCardToStock(new DaleCard(card_id))
+	public updateHTML(card?: DaleCard) {
+		console.log(`updateHTML for DaleStock '${this.control_name}'`);
+		if (card) {
+			this.removeFromStockById(card.id);
+			this.addDaleCardToStock(card)
+		}
+		else {
+			//remove all chameleon icons. warning: will not missing add missing chameleon icons!
+			const chameleonIcons = this.container_div.querySelectorAll('.chameleon-icon');
+			chameleonIcons.forEach(icon => {
+				if (icon.parentElement) {
+					const html_id = icon.parentElement.id;
+					const match = html_id.match(/\d+$/);
+					if (match) {
+						const card_id = +match[0];
+						const card = new DaleCard(card_id);
+						if (!card.isBoundChameleon()) {
+							this.removeFromStockById(card_id);
+							this.addDaleCardToStock(card)
+						}
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	/** 

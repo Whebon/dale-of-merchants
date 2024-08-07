@@ -48,6 +48,18 @@ export class MarketBoard implements CardSlotManager {
     }
 
     /**
+     * UpdateHTML for all cardslots. 
+     * @param card (optional) - if provided, only update the card slot of this card.
+     */
+    updateHTML(card?: DaleCard) {
+        for (let slot of this.slots) {
+            if (card == undefined || card.id == slot.card?.id) {
+                slot.updateHTML();
+            }
+        }
+    }
+
+    /**
      * converts any position to a valid market position
      * @param pos any market position
      * @param valid valid market position: 4, 3, 2, 1 or 0

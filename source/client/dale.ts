@@ -225,13 +225,7 @@ class Dale extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 
-		if (!this.isCurrentPlayerActive() && stateName != 'nextPlayer') {
-			this.market!.setSelectionMode(0);
-			this.myHand.setSelectionMode(0);
-			return;
-		}
-
-		//reset the selected cards array
+		//turn on selection mode(s)
 		switch( stateName ){
 			case 'playerTurn':
 				this.market!.setSelectionMode(1);
@@ -267,16 +261,7 @@ class Dale extends Gamegui
 			case 'nextPlayer':
 				console.log("nextPlayer, expire all effects that last until end of turn (chameleon bindings)");
 				DaleCard.unbindAllChameleons();
-				for (let pile of this.allPiles) {
-					pile.updateHTML();
-				}
-				for (let cardSlot of this.allCardSlots) {
-					cardSlot.updateHTML();
-				}
-				for (let stock of this.allDaleStocks) {
-					stock.updateHTML();
-				}
-				break;
+				this.updateHTML();
 		}
 	}
 
@@ -285,6 +270,7 @@ class Dale extends Gamegui
 	{
 		console.log( 'Leaving state: '+stateName );
 		
+		//turn off selection mode(s)
 		switch( stateName )
 		{
 			case 'playerTurn':
@@ -370,28 +356,63 @@ class Dale extends Gamegui
 	*/
 
 	/**
-	 * Check if the specified card is an unbound chameleon. If so, immediately set the client state to bind the chameleon.
-	 * @param card the card that potentially needs to be be bound
+	 * If the card is an UNBOUND chameleon card, first set the client state to bind the chameleon, then all the `callback` with the bound `card`.
+	 * 
+	 * Otherwise, simply call the `callback` function with `card`.
+	 * 
+	 * @param card the card that potentially needs to be be bound. If null, immediately call the callback function without arguments
 	 * @param from where is this card currently located?
-	 * @param callback (optional) after binding to a new card type, call this method with the new card type
-	 * @param requiresPlayable (optional) the chameleon must be a playable card
-	 * @returns 
+	 * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
+	 * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
+	 * @param saveSelection (optional) default false. If true, after copying, restored the saved selection
 	 */
-	isUnboundChameleon(card: DaleCard, from: Pile | DaleStock | MarketBoard | Stall, callback?: string, requiresPlayable: boolean = false) {
+	handleChameleonCard(card: DaleCard | undefined, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, saveSelection: boolean = false) {
+		callback = callback.bind(this);
+		if (!card) {
+			callback();
+			return;
+		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_TRENDSETTING:
 				if (this.chameleonArgs !== undefined) {
-					console.warn("Previous chameleon args will be overwritten");
+					console.warn("Previous chameleon args will be overwritten!");
 				}
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable);
+				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, saveSelection);
 				this.setClientState('client_trendsetting', {
 					descriptionmyturn: _("Trendsetting: ${you} must copy a card in the market")
 				});
-				return true;
+				break;
 			default:
-				return false;
+				//card is not a chameleon card, immediately execute the callback function
+				callback(card);
+				break;
 		}
 	}
+
+	/**
+	 * Refreshes all html elements that represent cards. Should be called after chameleon bindings are changed.
+	 * @param location (optional) - if provided, only update this location
+	 * @param card (optional) - if provided, only update this html elements of this card
+	 */
+	updateHTML(location?: Pile | DaleStock | MarketBoard | Stall, card?: DaleCard) {
+		if (location) {
+			location.updateHTML(card);
+		}
+		else {
+			this.market!.updateHTML(card);
+			for (let pile of this.allPiles) {
+				pile.updateHTML(card);
+			}
+			for (let stock of this.allDaleStocks) {
+				stock.updateHTML(card);
+			}
+			for (let stall of Object.values(this.playerStalls)) {
+				stall.updateHTML(card);
+			}
+		}
+	}
+
+
 
 	//TODO: safely delete this
 	// /**
@@ -597,8 +618,8 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'client_trendsetting':
-				this.chameleonArgs!.card.bindChameleonLocal(card.effective_type_id);
-				this.onConfirmChameleon();
+				this.onConfirmChameleon(card.effective_type_id);
+				break;
 		}
 	}
 	
@@ -618,7 +639,7 @@ class Dale extends Gamegui
 		console.log("onMyDiscardPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'build':
-				this.onBuildSelectionChanged();
+				this.onBuildSelectionChanged(card);
 				break;
 		}
 	}
@@ -626,25 +647,21 @@ class Dale extends Gamegui
 	onHandSelectionChanged() {
 		let items = this.myHand.getSelectedItems();
 		if (!items[0] && this.myHand.selectionMode == 1) return;
-		const card = items[0] ? new DaleCard(items[0].id) : null!;
+		const card = items.length > 0 ? new DaleCard(items[items.length - 1]!.id) : undefined;
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
 				//play card action (technique or active passive)
-				console.log("card.effective_type_id = " + card.effective_type_id);
-				if (this.isUnboundChameleon(card, this.myHand, "onPlayCard", true)) {
-					return;
-				}
-				this.onPlayCard(card);
-				this.myHand.unselectAll();
+				console.log("card.effective_type_id = " + card!.effective_type_id);
+				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
 				break;
 			case 'build':
-				this.onBuildSelectionChanged();
+				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged, false, true);
 				break;
 			case 'shatteredRelic':
 				if(this.checkAction('actShatteredRelic')) {
 					this.bgaPerformAction('actShatteredRelic', {
-						card_id: card.id
+						card_id: card!.id
 					})
 				}
 				this.myHand.unselectAll();
@@ -673,8 +690,11 @@ class Dale extends Gamegui
 		}
 	}
 
-	onPlayCard(card: DaleCard) {
-		console.log("onPlayCard");
+	onPlayCard(card?: DaleCard) {
+		if (!card) {
+			console.warn("Attempted to play 'undefined' card");
+			return;
+		}
 		if (!card.isPlayable()) {
 			this.showMessage(_("This card cannot be played"), 'error');
 			return;
@@ -682,14 +702,14 @@ class Dale extends Gamegui
 		if(this.checkAction('actPlayCard')) {
 			this.bgaPerformAction('actPlayCard', {
 				card_id: card.id, 
-				...DaleCard.commitLocalChameleons()
-			})
+				...DaleCard.getLocalChameleons()
+			});
 		}
+		this.myHand.unselectAll();
 	}
 
-	onBuildSelectionChanged(){
+	onBuildSelectionChanged(card?: DaleCard){
 		console.log("onBuildSelectionChanged");
-		//TODO: this client-side tip ignores chameleons!
 		const items = this.myHand.getSelectedItems();
 		let count_nostalgic_items = 0;
 		for (let item of items) {
@@ -716,37 +736,54 @@ class Dale extends Gamegui
 		if(this.checkAction('actBuild')) {
 			this.bgaPerformAction('actBuild', {
 				stack_card_ids: this.arrayToNumberList(autoSortedCards),
-				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds)
-			})
+				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds),
+				...DaleCard.getLocalChameleons()
+			});
 		}
 	}
 
 	onCancel() {
-		if(this.checkAction('actCancel')) {
-			this.bgaPerformAction('actCancel', {})
+		if (DaleCard.unbindAllChameleonsLocal()) {
+			//undo client state
+			this.restoreServerGameState();
+			this.chameleonArgs = undefined;
+			this.updateHTML();
+		}
+		else {
+			//undo server state
+			if(this.checkAction('actCancel')) {
+				this.bgaPerformAction('actCancel', {})
+			}
 		}
 	}
 	
 	onCancelChameleon() {
 		//return from the chameleon client state
-		this.restoreServerGameState();
-		DaleCard.unbindAllChameleonsLocal();
-		this.chameleonArgs = undefined;
+		this.restoreServerGameState();			//TODO: |
+		this.chameleonArgs = undefined;			//TODO: V
+		DaleCard.unbindAllChameleonsLocal(); 	//TODO: is this really needed? maybe we don't need to unbind anything AT ALL?
+		this.updateHTML(); 						//TODO: ^
 	}
 
-	onConfirmChameleon() {
+	/**
+	 * To be called from within a chameleon client state. Confirms the user selection for the chameleon card and restores the server state.
+	 * @param type_id new (target) type_id for the card
+	 * @returns 
+	 */
+	onConfirmChameleon(type_id: number) {
 		//return from the chameleon client state, but keep the local bindings
-		this.restoreServerGameState();
 		const args = this.chameleonArgs!;
-		if (args.requiresPlayable && !args.card.isPlayable()) {
+		if (args.requiresPlayable && !DaleCard.isPlayable(type_id)) {
 			this.showMessage(_("Copy failed: this card cannot be played"), 'error');
-			DaleCard.unbindAllChameleonsLocal();
-			return;
+			this.onCancelChameleon();
 		}
-		if (args.callback) {
-			(this as any)[args.callback](args.card);
+		else {
+			this.restoreServerGameState();
+			args.card.bindChameleonLocal(type_id);
+			this.updateHTML(args.location, args.card);
+			args.callback(args.card);
+			this.chameleonArgs = undefined;
 		}
-		this.chameleonArgs = undefined;
 	}
 
 	onRequestInventoryAction() {
@@ -813,7 +850,7 @@ class Dale extends Gamegui
 			['discardMultiple', 1000],
 			['placeOnDeckMultiple', 1000],
 			['reshuffleDeck', 1500],
-			['bindChameleon', 1500],
+			['bindChameleon', 1],
 			['message', 1],
 			['debugClient', 1],
 		];
@@ -1154,6 +1191,8 @@ class Dale extends Gamegui
 
 	notif_bindChameleon(notif: NotifAs<'bindChameleon'>) {
 		DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
+		DaleCard.unbindAllChameleonsLocal();
+		this.updateHTML();
 	}
 
 	notif_message(notif: NotifAs<'message'>) {
@@ -1185,8 +1224,12 @@ class Dale extends Gamegui
 		else if (arg == 'increaseDeckSize') {
 			this.myDeck.pushHiddenCards(notif.args.nbr);
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'bindings') {
+			const bindings = DaleCard.getLocalChameleons()
+			console.log("(Chameleon) cards_ids");
+			console.log(bindings.chameleon_card_ids);
+			console.log("Target type_ids");
+			console.log(bindings.chameleon_type_ids);
 		}
 		else if (arg == '') {
 			

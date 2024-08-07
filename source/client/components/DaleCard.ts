@@ -137,11 +137,28 @@ export class DaleCard {
      */
     public bindChameleonLocal(effective_type_id: number) {
         DaleCard.cardIdtoEffectiveTypeIdLocal.set(this.id, effective_type_id);
-        console.log(DaleCard.cardIdtoEffectiveTypeIdLocal);
+    }
+
+    
+    /**
+     * Unbinds the locally stored chameleon bindings for this card.
+     */
+    public unbindChameleonLocal() {
+        DaleCard.cardIdtoEffectiveTypeIdLocal.delete(this.id);
     }
 
     /**
-     * Bind an effective type to a card id. Maps `card_id` -> `effective_type_id`.
+     * Unbinds all locally stored chameleon bindings.
+     * @return `size` - number of bindings deleted this way
+     */
+    public static unbindAllChameleonsLocal(): number {
+        const size = DaleCard.cardIdtoEffectiveTypeIdLocal.size;
+        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+        return size;
+    }
+
+    /**
+     * Binds `card_id` -> `effective_type_id`. Overwrites existing local bindings
      * @param card_id card id to bind
      * @param effective_type_id type id the card should assume
      */
@@ -150,25 +167,17 @@ export class DaleCard {
     }
 
     /**
-     * Unbinds all locally stored chameleon bindings.
-     */
-    public static unbindAllChameleonsLocal() {
-        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
-    }
-
-    /**
-     * Returns the locally stored chameleon mapping in a format that can be send to the server. Then, unbinds the local changes.
+     * Returns the locally stored chameleon mapping in a format that can be send to the server.
      * @return ordered arrays that represents the local mapping: `card_ids` -> `type_ids`
      * @example example {card_ids: "1;3;4;8", type_ids: "28;9;15;17"}
      */
-    public static commitLocalChameleons(): {chameleon_card_ids: string, chameleon_type_ids: string} {
+    public static getLocalChameleons(): {chameleon_card_ids: string, chameleon_type_ids: string} {
         const card_ids = [] as number[];
         const type_ids = [] as number[];
         DaleCard.cardIdtoEffectiveTypeIdLocal.forEach((type_id: number, card_id: number) => {
             card_ids.push(card_id);
             type_ids.push(type_id);
         });
-        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
         return {
             chameleon_card_ids: card_ids.join(";"),
             chameleon_type_ids: type_ids.join(";")
@@ -206,6 +215,10 @@ export class DaleCard {
 
     public isPlayable(): boolean {
         return DaleCard.cardTypes[this.effective_type_id]!.playable
+    }
+
+    public static isPlayable(type_id: number): boolean {
+        return DaleCard.cardTypes[type_id]!.playable
     }
 
     private getTooltipContent(): string {

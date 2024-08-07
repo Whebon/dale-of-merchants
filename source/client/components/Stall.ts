@@ -98,6 +98,20 @@ export class Stall implements CardSlotManager {
     }
 
     /**
+     * UpdateHTML for all cardslots. 
+     * @param card (optional) - if provided, only update the card slot of this card.
+     */
+    updateHTML(card?: DaleCard) {
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (card == undefined || card.id == slot.card?.id) {
+                    slot.updateHTML();
+                }
+            }
+        }
+    }
+
+    /**
      * Create a new slot on top of the specified stack
      * @param stack_index stack index that points to an already existing stack
      * @param card (Optional) - fill the slot with a specified card

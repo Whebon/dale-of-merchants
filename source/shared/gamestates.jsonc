@@ -52,9 +52,9 @@
 				{"name": "market_card_id", "type": "AT_int"}
 			],
 			"actPlayCard": [
-				{"name": "card_id", "type": "AT_int"},
 				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"}
+				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "card_id", "type": "AT_int"}
 			],
 			"actRequestStallAction": [],
 			"actRequestInventoryAction": []
@@ -111,6 +111,8 @@
 		"args": "argStackIndex",
 		"possibleactions": {
 			"actBuild": [
+				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
 			],

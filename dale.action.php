@@ -42,14 +42,14 @@ class action_dale extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
 		/** @var string $chameleon_card_ids */
 		$chameleon_card_ids = self::getArg('chameleon_card_ids', AT_numberlist, true);
 		/** @var string $chameleon_type_ids */
 		$chameleon_type_ids = self::getArg('chameleon_type_ids', AT_numberlist, true);
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
 
-		$this->game->actPlayCard( $card_id, $chameleon_card_ids, $chameleon_type_ids );
+		$this->game->actPlayCard( $chameleon_card_ids, $chameleon_type_ids, $card_id );
 		self::ajaxResponse();
 	}
 
@@ -92,12 +92,16 @@ class action_dale extends APP_GameAction
 	{
 		self::setAjaxMode();
 
+		/** @var string $chameleon_card_ids */
+		$chameleon_card_ids = self::getArg('chameleon_card_ids', AT_numberlist, true);
+		/** @var string $chameleon_type_ids */
+		$chameleon_type_ids = self::getArg('chameleon_type_ids', AT_numberlist, true);
 		/** @var string $stack_card_ids */
 		$stack_card_ids = self::getArg('stack_card_ids', AT_numberlist, true);
 		/** @var string $stack_card_ids_from_discard */
 		$stack_card_ids_from_discard = self::getArg('stack_card_ids_from_discard', AT_numberlist, true);
 
-		$this->game->actBuild( $stack_card_ids, $stack_card_ids_from_discard );
+		$this->game->actBuild( $chameleon_card_ids, $chameleon_type_ids, $stack_card_ids, $stack_card_ids_from_discard );
 		self::ajaxResponse();
 	}
 

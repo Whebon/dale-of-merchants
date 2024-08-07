@@ -31,10 +31,6 @@ interface GameStates {
 				'typescriptType': number,
 			}],
 			'actPlayCard': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}, {
 				'name': 'chameleon_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
@@ -42,6 +38,10 @@ interface GameStates {
 				'name': 'chameleon_type_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 			'actRequestStallAction': [],
 			'actRequestInventoryAction': [],
@@ -100,6 +100,14 @@ interface GameStates {
 		'args': 'argStackIndex',
 		'possibleactions': {
 			'actBuild': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
 				'name': 'stack_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
