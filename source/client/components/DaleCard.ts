@@ -246,7 +246,7 @@ export class DaleCard {
      * Add a tooltip to the specified tooltip_parent_id. WARNING: each DaleCard card_id can have at most 1 tooltip.
      * @param tooltip_parent_id parent id to attach the tooltip to.
      */
-    public addTooltip(tooltip_parent_id: string) {
+    public addTooltip(tooltip_parent_id: string | HTMLElement) {
         if (this.id == 0) return; //card back doesn't have a tooltip
         const parent = $(tooltip_parent_id)
         if (!parent) {
@@ -268,7 +268,7 @@ export class DaleCard {
      * @returns a new div element representing this card
      * @param tooltip_parent_id (optional) - if specified, the div will be added to the parent, and it will have a tooltip
      */
-    public toDiv(tooltip_parent_id?: string): HTMLElement {
+    public toDiv(tooltip_parent_id?: string | HTMLElement): HTMLElement {
         let div = document.createElement("div")
         div.id = "dale-card-"+this.id
         div.classList.add("card")

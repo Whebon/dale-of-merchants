@@ -83,6 +83,9 @@ export class DaleStock extends Stock {
 	 * Additionally, it resets the 'orderedSelectedCardIds', which is needed to track the order in the selection
 	 */
 	override setSelectionMode(mode: 0 | 1 | 2): void {
+		if (mode == this.selectionMode) {
+			return;
+		}
 		super.setSelectionMode(mode);
 		this.orderedSelectedCardIds = [];
 	}
@@ -94,26 +97,67 @@ export class DaleStock extends Stock {
 	public updateHTML(card?: DaleCard) {
 		console.log(`updateHTML for DaleStock '${this.control_name}'`);
 		if (card) {
-			this.removeFromStockById(card.id);
-			this.addDaleCardToStock(card)
+			if (card.isBoundChameleon()) {
+				this.addChameleonOverlay(card);
+			}
+			else {
+				this.removeChameleonOverlay(card);
+			}
+			// console.log("remove and add "+card.id);
+			// this.removeFromStockById(card.id);
+			// this.addDaleCardToStock(card);
 		}
 		else {
-			//remove all chameleon icons. warning: will not missing add missing chameleon icons!
-			const chameleonIcons = this.container_div.querySelectorAll('.chameleon-icon');
-			chameleonIcons.forEach(icon => {
-				if (icon.parentElement) {
-					const html_id = icon.parentElement.id;
-					const match = html_id.match(/\d+$/);
-					if (match) {
-						const card_id = +match[0];
-						const card = new DaleCard(card_id);
-						if (!card.isBoundChameleon()) {
-							this.removeFromStockById(card_id);
-							this.addDaleCardToStock(card)
-						}
-					}
-				}
-			});
+			for (let item of this.getAllItems()) {
+				this.updateHTML(new DaleCard(item.id, item.type));
+			}
+			//TODO: safely delete this
+			// console.log("AAAA");
+			//Remove outdated chameleon overlays. WARNING: will not add missing chameleon overlays!
+			// const chameleonIcons = this.container_div.querySelectorAll('.chameleon-icon');
+			// chameleonIcons.forEach(icon => {
+			// 	const overlay = icon.parentElement!;
+			// 	const html_id = overlay.parentElement!.id;
+			// 	const match = html_id.match(/\d+$/);
+			// 	if (match) {
+			// 		const card_id = +match[0];
+			// 		const card = new DaleCard(card_id);
+			// 		if (!card.isBoundChameleon()) {
+			// 			dojo.fadeOut({node: overlay, onEnd: function (node: any){dojo.destroy(node);}}).play();
+			// 			//Alternative animation:
+			// 			// this.removeFromStockById(card_id);
+			// 			// this.addDaleCardToStock(card);
+			// 		}
+			// 	}
+			// });
+		}
+	}
+
+	/**
+	 * If the card does not have an overlay yet, add the chameleon card overlay on top of the stock item with an animation.
+	 * @param card dale card to add an overlay to
+	 */
+	public addChameleonOverlay(card: DaleCard) {
+		const stockitem = $(this.control_name+"_item_"+card.id);
+		if (stockitem?.children?.length === 0) {
+			const overlay = card.toDiv();
+			stockitem.appendChild(overlay);
+			dojo.setStyle(overlay, 'opacity', '0');
+			dojo.fadeIn({node: overlay}).play();
+			card.addTooltip(stockitem as HTMLElement);
+		}
+	}
+
+	/**
+	 * Remove the chameleon card overlay on top of the stock item with an animation
+	 * @param card_id
+	 */
+	public removeChameleonOverlay(card: DaleCard) {
+		const stockitem = $(this.control_name+"_item_"+card.id);
+		if (stockitem?.children?.length) {
+			const overlay = stockitem.children[0] as HTMLElement;
+			dojo.fadeOut({node: overlay, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
+			card.addTooltip(stockitem as HTMLElement);
 		}
 	}
 
@@ -123,11 +167,13 @@ export class DaleStock extends Stock {
 	 * @param from The element to animate the item from. When the `from` parameter is specified, the item will be created at the location of the from element and animate to the stock. The location create is always an absolute position at the top left of the from div. This is optional and can be used to animate the item from a specific location on the page. If this is not specified, the item will be created and placed immediately inside the stock.
 	*/
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
-		this.addToStockWithId(card.effective_type_id, card.id, from);
-		if (card.isBoundChameleon()) {
-			$(this.control_name+"_item_"+card.id)?.appendChild(DaleCard.createChameleonIcon());
-		}
+		this.addToStockWithId(card.original_type_id, card.id, from);
 		card.addTooltip(this.control_name+'_item_'+card.id);
+		if (card.isBoundChameleon()) {
+			this.addChameleonOverlay(card);
+			//$(this.control_name+"_item_"+card.id)?.appendChild(card.toDiv());
+			//$(this.control_name+"_item_"+card.id)?.appendChild(DaleCard.createChameleonIcon());
+		}
 	}
 
 	/**

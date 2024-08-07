@@ -270,6 +270,11 @@ class Dale extends Gamegui
 	{
 		console.log( 'Leaving state: '+stateName );
 		
+		if (this.chameleonArgs && stateName.substring(0, 6) != 'client') {
+			console.log("this.chameleonArgs => don't turn off selection modes");
+			return;
+		}
+
 		//turn off selection mode(s)
 		switch( stateName )
 		{
@@ -758,7 +763,13 @@ class Dale extends Gamegui
 	}
 	
 	onCancelChameleon() {
+		console.log("ON CANCEL CHAMELEON!");
 		//return from the chameleon client state
+		const args = this.chameleonArgs!
+		if (args.location instanceof DaleStock) {
+			args.location.unselectItem(args.card.id);
+			args.location.onChangeSelection(args.location.control_name, args.card.id); // stocks...
+		}
 		this.restoreServerGameState();			//TODO: |
 		this.chameleonArgs = undefined;			//TODO: V
 		DaleCard.unbindAllChameleonsLocal(); 	//TODO: is this really needed? maybe we don't need to unbind anything AT ALL?
