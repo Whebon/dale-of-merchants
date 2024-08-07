@@ -377,6 +377,12 @@ class Dale extends Gamegui
 			callback();
 			return;
 		}
+		if (card.isBoundChameleon()) {
+			card.unbindChameleonLocal();
+			from.updateHTML(card);
+			callback(card);
+			return;
+		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_TRENDSETTING:
 				if (this.chameleonArgs !== undefined) {
@@ -389,6 +395,7 @@ class Dale extends Gamegui
 				break;
 			default:
 				//card is not a chameleon card, immediately execute the callback function
+				console.log(DaleCard.getLocalChameleons());
 				callback(card);
 				break;
 		}
@@ -649,10 +656,10 @@ class Dale extends Gamegui
 		}
 	}
 
-	onHandSelectionChanged() {
-		let items = this.myHand.getSelectedItems();
-		if (!items[0] && this.myHand.selectionMode == 1) return;
-		const card = items.length > 0 ? new DaleCard(items[items.length - 1]!.id) : undefined;
+	onHandSelectionChanged(control_name: string, card_id?: number) {
+		if (!card_id) return;
+		const card = new DaleCard(card_id);
+		const isAdded = this.myHand.isSelected(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
@@ -670,6 +677,22 @@ class Dale extends Gamegui
 					})
 				}
 				this.myHand.unselectAll();
+				break;
+			case 'client_trendsetting':
+				console.log("client_trendsetting");
+				const args = this.chameleonArgs!;
+				if (args.card.id == card.id) {
+					this.onCancelChameleon();
+				}
+				else {
+					this.showMessage(_("Please select a valid target for 'Trendsetting'"), "error");
+					if (isAdded) {
+						this.myHand.unselectItem(card_id);
+					}
+					else {
+						this.myHand.selectItem(card_id);
+					}
+				}
 				break;
 			case null:
 				throw new Error("gamestate.name is null")
@@ -763,17 +786,16 @@ class Dale extends Gamegui
 	}
 	
 	onCancelChameleon() {
-		console.log("ON CANCEL CHAMELEON!");
+		console.log("ON CANCEL CHAMELEON !");
 		//return from the chameleon client state
 		const args = this.chameleonArgs!
 		if (args.location instanceof DaleStock) {
 			args.location.unselectItem(args.card.id);
-			args.location.onChangeSelection(args.location.control_name, args.card.id); // stocks...
 		}
-		this.restoreServerGameState();			//TODO: |
-		this.chameleonArgs = undefined;			//TODO: V
-		DaleCard.unbindAllChameleonsLocal(); 	//TODO: is this really needed? maybe we don't need to unbind anything AT ALL?
-		this.updateHTML(); 						//TODO: ^
+		this.restoreServerGameState();
+		this.chameleonArgs = undefined;
+		//DaleCard.unbindAllChameleonsLocal(); 	//TODO: is this really needed? maybe we don't need to unbind anything AT ALL?
+		this.updateHTML();
 	}
 
 	/**

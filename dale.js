@@ -317,25 +317,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         function DaleStock() {
             var _this = _super.call(this) || this;
             _this.orderedSelectedCardIds = [];
-            _this.onChangeSelection = function (control_name, item_id) {
-                item_id = +item_id;
-                var isSelected = this.isSelected(item_id);
-                var index = this.orderedSelectedCardIds.indexOf(item_id);
-                if (!item_id) {
-                    this.orderedSelectedCardIds = [];
-                }
-                else if (isSelected && index == -1) {
-                    this.orderedSelectedCardIds.push(item_id);
-                }
-                else if (!isSelected && index != -1) {
-                    this.orderedSelectedCardIds.splice(index, 1);
-                }
-                else {
-                    console.warn("orderedSelectedCardIds might be broken: " + this.orderedSelectedCardIds);
-                    this.orderedSelectedCardIds = [];
-                }
-                console.log(this.orderedSelectedCardIds);
-            };
             return _this;
         }
         Object.defineProperty(DaleStock.prototype, "selectionMode", {
@@ -371,6 +352,19 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
             };
             hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("hidden");
+        };
+        DaleStock.prototype.selectItem = function (item_id) {
+            _super.prototype.selectItem.call(this, item_id);
+            item_id = +item_id;
+            this.orderedSelectedCardIds.push(item_id);
+            console.log(this.orderedSelectedCardIds);
+        };
+        DaleStock.prototype.unselectItem = function (item_id) {
+            _super.prototype.unselectItem.call(this, item_id);
+            item_id = +item_id;
+            var index = this.orderedSelectedCardIds.indexOf(item_id);
+            this.orderedSelectedCardIds.splice(index, 1);
+            console.log(this.orderedSelectedCardIds);
         };
         DaleStock.prototype.setSelectionMode = function (mode) {
             if (mode == this.selectionMode) {
@@ -1438,6 +1432,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 callback();
                 return;
             }
+            if (card.isBoundChameleon()) {
+                card.unbindChameleonLocal();
+                from.updateHTML(card);
+                callback(card);
+                return;
+            }
             switch (card.effective_type_id) {
                 case DaleCard_4.DaleCard.CT_TRENDSETTING:
                     if (this.chameleonArgs !== undefined) {
@@ -1449,6 +1449,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                     break;
                 default:
+                    console.log(DaleCard_4.DaleCard.getLocalChameleons());
                     callback(card);
                     break;
             }
@@ -1581,11 +1582,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
         };
-        Dale.prototype.onHandSelectionChanged = function () {
-            var items = this.myHand.getSelectedItems();
-            if (!items[0] && this.myHand.selectionMode == 1)
+        Dale.prototype.onHandSelectionChanged = function (control_name, card_id) {
+            if (!card_id)
                 return;
-            var card = items.length > 0 ? new DaleCard_4.DaleCard(items[items.length - 1].id) : undefined;
+            var card = new DaleCard_4.DaleCard(card_id);
+            var isAdded = this.myHand.isSelected(card_id);
             switch (this.gamedatas.gamestate.name) {
                 case 'playerTurn':
                     console.log("card.effective_type_id = " + card.effective_type_id);
@@ -1601,6 +1602,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         });
                     }
                     this.myHand.unselectAll();
+                    break;
+                case 'client_trendsetting':
+                    console.log("client_trendsetting");
+                    var args = this.chameleonArgs;
+                    if (args.card.id == card.id) {
+                        this.onCancelChameleon();
+                    }
+                    else {
+                        this.showMessage(_("Please select a valid target for 'Trendsetting'"), "error");
+                        if (isAdded) {
+                            this.myHand.unselectItem(card_id);
+                        }
+                        else {
+                            this.myHand.selectItem(card_id);
+                        }
+                    }
                     break;
                 case null:
                     throw new Error("gamestate.name is null");
@@ -1679,15 +1696,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onCancelChameleon = function () {
-            console.log("ON CANCEL CHAMELEON!");
+            console.log("ON CANCEL CHAMELEON !");
             var args = this.chameleonArgs;
             if (args.location instanceof DaleStock_2.DaleStock) {
                 args.location.unselectItem(args.card.id);
-                args.location.onChangeSelection(args.location.control_name, args.card.id);
             }
             this.restoreServerGameState();
             this.chameleonArgs = undefined;
-            DaleCard_4.DaleCard.unbindAllChameleonsLocal();
             this.updateHTML();
         };
         Dale.prototype.onConfirmChameleon = function (type_id) {

@@ -43,9 +43,16 @@
 	border: 1px solid red;
 }
 
+@keyframes blinker {
+	from { opacity: 1.0; }
+	50% { opacity: 0.7; }
+	to { opacity: 1.0; }
+}
+
 .chameleon-selected {
 	border-radius: 10px;
 	border: 2px solid #1d7a2a !important;
+	animation: blinker 0.5s infinite;
 }
 
 .chameleon-icon {

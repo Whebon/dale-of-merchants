@@ -18,25 +18,26 @@ export class DaleStock extends Stock {
 	constructor(){
 		super();
 		this.orderedSelectedCardIds = [];
-		this.onChangeSelection = function(control_name: string, item_id: number) {
-			item_id = +item_id;
-			const isSelected = this.isSelected(item_id);
-			const index = this.orderedSelectedCardIds.indexOf(item_id);
-			if (!item_id) {
-				this.orderedSelectedCardIds = [];
-			}
-			else if (isSelected && index == -1) {
-				this.orderedSelectedCardIds.push(item_id);
-			}
-			else if (!isSelected && index != -1) {
-				this.orderedSelectedCardIds.splice(index, 1);
-			}
-			else {
-				console.warn("orderedSelectedCardIds might be broken: " + this.orderedSelectedCardIds);
-				this.orderedSelectedCardIds = [];
-			}
-			console.log(this.orderedSelectedCardIds);
-		}
+		//TODO: safely delete
+		// this.onChangeSelection = function(control_name: string, item_id: number) {
+		// 	item_id = +item_id;
+		// 	const isSelected = this.isSelected(item_id);
+		// 	const index = this.orderedSelectedCardIds.indexOf(item_id);
+		// 	if (!item_id) {
+		// 		this.orderedSelectedCardIds = [];
+		// 	}
+		// 	else if (isSelected && index == -1) {
+		// 		this.orderedSelectedCardIds.push(item_id);
+		// 	}
+		// 	else if (!isSelected && index != -1) {
+		// 		this.orderedSelectedCardIds.splice(index, 1);
+		// 	}
+		// 	else {
+		// 		console.warn("orderedSelectedCardIds might be broken: " + this.orderedSelectedCardIds);
+		// 		this.orderedSelectedCardIds = [];
+		// 	}
+		// 	console.log(this.orderedSelectedCardIds);
+		// }
 	}
 	
 	/**
@@ -76,6 +77,31 @@ export class DaleStock extends Stock {
 			}
 		}
 		hideOuterContainer?.classList.add("hidden");
+	}
+
+	/**
+	 * Selects the item with the specified unique id.
+	 * @param item_id The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
+	 * @returns {void}
+	 */
+	override selectItem(item_id: number): void {
+		super.selectItem(item_id);
+		item_id = +item_id;
+		this.orderedSelectedCardIds.push(item_id);
+		console.log(this.orderedSelectedCardIds);
+	}
+
+	/**
+	 * Deselects the item with the specified unique id.
+	 * @param item_id The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
+	 * @returns {void}
+	 */
+	override unselectItem(item_id: number): void {
+		super.unselectItem(item_id);
+		item_id = +item_id;
+		const index = this.orderedSelectedCardIds.indexOf(item_id);
+		this.orderedSelectedCardIds.splice(index, 1);
+		console.log(this.orderedSelectedCardIds);
 	}
 
 	/**
