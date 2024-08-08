@@ -185,7 +185,7 @@ declare global {
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameState {
-		'client_trendsetting': {}
+		'chameleon_trendsetting': {}
 	}
 
 	//

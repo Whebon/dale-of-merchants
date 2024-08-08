@@ -254,7 +254,7 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myTemporary.setSelectionMode(2);
 				break;
-			case 'client_trendsetting':
+			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(1);
 				this.chameleonArgs?.card_div?.classList.add("chameleon-selected");
 				break;
@@ -270,7 +270,7 @@ class Dale extends Gamegui
 	{
 		console.log( 'Leaving state: '+stateName );
 		
-		if (this.chameleonArgs && stateName.substring(0, 6) != 'client') {
+		if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
 			console.log("this.chameleonArgs => don't turn off selection modes");
 			return;
 		}
@@ -303,7 +303,7 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myTemporary.setSelectionMode(0);
 				break;
-			case 'client_trendsetting':
+			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(0);
 				this.chameleonArgs?.card_div?.classList.remove("chameleon-selected");
 				break;
@@ -346,7 +346,7 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
 				break;
-			case 'client_trendsetting':
+			case 'chameleon_trendsetting':
 				this.addActionButtonCancelChameleon();
 				break;
 		}
@@ -389,7 +389,7 @@ class Dale extends Gamegui
 					console.warn("Previous chameleon args will be overwritten!");
 				}
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, saveSelection);
-				this.setClientState('client_trendsetting', {
+				this.setClientState('chameleon_trendsetting', {
 					descriptionmyturn: _("Trendsetting: ${you} must copy a card in the market")
 				});
 				break;
@@ -629,8 +629,8 @@ class Dale extends Gamegui
 					})
 				}
 				break;
-			case 'client_trendsetting':
-				this.onConfirmChameleon(card.effective_type_id);
+			case 'chameleon_trendsetting':
+				this.onConfirmChameleon(card);
 				break;
 		}
 	}
@@ -678,8 +678,8 @@ class Dale extends Gamegui
 				}
 				this.myHand.unselectAll();
 				break;
-			case 'client_trendsetting':
-				console.log("client_trendsetting");
+			case 'chameleon_trendsetting':
+				console.log("chameleon_trendsetting");
 				const args = this.chameleonArgs!;
 				if (args.card.id == card.id) {
 					this.onCancelChameleon();
@@ -798,12 +798,13 @@ class Dale extends Gamegui
 
 	/**
 	 * To be called from within a chameleon client state. Confirms the user selection for the chameleon card and restores the server state.
-	 * @param type_id new (target) type_id for the card
+	 * @param target target card to bind to
 	 * @returns 
 	 */
-	onConfirmChameleon(type_id: number) {
+	onConfirmChameleon(target: DaleCard) {
 		//return from the chameleon client state, but keep the local bindings
 		const args = this.chameleonArgs!;
+		const type_id = target.effective_type_id;
 		if (args.requiresPlayable && !DaleCard.isPlayable(type_id)) {
 			this.showMessage(_("Copy failed: this card cannot be played"), 'error');
 			this.onCancelChameleon();
@@ -812,8 +813,15 @@ class Dale extends Gamegui
 			this.restoreServerGameState();
 			args.card.bindChameleonLocal(type_id);
 			this.updateHTML(args.location, args.card);
-			args.callback(args.card);
-			this.chameleonArgs = undefined;
+			if (target.isUnboundChameleon() && args.card.effective_type_id != target.effective_type_id) {
+				//chameleon chaining! chameleon is bound to another unbound chameleon type (i.e. the new target is also a chameleon)
+				this.handleChameleonCard(args.card, args.location, args.callback, args.requiresPlayable);
+			}
+			else {
+				//chameleon is now bound
+				args.callback(args.card);
+				this.chameleonArgs = undefined;
+			}
 		}
 	}
 

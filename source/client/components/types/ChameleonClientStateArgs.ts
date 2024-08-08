@@ -10,7 +10,7 @@ import { Stall } from "../Stall";
 export class ChameleonClientStateArgs {
 	public card: DaleCard;
 	public location: Pile | DaleStock | MarketBoard | Stall;
-	public callback: (card: DaleCard) => void;
+	public callback: (card?: DaleCard) => void;
     public requiresPlayable: boolean;
     public selection: number[] | undefined;
 
@@ -22,7 +22,7 @@ export class ChameleonClientStateArgs {
      * @param requiresPlayable (optional) default false. If true, the card to copy must be playable
      * @param saveSelection (optional) default false. If true, after copying, restored the saved selection
      */
-    constructor(card: DaleCard, from: Pile | DaleStock | MarketBoard | Stall, callback: (card: DaleCard) => void, requiresPlayable: boolean = false, saveSelection: boolean = false) {
+    constructor(card: DaleCard, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, saveSelection: boolean = false) {
         this.card = card;
         this.location = from;
         this.callback = callback;
