@@ -1,5 +1,6 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
+import { DaleStock } from './DaleStock';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 import { DbCard } from './types/DbCard';
@@ -297,5 +298,21 @@ export class Stall implements CardSlotManager {
         const index = slot.pos % Stall.MAX_STACK_SIZE;
         const stack_index = (slot.pos-index) / Stall.MAX_STACK_SIZE;
         (this.page as any).onStallCardClick(slot.card, stack_index, index);
+    }
+
+    /**
+     * Swaps a card in this stall with a card with a stock
+     * @param card_id card id in this stall
+     * @param stock location of the new card for this slot
+     * @param new_card_id id of the new card for this slot
+     */
+    public swapWithStock(card_id: number, stock: DaleStock, new_card_id: number) {
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (slot.card?.id == card_id) {
+                    slot.swapWithStock(stock, new_card_id);
+                }
+            }
+        }
     }
 }

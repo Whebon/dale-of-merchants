@@ -504,11 +504,17 @@ class Dale extends DaleTableBasic
         $first_free_slot = 0;
         if ($move) {
             //move all cards to the right
+            $shouldNotifyMarketSlideRight = false;
             foreach ($cards as $card) {
-                $this->cards->moveCard($card['id'], MARKET, $first_free_slot);
+                if ($card["location_arg"] != $first_free_slot) {
+                    $this->cards->moveCard($card['id'], MARKET, $first_free_slot);
+                    $shouldNotifyMarketSlideRight = true;
+                }
                 $first_free_slot++;
             }
-            $this->notifyAllPlayers('marketSlideRight', clienttranslate('Cards in the market move to the right'), array());
+            if ($shouldNotifyMarketSlideRight) {
+                $this->notifyAllPlayers('marketSlideRight', clienttranslate('Cards in the market move to the right'), array());
+            }
         }
         else {
             //store gaps in $free_slots

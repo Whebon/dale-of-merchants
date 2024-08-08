@@ -735,7 +735,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
     }());
     exports.Pile = Pile;
 });
-define("components/CardSlot", ["require", "exports"], function (require, exports) {
+define("components/CardSlot", ["require", "exports", "components/DaleCard"], function (require, exports, DaleCard_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CardSlot = void 0;
@@ -854,6 +854,18 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
                 this._container.onclick = null;
             }
         };
+        CardSlot.prototype.swapWithStock = function (stock, card_id) {
+            if (!this.hasCard()) {
+                throw new Error("'swapWithStock' called on an empty slot");
+            }
+            if (!stock.getItemById(card_id)) {
+                throw new Error("'swapWithStock' called with a card that is not in '".concat(stock.control_name, "' (card_id = ").concat(card_id, ")"));
+            }
+            var div = $(stock.control_name + "_item_" + card_id);
+            stock.addDaleCardToStock(this._card, this._container);
+            this.insertCard(new DaleCard_3.DaleCard(card_id), div);
+            stock.removeFromStockByIdNoAnimation(card_id);
+        };
         CardSlot.UNIQUE_ID = 0;
         return CardSlot;
     }());
@@ -955,11 +967,20 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                 this.page.showMessage(_("This card is sold out!"), 'error');
             }
         };
+        MarketBoard.prototype.swapWithStock = function (card_id, stock, new_card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var slot = _b[_i];
+                if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                    slot.swapWithStock(stock, new_card_id);
+                }
+            }
+        };
         return MarketBoard;
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot"], function (require, exports, DaleCard_3, Images_5, CardSlot_2) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot"], function (require, exports, DaleCard_4, Images_5, CardSlot_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -1049,7 +1070,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var pos = +card.location_arg;
             var index = pos % Stall.MAX_STACK_SIZE;
             var stack_index = (pos - index) / Stall.MAX_STACK_SIZE;
-            this.insertCard(DaleCard_3.DaleCard.of(card), stack_index, index, from);
+            this.insertCard(DaleCard_4.DaleCard.of(card), stack_index, index, from);
         };
         Stall.prototype.insertCard = function (card, stack_index, index, from) {
             var _a;
@@ -1131,6 +1152,18 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var stack_index = (slot.pos - index) / Stall.MAX_STACK_SIZE;
             this.page.onStallCardClick(slot.card, stack_index, index);
         };
+        Stall.prototype.swapWithStock = function (card_id, stock, new_card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var stack = _b[_i];
+                for (var _c = 0, stack_4 = stack; _c < stack_4.length; _c++) {
+                    var slot = stack_4[_c];
+                    if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                        slot.swapWithStock(stock, new_card_id);
+                    }
+                }
+            }
+        };
         Stall.MAX_STACK_SIZE = 1000;
         Stall.MAX_STACKS = 8;
         return Stall;
@@ -1165,7 +1198,7 @@ define("components/types/ChameleonClientStateArgs", ["require", "exports", "comp
     }());
     exports.ChameleonClientStateArgs = ChameleonClientStateArgs;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_2, Pile_1, DaleCard_4, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_2, Pile_1, DaleCard_5, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -1221,19 +1254,19 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("------ GAME DATAS ------");
             console.log(this.gamedatas);
             console.log("------------------------");
-            DaleCard_4.DaleCard.init(gamedatas.cardTypes);
+            DaleCard_5.DaleCard.init(gamedatas.cardTypes);
             console.log("DbEffects:");
             for (var i in gamedatas.effects) {
                 var effect = gamedatas.effects[i];
                 switch (+effect.type_id) {
-                    case DaleCard_4.DaleCard.CT_FLEXIBLESHOPKEEPER:
-                    case DaleCard_4.DaleCard.CT_REFLECTION:
-                    case DaleCard_4.DaleCard.CT_GOODOLDTIMES:
-                    case DaleCard_4.DaleCard.CT_TRENDSETTING:
-                    case DaleCard_4.DaleCard.CT_SEEINGDOUBLES:
+                    case DaleCard_5.DaleCard.CT_FLEXIBLESHOPKEEPER:
+                    case DaleCard_5.DaleCard.CT_REFLECTION:
+                    case DaleCard_5.DaleCard.CT_GOODOLDTIMES:
+                    case DaleCard_5.DaleCard.CT_TRENDSETTING:
+                    case DaleCard_5.DaleCard.CT_SEEINGDOUBLES:
                         if (+effect.target != -1) {
                             console.log("Bind Chameleon: ".concat(+effect.card_id, " -> ").concat(+effect.target));
-                            DaleCard_4.DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
+                            DaleCard_5.DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
                         }
                         break;
                     default:
@@ -1248,7 +1281,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerDiscards[player_id] = new Pile_1.Pile(this, 'discard-' + player_id, 'Discard Pile', +player_id);
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
-                    this.playerDiscards[player_id].push(DaleCard_4.DaleCard.of(card));
+                    this.playerDiscards[player_id].push(DaleCard_5.DaleCard.of(card));
                 }
                 this.playerStalls[player_id] = new Stall_1.Stall(this, +player_id);
                 for (var i in gamedatas.stalls[player_id]) {
@@ -1260,17 +1293,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.marketDeck.pushHiddenCards(gamedatas.deckSizes.market);
             for (var i in gamedatas.discardPiles.market) {
                 var card = gamedatas.discardPiles.market[i];
-                this.marketDiscard.push(DaleCard_4.DaleCard.of(card));
+                this.marketDiscard.push(DaleCard_5.DaleCard.of(card));
             }
             this.market = new MarketBoard_1.MarketBoard(this);
             for (var i in gamedatas.market) {
                 var card = gamedatas.market[i];
-                this.market.insertCard(DaleCard_4.DaleCard.of(card), +card.location_arg);
+                this.market.insertCard(DaleCard_5.DaleCard.of(card), +card.location_arg);
             }
             this.myHand.init(this, $('myhand'));
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
-                this.myHand.addDaleCardToStock(DaleCard_4.DaleCard.of(card));
+                this.myHand.addDaleCardToStock(DaleCard_5.DaleCard.of(card));
             }
             this.myHand.setSelectionMode(0);
             dojo.connect(this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged');
@@ -1279,7 +1312,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.myTemporary.init(this, $('mytemporary'), $('mytemporary-wrap'), myHandUpdateDisplay, myHandUpdateDisplay);
             for (var i in gamedatas.temporary) {
                 var card = gamedatas.temporary[i];
-                this.myTemporary.addDaleCardToStock(DaleCard_4.DaleCard.of(card));
+                this.myTemporary.addDaleCardToStock(DaleCard_5.DaleCard.of(card));
             }
             this.myTemporary.setSelectionMode(0);
             this.myTemporary.autowidth = true;
@@ -1299,7 +1332,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this_2.playerSchedules[player_id].duration = 500;
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];
-                    this_2.playerSchedules[player_id].addDaleCardToStock(DaleCard_4.DaleCard.of(card));
+                    this_2.playerSchedules[player_id].addDaleCardToStock(DaleCard_5.DaleCard.of(card));
                 }
             };
             var this_2 = this;
@@ -1346,7 +1379,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'nextPlayer':
                     console.log("nextPlayer, expire all effects that last until end of turn (chameleon bindings)");
-                    DaleCard_4.DaleCard.unbindAllChameleons();
+                    DaleCard_5.DaleCard.unbindAllChameleons();
                     this.updateHTML();
             }
         };
@@ -1439,7 +1472,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             }
             switch (card.effective_type_id) {
-                case DaleCard_4.DaleCard.CT_TRENDSETTING:
+                case DaleCard_5.DaleCard.CT_TRENDSETTING:
                     if (this.chameleonArgs !== undefined) {
                         console.warn("Previous chameleon args will be overwritten!");
                     }
@@ -1449,7 +1482,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                     break;
                 default:
-                    console.log(DaleCard_4.DaleCard.getLocalChameleons());
+                    console.log(DaleCard_5.DaleCard.getLocalChameleons());
                     callback(card);
                     break;
             }
@@ -1479,7 +1512,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var card_id = card.id;
             var item_name = stock.control_name + '_item_' + card_id;
             if ($(item_name)) {
-                pile.push(new DaleCard_4.DaleCard(card_id), item_name, undefined, undefined, delay);
+                pile.push(new DaleCard_5.DaleCard(card_id), item_name, undefined, undefined, delay);
                 stock.removeFromStockByIdNoAnimation(+card_id);
             }
             else {
@@ -1488,7 +1521,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.overallPlayerBoardToPile = function (card, player_id, pile, delay) {
             if (delay === void 0) { delay = 0; }
-            pile.push(DaleCard_4.DaleCard.of(card), 'overall_player_board_' + player_id);
+            pile.push(DaleCard_5.DaleCard.of(card), 'overall_player_board_' + player_id);
         };
         Dale.prototype.playerStockToPile = function (card, stock, player_id, pile, delay) {
             if (delay === void 0) { delay = 0; }
@@ -1505,7 +1538,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.pileToStock = function (card, pile, stock, location_arg) {
-            stock.addDaleCardToStock(DaleCard_4.DaleCard.of(card), pile.placeholderHTML);
+            stock.addDaleCardToStock(DaleCard_5.DaleCard.of(card), pile.placeholderHTML);
             if (location_arg !== undefined) {
                 if (pile.removeAt(location_arg).id != +card.id) {
                     throw new Error("Card ".concat(+card.id, " was not found at index ").concat(location_arg, " in the pile of size ").concat(pile.size));
@@ -1585,7 +1618,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onHandSelectionChanged = function (control_name, card_id) {
             if (!card_id)
                 return;
-            var card = new DaleCard_4.DaleCard(card_id);
+            var card = new DaleCard_5.DaleCard(card_id);
             var isAdded = this.myHand.isSelected(card_id);
             switch (this.gamedatas.gamestate.name) {
                 case 'playerTurn':
@@ -1627,7 +1660,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var items = this.myHand.getSelectedItems();
             if (!items[0])
                 return;
-            var card = new DaleCard_4.DaleCard(items[0].id);
+            var card = new DaleCard_5.DaleCard(items[0].id);
             switch (this.gamedatas.gamestate.name) {
                 case null:
                     throw new Error("gamestate.name is null");
@@ -1648,7 +1681,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.showMessage(_("This card cannot be played"), 'error');
             }
             else if (this.checkAction('actPlayCard')) {
-                this.bgaPerformAction('actPlayCard', __assign({ card_id: card.id }, DaleCard_4.DaleCard.getLocalChameleons()));
+                this.bgaPerformAction('actPlayCard', __assign({ card_id: card.id }, DaleCard_5.DaleCard.getLocalChameleons()));
             }
             this.myHand.unselectAll();
         };
@@ -1658,16 +1691,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var count_nostalgic_items = 0;
             for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
                 var item = items_1[_i];
-                var card_1 = new DaleCard_4.DaleCard(item.id);
-                if (card_1.effective_type_id == DaleCard_4.DaleCard.CT_NOSTALGICITEM) {
+                var card_1 = new DaleCard_5.DaleCard(item.id);
+                if (card_1.effective_type_id == DaleCard_5.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
                 }
             }
             if (count_nostalgic_items > 0) {
                 for (var _a = 0, _b = this.myDiscard.orderedSelectedCardIds; _a < _b.length; _a++) {
                     var card_id = _b[_a];
-                    var card_2 = new DaleCard_4.DaleCard(card_id);
-                    if (card_2.effective_type_id == DaleCard_4.DaleCard.CT_NOSTALGICITEM) {
+                    var card_2 = new DaleCard_5.DaleCard(card_id);
+                    if (card_2.effective_type_id == DaleCard_5.DaleCard.CT_NOSTALGICITEM) {
                         count_nostalgic_items++;
                     }
                 }
@@ -1678,11 +1711,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onBuild = function () {
             var autoSortedCards = this.myHand.getSelectedItems();
             if (this.checkAction('actBuild')) {
-                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(autoSortedCards), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds) }, DaleCard_4.DaleCard.getLocalChameleons()));
+                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(autoSortedCards), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds) }, DaleCard_5.DaleCard.getLocalChameleons()));
             }
         };
         Dale.prototype.onCancel = function () {
-            if (DaleCard_4.DaleCard.unbindAllChameleonsLocal()) {
+            if (DaleCard_5.DaleCard.unbindAllChameleonsLocal()) {
                 this.restoreServerGameState();
                 this.chameleonArgs = undefined;
                 this.updateHTML();
@@ -1705,7 +1738,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onConfirmChameleon = function (type_id) {
             var args = this.chameleonArgs;
-            if (args.requiresPlayable && !DaleCard_4.DaleCard.isPlayable(type_id)) {
+            if (args.requiresPlayable && !DaleCard_5.DaleCard.isPlayable(type_id)) {
                 this.showMessage(_("Copy failed: this card cannot be played"), 'error');
                 this.onCancelChameleon();
             }
@@ -1786,7 +1819,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (notif.args.player_id == this.player_id) {
                 var card_id = +notif.args.card.id;
                 if ($('myhand_item_' + card_id)) {
-                    this.mySchedule.addDaleCardToStock(DaleCard_4.DaleCard.of(notif.args.card), 'myhand_item_' + card_id);
+                    this.mySchedule.addDaleCardToStock(DaleCard_5.DaleCard.of(notif.args.card), 'myhand_item_' + card_id);
                     this.myHand.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -1795,14 +1828,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             else {
                 var schedule = this.playerSchedules[notif.args.player_id];
-                schedule.addDaleCardToStock(DaleCard_4.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
+                schedule.addDaleCardToStock(DaleCard_5.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
             }
         };
         Dale.prototype.notif_cancelTechnique = function (notif) {
             if (notif.args.player_id == this.player_id) {
                 var card_id = +notif.args.card.id;
                 if ($(this.mySchedule.control_name + '_item_' + card_id)) {
-                    this.myHand.addDaleCardToStock(DaleCard_4.DaleCard.of(notif.args.card), this.mySchedule.control_name + '_item_' + card_id);
+                    this.myHand.addDaleCardToStock(DaleCard_5.DaleCard.of(notif.args.card), this.mySchedule.control_name + '_item_' + card_id);
                     this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -1817,7 +1850,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_resolveTechnique = function (notif) {
             console.log(this.playerSchedules);
             var schedule = this.playerSchedules[notif.args.player_id];
-            var card = DaleCard_4.DaleCard.of(notif.args.card);
+            var card = DaleCard_5.DaleCard.of(notif.args.card);
             var from = schedule.control_name + '_item_' + card.id;
             this.playerDiscards[notif.args.player_id].push(card, from, null, schedule.duration);
             schedule.removeFromStockByIdNoAnimation(card.id);
@@ -1828,7 +1861,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var stall = this.playerStalls[notif.args.player_id];
             for (var i in notif.args.cards) {
                 var dbcard = notif.args.cards[i];
-                var card = DaleCard_4.DaleCard.of(dbcard);
+                var card = DaleCard_5.DaleCard.of(dbcard);
                 switch (notif.args.from) {
                     case 'hand':
                         if (notif.args.player_id == this.player_id) {
@@ -1865,7 +1898,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 throw new Error("notif_fillEmptyMarketSlots got invalid arguments");
             }
             for (var i = 0; i < cards.length; i++) {
-                this.market.insertCard(DaleCard_4.DaleCard.of(cards[i]), positions[i], this.marketDeck.placeholderHTML);
+                this.market.insertCard(DaleCard_5.DaleCard.of(cards[i]), positions[i], this.marketDeck.placeholderHTML);
                 this.marketDeck.pop();
             }
         };
@@ -1873,7 +1906,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.market.slideRight();
         };
         Dale.prototype.notif_marketToHand = function (notif) {
-            var daleCard = new DaleCard_4.DaleCard(notif.args.market_card_id);
+            var daleCard = new DaleCard_5.DaleCard(notif.args.market_card_id);
             var slotId = this.market.getSlotId(notif.args.pos);
             this.market.unselectAll();
             if (notif.args.player_id == this.player_id) {
@@ -1887,7 +1920,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_removeFromStall = function (notif) {
             var stall = this.playerStalls[notif.args.player_id];
             for (var i in notif.args.cards) {
-                var daleCard = DaleCard_4.DaleCard.of(notif.args.cards[i]);
+                var daleCard = DaleCard_5.DaleCard.of(notif.args.cards[i]);
                 var pos = +notif.args.cards[i].location_arg;
                 var slotId = stall.getSlotId(pos);
                 switch (notif.args.to) {
@@ -1912,7 +1945,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card_id = +notif.args._private.card.id;
                 if ($(this.myTemporary.control_name + '_item_' + card_id)) {
                     console.log(notif.args);
-                    this.myHand.addDaleCardToStock(DaleCard_4.DaleCard.of(notif.args._private.card), this.myTemporary.control_name + '_item_' + card_id);
+                    this.myHand.addDaleCardToStock(DaleCard_5.DaleCard.of(notif.args._private.card), this.myTemporary.control_name + '_item_' + card_id);
                     this.myTemporary.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -1927,7 +1960,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (notif.args.player_id == this.player_id) {
                 for (var i in notif.args.cards) {
                     var card = notif.args.cards[i];
-                    this.myHand.addDaleCardToStock(DaleCard_4.DaleCard.of(card), 'overall_player_board_' + notif.args.player_id);
+                    this.myHand.addDaleCardToStock(DaleCard_5.DaleCard.of(card), 'overall_player_board_' + notif.args.player_id);
                 }
             }
             else {
@@ -1936,7 +1969,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_throwAway = function (notif) {
             var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
-            if (DaleCard_4.DaleCard.of(notif.args.card).isJunk()) {
+            if (DaleCard_5.DaleCard.of(notif.args.card).isJunk()) {
                 this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
             }
             else {
@@ -1949,7 +1982,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
                 var id = _a[_i];
                 var card = notif.args.cards[id];
-                if (DaleCard_4.DaleCard.of(card).isJunk()) {
+                if (DaleCard_5.DaleCard.of(card).isJunk()) {
                     this.playerStockRemove(card, stock, notif.args.player_id);
                 }
                 else {
@@ -2015,7 +2048,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
             if (notif.args._private) {
                 var card = notif.args._private.card;
-                stock.addDaleCardToStock(DaleCard_4.DaleCard.of(card), this.myDeck.placeholderHTML);
+                stock.addDaleCardToStock(DaleCard_5.DaleCard.of(card), this.myDeck.placeholderHTML);
                 this.myDeck.pop();
             }
             else {
@@ -2030,7 +2063,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (notif.args._private) {
                 for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
                     var card = notif.args._private.cards[i];
-                    stock.addDaleCardToStock(DaleCard_4.DaleCard.of(card), this.myDeck.placeholderHTML);
+                    stock.addDaleCardToStock(DaleCard_5.DaleCard.of(card), this.myDeck.placeholderHTML);
                     this.myDeck.pop();
                 }
             }
@@ -2049,8 +2082,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.notif_bindChameleon = function (notif) {
-            DaleCard_4.DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
-            DaleCard_4.DaleCard.unbindAllChameleonsLocal();
+            DaleCard_5.DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
+            DaleCard_5.DaleCard.unbindAllChameleonsLocal();
             this.updateHTML();
         };
         Dale.prototype.notif_message = function (notif) {
@@ -2072,7 +2105,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.market.slideRight();
             }
             else if (arg == 'addCard') {
-                this.myHand.addDaleCardToStock(new DaleCard_4.DaleCard(0, 0));
+                this.myHand.addDaleCardToStock(new DaleCard_5.DaleCard(0, 0));
             }
             else if (arg == 'clientConsoleLog') {
                 console.log(notif.args.msg);
@@ -2081,7 +2114,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myDeck.pushHiddenCards(notif.args.nbr);
             }
             else if (arg == 'bindings') {
-                var bindings = DaleCard_4.DaleCard.getLocalChameleons();
+                var bindings = DaleCard_5.DaleCard.getLocalChameleons();
                 console.log("(Chameleon) cards_ids");
                 console.log(bindings.chameleon_card_ids);
                 console.log("Target type_ids");

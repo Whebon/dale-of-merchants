@@ -1,5 +1,6 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
+import { DaleStock } from './DaleStock';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 
@@ -172,6 +173,20 @@ export class MarketBoard implements CardSlotManager {
             (this.page as any).onMarketCardClick(slot.card, slot.pos);
         } else {
             this.page.showMessage(_("This card is sold out!"), 'error');
+        }
+    }
+
+    /**
+     * Swaps a card in this market with a card with a stock
+     * @param card_id card id in this market
+     * @param stock location of the new card for this slot
+     * @param new_card_id id of the new card for this slot
+     */
+    public swapWithStock(card_id: number, stock: DaleStock, new_card_id: number) {
+        for (let slot of this.slots) {
+            if (slot.card?.id == card_id) {
+                slot.swapWithStock(stock, new_card_id)
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
+import { DaleStock } from './DaleStock';
 
 /**
  * Responsible for managing a collection of CardSlots
@@ -176,5 +177,23 @@ export class CardSlot {
             this._container.classList.remove("clickable");
             this._container.onclick = null;
         }
+    }
+
+    /**
+     * Swaps the card in this slot with a card with a stock
+     * @param stock location of the new card for this slot
+     * @param card_id id of the new card for this slot
+     */
+    public swapWithStock(stock: DaleStock, card_id: number) {
+        if (!this.hasCard()) {
+            throw new Error("'swapWithStock' called on an empty slot");
+        }
+        if (!stock.getItemById(card_id)) {
+            throw new Error(`'swapWithStock' called with a card that is not in '${stock.control_name}' (card_id = ${card_id})`);
+        }
+        const div = $(stock.control_name + "_item_" + card_id) as HTMLElement;
+        stock.addDaleCardToStock(this._card!, this._container); 
+        this.insertCard(new DaleCard(card_id), div); //remove + add for a slot
+        stock.removeFromStockByIdNoAnimation(card_id);
     }
 }
