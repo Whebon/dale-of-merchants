@@ -4,6 +4,7 @@ import { DaleStock } from './DaleStock';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 import { DbCard } from './types/DbCard';
+import { DaleLocation } from './types/DaleLocation';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -19,7 +20,7 @@ type StallSelectionMode = "none" | "single" | "multiple" | "build" | "rightmosts
 /**
  * Major Dale of Merchants game component. Players must build 8 stacks in their Stall to win the game.
  */
-export class Stall implements CardSlotManager {
+export class Stall implements CardSlotManager, DaleLocation {
     static readonly MAX_STACK_SIZE: number = 1000; //must be the same as on the server side
     static readonly MAX_STACKS: number = 8; //must be the same as on the server side
 
@@ -292,10 +293,34 @@ export class Stall implements CardSlotManager {
         }
     }
 
+    selectItem(card_id: number): void {
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (slot.card?.id == card_id) {
+                    slot.selectItem();
+                    return;
+                }
+            }
+        }
+        console.warn(`Attempted to select a card (card_id = ${card_id}) that is not present in the stall`);
+    }
+
+    unselectItem(card_id: number): void {
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (slot.card?.id == card_id) {
+                    slot.unselectItem();
+                    return;
+                }
+            }
+        }
+        console.warn(`Attempted to unselect a card (card_id = ${card_id}) that is not present in the stall`);
+    }
+
     unselectAll() {
         for (let stack of this.slots) {
             for (let slot of stack) {
-                slot.setSelected(false);
+                slot.unselectItem();
             }
         }
     }

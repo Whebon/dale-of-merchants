@@ -1,7 +1,9 @@
 import Gamegui = require('ebg/core/gamegui');
 import PopInDialog = require('bga-ts-template/typescript/types/ebg/popindialog');
+import { DaleLocation } from './types/DaleLocation';
 import { Images } from './Images';
 import { DaleCard } from './DaleCard';
+import { ChameleonClientStateArgs } from './types/ChameleonClientStateArgs';
 
 
 declare function $(text: string | Element): HTMLElement;
@@ -12,13 +14,13 @@ type SelectionMode = 'none' | 'single' | 'multiple';
  * A component to display a set of cards in a pile.
  * Only displays the size and top card of the pile.
  */
-export class Pile {
+export class Pile implements DaleLocation {
     private page: Gamegui;
     private cards: DaleCard[];
     private containerHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private selectedSizeHTML: HTMLElement;
-    private topCardHTML: HTMLElement;
+    public topCardHTML: HTMLElement;
     public placeholderHTML: HTMLElement;
 
     private pile_container_id: string;
@@ -28,6 +30,7 @@ export class Pile {
     private selectionMode: SelectionMode = 'none';
     private selectionMax: number = 0;
     private popin: PopInDialog = new ebg.popindialog();
+    private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
 
     public orderedSelectedCardIds: number[];
 
@@ -297,6 +300,21 @@ export class Pile {
     }
 
     /**
+     * @returns If the popin is open, return the card div that corresponds to the specified card_id
+     * @param card_id
+     */
+    public getPopinCardDiv(card_id: number): HTMLElement | undefined {
+        return this.cardIdToPopinDiv.get(card_id);
+    }
+
+    /**
+     * @returns `true` iff the popin window for this pile is currently open
+     */
+    public isPopinOpen(): boolean {
+        return $(this.pile_container_id+'-popin') !== undefined
+    }
+
+    /**
      * User clicked on the top card of the pile. Show the popin.
      */
     public onClickTopCard() {
@@ -324,6 +342,10 @@ export class Pile {
             if(this.orderedSelectedCardIds.includes(card.id)) {
                 div.classList.add("selected");
             }
+            if ((this.page as any).chameleonArgs?.card.id == card.id) {
+                div.classList.add("chameleon-selected");
+            }
+            this.cardIdToPopinDiv.set(card.id, div);
         }
         dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
         this.popin.show();
@@ -332,8 +354,19 @@ export class Pile {
     /**
      * User clicked on a card within the popin.
      */
-    public onClickCard(card: DaleCard, div: HTMLElement){
-        console.log(card);
+    public onClickCard(card: DaleCard, div: HTMLElement) {
+        //when in a chameleon client state, make sure the user is directed towards selecting a target
+        const chameleonArgs: ChameleonClientStateArgs = (this.page as any).chameleonArgs!;
+        if (chameleonArgs) {
+            if (chameleonArgs.card.id == card.id) {
+                (this.page as any).onCancelChameleon();
+            }
+            else {
+                this.page.showMessage(_("Please select a valid target for ")+`'${chameleonArgs.card.name}'`, "error");
+            }
+            return;
+        }
+        //normal behavior
         switch(this.selectionMode) {
             case 'none':
                 return;
@@ -357,19 +390,51 @@ export class Pile {
                         }
                         return;
                     }
-                    div.classList.add("selected");
-                    this.orderedSelectedCardIds.push(card_id);
+                    this.selectItem(card_id);
+                    // div.classList.add("selected");
+                    // this.orderedSelectedCardIds.push(card_id);
                 }
                 else {
-                    //remove a card from selection
-                    div.classList.remove("selected");
-                    this.orderedSelectedCardIds.splice(index, 1);
+                    this.unselectItem(card_id);
+                    // //remove a card from selection
+                    // div.classList.remove("selected");
+                    // this.orderedSelectedCardIds.splice(index, 1);
                 }
                 console.log(this.orderedSelectedCardIds);
                 this.updateHTML();
                 break;
         }
         (this.page as any).onPileSelectionChanged(this, card);
+    }
+
+    /**
+     * Unselect a card_id in the pile popin
+     * @param card_id 
+     */
+    unselectItem(card_id: number) {
+        const div = this.cardIdToPopinDiv.get(card_id);
+        if (div) {
+            const index = this.orderedSelectedCardIds.indexOf(card_id);
+            if (index == -1) {
+                console.error(`card_id = ${card_id} was not found in the pile`)
+            }
+            div.classList.remove("selected");
+            this.orderedSelectedCardIds.splice(index, 1);
+        }
+        console.log(this.orderedSelectedCardIds);
+    }
+
+    /**
+     * Select a card_id in the pile popin
+     * @param card_id 
+     */
+    selectItem(card_id: number) {
+        const div = this.cardIdToPopinDiv.get(card_id);
+        if (div) {
+            this.cardIdToPopinDiv.get(card_id)?.classList.add("selected");
+            this.orderedSelectedCardIds.push(card_id);
+        }
+        console.log(this.orderedSelectedCardIds);
     }
 
     /**
@@ -394,9 +459,17 @@ export class Pile {
     }
 
     /**
+     * Close the popin
+     */
+    public closePopin(){
+        this.popin.hide();
+        this.onClosePopin();
+    }
+
+    /**
      * Triggers when a user closed the popin
      */
-    public onClosePopin(){
+    private onClosePopin(){
         console.log("onClosePopin");
         //Delete all tooltips from the popin
         for (let card of this.cards) {

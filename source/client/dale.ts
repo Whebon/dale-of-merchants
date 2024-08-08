@@ -25,6 +25,7 @@ import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
 import { ChameleonClientStateArgs } from './components/types/ChameleonClientStateArgs';
 import { CardSlot } from './components/CardSlot';
+import { DaleLocation } from './components/types/DaleLocation';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -98,7 +99,7 @@ class Dale extends Gamegui
 	override setup(gamedatas: Gamedatas): void
 	{
 		console.log( "Starting game setup" );
-		console.log("------ GAME DATAS ------")
+		console.log("------ GAME DATAS ------ !")
 		console.log(this.gamedatas)
 		console.log("------------------------")
 
@@ -240,7 +241,7 @@ class Dale extends Gamegui
 				break;
 			case 'build':
 				this.myHand.setSelectionMode(2);
-				this.myDiscard.setSelectionMode('multiple', 0);
+				this.onBuildSelectionChanged(); //this.myDiscard.setSelectionMode('multiple');
 				break;
 			case 'inventory':
 				this.myHand.setSelectionMode(2);
@@ -256,11 +257,11 @@ class Dale extends Gamegui
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('rightmoststack');
-				this.chameleonArgs?.card_div?.classList.add("chameleon-selected");
+				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(1);
-				this.chameleonArgs?.card_div?.classList.add("chameleon-selected");
+				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'nextPlayer':
 				console.log("nextPlayer, expire all effects that last until end of turn (chameleon bindings)");
@@ -309,11 +310,11 @@ class Dale extends Gamegui
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('none');
-				this.chameleonArgs?.card_div?.classList.remove("chameleon-selected");
+				this.chameleonArgs?.unselectChameleonCard();
 				break;
 			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(0);
-				this.chameleonArgs?.card_div?.classList.remove("chameleon-selected");
+				this.chameleonArgs?.unselectChameleonCard();
 				break;
 		}
 	}
@@ -382,7 +383,7 @@ class Dale extends Gamegui
 	 * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
 	 * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
 	 */
-	handleChameleonCard(card: DaleCard | undefined, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
+	handleChameleonCard(card: DaleCard | undefined, from: DaleLocation, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
 		callback = callback.bind(this);
 		if (!card || !this.checkLock()) {
 			callback();
@@ -426,7 +427,7 @@ class Dale extends Gamegui
 	 * @param location (optional) - if provided, only update this location
 	 * @param card (optional) - if provided, only update this html elements of this card
 	 */
-	updateHTML(location?: Pile | DaleStock | MarketBoard | Stall, card?: DaleCard) {
+	updateHTML(location?: DaleLocation, card?: DaleCard) {
 		if (location) {
 			location.updateHTML(card);
 		}
@@ -671,7 +672,12 @@ class Dale extends Gamegui
 		console.log("onMyDiscardPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'build':
-				this.onBuildSelectionChanged(card);
+				//TODO: automatically close the popin?
+				//const isUnboundChameleon = card.isUnboundChameleon();
+				this.handleChameleonCard(card, pile, this.onBuildSelectionChanged);
+				// if (isUnboundChameleon) {
+				// 	pile.closePopin();
+				// }
 				break;
 		}
 	}
@@ -815,9 +821,7 @@ class Dale extends Gamegui
 		console.log(this.chameleonArgs!);
 		//return from the chameleon client state
 		const args = this.chameleonArgs!
-		if (args.location instanceof DaleStock) {
-			args.location.unselectItem(args.card.id);
-		}
+		args.location.unselectItem(args.card.id);
 		args.card.unbindChameleonLocal();
 		this.restoreServerGameState();
 		this.chameleonArgs = undefined;

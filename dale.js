@@ -323,6 +323,10 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
     }());
     exports.DaleCard = DaleCard;
 });
+define("components/types/DaleLocation", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/DaleStock", ["require", "exports", "ebg/stock", "components/DaleCard", "components/Images", "ebg/stock"], function (require, exports, Stock, DaleCard_1, Images_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -473,301 +477,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
     }(Stock));
     exports.DaleStock = DaleStock;
 });
-define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_3, DaleCard_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Pile = void 0;
-    var Pile = (function () {
-        function Pile(page, pile_container_id, pile_name, player_id) {
-            this.selectionMode = 'none';
-            this.selectionMax = 0;
-            this.popin = new ebg.popindialog();
-            page.allPiles.push(this);
-            this.pile_container_id = pile_container_id;
-            this.pile_name = pile_name;
-            this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"clickable card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
-            this.page = page;
-            this.containerHTML = $(pile_container_id);
-            this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
-            this.topCardHTML = $(pile_container_id).querySelector('.card');
-            var sizeElements = $(pile_container_id).querySelectorAll('.size');
-            this.sizeHTML = sizeElements[0];
-            this.selectedSizeHTML = sizeElements[1];
-            this.cards = [];
-            this._slidingCards = [];
-            this.orderedSelectedCardIds = [];
-            this.updateHTML();
-            dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
-        }
-        Object.defineProperty(Pile.prototype, "size", {
-            get: function () {
-                return this.cards.length;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Pile.prototype.updateHTML = function (card) {
-            var topCard = this.peek(true);
-            if (card != undefined && card.id != (topCard === null || topCard === void 0 ? void 0 : topCard.id)) {
-                return;
-            }
-            if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
-                this.selectedSizeHTML.classList.remove("hidden");
-                this.selectedSizeHTML.innerHTML = "<span style=\"color: red;\">(x ".concat(this.orderedSelectedCardIds.length, ")</span>");
-            }
-            else {
-                this.selectedSizeHTML.classList.add("hidden");
-            }
-            this.sizeHTML.innerHTML = 'x ' + this.cards.length;
-            if (topCard == undefined) {
-                this.topCardHTML.setAttribute('style', "display: none");
-            }
-            else {
-                this.topCardHTML.innerHTML = '';
-                this.topCardHTML.setAttribute('style', Images_3.Images.getCardStyle(topCard.effective_type_id));
-                if (topCard.isBoundChameleon()) {
-                    this.topCardHTML.replaceChildren(DaleCard_2.DaleCard.createChameleonIcon());
-                }
-            }
-        };
-        Pile.prototype.setZIndex = function (slidingElement) {
-            var z_index = Images_3.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
-            var style = slidingElement.getAttribute('style');
-            slidingElement.setAttribute('style', style + "z-index: ".concat(z_index, ";"));
-        };
-        Pile.prototype.removeAt = function (index) {
-            if (index == undefined) {
-                return this.pop();
-            }
-            if (index > this.cards.length - 1) {
-                throw new Error("Cannot remove a card in pile of size ".concat(this.cards.length, " at index ").concat(index));
-            }
-            else if (index == this.cards.length - 1) {
-                return this.pop();
-            }
-            return this.cards.splice(index, 1)[0];
-        };
-        Pile.prototype.insert = function (card, index) {
-            if (index > this.cards.length) {
-                throw new Error("Cannot insert a card in pile of size ".concat(this.cards.length, " at index ").concat(index));
-            }
-            else if (index == this.cards.length) {
-                this.push(card);
-            }
-            else {
-                this.cards.splice(index, 0, card);
-            }
-        };
-        Pile.prototype.pushHiddenCards = function (amount) {
-            for (var i = 0; i < amount; i++) {
-                this.cards.push(new DaleCard_2.DaleCard(0, 0));
-            }
-            this.updateHTML();
-        };
-        Pile.prototype.push = function (card, from, onEnd, duration, delay) {
-            this.cards.push(card);
-            card.addTooltip(this.topCardHTML.id);
-            if (from != null) {
-                this._slidingCards.push(card);
-                var slidingElement = card.toDiv();
-                this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
-                var thiz_1 = this;
-                var callback = function (node) {
-                    dojo.destroy(node);
-                    var i = thiz_1._slidingCards.indexOf(card);
-                    if (i > -1) {
-                        thiz_1._slidingCards.splice(i, 1);
-                    }
-                    thiz_1.updateHTML();
-                    if (onEnd) {
-                        onEnd(node);
-                    }
-                };
-                this.page.placeOnObject(slidingElement, from);
-                var slideAnimation = this.page.slideToObject(slidingElement, this.placeholderHTML, duration, delay);
-                var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
-                dojo.fx.chain([slideAnimation, fadeAnimation]).play();
-                dojo.addClass(slidingElement, 'to_be_destroyed');
-                this.setZIndex(slidingElement);
-            }
-            this.updateHTML();
-        };
-        Pile.prototype.pop = function (to, onEnd, duration, delay) {
-            var _a;
-            if (this.cards.length == 0) {
-                throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
-            }
-            if (to != null) {
-                if (to instanceof Pile) {
-                    to = to.placeholderHTML;
-                }
-                var slidingElement = this.topCardHTML.cloneNode();
-                this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
-                var callback = function (node) {
-                    dojo.destroy(node);
-                    if (onEnd) {
-                        onEnd(node);
-                    }
-                };
-                var slideAnimation = this.page.slideToObject(slidingElement, to, duration, delay);
-                var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
-                dojo.fx.chain([slideAnimation, fadeAnimation]).play();
-                dojo.addClass(slidingElement, 'to_be_destroyed');
-                this.setZIndex(slidingElement);
-            }
-            var card = this.cards.pop();
-            (_a = this.peek()) === null || _a === void 0 ? void 0 : _a.addTooltip(this.topCardHTML.id);
-            this.updateHTML();
-            return card;
-        };
-        Pile.prototype.shuffleToDrawPile = function (drawPile, duration) {
-            if (duration === void 0) { duration = 1000; }
-            if (this.cards.length == 0) {
-                return;
-            }
-            if (this === drawPile) {
-                throw new Error('Cannot shuffle to self.');
-            }
-            var n = this.cards.length;
-            var durationPerPop = duration / n;
-            var thiz = this;
-            var callback = function (node) {
-                if (thiz.cards.length > 0) {
-                    thiz.pop(drawPile, callback, durationPerPop);
-                }
-                drawPile.pushHiddenCards(1);
-            };
-            if (n > 10) {
-                durationPerPop *= 4;
-                this.pop(drawPile, callback, durationPerPop);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 2 / 4);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 3 / 4);
-            }
-            else if (n > 5) {
-                durationPerPop *= 2;
-                this.pop(drawPile, callback, durationPerPop);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
-            }
-            else {
-                this.pop(drawPile, callback, durationPerPop);
-            }
-        };
-        Pile.prototype.peek = function (exclude_sliding_cards) {
-            if (exclude_sliding_cards === void 0) { exclude_sliding_cards = false; }
-            if (this.cards.length == 0) {
-                return undefined;
-            }
-            var i = this.cards.length - 1;
-            if (exclude_sliding_cards) {
-                while (i >= 0 && this._slidingCards.indexOf(this.cards[i]) != -1) {
-                    i--;
-                }
-                if (i == -1) {
-                    return undefined;
-                }
-            }
-            return this.cards[i];
-        };
-        Pile.prototype.onClickTopCard = function () {
-            var _a;
-            var player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
-            var title_player = player ? "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player.name, "</span>'s ") : "";
-            var title_pile_name = (_a = this.pile_name) !== null && _a !== void 0 ? _a : "Unnamed Pile";
-            var title = title_player + title_pile_name;
-            var popin_id = this.pile_container_id + '-popin';
-            this.popin.create(popin_id);
-            this.popin.setTitle(title);
-            this.popin.setMaxWidth(1000);
-            this.popin.setContent("<div id=\"".concat(popin_id, "-card-container\" class=\"popin-card-container\"></div>"));
-            var container_id = popin_id + "-card-container";
-            var _loop_1 = function (card) {
-                var div = card.toDiv(container_id);
-                div.classList.add("relative");
-                console.log("selectionMode: " + this_1.selectionMode);
-                if (this_1.selectionMode != 'none') {
-                    div.classList.add("clickable");
-                    var thiz_2 = this_1;
-                    dojo.connect($(div.id), 'onclick', function () {
-                        thiz_2.onClickCard(card, div);
-                    });
-                }
-                if (this_1.orderedSelectedCardIds.includes(card.id)) {
-                    div.classList.add("selected");
-                }
-            };
-            var this_1 = this;
-            for (var _i = 0, _b = this.cards; _i < _b.length; _i++) {
-                var card = _b[_i];
-                _loop_1(card);
-            }
-            dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
-            this.popin.show();
-        };
-        Pile.prototype.onClickCard = function (card, div) {
-            console.log(card);
-            switch (this.selectionMode) {
-                case 'none':
-                    return;
-                case 'single':
-                    this.popin.hide();
-                    break;
-                case 'multiple':
-                    var card_id = +card.id;
-                    var index = this.orderedSelectedCardIds.indexOf(card_id);
-                    if (index == -1) {
-                        if (this.orderedSelectedCardIds.length >= this.selectionMax) {
-                            if (this.selectionMax == 0) {
-                                this.page.showMessage(_("You cannot select cards from this pile!"), 'error');
-                            }
-                            else if (this.selectionMax == 1) {
-                                this.page.showMessage(_("You can only select 1 card from this pile!"), 'error');
-                            }
-                            else {
-                                this.page.showMessage(_("You can only select up to ".concat(this.selectionMax, " cards from this pile!")), 'error');
-                            }
-                            return;
-                        }
-                        div.classList.add("selected");
-                        this.orderedSelectedCardIds.push(card_id);
-                    }
-                    else {
-                        div.classList.remove("selected");
-                        this.orderedSelectedCardIds.splice(index, 1);
-                    }
-                    console.log(this.orderedSelectedCardIds);
-                    this.updateHTML();
-                    break;
-            }
-            this.page.onPileSelectionChanged(this, card);
-        };
-        Pile.prototype.setSelectionMode = function (mode, max) {
-            if (max === void 0) { max = 0; }
-            if (mode != 'multiple') {
-                this.orderedSelectedCardIds = [];
-            }
-            if (max < this.selectionMax) {
-                this.orderedSelectedCardIds = this.orderedSelectedCardIds.slice(0, max);
-            }
-            this.selectionMax = max;
-            this.selectionMode = mode;
-            this.updateHTML();
-        };
-        Pile.prototype.onClosePopin = function () {
-            var _a;
-            console.log("onClosePopin");
-            for (var _i = 0, _b = this.cards; _i < _b.length; _i++) {
-                var card = _b[_i];
-                card.destroyTooltip();
-            }
-            (_a = this.cards[this.cards.length - 1]) === null || _a === void 0 ? void 0 : _a.addTooltip(this.topCardHTML.id);
-        };
-        return Pile;
-    }());
-    exports.Pile = Pile;
-});
-define("components/CardSlot", ["require", "exports", "components/DaleCard"], function (require, exports, DaleCard_3) {
+define("components/CardSlot", ["require", "exports", "components/DaleCard"], function (require, exports, DaleCard_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CardSlot = void 0;
@@ -861,23 +571,20 @@ define("components/CardSlot", ["require", "exports", "components/DaleCard"], fun
             this.removeCard();
             this._container.remove();
         };
-        CardSlot.prototype.setSelected = function (enable) {
-            if (this.selected == enable)
-                return;
-            if (enable) {
-                this._container.classList.add("selected");
-            }
-            else {
-                this._container.classList.remove("selected");
-            }
-            this.selected = enable;
+        CardSlot.prototype.selectItem = function () {
+            this._container.classList.add("selected");
+            this.selected = true;
+        };
+        CardSlot.prototype.unselectItem = function () {
+            this._container.classList.remove("selected");
+            this.selected = false;
         };
         CardSlot.prototype.setClickable = function (enable) {
             if (enable) {
-                var thiz_3 = this;
+                var thiz_1 = this;
                 this._container.onclick = function (evt) {
                     evt.stopPropagation();
-                    thiz_3.parent.onCardSlotClick(thiz_3);
+                    thiz_1.parent.onCardSlotClick(thiz_1);
                 };
                 this._container.classList.add("clickable");
             }
@@ -895,7 +602,7 @@ define("components/CardSlot", ["require", "exports", "components/DaleCard"], fun
             }
             var div = $(stock.control_name + "_item_" + card_id);
             stock.addDaleCardToStock(this._card, this._container);
-            this.insertCard(new DaleCard_3.DaleCard(card_id), div);
+            this.insertCard(new DaleCard_2.DaleCard(card_id), div);
             stock.removeFromStockByIdNoAnimation(card_id);
         };
         CardSlot.UNIQUE_ID = 0;
@@ -903,7 +610,7 @@ define("components/CardSlot", ["require", "exports", "components/DaleCard"], fun
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_4, CardSlot_1) {
+define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_3, CardSlot_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -911,12 +618,12 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
             this.page = page;
-            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_4.Images.MARKET_WIDTH_S - Images_4.Images.MARKET_PADDING_LEFT_S - Images_4.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_4.Images.MARKET_HEIGHT_S - Images_4.Images.MARKET_PADDING_TOP_S - Images_4.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_4.Images.MARKET_WIDTH_S, "px ").concat(Images_4.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_4.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_4.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_4.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_4.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_3.Images.MARKET_WIDTH_S - Images_3.Images.MARKET_PADDING_LEFT_S - Images_3.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_3.Images.MARKET_HEIGHT_S - Images_3.Images.MARKET_PADDING_TOP_S - Images_3.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_3.Images.MARKET_WIDTH_S, "px ").concat(Images_3.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_3.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_3.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_3.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_3.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
             this.container = $("market-board-background").querySelector("#market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var div = document.createElement("div");
-                div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_4.Images.CARD_WIDTH_S + Images_4.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
+                div.setAttribute('style', "".concat(Images_3.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_3.Images.CARD_WIDTH_S + Images_3.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
@@ -983,12 +690,39 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         MarketBoard.prototype.setSelected = function (pos, enable) {
             if (enable === void 0) { enable = true; }
             pos = this.getValidPos(pos);
-            this.slots[pos].setSelected(enable);
+            if (enable) {
+                this.slots[pos].selectItem();
+            }
+            else {
+                this.slots[pos].unselectItem();
+            }
+        };
+        MarketBoard.prototype.selectItem = function (card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var slot = _b[_i];
+                if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                    slot.selectItem();
+                    return;
+                }
+            }
+            console.warn("Attempted to select a card (card_id = ".concat(card_id, ") that is not present in the market"));
+        };
+        MarketBoard.prototype.unselectItem = function (card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var slot = _b[_i];
+                if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                    slot.unselectItem();
+                    return;
+                }
+            }
+            console.warn("Attempted to unselect a card (card_id = ".concat(card_id, ") that is not present in the market"));
         };
         MarketBoard.prototype.unselectAll = function () {
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var slot = _a[_i];
-                slot.setSelected(false);
+                slot.unselectItem();
             }
         };
         MarketBoard.prototype.onCardSlotClick = function (slot) {
@@ -1012,7 +746,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot"], function (require, exports, DaleCard_4, Images_5, CardSlot_2) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot"], function (require, exports, DaleCard_3, Images_4, CardSlot_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -1029,15 +763,15 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (this.slots.length < Stall.MAX_STACKS) {
                 if (this.stackContainers.length > 0) {
                     var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                    var height = Images_5.Images.CARD_HEIGHT_S + Images_5.Images.VERTICAL_STACK_OFFSET_S * (this.slots[this.slots.length - 1].length - 1);
-                    prevStackContainer.setAttribute('style', "height: ".concat(height, "px; max-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;"));
+                    var height = Images_4.Images.CARD_HEIGHT_S + Images_4.Images.VERTICAL_STACK_OFFSET_S * (this.slots[this.slots.length - 1].length - 1);
+                    prevStackContainer.setAttribute('style', "height: ".concat(height, "px; max-width: ").concat(Images_4.Images.CARD_WIDTH_S, "px;"));
                 }
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("stack-container");
-                stackContainer.setAttribute('style', "min-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;"));
+                stackContainer.setAttribute('style', "min-width: ".concat(Images_4.Images.CARD_WIDTH_S, "px;"));
                 var placeholder = document.createElement("div");
                 placeholder.classList.add("placeholder");
-                placeholder.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";"));
+                placeholder.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";"));
                 stackContainer.appendChild(placeholder);
                 this.container.appendChild(stackContainer);
                 this.stackContainers.push(stackContainer);
@@ -1064,9 +798,9 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var stackContainer = this.stackContainers[stack_index];
             var stack = this.slots[stack_index];
             var index = stack.length;
-            var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * index;
+            var y_offset = Images_4.Images.VERTICAL_STACK_OFFSET_S * index;
             var div = document.createElement("div");
-            div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
+            div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
@@ -1092,17 +826,17 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                     stack.pop();
                 }
             }
-            var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * i;
+            var y_offset = Images_4.Images.VERTICAL_STACK_OFFSET_S * i;
             var stackContainer = this.stackContainers[stack_index];
             var prevStyleWithoutHeight = (_a = stackContainer.getAttribute('style')) === null || _a === void 0 ? void 0 : _a.replace('height:.*px;', '');
-            stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_5.Images.CARD_HEIGHT_S + y_offset, "px;"));
+            stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_4.Images.CARD_HEIGHT_S + y_offset, "px;"));
             return card;
         };
         Stall.prototype.insertDbCard = function (card, from) {
             var pos = +card.location_arg;
             var index = pos % Stall.MAX_STACK_SIZE;
             var stack_index = (pos - index) / Stall.MAX_STACK_SIZE;
-            this.insertCard(DaleCard_4.DaleCard.of(card), stack_index, index, from);
+            this.insertCard(DaleCard_3.DaleCard.of(card), stack_index, index, from);
         };
         Stall.prototype.insertCard = function (card, stack_index, index, from) {
             var _a;
@@ -1173,12 +907,40 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 }
             }
         };
+        Stall.prototype.selectItem = function (card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var stack = _b[_i];
+                for (var _c = 0, stack_3 = stack; _c < stack_3.length; _c++) {
+                    var slot = stack_3[_c];
+                    if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                        slot.selectItem();
+                        return;
+                    }
+                }
+            }
+            console.warn("Attempted to select a card (card_id = ".concat(card_id, ") that is not present in the stall"));
+        };
+        Stall.prototype.unselectItem = function (card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var stack = _b[_i];
+                for (var _c = 0, stack_4 = stack; _c < stack_4.length; _c++) {
+                    var slot = stack_4[_c];
+                    if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                        slot.unselectItem();
+                        return;
+                    }
+                }
+            }
+            console.warn("Attempted to unselect a card (card_id = ".concat(card_id, ") that is not present in the stall"));
+        };
         Stall.prototype.unselectAll = function () {
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var stack = _a[_i];
-                for (var _b = 0, stack_3 = stack; _b < stack_3.length; _b++) {
-                    var slot = stack_3[_b];
-                    slot.setSelected(false);
+                for (var _b = 0, stack_5 = stack; _b < stack_5.length; _b++) {
+                    var slot = stack_5[_b];
+                    slot.unselectItem();
                 }
             }
         };
@@ -1191,8 +953,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var _a;
             for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
                 var stack = _b[_i];
-                for (var _c = 0, stack_4 = stack; _c < stack_4.length; _c++) {
-                    var slot = stack_4[_c];
+                for (var _c = 0, stack_6 = stack; _c < stack_6.length; _c++) {
+                    var slot = stack_6[_c];
                     if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                         slot.swapWithStock(stock, new_card_id);
                     }
@@ -1205,7 +967,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
     }());
     exports.Stall = Stall;
 });
-define("components/types/ChameleonClientStateArgs", ["require", "exports", "components/DaleStock"], function (require, exports, DaleStock_1) {
+define("components/types/ChameleonClientStateArgs", ["require", "exports", "components/DaleStock", "components/Pile"], function (require, exports, DaleStock_1, Pile_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ChameleonClientStateArgs = void 0;
@@ -1219,22 +981,370 @@ define("components/types/ChameleonClientStateArgs", ["require", "exports", "comp
             this.requiresPlayable = requiresPlayable;
             this.isChain = isChain;
         }
-        Object.defineProperty(ChameleonClientStateArgs.prototype, "card_div", {
-            get: function () {
-                if (this.location instanceof DaleStock_1.DaleStock) {
-                    return $(this.location.control_name + "_item_" + this.card.id);
-                }
-                console.error("Unexpected value for this.currentChameleonCardFrom");
-                return null;
-            },
-            enumerable: false,
-            configurable: true
-        });
+        ChameleonClientStateArgs.prototype.selectChameleonCard = function () {
+            var card_div = undefined;
+            if (this.location instanceof DaleStock_1.DaleStock) {
+                card_div = $(this.location.control_name + "_item_" + this.card.id);
+            }
+            else if (this.location instanceof Pile_1.Pile) {
+                card_div = this.location.getPopinCardDiv(this.card.id);
+                this.location.topCardHTML.classList.add("chameleon-selected");
+            }
+            card_div === null || card_div === void 0 ? void 0 : card_div.classList.add("chameleon-selected");
+        };
+        ChameleonClientStateArgs.prototype.unselectChameleonCard = function () {
+            var card_div = undefined;
+            if (this.location instanceof DaleStock_1.DaleStock) {
+                card_div = $(this.location.control_name + "_item_" + this.card.id);
+            }
+            else if (this.location instanceof Pile_1.Pile) {
+                card_div = this.location.getPopinCardDiv(this.card.id);
+                this.location.topCardHTML.classList.remove("chameleon-selected");
+            }
+            card_div === null || card_div === void 0 ? void 0 : card_div.classList.remove("chameleon-selected");
+        };
         return ChameleonClientStateArgs;
     }());
     exports.ChameleonClientStateArgs = ChameleonClientStateArgs;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_2, Pile_1, DaleCard_5, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1) {
+define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_5, DaleCard_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Pile = void 0;
+    var Pile = (function () {
+        function Pile(page, pile_container_id, pile_name, player_id) {
+            this.selectionMode = 'none';
+            this.selectionMax = 0;
+            this.popin = new ebg.popindialog();
+            this.cardIdToPopinDiv = new Map();
+            page.allPiles.push(this);
+            this.pile_container_id = pile_container_id;
+            this.pile_name = pile_name;
+            this.player_id = player_id;
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_5.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_5.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"clickable card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            this.page = page;
+            this.containerHTML = $(pile_container_id);
+            this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
+            this.topCardHTML = $(pile_container_id).querySelector('.card');
+            var sizeElements = $(pile_container_id).querySelectorAll('.size');
+            this.sizeHTML = sizeElements[0];
+            this.selectedSizeHTML = sizeElements[1];
+            this.cards = [];
+            this._slidingCards = [];
+            this.orderedSelectedCardIds = [];
+            this.updateHTML();
+            dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+        }
+        Object.defineProperty(Pile.prototype, "size", {
+            get: function () {
+                return this.cards.length;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Pile.prototype.updateHTML = function (card) {
+            var topCard = this.peek(true);
+            if (card != undefined && card.id != (topCard === null || topCard === void 0 ? void 0 : topCard.id)) {
+                return;
+            }
+            if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
+                this.selectedSizeHTML.classList.remove("hidden");
+                this.selectedSizeHTML.innerHTML = "<span style=\"color: red;\">(x ".concat(this.orderedSelectedCardIds.length, ")</span>");
+            }
+            else {
+                this.selectedSizeHTML.classList.add("hidden");
+            }
+            this.sizeHTML.innerHTML = 'x ' + this.cards.length;
+            if (topCard == undefined) {
+                this.topCardHTML.setAttribute('style', "display: none");
+            }
+            else {
+                this.topCardHTML.innerHTML = '';
+                this.topCardHTML.setAttribute('style', Images_5.Images.getCardStyle(topCard.effective_type_id));
+                if (topCard.isBoundChameleon()) {
+                    this.topCardHTML.replaceChildren(DaleCard_4.DaleCard.createChameleonIcon());
+                }
+            }
+        };
+        Pile.prototype.setZIndex = function (slidingElement) {
+            var z_index = Images_5.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
+            var style = slidingElement.getAttribute('style');
+            slidingElement.setAttribute('style', style + "z-index: ".concat(z_index, ";"));
+        };
+        Pile.prototype.removeAt = function (index) {
+            if (index == undefined) {
+                return this.pop();
+            }
+            if (index > this.cards.length - 1) {
+                throw new Error("Cannot remove a card in pile of size ".concat(this.cards.length, " at index ").concat(index));
+            }
+            else if (index == this.cards.length - 1) {
+                return this.pop();
+            }
+            return this.cards.splice(index, 1)[0];
+        };
+        Pile.prototype.insert = function (card, index) {
+            if (index > this.cards.length) {
+                throw new Error("Cannot insert a card in pile of size ".concat(this.cards.length, " at index ").concat(index));
+            }
+            else if (index == this.cards.length) {
+                this.push(card);
+            }
+            else {
+                this.cards.splice(index, 0, card);
+            }
+        };
+        Pile.prototype.pushHiddenCards = function (amount) {
+            for (var i = 0; i < amount; i++) {
+                this.cards.push(new DaleCard_4.DaleCard(0, 0));
+            }
+            this.updateHTML();
+        };
+        Pile.prototype.push = function (card, from, onEnd, duration, delay) {
+            this.cards.push(card);
+            card.addTooltip(this.topCardHTML.id);
+            if (from != null) {
+                this._slidingCards.push(card);
+                var slidingElement = card.toDiv();
+                this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
+                var thiz_2 = this;
+                var callback = function (node) {
+                    dojo.destroy(node);
+                    var i = thiz_2._slidingCards.indexOf(card);
+                    if (i > -1) {
+                        thiz_2._slidingCards.splice(i, 1);
+                    }
+                    thiz_2.updateHTML();
+                    if (onEnd) {
+                        onEnd(node);
+                    }
+                };
+                this.page.placeOnObject(slidingElement, from);
+                var slideAnimation = this.page.slideToObject(slidingElement, this.placeholderHTML, duration, delay);
+                var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
+                dojo.fx.chain([slideAnimation, fadeAnimation]).play();
+                dojo.addClass(slidingElement, 'to_be_destroyed');
+                this.setZIndex(slidingElement);
+            }
+            this.updateHTML();
+        };
+        Pile.prototype.pop = function (to, onEnd, duration, delay) {
+            var _a;
+            if (this.cards.length == 0) {
+                throw new Error('Cannot draw from an empty pile. The Server is responsible for reshuffling.');
+            }
+            if (to != null) {
+                if (to instanceof Pile) {
+                    to = to.placeholderHTML;
+                }
+                var slidingElement = this.topCardHTML.cloneNode();
+                this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
+                var callback = function (node) {
+                    dojo.destroy(node);
+                    if (onEnd) {
+                        onEnd(node);
+                    }
+                };
+                var slideAnimation = this.page.slideToObject(slidingElement, to, duration, delay);
+                var fadeAnimation = dojo.fadeOut({ node: slidingElement, end: callback });
+                dojo.fx.chain([slideAnimation, fadeAnimation]).play();
+                dojo.addClass(slidingElement, 'to_be_destroyed');
+                this.setZIndex(slidingElement);
+            }
+            var card = this.cards.pop();
+            (_a = this.peek()) === null || _a === void 0 ? void 0 : _a.addTooltip(this.topCardHTML.id);
+            this.updateHTML();
+            return card;
+        };
+        Pile.prototype.shuffleToDrawPile = function (drawPile, duration) {
+            if (duration === void 0) { duration = 1000; }
+            if (this.cards.length == 0) {
+                return;
+            }
+            if (this === drawPile) {
+                throw new Error('Cannot shuffle to self.');
+            }
+            var n = this.cards.length;
+            var durationPerPop = duration / n;
+            var thiz = this;
+            var callback = function (node) {
+                if (thiz.cards.length > 0) {
+                    thiz.pop(drawPile, callback, durationPerPop);
+                }
+                drawPile.pushHiddenCards(1);
+            };
+            if (n > 10) {
+                durationPerPop *= 4;
+                this.pop(drawPile, callback, durationPerPop);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 2 / 4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 3 / 4);
+            }
+            else if (n > 5) {
+                durationPerPop *= 2;
+                this.pop(drawPile, callback, durationPerPop);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
+            }
+            else {
+                this.pop(drawPile, callback, durationPerPop);
+            }
+        };
+        Pile.prototype.peek = function (exclude_sliding_cards) {
+            if (exclude_sliding_cards === void 0) { exclude_sliding_cards = false; }
+            if (this.cards.length == 0) {
+                return undefined;
+            }
+            var i = this.cards.length - 1;
+            if (exclude_sliding_cards) {
+                while (i >= 0 && this._slidingCards.indexOf(this.cards[i]) != -1) {
+                    i--;
+                }
+                if (i == -1) {
+                    return undefined;
+                }
+            }
+            return this.cards[i];
+        };
+        Pile.prototype.getPopinCardDiv = function (card_id) {
+            return this.cardIdToPopinDiv.get(card_id);
+        };
+        Pile.prototype.isPopinOpen = function () {
+            return $(this.pile_container_id + '-popin') !== undefined;
+        };
+        Pile.prototype.onClickTopCard = function () {
+            var _a, _b;
+            var player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
+            var title_player = player ? "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player.name, "</span>'s ") : "";
+            var title_pile_name = (_a = this.pile_name) !== null && _a !== void 0 ? _a : "Unnamed Pile";
+            var title = title_player + title_pile_name;
+            var popin_id = this.pile_container_id + '-popin';
+            this.popin.create(popin_id);
+            this.popin.setTitle(title);
+            this.popin.setMaxWidth(1000);
+            this.popin.setContent("<div id=\"".concat(popin_id, "-card-container\" class=\"popin-card-container\"></div>"));
+            var container_id = popin_id + "-card-container";
+            var _loop_1 = function (card) {
+                var div = card.toDiv(container_id);
+                div.classList.add("relative");
+                console.log("selectionMode: " + this_1.selectionMode);
+                if (this_1.selectionMode != 'none') {
+                    div.classList.add("clickable");
+                    var thiz_3 = this_1;
+                    dojo.connect($(div.id), 'onclick', function () {
+                        thiz_3.onClickCard(card, div);
+                    });
+                }
+                if (this_1.orderedSelectedCardIds.includes(card.id)) {
+                    div.classList.add("selected");
+                }
+                if (((_b = this_1.page.chameleonArgs) === null || _b === void 0 ? void 0 : _b.card.id) == card.id) {
+                    div.classList.add("chameleon-selected");
+                }
+                this_1.cardIdToPopinDiv.set(card.id, div);
+            };
+            var this_1 = this;
+            for (var _i = 0, _c = this.cards; _i < _c.length; _i++) {
+                var card = _c[_i];
+                _loop_1(card);
+            }
+            dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
+            this.popin.show();
+        };
+        Pile.prototype.onClickCard = function (card, div) {
+            var chameleonArgs = this.page.chameleonArgs;
+            if (chameleonArgs) {
+                if (chameleonArgs.card.id == card.id) {
+                    this.page.onCancelChameleon();
+                }
+                else {
+                    this.page.showMessage(_("Please select a valid target for ") + "'".concat(chameleonArgs.card.name, "'"), "error");
+                }
+                return;
+            }
+            switch (this.selectionMode) {
+                case 'none':
+                    return;
+                case 'single':
+                    this.popin.hide();
+                    break;
+                case 'multiple':
+                    var card_id = +card.id;
+                    var index = this.orderedSelectedCardIds.indexOf(card_id);
+                    if (index == -1) {
+                        if (this.orderedSelectedCardIds.length >= this.selectionMax) {
+                            if (this.selectionMax == 0) {
+                                this.page.showMessage(_("You cannot select cards from this pile!"), 'error');
+                            }
+                            else if (this.selectionMax == 1) {
+                                this.page.showMessage(_("You can only select 1 card from this pile!"), 'error');
+                            }
+                            else {
+                                this.page.showMessage(_("You can only select up to ".concat(this.selectionMax, " cards from this pile!")), 'error');
+                            }
+                            return;
+                        }
+                        this.selectItem(card_id);
+                    }
+                    else {
+                        this.unselectItem(card_id);
+                    }
+                    console.log(this.orderedSelectedCardIds);
+                    this.updateHTML();
+                    break;
+            }
+            this.page.onPileSelectionChanged(this, card);
+        };
+        Pile.prototype.unselectItem = function (card_id) {
+            var div = this.cardIdToPopinDiv.get(card_id);
+            if (div) {
+                var index = this.orderedSelectedCardIds.indexOf(card_id);
+                if (index == -1) {
+                    console.error("card_id = ".concat(card_id, " was not found in the pile"));
+                }
+                div.classList.remove("selected");
+                this.orderedSelectedCardIds.splice(index, 1);
+            }
+            console.log(this.orderedSelectedCardIds);
+        };
+        Pile.prototype.selectItem = function (card_id) {
+            var _a;
+            var div = this.cardIdToPopinDiv.get(card_id);
+            if (div) {
+                (_a = this.cardIdToPopinDiv.get(card_id)) === null || _a === void 0 ? void 0 : _a.classList.add("selected");
+                this.orderedSelectedCardIds.push(card_id);
+            }
+            console.log(this.orderedSelectedCardIds);
+        };
+        Pile.prototype.setSelectionMode = function (mode, max) {
+            if (max === void 0) { max = 0; }
+            if (mode != 'multiple') {
+                this.orderedSelectedCardIds = [];
+            }
+            if (max < this.selectionMax) {
+                this.orderedSelectedCardIds = this.orderedSelectedCardIds.slice(0, max);
+            }
+            this.selectionMax = max;
+            this.selectionMode = mode;
+            this.updateHTML();
+        };
+        Pile.prototype.closePopin = function () {
+            this.popin.hide();
+            this.onClosePopin();
+        };
+        Pile.prototype.onClosePopin = function () {
+            var _a;
+            console.log("onClosePopin");
+            for (var _i = 0, _b = this.cards; _i < _b.length; _i++) {
+                var card = _b[_i];
+                card.destroyTooltip();
+            }
+            (_a = this.cards[this.cards.length - 1]) === null || _a === void 0 ? void 0 : _a.addTooltip(this.topCardHTML.id);
+        };
+        return Pile;
+    }());
+    exports.Pile = Pile;
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_2, Pile_2, DaleCard_5, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -1244,8 +1354,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.allPiles = [];
             _this.allDaleStocks = [];
             _this.allCardSlots = [];
-            _this.marketDeck = new Pile_1.Pile(_this, 'market-deck', 'Market Deck');
-            _this.marketDiscard = new Pile_1.Pile(_this, 'market-discard', 'Market Discard');
+            _this.marketDeck = new Pile_2.Pile(_this, 'market-deck', 'Market Deck');
+            _this.marketDiscard = new Pile_2.Pile(_this, 'market-discard', 'Market Discard');
             _this.playerDecks = {};
             _this.playerDiscards = {};
             _this.playerStalls = {};
@@ -1287,7 +1397,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.setup = function (gamedatas) {
             var _a, _b;
             console.log("Starting game setup");
-            console.log("------ GAME DATAS ------");
+            console.log("------ GAME DATAS ------ !");
             console.log(this.gamedatas);
             console.log("------------------------");
             DaleCard_5.DaleCard.init(gamedatas.cardTypes);
@@ -1312,9 +1422,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
-                this.playerDecks[player_id] = new Pile_1.Pile(this, 'deck-' + player_id, 'Deck', +player_id);
+                this.playerDecks[player_id] = new Pile_2.Pile(this, 'deck-' + player_id, 'Deck', +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
-                this.playerDiscards[player_id] = new Pile_1.Pile(this, 'discard-' + player_id, 'Discard Pile', +player_id);
+                this.playerDiscards[player_id] = new Pile_2.Pile(this, 'discard-' + player_id, 'Discard Pile', +player_id);
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
                     this.playerDiscards[player_id].push(DaleCard_5.DaleCard.of(card));
@@ -1379,7 +1489,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("Ending game setup");
         };
         Dale.prototype.onEnteringState = function (stateName, args) {
-            var _a, _b, _c, _d;
+            var _a, _b;
             console.log('Entering state: ' + stateName);
             switch (stateName) {
                 case 'playerTurn':
@@ -1395,7 +1505,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'build':
                     this.myHand.setSelectionMode(2);
-                    this.myDiscard.setSelectionMode('multiple', 0);
+                    this.onBuildSelectionChanged();
                     break;
                 case 'inventory':
                     this.myHand.setSelectionMode(2);
@@ -1411,11 +1521,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('rightmoststack');
-                    (_b = (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.card_div) === null || _b === void 0 ? void 0 : _b.classList.add("chameleon-selected");
+                    (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.selectChameleonCard();
                     break;
                 case 'chameleon_trendsetting':
                     this.market.setSelectionMode(1);
-                    (_d = (_c = this.chameleonArgs) === null || _c === void 0 ? void 0 : _c.card_div) === null || _d === void 0 ? void 0 : _d.classList.add("chameleon-selected");
+                    (_b = this.chameleonArgs) === null || _b === void 0 ? void 0 : _b.selectChameleonCard();
                     break;
                 case 'nextPlayer':
                     console.log("nextPlayer, expire all effects that last until end of turn (chameleon bindings)");
@@ -1424,7 +1534,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
-            var _a, _b, _c, _d;
+            var _a, _b;
             console.log('Leaving state: ' + stateName);
             if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
                 console.log("this.chameleonArgs => don't turn off selection modes");
@@ -1458,11 +1568,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('none');
-                    (_b = (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.card_div) === null || _b === void 0 ? void 0 : _b.classList.remove("chameleon-selected");
+                    (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.unselectChameleonCard();
                     break;
                 case 'chameleon_trendsetting':
                     this.market.setSelectionMode(0);
-                    (_d = (_c = this.chameleonArgs) === null || _c === void 0 ? void 0 : _c.card_div) === null || _d === void 0 ? void 0 : _d.classList.remove("chameleon-selected");
+                    (_b = this.chameleonArgs) === null || _b === void 0 ? void 0 : _b.unselectChameleonCard();
                     break;
             }
         };
@@ -1670,7 +1780,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("onMyDiscardPileSelectionChanged");
             switch (this.gamedatas.gamestate.name) {
                 case 'build':
-                    this.onBuildSelectionChanged(card);
+                    this.handleChameleonCard(card, pile, this.onBuildSelectionChanged);
                     break;
             }
         };
@@ -1791,9 +1901,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("onCancelChameleon");
             console.log(this.chameleonArgs);
             var args = this.chameleonArgs;
-            if (args.location instanceof DaleStock_2.DaleStock) {
-                args.location.unselectItem(args.card.id);
-            }
+            args.location.unselectItem(args.card.id);
             args.card.unbindChameleonLocal();
             this.restoreServerGameState();
             this.chameleonArgs = undefined;

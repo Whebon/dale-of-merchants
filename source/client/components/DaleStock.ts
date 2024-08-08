@@ -3,11 +3,12 @@ import Stock = require('ebg/stock');
 import "ebg/stock"; 
 import { DaleCard } from './DaleCard';
 import { Images } from './Images';
+import { DaleLocation } from './types/DaleLocation';
 
 /**
  * Decorator of the standard BGA Stock component.
  */
-export class DaleStock extends Stock {
+export class DaleStock extends Stock implements DaleLocation {
 	/** Keeps track of the order in which cards in are selected */
 	public orderedSelectedCardIds: number[];
 

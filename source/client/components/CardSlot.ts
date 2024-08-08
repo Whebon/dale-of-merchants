@@ -146,18 +146,19 @@ export class CardSlot {
     }
 
     /**
-     * (Un)set this slots's selected property
-     * @param enable
-    */
-    public setSelected(enable: boolean){
-        if (this.selected == enable) return;
-        if (enable) {
-            this._container.classList.add("selected");
-        }
-        else {
-            this._container.classList.remove("selected");
-        }
-        this.selected = enable;
+     * Select this item
+     */
+    selectItem(): void {
+        this._container.classList.add("selected");
+        this.selected = true;
+    }
+
+    /**
+     * Unselect this item
+     */
+    unselectItem(): void {
+        this._container.classList.remove("selected");
+        this.selected = false;
     }
 
     /**

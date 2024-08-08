@@ -3,6 +3,7 @@ import { DaleCard } from './DaleCard';
 import { DaleStock } from './DaleStock';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
+import { DaleLocation } from './types/DaleLocation';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -10,7 +11,7 @@ declare function $(text: string | Element): HTMLElement;
 /**
  * Singleton component for the dale of merchants market board.
  */
-export class MarketBoard implements CardSlotManager {
+export class MarketBoard implements CardSlotManager, DaleLocation {
     readonly MAX_SIZE: number = 5;
 
     public page: Gamegui;
@@ -150,13 +151,38 @@ export class MarketBoard implements CardSlotManager {
     }
 
     /**
-     * Select a slot in the market
+     * Select a slot in the market by position
      * @param pos valid market position: 4, 3, 2, 1 or 0
      * @param enable (optional) default true. enable/disable the `selected` property.
      */
     setSelected(pos: number, enable: boolean = true) {
         pos = this.getValidPos(pos);
-        this.slots[pos]!.setSelected(enable);
+        if (enable) {
+            this.slots[pos]!.selectItem();
+        }
+        else {
+            this.slots[pos]!.unselectItem();
+        }
+    }
+
+    selectItem(card_id: number): void {
+        for (let slot of this.slots) {
+            if (slot.card?.id == card_id) {
+                slot.selectItem();
+                return;
+            }
+        }
+        console.warn(`Attempted to select a card (card_id = ${card_id}) that is not present in the market`);
+    }
+
+    unselectItem(card_id: number): void {
+        for (let slot of this.slots) {
+            if (slot.card?.id == card_id) {
+                slot.unselectItem();
+                return;
+            }
+        }
+        console.warn(`Attempted to unselect a card (card_id = ${card_id}) that is not present in the market`);
     }
 
     /**
@@ -164,7 +190,7 @@ export class MarketBoard implements CardSlotManager {
     */
     unselectAll() {
         for (let slot of this.slots) {
-            slot.setSelected(false);
+            slot.unselectItem();
         }
     }
 
