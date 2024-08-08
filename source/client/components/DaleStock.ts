@@ -162,8 +162,9 @@ export class DaleStock extends Stock {
 	/**
 	 * Replace the chameleon card overlay on top of the stock item with an animation. If the same type of overlay already exists, nothing will be done
 	 * @param card dale card to add an overlay to
+	 * @param fadein (default) true. If true, the overlay will be added with a fade in animation
 	 */
-	public addChameleonOverlay(card: DaleCard) {
+	public addChameleonOverlay(card: DaleCard, fadein: boolean = true) {
 		const stockitem = $(this.control_name+"_item_"+card.id);
 		if (!stockitem) {
 			return;
@@ -178,9 +179,12 @@ export class DaleStock extends Stock {
 			this.removeChameleonOverlay(card);
 		}
 		const overlay = card.toDiv();
+		overlay.classList.add("type-id-"+card.effective_type_id);
 		stockitem.appendChild(overlay);
-		dojo.setStyle(overlay, 'opacity', '0');
-		dojo.fadeIn({node: overlay}).play();
+		if (fadein) {
+			dojo.setStyle(overlay, 'opacity', '0');
+			dojo.fadeIn({node: overlay}).play();
+		}
 		card.addTooltip(stockitem as HTMLElement);
 	}
 
@@ -209,9 +213,7 @@ export class DaleStock extends Stock {
 		this.addToStockWithId(card.original_type_id, card.id, from);
 		card.addTooltip(this.control_name+'_item_'+card.id);
 		if (card.isBoundChameleon()) {
-			this.addChameleonOverlay(card);
-			//$(this.control_name+"_item_"+card.id)?.appendChild(card.toDiv());
-			//$(this.control_name+"_item_"+card.id)?.appendChild(DaleCard.createChameleonIcon());
+			this.addChameleonOverlay(card, false);
 		}
 	}
 

@@ -405,8 +405,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
             }
         };
-        DaleStock.prototype.addChameleonOverlay = function (card) {
+        DaleStock.prototype.addChameleonOverlay = function (card, fadein) {
             var _a, _b, _c;
+            if (fadein === void 0) { fadein = true; }
             var stockitem = $(this.control_name + "_item_" + card.id);
             if (!stockitem) {
                 return;
@@ -421,9 +422,12 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 this.removeChameleonOverlay(card);
             }
             var overlay = card.toDiv();
+            overlay.classList.add("type-id-" + card.effective_type_id);
             stockitem.appendChild(overlay);
-            dojo.setStyle(overlay, 'opacity', '0');
-            dojo.fadeIn({ node: overlay }).play();
+            if (fadein) {
+                dojo.setStyle(overlay, 'opacity', '0');
+                dojo.fadeIn({ node: overlay }).play();
+            }
             card.addTooltip(stockitem);
         };
         DaleStock.prototype.removeChameleonOverlay = function (card) {
@@ -442,7 +446,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.addToStockWithId(card.original_type_id, card.id, from);
             card.addTooltip(this.control_name + '_item_' + card.id);
             if (card.isBoundChameleon()) {
-                this.addChameleonOverlay(card);
+                this.addChameleonOverlay(card, false);
             }
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
