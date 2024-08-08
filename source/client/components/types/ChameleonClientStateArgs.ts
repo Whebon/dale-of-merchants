@@ -13,7 +13,8 @@ export class ChameleonClientStateArgs {
 	public callback: (card?: DaleCard) => void;
     public requiresPlayable: boolean;
     public selection: number[] | undefined;
-
+    public isChain: boolean;
+    
     /**
      * Bundles arguments for a chameleon client state 
      * @param card the chameleon card that needs to get bound (it needs be highlighted while selecting a valid target for it)
@@ -22,24 +23,12 @@ export class ChameleonClientStateArgs {
      * @param requiresPlayable (optional) default false. If true, the card to copy must be playable
      * @param saveSelection (optional) default false. If true, after copying, restored the saved selection
      */
-    constructor(card: DaleCard, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, saveSelection: boolean = false) {
+    constructor(card: DaleCard, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
         this.card = card;
         this.location = from;
         this.callback = callback;
         this.requiresPlayable = requiresPlayable;
-        //from instanceof DaleStock
-        // if (saveSelection) {
-        //     //restore selection
-        //     console.log("restore selection");
-        //     const selection = [...from.orderedSelectedCardIds];
-        //     this.callback = (card: DaleCard) => {
-        //         for (let card_id of selection) {
-        //             from.selectItem(card_id);
-        //         }
-        //         from.orderedSelectedCardIds = selection;
-        //         callback(card);
-        //     }
-        // }
+        this.isChain = isChain;
     }
 
     /** Points to the card div representing this card */

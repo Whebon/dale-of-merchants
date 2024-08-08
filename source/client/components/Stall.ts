@@ -12,8 +12,9 @@ declare function $(text: string | Element): HTMLElement;
  * "single": select single non-empty card slot
  * "multiple": select multiple non-empty card slots
  * "build": click on an empty slot to build a new stack
+ * "rightmoststack": click on any card in the right most stack
  */
-type StallSelectionMode = "none" | "single" | "multiple" | "build";
+type StallSelectionMode = "none" | "single" | "multiple" | "build" | "rightmoststack";
 
 /**
  * Major Dale of Merchants game component. Players must build 8 stacks in their Stall to win the game.
@@ -281,6 +282,11 @@ export class Stall implements CardSlotManager {
                     case "build":
                         slot.setClickable(!slot.hasCard());
                         break;
+                    case "rightmoststack":
+                        //TODO: IMPORTANT: this should be -1 once the build action has been refactored. 
+                        //-2 is refering to the stack before the trailing empty stack
+                        slot.setClickable(stack === this.slots[this.slots.length-2]);
+                        break;
                 }
             }
         }
@@ -297,7 +303,7 @@ export class Stall implements CardSlotManager {
     onCardSlotClick(slot: CardSlot): void {
         const index = slot.pos % Stall.MAX_STACK_SIZE;
         const stack_index = (slot.pos-index) / Stall.MAX_STACK_SIZE;
-        (this.page as any).onStallCardClick(slot.card, stack_index, index);
+        (this.page as any).onStallCardClick(this, slot.card, stack_index, index);
     }
 
     /**

@@ -124,7 +124,13 @@ export class DaleCard {
         return _type_id
     }
 
-    //TODO: safely delete this
+    /**
+     * @returns true if this is a card that has already copied a card earlier this turn
+     */
+    public isBoundChameleon(): boolean {
+        return DaleCard.cardIdtoEffectiveTypeIdLocal.has(this.id) || DaleCard.cardIdtoEffectiveTypeId.has(this.id);
+    }
+
     /**
      * @returns true if this is an unbound chameleon card
      */
@@ -136,14 +142,7 @@ export class DaleCard {
             type_id == DaleCard.CT_GOODOLDTIMES ||
             type_id == DaleCard.CT_TRENDSETTING ||
             type_id == DaleCard.CT_SEEINGDOUBLES
-        ) 
-    }
-
-    /**
-     * @returns true if this is a chameleon card that has already copied a card earlier this turn
-     */
-    public isBoundChameleon(): boolean {
-        return DaleCard.cardIdtoEffectiveTypeIdLocal.has(this.id) || DaleCard.cardIdtoEffectiveTypeId.has(this.id);
+        ) ;
     }
 
     /**
@@ -222,6 +221,10 @@ export class DaleCard {
 
     public get animalfolk(): Animalfolk {
         return DaleCard.cardTypes[this.effective_type_id]!.animalfolk
+    }
+
+    public get name(): string {
+        return DaleCard.cardTypes[this.effective_type_id]!.name
     }
 
     public isJunk(): boolean {

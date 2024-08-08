@@ -254,6 +254,10 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myTemporary.setSelectionMode(2);
 				break;
+			case 'chameleon_flexibleShopkeeper':
+				this.myStall!.setSelectionMode('rightmoststack');
+				this.chameleonArgs?.card_div?.classList.add("chameleon-selected");
+				break;
 			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(1);
 				this.chameleonArgs?.card_div?.classList.add("chameleon-selected");
@@ -303,6 +307,10 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myTemporary.setSelectionMode(0);
 				break;
+			case 'chameleon_flexibleShopkeeper':
+				this.myStall!.setSelectionMode('none');
+				this.chameleonArgs?.card_div?.classList.remove("chameleon-selected");
+				break;
 			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(0);
 				this.chameleonArgs?.card_div?.classList.remove("chameleon-selected");
@@ -346,6 +354,9 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
 				break;
+			case 'chameleon_flexibleShopkeeper':
+				this.addActionButtonCancelChameleon();
+				break;
 			case 'chameleon_trendsetting':
 				this.addActionButtonCancelChameleon();
 				break;
@@ -369,26 +380,35 @@ class Dale extends Gamegui
 	 * @param from where is this card currently located?
 	 * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
 	 * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
-	 * @param saveSelection (optional) default false. If true, after copying, restored the saved selection
+	 * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
 	 */
-	handleChameleonCard(card: DaleCard | undefined, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, saveSelection: boolean = false) {
+	handleChameleonCard(card: DaleCard | undefined, from: Pile | DaleStock | MarketBoard | Stall, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
 		callback = callback.bind(this);
 		if (!card || !this.checkLock()) {
 			callback();
 			return;
 		}
-		if (card.isBoundChameleon()) {
+		if (!isChain && card.isBoundChameleon()) {
 			card.unbindChameleonLocal();
 			from.updateHTML(card);
 			callback(card);
 			return;
 		}
 		switch(card.effective_type_id) {
+			case DaleCard.CT_FLEXIBLESHOPKEEPER:
+				if (this.chameleonArgs !== undefined) {
+					console.warn("Previous chameleon args will be overwritten!");
+				}
+				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
+				this.setClientState('chameleon_flexibleShopkeeper', {
+					descriptionmyturn: _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
+				});
+				break;
 			case DaleCard.CT_TRENDSETTING:
 				if (this.chameleonArgs !== undefined) {
 					console.warn("Previous chameleon args will be overwritten!");
 				}
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, saveSelection);
+				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				this.setClientState('chameleon_trendsetting', {
 					descriptionmyturn: _("Trendsetting: ${you} must copy a card in the market")
 				});
@@ -602,17 +622,17 @@ class Dale extends Gamegui
 		- make a call to the game server
 	*/
 
-	onStallCardClick(card: DaleCard, stack_index: number, index: number) {
+	onStallCardClick(stall: Stall, card: DaleCard, stack_index: number, index: number) {
         console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
-		// this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
-        // this.myStall.createNewSlot(stack_index, new DaleCard(0, 0))
-        // this.myStall.createNewStack();
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
 				if(this.checkAction('actRequestStallAction')) {
 					this.bgaPerformAction('actRequestStallAction', {})
 				}
+				break;
+			case 'chameleon_flexibleShopkeeper':
+				this.onConfirmChameleon(card);
 				break;
 		}
 	}
@@ -668,7 +688,7 @@ class Dale extends Gamegui
 				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
 				break;
 			case 'build':
-				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged, false, true);
+				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
 				break;
 			case 'shatteredRelic':
 				if(this.checkAction('actShatteredRelic')) {
@@ -678,14 +698,14 @@ class Dale extends Gamegui
 				}
 				this.myHand.unselectAll();
 				break;
+			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_trendsetting':
-				console.log("chameleon_trendsetting");
 				const args = this.chameleonArgs!;
 				if (args.card.id == card.id) {
 					this.onCancelChameleon();
 				}
 				else {
-					this.showMessage(_("Please select a valid target for 'Trendsetting'"), "error");
+					this.showMessage(_("Please select a valid target for ")+`'${args.card.name}'`, "error");
 					if (isAdded) {
 						this.myHand.unselectItem(card_id);
 					}
@@ -784,12 +804,14 @@ class Dale extends Gamegui
 	}
 	
 	onCancelChameleon() {
-		console.log("ON CANCEL CHAMELEON !");
+		console.log("onCancelChameleon");
+		console.log(this.chameleonArgs!);
 		//return from the chameleon client state
 		const args = this.chameleonArgs!
 		if (args.location instanceof DaleStock) {
 			args.location.unselectItem(args.card.id);
 		}
+		args.card.unbindChameleonLocal();
 		this.restoreServerGameState();
 		this.chameleonArgs = undefined;
 		//DaleCard.unbindAllChameleonsLocal(); 	//TODO: is this really needed? maybe we don't need to unbind anything AT ALL?
@@ -805,23 +827,31 @@ class Dale extends Gamegui
 		//return from the chameleon client state, but keep the local bindings
 		const args = this.chameleonArgs!;
 		const type_id = target.effective_type_id;
-		if (args.requiresPlayable && !DaleCard.isPlayable(type_id)) {
+		const isDifferentUnboundChameleon = target.isUnboundChameleon() && type_id != args.card.effective_type_id;
+		if (args.requiresPlayable && !DaleCard.isPlayable(type_id) && !isDifferentUnboundChameleon) {
 			this.showMessage(_("Copy failed: this card cannot be played"), 'error');
 			this.onCancelChameleon();
 		}
 		else {
 			this.restoreServerGameState();
-			args.card.bindChameleonLocal(type_id);
-			this.updateHTML(args.location, args.card);
-			if (target.isUnboundChameleon() && args.card.effective_type_id != target.effective_type_id) {
-				//chameleon chaining! chameleon is bound to another unbound chameleon type (i.e. the new target is also a chameleon)
-				this.handleChameleonCard(args.card, args.location, args.callback, args.requiresPlayable);
+			if (isDifferentUnboundChameleon) {
+				//chameleon chaining! the new target is also a chameleon.
+				console.log("isDifferentUnboundChameleon");
+				console.log("type_id = "+args.card.effective_type_id);
+				console.log("target_type_id = "+type_id);
+				args.card.bindChameleonLocal(type_id);
+				console.log("type_id = "+args.card.effective_type_id);
+				console.log(args.card);
+				this.chameleonArgs = undefined;
+				this.handleChameleonCard(args.card, args.location, args.callback, args.requiresPlayable, true);
 			}
 			else {
-				//chameleon is now bound
+				//chameleon will be bound to the target
+				args.card.bindChameleonLocal(type_id);
 				args.callback(args.card);
 				this.chameleonArgs = undefined;
 			}
+			this.updateHTML(args.location, args.card);
 		}
 	}
 

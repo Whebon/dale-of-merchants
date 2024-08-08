@@ -688,6 +688,19 @@ class Dale extends DaleTableBasic
             return $chameleon_type_id == $type_id;
         }
         switch($chameleon_type_id) {
+            case CT_FLEXIBLESHOPKEEPER:
+                array_push($_visited, CT_FLEXIBLESHOPKEEPER);
+                $player_id = $this->getCurrentPlayerId();
+                $rightmost_stack_index = $this->cards->getNextStackIndex($player_id) - 1;
+                $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
+                foreach ($valid_targets as $target) {
+                    if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
+                        if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                            return true;
+                        }
+                    }
+                }
+                break;
             case CT_TRENDSETTING:
                 array_push($_visited, CT_TRENDSETTING);
                 $valid_targets = $this->cards->getCardsInLocation(MARKET);

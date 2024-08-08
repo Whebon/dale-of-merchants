@@ -160,18 +160,28 @@ export class DaleStock extends Stock {
 	}
 
 	/**
-	 * If the card does not have an overlay yet, add the chameleon card overlay on top of the stock item with an animation.
+	 * Replace the chameleon card overlay on top of the stock item with an animation. If the same type of overlay already exists, nothing will be done
 	 * @param card dale card to add an overlay to
 	 */
 	public addChameleonOverlay(card: DaleCard) {
 		const stockitem = $(this.control_name+"_item_"+card.id);
-		if (stockitem?.children?.length === 0) {
-			const overlay = card.toDiv();
-			stockitem.appendChild(overlay);
-			dojo.setStyle(overlay, 'opacity', '0');
-			dojo.fadeIn({node: overlay}).play();
-			card.addTooltip(stockitem as HTMLElement);
+		if (!stockitem) {
+			return;
 		}
+		if (stockitem?.children?.length) {
+			if (stockitem?.children?.length >= 2) {
+				console.warn("addChameleonOverlay found more than 1 overlay")
+			}
+			if (stockitem.children[0]?.classList.contains("type-id-"+card.effective_type_id)) {
+				return;
+			}
+			this.removeChameleonOverlay(card);
+		}
+		const overlay = card.toDiv();
+		stockitem.appendChild(overlay);
+		dojo.setStyle(overlay, 'opacity', '0');
+		dojo.fadeIn({node: overlay}).play();
+		card.addTooltip(stockitem as HTMLElement);
 	}
 
 	/**
@@ -181,6 +191,9 @@ export class DaleStock extends Stock {
 	public removeChameleonOverlay(card: DaleCard) {
 		const stockitem = $(this.control_name+"_item_"+card.id);
 		if (stockitem?.children?.length) {
+			if (stockitem?.children?.length >= 2) {
+				console.warn("removeChameleonOverlay found more than 1 overlay")
+			}
 			const overlay = stockitem.children[0] as HTMLElement;
 			dojo.fadeOut({node: overlay, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
 			card.addTooltip(stockitem as HTMLElement);
