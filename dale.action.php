@@ -73,10 +73,14 @@ class action_dale extends APP_GameAction
 	{
 		self::setAjaxMode();
 
+		/** @var string $chameleon_card_ids */
+		$chameleon_card_ids = self::getArg('chameleon_card_ids', AT_numberlist, true);
+		/** @var string $chameleon_type_ids */
+		$chameleon_type_ids = self::getArg('chameleon_type_ids', AT_numberlist, true);
 		/** @var string $funds_card_ids */
 		$funds_card_ids = self::getArg('funds_card_ids', AT_numberlist, true);
 
-		$this->game->actPurchase( $funds_card_ids );
+		$this->game->actPurchase( $chameleon_card_ids, $chameleon_type_ids, $funds_card_ids );
 		self::ajaxResponse();
 	}
 

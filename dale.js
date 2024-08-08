@@ -1681,8 +1681,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var isAdded = this.myHand.isSelected(card_id);
             switch (this.gamedatas.gamestate.name) {
                 case 'playerTurn':
-                    console.log("card.effective_type_id = " + card.effective_type_id);
                     this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
+                    break;
+                case 'purchase':
+                    this.handleChameleonCard(card, this.myHand, this.onPurchaseSelectionChanged);
                     break;
                 case 'build':
                     this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
@@ -1725,11 +1727,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("gamestate.name is null");
             }
         };
+        Dale.prototype.onPurchaseSelectionChanged = function () {
+        };
         Dale.prototype.onPurchase = function () {
             if (this.checkAction('actPurchase')) {
-                this.bgaPerformAction('actPurchase', {
-                    funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
-                });
+                this.bgaPerformAction('actPurchase', __assign({ funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds) }, DaleCard_5.DaleCard.getLocalChameleons()));
             }
         };
         Dale.prototype.onPlayCard = function (card) {

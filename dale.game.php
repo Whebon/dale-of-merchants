@@ -1230,7 +1230,8 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trCancel");
     }
 
-    function actPurchase(string $funds_card_ids) {
+    function actPurchase(string $chameleon_card_ids, string $chameleon_type_ids, string $funds_card_ids) {
+        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $funds_card_ids);
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
 

@@ -71,6 +71,14 @@ interface GameStates {
 		},
 		'possibleactions': {
 			'actPurchase': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
 				'name': 'funds_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,

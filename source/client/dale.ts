@@ -684,8 +684,10 @@ class Dale extends Gamegui
 		switch(this.gamedatas.gamestate.name) {
 			case 'playerTurn':
 				//play card action (technique or active passive)
-				console.log("card.effective_type_id = " + card!.effective_type_id);
 				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
+				break;
+			case 'purchase':
+				this.handleChameleonCard(card, this.myHand, this.onPurchaseSelectionChanged);
 				break;
 			case 'build':
 				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
@@ -730,10 +732,15 @@ class Dale extends Gamegui
 		}
 	}
 
+	onPurchaseSelectionChanged() {
+		//TODO: pandas
+	}
+
 	onPurchase() {
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
-				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
+				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds),
+				...DaleCard.getLocalChameleons()
 			})
 		}
 	}

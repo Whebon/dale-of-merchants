@@ -96,6 +96,8 @@
 		},
 		"possibleactions": {
 			"actPurchase": [
+				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
 				{"name": "funds_card_ids", "type": "AT_numberlist"}
 			],
 			"actCancel" : []
