@@ -1,0 +1,17 @@
+    /**
+     * Returns the chameleon card id that corresponds to the latest committed bind.
+     * @return int `card_id`
+     */
+    function getLatestChameleon() {
+        // $chameleon_type_ids = implode(",", array(CT_FLEXIBLESHOPKEEPER, CT_REFLECTION, CT_GOODOLDTIMES, CT_TRENDSETTING, CT_SEEINGDOUBLES));
+        // $sql = "SELECT card_id FROM effect WHERE effect_id = (SELECT MAX(effect_id) FROM effect WHERE type_id IN ($chameleon_type_ids))";
+        // return $this->game->getUniqueValueFromDb($sql);
+        $chameleon_type_ids = array(CT_FLEXIBLESHOPKEEPER, CT_REFLECTION, CT_GOODOLDTIMES, CT_TRENDSETTING, CT_SEEINGDOUBLES);
+        for ($i = count($this->cache) - 1; $i >= 0; $i--) {
+            $row = $this->cache[$i];
+            if (in_array($row["type_id"], $chameleon_type_ids)) {
+                return $row["card_id"];
+            }
+        }
+        return null;
+    }

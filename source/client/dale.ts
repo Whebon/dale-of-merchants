@@ -931,6 +931,7 @@ class Dale extends Gamegui
 			['placeOnDeckMultiple', 1000],
 			['reshuffleDeck', 1500],
 			['bindChameleon', 1],
+			['unbindChameleon', 1],
 			['message', 1],
 			['debugClient', 1],
 		];
@@ -1272,6 +1273,11 @@ class Dale extends Gamegui
 	notif_bindChameleon(notif: NotifAs<'bindChameleon'>) {
 		DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
 		DaleCard.unbindAllChameleonsLocal();
+		this.updateHTML();
+	}
+
+	notif_unbindChameleon(notif: NotifAs<'unbindChameleon'>) {
+		DaleCard.unbindChameleonFromServer(+notif.args.card_id);
 		this.updateHTML();
 	}
 

@@ -40,6 +40,9 @@ declare global {
 			card_id: string,
 			type_id: string
 		}
+		'unbindChameleon': {
+			card_id: string
+		}
 		'message': {
 			//no args
 		}

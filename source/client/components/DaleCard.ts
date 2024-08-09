@@ -181,6 +181,14 @@ export class DaleCard {
     }
 
     /**
+     * Unbinds a commited `card_id` -> `effective_type_id`
+     * @param card_id card id to unbind
+     */
+    public static unbindChameleonFromServer(card_id: number) {
+        DaleCard.cardIdtoEffectiveTypeId.delete(card_id);
+    }
+
+    /**
      * Returns the locally stored chameleon mapping in a format that can be send to the server.
      * @return ordered arrays that represents the local mapping: `card_ids` -> `type_ids`
      * @example example {card_ids: "1;3;4;8", type_ids: "28;9;15;17"}

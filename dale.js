@@ -176,6 +176,9 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
         DaleCard.bindChameleonFromServer = function (card_id, effective_type_id) {
             DaleCard.cardIdtoEffectiveTypeId.set(card_id, effective_type_id);
         };
+        DaleCard.unbindChameleonFromServer = function (card_id) {
+            DaleCard.cardIdtoEffectiveTypeId.delete(card_id);
+        };
         DaleCard.getLocalChameleons = function () {
             var card_ids = [];
             var type_ids = [];
@@ -1991,6 +1994,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['placeOnDeckMultiple', 1000],
                 ['reshuffleDeck', 1500],
                 ['bindChameleon', 1],
+                ['unbindChameleon', 1],
                 ['message', 1],
                 ['debugClient', 1],
             ];
@@ -2024,7 +2028,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
-                    throw new Error("Unable to cancel a techqniue. Techqniue card ".concat(card_id, " does not exist in the schedule."));
+                    throw new Error("Unable to cancel a technique. Techqniue card ".concat(card_id, " does not exist in the schedule."));
                 }
             }
             else {
@@ -2269,6 +2273,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_bindChameleon = function (notif) {
             DaleCard_5.DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
             DaleCard_5.DaleCard.unbindAllChameleonsLocal();
+            this.updateHTML();
+        };
+        Dale.prototype.notif_unbindChameleon = function (notif) {
+            DaleCard_5.DaleCard.unbindChameleonFromServer(+notif.args.card_id);
             this.updateHTML();
         };
         Dale.prototype.notif_message = function (notif) {

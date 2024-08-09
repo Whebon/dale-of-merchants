@@ -38,7 +38,8 @@ class Dale extends DaleTableBasic
         
         $this->initGameStateLabels( array(
             "selectedCard" => 10,
-            "resolvingCard" => 11
+            "resolvingCard" => 11,
+            "cancelableChameleon" => 12
         ) );
 
         $this->cards = new DaleDeck($this, "onLocationExhausted");
@@ -87,6 +88,7 @@ class Dale extends DaleTableBasic
         //$this->setGameStateInitialValue( 'my_first_global_variable', 0 );
         $this->setGameStateInitialValue("selectedCard", -1);
         $this->setGameStateInitialValue("resolvingCard", -1);
+        $this->setGameStateInitialValue("cancelableChameleon", -1);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -866,6 +868,14 @@ class Dale extends DaleTableBasic
                 'card_name' => $this->getCardName($dbcard),
                 'card' => $dbcard,
             ));
+            if ($card_id == $this->getGameStateValue("cancelableChameleon")) {
+                //the resolving (chameleon) card was bound for this reason. undo this.
+                $this->effects->unbindChameleon($card_id);
+                $this->notifyAllPlayers('unbindChameleon', clienttranslate('${original_name} takes back its original form'), array(
+                    "original_name" => $this->card_types[$dbcard["type_arg"]]['name'],
+                    "card_id" => $card_id,
+                ));
+            }
             $this->setGameStateValue("resolvingCard", -1);
         }
     }
@@ -1022,6 +1032,33 @@ class Dale extends DaleTableBasic
         }
         die("SUCCESS ! TESTS PASSED !");
         die(print_r($location_args));
+    }
+
+    function testUnbindChameleon() {
+        $this->effects->expireEndOfTurn();
+        $this->effects->insert(1, CT_FLEXIBLESHOPKEEPER, 23);
+        $this->effects->insert(2, CT_GOODOLDTIMES, 34);
+        $this->effects->insert(3, CT_GOODOLDTIMES, -1);
+        $this->effects->insert(4, CT_SEEINGDOUBLES, 63);
+        $this->effects->unbindChameleon(2); //has a valid target that should be unbinded
+        $this->effects->unbindChameleon(3); //has an invalid target, don't remove this effect
+        $target1 = $this->effects->getTarget(1, CT_FLEXIBLESHOPKEEPER);
+        $target2 = $this->effects->getTarget(2, CT_GOODOLDTIMES);
+        $target3 = $this->effects->getTarget(3, CT_GOODOLDTIMES);
+        $target4 = $this->effects->getTarget(4, CT_SEEINGDOUBLES);
+        if ($target1 != 23) {
+            die("TEST FAILED: $target1 != 23");
+        }
+        if ($target2 != null) {
+            die("TEST FAILED: $target2 != null, card_id 2 should have been unbounded");
+        }
+        if ($target3 != -1) {
+            die("TEST FAILED: $target3 != -1, card_id 3 should still have an effect with [target == -1]");
+        }
+        if ($target4 != 63) {
+            die("TEST FAILED: $target4 != null");
+        }
+        die("SUCCESS ! TESTS PASSED !");
     }
 
     function testEffects() {
@@ -1297,6 +1334,11 @@ class Dale extends DaleTableBasic
             throw new BgaUserException("That card is not playable!");
         }
 
+        //TODO: active passives
+
+        
+        //technique
+        $this->setGameStateValue("cancelableChameleon", intval($chameleon_card_ids));
         $this->scheduleCard($player_id, $card);
         switch($type_id) {
             case CT_SWIFTBROKER:

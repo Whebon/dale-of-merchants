@@ -143,6 +143,18 @@ class DaleEffects {
     }
 
     /**
+     * Delete the chameleon binding effect for the specified card
+     * @param int $card_id
+     * @param int $type_id
+     */
+    function unbindChameleon(int $card_id) {
+        $chameleon_type_ids = implode(",", array(CT_FLEXIBLESHOPKEEPER, CT_REFLECTION, CT_GOODOLDTIMES, CT_TRENDSETTING, CT_SEEINGDOUBLES));
+        $sql = "DELETE FROM effect WHERE card_id = $card_id AND target >= 0 AND type_id IN ($chameleon_type_ids)";
+        $this->game->DbQuery($sql);
+        $this->loadFromDb();
+    }
+
+    /**
      * Expire all effects with EXPIRES_ON_END_OF_TURN
      */
     function expireEndOfTurn() {
