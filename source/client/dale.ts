@@ -19,6 +19,7 @@ import "ebg/stock";
 
 import { DaleStock } from './components/DaleStock'
 import { Pile } from './components/Pile';
+import { HiddenPile } from './components/HiddenPile';
 import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
@@ -40,7 +41,7 @@ class Dale extends Gamegui
 	allCardSlots: CardSlot[] = [];
 
 	/** Pile of hidden cards representing the market deck. */
-	marketDeck: Pile = new Pile(this, 'market-deck', 'Market Deck');
+	marketDeck: Pile = new HiddenPile(this, 'market-deck', 'Market Deck');
 
 	/** Ordered pile of known cards representing the market discard deck. */
 	marketDiscard: Pile = new Pile(this, 'market-discard', 'Market Discard');
@@ -132,7 +133,7 @@ class Dale extends Gamegui
 			let player = gamedatas.players[player_id];
 
 			//deck per player
-			this.playerDecks[player_id] = new Pile(this, 'deck-'+player_id, 'Deck', +player_id);
+			this.playerDecks[player_id] = new HiddenPile(this, 'deck-'+player_id, 'Deck', +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
 
 			//discard pile per player
@@ -1205,9 +1206,9 @@ class Dale extends Gamegui
 		}
 		else {
 			//increase deck size
-			this.myDeck.pushHiddenCards(1);
+			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
-	}
+	} 
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.log("notif_discardToHand");
