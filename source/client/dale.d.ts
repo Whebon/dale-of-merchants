@@ -50,6 +50,7 @@ declare global {
 			arg: string
 			msg: string
 			nbr: number
+			player_id: number
 		}
 		'reshuffleDeck': { 
 			player_id?: number
@@ -95,6 +96,7 @@ declare global {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
+			nbr: number,
 			discard_id?: number //by default, this is the same as player_id
 			from_temporary?: boolean
 		}
@@ -118,6 +120,7 @@ declare global {
 			player_id: number
 			discard_id?: number
 			cards: {[card_id: number]: DbCard} //location_arg matters!
+			nbr: number
 			from_temporary?: boolean
 		}
 		'draw': {
@@ -161,6 +164,10 @@ declare global {
 	interface Gamedatas {
 		// [key: string | number]: Record<keyof any, any>; // Uncomment to remove type safety on game state arguments
 		'cardTypes': {[type_id: number]: CardType}
+
+		'handSizes': {
+			[player_id: number]: number
+		}
 
 		'discardPiles': {
 			"market": {[card_id: number]: DbCard}

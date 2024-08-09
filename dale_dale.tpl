@@ -83,12 +83,8 @@
 
 // Javascript HTML templates
 
-/*
-// Example:
-var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_ID}"></div>';
+var jstpl_hand_size = '<span id="handsize-${player.id}">0</span><i class="handsize-icon"></i>';
 
-*/
-
-</script>  
+</script>
 
 {OVERALL_GAME_FOOTER}

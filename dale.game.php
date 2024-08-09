@@ -161,6 +161,12 @@ class Dale extends DaleTableBasic
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
 
+        //count the cards in each hand, but don't send the content (that information is hidden)
+        $result['handSizes'] = array();
+        foreach ( $players as $player_id => $player ) {
+            $result['handSizes'][$player_id] = $this->cards->countCardInLocation(HAND.$player_id);
+        }
+
         //count the cards in each deck, but don't send the content (that information is hidden)
         $result['deckSizes'] = array(
             'market' => $this->cards->countCardInLocation(DECK.MARKET)
@@ -1188,7 +1194,11 @@ class Dale extends DaleTableBasic
         $this->cards->createCards($cards, 'spawned');
         $cards = $this->cards->getCardsInLocation('spawned');
         $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
-        $this->notifyAllPlayers('debugClient', 'DEBUG: increase deck size', array('arg' => 'increaseDeckSize', 'nbr' => count($cards)));
+        $this->notifyAllPlayers('debugClient', 'DEBUG: increase deck size', array(
+            'arg' => 'increaseDeckSize', 
+            'player_id' => $player_id,
+            'nbr' => count($cards)
+        ));
         $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('DEBUG: spawn cards in hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),

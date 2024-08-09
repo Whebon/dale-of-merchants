@@ -23,6 +23,20 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
+.handsize-icon {
+	before {
+		content: "\f005";
+	}
+	background-image: url('img/handsize_icon.png');
+	width: 16px;
+    height: 16px;
+    background-size: contain;
+    background-repeat: no-repeat;
+	display: inline-block;
+	margin-left: 4px;
+	margin-right: 5px;
+}
+
 .stockitem {
 	z-index: 3;
 	border-radius: 10px;

@@ -12,10 +12,12 @@
 //needed for the IDE
 import Gamegui = require('ebg/core/gamegui');
 import Stock = require('ebg/stock'); 
+import Counter = require('ebg/counter'); 
 
 //needed for BGA
 import "ebg/counter";
 import "ebg/stock"; 
+import "ebg/counter"; 
 
 import { DaleStock } from './components/DaleStock'
 import { Pile } from './components/Pile';
@@ -45,6 +47,9 @@ class Dale extends Gamegui
 
 	/** Ordered pile of known cards representing the market discard deck. */
 	marketDiscard: Pile = new Pile(this, 'market-discard', 'Market Discard');
+
+	/** A hand size counter at the overall player board for each player  */
+	playerHandSizes: Record<number, Counter> = {};
 
 	/** A hidden draw pile for each player */
 	playerDecks: Record<number, Pile> = {};
@@ -131,6 +136,15 @@ class Dale extends Gamegui
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
+
+			//handsize per player
+			const player_board_div = $('player_board_'+player_id)?.querySelector(".player_score")!;
+			dojo.place( this.format_block('jstpl_hand_size', {
+				player: player
+			} ), player_board_div, 'first');
+			this.playerHandSizes[player_id] = new ebg.counter();
+			this.playerHandSizes[player_id].create('handsize-'+player_id);
+			this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]!);
 
 			//deck per player
 			this.playerDecks[player_id] = new HiddenPile(this, 'deck-'+player_id, 'Deck', +player_id);
@@ -983,6 +997,8 @@ class Dale extends Gamegui
 			const schedule = this.playerSchedules[notif.args.player_id]!;
 			schedule.addDaleCardToStock(DaleCard.of(notif.args.card), 'overall_player_board_'+notif.args.player_id)
 		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
 	}
 
 	notif_cancelTechnique(notif: NotifAs<'cancelTechnique'>) {
@@ -1003,6 +1019,8 @@ class Dale extends Gamegui
 			const schedule = this.playerSchedules[notif.args.player_id]!;
 			schedule.removeFromStockById(+notif.args.card.id, 'overall_player_board_'+notif.args.player_id);
 		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
@@ -1055,6 +1073,11 @@ class Dale extends Gamegui
 		}
 		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
 		stall.createNewStack();
+		//update the hand sizes
+		if (notif.args.from == 'hand') {
+			const nbr = Object.keys(notif.args.cards).length;
+			this.playerHandSizes[notif.args.player_id]!.incValue(-nbr);
+		}
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
@@ -1088,9 +1111,12 @@ class Dale extends Gamegui
 			//move card to the overall player board
 			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
 		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 	
 	notif_removeFromStall(notif: NotifAs<'removeFromStall'>) {
+		//WARNING: SHOULD PROBABLY BE DELETED
 		//TODO: currently unused, but could be used for CT_ACORN
 		const stall = this.playerStalls[notif.args.player_id]!;
 		for (let i in notif.args.cards) {
@@ -1129,10 +1155,8 @@ class Dale extends Gamegui
 				throw new Error(`Card ${card_id} does not exist in myTemporary.`);
 			}
 		}
-		else {
-			//TODO: increase player hand size
-			return;
-		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 	
 	notif_obtainNewJunkInHand(notif: NotifAs<'obtainNewJunkInHand'>) {
@@ -1143,10 +1167,9 @@ class Dale extends Gamegui
 				this.myHand.addDaleCardToStock(DaleCard.of(card), 'overall_player_board_'+notif.args.player_id);
 			}
 		}
-		else {
-			//TODO: increase player hand size
-			return;
-		}
+		//update the hand sizes
+		const nbr = Object.keys(notif.args.cards).length;
+		this.playerHandSizes[notif.args.player_id]!.incValue(nbr);
 	}
 
 	notif_throwAway(notif: NotifAs<'throwAway'>) {
@@ -1156,6 +1179,10 @@ class Dale extends Gamegui
 		}
 		else {
 			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard);
+		}
+		//update the hand sizes
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(-1);
 		}
 	}
 
@@ -1172,6 +1199,11 @@ class Dale extends Gamegui
 			}
 			delay += 75; //delay indicates that ordering matters
 		}
+		//update the hand sizes
+		if (stock === this.myHand) {
+			const nbr = Object.keys(notif.args.cards).length;
+			this.playerHandSizes[notif.args.player_id]!.incValue(-nbr);
+		}
 	}
 
 	notif_discard(notif: NotifAs<'discard'>) {
@@ -1179,6 +1211,8 @@ class Dale extends Gamegui
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile);
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
 	}
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
@@ -1191,6 +1225,8 @@ class Dale extends Gamegui
 			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
 			delay += 75; //delay indicates that ordering matters
 		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
 	}
 
 	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
@@ -1208,6 +1244,10 @@ class Dale extends Gamegui
 			//increase deck size
 			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
+		//update the hand sizes
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
+		}
 	} 
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
@@ -1215,6 +1255,8 @@ class Dale extends Gamegui
 		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 	
 	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
@@ -1225,6 +1267,8 @@ class Dale extends Gamegui
 			const card = notif.args.cards[i]!;
 			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
 		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
 	}
 
 	notif_draw(notif: NotifAs<'draw'>) {
@@ -1239,6 +1283,10 @@ class Dale extends Gamegui
 		else {
 			//another player drew cards, just remove a card from the deck
 			this.playerDecks[notif.args.player_id]!.pop();
+		}
+		//update the hand sizes
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(1);
 		}
 	}
 	
@@ -1259,6 +1307,10 @@ class Dale extends Gamegui
 			for (let i = 0; i < notif.args.nbr; i++) {
 				this.playerDecks[notif.args.player_id]!.pop();
 			}
+		}
+		//update the hand sizes
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
 		}
 	}
 
@@ -1309,7 +1361,7 @@ class Dale extends Gamegui
 			console.log(notif.args.msg);
 		}
 		else if (arg == 'increaseDeckSize') {
-			this.myDeck.pushHiddenCards(notif.args.nbr);
+			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
 		else if (arg == 'bindings') {
 			const bindings = DaleCard.getLocalChameleons()
