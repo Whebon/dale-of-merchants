@@ -680,7 +680,7 @@ class Dale extends DaleTableBasic
      * Returns true if the specified chameleon type is currently able to bind to the specified type. (does a dfs)
      * @param int chameleon_type_id the chameleon type that is attempting to (re)bind
      * @param int type_id the type it wishes to bind to
-     * @param int $_visited chameleon types that have already been attempted and are known to be invalid
+     * @param array $_visited chameleon types that have already been attempted and are known to be invalid
      */
     function isValidBinding(int $chameleon_type_id, int $type_id, array $_visited = array()) {
         if (in_array($chameleon_type_id, $_visited)) {
