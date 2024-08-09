@@ -274,6 +274,14 @@ class Dale extends Gamegui
 				this.myStall!.setSelectionMode('rightmoststack');
 				this.chameleonArgs?.selectChameleonCard();
 				break;
+			case 'chameleon_reflection':
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						this.playerDiscards[player_id]!.setSelectionMode('top');
+					}
+				}
+				this.chameleonArgs?.selectChameleonCard();
+				break;
 			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(1);
 				this.chameleonArgs?.selectChameleonCard();
@@ -327,6 +335,14 @@ class Dale extends Gamegui
 				this.myStall!.setSelectionMode('none');
 				this.chameleonArgs?.unselectChameleonCard();
 				break;
+			case 'chameleon_reflection':
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						this.playerDiscards[player_id]!.setSelectionMode('none');
+					}
+				}
+				this.chameleonArgs?.unselectChameleonCard();
+				break;
 			case 'chameleon_trendsetting':
 				this.market!.setSelectionMode(0);
 				this.chameleonArgs?.unselectChameleonCard();
@@ -373,6 +389,9 @@ class Dale extends Gamegui
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelChameleon();
 				break;
+			case 'chameleon_reflection':
+				this.addActionButtonCancelChameleon();
+				break;
 			case 'chameleon_trendsetting':
 				this.addActionButtonCancelChameleon();
 				break;
@@ -417,7 +436,20 @@ class Dale extends Gamegui
 				}
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				this.setClientState('chameleon_flexibleShopkeeper', {
-					descriptionmyturn: _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
+					descriptionmyturn: requiresPlayable ? 
+						_("Flexible Shopkeeper: ${you} must copy a PLAYABLE card from your rightmost stack") : 
+						_("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
+				});
+				break;
+			case DaleCard.CT_REFLECTION:
+				if (this.chameleonArgs !== undefined) {
+					console.warn("Previous chameleon args will be overwritten!");
+				}
+				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
+				this.setClientState('chameleon_reflection', {
+					descriptionmyturn: requiresPlayable ?
+						_("Reflection: ${you} must copy a PLAYABLE card from the top of another player's discard pile") :
+						_("Reflection: ${you} must copy a card from the top of another player's discard pile")
 				});
 				break;
 			case DaleCard.CT_TRENDSETTING:
@@ -426,7 +458,9 @@ class Dale extends Gamegui
 				}
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				this.setClientState('chameleon_trendsetting', {
-					descriptionmyturn: _("Trendsetting: ${you} must copy a card in the market")
+					descriptionmyturn: requiresPlayable ? 
+						_("Trendsetting: ${you} must copy a PLAYABLE card in the market") : 
+						_("Trendsetting: ${you} must copy a card in the market")
 				});
 				break;
 			default:
@@ -681,6 +715,12 @@ class Dale extends Gamegui
 		if (pile === this.myDiscard) {
 			this.onMyDiscardPileSelectionChanged(pile, card);
 		} 
+
+		switch(this.gamedatas.gamestate.name) {
+			case 'chameleon_reflection':
+				this.onConfirmChameleon(card);
+				break;
+		}
 	}
 
 	onMyDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
@@ -722,6 +762,7 @@ class Dale extends Gamegui
 				this.myHand.unselectAll();
 				break;
 			case 'chameleon_flexibleShopkeeper':
+			case 'chameleon_reflection':
 			case 'chameleon_trendsetting':
 				const args = this.chameleonArgs!;
 				if (args.card.id == card.id) {
@@ -1281,8 +1322,8 @@ class Dale extends Gamegui
 			this.myDeck.pop();
 		}
 		else {
-			//another player drew cards, just remove a card from the deck
-			this.playerDecks[notif.args.player_id]!.pop();
+			//another player drew cards
+			this.playerDecks[notif.args.player_id]!.pop('overall_player_board_'+notif.args.player_id);
 		}
 		//update the hand sizes
 		if (stock === this.myHand) {
@@ -1303,9 +1344,9 @@ class Dale extends Gamegui
 			}
 		}
 		else {
-			//another player drew cards, just remove cards from the deck
+			//another player drew cards
 			for (let i = 0; i < notif.args.nbr; i++) {
-				this.playerDecks[notif.args.player_id]!.pop();
+				this.playerDecks[notif.args.player_id]!.pop('overall_player_board_'+notif.args.player_id);
 			}
 		}
 		//update the hand sizes
@@ -1315,7 +1356,8 @@ class Dale extends Gamegui
 	}
 
 	notif_reshuffleDeck(notif: NotifAs<'reshuffleDeck'>) {
-		if (notif.args.player_id == null) {
+		console.log(`reshuffleDeck [market=${notif.args.market}, player_id=${notif.args.player_id}]`);
+		if (notif.args.market) {
 			this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
 		}
 		else {

@@ -420,11 +420,12 @@ class Dale extends DaleTableBasic
                 $this->cards->shuffle($location);
                 if ($player_id == MARKET) {
                     $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling the market discard pile to form a new market deck'), array(
-                        "player_id" => $player_id
+                        "market" => true
                     ));
                 }
                 else {
                     $this->notifyAllPlayers('reshuffleDeck', clienttranslate('${player_name} shuffles their discard pile to form a new deck'), array(
+                        "market" => false,
                         "player_id" => $player_id,
                         "player_name" => $this->getPlayerNameById($player_id)
                     ));
@@ -692,9 +693,10 @@ class Dale extends DaleTableBasic
      */
     function isValidBinding(int $chameleon_type_id, int $type_id, array $_visited = array()) {
         if (in_array($chameleon_type_id, $_visited)) {
-            //chameleon cards can only bind to themselves in case of infinite recursion
+            //chameleon cards are allowed to bind to themselves in case of infinite recursion
             return $chameleon_type_id == $type_id;
         }
+        $has_valid_target = false;
         switch($chameleon_type_id) {
             case CT_FLEXIBLESHOPKEEPER:
                 array_push($_visited, CT_FLEXIBLESHOPKEEPER);
@@ -703,6 +705,20 @@ class Dale extends DaleTableBasic
                 $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
                 foreach ($valid_targets as $target) {
                     if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
+                        $has_valid_target = true;
+                        if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                            return true;
+                        }
+                    }
+                }
+                break;
+            case CT_REFLECTION:
+                array_push($_visited, CT_REFLECTION);
+                $players = $this->loadPlayersBasicInfos();
+                foreach ($players as $player_id => $player) {
+                    $target = $this->cards->getCardOnTop(DISCARD.$player_id);
+                    if ($target) {
+                        $has_valid_target = true;
                         if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
                             return true;
                         }
@@ -713,6 +729,7 @@ class Dale extends DaleTableBasic
                 array_push($_visited, CT_TRENDSETTING);
                 $valid_targets = $this->cards->getCardsInLocation(MARKET);
                 foreach ($valid_targets as $target) {
+                    $has_valid_target = true;
                     if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
                         return true;
                     }
@@ -720,6 +737,10 @@ class Dale extends DaleTableBasic
                 break;
             default:
                 break;
+        }
+        if ($has_valid_target) {
+            //chameleons with valid targets cannot bind to themselves
+            return false;
         }
         //non-chameleon card can always bind to themselves
         return $chameleon_type_id == $type_id;

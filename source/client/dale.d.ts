@@ -53,7 +53,8 @@ declare global {
 			player_id: number
 		}
 		'reshuffleDeck': { 
-			player_id?: number
+			market: boolean
+			player_id: number
 		}
 		'marketSlideRight': {
 			//no args
@@ -196,6 +197,7 @@ declare global {
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameState {
 		'chameleon_flexibleShopkeeper': {}
+		'chameleon_reflection': {}
 		'chameleon_trendsetting': {}
 	}
 

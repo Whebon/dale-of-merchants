@@ -8,7 +8,13 @@ import { ChameleonClientStateArgs } from './types/ChameleonClientStateArgs';
 
 declare function $(text: string | Element): HTMLElement;
 
-type SelectionMode = 'none' | 'single' | 'multiple';
+/**
+ * 'none': content popin can be viewed, but no cards can be selected
+ * 'single': a single card can be selected from the popin
+ * 'multiple': multiple cards (up to the selectionMax) can be selected from the popin
+ * 'top': only the top card of the pile can be selected. furthermore, the popin cannot be opened.
+ */
+type SelectionMode = 'none' | 'single' | 'multiple' | 'top';
 
 /**
  * A component to display a set of cards in a pile.
@@ -318,6 +324,10 @@ export class Pile implements DaleLocation {
      * User clicked on the top card of the pile. Show the popin.
      */
     public onClickTopCard() {
+        if (this.selectionMode == 'top') {
+            (this.page as any).onPileSelectionChanged(this, this.peek());
+            return;
+        }
         const player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
         const title_player = player ? `<span style="font-weight:bold;color:#${player.color}">${player.name}</span>'s ` : "";
         const title_pile_name = this.pile_name ?? "Unnamed Pile";
@@ -331,7 +341,6 @@ export class Pile implements DaleLocation {
         for (let card of this.cards) {
             const div = card.toDiv(container_id);
             div.classList.add("relative");
-            console.log("selectionMode: "+this.selectionMode);
             if(this.selectionMode != 'none') {
                 div.classList.add("clickable");
                 const thiz = this;
