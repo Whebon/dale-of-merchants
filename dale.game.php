@@ -372,6 +372,7 @@ class Dale extends DaleTableBasic
      * @param bool $to_temporary (optional) default false. If true, the cards are placed in temporary. If false, the cards are placed in hand.
      * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
      * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
+     * @return int how much cards were actually drawn (`<= $nbr`)
      */
     function draw(string $msg, int $nbr = 1, bool $to_temporary = false, string $from_player_id = null, string $to_player_id = null) {
         if ($from_player_id == null) {
@@ -394,7 +395,9 @@ class Dale extends DaleTableBasic
                     "deck_player_id" => $from_player_id,
                     "to_temporary" => $to_temporary
                 ));
+                return 1;
             }
+            return 0;
         }
         else {
             $cards = $this->cards->pickCardsForLocation($nbr, DECK.$to_player_id, $to_location);
@@ -410,6 +413,7 @@ class Dale extends DaleTableBasic
                 "deck_player_id" => $from_player_id,
                 "to_temporary" => $to_temporary
             ));
+            return $actual_nbr;
         }
     }
 
@@ -1502,38 +1506,25 @@ class Dale extends DaleTableBasic
                 $this->beginToResolveCard($player_id, $card);
                 $handsize = $this->cards->countCardInLocation(HAND.$player_id);
                 if ($handsize == 0) {
-                    //skip the game state and just draw a card
+                    //shattered relic just draws a card
                     $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to throw away'), array(
                         "player_name" => $this->getActivePlayerName()
                     ));
                     $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
                     $this->gamestate->nextState("trFullyResolveTechnique");
+                    return;
                 }
-                else {
-                    //resolve shattered relic
-                    $this->gamestate->nextState("trShatteredRelic");
-                }
+                $this->gamestate->nextState("trShatteredRelic");
                 break;
             case CT_SPYGLASS:
-                $cards = $this->cards->pickCardsForLocation(3, DECK.$player_id, TEMPORARY.$player_id);
-                $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('Spyglass: ${player_name} draws 3 card'), array(
-                    "player_id" => $player_id,
-                    "player_name" => $this->getPlayerNameById($player_id),
-                    "nbr" => count($cards),
-                    "_private" => array(
-                        "cards" => $cards
-                    ),
-                    "to_temporary" => true
-                ));
                 $this->beginToResolveCard($player_id, $card);
-                if (count($cards) == 0) {
+                $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
+                if ($nbr == 0) {
                     //skyglass has no effect
                     $this->gamestate->nextState("trFullyResolveTechnique");
+                    return;
                 }
-                else {
-                    //resolve spyglass
-                    $this->gamestate->nextState("trSpyglass");
-                }
+                $this->gamestate->nextState("trSpyglass");
                 break;
             case CT_FLASHYSHOW:
                 $this->beginToResolveCard($player_id, $card);
@@ -1616,18 +1607,10 @@ class Dale extends DaleTableBasic
 
         //draw an equal amount of new cards
         $nbr = count($selected_cards) + count($non_selected_cards);
-        $new_cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
-        if ($nbr != count($new_cards)) {
-            throw new Error("Swift Broker Invariant Exception: unable to pick enough cards from deck, even though this is guaranteed to be possible");
-        }
-        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameById($player_id),
-            "nbr" => $nbr,
-            "_private" => array(
-                "cards" => $new_cards
-            )
-        ));
+        $this->draw(
+            clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
+            $nbr
+        );
         
         $this->gamestate->nextState("trFullyResolveTechnique");
     }
