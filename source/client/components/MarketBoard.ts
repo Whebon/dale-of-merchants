@@ -50,6 +50,19 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     }
 
     /**
+     * Number of cards on the market board (0, 1, 2, 3, 4 or 5).
+     */
+    public get size(): number {
+        let nbr = 0;
+        for (let slot of this.slots) {
+            if (slot.hasCard()) {
+                nbr++;
+            }
+        }
+        return nbr;
+    }
+
+    /**
      * UpdateHTML for all cardslots. 
      * @param card (optional) - if provided, only update the card slot of this card.
      */

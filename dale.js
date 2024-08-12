@@ -632,6 +632,20 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             }
             this.selectionMode = 0;
         }
+        Object.defineProperty(MarketBoard.prototype, "size", {
+            get: function () {
+                var nbr = 0;
+                for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                    var slot = _a[_i];
+                    if (slot.hasCard()) {
+                        nbr++;
+                    }
+                }
+                return nbr;
+            },
+            enumerable: false,
+            configurable: true
+        });
         MarketBoard.prototype.updateHTML = function (card) {
             var _a;
             for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
@@ -1285,7 +1299,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                                 this.page.showMessage(_("You can only select 1 card from this pile!"), 'error');
                             }
                             else {
-                                this.page.showMessage(_("You can only select up to ".concat(this.selectionMax, " cards from this pile!")), 'error');
+                                this.page.showMessage(_("You already selected the maximum number of cards from this pile") + "[".concat(this.selectionMax, "]"), 'error');
                             }
                             return;
                         }
@@ -1521,6 +1535,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onEnteringState = function (stateName, args) {
             var _a, _b, _c;
             console.log('Entering state: ' + stateName);
+            if (!this.isCurrentPlayerActive()) {
+                return;
+            }
             switch (stateName) {
                 case 'playerTurn':
                     this.market.setSelectionMode(1);
@@ -1679,8 +1696,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             switch (card.effective_type_id) {
                 case DaleCard_6.DaleCard.CT_FLEXIBLESHOPKEEPER:
-                    if (this.chameleonArgs !== undefined) {
-                        console.warn("Previous chameleon args will be overwritten!");
+                    if (this.myStall.getNumberOfStacks() == 0) {
+                        console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
+                        callback(card);
+                        return;
                     }
                     this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
                     this.setClientState('chameleon_flexibleShopkeeper', {
@@ -1690,8 +1709,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                     break;
                 case DaleCard_6.DaleCard.CT_REFLECTION:
-                    if (this.chameleonArgs !== undefined) {
-                        console.warn("Previous chameleon args will be overwritten!");
+                    var has_valid_target = false;
+                    for (var _i = 0, _a = Object.entries(this.playerDiscards); _i < _a.length; _i++) {
+                        var _b = _a[_i], player_id = _b[0], pile = _b[1];
+                        if (+player_id != +this.player_id && pile.size > 0) {
+                            has_valid_target = true;
+                            break;
+                        }
+                    }
+                    if (!has_valid_target) {
+                        console.log("No valid targets for CT_REFLECTION");
+                        callback(card);
+                        return;
                     }
                     this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
                     this.setClientState('chameleon_reflection', {
@@ -1701,8 +1730,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                     break;
                 case DaleCard_6.DaleCard.CT_TRENDSETTING:
-                    if (this.chameleonArgs !== undefined) {
-                        console.warn("Previous chameleon args will be overwritten!");
+                    if (this.market.size == 0) {
+                        console.log("No valid targets for CT_TRENDSETTING");
+                        callback(card);
+                        return;
                     }
                     this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
                     this.setClientState('chameleon_trendsetting', {
@@ -1712,7 +1743,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                     break;
                 default:
-                    console.log(DaleCard_6.DaleCard.getLocalChameleons());
                     callback(card);
                     break;
             }

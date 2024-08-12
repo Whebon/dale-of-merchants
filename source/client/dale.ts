@@ -241,6 +241,10 @@ class Dale extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 
+		if (!this.isCurrentPlayerActive()) {
+			return;
+		}
+
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'playerTurn':
@@ -431,8 +435,10 @@ class Dale extends Gamegui
 		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
-				if (this.chameleonArgs !== undefined) {
-					console.warn("Previous chameleon args will be overwritten!");
+				if (this.myStall.getNumberOfStacks() == 0) {
+					console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
+					callback(card);
+					return;
 				}
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				this.setClientState('chameleon_flexibleShopkeeper', {
@@ -442,8 +448,17 @@ class Dale extends Gamegui
 				});
 				break;
 			case DaleCard.CT_REFLECTION:
-				if (this.chameleonArgs !== undefined) {
-					console.warn("Previous chameleon args will be overwritten!");
+				let has_valid_target = false;
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						has_valid_target = true;
+						break;
+					}
+				}
+				if (!has_valid_target) {
+					console.log("No valid targets for CT_REFLECTION");
+					callback(card);
+					return;
 				}
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				this.setClientState('chameleon_reflection', {
@@ -453,8 +468,10 @@ class Dale extends Gamegui
 				});
 				break;
 			case DaleCard.CT_TRENDSETTING:
-				if (this.chameleonArgs !== undefined) {
-					console.warn("Previous chameleon args will be overwritten!");
+				if (this.market!.size == 0) {
+					console.log("No valid targets for CT_TRENDSETTING");
+					callback(card);
+					return;
 				}
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				this.setClientState('chameleon_trendsetting', {
@@ -465,7 +482,6 @@ class Dale extends Gamegui
 				break;
 			default:
 				//card is not a chameleon card, immediately execute the callback function
-				console.log(DaleCard.getLocalChameleons());
 				callback(card);
 				break;
 		}

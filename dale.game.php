@@ -714,13 +714,16 @@ class Dale extends DaleTableBasic
                 break;
             case CT_REFLECTION:
                 array_push($_visited, CT_REFLECTION);
+                $active_player_id = $this->getActivePlayerId();
                 $players = $this->loadPlayersBasicInfos();
                 foreach ($players as $player_id => $player) {
-                    $target = $this->cards->getCardOnTop(DISCARD.$player_id);
-                    if ($target) {
-                        $has_valid_target = true;
-                        if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
-                            return true;
+                    if ($player_id != $active_player_id) {
+                        $target = $this->cards->getCardOnTop(DISCARD.$player_id);
+                        if ($target) {
+                            $has_valid_target = true;
+                            if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                                return true;
+                            }
                         }
                     }
                 }
