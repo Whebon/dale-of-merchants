@@ -2,7 +2,7 @@
  /**
   *------
   * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
-  * Dale implementation : © <Your name here> <Your email address here>
+  * Dale implementation : © Bart Swinkels bart-man99@hotmail.com
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -761,7 +761,7 @@ class Dale extends DaleTableBasic
 
         //enforce the (chameleon) card_ids are a subset of the used_card_ids
         if (!$this->isSubset($card_ids, $used_card_ids)) {
-            throw new BgaUserException("Bound chameleon cards must be used in the action");
+            throw new BgaVisibleSystemException("Bound chameleon cards must be used in the action");
         }
         
         //enforce the card_ids and type_ids are of equal length
@@ -782,7 +782,7 @@ class Dale extends DaleTableBasic
             $original_name = $this->getCardName($card);
             $new_name = $this->card_types[$new_type_id]['name'];
             if (!$this->isValidBinding($original_type_id, $new_type_id)) {
-                throw new BgaUserException("Unable to bind '$original_name' to '$new_name'");
+                throw new BgaVisibleSystemException("Unable to bind '$original_name' to '$new_name'");
             }
 
             //TODO: enforce the card is being 'used' from the correct location
@@ -792,7 +792,7 @@ class Dale extends DaleTableBasic
             $previous_target = $this->effects->getTarget($card_id, $original_type_id);
             if ($previous_target != null && $previous_target != -1) {
                 $previous_name = $this->card_types[$previous_target]['name'];
-                throw new BgaUserException("'$original_name' (card_id = $card_id) is already bound to '$previous_name'");
+                throw new BgaVisibleSystemException("'$original_name' (card_id = $card_id) is already bound to '$previous_name'");
             }
 
             //set the new binding in the db
@@ -947,12 +947,12 @@ class Dale extends DaleTableBasic
     
         //Enforce no junk cards are used
         if ($junk_used && !$this->containsTypeId($cards, CT_STASHINGVENDOR)) {
-            throw new BgaUserException("Junk cards cannot be included in a stack");
+            throw new BgaUserException($this->_("Junk cards cannot be included in a stack"));
         }
 
         //Enforce only a single animalfolk set is used
         if ($multiple_sets_used && !$this->containsTypeId($cards, CT_EMPTYCHEST)) {
-            throw new BgaUserException("Cards in the stack must be of the same animalfolk set");
+            throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set"));
         }
 
         //Enforce the stack value is correct
@@ -1362,7 +1362,7 @@ class Dale extends DaleTableBasic
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $type_id = $this->getTypeId($card);
         if ($this->card_types[$type_id]['playable'] == false) {
-            throw new BgaUserException("That card is not playable!");
+            throw new BgaUserException($this->_("That card is not playable!"));
         }
 
         //TODO: active passives
@@ -1503,7 +1503,7 @@ class Dale extends DaleTableBasic
 
         //get the card to draw (first card from the card_ids array)
         if (count($card_ids) == 0) {
-            throw new BgaUserException("You must select at least 1 card to place into your hand");
+            throw new BgaUserException($this->_("You must select at least 1 card to place into your hand"));
         }
         $draw_card_id = array_shift($card_ids);
         $draw_card = $this->cards->getCardFromLocation($draw_card_id, TEMPORARY.$player_id);
@@ -1567,7 +1567,7 @@ class Dale extends DaleTableBasic
                 $nbr_nostalgic_item += $this->countTypeId($stack_cards_from_discard, CT_NOSTALGICITEM);
             }
             if ($nbr_from_discard > $nbr_nostalgic_item) {
-                throw new BgaUserException("You cannot include cards from your discard pile.");
+                throw new BgaUserException($this->_("You cannot include cards from your discard pile."));
             }
         }
 

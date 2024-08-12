@@ -395,7 +395,7 @@ export class Pile implements DaleLocation {
                             this.page.showMessage(_(`You can only select 1 card from this pile!`), 'error');
                         }
                         else {
-                            this.page.showMessage(_(`You can only select up to ${this.selectionMax} cards from this pile!`), 'error');
+                            this.page.showMessage(_("You already selected the maximum number of cards from this pile")+`[${this.selectionMax}]`, 'error');
                         }
                         return;
                     }
