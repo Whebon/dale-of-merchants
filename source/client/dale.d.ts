@@ -36,6 +36,9 @@ declare global {
 			player_id: number
 			card: DbCard
 		}
+		'addEffect': {
+			effect: DbEffect;
+		}
 		'bindChameleon': {
 			card_id: string,
 			type_id: string
@@ -55,6 +58,9 @@ declare global {
 		'reshuffleDeck': { 
 			market: boolean
 			player_id: number
+		}
+		'throwAwayFromMarketDeck': {
+			card: DbCard
 		}
 		'marketSlideRight': {
 			//no args
@@ -198,6 +204,7 @@ declare global {
 	interface ClientGameState {
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
+		'chameleon_goodoldtimes': {}
 		'chameleon_trendsetting': {}
 	}
 

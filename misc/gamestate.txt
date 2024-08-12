@@ -1,0 +1,3017 @@
+/**
+
+* gamestate.game.php
+
+*
+
+*
+
+* State machine corresponding to the game
+
+*
+
+*/
+
+
+c
+class Gamestate extends APP_GameClass
+{
+{
+
+var $o_game = null;
+
+private $current_state = null;
+
+private $active_player = null;
+
+var $states = array();
+
+var $table_id = null;
+
+var $game = null;
+
+private $state_args = null;
+
+var $table_globals = array();
+
+var $admin_player = null;
+
+var $lock_state_args = false;
+
+private $multiple_active = null;
+
+private $reflexion_time = null;
+
+private $o_tableinfos = null;
+
+var $bGameCreationRequest = false; // Note: true if we are during the game creation request
+
+var $nested_jumptostate = 0;
+
+var $save_every = 10;
+
+var $bIsSandbox = false;
+
+private $playerPrivateStates = null;
+
+private $privateStateCacheSkippedArgs = false;
+
+
+
+function loadStateMachine( $o_game, $game, $table_id, $bIsSandbox=false )
+
+{
+
+$this->table_id = $table_id;
+
+$this->o_game = $o_game;
+
+$this->game = $game;
+
+$this->bIsSandbox = $bIsSandbox;
+
+
+
+$this->o_tableinfos = self::getNew( "module.table.tableinfos" );
+
+$this->o_tableinfos->setTable( $table_id );
+
+
+
+$this->states = array();
+
+
+
+if( $bIsSandbox )
+
+{
+
+// The states may be defined by the script.
+
+$this->states = $this->o_game->getSandboxMachineStates();
+
+}
+
+
+
+if( count( $this->states ) == 0 )
+
+{
+
+// Load state machine from a game configuration file
+
+if( file_exists( APP_GAMES_PATH.$game.'/current/states.inc.php' ) )
+
+require( APP_GAMES_PATH.$game.'/current/states.inc.php' );
+
+else
+
+require( APP_GAMEMODULE_PATH.'module/'.$game.'/states.inc.php' );
+
+$this->states = $machinestates;
+
+}
+
+
+
+// Get current state from db
+
+// Note on globals:
+
+// id<10: game states globals common to all games
+
+// 10 <= id < 100: game state globals specific to a game
+
+// 100 <= id: game options
+
+//
+
+$this->table_globals = $this->o_tableinfos->getGlobalsFromDB( );
+
+$current_state = 1;
+
+foreach( $this->table_globals as $global_id => $global_value )
+
+{
+
+if( $global_id==GAMESTATE_CURRENT_STATE )
+
+$current_state = $global_value ;
+
+if( $global_id==GAMESTATE_ACTIVE_PLAYER )
+
+$this->active_player = $global_value ;
+
+if( $global_id==GAMESTATE_ADMIN_PLAYER )
+
+$this->admin_player = $global_value ;
+
+}
+
+
+
+self::setCurrentState( $current_state );
+
+}
+
+
+
+// Reload state machine and return current state (used for test cases)
+
+function reloadState()
+
+{
+
+self::loadStateMachine( $this->o_game, $this->game, $this->table_id, $this->bIsSandbox );
+
+return self::state();
+
+}
+
+
+
+function resetGameState( $admin_player )
+
+{
+
+$current_state = 1; // Start state
+
+$this->active_player = 0; // No active player when game start
+
+
+
+// General setup methods
+
+$this->o_tableinfos->setGlobal( GAMESTATE_CURRENT_STATE, 1 );
+
+$this->o_tableinfos->setGlobal( GAMESTATE_ACTIVE_PLAYER, 0 );
+
+$this->o_tableinfos->setGlobal( GAMESTATE_ADMIN_PLAYER, $admin_player );
+
+$this->o_tableinfos->setGlobal( GAMESTATE_NEXT_NOTIF_NO, 1 );
+<
+
+
+$this->active_player = 0;
+
+$this->admin_player = $admin_player;
+
+$this->table_globals[ GAMESTATE_NEXT_NOTIF_NO ] = 1;
+<
+
+
+self::setCurrentState( 1 );
+
+}
+
+
+
+function state_id()
+
+{
+
+return $this->current_state;
+
+}
+
+function state( $bSkipStateArgs=false, $bOnlyVariableContent = false, $bSkipReflexionTimeLoad = false )
+
+{
+
+if( $this->current_state )
+
+{
+
+if( ! isset( $this->states[ $this->current_state ] ) )
+
+throw new feException( "Unknow state: ".$this->current_state );
+<
+
+
+$gamestate = $this->states[ $this->current_state ];
+
+$gamestate['active_player'] = $this->active_player;
+<
+
+
+if( $bSkipStateArgs )
+
+{
+
+$gamestate['args'] = null;
+
+}
+
+else
+
+{
+
+if( $this->state_args == null )
+
+self::loadStateArgs();
+
+$gamestate['args'] = $this->state_args;
+
+}
+<
+
+
+if( $bSkipReflexionTimeLoad )
+
+{
+
+$gamestate['reflexion'] = null;
+
+}
+
+else
+
+{
+
+if( $this->reflexion_time == null )
+
+self::loadReflexionTime();
+
+}
+<
+
+
+$gamestate['reflexion'] = $this->reflexion_time;
+<
+
+
+if( $gamestate['type'] == 'multipleactiveplayer' )
+
+{
+
+if( $this->multiple_active == null )
+
+self::loadMultipleActive( false );
+<
+
+
+$gamestate['multiactive'] = $this->multiple_active;
+
+}
+<
+
+
+if ( $this->isPrivateMasterState() )
+
+{
+
+if( $this->playerPrivateStates == null )
+
+$this->loadPlayerPrivateStates($bSkipStateArgs);
+<
+
+
+if ($this->privateStateCacheSkippedArgs && !$bSkipStateArgs)
+
+$this->loadPlayerPrivateStates($bSkipStateArgs);
+<
+
+
+$gamestate['private_states'] = $this->playerPrivateStates;
+
+}
+<
+
+
+if( $bOnlyVariableContent )
+
+{
+
+// Return only variable content
+
+$res = array(
+
+'id' => $this->current_state,
+
+'active_player' => $gamestate['active_player'],
+
+'args' => $gamestate['args'],
+
+'reflexion' => $gamestate['reflexion']
+
+);
+<
+
+
+if( isset( $gamestate['multiactive'] ) )
+
+$res['multiactive'] = $gamestate['multiactive'];
+<
+
+
+if ($this->isPrivateMasterState()){
+
+$res["private_states"] = [];
+
+foreach ($gamestate['private_states'] as $playerId => $state) {
+
+$res['private_states'][$playerId] = [
+
+'id' => $state['id'],
+
+'args' => isset($state['args']) ? $state["args"] : [],
+
+];
+
+}
+
+}
+<
+
+
+return $res;
+
+}
+
+else
+
+return $gamestate; // Return everything
+
+}
+
+else
+
+return null;
+
+}
+
+
+
+
+
+// Check if action is valid regarding current game state (exception if fails)
+
+// if "bThrowException" is set to "false", the function return false in case of failure instead of throwing and exception
+
+function checkPlayerAction( $action_name, $bThrowException=true )
+
+{
+
+$state = self::state();
+
+
+
+if( $state == null )
+
+{
+
+if( $bThrowException )
+
+throw new feException( "Game not initialized yet" );
+
+else
+
+return false;
+
+}
+<
+
+
+$possibleActions = [];
+
+if( isset( $state['possibleactions'] ) ) {
+
+$possibleActions = $state['possibleactions'];
+
+}
+<
+
+
+global $g_user;
+
+if ($this->isPrivateMasterState() && isset($state['private_states'][$g_user->get_id()])) {
+
+$possibleActions = $state['private_states'][$g_user->get_id()]["possibleactions"];
+
+}
+
+
+
+$action_possible = false;
+
+foreach( $possibleActions as $action )
+
+{
+
+if( $action == $action_name )
+
+$action_possible = true;
+
+}
+
+
+
+if( ! $action_possible )
+
+{
+
+self::trace( "Game action impossible: ".$action_name." for state ".$state['name'] );
+
+if( $bThrowException )
+
+throw new feException( _( "This game action is impossible right now"), true, true, FEX_game_action_no_allowed );
+
+else
+
+return false;
+
+}
+
+
+
+if( $state['type'] == 'activeplayer' )
+
+{
+
+global $g_user;
+
+if( $state['active_player'] != $g_user->get_id() )
+
+{
+
+self::trace( "This is not turn of player ".$g_user->get_id()." (this is turn of player ".$state['active_player'].")" );
+
+if( $bThrowException )
+
+{
+
+if( $g_user->is_visitor() )
+
+throw new feException( _("You are disconnected from Board Game Arena, please login"), true, true );
+
+else
+
+throw new feException( _( "This is not your turn" ), true, true, FEX_this_is_not_your_turn );
+
+}
+
+else
+
+return false;
+
+}
+
+}
+
+else if( $state['type'] == 'multipleactiveplayer' )
+
+{
+
+global $g_user;
+
+
+
+// Check if current player is "multi active"
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "SELECT ma_is_multiactive player_is_multiactive FROM playermultiactive WHERE ma_player_id='".$g_user->get_id()."' LOCK IN SHARE MODE";
+
+else
+
+$sql = "SELECT player_is_multiactive FROM player WHERE player_id='".$g_user->get_id()."' LOCK IN SHARE MODE";
+
+$dbres = self::DbQuery( $sql );
+
+$row = mysql_fetch_assoc( $dbres );
+
+if( ! $row )
+
+{
+
+if( $bThrowException )
+
+{
+
+if( $g_user->is_visitor() )
+
+throw new feException( _("You are disconnected from Board Game Arena, please login"), true, true );
+
+else
+
+throw new feException( _( "This is not your turn" ), true, true, FEX_this_is_not_your_turn );
+
+}
+
+else
+
+return false;
+
+}
+
+
+
+if( $row['player_is_multiactive'] != 1 )
+
+{
+
+self::trace( "This is not turn of player ".$g_user->get_id()." (player_is_multiactive=".$row['player_is_multiactive'].")" );
+
+if( $bThrowException )
+
+throw new feException( _( "This is not your turn" ), true, true, FEX_this_is_not_your_turn );
+
+else
+
+return false;
+
+}
+
+}
+
+else
+
+{
+
+if( $bThrowException )
+
+throw new feException( "Game state type does not allow player actions" );
+
+else
+
+return false;
+
+}
+
+
+
+return true;
+
+}
+
+
+
+// Check if action is possible regarding current game state (exception if fails)
+
+// !! DO NOT check if current player is active
+
+function checkPossibleAction( $action_name )
+
+{
+
+$state = self::state();
+
+
+
+if( $state == null )
+
+{
+
+throw new feException( "Game not initialized yet" );
+
+}
+
+
+
+$possibleActions = [];
+
+if( isset( $state['possibleactions'] ) ) {
+
+$possibleActions = $state['possibleactions'];
+
+}
+<
+
+
+global $g_user;
+
+if ($this->isPrivateMasterState() && isset($state['private_states'][$g_user->get_id()])) {
+
+$possibleActions = $state['private_states'][$g_user->get_id()]["possibleactions"];
+
+}
+
+
+
+$action_possible = false;
+
+foreach( $possibleActions as $action )
+
+{
+
+if( $action == $action_name )
+
+$action_possible = true;
+
+}
+
+
+
+if( ! $action_possible )
+
+{
+
+self::trace( "Game action impossible: ".$action_name." for state ".$state['name'] );
+
+throw new feException( _( "This game action is impossible right now"), true, true, FEX_game_action_no_allowed );
+
+}
+
+}
+
+
+
+
+
+// Go to next game state
+
+// This function triggers possible actions linked to this game state
+
+function nextState( $action='' )
+
+{
+
+self::trace( "nextState with action: '".$action."'" );
+
+$state = self::state();
+
+
+
+if( $state == null )
+
+throw new feException( "Game not initialized yet" );
+<
+
+
+if( $state['name'] == 'gameEnd')
+
+return ; // This is the end of the game, so there is no more "nextState" possible
+<
+
+
+if( $action == 'startingGameSpecialTransition' )
+
+{
+
+// Specific to first transition
+
+if( count( $state['transitions'] ) == 1 )
+
+$action = ''; // Only one possible transition (no tutorial): just jump to the next state
+
+else
+
+{
+
+// A tutorial is present in the game. Is there some beginner on board?
+
+$players = $this->o_game->loadPlayersBasicInfos();
+<
+
+
+$bAtLeastOneBeginner = false;
+
+foreach( $players as $player_id => $player )
+
+{
+
+if( $player['player_beginner'] !== null )
+
+$bAtLeastOneBeginner = true;
+
+}
+
+
+
+if( $bAtLeastOneBeginner )
+
+$action = "tutorialStart";
+
+else
+
+$action = "start";
+
+}
+
+}
+
+
+
+// Get corresponding transition
+
+if( $action == '' )
+
+{
+
+if( count( $state['transitions'] ) != 1 )
+
+{
+
+self::trace( "in state ".$state['name']." possible transitions: ".count( $state['transitions'] ).": ".implode( ',',$state['transitions'] ) );
+
+throw new feException( "More than one possible action at this state" );
+
+}
+
+$next_state = reset( $state['transitions'] ); // Note: return first element
+
+}
+
+else
+
+{
+
+$action_is_possible = false;
+
+foreach( $state['transitions'] as $possible_action => $possible_next_state )
+
+{
+
+if( $action == $possible_action )
+
+{
+
+$action_is_possible = true;
+
+$next_state = $possible_next_state;
+
+}
+
+}
+
+
+
+if( ! $action_is_possible )
+
+{
+
+throw new feException( "This transition ($action) is impossible at this state (".self::state_id().")" );
+
+}
+
+
+
+}
+
+
+
+self::jumpToState( $next_state );
+
+}
+
+
+
+// Jump to specified state, without any checks
+
+function jumpToState( $next_state, $bWithActions=true )
+
+{
+
+self::trace( "jump to state $next_state" );
+
+
+
+// Update all active player's reflexion time
+
+self::reflexionTimeUpdate();
+
+
+
+// There is no use to notify about leaving current state => skip it!
+/
+/* $state = self::state();
+
+
+
+// Notify all player this is the end of this game state
+
+if( isset( $state['args']['_private'] ) )
+
+unset( $state['args']['_private'] );
+
+
+
+// Remove unuseful game state infos to save notification space
+
+unset( $state['description'] );
+
+unset( $state['descriptionmyturn'] );
+
+unset( $state['possibleactions'] );
+
+unset( $state['transitions'] );
+
+$this->o_game->notifyAllPlayers( 'leaveGameState', '', $state );
+*
+*/
+
+// Now, switch to next state
+
+$this->setCurrentState( $next_state );
+
+$this->o_tableinfos->setGlobal( GAMESTATE_CURRENT_STATE, $next_state );
+
+$state = self::state();
+
+self::trace( "New game state: '".$state['name']."'" );
+<
+
+
+global $g_config;
+
+
+
+
+
+// Last move (used to signal to metasite that the table is "alive")
+
+// (note: last_move is the "0" global)
+
+self::DbQuery( "UPDATE global SET global_value=UNIX_TIMESTAMP(NOW()) WHERE global_id='0'" );
+<
+
+
+// if( self::ensure_enough_time_since_last_action( 'tablelastmove', $this->table_id, 60 ) )
+
+// {
+
+// if( ! $this->bGameCreationRequest ) // note: disabled during game creation request to avoid a gameserver/metasite request lock
+
+// self::masterNodeRequest( 'lastmove', array( 'table_id' => $this->table_id ) );
+
+// }
+
+
+
+// Game progression
+
+if( isset( $state['updateGameProgression'] ) )
+
+{
+
+$newProgression = min( 100, max( 0, round( $this->o_game->getGameProgression() ) ) );
+
+$state['updateGameProgression'] = $newProgression;
+
+
+
+$this->o_game->setGameStateValue( 'gameprogression', $newProgression );
+
+}
+
+
+
+// Update "player_start_reflexion_time" field
+
+self::initiateStartReflexionTime();
+<
+
+
+$notifyGameStateChange = !($state['args']['_no_notify'] ?? false);
+<
+
+
+// Notify all players of this game state change
+
+if($notifyGameStateChange && isset( $state['args']['_private'] ) )
+
+{
+
+// Notify individual players
+
+foreach( $state['args']['_private'] as $target_id => $state_args )
+
+{
+
+if( is_numeric( $target_id ) )
+
+{
+
+// Notify player with this ID
+
+$this->o_game->notifyPlayer( $target_id, 'gameStateChangePrivateArg', '', $state_args );
+
+}
+
+else if( $target_id == 'active' )
+
+{
+
+$players_ids = self::getActivePlayerList();
+
+foreach( $players_ids as $player_id )
+
+{
+
+$this->o_game->notifyPlayer( $player_id, 'gameStateChangePrivateArg', '', $state_args );
+
+}
+
+}
+
+}
+
+unset( $state['args']['_private'] );
+
+}
+
+
+
+
+
+// Removing unnecessary informations from game state (to save space in network/BDD)
+
+$state_light = array(
+
+'id' => $this->current_state,
+
+'active_player' => $state['active_player'],
+
+'args' => $state['args'],
+
+'type' => $state['type'], // Note: type is mandatory to update turn based counters on MS
+
+'reflexion' => $state['reflexion']
+
+);
+/
+// $state_light = $state; // OLD VERSION => must be kept during few days for compatibility
+<
+
+
+if( isset( $state['multiactive'] ) )
+
+$state_light['multiactive'] = $state['multiactive'];
+
+if( isset( $state['updateGameProgression'] ) )
+
+$state_light['updateGameProgression'] = $state['updateGameProgression'];
+<
+
+
+if ($notifyGameStateChange) {
+
+$this->o_game->notifyAllPlayers( 'gameStateChange', '', $state_light );
+
+}
+
+
+
+
+
+if( $bWithActions )
+
+{
+
+if( isset( $state['action'] ) )
+
+{
+
+// Launch game action corresponding to this new state
+
+$this->nested_jumptostate ++;
+
+$this->o_game->{$state['action']}();
+
+$this->nested_jumptostate --;
+
+}
+
+if( isset( $state['onState'] ) )
+
+{
+
+// Launch game action (JS script) corresponding to this new state
+
+$this->nested_jumptostate ++;
+
+$this->o_game->triggerOnStateScriptAction( $state['onState'] );
+
+$this->nested_jumptostate --;
+
+}
+<
+
+
+
+
+// Detect the last gamestate before giving the hand back to players
+
+if( $this->nested_jumptostate == 0 )
+
+{
+
+// Every 10 moves, save all datas to the Database to optimize replays
+
+$move_id = $this->table_globals[ GAMESTATE_NEXT_NOTIF_NO ];
+<
+
+
+if( $move_id % $this->save_every == 2 ) // Note: we always make sure the move #2 is saved (first move after init)
+
+{
+
+$this->o_game->saveReplayPoint( $move_id );
+
+}
+<
+
+
+// Zombie turn if needed
+
+$this->o_game->checkZombieTurn();
+
+}
+
+}
+
+
+
+if( $next_state == 99 )
+
+{
+
+// This is the end of the game.
+
+// Before going further (and send notifications), we commit everything, to ensure that the GS is in a "end of the game" state.
+
+// If we don't do this and some error happens with notification service, then the MS believe that the game is over while the GS believe it is not.
+
+// By doing this, if some error happens with notification service afterwards, then the player will re-issue his move and will get a "this game has been ended". With a F5 he will recover
+
+// from this situation
+
+self::CommitAllAndRestart();
+
+}
+
+
+
+self::trace( "after jump to nextState" );
+
+
+
+}
+
+
+
+// Send an "asynctablemove" notification to metasite to signal which players are active on the table
+
+// in general case, $active_players_change is not null and is used to know which players are newly active and newly inactive
+
+//
+
+public function sendAsyncTableMove( $active_players_change = null )
+
+{
+
+// If we are in async mode, we must intercept the last state jump to signal current state to server
+
+if( $this->o_game->isAsync() )
+
+{
+
+$asyncTimeLimits = $this->o_game->getAsyncTimeLimits();
+
+$additional_time = $asyncTimeLimits['additional_time_per_move'];
+<
+
+
+// Give async thinking time to active players
+
+$maximum_time = $asyncTimeLimits['initial_time_to_thing'];
+
+if( $maximum_time === null )
+
+$maximum_time = $this->table_globals[ GAMESTATE_CLOCK_MODE_ARG ];
+<
+
+
+if( $maximum_time === null )
+
+throw new feException( "maximum time is null !!!" );
+<
+
+
+$players_over_maximum_time = self::getObjectListFromDB( "SELECT player_id FROM player WHERE player_remaining_reflexion_time>$maximum_time", true );
+<
+
+
+if( $active_players_change !== null )
+
+{
+
+if( count( $active_players_change['new_active'] ) > 0 )
+
+{
+<
+
+
+$players_to_receive_additional_time = array();
+
+foreach( $active_players_change['new_active'] as $player_id )
+
+{
+
+if( ! in_array( $player_id, $players_over_maximum_time ) ) // We filter here players that are over maximum reflexion time. If you are over reflexion time,
+
+$players_to_receive_additional_time[] = $player_id; // you probably used a time joker and you just have to consume your joker without being limited (but you don't receive extra time of course)
+
+}
+<
+
+<
+
+
+if( count( $players_to_receive_additional_time ) > 0 )
+
+{
+
+$sql = "UPDATE player SET player_remaining_reflexion_time=LEAST( $maximum_time, player_remaining_reflexion_time+$additional_time )
+
+WHERE player_start_reflexion_time IS NOT NULL
+
+AND player_remaining_reflexion_time<$maximum_time "; // Note: this latest check is a security to make sure we do not decrease player_remaining_reflexion_time if it is higher than the max
+<
+
+
+// Note: with this additional filter, we don't give additional time to players that we already actives before
+
+$sql .= " AND player_id IN ('".implode("','",$active_players_change['new_active'] ) ."') ";
+<
+
+
+self::DbQuery( $sql );
+
+}
+
+}
+
+}
+<
+
+
+$clock_night = 0;
+
+if( isset($this->table_globals[ GAMESTATE_CLOCK_NIGHT ]) && $this->table_globals[ GAMESTATE_CLOCK_NIGHT ] != 0 )
+
+{
+
+$clock_night = $this->table_globals[ GAMESTATE_CLOCK_NIGHT ];
+
+}
+<
+
+
+// Get current active players + time to think
+
+$active_players = self::getCollectionFromDB( "SELECT player_id, UNIX_TIMESTAMP( player_start_reflexion_time ) start,
+
+player_remaining_reflexion_time remaining_time
+
+FROM player
+
+WHERE player_start_reflexion_time IS NOT NULL" );
+<
+
+
+foreach( $active_players as $i => $player )
+
+{
+
+$bSkipIncreaseTime = false; // By default, increase time for everyone
+
+if( $active_players_change !== null )
+
+{
+
+$bSkipIncreaseTime = true; // Normal case: increase time for no one, except...
+
+if( in_array( $player['player_id'], $active_players_change['new_active'] ) )
+
+{
+
+$bSkipIncreaseTime = false; // ... those newly actives
+
+}
+
+}
+<
+
+
+if( in_array( $player['player_id'], $players_over_maximum_time ) )
+
+$bSkipIncreaseTime = true;
+<
+
+
+$time_to_add = 0;
+
+if( ! $bSkipIncreaseTime )
+
+{
+
+$time_to_add = $additional_time;
+
+self::incReflexionTime( $player['player_id'], $additional_time, $maximum_time );
+
+}
+<
+
+<
+
+
+$active_players[$i]['time_penalty_limit'] = addTimeDeltaToTimestamp( $player['start'], min( $maximum_time, $player['remaining_time']), $clock_night );
+<
+
+
+// Note: DEPRECATED
+
+$active_players[$i]['time_expel_limit'] = min( $player['start']+$asyncTimeLimits['maximum_time_per_move'],
+
+$player['start']+$player['remaining_time']+$time_to_add+$asyncTimeLimits['extra_time_to_think_to_expel'] );
+
+}
+<
+
+
+global $g_user;
+
+$current_player_id = $g_user->is_logged() ? $g_user->get_id() : null;
+
+$players = $this->o_game->loadPlayersBasicInfos();
+<
+
+
+$progression = $this->o_game->getGameStateValue( 'gameprogression') ?: 0;
+
+$res = self::masterNodeRequest( 'asyncTableMove', array(
+
+'table_id' => $this->table_id,
+
+'current' => $current_player_id,
+
+'players' => $active_players,
+
+'all' => array_keys( $players ),
+
+'new_table' => ( isset( $active_players_change ) && isset( $active_players_change['new_table'] ) ) ? $active_players_change['new_table'] : false,
+
+'progression' => $progression,
+
+) );
+
+$this->o_game->ajaxSpecialResult = array( 'tbyt' => $res ); // Turn based your turn
+<
+
+
+}
+
+}
+
+
+
+// If this state specify a state argument function, call it
+
+private function loadStateArgs()
+
+{
+
+if( $this->state_args != null )
+
+return; // Arguments already loads
+
+
+
+if( $this->lock_state_args )
+
+return; // This has been called from an "arg" method => avoid an infinite loop when trying to retrieve current state
+
+
+
+$gamestate = $this->states[ $this->current_state ];
+
+if( isset( $gamestate['args'] ) )
+
+{
+
+if( ! method_exists( $this->o_game, $gamestate['args'] ) )
+
+throw new feException("Invalid 'args' method for state ".$this->current_state.": ".$gamestate['args'] );
+
+
+
+$this->lock_state_args = true;
+
+$this->state_args = $this->o_game->{$gamestate['args']}();
+
+$this->lock_state_args = false;
+
+}
+
+if( isset( $gamestate['descriptionargs'] ) )
+
+{
+
+$this->lock_state_args = true;
+
+$this->state_args = $this->o_game->triggerDescriptionArgsScriptAction( $gamestate['descriptionargs'] );
+
+$this->lock_state_args = false;
+
+}
+<
+
+<
+
+
+}
+
+
+
+function changeActivePlayer( $player_id )
+
+{
+
+$state = self::state();
+<
+
+
+if( $state['type'] == 'activeplayer' )
+
+throw new feException( "Impossible to change active player during activeplayer type state" );
+<
+
+
+$players = $this->o_game->loadPlayersBasicInfos();
+
+if( ! isset( $players[ $player_id ] ) )
+
+throw new feException( "Try to active a player that is not part of the game: ".$player_id );
+<
+
+
+$this->active_player = $player_id;
+
+$this->o_tableinfos->setGlobal( GAMESTATE_ACTIVE_PLAYER, $player_id );
+<
+
+
+$this->o_tableinfos->incGlobal( GAMESTATE_PLAYERTURN_NBR, 1 );
+<
+
+
+// Notify
+
+//$this->o_game->notifyAllPlayers( 'newActivePlayer', '', $player_id );
+
+// Issue: we can't notify now because on many case we are still in previous game state
+
+// => change of active player will be done with the "gameStateChange" notification
+
+// If this is needed one day, we can introduce a "updateActivePlayer" which send explicitely the notification
+
+}
+
+
+
+// Get the "active_player", whatever what is the current state type
+
+// Note: it does NOT mean that this player is active right now, because state type could be "game" or "multiplayer"
+
+public function getPlayerActiveThisTurn()
+
+{
+
+$state = self::state();
+
+return $state['active_player'];
+
+}
+
+
+
+public function getActivePlayerList()
+
+{
+
+$state = self::state( true, false, true );
+
+
+
+if( $state['type'] == 'activeplayer' )
+
+{
+
+return array( $state['active_player'] );
+
+}
+
+else if( $state['type'] == 'multipleactiveplayer' )
+
+{
+
+return $state['multiactive'];
+
+}
+
+else
+
+return array();
+
+}
+
+
+
+public function isMutiactiveState()
+
+{
+
+$state = self::state();
+
+return ( $state['type'] == 'multipleactiveplayer' );
+
+}
+
+
+
+// Return true if specified player is active right now.
+
+// This method take into account game state type, ie nobody is active if game state is "game" and several
+
+// players can be active if game state is "multiplayer"
+
+public function isPlayerActive( $player_id )
+
+{
+
+$state = self::state();
+
+if( $state['type'] == 'activeplayer' )
+
+{
+
+if( $state['active_player'] == $player_id )
+
+return true;
+
+}
+
+else if( $state['type'] == 'multipleactiveplayer' )
+
+{
+
+// Check if current player is "multi active"
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "SELECT ma_is_multiactive player_is_multiactive FROM playermultiactive WHERE ma_player_id='$player_id' LOCK IN SHARE MODE";
+
+else
+
+$sql = "SELECT player_is_multiactive FROM player WHERE player_id='$player_id' LOCK IN SHARE MODE";
+
+$dbres = self::DbQuery( $sql );
+
+$row = mysql_fetch_assoc( $dbres );
+
+if( ! $row )
+
+{
+
+return false; // Note: it happens for Spectators => we must return false instead of throwing an exception here
+
+//throw new feException( "Unable to retrieve multiactivity status for player ".$player_id );
+
+}
+
+
+
+if( $row['player_is_multiactive'] == 1 )
+
+return true;
+
+}
+<
+
+
+return false;
+
+}
+
+
+
+// Change current state and update associated arguments
+
+private function setCurrentState( $new_state )
+
+{
+
+$this->current_state = $new_state;
+
+$this->state_args = null;
+
+}
+<
+
+
+
+
+// Returns the list of players multiple active and load it into this->multiple_active
+
+private function loadMultipleActive( $bLockInShareMode=true )
+
+{
+
+// Note: for multiactive activity, we should always take the last situation as it can evolved anytime.
+
+// => we should face deadlocks if it happens
+
+self::setDeadlockMode( "retry" ); // Players can play at the same time => allow the retry
+<
+
+
+$this->multiple_active = array();
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "SELECT ma_player_id player_id, ma_is_multiactive player_is_multiactive FROM playermultiactive ";
+
+else
+
+$sql = "SELECT player_id, player_is_multiactive FROM player ";
+<
+
+
+if( $bLockInShareMode )
+
+$sql .= "LOCK IN SHARE MODE ";
+
+$dbres = self::DbQuery( $sql );
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+if( $row['player_is_multiactive'] == 1 )
+
+$this->multiple_active[] = $row['player_id'];
+
+}
+
+}
+
+
+
+public function setAllPlayersMultiactive()
+
+{
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "UPDATE playermultiactive SET ma_is_multiactive='1' WHERE ma_is_multiactive='0'";
+
+else
+
+$sql = "UPDATE player SET player_is_multiactive='1' WHERE player_is_multiactive='0'";
+
+self::DbQuery( $sql );
+
+self::updateMultiactiveOrNextState( '' ); // Not: we are not supposed to go "next step"
+
+}
+
+
+
+public function setAllPlayersNonMultiactive( $next_state )
+
+{
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "UPDATE playermultiactive SET ma_is_multiactive='0' WHERE ma_is_multiactive!='0'";
+
+else
+
+$sql = "UPDATE player SET player_is_multiactive='0' WHERE player_is_multiactive!='0'";
+
+self::DbQuery( $sql );
+
+
+
+$bGoToNextState = self::updateMultiactiveOrNextState( $next_state );
+
+
+
+return $bGoToNextState;
+
+}
+
+
+
+// Set some player multiactive. If none provided, go to next state
+
+public function setPlayersMultiactive( $players, $next_state, $bInactivePlayersNotOnTheList=false )
+
+{
+
+if( count( $players ) == 0 )
+
+{
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "UPDATE playermultiactive SET ma_is_multiactive='0' WHERE ma_is_multiactive!='0'";
+
+else
+
+$sql = "UPDATE player SET player_is_multiactive='0' WHERE player_is_multiactive!='0'";
+
+self::DbQuery( $sql );
+
+}
+
+else
+
+{
+
+if( $bInactivePlayersNotOnTheList )
+
+{
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "UPDATE playermultiactive SET ma_is_multiactive='0' WHERE ma_is_multiactive!='0'";
+
+else
+
+$sql = "UPDATE player SET player_is_multiactive='0' WHERE player_is_multiactive!='0'";
+
+self::DbQuery( $sql );
+
+}
+<
+
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "UPDATE playermultiactive SET ma_is_multiactive='1' WHERE ma_is_multiactive!='1' AND ma_player_id IN ('".implode( "','", $players )."')";
+
+else
+
+$sql = "UPDATE player SET player_is_multiactive='1' WHERE player_is_multiactive!='1' AND player_id IN ('".implode( "','", $players )."')";
+
+self::DbQuery( $sql );
+
+}
+<
+
+
+return self::updateMultiactiveOrNextState( $next_state ); // Not: we are not supposed to go "next step"
+
+}
+
+
+
+public function setPlayerNonMultiactive( $player_id, $next_state )
+
+{
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "SELECT ma_is_multiactive player_is_multiactive FROM playermultiactive WHERE ma_player_id='$player_id'";
+
+else
+
+$sql = "SELECT player_is_multiactive FROM player WHERE player_id='$player_id'";
+
+
+
+if( self::getUniqueValueFromDb( $sql ) != 0 )
+
+{
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "UPDATE playermultiactive SET ma_is_multiactive='0' WHERE ma_player_id='$player_id' ";
+
+else
+
+$sql = "UPDATE player SET player_is_multiactive='0' WHERE player_id='$player_id' ";
+
+self::DbQuery( $sql );
+
+
+
+$bGoToNextState = self::updateMultiactiveOrNextState( $next_state );
+
+
+
+return $bGoToNextState;
+
+}
+
+else
+
+return false;
+
+}
+
+
+
+// Send an update to all players about current multiactive players
+
+// If no players is multiactive, jump to next state
+
+public function updateMultiactiveOrNextState( $next_state_if_none )
+
+{
+
+$bGoToNextState = false;
+
+self::loadMultipleActive( true );
+<
+
+
+self::reflexionTimeUpdate();
+
+
+
+if( count( $this->multiple_active ) == 0 )
+
+{
+
+// Okay, now we now that everyone has set its "player_is_multiactive" to 0, which mean everyone has played.
+
+// BUT: to go to next state, we have to be sure that all players has commited their play ! Because otherwise
+
+// there is a big risk that some player's play won't be taken into account !
+
+// To be sure everything is fine, we wait until the number of active player is really 0 WITHOUT lock in share mode
+
+// (meaning: all change must have been commited to be seen by this request).
+
+/*$time_start = microtime(true);
+
+$bContinue = true;
+
+while( $bContinue )
+
+{
+
+$sql = "SELECT player_id FROM player WHERE player_is_multiactive='1' ";
+
+$dbres = self::DbQuery( $sql );
+
+$wait_for = array();
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+$wait_for[] = $row['player_id'];
+
+}
+
+if( count( $wait_for ) == 0 )
+
+{
+
+// YES: everyone has really really played, and we can go to next step safely
+
+$bContinue = false;
+
+}
+
+else
+
+{
+
+$time_current = microtime(true);
+
+$time = $time_current - $time_start;
+
+if( $time > 5 ) // 5sec
+
+throw new feException( "Sorry, 2 players plays exactly at the same moment. Please retry." );
+
+
+
+self::trace( "Detecting that some player(s) (".implode( ",", $wait_for ).") did not have time to commit his play. Waiting ..." );
+
+sleep( 1 );
+
+}
+
+}*/
+
+
+
+$bGoToNextState = true;
+
+
+
+// The previous approach is not so bad but the problem is we are unable to know from this transaction
+
+// if the other players transactions has been finished (the query without lock is not realiable enough for this)
+
+// Then, if we detect this issue, we throw an exception and the player should retry his query.
+
+if( $this->o_game->bIndependantMultiactiveTable )
+
+$sql = "SELECT COUNT( ma_player_id ) cnt FROM playermultiactive WHERE ma_is_multiactive='1' ";
+
+else
+
+$sql = "SELECT COUNT( player_id ) cnt FROM player WHERE player_is_multiactive='1' ";
+
+$dbres = self::DbQuery( $sql );
+
+$row = mysql_fetch_assoc( $dbres );
+
+if( $row['cnt'] > 0 )
+
+{
+
+// In this case, we treat it as a deadlock
+
+self::trace( "Detecting that some player(s) did not have time to commit his play. Restarting ..." );
+
+sleep( 0 );
+
+throw new feException( "Multiactive player deadlock, restarting action", false, false, FEX_application_deadlock_restart_transaction );
+
+}
+<
+
+
+$this->o_tableinfos->incGlobal( GAMESTATE_PLAYERTURN_NBR, 1 ); // We increment this one here cause it's a common path to all multiactive player turn
+
+$this->nextState( $next_state_if_none );
+
+}
+
+else
+
+{
+
+$this->o_game->notifyAllPlayers( 'gameStateMultipleActiveUpdate', '', $this->multiple_active );
+
+}
+<
+
+
+self::initiateStartReflexionTime();
+
+
+
+return $bGoToNextState;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////
+
+////// REFLEXION TIME MANAGEMENT
+
+//////
+
+
+
+// Return move time limit in seconds
+
+// (note: move time limit = maximum number of seconds allowed for one move, whatever the reflexion time is)
+
+// DEPRECATED (now: unique clock)
+
+function getMoveTimeLimit()
+
+{
+
+
+
+$clock_mode = $this->table_globals[ GAMESTATE_CLOCK_MODE ];
+
+
+
+$time_profile = self::getTimeLimits( $clock_mode, $this->o_game->getCurrentGameName() );
+
+return $time_profile[ 'maximum_time_per_move' ];
+
+}
+
+
+
+function getThisGameTimeLimits()
+
+{
+
+$clock_mode = $this->table_globals[ GAMESTATE_CLOCK_MODE ];
+
+$time_profile = self::getTimeLimits( $clock_mode, $this->o_game->getCurrentGameName() );
+
+return $time_profile;
+
+}
+
+
+
+// Central method to set all time limits for tables, depending on time profile
+
+static function getTimeLimits( $time_profile, $game_name = null )
+
+{
+
+$result = array(
+
+'additional_time_per_move' => null, // If null: depends on each game configuration (realtime fast/medium/slow values defined in backoffice)
+
+'maximum_time_per_move' => null, // DEPRECATED: now there is no more limit by turn
+
+'extra_time_to_think_to_expel' => 5*60, // 5 minutes = default /// DEPRECATED: now you can skip the turn of a player as soon as he is out of time
+
+'initial_time_to_thing' => null // default
+
+);
+
+
+
+if( $time_profile < 10 )
+
+{
+
+// Realtime mode time profile
+
+if( $time_profile == 0 )
+
+{
+
+// Fast
+
+$result['maximum_time_per_move'] = 3*60;
+
+$result['initial_time_to_thing'] = null;
+
+}
+
+else if( $time_profile == 1 )
+
+{
+
+// Medium
+
+$result['maximum_time_per_move'] = 4*60;
+
+$result['initial_time_to_thing'] = null;
+
+}
+
+else if( $time_profile == 2 )
+
+{
+
+// Slow
+
+$result['maximum_time_per_move'] = 5*60;
+
+$result['initial_time_to_thing'] = null;
+
+}
+
+else if( $time_profile == 3 )
+
+{
+
+$result['maximum_time_per_move'] = 5*60; // Old no time limit => 50mn
+
+$result['initial_time_to_thing'] = 60*60;
+
+}
+
+else if( $time_profile == 5 )
+
+{
+
+// Fixed time.
+
+$result['maximum_time_per_move'] = 5*60; // = slow mode
+
+$result['initial_time_to_thing'] = null; // Default = 40mn, to be override
+
+$result['additional_time_per_move'] = 0; // All time = initial time
+
+$result['extra_time_to_think_to_expel'] = 0; // Can be expelled as soon as over time
+
+}
+
+else if( $time_profile == 9 )
+
+{
+
+$average_time_per_move = 30*24*3600; // 30 days
+
+// ====> specific, see special update below
+
+$result['initial_time_to_thing'] = max( 3600*24, $average_time_per_move*3 ); // 3 moves, and a minimum of 24 hours
+
+$result['additional_time_per_move'] = $average_time_per_move;
+
+$result['maximum_time_per_move'] = 3600*24*8; // 8 days
+
+$result['extra_time_to_think_to_expel'] = 48*3600*3;
+
+}
+
+else
+
+throw new feException( "Invalid time profile in getTimeLimits" );
+
+
+
+if( $time_profile != 5 )
+
+{
+
+global $g_config;
+
+if( isset( $g_config['default_initial_time'] ) )
+
+$result['initial_time_to_thing'] = $g_config['default_initial_time'];
+
+}
+
+}
+
+else
+
+{
+
+// Turn based mode time profile
+
+
+
+$average_time_per_move = null;
+
+if( $time_profile == 10 )
+
+{ // 12 moves per day
+
+$average_time_per_move = 0.5*3600; // 30
+
+}
+
+else if( $time_profile == 11 )
+
+{ // 12 moves per day
+
+$average_time_per_move = 1*3600; // 1 hour
+
+}
+
+else if( $time_profile == 12 )
+
+{ // 8 moves per day // (fast turn based)
+
+$average_time_per_move = 1.5*3600; // 1.5 hours
+
+}
+
+else if( $time_profile == 13 )
+
+{ // 4 moves per day
+
+$average_time_per_move = 6*3600; // 6 hours
+
+}
+
+else if( $time_profile == 14 )
+
+{ // 3 moves per day
+
+$average_time_per_move = 8*3600; // 8 hours
+
+}
+
+else if( $time_profile == 15 )
+
+{ // 2 moves per day
+
+$average_time_per_move = 12*3600; // 12 hours
+
+}
+
+else if( $time_profile == 17 )
+
+{ // 1 move per day
+
+$average_time_per_move = 24*3600; // 24 hours
+
+}
+
+else if( $time_profile == 19 )
+
+{ // 1 move per 2 days
+
+$average_time_per_move = 48*3600; // 48 hours
+
+}
+
+else if( $time_profile == 20 )
+
+{
+
+$average_time_per_move = 30*24*3600; // 30 days
+
+// ====> specific, see special update below
+
+}
+
+else if( $time_profile == 21 )
+
+{
+
+// ====> specific, see special update below
+
+$average_time_per_move = 500*3600; // 500 hours
+
+}
+
+else
+
+throw new feException( "Invalid time profile in getTimeLimits" );
+<
+
+
+if( $time_profile <= 12 )
+
+{
+
+// Fast turn based
+
+$result['maximum_time_per_move'] = max( 3600*12, $average_time_per_move*3 ); // Note: min = 12 hours
+
+$result['initial_time_to_thing'] = max( 3600*12, $average_time_per_move*3 ); // 3 moves, and a minimum of 12 hours
+
+}
+
+else
+
+{
+
+// Normal turn based
+
+$result['maximum_time_per_move'] = max( 3600*24, $average_time_per_move*3 ); // Note: min = 24 hours
+
+$result['initial_time_to_thing'] = max( 3600*24, $average_time_per_move*3 ); // 3 moves, and a minimum of 24 hours
+
+}
+
+
+
+$result['additional_time_per_move'] = $average_time_per_move;
+
+$result['extra_time_to_think_to_expel'] = $average_time_per_move*3;
+
+
+
+if( $time_profile == 20 )
+
+{
+
+// No limit => set up extra limits anyway
+
+$result['maximum_time_per_move'] = 3600*24*8; // 8 days
+
+$result['extra_time_to_think_to_expel'] = 48*3600*3;
+
+}
+
+else if( $time_profile == 21 )
+
+{
+
+// Fixed time (ex: for tournaments)
+
+$result['initial_time_to_thing'] = null;
+
+$result['additional_time_per_move'] = 0; // All time = initial time
+
+$result['extra_time_to_think_to_expel'] = 0; // Can be expelled as soon as over time
+
+}
+<
+
+
+}
+<
+
+
+if( $game_name !== null )
+
+{
+
+// See if there is a particular time profile to apply to this game
+
+$gameInfos = Table::getGameInfosForGame( $game_name );
+
+if( isset( $gameInfos['specific_time_profile'] ) )
+
+{
+
+if( isset( $gameInfos['specific_time_profile'][ $time_profile ] ) )
+
+return $gameInfos['specific_time_profile'][ $time_profile ]; // Return THIS time profile instead of normal one
+
+}
+
+}
+
+
+
+return $result;
+
+
+
+}
+
+
+
+// Load current player reflexion time according to current time and remaining reflexion time
+
+// and place it into private variable
+
+// (note: these reflexion times are returned to the client in "reflexion" object)
+
+private function loadReflexionTime()
+
+{
+
+if( $this->reflexion_time != null )
+
+return; // already loads
+<
+
+
+// $move_time_limit = self::getMoveTimeLimit();
+
+
+
+$clock_night = 0;
+
+if( $this->o_game->isAsync() )
+
+{
+
+if( isset($this->table_globals[ GAMESTATE_CLOCK_NIGHT ]) && $this->table_globals[ GAMESTATE_CLOCK_NIGHT ] != 0 )
+
+{
+
+$clock_night = $this->table_globals[ GAMESTATE_CLOCK_NIGHT ];
+
+}
+
+}
+<
+
+
+$this->reflexion_time = array(
+
+'total' => array()
+
+);
+<
+
+
+$sql = "SELECT player_id, player_remaining_reflexion_time,
+
+UNIX_TIMESTAMP( player_start_reflexion_time ) start_reflexion_time, UNIX_TIMESTAMP( NOW() ) now_time
+
+FROM player ";
+
+$dbres = self::DbQuery( $sql );
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+$remaining = $row['player_remaining_reflexion_time'];
+
+if( $row['start_reflexion_time'] != null )
+
+{
+
+// This player is thinking right now => must take into account "start_reflexion_time" for starting point
+
+$reflexion_for = deltaBetweenTimestamp( $row['start_reflexion_time'], $row['now_time'], $clock_night );
+<
+
+
+$remaining -= $reflexion_for;
+
+$this->reflexion_time['total'][ $row['player_id'] ] = $remaining;
+
+}
+
+else
+
+{
+
+// This player is not thinking right now => take "now" as starting point
+
+$this->reflexion_time['total'][ $row['player_id'] ] = $remaining;
+
+}
+
+
+
+}
+
+}
+
+
+
+// Increase local value of reflexion time
+
+public function incReflexionTime( $player_id, $time, $max=null )
+
+{
+
+if( isset( $this->reflexion_time['total'][ $player_id ] ) )
+
+{
+
+if( $max === null )
+
+$this->reflexion_time['total'][ $player_id ] += $time;
+
+else
+
+$this->reflexion_time['total'][ $player_id ] = min( $max, $this->reflexion_time['total'][ $player_id ]+$time );
+<
+
+
+}
+
+$this->o_game->notifyAllPlayers( 'updateReflexionTime', '', array(
+
+'player_id' => $player_id,
+
+'delta' => $time,
+
+'max' => $max
+
+) );
+
+}
+
+
+
+// This method is called each time game state changed or multiactive players changed (+ all giveExtraTime calls)
+
+// in order to perform clock's related stuff
+
+public function reflexionTimeUpdate()
+
+{
+
+global $g_config;
+<
+
+
+$players = $this->o_game->loadPlayersBasicInfos();
+
+$players_ids = array_keys( $players );
+
+$players_ids_list = " ('".implode( "','", $players_ids )."') ";
+
+$active_players_ids = self::getActivePlayerList();
+
+$active_players_ids_list = " ('".implode( "','", $active_players_ids )."') ";
+<
+
+
+// Get current reflexion time for all active players at this table
+
+$sql = "SELECT player_id, player_remaining_reflexion_time, UNIX_TIMESTAMP( NOW() ) now, UNIX_TIMESTAMP( player_start_reflexion_time ) start_reflexion_time, player_over_time
+
+FROM player ";
+<
+
+
+// Note: standard case:
+
+$sql .= "WHERE player_start_reflexion_time IS NOT NULL
+
+AND player_remaining_reflexion_time IS NOT NULL "; // Note: during first load of the page, player_remaining_reflexion_time could be null...
+<
+
+
+$dbres = self::DbQuery( $sql );
+<
+
+
+$clock_night = 0;
+
+if( $this->o_game->isAsync() )
+
+{
+
+if( isset($this->table_globals[ GAMESTATE_CLOCK_NIGHT ]) && $this->table_globals[ GAMESTATE_CLOCK_NIGHT ] != 0 )
+
+{
+
+$clock_night = $this->table_globals[ GAMESTATE_CLOCK_NIGHT ];
+
+}
+
+}
+<
+
+<
+
+
+$player_to_reflexion_time = array();
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+// If user is no more active, we must
+
+// substract reflexion_time from player's reflexion time
+
+$user_id = $row['player_id'];
+
+$start_reflexion_time = $row['start_reflexion_time'];
+
+$now = $row['now'];
+
+
+
+$reflexion_time = deltaBetweenTimestamp( $start_reflexion_time, $now, $clock_night );
+
+
+
+$move_remaining = $row['player_remaining_reflexion_time'];
+
+$bPlayerOverTime = ($row['player_over_time']==1);
+
+if( $reflexion_time > $move_remaining ) // If over the time for this move (note: "time for this move" include "total time"
+
+{
+
+if( $bPlayerOverTime )
+
+{
+
+// This player already gets a clock penalty
+
+}
+
+else
+
+{
+
+if( ! $g_config['common_time_counter'] )
+
+{
+
+if( ! $this->o_game->isSoloGame() ) // No clock penalty for solo games
+
+{
+
+// Give a clock penalty
+
+$sql = "UPDATE player SET player_over_time='1' WHERE player_id='$user_id'";
+
+self::DbQuery( $sql );
+
+
+
+if( ! $this->o_game->bGameAbandonForced )
+
+{
+
+self::masterNodeRequest( 'clockPenalty', array(
+
+'player_id' => $user_id,
+
+'table_id' => $this->table_id
+
+) );
+
+}
+
+}
+
+}
+
+}
+
+}
+
+
+
+if( ( $reflexion_time > $move_remaining ) && $g_config['no_move_on_extratime'] && !isset( $this->o_game->bThisIsConcede ) && !$this->o_game->bGameAbandonForced && !$this->o_game->bGameAbandonByTournamentTimeout )
+
+throw new feException( _("Time is over!"), true );
+
+
+
+if( ! $g_config['common_time_counter'] )
+
+{
+
+// In any case, update the remaining reflexion time
+
+// Reset the start reflexion time to "NOW()" to make sure the time is not substracted twice
+<
+
+
+$clock_mode = $this->table_globals[ GAMESTATE_CLOCK_MODE ];
+<
+
+
+if( $clock_mode >= 0 && $clock_mode <= 3 ) // Realtime games, except tournament ones
+
+{
+
+if( isset( $g_config['force_initial_reflexion_time'] ) )
+
+{
+
+// In this case (ex: Mindlab), all games are with "fixed time limit", so do not
+
+}
+
+else
+
+{
+
+// (Note : we always add +1 sec to take into account request time - little help in favor of the players)
+
+// Important: CANNOT do this for "limited time" (ex: tournament games) because it increases the available time, and the game will be closed by the "endAllGamesThatExceedMaxDuration" tournament cronjob before any players has a negative time.
+
+if( $reflexion_time >= 1 )
+
+$reflexion_time --;
+
+}
+
+}
+<
+
+
+$sql = "UPDATE player SET player_remaining_reflexion_time=player_remaining_reflexion_time-$reflexion_time, player_start_reflexion_time=NOW() WHERE player_id='$user_id' ";
+
+self::DbQuery( $sql );
+
+}
+
+
+
+$player_to_reflexion_time[ $user_id ] = $reflexion_time;
+
+}
+<
+
+
+
+
+$this->reflexion_time = null; // Reset reflexion time
+
+
+
+// Add reflexion time to statistics
+
+foreach( $player_to_reflexion_time as $player_id => $reflexion_time )
+
+{
+
+$this->o_game->incStat( $reflexion_time, 'reflexion_time', $player_id );
+
+}
+
+}
+<
+
+
+// update player_start_reflexion_time field in table DB
+
+// Called at the beginning of a move, in order "player_start_reflexion_time" can be set to "NOW()".
+
+private function initiateStartReflexionTime()
+
+{
+
+global $g_config;
+
+
+
+if( ! $g_config['common_time_counter'] )
+
+{
+
+$active_players_ids = self::getActivePlayerList();
+
+$active_players_ids_list = " ('".implode( "','", $active_players_ids )."') ";
+
+$players = $this->o_game->loadPlayersBasicInfos();
+<
+
+
+$sql = "UPDATE player SET player_start_reflexion_time=NULL";
+
+self::DbQuery( $sql );
+
+
+
+if( count( $active_players_ids ) > 0 )
+
+{
+
+$sql = "UPDATE player SET player_start_reflexion_time=NOW()
+
+WHERE player_id IN ".$active_players_ids_list;
+
+self::DbQuery( $sql );
+
+}
+
+}
+
+}
+<
+
+
+private function isPrivateMasterState() {
+
+$isMultiplayerState = $this->states[$this->current_state]['type'] == 'multipleactiveplayer';
+
+$hasPrivateParallelParameter = array_key_exists('initialprivate', $this->states[$this->current_state]);
+
+return $isMultiplayerState && $hasPrivateParallelParameter;
+
+}
+<
+
+
+function loadPlayerPrivateStates($bSkipStateArgs = false)
+
+{
+
+$this->playerPrivateStates = array();
+<
+
+
+if (sizeof($this->multiple_active) > 0){
+
+$sql = "SELECT player_id, player_state FROM player WHERE player_id IN (".implode( ",", $this->multiple_active ).")";
+
+$dbres = self::DbQuery( $sql );
+
+while( $row = mysql_fetch_assoc( $dbres ) )
+
+{
+
+$privateStateId = $row['player_state'];
+<
+
+
+if ($privateStateId === null) {
+
+$this->playerPrivateStates[ $row['player_id'] ] = null;
+
+} else {
+
+if (!array_key_exists($privateStateId, $this->states))
+
+throw new feException("Player {$row['player_id']} is in an unknown private state $privateStateId");
+
+
+
+$state = $this->states[ $privateStateId ];
+
+$this->playerPrivateStates[ $row['player_id'] ] = $state;
+
+$this->playerPrivateStates[ $row['player_id'] ]["id"] = $privateStateId;
+
+
+
+if (isset($state["args"])){
+
+if (!$bSkipStateArgs) {
+
+$argsMethod = $state["args"];
+
+$this->playerPrivateStates[ $row['player_id'] ]["args"] = $this->o_game->$argsMethod($row['player_id'], $state);
+
+$this->privateStateCacheSkippedArgs = false;
+
+} else {
+
+$this->privateStateCacheSkippedArgs = true;
+
+}
+
+}
+
+}
+<
+
+
+}
+
+}
+<
+
+
+}
+<
+
+
+function getPrivateState($playerId)
+
+{
+
+return $this->state()["private_states"][$playerId];
+
+}
+<
+
+
+function nextPrivateStateForPlayers($ids, $transition) {
+
+foreach ($ids as $id) {
+
+$this->nextPrivateState($id, $transition);
+
+}
+
+}
+<
+
+
+function nextPrivateStateForAllActivePlayers($transition) {
+
+$ids = $this->state()["multiactive"];
+
+$this->nextPrivateStateForPlayers($ids, $transition);
+
+}
+<
+
+
+function nextPrivateState($playerId, $transition)
+
+{
+
+if (!$this->isPrivateMasterState()) {
+
+throw new feException("Private state can only be changed in a multiactive state with initialprivate parameter");
+
+}
+<
+
+
+$currentState = $this->getPrivateState($playerId);
+<
+
+
+if(!isset($currentState['transitions'][$transition]))
+
+throw new feException("Transition '$transition' does not exist in private state {$currentState['name']}");
+<
+
+
+$newStateId = $currentState['transitions'][$transition];
+
+if(!isset($this->states[$newStateId]))
+
+throw new feException("Transition '$transition' in {$currentState['name']} lead to a non-existing state $newStateId");
+<
+
+
+$this->setPrivateState($playerId, $newStateId);
+
+}
+<
+
+
+function setPrivateState($playerId, $newStateId) {
+
+if(!array_key_exists($newStateId, $this->states)) {
+
+throw new feException("State $newStateId doesn't exists");
+
+}
+<
+
+
+if($this->states[$newStateId]['type'] != "private") {
+
+throw new feException("State $newStateId is not defined as a private state");
+
+}
+<
+
+
+$newState = $this->states[$newStateId];
+<
+
+
+self::DbQuery("UPDATE player SET `player_state` = $newStateId WHERE player_id = $playerId");
+<
+
+
+if( $this->playerPrivateStates == null )
+
+$this->playerPrivateStates = array();
+<
+
+
+$this->playerPrivateStates[ $playerId ] = $this->states[ $newStateId ];
+
+$this->playerPrivateStates[ $playerId ]["id"] = $newStateId;
+<
+
+
+// Call action if it exists
+
+if(isset($newState['action'])){
+
+$actionMethod = $newState['action'];
+
+$changedState = $this->o_game->$actionMethod($playerId, $newState);
+
+
+
+// If another transition occured while computing this action, no need to compute the args and send notification
+
+if($changedState === true)
+
+return;
+
+}
+
+
+
+// Compute args if any provided
+
+$args = [];
+
+if(isset($newState['args'])){
+
+$method = $newState['args'];
+
+$args = $this->o_game->$method($playerId, $newState);
+
+$this->playerPrivateStates[ $playerId ]["args"] = $args;
+
+}
+
+
+
+// Update state and args on UI using notification
+
+$this->o_game->notifyPlayer($playerId, "newPrivateState", '', [
+
+'id' => $newStateId,
+
+'args' => $args,
+
+]);
+
+}
+<
+
+
+function initializePrivateStateForAllActivePlayers(){
+
+$ids = $this->state()["multiactive"];
+
+$this->initializePrivateStateForPlayers($ids);
+
+}
+<
+
+
+function initializePrivateStateForPlayers($ids){
+
+foreach ($ids as $id) {
+
+$this->initializePrivateState($id);
+
+}
+
+}
+<
+
+
+function initializePrivateState($playerId){
+
+if (!$this->isPrivateMasterState()) {
+
+throw new feException("Private state can only be changed in a multiactive state with initialprivate parameter");
+
+}
+<
+
+
+$initialStateId = $this->states[$this->current_state]["initialprivate"];
+
+
+
+$this->setPrivateState($playerId, $initialStateId);
+
+}
+<
+
+
+function unsetPrivateState($playerId) {
+
+if (!$this->isPrivateMasterState()) {
+
+throw new feException("Private state can only be changed in a multiactive state with initialprivate parameter");
+
+}
+<
+
+
+self::DbQuery("UPDATE player SET `player_state` = null WHERE player_id = $playerId");
+
+}
+
+
+
+function unsetPrivateStateForPlayers($ids) {
+
+if (!$this->isPrivateMasterState()) {
+
+throw new feException("Private state can only be changed in a multiactive state with initialprivate parameter");
+
+}
+<
+
+
+$ids = explode(",", $ids);
+<
+
+
+self::DbQuery("UPDATE player SET `player_state` = null WHERE player_id in ($$ids)");
+
+}
+
+
+
+function unsetPrivateStateForAllPlayers() {
+
+if (!$this->isPrivateMasterState()) {
+
+throw new feException("Private state can only be changed in a multiactive state with initialprivate parameter");
+
+}
+<
+
+
+self::DbQuery("UPDATE player SET `player_state` = null");
+
+}
+}
+}

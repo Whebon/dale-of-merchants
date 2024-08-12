@@ -53,6 +53,21 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actUseActiveAbility()
+	{
+		self::setAjaxMode();
+
+		/** @var string $chameleon_card_ids */
+		$chameleon_card_ids = self::getArg('chameleon_card_ids', AT_numberlist, true);
+		/** @var string $chameleon_type_ids */
+		$chameleon_type_ids = self::getArg('chameleon_type_ids', AT_numberlist, true);
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actUseActiveAbility( $chameleon_card_ids, $chameleon_type_ids, $card_id );
+		self::ajaxResponse();
+	}
+
 	public function actRequestStallAction()
 	{
 		self::setAjaxMode();

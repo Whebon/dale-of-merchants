@@ -10,7 +10,8 @@ export interface CardType {
     type_displayed: string;             // translated "Technique" or "Passive"
     is_technique: boolean;              // technique or passive
     has_plus: boolean;                  // (is_technique == true) && has a plus sign
-    playable: boolean;                  // (is_technique == true) || has an activated passive ability
+    has_active: boolean;                // (is_technique == false) && has an active ability
+    playable: boolean;                  // (is_technique == true) || (has_active == true)
     value: number;                      // base value of this card
     nbr: number;                        // number of copies of this card deck in the initial deck
     animalfolk: Animalfolk;             // animalfolk set name

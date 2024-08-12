@@ -39,16 +39,19 @@ class DaleEffects {
      * @param int $type_id the effective type of the card that caused the effect (CT).
      * @param int $target (optional) default -1. If the card effect has some kind of target (typically another card_id), use this column to store that information
      * @param int $expires (optonal) default EXPIRES_ON_END_OF_TURN. Describes when this effect will wear off
+     * @return array newly added effect
      */
     function insert(int $card_id, int $type_id, int $target = -1, int $expires = EXPIRES_ON_END_OF_TURN) {
         $sql = "INSERT INTO effect (card_id, type_id, target, expires) VALUES ($card_id, $type_id, $target, $expires) ";
         $this->game->DbQuery($sql);
-        $this->cache[] = array(
+        $row = array(
             "card_id" => $card_id,
             "type_id" => $type_id,
             "target" => $target,
             "expires" => $expires
         );
+        $this->cache[] = $row;
+        return $row;
     }
 
     /**
@@ -143,15 +146,21 @@ class DaleEffects {
     }
 
     /**
-     * Delete the chameleon binding effect for the specified card
+     * Delete and return the chameleon binding effects for the specified card
      * @param int $card_id
-     * @param int $type_id
      */
     function unbindChameleon(int $card_id) {
         $chameleon_type_ids = implode(",", array(CT_FLEXIBLESHOPKEEPER, CT_REFLECTION, CT_GOODOLDTIMES, CT_TRENDSETTING, CT_SEEINGDOUBLES));
         $sql = "DELETE FROM effect WHERE card_id = $card_id AND target >= 0 AND type_id IN ($chameleon_type_ids)";
+        $deleted_rows = array();
+        foreach ($this->cache as $row) {
+            if ($row["card_id"] == $card_id) {
+                $deleted_rows[] = $row;
+            }
+        }
         $this->game->DbQuery($sql);
         $this->loadFromDb();
+        return $deleted_rows;
     }
 
     /**

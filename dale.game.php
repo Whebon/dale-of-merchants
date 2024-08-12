@@ -39,7 +39,8 @@ class Dale extends DaleTableBasic
         $this->initGameStateLabels( array(
             "selectedCard" => 10,
             "resolvingCard" => 11,
-            "cancelableChameleon" => 12
+            "cancelableChameleon" => 12,
+            "cancelableChameleonTypeId" => 13
         ) );
 
         $this->cards = new DaleDeck($this, "onLocationExhausted");
@@ -89,6 +90,7 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("selectedCard", -1);
         $this->setGameStateInitialValue("resolvingCard", -1);
         $this->setGameStateInitialValue("cancelableChameleon", -1);
+        $this->setGameStateInitialValue("cancelableChameleonTypeId", -1);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -403,6 +405,21 @@ class Dale extends DaleTableBasic
         }
     }
 
+    /**
+     * The active player throws away a card from the market deck and notifies all players
+     * @param string $msg notification message
+     */
+    function throwAwayFromMarketDeck(string $msg) {
+        $dbcard = $this->cards->pickCardForLocation(DECK.MARKET, 'unstable');
+        if ($dbcard) {
+            $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
+            $this->notifyAllPlayers('throwAwayFromMarketDeck', $msg, array (
+                'player_name' => $this->getActivePlayerName(),
+                'card' => $dbcard
+            ));
+        }
+    }
+
 
     /**
      * Callback method for when cards need to be drawn from a location, but the location is empty.
@@ -613,6 +630,12 @@ class Dale extends DaleTableBasic
                         $type_id == CT_SEEINGDOUBLES;
         if ($is_bindable) {
             $target = $this->effects->getTarget($dbcard["id"], $type_id);
+            if ($target == CT_GOODOLDTIMES) {
+                $good_old_times_target = $this->effects->getTarget($dbcard["id"], CT_GOODOLDTIMES);
+                if ($good_old_times_target != null && $good_old_times_target != -1) {
+                    $target = $good_old_times_target;
+                }
+            }
             if ($target != null && $target != -1) {
                 return $target;
             }
@@ -728,6 +751,19 @@ class Dale extends DaleTableBasic
                     }
                 }
                 break;
+            case CT_GOODOLDTIMES:
+                array_push($_visited, CT_GOODOLDTIMES);
+                $target = $this->cards->getCardOnTop(DISCARD.MARKET);
+                if ($target) {
+                    $has_valid_target = true;
+                    if (count($_visited) >= 2) {
+                        return true; //other chameleons can copy this for its passive
+                    }
+                    if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                        return true;
+                    }
+                }
+                break;
             case CT_TRENDSETTING:
                 array_push($_visited, CT_TRENDSETTING);
                 $valid_targets = $this->cards->getCardsInLocation(MARKET);
@@ -793,7 +829,7 @@ class Dale extends DaleTableBasic
 
             //enforce the card has not been bound before
             $previous_target = $this->effects->getTarget($card_id, $original_type_id);
-            if ($previous_target != null && $previous_target != -1) {
+            if ($previous_target != null && $previous_target != -1 && $previous_target != CT_GOODOLDTIMES) {
                 $previous_name = $this->card_types[$previous_target]['name'];
                 throw new BgaVisibleSystemException("'$original_name' (card_id = $card_id) is already bound to '$previous_name'");
             }
@@ -900,11 +936,30 @@ class Dale extends DaleTableBasic
             ));
             if ($card_id == $this->getGameStateValue("cancelableChameleon")) {
                 //the resolving (chameleon) card was bound for this reason. undo this.
-                $this->effects->unbindChameleon($card_id);
+                $type_id = $this->getGameStateValue("cancelableChameleonTypeId");
+                $bindings = $this->effects->unbindChameleon($card_id, $type_id);
                 $this->notifyAllPlayers('unbindChameleon', clienttranslate('${original_name} takes back its original form'), array(
-                    "original_name" => $this->card_types[$dbcard["type_arg"]]['name'],
-                    "card_id" => $card_id,
+                    "original_name" => $this->getCardName($dbcard),
+                    "card_id" => $card_id
                 ));
+                if (count($bindings) > 2) {
+                    throw new BgaVisibleSystemException("A chameleon has more than 2 bindings. This should not be possible");
+                }
+                else if (count($bindings) == 2) {
+                    //edge case: chameleon -> good old times (passive) -> technique
+                    //"technique -> good old times" is cancelable
+                    //"good old times -> original chameleon" is not. rebind.
+                    $original_type_id = $this->getTypeId($dbcard);
+                    foreach ($bindings as $binding) {
+                        if ($binding["type_id"] != CT_GOODOLDTIMES) {
+                            $this->effects->insert($card_id, $original_type_id, $binding["target"]);
+                            $this->notifyAllPlayers('bindChameleon', '', array(
+                                "card_id" => $card_id,
+                                "type_id" => $binding["target"]
+                            ));
+                        }
+                    }
+                }
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
@@ -1268,7 +1323,7 @@ class Dale extends DaleTableBasic
      * Print a message in the client's console
      */
     function clientConsoleLog($msg) {
-        $this->notifyAllPlayers('debugClient', $msg, array('arg' => 'clientConsoleLog', 'msg' => $msg));
+        $this->notifyAllPlayers('debugClient', 'clientConsoleLog', array('arg' => 'clientConsoleLog', 'msg' => $msg));
     }
 
     function d($arg) {
@@ -1367,9 +1422,6 @@ class Dale extends DaleTableBasic
         if ($this->card_types[$type_id]['playable'] == false) {
             throw new BgaUserException($this->_("That card is not playable!"));
         }
-
-        //TODO: active passives
-
         
         //technique
         $this->setGameStateValue("cancelableChameleon", intval($chameleon_card_ids));
@@ -1430,6 +1482,36 @@ class Dale extends DaleTableBasic
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
         }
+    }
+    
+    function actUseActiveAbility($chameleon_card_ids, $chameleon_type_ids, $card_id) {
+        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $card_id);
+        $this->checkAction("actUseActiveAbility");
+
+        $player_id = $this->getActivePlayerId();
+        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $type_id = $this->getTypeId($card);
+        if ($this->card_types[$type_id]['has_active'] == false) {
+            throw new BgaUserException($this->_("That card has no active ability!"));
+        }
+
+        $target = $this->effects->getTarget($card_id, $type_id);
+        if ($target != null && ($type_id != CT_GOODOLDTIMES || $target != CT_GOODOLDTIMES)) {
+            throw new BgaUserException($this->_("That card's active ability has already been used this turn!"));
+        }
+
+        switch($type_id) {
+            case CT_GOODOLDTIMES:
+                $this->throwAwayFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to throw away a card from the market deck'));
+                $effect = $this->effects->insert($card_id, $type_id);
+                $this->notifyAllPlayers('addEffect', '', array("effect" => $effect));
+                break;
+            default:
+                $name = $this->getCardName($card);
+                throw new BgaVisibleSystemException("ACTIVE ABILITY NOT IMPLEMENTED: '$name'");
+        }
+
+        $this->gamestate->nextState("trActiveAbility");
     }
 
     function actSwiftBroker(string $card_ids) {

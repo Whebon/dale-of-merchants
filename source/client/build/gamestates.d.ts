@@ -43,10 +43,24 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
+			'actUseActiveAbility': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
 			'actRequestStallAction': [],
 			'actRequestInventoryAction': [],
 		},
 		'transitions': {
+			'trActiveAbility': 30,
 			'trPurchase': 31,
 			'trFullyResolveTechnique': 33,
 			'trBuild': 35,
@@ -83,9 +97,23 @@ interface GameStates {
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],
+			'actUseActiveAbility': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
 			'actCancel': [],
 		},
 		'transitions': {
+			'trActiveAbility': 31,
 			'trCancel': 30,
 			'trNextPlayer': 41,
 		},
@@ -124,9 +152,23 @@ interface GameStates {
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],
+			'actUseActiveAbility': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
 			'actCancel': [],
 		},
 		'transitions': {
+			'trActiveAbility': 35,
 			'trCancel': 30,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,

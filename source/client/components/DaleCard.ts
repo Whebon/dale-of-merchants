@@ -2,6 +2,7 @@ import { Images } from './Images';
 import { Animalfolk } from './types/Animalfolk';
 import { CardType } from './types/CardType';
 import { DbCard } from './types/DbCard';
+import { DbEffect } from './types/DbEffect';
 
 /**
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
@@ -11,7 +12,9 @@ export class DaleCard {
     private static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>();
     private static readonly cardIdtoEffectiveTypeId: Map<number, number> = new Map<number, number>();
     private static readonly cardIdtoEffectiveTypeIdLocal: Map<number, number> = new Map<number, number>();
+    private static readonly usedActiveAbilities: Set<number> = new Set<number>(); //encoded as <id>*MAX_TYPES + <type_id>
     static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
+    static readonly MAX_TYPES: number = 1000;
 
     static readonly CT_CARDBACK: number = 0;
     static readonly CT_JUNK: number = 1;
@@ -97,6 +100,45 @@ export class DaleCard {
         // }
     }
 
+    /**
+     * Parse effect information from the db
+     * @param effect 
+     */
+    public static addEffect(effect: DbEffect) {
+        //an active passive effect has been used
+        if (DaleCard.hasActiveAbility(+effect.type_id)) {
+            if (+effect.type_id != DaleCard.CT_GOODOLDTIMES || +effect.target != DaleCard.CT_GOODOLDTIMES) {
+                const encoding = (+effect.card_id)*DaleCard.MAX_TYPES+(+effect.type_id)
+                DaleCard.usedActiveAbilities.add(encoding);
+            }
+        }
+
+        //a new chameleon bindings is added
+        switch(+effect.type_id) {
+            case DaleCard.CT_FLEXIBLESHOPKEEPER:
+            case DaleCard.CT_REFLECTION:
+            case DaleCard.CT_GOODOLDTIMES:
+            case DaleCard.CT_TRENDSETTING:
+            case DaleCard.CT_SEEINGDOUBLES:
+                if (+effect.target != -1) {
+                    console.log(`Bind Chameleon: ${+effect.card_id} -> ${+effect.target}`);
+                    DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Should be called when a turn ends. Removes all effects that last until end of turn.
+     */
+    public static removeEndOfTurnEffects() {
+        console.log("removeEndOfTurnEffects");
+        DaleCard.usedActiveAbilities.clear();
+        DaleCard.unbindAllChameleons();
+    }
+
     /** 
      * Uniquely defines the original appearance of a card (not to be confused with tehcnique/passive typing). 
      * Cards with the same type_id are indistinguishable up to their ids.
@@ -114,9 +156,12 @@ export class DaleCard {
      * Returns the effective type_id of this card (after applying chameleon targets)
      * */
     public get effective_type_id(): number {
-        let _type_id = DaleCard.cardIdtoEffectiveTypeId.get(this.id);
+        //local type id is more important than the commited type id. Example:
+        //flexible shopkeeper -> good old times passive (committed binding)
+        //flexible shopkeeper -> gift voucher (local binding)
+        let _type_id = DaleCard.cardIdtoEffectiveTypeIdLocal.get(this.id);
         if (_type_id == undefined) {
-            _type_id = DaleCard.cardIdtoEffectiveTypeIdLocal.get(this.id)
+            _type_id = DaleCard.cardIdtoEffectiveTypeId.get(this.id)
         }
         if (_type_id == undefined) {
             return this.original_type_id;
@@ -142,7 +187,7 @@ export class DaleCard {
             type_id == DaleCard.CT_GOODOLDTIMES ||
             type_id == DaleCard.CT_TRENDSETTING ||
             type_id == DaleCard.CT_SEEINGDOUBLES
-        ) ;
+        );
     }
 
     /**
@@ -150,6 +195,7 @@ export class DaleCard {
      * @param effective_type_id new type id this card should be bound to
      */
     public bindChameleonLocal(effective_type_id: number) {
+        console.log("BIND!");
         DaleCard.cardIdtoEffectiveTypeIdLocal.set(this.id, effective_type_id);
     }
 
@@ -245,6 +291,25 @@ export class DaleCard {
 
     public static isPlayable(type_id: number): boolean {
         return DaleCard.cardTypes[type_id]!.playable
+    }
+    
+    /**
+     * @returns `true` if this card has an unused active ability
+     */
+    public hasActiveAbility(): boolean {
+        const type_id = this.effective_type_id;
+        if (!DaleCard.hasActiveAbility(type_id)) {
+            return false;
+        }
+        const encoding = this.id * DaleCard.MAX_TYPES + type_id;
+        return !DaleCard.usedActiveAbilities.has(encoding);
+    }
+
+    /**
+     * @returns `true` if this card type can have an active ability
+     */
+    public static hasActiveAbility(type_id: number): boolean {
+        return DaleCard.cardTypes[type_id]!.has_active
     }
 
     private getTooltipContent(): string {

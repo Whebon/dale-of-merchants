@@ -1,8 +1,6 @@
 import { DaleCard } from "../DaleCard";
 import { DaleStock } from "../DaleStock";
-import { MarketBoard } from "../MarketBoard";
 import { Pile } from "../Pile";
-import { Stall } from "../Stall";
 import { DaleLocation } from "./DaleLocation";
 
 /**
