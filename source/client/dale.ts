@@ -476,13 +476,22 @@ class Dale extends Gamegui
 				break;
 			case DaleCard.CT_GOODOLDTIMES:
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
-				if (card.hasActiveAbility()) {
+				if (card.hasActiveAbility() && from == this.myHand) {
+					if (!this.myHand.isSelected(card.id)) {
+						console.log("Deselected CT_GOODOLDTIMES");
+						callback(card);
+						return;
+					}
 					this.setClientState('chameleon_goodoldtimes', {
 						descriptionmyturn: _("Good Old Times: ${you} may throw away a card from the market deck or copy the card on top of the market's discard pile")
 					});
 				}
 				else {
-					//TODO: has valid target!!!
+					if (this.marketDiscard.size == 0) {
+						console.log("No valid targets for CT_GOODOLDTIMES");
+						callback(card);
+						return;
+					}
 					this.setClientState('chameleon_goodoldtimes', {
 						descriptionmyturn: requiresPlayable ?
 							_("Good Old Times: ${you} must copy a playable card from the top of the market's discard pile") :
@@ -809,6 +818,7 @@ class Dale extends Gamegui
 			case 'playerTurn':
 				//play card action (technique or active passive)
 				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
+				this.myHand.unselectAll();
 				break;
 			case 'purchase':
 				this.handleChameleonCard(card, this.myHand, this.onPurchaseSelectionChanged);
@@ -878,14 +888,19 @@ class Dale extends Gamegui
 		else if (!card.isPlayable()) {
 			this.showMessage(_("This card cannot be played"), 'error');
 		}
+		else if (card.isTechnique()) {
+			if(this.checkAction('actPlayTechniqueCard')) {
+				this.bgaPerformAction('actPlayTechniqueCard', {
+					card_id: card.id, 
+					...DaleCard.getLocalChameleons()
+				});
+			}
+		}
 		else if (card.hasActiveAbility()) {
 			this.onUseActiveAbility(card);
 		}
-		else if(this.checkAction('actPlayTechniqueCard')) {
-			this.bgaPerformAction('actPlayTechniqueCard', {
-				card_id: card.id, 
-				...DaleCard.getLocalChameleons()
-			});
+		else {
+			this.showMessage(_("This card's ability was already used"), 'error');
 		}
 		this.myHand.unselectAll();
 	}
@@ -953,12 +968,18 @@ class Dale extends Gamegui
 		}
 	}
 	
-	onCancelChameleon() {
+	/**
+	 * To be called from within a chameleon client state. Cancels finding a target for the chameleon bind
+	 * @param unselect (optional) default true. If true, automatically deselect the chameleon card
+	 */
+	onCancelChameleon(unselect: boolean = true) {
 		console.log("onCancelChameleon");
 		console.log(this.chameleonArgs!);
 		//return from the chameleon client state
 		const args = this.chameleonArgs!
-		args.location.unselectItem(args.card.id);
+		if (unselect) {
+			args.location.unselectItem(args.card.id);
+		}
 		args.card.unbindChameleonLocal();
 		this.restoreServerGameState();
 		this.chameleonArgs = undefined;
@@ -1011,8 +1032,10 @@ class Dale extends Gamegui
 	onGoodOldTimesBind() {
 		const topCard = this.marketDiscard.peek();
 		if (!topCard) {
-			console.log("'Good Old Times' has no valid target, therefore it is allowed to bind to itself");
-			this.onConfirmChameleon(this.chameleonArgs!.card);
+			if (this.chameleonArgs!.requiresPlayable) {
+				this.showMessage(_("Good Old Times has no valid target"), 'error');
+			}
+			this.onCancelChameleon(false);
 			return;
 		}
 		this.onConfirmChameleon(topCard);

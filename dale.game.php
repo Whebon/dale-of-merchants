@@ -1731,7 +1731,6 @@ class Dale extends DaleTableBasic
             'nbr' => count($card_ids)
         ));
         
-        
         $this->gamestate->nextState("trNextPlayer");
     }
 

@@ -256,6 +256,9 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
         DaleCard.prototype.isJunk = function () {
             return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
         };
+        DaleCard.prototype.isTechnique = function () {
+            return DaleCard.cardTypes[this.effective_type_id].is_technique;
+        };
         DaleCard.prototype.isPlayable = function () {
             return DaleCard.cardTypes[this.effective_type_id].playable;
         };
@@ -1782,12 +1785,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case DaleCard_6.DaleCard.CT_GOODOLDTIMES:
                     this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
-                    if (card.hasActiveAbility()) {
+                    if (card.hasActiveAbility() && from == this.myHand) {
+                        if (!this.myHand.isSelected(card.id)) {
+                            console.log("Deselected CT_GOODOLDTIMES");
+                            callback(card);
+                            return;
+                        }
                         this.setClientState('chameleon_goodoldtimes', {
                             descriptionmyturn: _("Good Old Times: ${you} may throw away a card from the market deck or copy the card on top of the market's discard pile")
                         });
                     }
                     else {
+                        if (this.marketDiscard.size == 0) {
+                            console.log("No valid targets for CT_GOODOLDTIMES");
+                            callback(card);
+                            return;
+                        }
                         this.setClientState('chameleon_goodoldtimes', {
                             descriptionmyturn: requiresPlayable ?
                                 _("Good Old Times: ${you} must copy a playable card from the top of the market's discard pile") :
@@ -1979,6 +1992,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             switch (this.gamedatas.gamestate.name) {
                 case 'playerTurn':
                     this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
+                    this.myHand.unselectAll();
                     break;
                 case 'purchase':
                     this.handleChameleonCard(card, this.myHand, this.onPurchaseSelectionChanged);
@@ -2040,11 +2054,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else if (!card.isPlayable()) {
                 this.showMessage(_("This card cannot be played"), 'error');
             }
+            else if (card.isTechnique()) {
+                if (this.checkAction('actPlayTechniqueCard')) {
+                    this.bgaPerformAction('actPlayTechniqueCard', __assign({ card_id: card.id }, DaleCard_6.DaleCard.getLocalChameleons()));
+                }
+            }
             else if (card.hasActiveAbility()) {
                 this.onUseActiveAbility(card);
             }
-            else if (this.checkAction('actPlayTechniqueCard')) {
-                this.bgaPerformAction('actPlayTechniqueCard', __assign({ card_id: card.id }, DaleCard_6.DaleCard.getLocalChameleons()));
+            else {
+                this.showMessage(_("This card's ability was already used"), 'error');
             }
             this.myHand.unselectAll();
         };
@@ -2095,11 +2114,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
         };
-        Dale.prototype.onCancelChameleon = function () {
+        Dale.prototype.onCancelChameleon = function (unselect) {
+            if (unselect === void 0) { unselect = true; }
             console.log("onCancelChameleon");
             console.log(this.chameleonArgs);
             var args = this.chameleonArgs;
-            args.location.unselectItem(args.card.id);
+            if (unselect) {
+                args.location.unselectItem(args.card.id);
+            }
             args.card.unbindChameleonLocal();
             this.restoreServerGameState();
             this.chameleonArgs = undefined;
@@ -2140,8 +2162,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onGoodOldTimesBind = function () {
             var topCard = this.marketDiscard.peek();
             if (!topCard) {
-                console.log("'Good Old Times' has no valid target, therefore it is allowed to bind to itself");
-                this.onConfirmChameleon(this.chameleonArgs.card);
+                if (this.chameleonArgs.requiresPlayable) {
+                    this.showMessage(_("Good Old Times has no valid target"), 'error');
+                }
+                this.onCancelChameleon(false);
                 return;
             }
             this.onConfirmChameleon(topCard);

@@ -285,6 +285,10 @@ export class DaleCard {
         return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
     }
 
+    public isTechnique(): boolean {
+        return DaleCard.cardTypes[this.effective_type_id]!.is_technique
+    }
+
     public isPlayable(): boolean {
         return DaleCard.cardTypes[this.effective_type_id]!.playable
     }
