@@ -693,11 +693,11 @@ class Dale extends DaleTableBasic
 
 
     /**
-     * Returns true iff the card is a junk card
+     * Returns true iff the original card is a junk card
      */
     function isJunk(array $dbcard): bool {
-        $card_id = $dbcard["id"];
-        return ($card_id >= 1) && ($card_id <= 5);
+        $type_id = intval($dbcard["type_arg"]);
+        return ($type_id >= 1) && ($type_id <= 5);
     }
 
 //////////////////////////////////////////////////////////////////////////////
