@@ -30,7 +30,7 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
-			'actPlayCard': [{
+			'actPlayTechniqueCard': [{
 				'name': 'chameleon_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,

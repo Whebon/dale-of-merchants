@@ -881,8 +881,8 @@ class Dale extends Gamegui
 		else if (card.hasActiveAbility()) {
 			this.onUseActiveAbility(card);
 		}
-		else if(this.checkAction('actPlayCard')) {
-			this.bgaPerformAction('actPlayCard', {
+		else if(this.checkAction('actPlayTechniqueCard')) {
+			this.bgaPerformAction('actPlayTechniqueCard', {
 				card_id: card.id, 
 				...DaleCard.getLocalChameleons()
 			});

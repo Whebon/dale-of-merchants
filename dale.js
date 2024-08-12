@@ -2043,8 +2043,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else if (card.hasActiveAbility()) {
                 this.onUseActiveAbility(card);
             }
-            else if (this.checkAction('actPlayCard')) {
-                this.bgaPerformAction('actPlayCard', __assign({ card_id: card.id }, DaleCard_6.DaleCard.getLocalChameleons()));
+            else if (this.checkAction('actPlayTechniqueCard')) {
+                this.bgaPerformAction('actPlayTechniqueCard', __assign({ card_id: card.id }, DaleCard_6.DaleCard.getLocalChameleons()));
             }
             this.myHand.unselectAll();
         };

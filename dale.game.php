@@ -1484,9 +1484,9 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPlayCard($chameleon_card_ids, $chameleon_type_ids, $card_id) {
+    function actPlayTechniqueCard($chameleon_card_ids, $chameleon_type_ids, $card_id) {
         $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $card_id);
-        $this->checkAction("actPlayCard");
+        $this->checkAction("actPlayTechniqueCard");
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $type_id = $this->getTypeId($card);
