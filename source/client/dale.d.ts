@@ -121,20 +121,21 @@ declare global {
 			player_id: number
 			discard_id?: number
 			card: DbCard
-			from_temporary?: boolean
+			to_temporary?: boolean
 		}
 		'discardToHandMultiple': {
 			player_id: number
 			discard_id?: number
 			cards: {[card_id: number]: DbCard} //location_arg matters!
 			nbr: number
-			from_temporary?: boolean
+			to_temporary?: boolean
 		}
 		'draw': {
 			player_id: number 
 			_private?: {
 				card: DbCard
 			}
+			deck_player_id?: number
 			to_temporary?: boolean
 		}
 		'drawMultiple': {
@@ -143,6 +144,7 @@ declare global {
 			_private?: {
 				cards: {[card_id: number]: DbCard}
 			}
+			deck_player_id?: number
 			to_temporary?: boolean
 		}
 		'temporaryToHand': {

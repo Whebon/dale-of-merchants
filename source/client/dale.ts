@@ -1391,7 +1391,7 @@ class Dale extends Gamegui
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.log("notif_discardToHand");
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
 		//update the hand sizes
@@ -1400,7 +1400,7 @@ class Dale extends Gamegui
 	
 	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
 		console.log("notif_discardToHandMultiple");
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
 		for (let i in notif.args.cards) {
 			const card = notif.args.cards[i]!;
@@ -1413,11 +1413,12 @@ class Dale extends Gamegui
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
 		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] ?? this.marketDeck : this.myDeck;
 		if (notif.args._private) {
 			//you drew the cards
 			let card = notif.args._private.card
-			stock.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
-			this.myDeck.pop();
+			stock.addDaleCardToStock(DaleCard.of(card), deck.placeholderHTML);
+			deck.pop();
 		}
 		else {
 			//another player drew cards
@@ -1433,12 +1434,14 @@ class Dale extends Gamegui
 		console.log("notif_drawMultiple");
 		console.log(notif.args);
 		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] ?? this.marketDeck : this.myDeck;
+		console.log(deck.size);
 		if (notif.args._private) {
 			//you drew the cards
 			for (let i in notif.args._private?.cards) {
 				let card = notif.args._private.cards[i]!;
-				stock.addDaleCardToStock(DaleCard.of(card), this.myDeck.placeholderHTML);
-				this.myDeck.pop();
+				stock.addDaleCardToStock(DaleCard.of(card), deck.placeholderHTML);
+				deck.pop();
 			}
 		}
 		else {

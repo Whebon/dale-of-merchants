@@ -366,15 +366,82 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Discard multiple cards for a player in the given order
-     * @param int $player_id player that will discard the cards from hand
+     * Draw $nbr cards from your deck and place them into your hand.
      * @param string $msg notification message for all players
+     * @param int $nbr (optional) default 1. number of cards to draw from the specified player's draw pile
+     * @param bool $to_temporary (optional) default false. If true, the cards are placed in temporary. If false, the cards are placed in hand.
+     * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
+     * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
+     */
+    function draw(string $msg, int $nbr = 1, bool $to_temporary = false, string $from_player_id = null, string $to_player_id = null) {
+        if ($from_player_id == null) {
+            $from_player_id = $this->getActivePlayerId();
+        }
+        if ($to_player_id == null) {
+            $to_player_id = $this->getActivePlayerId();
+        }
+        $to_location = $to_temporary ? TEMPORARY.$to_player_id : HAND.$to_player_id;
+        if ($nbr == 1) {
+            $card = $this->cards->pickCardForLocation(DECK.$from_player_id, $to_location);
+            if ($card) {
+                $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array(
+                    "player_id" => $to_player_id,
+                    "player_name" => $this->getPlayerNameById($to_player_id),
+                    "nbr" => 1,
+                    "_private" => array(
+                        "card" => $card
+                    ),
+                    "deck_player_id" => $from_player_id,
+                    "to_temporary" => $to_temporary
+                ));
+            }
+        }
+        else {
+            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$to_player_id, $to_location);
+            $actual_nbr = count($cards);
+            if ($actual_nbr > 0)
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array(
+                "player_id" => $to_player_id,
+                "player_name" => $this->getPlayerNameById($to_player_id),
+                "nbr" => $actual_nbr,
+                "_private" => array(
+                    "cards" => $cards
+                ),
+                "deck_player_id" => $from_player_id,
+                "to_temporary" => $to_temporary
+            ));
+        }
+    }
+
+    /**
+     * Throw away a single specified card from the hand of the active player
+     * @param string $msg notification message for all players
+     * @param array $dbcard card that needs to be thrown away
+     * @param bool $from_temporary (optional) - default false. If `false`, throw away from hand. If `true`, throw away from temporary.
+     */
+    function throwAway(string $msg, array $dbcard, bool $from_temporary = false) {
+        $player_id = $this->getActivePlayerId();
+        $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+        $this->cards->moveCardOnTop($dbcard["id"], $destination);
+        $this->notifyAllPlayers('throwAway', $msg, array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($dbcard), //TODO: i18n for card names
+            "card" => $dbcard,
+            "from_temporary" => $from_temporary
+        ));
+    }
+
+    /**
+     * Discard multiple cards for a player in the given order
+     * @param string $msg notification message for all players
+     * @param int $player_id player that will discard the cards from hand
      * @param array $card_ids cards_ids to be discarded in that order
      * @param array $cards array with exactly the same keys as $card_ids
      * @param array $unordered_cards (optional) - if provided, first discard this collection of unordered cards
      * @param bool $from_temporary (optional) - default false. If `false`, discard from hand. If `true`, discard from temporary.
      */
-    function discardMultiple(int $player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_temporary = false) {
+    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_temporary = false) {
         //1: move the unordered cards to the discard pile (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
@@ -1251,8 +1318,8 @@ class Dale extends DaleTableBasic
         $player_id = $this->getCurrentPlayerId();
         $cards = $this->spawn($name, $nbr);
         $this->discardMultiple(
-            $player_id, 
             clienttranslate('DEBUG: discard'),
+            $player_id, 
             $this->toCardIds($cards),
             $cards
         );
@@ -1433,7 +1500,19 @@ class Dale extends DaleTableBasic
                 break;
             case CT_SHATTEREDRELIC:
                 $this->beginToResolveCard($player_id, $card);
-                $this->gamestate->nextState("trShatteredRelic");
+                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+                if ($handsize == 0) {
+                    //skip the game state and just draw a card
+                    $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to throw away'), array(
+                        "player_name" => $this->getActivePlayerName()
+                    ));
+                    $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
+                    $this->gamestate->nextState("trFullyResolveTechnique");
+                }
+                else {
+                    //resolve shattered relic
+                    $this->gamestate->nextState("trShatteredRelic");
+                }
                 break;
             case CT_SPYGLASS:
                 $cards = $this->cards->pickCardsForLocation(3, DECK.$player_id, TEMPORARY.$player_id);
@@ -1528,8 +1607,8 @@ class Dale extends DaleTableBasic
 
         //discard all
         $this->discardMultiple(
-            $player_id, 
             clienttranslate('Swift Broker: ${player_name} discards their hand'),
+            $player_id, 
             $card_ids, 
             $selected_cards, 
             $non_selected_cards
@@ -1558,25 +1637,8 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
 
-        //throw away a card
-        $destination = $this->isJunk($card) ? JUNKRESERVE : DISCARD.MARKET;
-        $this->cards->moveCardOnTop($card_id, $destination);
-        $this->notifyAllPlayers('throwAway', clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameById($player_id),
-            "card_name" => $this->getCardName($card), //TODO: i18n for card names
-            "card" => $card
-        ));
-
-        //draw a card
-        $card = $this->cards->pickCardForLocation(DECK.$player_id, HAND.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Shattered Relic: ${player_name} draws 1 card'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameById($player_id),
-            "_private" => array(
-                "card" => $card
-            )
-        ));
+        $this->throwAway(clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), $card);
+        $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
 
         $this->gamestate->nextState("trFullyResolveTechnique");
     }
