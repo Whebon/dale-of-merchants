@@ -386,6 +386,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         __extends(DaleStock, _super);
         function DaleStock() {
             var _this = _super.call(this) || this;
+            _this.selectionIcons = 'none';
             _this.orderedSelectedCardIds = [];
             return _this;
         }
@@ -396,6 +397,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             enumerable: false,
             configurable: true
         });
+        DaleStock.prototype.getSelectionOrder = function () {
+            return this.orderedSelectedCardIds.slice().reverse();
+        };
         DaleStock.prototype.init = function (page, container, hideOuterContainer, onItemCreate, onItemDelete) {
             page.allDaleStocks.push(this);
             for (var i in page.gamedatas.cardTypes) {
@@ -424,17 +428,32 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("hidden");
         };
         DaleStock.prototype.selectItem = function (item_id) {
+            var _a;
             _super.prototype.selectItem.call(this, item_id);
             item_id = +item_id;
             this.orderedSelectedCardIds.push(item_id);
             console.log(this.orderedSelectedCardIds);
+            if (this.selectionIcons != 'none') {
+                var offset = Math.min(7, this.orderedSelectedCardIds.length);
+                if (this.selectionIcons == 'handandpile') {
+                    offset -= 1;
+                }
+                var icon = document.createElement("div");
+                icon.classList.add("selection-icon");
+                icon.setAttribute('style', "\n\t\t\t\tbackground-position: -".concat(offset, "00%;\n\t\t\t"));
+                (_a = $(this.control_name + "_item_" + item_id)) === null || _a === void 0 ? void 0 : _a.appendChild(icon);
+            }
         };
         DaleStock.prototype.unselectItem = function (item_id) {
+            var _a, _b;
             _super.prototype.unselectItem.call(this, item_id);
             item_id = +item_id;
             var index = this.orderedSelectedCardIds.indexOf(item_id);
             this.orderedSelectedCardIds.splice(index, 1);
             console.log(this.orderedSelectedCardIds);
+            if (this.selectionIcons != 'none') {
+                (_b = (_a = $(this.control_name + "_item_" + item_id)) === null || _a === void 0 ? void 0 : _a.querySelector(".selection-icon")) === null || _b === void 0 ? void 0 : _b.remove();
+            }
         };
         DaleStock.prototype.setSelectionMode = function (mode) {
             if (mode == this.selectionMode) {
@@ -442,6 +461,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
             _super.prototype.setSelectionMode.call(this, mode);
             this.orderedSelectedCardIds = [];
+        };
+        DaleStock.prototype.setSelectionIcons = function (type) {
+            this.selectionIcons = type;
         };
         DaleStock.prototype.updateHTML = function (card) {
             console.log("updateHTML for DaleStock '".concat(this.control_name, "'"));
@@ -461,17 +483,14 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
         };
         DaleStock.prototype.addChameleonOverlay = function (card, fadein) {
-            var _a, _b, _c;
             if (fadein === void 0) { fadein = true; }
             var stockitem = $(this.control_name + "_item_" + card.id);
             if (!stockitem) {
                 return;
             }
-            if ((_a = stockitem === null || stockitem === void 0 ? void 0 : stockitem.children) === null || _a === void 0 ? void 0 : _a.length) {
-                if (((_b = stockitem === null || stockitem === void 0 ? void 0 : stockitem.children) === null || _b === void 0 ? void 0 : _b.length) >= 2) {
-                    console.warn("addChameleonOverlay found more than 1 overlay");
-                }
-                if ((_c = stockitem.children[0]) === null || _c === void 0 ? void 0 : _c.classList.contains("type-id-" + card.effective_type_id)) {
+            var old_overlay = stockitem === null || stockitem === void 0 ? void 0 : stockitem.querySelector(".card");
+            if (old_overlay) {
+                if (old_overlay.classList.contains("type-id-" + card.effective_type_id)) {
                     return;
                 }
                 this.removeChameleonOverlay(card);
@@ -486,14 +505,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             card.addTooltip(stockitem);
         };
         DaleStock.prototype.removeChameleonOverlay = function (card) {
-            var _a, _b;
             var stockitem = $(this.control_name + "_item_" + card.id);
-            if ((_a = stockitem === null || stockitem === void 0 ? void 0 : stockitem.children) === null || _a === void 0 ? void 0 : _a.length) {
-                if (((_b = stockitem === null || stockitem === void 0 ? void 0 : stockitem.children) === null || _b === void 0 ? void 0 : _b.length) >= 2) {
-                    console.warn("removeChameleonOverlay found more than 1 overlay");
-                }
-                var overlay = stockitem.children[0];
-                dojo.fadeOut({ node: overlay, onEnd: function (node) { dojo.destroy(node); } }).play();
+            var old_overlay = stockitem === null || stockitem === void 0 ? void 0 : stockitem.querySelector(".card");
+            if (old_overlay) {
+                dojo.fadeOut({ node: old_overlay, onEnd: function (node) { dojo.destroy(node); } }).play();
                 card.addTooltip(stockitem);
             }
         };
@@ -1586,6 +1601,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'purchase':
                     var purchaseArgs = args.args;
                     console.log(purchaseArgs);
+                    this.myHand.setSelectionIcons('pile');
                     this.myHand.setSelectionMode(2);
                     this.market.setSelected(purchaseArgs.pos, true);
                     break;
@@ -1594,15 +1610,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.onBuildSelectionChanged();
                     break;
                 case 'inventory':
+                    this.myHand.setSelectionIcons('pile');
                     this.myHand.setSelectionMode(2);
                     break;
                 case 'swiftBroker':
+                    this.myHand.setSelectionIcons('pile');
                     this.myHand.setSelectionMode(2);
                     break;
                 case 'shatteredRelic':
                     this.myHand.setSelectionMode(1);
                     break;
                 case 'spyglass':
+                    this.myTemporary.setSelectionIcons('handandpile');
                     this.myTemporary.setSelectionMode(2);
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -1644,6 +1663,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.setSelectionMode("none");
                     break;
                 case 'purchase':
+                    this.myHand.setSelectionIcons('none');
                     this.myHand.setSelectionMode(0);
                     this.market.unselectAll();
                     break;
@@ -1652,15 +1672,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'inventory':
+                    this.myHand.setSelectionIcons('none');
                     this.myHand.setSelectionMode(0);
                     break;
                 case 'swiftBroker':
+                    this.myHand.setSelectionIcons('none');
                     this.myHand.setSelectionMode(0);
                     break;
                 case 'shatteredRelic':
                     this.myHand.setSelectionMode(0);
                     break;
                 case 'spyglass':
+                    this.myTemporary.setSelectionIcons('none');
                     this.myTemporary.setSelectionMode(0);
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2044,7 +2067,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onPurchase = function () {
             if (this.checkAction('actPurchase')) {
-                this.bgaPerformAction('actPurchase', __assign({ funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds) }, DaleCard_6.DaleCard.getLocalChameleons()));
+                this.bgaPerformAction('actPurchase', __assign({ funds_card_ids: this.arrayToNumberList(this.myHand.getSelectionOrder()) }, DaleCard_6.DaleCard.getLocalChameleons()));
             }
         };
         Dale.prototype.onPlayCard = function (card) {
@@ -2178,26 +2201,27 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onInventoryAction = function () {
             if (this.checkAction("actInventoryAction")) {
                 this.bgaPerformAction('actInventoryAction', {
-                    ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
+                    ids: this.arrayToNumberList(this.myHand.getSelectionOrder())
                 });
             }
         };
         Dale.prototype.onSwiftBroker = function () {
             if (this.checkAction("actSwiftBroker")) {
                 this.bgaPerformAction('actSwiftBroker', {
-                    card_ids: this.arrayToNumberList(this.myHand.orderedSelectedCardIds)
+                    card_ids: this.arrayToNumberList(this.myHand.getSelectionOrder())
                 });
             }
         };
         Dale.prototype.onSpyglass = function () {
-            console.log("Sending " + this.arrayToNumberList(this.myTemporary.orderedSelectedCardIds));
-            if (this.myTemporary.orderedSelectedCardIds.length == 0) {
+            var card_ids = this.myTemporary.getSelectionOrder();
+            console.log("Sending " + this.arrayToNumberList(card_ids));
+            if (card_ids.length == 0) {
                 this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
                 return;
             }
             if (this.checkAction("actSpyglass")) {
                 this.bgaPerformAction('actSpyglass', {
-                    card_ids: this.arrayToNumberList(this.myTemporary.orderedSelectedCardIds)
+                    card_ids: this.arrayToNumberList(card_ids)
                 });
             }
         };

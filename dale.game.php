@@ -1635,7 +1635,7 @@ class Dale extends DaleTableBasic
         if (count($card_ids) == 0) {
             throw new BgaUserException($this->_("You must select at least 1 card to place into your hand"));
         }
-        $draw_card_id = array_shift($card_ids);
+        $draw_card_id = array_pop($card_ids); //the last index is the card to draw
         $draw_card = $this->cards->getCardFromLocation($draw_card_id, TEMPORARY.$player_id);
 
         //get the non-selected cards and selected cards to discard

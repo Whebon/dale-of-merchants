@@ -5,15 +5,25 @@ import { DaleCard } from './DaleCard';
 import { Images } from './Images';
 import { DaleLocation } from './types/DaleLocation';
 
+type SelectionIcons = 'none' | 'pile' | 'handandpile';
+
 /**
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock implements DaleLocation {
-	/** Keeps track of the order in which cards in are selected */
-	public orderedSelectedCardIds: number[];
+	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
+	private orderedSelectedCardIds: number[];
+	public selectionIcons: SelectionIcons = 'none';
 
 	public get selectionMode() {
 		return (this as any).selectable;
+	}
+
+	/**
+	 * Get the order of selection as shown by the selection icons
+	 */
+	public getSelectionOrder(): number[] {
+		return this.orderedSelectedCardIds.slice().reverse();
 	}
 
 	constructor(){
@@ -90,6 +100,18 @@ export class DaleStock extends Stock implements DaleLocation {
 		item_id = +item_id;
 		this.orderedSelectedCardIds.push(item_id);
 		console.log(this.orderedSelectedCardIds);
+		if (this.selectionIcons != 'none') {
+			let offset = Math.min(7, this.orderedSelectedCardIds.length);
+			if (this.selectionIcons == 'handandpile') {
+				offset -= 1;
+			}
+			const icon = document.createElement("div");
+			icon.classList.add("selection-icon");
+			icon.setAttribute('style', `
+				background-position: -${offset}00%;
+			`);
+			$(this.control_name+"_item_"+item_id)?.appendChild(icon);
+		}
 	}
 
 	/**
@@ -103,6 +125,9 @@ export class DaleStock extends Stock implements DaleLocation {
 		const index = this.orderedSelectedCardIds.indexOf(item_id);
 		this.orderedSelectedCardIds.splice(index, 1);
 		console.log(this.orderedSelectedCardIds);
+		if (this.selectionIcons != 'none') {
+			$(this.control_name+"_item_"+item_id)?.querySelector(".selection-icon")?.remove();
+		}
 	}
 
 	/**
@@ -115,6 +140,10 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 		super.setSelectionMode(mode);
 		this.orderedSelectedCardIds = [];
+	}
+
+	public setSelectionIcons(type: SelectionIcons) {
+		this.selectionIcons = type;
 	}
 
 	/**
@@ -170,11 +199,9 @@ export class DaleStock extends Stock implements DaleLocation {
 		if (!stockitem) {
 			return;
 		}
-		if (stockitem?.children?.length) {
-			if (stockitem?.children?.length >= 2) {
-				console.warn("addChameleonOverlay found more than 1 overlay")
-			}
-			if (stockitem.children[0]?.classList.contains("type-id-"+card.effective_type_id)) {
+		const old_overlay = stockitem?.querySelector(".card");
+		if (old_overlay) {
+			if (old_overlay.classList.contains("type-id-"+card.effective_type_id)) {
 				return;
 			}
 			this.removeChameleonOverlay(card);
@@ -195,12 +222,9 @@ export class DaleStock extends Stock implements DaleLocation {
 	 */
 	public removeChameleonOverlay(card: DaleCard) {
 		const stockitem = $(this.control_name+"_item_"+card.id);
-		if (stockitem?.children?.length) {
-			if (stockitem?.children?.length >= 2) {
-				console.warn("removeChameleonOverlay found more than 1 overlay")
-			}
-			const overlay = stockitem.children[0] as HTMLElement;
-			dojo.fadeOut({node: overlay, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
+		const old_overlay = stockitem?.querySelector(".card") as HTMLElement;
+		if (old_overlay) {
+			dojo.fadeOut({node: old_overlay, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
 			card.addTooltip(stockitem as HTMLElement);
 		}
 	}
