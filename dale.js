@@ -2061,10 +2061,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else if (pile === this.marketDeck) {
                 this.onMarketDeckSelectionChanged(pile, card);
             }
-            switch (this.gamedatas.gamestate.name) {
-                case 'chameleon_reflection':
-                    this.onConfirmChameleon(card);
-                    break;
+            else {
+                this.onOtherDiscardPileSelectionChanged(pile, card);
             }
         };
         Dale.prototype.onMyDiscardPileSelectionChanged = function (pile, card) {
@@ -2088,6 +2086,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             switch (this.gamedatas.gamestate.name) {
                 case 'chameleon_goodoldtimes':
                     this.onGoodOldTimesPassive();
+                    break;
+            }
+        };
+        Dale.prototype.onOtherDiscardPileSelectionChanged = function (pile, card) {
+            switch (this.gamedatas.gamestate.name) {
+                case 'chameleon_reflection':
+                    this.onConfirmChameleon(card);
                     break;
             }
         };
@@ -2246,6 +2251,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.updateHTML();
         };
         Dale.prototype.onConfirmChameleon = function (target) {
+            console.log("onConfirmChameleon");
             var args = this.chameleonArgs;
             var type_id = target.effective_type_id;
             var isDifferentUnboundChameleon = target.isUnboundChameleon() && type_id != args.card.effective_type_id;
@@ -2278,7 +2284,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.onCancelChameleon();
         };
         Dale.prototype.onGoodOldTimesBind = function () {
+            console.log("onGoodOldTimesBind");
             var topCard = this.marketDiscard.peek();
+            console.log(topCard);
             if (!topCard) {
                 if (this.chameleonArgs.requiresPlayable) {
                     this.showMessage(_("Good Old Times has no valid target"), 'error');

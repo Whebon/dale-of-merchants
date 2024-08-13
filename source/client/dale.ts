@@ -865,11 +865,8 @@ class Dale extends Gamegui
 		else if (pile === this.marketDeck) {
 			this.onMarketDeckSelectionChanged(pile, card);
 		}
-
-		switch(this.gamedatas.gamestate.name) {
-			case 'chameleon_reflection':
-				this.onConfirmChameleon(card);
-				break;
+		else {
+			this.onOtherDiscardPileSelectionChanged(pile, card);
 		}
 	}
 
@@ -901,6 +898,14 @@ class Dale extends Gamegui
 		switch(this.gamedatas.gamestate.name) {
 			case 'chameleon_goodoldtimes':
 				this.onGoodOldTimesPassive();
+				break;
+		}
+	}
+
+	onOtherDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
+		switch(this.gamedatas.gamestate.name) {
+			case 'chameleon_reflection':
+				this.onConfirmChameleon(card);
 				break;
 		}
 	}
@@ -1101,6 +1106,7 @@ class Dale extends Gamegui
 	 * @returns 
 	 */
 	onConfirmChameleon(target: DaleCard) {
+		console.log("onConfirmChameleon");
 		//return from the chameleon client state, but keep the local bindings
 		const args = this.chameleonArgs!;
 		const type_id = target.effective_type_id;
@@ -1138,7 +1144,9 @@ class Dale extends Gamegui
 	}
 
 	onGoodOldTimesBind() {
+		console.log("onGoodOldTimesBind");
 		const topCard = this.marketDiscard.peek();
+		console.log(topCard);
 		if (!topCard) {
 			if (this.chameleonArgs!.requiresPlayable) {
 				this.showMessage(_("Good Old Times has no valid target"), 'error');
