@@ -463,7 +463,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.orderedSelectedCardIds = [];
         };
         DaleStock.prototype.setSelectionIcons = function (type) {
+            var _a;
             this.selectionIcons = type;
+            if (type == 'none') {
+                (_a = $(this.control_name)) === null || _a === void 0 ? void 0 : _a.querySelectorAll(".selection-icon").forEach(function (icon) { return icon.remove(); });
+            }
         };
         DaleStock.prototype.updateHTML = function (card) {
             console.log("updateHTML for DaleStock '".concat(this.control_name, "'"));

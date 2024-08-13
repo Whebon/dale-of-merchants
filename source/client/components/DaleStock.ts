@@ -144,6 +144,9 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	public setSelectionIcons(type: SelectionIcons) {
 		this.selectionIcons = type;
+		if (type == 'none') {
+			$(this.control_name)?.querySelectorAll(".selection-icon").forEach(icon => icon.remove());
+		}
 	}
 
 	/**
