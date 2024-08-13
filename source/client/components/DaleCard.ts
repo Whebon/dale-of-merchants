@@ -61,6 +61,9 @@ export class DaleCard {
 
     public id: number
 
+    //effecst
+    public static winterIsComing = false;
+
     /** 
      * Construct a dale card of a given card id. If this is the first time this card id is constructed, the type_id MUST be provided.
      * @param id unique database id for this card instance.
@@ -113,17 +116,20 @@ export class DaleCard {
             }
         }
 
-        //a new chameleon bindings is added
         switch(+effect.type_id) {
             case DaleCard.CT_FLEXIBLESHOPKEEPER:
             case DaleCard.CT_REFLECTION:
             case DaleCard.CT_GOODOLDTIMES:
             case DaleCard.CT_TRENDSETTING:
             case DaleCard.CT_SEEINGDOUBLES:
+                //a new chameleon bindings is added
                 if (+effect.target != -1) {
                     console.log(`Bind Chameleon: ${+effect.card_id} -> ${+effect.target}`);
                     DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
                 }
+                break;
+            case DaleCard.CT_WINTERISCOMING:
+                DaleCard.winterIsComing = true;
                 break;
             default:
                 break;
@@ -137,6 +143,7 @@ export class DaleCard {
         console.log("removeEndOfTurnEffects");
         DaleCard.usedActiveAbilities.clear();
         DaleCard.unbindAllChameleons();
+        DaleCard.winterIsComing = false;
     }
 
     /** 

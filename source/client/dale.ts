@@ -406,7 +406,13 @@ class Dale extends Gamegui
 				break;
 			case 'build':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
-				this.addActionButtonCancel();
+				if (DaleCard.winterIsComing) {
+					this.setMainTitle(_("Winter Is Coming: you may immediately build an additional stack"));
+					this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
+				}
+				else {
+					this.addActionButtonCancel();
+				}
 				break;
 			case 'inventory':
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
@@ -579,6 +585,15 @@ class Dale extends Gamegui
 				callback(card);
 				break;
 		}
+	}
+
+	/**
+	 * Update the state prompt message displayed
+	 * Code copied from https://studio.boardgamearena.com/doc/BGA_Studio_Cookbook
+	 * @param text new string to display at the main title
+	 */
+	setMainTitle(text: string) {
+		$('pagemaintitletext')!.innerHTML = text;
 	}
 
 	/**
@@ -1038,6 +1053,12 @@ class Dale extends Gamegui
 				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds),
 				...DaleCard.getLocalChameleons()
 			});
+		}
+	}
+	
+	onWinterIsComingSkip() {
+		if(this.checkAction('actWinterIsComingSkip')) {
+			this.bgaPerformAction('actWinterIsComingSkip', {})
 		}
 	}
 

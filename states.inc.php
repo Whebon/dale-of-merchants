@@ -92,10 +92,11 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('${you} must select cards to build in stack ${stack_index_plus_1}'),
 		'type' => 'activeplayer',
 		'args' => 'argStackIndex',
-		'possibleactions' => ['actBuild', 'actUseActiveAbility', 'actCancel'],
+		'possibleactions' => ['actBuild', 'actUseActiveAbility', 'actCancel', 'actWinterIsComingSkip'],
 		'transitions' => array(
 			'trActiveAbility' => 35,
 			'trCancel' => 30,
+			'trWinterIsComing' => 35,
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
 		),

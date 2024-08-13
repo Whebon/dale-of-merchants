@@ -147,6 +147,9 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
                         DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
                     }
                     break;
+                case DaleCard.CT_WINTERISCOMING:
+                    DaleCard.winterIsComing = true;
+                    break;
                 default:
                     break;
             }
@@ -155,6 +158,7 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
             console.log("removeEndOfTurnEffects");
             DaleCard.usedActiveAbilities.clear();
             DaleCard.unbindAllChameleons();
+            DaleCard.winterIsComing = false;
         };
         Object.defineProperty(DaleCard.prototype, "original_type_id", {
             get: function () {
@@ -370,6 +374,7 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
         DaleCard.CT_GIFTVOUCHER = 39;
         DaleCard.CT_TRENDSETTING = 40;
         DaleCard.CT_SEEINGDOUBLES = 41;
+        DaleCard.winterIsComing = false;
         return DaleCard;
     }());
     exports.DaleCard = DaleCard;
@@ -1751,7 +1756,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'build':
                     this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
-                    this.addActionButtonCancel();
+                    if (DaleCard_6.DaleCard.winterIsComing) {
+                        this.setMainTitle(_("Winter Is Coming: you may immediately build an additional stack"));
+                        this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
+                    }
+                    else {
+                        this.addActionButtonCancel();
+                    }
                     break;
                 case 'inventory':
                     this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
@@ -1907,6 +1918,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     callback(card);
                     break;
             }
+        };
+        Dale.prototype.setMainTitle = function (text) {
+            $('pagemaintitletext').innerHTML = text;
         };
         Dale.prototype.updateHTML = function (location, card) {
             if (location) {
@@ -2209,6 +2223,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var autoSortedCards = this.myHand.getSelectedItems();
             if (this.checkAction('actBuild')) {
                 this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(autoSortedCards), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds) }, DaleCard_6.DaleCard.getLocalChameleons()));
+            }
+        };
+        Dale.prototype.onWinterIsComingSkip = function () {
+            if (this.checkAction('actWinterIsComingSkip')) {
+                this.bgaPerformAction('actWinterIsComingSkip', {});
             }
         };
         Dale.prototype.onCancel = function () {

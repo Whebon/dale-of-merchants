@@ -144,9 +144,10 @@
 				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
 				{"name": "card_id", "type": "AT_int"}
 			],
-			"actCancel" : []
+			"actCancel" : [],
+			"actWinterIsComingSkip": []
 		},
-		"transitions": { "trActiveAbility": 35, "trCancel" : 30, "trNextPlayer": 41, "trGameEnd": 99 }
+		"transitions": { "trActiveAbility": 35, "trCancel" : 30, "trWinterIsComing": 35, "trNextPlayer": 41, "trGameEnd": 99 }
 	},
 
 	"40": {

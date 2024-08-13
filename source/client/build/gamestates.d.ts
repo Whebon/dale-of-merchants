@@ -178,10 +178,12 @@ interface GameStates {
 				'typescriptType': number,
 			}],
 			'actCancel': [],
+			'actWinterIsComingSkip': [],
 		},
 		'transitions': {
 			'trActiveAbility': 35,
 			'trCancel': 30,
+			'trWinterIsComing': 35,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
 		},

@@ -653,9 +653,23 @@ class Dale extends DaleTableBasic
     /**
      * @param array $dbcards array of dbcards to scan
      * @param string $card_type effective card type to look for
-     * @return boolean true if the card_type was found
+     * @return ?array first `dbcard` with the desired type id. returns `null` if none was found.
      */
-    function containsTypeId(array $dbcards, int $card_type): int {
+    function getCardWithTypeId(array $dbcards, int $card_type): ?array {
+        foreach ($dbcards as $dbcard) {
+            if ($this->getTypeId($dbcard) == $card_type) {
+                return $dbcard;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param array $dbcards array of dbcards to scan
+     * @param string $card_type effective card type to look for
+     * @return bool true if the card_type was found
+     */
+    function containsTypeId(array $dbcards, int $card_type): bool {
         foreach ($dbcards as $dbcard) {
             if ($this->getTypeId($dbcard) == $card_type) {
                 return true;
@@ -1122,6 +1136,7 @@ class Dale extends DaleTableBasic
      * @param array $cards_from_discard (optional) - cards to add to the stack from discard
      * @return string game state transition to take after building. One of:
      * * trGameEnd
+     * * trWinterIsComing
      * * trNextPlayer
      */
     function build(int $stack_index, array $cards_from_hand, array $cards_from_discard = null) {
@@ -1158,10 +1173,24 @@ class Dale extends DaleTableBasic
             "from" => HAND
         ));
 
+        //Winter is coming
+        $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
+        $winter_is_coming = $this->getCardWithTypeId($cards, CT_WINTERISCOMING);
+        if ($winter_is_coming) {
+            $effect = $this->effects->insert($winter_is_coming["id"], CT_WINTERISCOMING); //ensures building is no longer cancelable
+            $this->notifyAllPlayers('addEffect', clienttranslate('Winter Is Coming: ${player_name} may build an additional stack'), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "effect" => $effect
+            ));
+        }
+
         //Update the player score and end turn
         $win = $this->updateScore($player_id, $stack_index + 1);
         if ($win) {
             return "trGameEnd";
+        }
+        if ($winter_is_coming) {
+            return "trWinterIsComing";
         }
         return "trNextPlayer";
     }
@@ -1444,6 +1473,9 @@ class Dale extends DaleTableBasic
     
     function actCancel() {
         $this->checkAction("actCancel");
+        if ($this->effects->containsEffectOfTypeId(CT_WINTERISCOMING)) {
+            throw new BgaVisibleSystemException("Winter Is Coming cannot be cancelled");
+        }
         $this->abortResolvingCard();
         $this->gamestate->nextState("trCancel");
     }
@@ -1816,6 +1848,17 @@ class Dale extends DaleTableBasic
         //Build the stack
         $transition = $this->build($stack_index, $stack_cards, $stack_cards_from_discard);
         $this->gamestate->nextState($transition);
+    }
+
+    function actWinterIsComingSkip() {
+        $this->checkAction("actWinterIsComingSkip");
+        if (!$this->effects->containsEffectOfTypeId(CT_WINTERISCOMING)) {
+            throw new BgaVisibleSystemException("actWinterIsComingSkip requires a CT_WINTERISCOMING effect");
+        }
+        $this->notifyAllPlayers('message', clienttranslate('Winter is Coming: ${player_name} skips building an additional stack.'), array(
+            "player_name" => $this->getActivePlayerName()
+        ));
+        $this->gamestate->nextState("trNextPlayer");
     }
 
     function actRequestInventoryAction() {

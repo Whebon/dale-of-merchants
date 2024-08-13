@@ -124,6 +124,14 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actWinterIsComingSkip()
+	{
+		self::setAjaxMode();
+
+		$this->game->actWinterIsComingSkip(  );
+		self::ajaxResponse();
+	}
+
 	public function actInventoryAction()
 	{
 		self::setAjaxMode();
