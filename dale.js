@@ -1635,6 +1635,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     break;
+                case 'giftVoucher':
+                    this.market.setSelectionMode(1);
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('rightmoststack');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.selectChameleonCard();
@@ -1706,6 +1709,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     break;
+                case 'giftVoucher':
+                    this.market.setSelectionMode(0);
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('none');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.unselectChameleonCard();
@@ -1762,6 +1768,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
                     break;
                 case 'acorn':
+                    this.addActionButtonCancel();
+                    break;
+                case 'giftVoucher':
                     this.addActionButtonCancel();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2018,6 +2027,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'playerTurn':
                     if (this.checkAction('actRequestMarketAction')) {
                         this.bgaPerformAction('actRequestMarketAction', {
+                            market_card_id: card.id
+                        });
+                    }
+                    break;
+                case 'giftVoucher':
+                    if (this.checkAction("actGiftVoucher")) {
+                        this.bgaPerformAction('actGiftVoucher', {
                             market_card_id: card.id
                         });
                     }
@@ -2307,6 +2323,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['marketSlideRight', 1000],
                 ['marketToHand', 1500],
                 ['swapScheduleStall', 1],
+                ['swapScheduleMarket', 1],
                 ['removeFromStall', 1000],
                 ['discardToHand', 1000],
                 ['discardToHandMultiple', 1000],
@@ -2446,6 +2463,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var schedule = this.playerSchedules[notif.args.schedule_player_id];
             var stall = this.playerStalls[notif.args.stall_player_id];
             stall.swapWithStock(notif.args.stall_card_id, schedule, notif.args.schedule_card_id);
+        };
+        Dale.prototype.notif_swapScheduleMarket = function (notif) {
+            var schedule = this.playerSchedules[notif.args.schedule_player_id];
+            this.market.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
         };
         Dale.prototype.notif_removeFromStall = function (notif) {
             var stall = this.playerStalls[notif.args.player_id];

@@ -1587,6 +1587,16 @@ class Dale extends DaleTableBasic
                 }
                 $this->gamestate->nextState("trAcorn");
                 break;
+            case CT_GIFTVOUCHER:
+                $this->beginToResolveCard($player_id, $card);
+                $marketsize = $this->cards->countCardInLocation(MARKET);
+                if ($marketsize == 0) {
+                    //gift voucher has no effect
+                    $this->gamestate->nextState("trFullyResolveTechnique");
+                    return;
+                }
+                $this->gamestate->nextState("trGiftVoucher");
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -1735,7 +1745,38 @@ class Dale extends DaleTableBasic
         //client: 2. move the new card from schedule to hand
         $this->notifyAllPlayers('cancelTechnique', '', array(
             'player_id' => $schedule_player_id,
-            'card' => $stall_card,
+            'card' => $stall_card
+        ));
+
+        $this->gamestate->nextState("trFullyResolveTechniqueNoDiscard");
+    }
+
+    function actGiftVoucher($market_card_id) {
+        $this->checkAction("actGiftVoucher");
+        $schedule_card_id = $this->getGameStateValue("resolvingCard");
+        $schedule_player_id = $this->getActivePlayerId();
+
+        //get the cards (+enforce they exist in their claimed locations)
+        $schedule_card = $this->cards->getCardFromLocation($schedule_card_id, SCHEDULE.$schedule_player_id);
+        $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
+
+        //swap the cards
+        $this->cards->moveCard($schedule_card_id, MARKET, $market_card["location_arg"]);
+        $this->cards->moveCard($market_card_id, HAND.$schedule_player_id);
+
+        //client: 1. swap the cards
+        $this->notifyAllPlayers('swapScheduleMarket', clienttranslate('Gift Voucher: ${player_name} swaps with a ${card_name}'), array(
+            "player_name" => $this->getActivePlayerName(),
+            "card_name" => $this->getCardName($market_card),
+            "schedule_player_id" => $schedule_player_id,
+			"schedule_card_id" => $schedule_card_id,
+			"market_card_id" => $market_card_id
+        ));
+
+        //client: 2. move the new card from schedule to hand
+        $this->notifyAllPlayers('cancelTechnique', '', array(
+            'player_id' => $schedule_player_id,
+            'card' => $market_card
         ));
 
         $this->gamestate->nextState("trFullyResolveTechniqueNoDiscard");

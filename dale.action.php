@@ -180,4 +180,15 @@ class action_dale extends APP_GameAction
 		$this->game->actAcorn( $stall_player_id, $stall_card_id );
 		self::ajaxResponse();
 	}
+
+	public function actGiftVoucher()
+	{
+		self::setAjaxMode();
+
+		/** @var int $market_card_id */
+		$market_card_id = self::getArg('market_card_id', AT_int, true);
+
+		$this->game->actGiftVoucher( $market_card_id );
+		self::ajaxResponse();
+	}
 }

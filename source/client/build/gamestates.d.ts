@@ -70,6 +70,7 @@ interface GameStates {
 			'trShatteredRelic': 51,
 			'trSpyglass': 52,
 			'trAcorn': 53,
+			'trGiftVoucher': 54,
 		},
 	},
 	31: {
@@ -277,6 +278,24 @@ interface GameStates {
 				'typescriptType': number,
 			}, {
 				'name': 'stall_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trFullyResolveTechniqueNoDiscard': 34,
+		},
+	},
+	54: {
+		'name': 'giftVoucher',
+		'description': 'Gift Voucher: ${actplayer} must select a card in the market to swap with',
+		'descriptionmyturn': 'Gift Voucher: ${you} must select a card in the market to swap with',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actGiftVoucher': [{
+				'name': 'market_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],

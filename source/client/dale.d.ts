@@ -83,6 +83,11 @@ declare global {
 			stall_player_id: number
 			stall_card_id: number
 		}
+		'swapScheduleMarket': {
+			schedule_player_id: number
+			schedule_card_id: number
+			market_card_id: number
+		}
 		'removeFromStall': {
 			player_id: number
 			cards: {[card_id: number]: DbCard}

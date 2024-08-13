@@ -50,6 +50,7 @@ $machinestates = array(
 			'trShatteredRelic' => 51,
 			'trSpyglass' => 52,
 			'trAcorn' => 53,
+			'trGiftVoucher' => 54,
 		),
 	),
 	31 => array(
@@ -158,6 +159,17 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Acorn: ${you} must select a card from an opponent\'s stall to swap with'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actAcorn', 'actCancel'],
+		'transitions' => array(
+			'trCancel' => 30,
+			'trFullyResolveTechniqueNoDiscard' => 34,
+		),
+	),
+	54 => array(
+		'name' => 'giftVoucher',
+		'description' => clienttranslate('Gift Voucher: ${actplayer} must select a card in the market to swap with'),
+		'descriptionmyturn' => clienttranslate('Gift Voucher: ${you} must select a card in the market to swap with'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actGiftVoucher', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
 			'trFullyResolveTechniqueNoDiscard' => 34,

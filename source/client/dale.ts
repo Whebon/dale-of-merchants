@@ -277,6 +277,9 @@ class Dale extends Gamegui
 					}
 				}
 				break;
+			case 'giftVoucher':
+				this.market!.setSelectionMode(1);
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('rightmoststack');
 				this.chameleonArgs?.selectChameleonCard();
@@ -354,6 +357,9 @@ class Dale extends Gamegui
 					}
 				}
 				break;
+			case 'giftVoucher':
+				this.market!.setSelectionMode(0);
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('none');
 				this.chameleonArgs?.unselectChameleonCard();
@@ -417,6 +423,9 @@ class Dale extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
 				break;
 			case 'acorn':
+				this.addActionButtonCancel();
+				break;
+			case 'giftVoucher':
 				this.addActionButtonCancel();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -813,6 +822,13 @@ class Dale extends Gamegui
 					})
 				}
 				break;
+			case 'giftVoucher':
+				if(this.checkAction("actGiftVoucher")) {
+					this.bgaPerformAction('actGiftVoucher', {
+						market_card_id: card.id
+					})
+				}
+				break;
 			case 'chameleon_trendsetting':
 				this.onConfirmChameleon(card);
 				break;
@@ -1166,6 +1182,7 @@ class Dale extends Gamegui
 			['marketSlideRight', 1000],
 			['marketToHand', 1500],
 			['swapScheduleStall', 1],
+			['swapScheduleMarket', 1],
 			['removeFromStall', 1000],
 			['discardToHand', 1000],
 			['discardToHandMultiple', 1000],
@@ -1355,6 +1372,11 @@ class Dale extends Gamegui
 		const schedule = this.playerSchedules[notif.args.schedule_player_id]!
 		const stall = this.playerStalls[notif.args.stall_player_id]!;
 		stall.swapWithStock(notif.args.stall_card_id, schedule, notif.args.schedule_card_id);
+	}
+
+	notif_swapScheduleMarket(notif: NotifAs<'swapScheduleMarket'>) {
+		const schedule = this.playerSchedules[notif.args.schedule_player_id]!
+		this.market!.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
 	}
 	
 	notif_removeFromStall(notif: NotifAs<'removeFromStall'>) {
