@@ -982,23 +982,30 @@ class Dale extends DaleTableBasic
     /**
      * Discard the resolved card stored in "resolvingCard" and notify all players. Makes 3 db calls.
      * @param mixed $player_id id of the owner of the scheduled card
-     * @param int $ct card that that is expected to resolve at this moment
+     * @param bool $should_discard (optional) default true. If true, move the resolved card to discard.
      * @return array dbcard that just resolved
      */
-    function fullyResolveCard(string $player_id) {
+    function fullyResolveCard(string $player_id, bool $should_discard = true) {
         //fully resolve the card from the schedule
         $card_id = $this->getGameStateValue("resolvingCard");
         if ($card_id == -1) {
             throw new Error("Trying to 'fullyResolveCard' without 'beginToResolveCard'");
         }
         $dbcard = $this->cards->getCard($card_id);
-        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
-        $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_name' => $this->getCardName($dbcard),
-            'card' => $dbcard,
-        ));
+        if ($should_discard) {
+            $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
+            $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($dbcard),
+                'card' => $dbcard
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('message', clienttranslate('${player_name} fully resolves their swapping technique'), array(
+                'player_name' => $this->getActivePlayerName(),
+            ));
+        }
         $this->setGameStateValue("resolvingCard", -1);
         return $dbcard;
     }
@@ -1562,6 +1569,24 @@ class Dale extends DaleTableBasic
                 }
                 $this->gamestate->nextState("trFullyResolveTechnique");
                 break;
+            case CT_ACORN:
+                $this->beginToResolveCard($player_id, $card);
+                $stallsize = 0;
+                foreach ($this->players as $opponent_id => $opponent) {
+                    if ($opponent_id != $player_id) {
+                        $stallsize += $this->cards->countCardInLocation(STALL.$opponent_id);
+                        if ($stallsize > 0) {
+                            break;
+                        }
+                    }
+                }
+                if ($stallsize == 0) {
+                    //acorn has no effect
+                    $this->gamestate->nextState("trFullyResolveTechnique");
+                    return;
+                }
+                $this->gamestate->nextState("trAcorn");
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -1682,6 +1707,38 @@ class Dale extends DaleTableBasic
         );
 
         $this->gamestate->nextState("trFullyResolveTechnique");
+    }
+
+    function actAcorn($stall_player_id, $stall_card_id) {
+        $this->checkAction("actAcorn");
+        $schedule_card_id = $this->getGameStateValue("resolvingCard");
+        $schedule_player_id = $this->getActivePlayerId();
+
+        //get the cards (+enforce they exist in their claimed locations)
+        $schedule_card = $this->cards->getCardFromLocation($schedule_card_id, SCHEDULE.$schedule_player_id);
+        $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
+
+        //swap the cards
+        $this->cards->moveCard($schedule_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
+        $this->cards->moveCard($stall_card_id, HAND.$schedule_player_id);
+
+        //client: 1. swap the cards
+        $this->notifyAllPlayers('swapScheduleStall', clienttranslate('Acorn: ${player_name} swaps with a ${card_name}'), array(
+            "player_name" => $this->getActivePlayerName(),
+            "card_name" => $this->getCardName($stall_card),
+            "schedule_player_id" => $schedule_player_id,
+			"schedule_card_id" => $schedule_card_id,
+			"stall_player_id" => $stall_player_id,
+			"stall_card_id" => $stall_card_id
+        ));
+
+        //client: 2. move the new card from schedule to hand
+        $this->notifyAllPlayers('cancelTechnique', '', array(
+            'player_id' => $schedule_player_id,
+            'card' => $stall_card,
+        ));
+
+        $this->gamestate->nextState("trFullyResolveTechniqueNoDiscard");
     }
 
     function actRequestStallAction() {
@@ -1811,6 +1868,21 @@ class Dale extends DaleTableBasic
         //resolve the current resolvingCard
         $player_id = $this->getActivePlayerId();
         $dbcard = $this->fullyResolveCard($player_id);
+        
+        //decide if the player can go again
+        $type_id = $this->getTypeId($dbcard);
+        if ($this->card_types[$type_id]["has_plus"]) {
+            $this->gamestate->nextState("trSamePlayer");
+        }
+        else {
+            $this->gamestate->nextState("trNextPlayer");
+        }
+    }
+
+    function stFullyResolveTechniqueNoDiscard(){
+        //resolve the current resolvingCard
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->fullyResolveCard($player_id, false);
         
         //decide if the player can go again
         $type_id = $this->getTypeId($dbcard);

@@ -69,6 +69,7 @@ interface GameStates {
 			'trSwiftBroker': 50,
 			'trShatteredRelic': 51,
 			'trSpyglass': 52,
+			'trAcorn': 53,
 		},
 	},
 	31: {
@@ -123,6 +124,16 @@ interface GameStates {
 		'description': '',
 		'type': 'game',
 		'action': 'stFullyResolveTechnique',
+		'transitions': {
+			'trSamePlayer': 30,
+			'trNextPlayer': 41,
+		},
+	},
+	34: {
+		'name': 'fullyResolveTechniqueNoDiscard',
+		'description': '',
+		'type': 'game',
+		'action': 'stFullyResolveTechniqueNoDiscard',
 		'transitions': {
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
@@ -252,6 +263,28 @@ interface GameStates {
 		},
 		'transitions': {
 			'trFullyResolveTechnique': 33,
+		},
+	},
+	53: {
+		'name': 'acorn',
+		'description': 'Acorn: ${actplayer} must select a card from an opponent\\\'s stall to swap with',
+		'descriptionmyturn': 'Acorn: ${you} must select a card from an opponent\\\'s stall to swap with',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actAcorn': [{
+				'name': 'stall_player_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'stall_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trFullyResolveTechniqueNoDiscard': 34,
 		},
 	},
 	99: {

@@ -19,6 +19,7 @@ declare(strict_types=1);
 if (false) {
 	/** @var dale $game */
 	$game->stFullyResolveTechnique();
+	$game->stFullyResolveTechniqueNoDiscard();
 	$game->stNextPlayer();
 }
 
@@ -48,6 +49,7 @@ $machinestates = array(
 			'trSwiftBroker' => 50,
 			'trShatteredRelic' => 51,
 			'trSpyglass' => 52,
+			'trAcorn' => 53,
 		),
 	),
 	31 => array(
@@ -68,6 +70,16 @@ $machinestates = array(
 		'description' => '',
 		'type' => 'game',
 		'action' => 'stFullyResolveTechnique',
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trNextPlayer' => 41,
+		),
+	),
+	34 => array(
+		'name' => 'fullyResolveTechniqueNoDiscard',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stFullyResolveTechniqueNoDiscard',
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
@@ -138,6 +150,17 @@ $machinestates = array(
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
 			'trFullyResolveTechnique' => 33,
+		),
+	),
+	53 => array(
+		'name' => 'acorn',
+		'description' => clienttranslate('Acorn: ${actplayer} must select a card from an opponent\'s stall to swap with'),
+		'descriptionmyturn' => clienttranslate('Acorn: ${you} must select a card from an opponent\'s stall to swap with'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actAcorn', 'actCancel'],
+		'transitions' => array(
+			'trCancel' => 30,
+			'trFullyResolveTechniqueNoDiscard' => 34,
 		),
 	),
 	99 => array(

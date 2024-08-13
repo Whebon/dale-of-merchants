@@ -270,6 +270,13 @@ class Dale extends Gamegui
 				this.myTemporary.setSelectionIcons('handandpile');
 				this.myTemporary.setSelectionMode(2);
 				break;
+			case 'acorn':
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						this.playerStalls[player_id]!.setSelectionMode('single');
+					}
+				}
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('rightmoststack');
 				this.chameleonArgs?.selectChameleonCard();
@@ -340,6 +347,13 @@ class Dale extends Gamegui
 				this.myTemporary.setSelectionIcons('none');
 				this.myTemporary.setSelectionMode(0);
 				break;
+			case 'acorn':
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						this.playerStalls[player_id]!.setSelectionMode('none');
+					}
+				}
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('none');
 				this.chameleonArgs?.unselectChameleonCard();
@@ -401,6 +415,9 @@ class Dale extends Gamegui
 				break;
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
+				break;
+			case 'acorn':
+				this.addActionButtonCancel();
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelChameleon();
@@ -763,6 +780,19 @@ class Dale extends Gamegui
 			case 'playerTurn':
 				if(this.checkAction('actRequestStallAction')) {
 					this.bgaPerformAction('actRequestStallAction', {})
+				}
+				break;
+			case 'acorn':
+				for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
+					if (stall == player_stall) {
+						if(this.checkAction("actAcorn")) {
+							this.bgaPerformAction('actAcorn', {
+								stall_player_id: +player_id,
+								stall_card_id: card.id
+							})
+						}
+						break;
+					}
 				}
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1135,6 +1165,7 @@ class Dale extends Gamegui
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 1000],
 			['marketToHand', 1500],
+			['swapScheduleStall', 1],
 			['removeFromStall', 1000],
 			['discardToHand', 1000],
 			['discardToHandMultiple', 1000],
@@ -1319,10 +1350,16 @@ class Dale extends Gamegui
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
+
+	notif_swapScheduleStall(notif: NotifAs<'swapScheduleStall'>) {
+		const schedule = this.playerSchedules[notif.args.schedule_player_id]!
+		const stall = this.playerStalls[notif.args.stall_player_id]!;
+		stall.swapWithStock(notif.args.stall_card_id, schedule, notif.args.schedule_card_id);
+	}
 	
 	notif_removeFromStall(notif: NotifAs<'removeFromStall'>) {
 		//WARNING: SHOULD PROBABLY BE DELETED
-		//TODO: currently unused, but could be used for CT_ACORN
+		//TODO: currently unused
 		const stall = this.playerStalls[notif.args.player_id]!;
 		for (let i in notif.args.cards) {
 			const daleCard = DaleCard.of(notif.args.cards[i]!);

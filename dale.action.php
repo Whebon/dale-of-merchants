@@ -167,4 +167,17 @@ class action_dale extends APP_GameAction
 		$this->game->actSpyglass( $card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actAcorn()
+	{
+		self::setAjaxMode();
+
+		/** @var int $stall_player_id */
+		$stall_player_id = self::getArg('stall_player_id', AT_int, true);
+		/** @var int $stall_card_id */
+		$stall_card_id = self::getArg('stall_card_id', AT_int, true);
+
+		$this->game->actAcorn( $stall_player_id, $stall_card_id );
+		self::ajaxResponse();
+	}
 }

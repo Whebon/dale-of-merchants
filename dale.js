@@ -1628,6 +1628,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myTemporary.setSelectionIcons('handandpile');
                     this.myTemporary.setSelectionMode(2);
                     break;
+                case 'acorn':
+                    for (var player_id in this.gamedatas.players) {
+                        if (+player_id != this.player_id) {
+                            this.playerStalls[player_id].setSelectionMode('single');
+                        }
+                    }
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('rightmoststack');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.selectChameleonCard();
@@ -1692,6 +1699,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myTemporary.setSelectionIcons('none');
                     this.myTemporary.setSelectionMode(0);
                     break;
+                case 'acorn':
+                    for (var player_id in this.gamedatas.players) {
+                        if (+player_id != this.player_id) {
+                            this.playerStalls[player_id].setSelectionMode('none');
+                        }
+                    }
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('none');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.unselectChameleonCard();
@@ -1746,6 +1760,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'spyglass':
                     this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
+                    break;
+                case 'acorn':
+                    this.addActionButtonCancel();
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelChameleon();
@@ -1974,6 +1991,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'playerTurn':
                     if (this.checkAction('actRequestStallAction')) {
                         this.bgaPerformAction('actRequestStallAction', {});
+                    }
+                    break;
+                case 'acorn':
+                    for (var _i = 0, _a = Object.entries(this.playerStalls); _i < _a.length; _i++) {
+                        var _b = _a[_i], player_id = _b[0], player_stall = _b[1];
+                        if (stall == player_stall) {
+                            if (this.checkAction("actAcorn")) {
+                                this.bgaPerformAction('actAcorn', {
+                                    stall_player_id: +player_id,
+                                    stall_card_id: card.id
+                                });
+                            }
+                            break;
+                        }
                     }
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2275,6 +2306,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['fillEmptyMarketSlots', 1],
                 ['marketSlideRight', 1000],
                 ['marketToHand', 1500],
+                ['swapScheduleStall', 1],
                 ['removeFromStall', 1000],
                 ['discardToHand', 1000],
                 ['discardToHandMultiple', 1000],
@@ -2409,6 +2441,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.market.removeCard(notif.args.pos, 'overall_player_board_' + notif.args.player_id);
             }
             this.playerHandSizes[notif.args.player_id].incValue(1);
+        };
+        Dale.prototype.notif_swapScheduleStall = function (notif) {
+            var schedule = this.playerSchedules[notif.args.schedule_player_id];
+            var stall = this.playerStalls[notif.args.stall_player_id];
+            stall.swapWithStock(notif.args.stall_card_id, schedule, notif.args.schedule_card_id);
         };
         Dale.prototype.notif_removeFromStall = function (notif) {
             var stall = this.playerStalls[notif.args.player_id];
