@@ -1243,6 +1243,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             this.stackContainers = [];
             this.selectionMode = "none";
             this.slots = [];
+            this.createNewStack();
         }
         Stall.prototype.createNewStack = function () {
             if (this.slots.length < Stall.MAX_STACKS) {
@@ -1328,7 +1329,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (stack_index >= Stall.MAX_STACKS) {
                 throw new Error("Cannot build beyond the maximum number of ".concat(Stall.MAX_STACKS, " stacks"));
             }
-            while (stack_index >= this.slots.length && this.slots.length < Stall.MAX_STACKS) {
+            while (stack_index >= this.slots.length - 1 && this.slots.length < Stall.MAX_STACKS) {
                 this.createNewStack();
             }
             var stack = this.slots[stack_index];
@@ -1536,7 +1537,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var card = gamedatas.stalls[player_id][+i];
                     this.playerStalls[player_id].insertDbCard(card);
                 }
-                this.playerStalls[player_id].createNewStack();
             }
             this.marketDeck.pushHiddenCards(gamedatas.deckSizes.market);
             for (var i in gamedatas.discardPiles.market) {
@@ -2443,7 +2443,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
             (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.toValue(notif.args.stack_index_plus_1);
-            stall.createNewStack();
             if (notif.args.from == 'hand') {
                 var nbr = Object.keys(notif.args.cards).length;
                 this.playerHandSizes[notif.args.player_id].incValue(-nbr);

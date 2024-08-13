@@ -65,13 +65,14 @@ class DaleDeck extends Deck {
      * @param mixed $card_ids cards to move
      * @param string $stall_location location to move to cards to (must be a stall)
      * @param int $stack_index index of a stack in the stall to put the cards on
+     * @param int $index (optional) default 0. starting index within the stack
      */
-    function moveCardsToStall(array $card_ids, string $stall_location, int $stack_index){
+    function moveCardsToStall(array $card_ids, string $stall_location, int $stack_index, int $index = 0){
         $prefix = substr($stall_location, 0, 4);
         if ($prefix != STALL) {
             throw new BgaVisibleSystemException("moveCardsToStall must be called with a stall location");
         }
-        for ($i=0; $i < count($card_ids); $i++) {
+        for ($i = $index; $i < $index + count($card_ids); $i++) {
             $pos = $stack_index * MAX_STACK_SIZE + $i;
             $this->moveCard($card_ids[$i], $stall_location, $pos);
         }

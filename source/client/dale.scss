@@ -162,8 +162,8 @@
 
 		.stack-container {
 			flex: 1 1; /* Allow items to grow and shrink */
-			background-color: red;
-			border: 2px solid black;
+			// background-color: red;
+			// border: 2px solid black;
 			margin-left: 5px;
 			min-width: 0; /* Ensure items can shrink below their content width */
 			position: relative;

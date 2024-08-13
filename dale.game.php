@@ -1147,10 +1147,12 @@ class Dale extends DaleTableBasic
         $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
 
         //Add the cards to the stack
+        $index = 0;
         if ($cards_from_discard) {
             $this->cards->moveCardsToStall($this->toCardIds($cards_from_discard), STALL.$player_id, $stack_index);
+            $index += count($cards_from_discard);
         }
-        $this->cards->moveCardsToStall($this->toCardIds($cards_from_hand), STALL.$player_id, $stack_index);
+        $this->cards->moveCardsToStall($this->toCardIds($cards_from_hand), STALL.$player_id, $stack_index, $index);
 
         //Notify players about the complete build
         if ($cards_from_discard) {

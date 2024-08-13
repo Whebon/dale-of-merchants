@@ -38,34 +38,8 @@ export class Stall implements CardSlotManager, DaleLocation {
         this.stackContainers = [];
         this.selectionMode = "none";
         this.slots = [];
-        //TODO: this can safely be removed
-        // this.buildIcon = document.createElement("div");
-        // this.buildIcon.classList.add("build-icon");
-        // this.buildIcon.setAttribute('style', `${Images.getCardStyle()};`);
+        this.createNewStack(); //first stack
     }
-
-    //TODO: safely remove this
-    // /**
-    //  * Remove all trailing empty stacks
-    //  */
-    // removeEmptyStacks() {
-    //     for (let stack_index = this.getNumberOfStacks() - 1; stack_index >= 0; stack_index--) {
-    //         const stack = this.slots[stack_index]!
-    //         if (stack.length >= 2) {
-    //             return;
-    //         }
-    //         if (stack.length == 1) {
-    //             if (stack[0]!.hasCard()) {
-    //                 return;
-    //             }
-    //             else {
-    //                 stack[0]!.remove();
-    //                 this.stackContainers[stack_index]!.remove();
-    //                 this.slots[stack_index]!.pop();
-    //             }
-    //         }
-    //     }
-    // }
 
     /**
      * Create a new empty stack in the stall with a single empty slot.
@@ -198,7 +172,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         if (stack_index >= Stall.MAX_STACKS) {
             throw new Error(`Cannot build beyond the maximum number of ${Stall.MAX_STACKS} stacks`);
         }
-        while (stack_index >= this.slots.length && this.slots.length < Stall.MAX_STACKS) {
+        while (stack_index >= this.slots.length-1 && this.slots.length < Stall.MAX_STACKS) { //-1 because we need a trailing empty stack
             this.createNewStack();
         }
         const stack = this.slots[stack_index]!;

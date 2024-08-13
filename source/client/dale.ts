@@ -149,7 +149,6 @@ class Dale extends Gamegui
 				let card = gamedatas.stalls[player_id][+i]!;
 				this.playerStalls[player_id].insertDbCard(card);
 			}
-			this.playerStalls[player_id].createNewStack() //we always need a trailing empty stack
 		}
 
 		//initialize the market deck
@@ -1346,7 +1345,6 @@ class Dale extends Gamegui
 
 		}
 		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
-		stall.createNewStack();
 		//update the hand sizes
 		if (notif.args.from == 'hand') {
 			const nbr = Object.keys(notif.args.cards).length;
