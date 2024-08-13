@@ -422,7 +422,7 @@ $this->card_types = array(
         'has_active' => false,
         'playable' => false,
         'value' => 1,
-        'nbr' => 4,
+        'nbr' => 0,
         'animalfolk' => "Squirrels",
         'animalfolk_displayed' => clienttranslate("Squirrels")
     ),
