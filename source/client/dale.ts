@@ -293,6 +293,8 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				this.chameleonArgs?.selectChameleonCard();
 				break;
+			case 'chameleon_seeingdoubles':
+				this.chameleonArgs?.selectChameleonCard();
 		}
 	}
 
@@ -359,6 +361,8 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.chameleonArgs?.unselectChameleonCard();
 				break;
+			case 'chameleon_seeingdoubles':
+				this.chameleonArgs?.unselectChameleonCard();
 		}
 	}
 
@@ -412,6 +416,9 @@ class Dale extends Gamegui
 				this.addActionButtonCancelChameleon();
 				break;
 			case 'chameleon_trendsetting':
+				this.addActionButtonCancelChameleon();
+				break;
+			case 'chameleon_seeingdoubles':
 				this.addActionButtonCancelChameleon();
 				break;
 		}
@@ -485,7 +492,7 @@ class Dale extends Gamegui
 			case DaleCard.CT_GOODOLDTIMES:
 				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
 				if (card.hasActiveAbility() && from == this.myHand) {
-					if (!this.myHand.isSelected(card.id)) {
+					if (!isChain && !this.myHand.isSelected(card.id)) {
 						console.log("Deselected CT_GOODOLDTIMES");
 						callback(card);
 						return;
@@ -518,6 +525,27 @@ class Dale extends Gamegui
 					descriptionmyturn: requiresPlayable ? 
 						_("Trendsetting: ${you} must copy a playable card in the market") : 
 						_("Trendsetting: ${you} must copy a card in the market")
+				});
+				break;
+			case DaleCard.CT_SEEINGDOUBLES:
+				const items = this.myHand.getAllItems()
+				let has_another_card_in_hand = false;
+				for (let item of items) {
+					if (item.id != card.id) {
+						has_another_card_in_hand = true;
+						break;
+					}
+				}
+				if (!has_another_card_in_hand) {
+					console.log("No valid targets for CT_SEEINGDOUBLES");
+					callback(card);
+					return;
+				}
+				this.chameleonArgs = new ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
+				this.setClientState('chameleon_seeingdoubles', {
+					descriptionmyturn: requiresPlayable ? 
+						_("Seeing Doubles: ${you} must copy a playable card from your hand") : 
+						_("Trendsetting: ${you} must copy another card in your hand")
 				});
 				break;
 			default:
@@ -846,12 +874,18 @@ class Dale extends Gamegui
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
 			case 'chameleon_trendsetting':
+			case 'chameleon_seeingdoubles':
 				const args = this.chameleonArgs!;
 				if (args.card.id == card.id) {
 					this.onCancelChameleon();
 				}
 				else {
-					this.showMessage(_("Please select a valid target for ")+`'${args.card.name}'`, "error");
+					if (this.gamedatas.gamestate.name == 'chameleon_seeingdoubles') {
+						this.onConfirmChameleon(card);
+					}
+					else {
+						this.showMessage(_("Please select a valid target for ")+`'${args.card.name}'`, "error");
+					}
 					if (isAdded) {
 						this.myHand.unselectItem(card_id);
 					}

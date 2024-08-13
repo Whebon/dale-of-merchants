@@ -208,6 +208,7 @@ declare global {
 		'chameleon_reflection': {}
 		'chameleon_goodoldtimes': {}
 		'chameleon_trendsetting': {}
+		'chameleon_seeingdoubles': {}
 	}
 
 	//

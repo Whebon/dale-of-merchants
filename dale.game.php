@@ -781,11 +781,12 @@ class Dale extends DaleTableBasic
 
     /**
      * Returns true if the specified chameleon type is currently able to bind to the specified type. (does a dfs)
+     * @param int chameleon_card_id the original chameleon card id that is attempting to (re)bind
      * @param int chameleon_type_id the chameleon type that is attempting to (re)bind
      * @param int type_id the type it wishes to bind to
      * @param array $_visited chameleon types that have already been attempted and are known to be invalid
      */
-    function isValidBinding(int $chameleon_type_id, int $type_id, array $_visited = array()) {
+    function isValidBinding(int $chameleon_card_id, int $chameleon_type_id, int $type_id, array $_visited = array()) {
         if (in_array($chameleon_type_id, $_visited)) {
             //chameleon cards are allowed to bind to themselves in case of infinite recursion
             return $chameleon_type_id == $type_id;
@@ -800,7 +801,7 @@ class Dale extends DaleTableBasic
                 foreach ($valid_targets as $target) {
                     if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
                         $has_valid_target = true;
-                        if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                        if ($this->isValidBinding($chameleon_card_id, $this->getTypeId($target), $type_id, $_visited)) {
                             return true;
                         }
                     }
@@ -815,7 +816,7 @@ class Dale extends DaleTableBasic
                         $target = $this->cards->getCardOnTop(DISCARD.$player_id);
                         if ($target) {
                             $has_valid_target = true;
-                            if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                            if ($this->isValidBinding($chameleon_card_id, $this->getTypeId($target), $type_id, $_visited)) {
                                 return true;
                             }
                         }
@@ -830,7 +831,7 @@ class Dale extends DaleTableBasic
                     if (count($_visited) >= 2) {
                         return true; //other chameleons can copy this for its passive
                     }
-                    if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                    if ($this->isValidBinding($chameleon_card_id, $this->getTypeId($target), $type_id, $_visited)) {
                         return true;
                     }
                 }
@@ -840,8 +841,21 @@ class Dale extends DaleTableBasic
                 $valid_targets = $this->cards->getCardsInLocation(MARKET);
                 foreach ($valid_targets as $target) {
                     $has_valid_target = true;
-                    if ($this->isValidBinding($this->getTypeId($target), $type_id, $_visited)) {
+                    if ($this->isValidBinding($chameleon_card_id, $this->getTypeId($target), $type_id, $_visited)) {
                         return true;
+                    }
+                }
+                break;
+            case CT_SEEINGDOUBLES:
+                array_push($_visited, CT_SEEINGDOUBLES);
+                $active_player_id = $this->getActivePlayerId();
+                $valid_targets = $this->cards->getCardsInLocation(HAND.$active_player_id);
+                foreach ($valid_targets as $target) {
+                    if ($target["id"] != $chameleon_card_id) { //seeing doubles cannot bind to itself
+                        $has_valid_target = true;
+                        if ($this->isValidBinding($chameleon_card_id, $this->getTypeId($target), $type_id, $_visited)) {
+                            return true;
+                        }
                     }
                 }
                 break;
@@ -891,7 +905,7 @@ class Dale extends DaleTableBasic
             $original_type_id = $this->getTypeId($card);
             $original_name = $this->getCardName($card);
             $new_name = $this->card_types[$new_type_id]['name'];
-            if (!$this->isValidBinding($original_type_id, $new_type_id)) {
+            if (!$this->isValidBinding($card_id, $original_type_id, $new_type_id)) {
                 throw new BgaVisibleSystemException("Unable to bind '$original_name' to '$new_name'");
             }
 

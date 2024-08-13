@@ -1586,7 +1586,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("Ending game setup");
         };
         Dale.prototype.onEnteringState = function (stateName, args) {
-            var _a, _b, _c, _d;
+            var _a, _b, _c, _d, _e;
             console.log('Entering state: ' + stateName);
             if (stateName == 'nextPlayer') {
                 console.log("nextPlayer, expire all effects that last until end of turn");
@@ -1651,10 +1651,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(1);
                     (_d = this.chameleonArgs) === null || _d === void 0 ? void 0 : _d.selectChameleonCard();
                     break;
+                case 'chameleon_seeingdoubles':
+                    (_e = this.chameleonArgs) === null || _e === void 0 ? void 0 : _e.selectChameleonCard();
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
-            var _a, _b, _c, _d;
+            var _a, _b, _c, _d, _e;
             console.log('Leaving state: ' + stateName);
             if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
                 console.log("this.chameleonArgs => don't turn off selection modes");
@@ -1711,6 +1713,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(0);
                     (_d = this.chameleonArgs) === null || _d === void 0 ? void 0 : _d.unselectChameleonCard();
                     break;
+                case 'chameleon_seeingdoubles':
+                    (_e = this.chameleonArgs) === null || _e === void 0 ? void 0 : _e.unselectChameleonCard();
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -1757,6 +1761,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelChameleon();
                     break;
                 case 'chameleon_trendsetting':
+                    this.addActionButtonCancelChameleon();
+                    break;
+                case 'chameleon_seeingdoubles':
                     this.addActionButtonCancelChameleon();
                     break;
             }
@@ -1813,7 +1820,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case DaleCard_6.DaleCard.CT_GOODOLDTIMES:
                     this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
                     if (card.hasActiveAbility() && from == this.myHand) {
-                        if (!this.myHand.isSelected(card.id)) {
+                        if (!isChain && !this.myHand.isSelected(card.id)) {
                             console.log("Deselected CT_GOODOLDTIMES");
                             callback(card);
                             return;
@@ -1846,6 +1853,28 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         descriptionmyturn: requiresPlayable ?
                             _("Trendsetting: ${you} must copy a playable card in the market") :
                             _("Trendsetting: ${you} must copy a card in the market")
+                    });
+                    break;
+                case DaleCard_6.DaleCard.CT_SEEINGDOUBLES:
+                    var items = this.myHand.getAllItems();
+                    var has_another_card_in_hand = false;
+                    for (var _c = 0, items_1 = items; _c < items_1.length; _c++) {
+                        var item = items_1[_c];
+                        if (item.id != card.id) {
+                            has_another_card_in_hand = true;
+                            break;
+                        }
+                    }
+                    if (!has_another_card_in_hand) {
+                        console.log("No valid targets for CT_SEEINGDOUBLES");
+                        callback(card);
+                        return;
+                    }
+                    this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, callback, requiresPlayable, isChain);
+                    this.setClientState('chameleon_seeingdoubles', {
+                        descriptionmyturn: requiresPlayable ?
+                            _("Seeing Doubles: ${you} must copy a playable card from your hand") :
+                            _("Trendsetting: ${you} must copy another card in your hand")
                     });
                     break;
                 default:
@@ -2039,12 +2068,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_reflection':
                 case 'chameleon_goodoldtimes':
                 case 'chameleon_trendsetting':
+                case 'chameleon_seeingdoubles':
                     var args = this.chameleonArgs;
                     if (args.card.id == card.id) {
                         this.onCancelChameleon();
                     }
                     else {
-                        this.showMessage(_("Please select a valid target for ") + "'".concat(args.card.name, "'"), "error");
+                        if (this.gamedatas.gamestate.name == 'chameleon_seeingdoubles') {
+                            this.onConfirmChameleon(card);
+                        }
+                        else {
+                            this.showMessage(_("Please select a valid target for ") + "'".concat(args.card.name, "'"), "error");
+                        }
                         if (isAdded) {
                             this.myHand.unselectItem(card_id);
                         }
@@ -2104,8 +2139,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("onBuildSelectionChanged");
             var items = this.myHand.getSelectedItems();
             var count_nostalgic_items = 0;
-            for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-                var item = items_1[_i];
+            for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
+                var item = items_2[_i];
                 var card_1 = new DaleCard_6.DaleCard(item.id);
                 if (card_1.effective_type_id == DaleCard_6.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
