@@ -393,6 +393,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             var _this = _super.call(this) || this;
             _this.selectionIcons = 'none';
             _this.orderedSelectedCardIds = [];
+            _this.onChangeSelection = function (control_name, item_id) {
+                if (item_id && !this.isSelected(item_id)) {
+                    this.updateSelectionIcons();
+                }
+            };
             return _this;
         }
         Object.defineProperty(DaleStock.prototype, "selectionMode", {
@@ -432,21 +437,40 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             };
             hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("hidden");
         };
-        DaleStock.prototype.selectItem = function (item_id) {
+        DaleStock.prototype.addSelectionIcon = function (item_div, index) {
+            var offset = Math.min(7, index);
+            if (this.selectionIcons == 'pile') {
+                offset += 1;
+            }
+            var icon = document.createElement("div");
+            icon.classList.add("selection-icon");
+            icon.setAttribute('style', "\n\t\t\tbackground-position: -".concat(offset, "00%;\n\t\t"));
+            item_div.appendChild(icon);
+        };
+        DaleStock.prototype.updateSelectionIcons = function () {
             var _a;
+            console.log("updateSelectionIcons");
+            if (this.selectionIcons != 'none') {
+                for (var i = 0; i < this.orderedSelectedCardIds.length; i++) {
+                    var card_id = this.orderedSelectedCardIds[i];
+                    var item_div = $(this.control_name + "_item_" + card_id);
+                    if (item_div) {
+                        (_a = item_div.querySelector(".selection-icon")) === null || _a === void 0 ? void 0 : _a.remove();
+                        this.addSelectionIcon(item_div, i);
+                    }
+                }
+            }
+        };
+        DaleStock.prototype.selectItem = function (item_id) {
             _super.prototype.selectItem.call(this, item_id);
             item_id = +item_id;
             this.orderedSelectedCardIds.push(item_id);
             console.log(this.orderedSelectedCardIds);
             if (this.selectionIcons != 'none') {
-                var offset = Math.min(7, this.orderedSelectedCardIds.length);
-                if (this.selectionIcons == 'handandpile') {
-                    offset -= 1;
+                var item_div = $(this.control_name + "_item_" + item_id);
+                if (item_div) {
+                    this.addSelectionIcon(item_div, this.orderedSelectedCardIds.length - 1);
                 }
-                var icon = document.createElement("div");
-                icon.classList.add("selection-icon");
-                icon.setAttribute('style', "\n\t\t\t\tbackground-position: -".concat(offset, "00%;\n\t\t\t"));
-                (_a = $(this.control_name + "_item_" + item_id)) === null || _a === void 0 ? void 0 : _a.appendChild(icon);
             }
         };
         DaleStock.prototype.unselectItem = function (item_id) {

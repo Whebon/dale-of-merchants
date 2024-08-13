@@ -29,26 +29,11 @@ export class DaleStock extends Stock implements DaleLocation {
 	constructor(){
 		super();
 		this.orderedSelectedCardIds = [];
-		//TODO: safely delete
-		// this.onChangeSelection = function(control_name: string, item_id: number) {
-		// 	item_id = +item_id;
-		// 	const isSelected = this.isSelected(item_id);
-		// 	const index = this.orderedSelectedCardIds.indexOf(item_id);
-		// 	if (!item_id) {
-		// 		this.orderedSelectedCardIds = [];
-		// 	}
-		// 	else if (isSelected && index == -1) {
-		// 		this.orderedSelectedCardIds.push(item_id);
-		// 	}
-		// 	else if (!isSelected && index != -1) {
-		// 		this.orderedSelectedCardIds.splice(index, 1);
-		// 	}
-		// 	else {
-		// 		console.warn("orderedSelectedCardIds might be broken: " + this.orderedSelectedCardIds);
-		// 		this.orderedSelectedCardIds = [];
-		// 	}
-		// 	console.log(this.orderedSelectedCardIds);
-		// }
+		this.onChangeSelection = function(control_name: string, item_id: number) {
+			if (item_id && !this.isSelected(item_id)) {
+				this.updateSelectionIcons();
+			}
+		}
 	}
 	
 	/**
@@ -91,6 +76,41 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	/**
+	 * Adds the correct selection icon to the given item_div
+	 * @param item_div div to add the selection icon to
+	 * @param index index of the item in this.orderedSelectedCardIds
+	 */
+	private addSelectionIcon(item_div: Element, index: number) {
+		let offset = Math.min(7, index);
+		if (this.selectionIcons == 'pile') {
+			offset += 1;
+		}
+		const icon = document.createElement("div");
+		icon.classList.add("selection-icon");
+		icon.setAttribute('style', `
+			background-position: -${offset}00%;
+		`);
+		item_div.appendChild(icon);
+	}
+
+	/**
+	 * Shift selection icons to ensure the icons remain contiguous. Should be called when the user removes an element from the selection.
+	 */
+	private updateSelectionIcons() {
+		console.log("updateSelectionIcons");
+		if (this.selectionIcons != 'none') {
+			for (let i = 0; i < this.orderedSelectedCardIds.length; i++) {
+				const card_id = this.orderedSelectedCardIds[i]!;
+				const item_div = $(this.control_name+"_item_"+card_id);
+				if (item_div) {
+					item_div.querySelector(".selection-icon")?.remove();
+					this.addSelectionIcon(item_div, i);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Selects the item with the specified unique id.
 	 * @param item_id The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
 	 * @returns {void}
@@ -101,16 +121,10 @@ export class DaleStock extends Stock implements DaleLocation {
 		this.orderedSelectedCardIds.push(item_id);
 		console.log(this.orderedSelectedCardIds);
 		if (this.selectionIcons != 'none') {
-			let offset = Math.min(7, this.orderedSelectedCardIds.length);
-			if (this.selectionIcons == 'handandpile') {
-				offset -= 1;
+			const item_div = $(this.control_name+"_item_"+item_id);
+			if (item_div) {
+				this.addSelectionIcon(item_div, this.orderedSelectedCardIds.length-1);
 			}
-			const icon = document.createElement("div");
-			icon.classList.add("selection-icon");
-			icon.setAttribute('style', `
-				background-position: -${offset}00%;
-			`);
-			$(this.control_name+"_item_"+item_id)?.appendChild(icon);
 		}
 	}
 
