@@ -88,11 +88,6 @@ declare global {
 			schedule_card_id: number
 			market_card_id: number
 		}
-		'removeFromStall': {
-			player_id: number
-			cards: {[card_id: number]: DbCard}
-			to: DbLocationPrefix
-		}
 		'throwAway': {
 			player_id: number 
 			card: DbCard

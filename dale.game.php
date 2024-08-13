@@ -98,25 +98,36 @@ class Dale extends DaleTableBasic
         //$this->initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
         // TODO: decide which animalfolk sets to play with
+        $animalfolks = array(
+            ANIMALFOLK_MACAWS, 
+            ANIMALFOLK_SQUIRRELS, 
+            ANIMALFOLK_CHAMELEONS
+        );
+
         //Create the market deck
         $cards = array();
         foreach ($this->card_types as $type_id => $card_type) {
-            $cards[] = array ('type' => 'null', 'type_arg' => $type_id, 'nbr' => $card_type['nbr']);
-            if (count($cards) > 11) break; //todo: remove this
+            if (in_array($card_type['animalfolk'], $animalfolks)) {
+                $cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $card_type['nbr']);
+            }
         }
         $this->cards->createCards($cards, DECK.MARKET);
         $this->cards->shuffle(DECK.MARKET);
 
-        //TODO: set-up ACTUAL initial player decks
-        $junk = array(array('type' => 'null', 'type_arg' => 1, 'nbr' => 5));
-        foreach( $players as $player_id => $player ){
-            $this->cards->createCards($junk, DECK.$player_id);
-            $this->cards->createCards($cards, DECK.$player_id);
+        //Create the initial player decks
+        $nbr_junk = 10 - count($animalfolks);
+        $player_cards = array(array('type' => 'null', 'type_arg' => 1, 'nbr' => $nbr_junk));
+        foreach ($this->card_types as $type_id => $card_type) {
+            if (in_array($card_type['animalfolk'], $animalfolks) && $card_type['value'] == 1) {
+                $player_cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1);
+            }
+        }
+        foreach ($players as $player_id => $player) {
+            $this->cards->createCards($player_cards, DECK.$player_id);
             $this->cards->shuffle(DECK.$player_id);
         }
 
-        //TODO: move this to a setup game state
-        //each player draws an initial hand of 5 cards
+        //Each player draws an initial hand of 5 cards
         foreach($players as $player_id => $player) {
             $cards = $this->cards->pickCardsForLocation(5, DECK.$player_id, HAND.$player_id);
             $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws their initial hand of ${nbr} cards'), array(

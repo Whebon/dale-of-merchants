@@ -48,8 +48,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         if (this.slots.length < Stall.MAX_STACKS) {
             if (this.stackContainers.length > 0) {
                 const prevStackContainer = this.stackContainers[this.stackContainers.length - 1]!;
-                const height = Images.CARD_HEIGHT_S + Images.VERTICAL_STACK_OFFSET_S * (this.slots[this.slots.length - 1]!.length - 1);
-                prevStackContainer.setAttribute('style', `height: ${height}px; max-width: ${Images.CARD_WIDTH_S}px;`); //the last stack containers has a max width (to stay in bounds)
+                prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S}px;`); //the last stack containers has a max width (to stay in bounds)
             }
             const stackContainer = document.createElement("div");
             stackContainer.classList.add("stack-container");
@@ -58,19 +57,29 @@ export class Stall implements CardSlotManager, DaleLocation {
             placeholder.classList.add("placeholder");
             placeholder.setAttribute('style', `${Images.getCardStyle()};`);
             stackContainer.appendChild(placeholder);
-            //TODO: this can safely be removed
-            // stackContainer.appendChild(this.buildIcon);
-            // const buildIconWidth = Images.CARD_WIDTH_S;
-            // this.buildIcon.setAttribute('style', `
-            //     width: ${buildIconWidth}px;
-            //     height: ${buildIconWidth}px;
-            //     left: ${Images.CARD_WIDTH_S / 2}px;
-            //     top: ${Images.CARD_HEIGHT_S / 2}px;
-            // `);
             this.container.appendChild(stackContainer);
             this.stackContainers.push(stackContainer);
             this.slots.push([]);
             this.createNewSlot(this.slots.length - 1);
+        }
+    }
+
+    /**
+     * Update the height of the (first) stack container according to the current maximum stack size
+     */
+    private updateHeight() {
+        const stackContainer = this.stackContainers[0];
+        if (stackContainer) {
+            let maxHeight = 0;
+            for (let stack of this.slots) {
+                maxHeight = Math.max(maxHeight, stack.length);
+            }
+            const y_offset = Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
+            console.log("Update height");
+            console.log(stackContainer.getAttribute('style'));
+            const prevStyleWithoutHeight = stackContainer.getAttribute('style')?.replace(/height:.*px;/, '');
+            console.log(prevStyleWithoutHeight);
+            stackContainer.setAttribute('style', prevStyleWithoutHeight+`height: ${Images.CARD_HEIGHT_S + y_offset}px;`);
         }
     }
 
@@ -114,39 +123,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         //add the slot to the collection of slots
         const pos = this.getPos(stack_index, index);
         stack.push(new CardSlot(this, pos, div, card));
-    }
-
-    /**
-     * Remove the card at the given position.
-     * @param pos position in the stall to remove the card from.
-     * @param to (optional) if a card was present, move it to this location, then destroy it
-     * @return removed card
-    */
-    removeCard(pos: number, to?: HTMLElement | string): DaleCard | undefined {
-        const index = pos % Stall.MAX_STACK_SIZE;
-        const stack_index = (pos - index) / Stall.MAX_STACK_SIZE;
-        if (stack_index < 0 || stack_index >= this.getNumberOfStacks()) {
-            throw new Error(`Stack index ${stack_index} out of range`)
-        }
-        const stack = this.slots[stack_index]!;
-        if (index < 0 || index >= stack.length) {
-            throw new Error(`Index ${stack_index} out of range`)
-        }
-        const card = stack[index]!.removeCard(to); //TODO: the 'to' argument doesn't work...
-        for (var i = stack.length-1; i >= 1; i--) { //1, because we never delete slot 0
-            if (stack[i]!.hasCard()) {
-                break;
-            }
-            else {
-                stack[i]!.remove(); //...because we eliminate the parent of the slidingObject
-                stack.pop();
-            }
-        }
-        const y_offset = Images.VERTICAL_STACK_OFFSET_S * i;
-        const stackContainer = this.stackContainers[stack_index]!;
-        const prevStyleWithoutHeight = stackContainer.getAttribute('style')?.replace('height:.*px;', '');
-        stackContainer.setAttribute('style', prevStyleWithoutHeight+`height: ${Images.CARD_HEIGHT_S + y_offset}px;`);
-        return card;
+        this.updateHeight();
     }
 
     /**

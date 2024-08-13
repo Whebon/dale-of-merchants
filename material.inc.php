@@ -65,6 +65,16 @@ if (!defined('CT_CARDBACK')) {
   define('CT_SEEINGDOUBLES', 41);
 }
 
+//define all animalfolk
+if (!defined('ANIMALFOLK_MACAWS')) {
+    define('ANIMALFOLK_MACAWS', "Macaws");
+    define('ANIMALFOLK_PANDAS', "Pandas");
+    define('ANIMALFOLK_RACCOONS', "Raccoons");
+    define('ANIMALFOLK_SQUIRRELS', "Squirrels");
+    define('ANIMALFOLK_OCELOTS', "Ocelots");
+    define('ANIMALFOLK_CHAMELEONS', "Chameleons");
+}
+
 $this->card_types = array(
     0 => array(
         'type_id' => 0,

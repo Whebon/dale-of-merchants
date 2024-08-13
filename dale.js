@@ -1249,8 +1249,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (this.slots.length < Stall.MAX_STACKS) {
                 if (this.stackContainers.length > 0) {
                     var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                    var height = Images_5.Images.CARD_HEIGHT_S + Images_5.Images.VERTICAL_STACK_OFFSET_S * (this.slots[this.slots.length - 1].length - 1);
-                    prevStackContainer.setAttribute('style', "height: ".concat(height, "px; max-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;"));
+                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;"));
                 }
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("stack-container");
@@ -1263,6 +1262,23 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 this.stackContainers.push(stackContainer);
                 this.slots.push([]);
                 this.createNewSlot(this.slots.length - 1);
+            }
+        };
+        Stall.prototype.updateHeight = function () {
+            var _a;
+            var stackContainer = this.stackContainers[0];
+            if (stackContainer) {
+                var maxHeight = 0;
+                for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                    var stack = _b[_i];
+                    maxHeight = Math.max(maxHeight, stack.length);
+                }
+                var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
+                console.log("Update height");
+                console.log(stackContainer.getAttribute('style'));
+                var prevStyleWithoutHeight = (_a = stackContainer.getAttribute('style')) === null || _a === void 0 ? void 0 : _a.replace(/height:.*px;/, '');
+                console.log(prevStyleWithoutHeight);
+                stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_5.Images.CARD_HEIGHT_S + y_offset, "px;"));
             }
         };
         Stall.prototype.updateHTML = function (card) {
@@ -1290,33 +1306,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
-        };
-        Stall.prototype.removeCard = function (pos, to) {
-            var _a;
-            var index = pos % Stall.MAX_STACK_SIZE;
-            var stack_index = (pos - index) / Stall.MAX_STACK_SIZE;
-            if (stack_index < 0 || stack_index >= this.getNumberOfStacks()) {
-                throw new Error("Stack index ".concat(stack_index, " out of range"));
-            }
-            var stack = this.slots[stack_index];
-            if (index < 0 || index >= stack.length) {
-                throw new Error("Index ".concat(stack_index, " out of range"));
-            }
-            var card = stack[index].removeCard(to);
-            for (var i = stack.length - 1; i >= 1; i--) {
-                if (stack[i].hasCard()) {
-                    break;
-                }
-                else {
-                    stack[i].remove();
-                    stack.pop();
-                }
-            }
-            var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * i;
-            var stackContainer = this.stackContainers[stack_index];
-            var prevStyleWithoutHeight = (_a = stackContainer.getAttribute('style')) === null || _a === void 0 ? void 0 : _a.replace('height:.*px;', '');
-            stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_5.Images.CARD_HEIGHT_S + y_offset, "px;"));
-            return card;
+            this.updateHeight();
         };
         Stall.prototype.insertDbCard = function (card, from) {
             var pos = +card.location_arg;
@@ -1821,7 +1811,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             switch (card.effective_type_id) {
                 case DaleCard_6.DaleCard.CT_FLEXIBLESHOPKEEPER:
-                    if (this.myStall.getNumberOfStacks() == 0) {
+                    if (this.myStall.getNumberOfStacks() <= 1) {
                         console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
                         callback(card);
                         return;
@@ -2343,7 +2333,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['marketToHand', 1500],
                 ['swapScheduleStall', 1],
                 ['swapScheduleMarket', 1],
-                ['removeFromStall', 1000],
                 ['discardToHand', 1000],
                 ['discardToHandMultiple', 1000],
                 ['draw', 1000],
@@ -2485,28 +2474,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_swapScheduleMarket = function (notif) {
             var schedule = this.playerSchedules[notif.args.schedule_player_id];
             this.market.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
-        };
-        Dale.prototype.notif_removeFromStall = function (notif) {
-            var stall = this.playerStalls[notif.args.player_id];
-            for (var i in notif.args.cards) {
-                var daleCard = DaleCard_6.DaleCard.of(notif.args.cards[i]);
-                var pos = +notif.args.cards[i].location_arg;
-                var slotId = stall.getSlotId(pos);
-                switch (notif.args.to) {
-                    case 'hand':
-                        if (notif.args.player_id == this.player_id) {
-                            this.myHand.addDaleCardToStock(daleCard, slotId);
-                            stall.removeCard(pos);
-                        }
-                        else {
-                            stall.removeCard(pos);
-                        }
-                        break;
-                    default:
-                        console.error("Invalid argument for removeFromStall: to = '".concat(notif.args.to, "'"));
-                        break;
-                }
-            }
         };
         Dale.prototype.notif_temporaryToHand = function (notif) {
             console.log("notif_temporaryToHand");

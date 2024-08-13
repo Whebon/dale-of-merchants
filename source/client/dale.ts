@@ -488,7 +488,7 @@ class Dale extends Gamegui
 		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
-				if (this.myStall.getNumberOfStacks() == 0) {
+				if (this.myStall.getNumberOfStacks() <= 1) { //TODO: maybe needs to get refactored to 0 if I get rid of the trailing empty stack
 					console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
 					callback(card);
 					return;
@@ -1203,7 +1203,6 @@ class Dale extends Gamegui
 			['marketToHand', 1500],
 			['swapScheduleStall', 1],
 			['swapScheduleMarket', 1],
-			['removeFromStall', 1000],
 			['discardToHand', 1000],
 			['discardToHandMultiple', 1000],
 			['draw', 1000],
@@ -1396,33 +1395,6 @@ class Dale extends Gamegui
 	notif_swapScheduleMarket(notif: NotifAs<'swapScheduleMarket'>) {
 		const schedule = this.playerSchedules[notif.args.schedule_player_id]!
 		this.market!.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
-	}
-	
-	notif_removeFromStall(notif: NotifAs<'removeFromStall'>) {
-		//WARNING: SHOULD PROBABLY BE DELETED
-		//TODO: currently unused
-		const stall = this.playerStalls[notif.args.player_id]!;
-		for (let i in notif.args.cards) {
-			const daleCard = DaleCard.of(notif.args.cards[i]!);
-			const pos = +notif.args.cards[i]!.location_arg;
-			const slotId = stall.getSlotId(pos);
-			switch(notif.args.to) {
-				case 'hand':
-					if (notif.args.player_id == this.player_id) {
-						//move card from market to hand
-						this.myHand.addDaleCardToStock(daleCard, slotId);
-						stall.removeCard(pos);
-					}
-					else {
-						//move card to the overall player board
-						stall.removeCard(pos);
-					}
-					break;
-				default:
-					console.error(`Invalid argument for removeFromStall: to = '${notif.args.to}'`)
-					break;
-			}
-		}
 	}
 
 	notif_temporaryToHand(notif: NotifAs<'temporaryToHand'>) {
