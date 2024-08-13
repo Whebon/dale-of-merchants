@@ -150,14 +150,11 @@ class DaleDeck extends Deck {
         $found = count($junk_cards);
         if ($found >= $nbr) {
             //found a sufficient amount of free junk cards, return them
-            if ($nbr == 1) {
-                return array_pop($junk_cards); //1 card
-            }
             while ($found > $nbr) {
                 array_pop($junk_cards);
-                $nbr--;
+                $found--;
             }
-            return $junk_cards; //array of cards
+            return $junk_cards;
         }
 
         //not enough free junk cards exist, create a sufficient amount of new junk cards, then try again
