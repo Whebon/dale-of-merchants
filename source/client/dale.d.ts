@@ -62,6 +62,10 @@ declare global {
 		'throwAwayFromMarketDeck': {
 			card: DbCard
 		}
+		'throwAwayFromMarketBoard': {
+			cards: {[card_id: number]: DbCard}
+			card_ids: number[] //because ordering matters
+		}
 		'marketSlideRight': {
 			//no args
 		}

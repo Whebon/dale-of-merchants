@@ -4,9 +4,9 @@ import { DaleStock } from './DaleStock';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 import { DaleLocation } from './types/DaleLocation';
+import { OrderedSelection, SelectionIconType } from './OrderedSelection';
 
 declare function $(text: string | Element): HTMLElement;
-
 
 /**
  * Singleton component for the dale of merchants market board.
@@ -18,6 +18,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     private container: HTMLElement;
     private slots: CardSlot[];
     private selectionMode: 0 | 1 | 2;
+    public orderedSelection: OrderedSelection;
 
     constructor(page: Gamegui) {
         //set the background for the market board
@@ -46,6 +47,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         }
 
         //by default, market slots cannot be clicked
+        this.orderedSelection = new OrderedSelection();
         this.selectionMode = 0;
     }
 
@@ -72,6 +74,19 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
                 slot.updateHTML();
             }
         }
+    }
+
+    /**
+     * @param card_id
+     * @return `pos` of this card_id
+     */
+    posOf(card_id: number): number {
+        for (let slot of this.slots) {
+            if (slot.card?.id == card_id) {
+                return slot.pos;
+            } 
+        }
+        throw new Error(`card ${card_id} does not exist in the market!`);
     }
 
     /**
@@ -151,9 +166,10 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * 0: no item can be selected by the player.
      * 1: a maximum of one item can be selected by the player at a time.
      * 2: multiple items can be selected by the player at the same time.
+     * @param iconType (optional) default 'none'. types of icons to use for the selection
     */
-    setSelectionMode(mode: 0 | 1 | 2) {
-        //TODO: make a distinction between selectionMode 1 and 2
+    setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none') {
+        this.orderedSelection.setIconType(iconType);
         if( this.selectionMode == mode ) return;
         this.unselectAll();
         this.selectionMode = mode;
@@ -202,6 +218,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * For each card slot, set `selected` to false.
     */
     unselectAll() {
+        this.orderedSelection.unselectAll();
         for (let slot of this.slots) {
             slot.unselectItem();
         }
@@ -209,6 +226,9 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
 
     onCardSlotClick(slot: CardSlot): void {
         if (slot.hasCard()) {
+            if (this.selectionMode == 2) {
+                this.orderedSelection.toggle(slot.card!.id);
+            }
             (this.page as any).onMarketCardClick(slot.card, slot.pos);
         } else {
             this.page.showMessage(_("This card is sold out!"), 'error');

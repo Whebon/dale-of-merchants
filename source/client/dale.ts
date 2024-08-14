@@ -276,7 +276,7 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				break;
 			case 'loyalPartner':
-				this.market!.setSelectionMode(2);
+				this.market!.setSelectionMode(2, 'orderedPile');
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('rightmoststack');
@@ -432,7 +432,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'loyalPartner':
-				this.addActionButton("confirm-button", _("Discard All"), "onLoyalPartner");
+				this.addActionButton("confirm-button", _("Throw Away All"), "onLoyalPartner");
 				this.addActionButtonCancel();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1196,13 +1196,11 @@ class Dale extends Gamegui
 	}
 
 	onLoyalPartner() {
-		throw new Error("NOT IMPLEMENTED: onLoyalPartner")
-		//TODO
-		// if(this.checkAction("actLoyalPartner")) {
-		// 	this.bgaPerformAction('actLoyalPartner', {
-		// 		card_ids: this.arrayToNumberList(this.market!.getSelectionOrder())
-		// 	})
-		// }
+		if(this.checkAction("actLoyalPartner")) {
+			this.bgaPerformAction('actLoyalPartner', {
+				card_ids: this.arrayToNumberList(this.market!.orderedSelection.get())
+			})
+		}
 	}
 
 	///////////////////////////////////////////////////
@@ -1236,6 +1234,7 @@ class Dale extends Gamegui
 			['placeOnDeckMultiple', 1000],
 			['reshuffleDeck', 1500],
 			['throwAwayFromMarketDeck', 1000],
+			['throwAwayFromMarketBoard', 1000],
 			['addEffect', 1],
 			['bindChameleon', 1],
 			['unbindChameleon', 1],
@@ -1605,6 +1604,17 @@ class Dale extends Gamegui
 	notif_throwAwayFromMarketDeck(notif: NotifAs<'throwAwayFromMarketDeck'>) {
 		this.marketDeck.pop!();
 		this.marketDiscard.push(DaleCard.of(notif.args.card), this.marketDeck.placeholderHTML);
+	}
+
+	notif_throwAwayFromMarketBoard(notif: NotifAs<'throwAwayFromMarketBoard'>) {
+		let delay = 0;
+		for (let id of notif.args.card_ids) {
+			const pos = this.market!.posOf(id);
+			const slot_id = this.market!.getSlotId(pos);
+			this.marketDiscard.push(new DaleCard(id), slot_id, undefined, undefined, delay);
+			this.market!.removeCard(pos);
+			delay += 75; //delay indicates that ordering matters
+		}
 	}
 
 	notif_addEffect(notif: NotifAs<'addEffect'>) {

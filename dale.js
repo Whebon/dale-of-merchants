@@ -393,6 +393,9 @@ define("components/OrderedSelection", ["require", "exports", "ebg/stock"], funct
             this.divsWithIcons = new Map();
             this.card_ids = [];
         }
+        OrderedSelection.prototype.getDiv = function (card_id) {
+            return $("dale-card-" + card_id);
+        };
         OrderedSelection.prototype.addIcon = function (card_id, index) {
             if (this.iconType == 'none') {
                 return;
@@ -429,6 +432,10 @@ define("components/OrderedSelection", ["require", "exports", "ebg/stock"], funct
             this.card_ids.splice(index, 1);
             console.log(this.card_ids);
         };
+        OrderedSelection.prototype.unselectAll = function () {
+            this.updateIcons();
+            this.card_ids = [];
+        };
         OrderedSelection.prototype.setIconType = function (type) {
             this.iconType = type;
         };
@@ -441,6 +448,18 @@ define("components/OrderedSelection", ["require", "exports", "ebg/stock"], funct
                     this.addIcon(card_id, i);
                 }
             }
+        };
+        OrderedSelection.prototype.toggle = function (card_id) {
+            if (this.includes(card_id)) {
+                this.unselectItem(card_id);
+                this.updateIcons();
+            }
+            else {
+                this.selectItem(card_id);
+            }
+        };
+        OrderedSelection.prototype.includes = function (card_id) {
+            return this.card_ids.includes(card_id);
         };
         OrderedSelection.prototype.get = function () {
             return this.card_ids.slice().reverse();
@@ -1134,7 +1153,7 @@ define("components/CardSlot", ["require", "exports", "components/DaleCard"], fun
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot"], function (require, exports, Images_4, CardSlot_1) {
+define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot", "components/OrderedSelection"], function (require, exports, Images_4, CardSlot_1, OrderedSelection_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -1151,6 +1170,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
+            this.orderedSelection = new OrderedSelection_2.OrderedSelection();
             this.selectionMode = 0;
         }
         Object.defineProperty(MarketBoard.prototype, "size", {
@@ -1175,6 +1195,16 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                     slot.updateHTML();
                 }
             }
+        };
+        MarketBoard.prototype.posOf = function (card_id) {
+            var _a;
+            for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
+                var slot = _b[_i];
+                if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
+                    return slot.pos;
+                }
+            }
+            throw new Error("card ".concat(card_id, " does not exist in the market!"));
         };
         MarketBoard.prototype.getValidPos = function (pos) {
             if (pos == undefined || pos < 0 || pos >= this.MAX_SIZE) {
@@ -1214,7 +1244,9 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             pos = this.getValidPos(pos);
             return this.slots[pos].id;
         };
-        MarketBoard.prototype.setSelectionMode = function (mode) {
+        MarketBoard.prototype.setSelectionMode = function (mode, iconType) {
+            if (iconType === void 0) { iconType = 'none'; }
+            this.orderedSelection.setIconType(iconType);
             if (this.selectionMode == mode)
                 return;
             this.unselectAll();
@@ -1258,6 +1290,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             console.warn("Attempted to unselect a card (card_id = ".concat(card_id, ") that is not present in the market"));
         };
         MarketBoard.prototype.unselectAll = function () {
+            this.orderedSelection.unselectAll();
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var slot = _a[_i];
                 slot.unselectItem();
@@ -1265,6 +1298,9 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         };
         MarketBoard.prototype.onCardSlotClick = function (slot) {
             if (slot.hasCard()) {
+                if (this.selectionMode == 2) {
+                    this.orderedSelection.toggle(slot.card.id);
+                }
                 this.page.onMarketCardClick(slot.card, slot.pos);
             }
             else {
@@ -1683,7 +1719,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(1);
                     break;
                 case 'loyalPartner':
-                    this.market.setSelectionMode(2);
+                    this.market.setSelectionMode(2, 'orderedPile');
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('rightmoststack');
@@ -1826,7 +1862,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'loyalPartner':
-                    this.addActionButton("confirm-button", _("Discard All"), "onLoyalPartner");
+                    this.addActionButton("confirm-button", _("Throw Away All"), "onLoyalPartner");
                     this.addActionButtonCancel();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2384,7 +2420,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onLoyalPartner = function () {
-            throw new Error("NOT IMPLEMENTED: onLoyalPartner");
+            if (this.checkAction("actLoyalPartner")) {
+                this.bgaPerformAction('actLoyalPartner', {
+                    card_ids: this.arrayToNumberList(this.market.orderedSelection.get())
+                });
+            }
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
@@ -2412,6 +2452,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['placeOnDeckMultiple', 1000],
                 ['reshuffleDeck', 1500],
                 ['throwAwayFromMarketDeck', 1000],
+                ['throwAwayFromMarketBoard', 1000],
                 ['addEffect', 1],
                 ['bindChameleon', 1],
                 ['unbindChameleon', 1],
@@ -2708,6 +2749,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_throwAwayFromMarketDeck = function (notif) {
             this.marketDeck.pop();
             this.marketDiscard.push(DaleCard_6.DaleCard.of(notif.args.card), this.marketDeck.placeholderHTML);
+        };
+        Dale.prototype.notif_throwAwayFromMarketBoard = function (notif) {
+            var delay = 0;
+            for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
+                var id = _a[_i];
+                var pos = this.market.posOf(id);
+                var slot_id = this.market.getSlotId(pos);
+                this.marketDiscard.push(new DaleCard_6.DaleCard(id), slot_id, undefined, undefined, delay);
+                this.market.removeCard(pos);
+                delay += 75;
+            }
         };
         Dale.prototype.notif_addEffect = function (notif) {
             console.log("notif_addEffect");

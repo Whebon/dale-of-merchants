@@ -312,7 +312,7 @@ interface GameStates {
 	55: {
 		'name': 'loyalPartner',
 		'description': 'Loyal Partner: ${actplayer} must throw away all cards from the market',
-		'descriptionmyturn': 'Loyal Partner: ${you} must throw away all cards from the market',
+		'descriptionmyturn': 'Loyal Partner: ${you} must throw away all cards from the market. Click on any cards to determine the order on the market discard pile.',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actLoyalPartner': [{

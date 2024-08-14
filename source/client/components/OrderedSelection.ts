@@ -3,7 +3,7 @@ import "ebg/stock";
 
 export type SelectionIconType = 'none' | 'orderedPile' | 'hand';
 
-export abstract class OrderedSelection {
+export class OrderedSelection {
     private iconType: SelectionIconType;
     private divsWithIcons: Map<number, Element>;
     private card_ids: number[];
@@ -18,7 +18,9 @@ export abstract class OrderedSelection {
      * @param card_id
      * @return div element corresponding to the card_id
      */
-    protected abstract getDiv(card_id: number): Element | null;
+    protected getDiv(card_id: number): Element | null {
+        return $("dale-card-"+card_id);
+    }
 
 	/**
 	 * Adds the correct selection icon to the given item_div
@@ -78,19 +80,19 @@ export abstract class OrderedSelection {
     }
 
     /**
+     * Reset the selection and icons
+     */
+    public unselectAll() {
+        this.updateIcons();
+        this.card_ids = [];
+    }
+
+    /**
      * Configure the type of icons that are to be displayed on the selected cards
      */
     public setIconType(type: SelectionIconType) {
         this.iconType = type;
     }
-
-    // /**
-    //  * Reset the selection and icons
-    //  */
-    // public reset() {
-    //     this.updateIcons();
-    //     this.card_ids = [];
-    // }
     
     /**
      * Shift selection icons to ensure the icons remain adjacent. Should be called when the user removes an element from the selection.
@@ -104,6 +106,28 @@ export abstract class OrderedSelection {
                 this.addIcon(card_id, i);
             }
         }
+    }
+
+    /**
+     * If the card is selected, unselect it. If the card is unselected, select it. Also updates the icons.
+     * @param card_id
+     */
+    public toggle(card_id: number) {
+        if (this.includes(card_id)) {
+            this.unselectItem(card_id);
+            this.updateIcons();
+        }
+        else {
+            this.selectItem(card_id);
+        }
+    }
+
+    /**
+     * @param card_id
+     * @returns `true` id the card_id is present in the selection
+     */
+    public includes(card_id: number) {
+        return this.card_ids.includes(card_id);
     }
 
     /**

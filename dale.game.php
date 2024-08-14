@@ -502,6 +502,40 @@ class Dale extends DaleTableBasic
         }
     }
 
+    /**
+     * The active player throws away multiple cards from the market board
+     * @param string $msg notification message for all players
+     * @param array $card_ids cards_ids to be thrown away in that order
+     * @param array $cards array with exactly the same keys as $card_ids
+     * @param array $unordered_cards (optional) - if provided, first throw away these cards
+     */
+    function throwAwayFromMarketBoard(string $msg, array $card_ids, array $cards, array $unordered_cards = null) {
+        //1: move the unordered cards to the market discard pile (no message)
+        $nbr_unordered_cards = 0;
+        if ($unordered_cards) {
+            $nbr_unordered_cards = count($unordered_cards);
+            $unordered_card_ids = array_keys($unordered_cards);
+            $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.MARKET);
+            $this->notifyAllPlayers('throwAwayFromMarketBoard', $cards ? '' : $msg, array (
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $unordered_card_ids,
+                'cards' => $unordered_cards,
+                'nbr' => $nbr_unordered_cards,
+            ));
+        }
+        
+        //2: move the ordered cards to the market discard pile 
+        if ($cards) {
+            $this->cards->moveCardsOnTop($card_ids, DISCARD.MARKET);
+            $this->notifyAllPlayers('throwAwayFromMarketBoard', $msg, array (
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $card_ids,
+                'cards' => $cards,
+                'nbr' => count($cards) + $nbr_unordered_cards,
+            ));
+        }
+    }
+
 
     /**
      * Callback method for when cards need to be drawn from a location, but the location is empty.
@@ -1832,7 +1866,28 @@ class Dale extends DaleTableBasic
     }
 
     function actLoyalPartner($card_ids) {
-        die("NOT IMPLEMENTED: actLoyalPartner");
+        $this->checkAction("actLoyalPartner");
+        $card_ids = $this->numberListToArray($card_ids);
+
+        //get the non-selected cards and selected cards
+        $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+
+        //1. throw away all cards from the market board
+        $this->throwAwayFromMarketBoard(
+            clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
+            $card_ids, 
+            $selected_cards, 
+            $non_selected_cards
+        );
+
+        //2. refill the market
+        $this->refillMarket(false);
+        
+        $this->gamestate->nextState("trFullyResolveTechnique");
     }
 
     function actRequestStallAction() {
