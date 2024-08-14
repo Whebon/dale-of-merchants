@@ -183,7 +183,7 @@ $this->card_types = array(
   ),
   13 => array(
       'type_id' => 13,
-      'name' => clienttranslate("Prepaid Food"),
+      'name' => clienttranslate("Prepaid Good"),
       'text' => clienttranslate("Choose a card from the market and place it into your hand."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
@@ -345,7 +345,7 @@ $this->card_types = array(
       'has_active' => false,
       'playable' => false,
       'value' => 1,
-      'nbr' => 4,
+      'nbr' => 0,
       'animalfolk' => "Squirrels",
       'animalfolk_displayed' => clienttranslate("Squirrels")
   ),

@@ -210,4 +210,15 @@ class action_dale extends APP_GameAction
 		$this->game->actLoyalPartner( $card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actPrepaidGood()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actPrepaidGood( $card_id );
+		self::ajaxResponse();
+	}
 }

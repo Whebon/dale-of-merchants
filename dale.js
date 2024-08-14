@@ -345,7 +345,7 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
         DaleCard.CT_FLASHYSHOW = 10;
         DaleCard.CT_FAVORITETOY = 11;
         DaleCard.CT_LOYALPARTNER = 12;
-        DaleCard.CT_PREPAIDFOOD = 13;
+        DaleCard.CT_PREPAIDGOOD = 13;
         DaleCard.CT_ESSENTIALPURCHASE = 14;
         DaleCard.CT_MARKETDISCOVERY = 15;
         DaleCard.CT_SPECIALOFFER = 16;
@@ -1721,6 +1721,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'loyalPartner':
                     this.market.setSelectionMode(2, 'orderedPile');
                     break;
+                case 'prepaidGood':
+                    this.market.setSelectionMode(1);
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('rightmoststack');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.selectChameleonCard();
@@ -1794,6 +1797,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'loyalPartner':
                     this.market.setSelectionMode(0);
                     break;
+                case 'prepaidGood':
+                    this.market.setSelectionMode(0);
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.myStall.setSelectionMode('none');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.unselectChameleonCard();
@@ -1863,6 +1869,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'loyalPartner':
                     this.addActionButton("confirm-button", _("Throw Away All"), "onLoyalPartner");
+                    this.addActionButtonCancel();
+                    break;
+                case 'prepaidGood':
                     this.addActionButtonCancel();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2130,6 +2139,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (this.checkAction("actGiftVoucher")) {
                         this.bgaPerformAction('actGiftVoucher', {
                             market_card_id: card.id
+                        });
+                    }
+                    break;
+                case 'prepaidGood':
+                    if (this.checkAction("actPrepaidGood")) {
+                        this.bgaPerformAction('actPrepaidGood', {
+                            card_id: card.id
                         });
                     }
                     break;

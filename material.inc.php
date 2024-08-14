@@ -34,7 +34,7 @@ if (!defined('CT_CARDBACK')) {
   define('CT_FLASHYSHOW', 10);
   define('CT_FAVORITETOY', 11);
   define('CT_LOYALPARTNER', 12);
-  define('CT_PREPAIDFOOD', 13);
+  define('CT_PREPAIDGOOD', 13);
   define('CT_ESSENTIALPURCHASE', 14);
   define('CT_MARKETDISCOVERY', 15);
   define('CT_SPECIALOFFER', 16);
@@ -260,7 +260,7 @@ $this->card_types = array(
     ),
     13 => array(
         'type_id' => 13,
-        'name' => clienttranslate("Prepaid Food"),
+        'name' => clienttranslate("Prepaid Good"),
         'text' => clienttranslate("Choose a card from the market and place it into your hand."),
         'type_displayed' => clienttranslate("Technique"),
         'is_technique' => true,

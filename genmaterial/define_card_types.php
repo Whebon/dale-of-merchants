@@ -11,7 +11,7 @@
   define('CT_FLASHYSHOW', 10);
   define('CT_FAVORITETOY', 11);
   define('CT_LOYALPARTNER', 12);
-  define('CT_PREPAIDFOOD', 13);
+  define('CT_PREPAIDGOOD', 13);
   define('CT_ESSENTIALPURCHASE', 14);
   define('CT_MARKETDISCOVERY', 15);
   define('CT_SPECIALOFFER', 16);

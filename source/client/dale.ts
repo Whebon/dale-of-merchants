@@ -278,6 +278,9 @@ class Dale extends Gamegui
 			case 'loyalPartner':
 				this.market!.setSelectionMode(2, 'orderedPile');
 				break;
+			case 'prepaidGood':
+				this.market!.setSelectionMode(1);
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('rightmoststack');
 				this.chameleonArgs?.selectChameleonCard();
@@ -357,6 +360,9 @@ class Dale extends Gamegui
 			case 'loyalPartner':
 				this.market!.setSelectionMode(0);
 				break;
+			case 'prepaidGood':
+				this.market!.setSelectionMode(0);
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('none');
 				this.chameleonArgs?.unselectChameleonCard();
@@ -433,6 +439,9 @@ class Dale extends Gamegui
 				break;
 			case 'loyalPartner':
 				this.addActionButton("confirm-button", _("Throw Away All"), "onLoyalPartner");
+				this.addActionButtonCancel();
+				break;
+			case 'prepaidGood':
 				this.addActionButtonCancel();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -842,6 +851,13 @@ class Dale extends Gamegui
 				if(this.checkAction("actGiftVoucher")) {
 					this.bgaPerformAction('actGiftVoucher', {
 						market_card_id: card.id
+					})
+				}
+				break;
+			case 'prepaidGood':
+				if(this.checkAction("actPrepaidGood")) {
+					this.bgaPerformAction('actPrepaidGood', {
+						card_id: card.id
 					})
 				}
 				break;

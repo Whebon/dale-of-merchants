@@ -29,7 +29,7 @@ export class DaleCard {
     static readonly CT_FLASHYSHOW: number = 10;
     static readonly CT_FAVORITETOY: number = 11;
     static readonly CT_LOYALPARTNER: number = 12;
-    static readonly CT_PREPAIDFOOD: number = 13;
+    static readonly CT_PREPAIDGOOD: number = 13;
     static readonly CT_ESSENTIALPURCHASE: number = 14;
     static readonly CT_MARKETDISCOVERY: number = 15;
     static readonly CT_SPECIALOFFER: number = 16;

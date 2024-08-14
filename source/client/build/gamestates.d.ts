@@ -72,6 +72,7 @@ interface GameStates {
 			'trAcorn': 53,
 			'trGiftVoucher': 54,
 			'trLoyalPartner': 55,
+			'trPrepaidGood': 56,
 		},
 	},
 	31: {
@@ -312,13 +313,31 @@ interface GameStates {
 	55: {
 		'name': 'loyalPartner',
 		'description': 'Loyal Partner: ${actplayer} must throw away all cards from the market',
-		'descriptionmyturn': 'Loyal Partner: ${you} must throw away all cards from the market. Click on any cards to determine the order on the market discard pile.',
+		'descriptionmyturn': 'Loyal Partner: ${you} must throw away all cards from the market. Click on any cards to determine the order on the market discard pile',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actLoyalPartner': [{
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trFullyResolveTechnique': 33,
+		},
+	},
+	56: {
+		'name': 'prepaidGood',
+		'description': 'Prepaid Good: ${actplayer} must choose a card from the market',
+		'descriptionmyturn': 'Prepaid Good: ${you} must choose a card from the market',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actPrepaidGood': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 			'actCancel': [],
 		},

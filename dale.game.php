@@ -1680,6 +1680,10 @@ class Dale extends DaleTableBasic
                 $this->beginToResolveCard($player_id, $card);
                 $this->gamestate->nextState("trLoyalPartner");
                 break;
+            case CT_PREPAIDGOOD:
+                $this->beginToResolveCard($player_id, $card);
+                $this->gamestate->nextState("trPrepaidGood");
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -1887,6 +1891,27 @@ class Dale extends DaleTableBasic
         //2. refill the market
         $this->refillMarket(false);
         
+        $this->gamestate->nextState("trFullyResolveTechnique");
+    }
+
+    function actPrepaidGood($card_id) {
+        $this->checkAction("actPrepaidGood");
+        $player_id = $this->getActivePlayerId();
+
+        //Get the card from the market
+        $card = $this->cards->getCardFromLocation($card_id, MARKET);
+
+        //Place the card into the player's hand
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
+            'i18n' => array('card_name'),
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($card),
+            'market_card_id' => $card_id,
+            'pos' => $card["location_arg"],
+        ));
+
         $this->gamestate->nextState("trFullyResolveTechnique");
     }
 
