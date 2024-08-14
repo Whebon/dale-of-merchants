@@ -1554,8 +1554,7 @@ class Dale extends DaleTableBasic
         }
 
         //Check for overpaying
-        if (($total_value - $lowest_value) >= $cost) {
-            //TODO: 'Stock Clearance'
+        if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
             throw new BgaUserException($this->_("Overpaying is not allowed")." ($total_value)");
         }
 
