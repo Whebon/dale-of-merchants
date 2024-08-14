@@ -1831,7 +1831,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             switch (stateName) {
                 case 'playerTurn':
-                    this.addActionButton("confirm-button", _("Pass"), "onRequestInventoryAction");
+                    this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
                     break;
                 case 'purchase':
                     this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");

@@ -401,7 +401,7 @@ class Dale extends Gamegui
 		{
 			case 'playerTurn':
 				// Add buttons if needed
-				this.addActionButton("confirm-button", _("Pass"), "onRequestInventoryAction");
+				this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
 				break;
 			case 'purchase':
 				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");

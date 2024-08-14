@@ -22,7 +22,7 @@ interface GameStates {
 	30: {
 		'name': 'playerTurn',
 		'description': '${actplayer} must take an action',
-		'descriptionmyturn': '${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) pass',
+		'descriptionmyturn': '${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actRequestMarketAction': [{
