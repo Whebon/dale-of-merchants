@@ -51,6 +51,7 @@ $machinestates = array(
 			'trSpyglass' => 52,
 			'trAcorn' => 53,
 			'trGiftVoucher' => 54,
+			'trLoyalPartner' => 55,
 		),
 	),
 	31 => array(
@@ -174,6 +175,17 @@ $machinestates = array(
 		'transitions' => array(
 			'trCancel' => 30,
 			'trFullyResolveTechniqueNoDiscard' => 34,
+		),
+	),
+	55 => array(
+		'name' => 'loyalPartner',
+		'description' => clienttranslate('Loyal Partner: ${actplayer} must throw away all cards from the market'),
+		'descriptionmyturn' => clienttranslate('Loyal Partner: ${you} must throw away all cards from the market'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actLoyalPartner', 'actCancel'],
+		'transitions' => array(
+			'trCancel' => 30,
+			'trFullyResolveTechnique' => 33,
 		),
 	),
 	99 => array(

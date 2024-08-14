@@ -4,34 +4,41 @@ import "ebg/stock";
 import { DaleCard } from './DaleCard';
 import { Images } from './Images';
 import { DaleLocation } from './types/DaleLocation';
+import { OrderedSelection, SelectionIconType } from './OrderedSelection';
 
-type SelectionIcons = 'none' | 'pile' | 'handandpile';
+/**
+ * Ordered selection for a stock
+ */
+class StockOrderedSelection extends OrderedSelection {
+    private _stock: Stock;
+
+    constructor(stock: Stock) {
+        super();
+        this._stock = stock;
+    }
+
+    protected override getDiv(card_id: number): Element | null {
+        return $(this._stock.control_name+"_item_"+card_id);
+    }
+}
 
 /**
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock implements DaleLocation {
 	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
-	private orderedSelectedCardIds: number[];
-	public selectionIcons: SelectionIcons = 'none';
+	public orderedSelection: OrderedSelection;
 
 	public get selectionMode() {
 		return (this as any).selectable;
 	}
 
-	/**
-	 * Get the order of selection as shown by the selection icons
-	 */
-	public getSelectionOrder(): number[] {
-		return this.orderedSelectedCardIds.slice().reverse();
-	}
-
 	constructor(){
 		super();
-		this.orderedSelectedCardIds = [];
+		this.orderedSelection = new StockOrderedSelection(this);
 		this.onChangeSelection = function(control_name: string, item_id: number) {
 			if (item_id && !this.isSelected(item_id)) {
-				this.updateSelectionIcons();
+				this.orderedSelection.updateIcons();
 			}
 		}
 	}
@@ -75,40 +82,42 @@ export class DaleStock extends Stock implements DaleLocation {
 		hideOuterContainer?.classList.add("hidden");
 	}
 
-	/**
-	 * Adds the correct selection icon to the given item_div
-	 * @param item_div div to add the selection icon to
-	 * @param index index of the item in this.orderedSelectedCardIds
-	 */
-	private addSelectionIcon(item_div: Element, index: number) {
-		let offset = Math.min(7, index);
-		if (this.selectionIcons == 'pile') {
-			offset += 1;
-		}
-		const icon = document.createElement("div");
-		icon.classList.add("selection-icon");
-		icon.setAttribute('style', `
-			background-position: -${offset}00%;
-		`);
-		item_div.appendChild(icon);
-	}
+	//TODO: safely delete this
+	// /**
+	//  * Adds the correct selection icon to the given item_div
+	//  * @param item_div div to add the selection icon to
+	//  * @param index index of the item in this.orderedSelectedCardIds
+	//  */
+	// private addSelectionIcon(item_div: Element, index: number) {
+	// 	let offset = Math.min(7, index);
+	// 	if (this.selectionIconType == 'pile') {
+	// 		offset += 1;
+	// 	}
+	// 	const icon = document.createElement("div");
+	// 	icon.classList.add("selection-icon");
+	// 	icon.setAttribute('style', `
+	// 		background-position: -${offset}00%;
+	// 	`);
+	// 	item_div.appendChild(icon);
+	// }
 
-	/**
-	 * Shift selection icons to ensure the icons remain contiguous. Should be called when the user removes an element from the selection.
-	 */
-	private updateSelectionIcons() {
-		console.log("updateSelectionIcons");
-		if (this.selectionIcons != 'none') {
-			for (let i = 0; i < this.orderedSelectedCardIds.length; i++) {
-				const card_id = this.orderedSelectedCardIds[i]!;
-				const item_div = $(this.control_name+"_item_"+card_id);
-				if (item_div) {
-					item_div.querySelector(".selection-icon")?.remove();
-					this.addSelectionIcon(item_div, i);
-				}
-			}
-		}
-	}
+	//TODO: safely delete this
+	// /**
+	//  * Shift selection icons to ensure the icons remain contiguous. Should be called when the user removes an element from the selection.
+	//  */
+	// private updateSelectionIcons() {
+	// 	console.log("updateSelectionIcons");
+	// 	if (this.selectionIconType != 'none') {
+	// 		for (let i = 0; i < this.orderedSelectedCardIds.length; i++) {
+	// 			const card_id = this.orderedSelectedCardIds[i]!;
+	// 			const item_div = $(this.control_name+"_item_"+card_id);
+	// 			if (item_div) {
+	// 				item_div.querySelector(".selection-icon")?.remove();
+	// 				SelectionIcons.add(this.selectionIconType, item_div, i);
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	/**
 	 * Selects the item with the specified unique id.
@@ -117,15 +126,14 @@ export class DaleStock extends Stock implements DaleLocation {
 	 */
 	override selectItem(item_id: number): void {
 		super.selectItem(item_id);
-		item_id = +item_id;
-		this.orderedSelectedCardIds.push(item_id);
-		console.log(this.orderedSelectedCardIds);
-		if (this.selectionIcons != 'none') {
-			const item_div = $(this.control_name+"_item_"+item_id);
-			if (item_div) {
-				this.addSelectionIcon(item_div, this.orderedSelectedCardIds.length-1);
-			}
-		}
+		this.orderedSelection.selectItem(+item_id);
+		//TODO: safely delete this
+		// if (this.selectionIconType != 'none') {
+		// 	const item_div = $(this.control_name+"_item_"+item_id);
+		// 	if (item_div) {
+		// 		this.addSelectionIcon(item_div, this.orderedSelectedCardIds.length-1);
+		// 	}
+		// }
 	}
 
 	/**
@@ -135,33 +143,40 @@ export class DaleStock extends Stock implements DaleLocation {
 	 */
 	override unselectItem(item_id: number): void {
 		super.unselectItem(item_id);
-		item_id = +item_id;
-		const index = this.orderedSelectedCardIds.indexOf(item_id);
-		this.orderedSelectedCardIds.splice(index, 1);
-		console.log(this.orderedSelectedCardIds);
-		if (this.selectionIcons != 'none') {
-			$(this.control_name+"_item_"+item_id)?.querySelector(".selection-icon")?.remove();
-		}
+		this.orderedSelection.unselectItem(+item_id);
+		//TODO: safely delete this
+		// item_id = +item_id;
+		// const index = this.orderedSelectedCardIds.indexOf(item_id);
+		// this.orderedSelectedCardIds.splice(index, 1);
+		// console.log(this.orderedSelectedCardIds);
+		// this.orderedSelection.remove(item_id);
+		// if (this.selectionIconType != 'none') {
+		// 	$(this.control_name+"_item_"+item_id)?.querySelector(".selection-icon")?.remove();
+		// }
 	}
 
 	/**
 	 * Sets the selection mode for the stock. The selection mode determines how the user can interact with the items in the stock.
 	 * Additionally, it resets the 'orderedSelectedCardIds', which is needed to track the order in the selection
+	 * @param mode selection mode
+	 * @param iconType (optional) none. types of icons to use for the selection
 	 */
-	override setSelectionMode(mode: 0 | 1 | 2): void {
+	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none'): void {
+		this.orderedSelection.setIconType(iconType);
 		if (mode == this.selectionMode) {
 			return;
 		}
 		super.setSelectionMode(mode);
-		this.orderedSelectedCardIds = [];
+		//this.orderedSelectedCardIds = []; //TODO safely delete this. (this is not needed, super.setSelectionMode(mode) calls unselectAll)
 	}
 
-	public setSelectionIcons(type: SelectionIcons) {
-		this.selectionIcons = type;
-		if (type == 'none') {
-			$(this.control_name)?.querySelectorAll(".selection-icon").forEach(icon => icon.remove());
-		}
-	}
+	//TODO: safely delete this
+	// public setSelectionIcons(type: SelectionIcons) {
+	// 	this.selectionIconType = type;
+	// 	if (type == 'none') {
+	// 		$(this.control_name)?.querySelectorAll(".selection-icon").forEach(icon => icon.remove());
+	// 	}
+	// }
 
 	/**
 	 * Function to be called after unbinding chameleon cards. All bound chameleon cards are removed and readded to the stock.

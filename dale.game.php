@@ -1642,6 +1642,10 @@ class Dale extends DaleTableBasic
                 }
                 $this->gamestate->nextState("trGiftVoucher");
                 break;
+            case CT_LOYALPARTNER:
+                $this->beginToResolveCard($player_id, $card);
+                $this->gamestate->nextState("trLoyalPartner");
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -1825,6 +1829,10 @@ class Dale extends DaleTableBasic
         ));
 
         $this->gamestate->nextState("trFullyResolveTechniqueNoDiscard");
+    }
+
+    function actLoyalPartner($card_ids) {
+        die("NOT IMPLEMENTED: actLoyalPartner");
     }
 
     function actRequestStallAction() {

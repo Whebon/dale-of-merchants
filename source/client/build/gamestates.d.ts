@@ -71,6 +71,7 @@ interface GameStates {
 			'trSpyglass': 52,
 			'trAcorn': 53,
 			'trGiftVoucher': 54,
+			'trLoyalPartner': 55,
 		},
 	},
 	31: {
@@ -306,6 +307,24 @@ interface GameStates {
 		'transitions': {
 			'trCancel': 30,
 			'trFullyResolveTechniqueNoDiscard': 34,
+		},
+	},
+	55: {
+		'name': 'loyalPartner',
+		'description': 'Loyal Partner: ${actplayer} must throw away all cards from the market',
+		'descriptionmyturn': 'Loyal Partner: ${you} must throw away all cards from the market',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actLoyalPartner': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+			'actCancel': [],
+		},
+		'transitions': {
+			'trCancel': 30,
+			'trFullyResolveTechnique': 33,
 		},
 	},
 	99: {

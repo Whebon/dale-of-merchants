@@ -199,4 +199,15 @@ class action_dale extends APP_GameAction
 		$this->game->actGiftVoucher( $market_card_id );
 		self::ajaxResponse();
 	}
+
+	public function actLoyalPartner()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actLoyalPartner( $card_ids );
+		self::ajaxResponse();
+	}
 }

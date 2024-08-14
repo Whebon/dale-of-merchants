@@ -246,8 +246,7 @@ class Dale extends Gamegui
 			case 'purchase':
 				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
 				console.log(purchaseArgs);
-				this.myHand.setSelectionIcons('pile');
-				this.myHand.setSelectionMode(2);
+				this.myHand.setSelectionMode(2, 'orderedPile');
 				this.market!.setSelected(purchaseArgs.pos, true);
 				break;
 			case 'build':
@@ -255,19 +254,16 @@ class Dale extends Gamegui
 				this.onBuildSelectionChanged(); //this.myDiscard.setSelectionMode('multiple');
 				break;
 			case 'inventory':
-				this.myHand.setSelectionIcons('pile');
-				this.myHand.setSelectionMode(2);
+				this.myHand.setSelectionMode(2, 'orderedPile');
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionIcons('pile');
-				this.myHand.setSelectionMode(2);
+				this.myHand.setSelectionMode(2, 'orderedPile');
 				break;
 			case 'shatteredRelic':
 				this.myHand.setSelectionMode(1);
 				break;
 			case 'spyglass':
-				this.myTemporary.setSelectionIcons('handandpile');
-				this.myTemporary.setSelectionMode(2);
+				this.myTemporary.setSelectionMode(2, 'hand');
 				break;
 			case 'acorn':
 				for (let player_id in this.gamedatas.players) {
@@ -278,6 +274,9 @@ class Dale extends Gamegui
 				break;
 			case 'giftVoucher':
 				this.market!.setSelectionMode(1);
+				break;
+			case 'loyalPartner':
+				this.market!.setSelectionMode(2);
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myStall!.setSelectionMode('rightmoststack');
@@ -326,7 +325,6 @@ class Dale extends Gamegui
 				this.myStall.setSelectionMode("none");
 				break;
 			case 'purchase':
-				this.myHand.setSelectionIcons('none');
 				this.myHand.setSelectionMode(0);
 				this.market!.unselectAll();
 				break;
@@ -335,18 +333,15 @@ class Dale extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'inventory':
-				this.myHand.setSelectionIcons('none');
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionIcons('none');
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'shatteredRelic':
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'spyglass':
-				this.myTemporary.setSelectionIcons('none');
 				this.myTemporary.setSelectionMode(0);
 				break;
 			case 'acorn':
@@ -357,6 +352,9 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'giftVoucher':
+				this.market!.setSelectionMode(0);
+				break;
+			case 'loyalPartner':
 				this.market!.setSelectionMode(0);
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -431,6 +429,10 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'giftVoucher':
+				this.addActionButtonCancel();
+				break;
+			case 'loyalPartner':
+				this.addActionButton("confirm-button", _("Discard All"), "onLoyalPartner");
 				this.addActionButtonCancel();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -982,7 +984,7 @@ class Dale extends Gamegui
 	onPurchase() {
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
-				funds_card_ids: this.arrayToNumberList(this.myHand.getSelectionOrder()),
+				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
 				...DaleCard.getLocalChameleons()
 			})
 		}
@@ -1166,7 +1168,7 @@ class Dale extends Gamegui
 	onInventoryAction() {
 		if(this.checkAction("actInventoryAction")) {
 			this.bgaPerformAction('actInventoryAction', {
-				ids: this.arrayToNumberList(this.myHand.getSelectionOrder())
+				ids: this.arrayToNumberList(this.myHand.orderedSelection.get())
 			})
 		}
 	}
@@ -1174,13 +1176,13 @@ class Dale extends Gamegui
 	onSwiftBroker() {
 		if(this.checkAction("actSwiftBroker")) {
 			this.bgaPerformAction('actSwiftBroker', {
-				card_ids: this.arrayToNumberList(this.myHand.getSelectionOrder())
+				card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get())
 			})
 		}
 	}
 
 	onSpyglass() {
-		const card_ids = this.myTemporary.getSelectionOrder();
+		const card_ids = this.myTemporary.orderedSelection.get();
 		console.log("Sending "+this.arrayToNumberList(card_ids));
 		if (card_ids.length == 0) {
 			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
@@ -1193,13 +1195,23 @@ class Dale extends Gamegui
 		}
 	}
 
+	onLoyalPartner() {
+		throw new Error("NOT IMPLEMENTED: onLoyalPartner")
+		//TODO
+		// if(this.checkAction("actLoyalPartner")) {
+		// 	this.bgaPerformAction('actLoyalPartner', {
+		// 		card_ids: this.arrayToNumberList(this.market!.getSelectionOrder())
+		// 	})
+		// }
+	}
+
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
 
 	/** @gameSpecific See {@link Gamegui.setupNotifications} for more information. */
 	override setupNotifications()
 	{
-		console.log( 'notifications subscriptions setup2' );
+		console.log( 'notifications subscriptions setup42' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
 			['scheduleTechnique', 1000],
