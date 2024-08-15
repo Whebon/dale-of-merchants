@@ -34,28 +34,20 @@
     </div>
 </div>
 
-<div class="whiteblock">
-    <div class="horizontal-flex">
-        <div class="myhand-wrap">
-            <h3> {YOUR_HAND} </h3>
-            <div id="myhand"></div>
-        </div> 
-        <div id="mytemporary-wrap" class="margin-left-wrap">
-            <h3> {CARD_CHOICE} </h3>
-            <div id="mytemporary"></div>
-        </div>
-        <!-- BEGIN schedule -->
-        <div id="schedule-wrap-{PLAYER_ID}" class="margin-left-wrap">
-            <h3> {SCHEDULE} </h3>
-            <div id="schedule-{PLAYER_ID}"></div>
-        </div>
-        <!-- END schedule -->
+<div class="horizontal-flex">
+    <div class="myhand-wrap whiteblock dale-no-vertical-margin">
+        <h3> {YOUR_HAND} </h3>
+        <div id="myhand"></div>
+    </div> 
+    <div id="mytemporary-wrap" class="whiteblock dale-no-vertical-margin dale-left-margin">
+        <h3> {CARD_CHOICE} </h3>
+        <div id="mytemporary"></div>
     </div>
-</div>  
+</div> 
 
 <!-- BEGIN stall -->
 <div class="whiteblock">
-    <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {BOARD} </h3>
+    <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
     <div class="horizontal-flex">
         <div id="discard-{PLAYER_ID}" class="pile-container"></div>
         <div id="deck-{PLAYER_ID}" class="pile-container"></div>
@@ -72,6 +64,10 @@
                 <div class="stack-container"></div>
                 <div class="stack-container"></div>
             </div> -->
+        </div>
+        <div id="schedule-wrap-{PLAYER_ID}" class="margin-left-wrap">
+            <h3> {SCHEDULE} </h3>
+            <div id="schedule-{PLAYER_ID}"></div>
         </div>
     </div>
     <br>

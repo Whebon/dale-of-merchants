@@ -135,8 +135,13 @@
   flex: 1 1;
 }
 
-.margin-left-wrap {
-  margin-left: 5px;
+.dale-no-vertical-margin {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
+
+.dale-left-margin {
+  margin-left: 10px;
 }
 
 #schedule {

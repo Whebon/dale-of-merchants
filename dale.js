@@ -1584,7 +1584,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             configurable: true
         });
         Dale.prototype.setup = function (gamedatas) {
-            var _a, _b, _c;
+            var _a;
             console.log("Starting game setup");
             console.log("------ GAME DATAS ------ !");
             console.log(this.gamedatas);
@@ -1644,27 +1644,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.myTemporary.setSelectionMode(0);
             this.myTemporary.autowidth = true;
             dojo.connect(this.myTemporary, 'onChangeSelection', this, 'onTemporarySelectionChanged');
-            var _loop_2 = function (player_id) {
+            for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
-                var color = (_c = (_b = gamedatas.players[player_id]) === null || _b === void 0 ? void 0 : _b.color) !== null && _c !== void 0 ? _c : 'white';
-                var recolor = function (itemDiv, typeId, itemId) {
-                    itemDiv.setAttribute('style', itemDiv.getAttribute('style') + ";\n\t\t\t\t\tbackground-blend-mode: overlay;\n\t\t\t\t\tbackground-color: #".concat(color, "20;"));
-                    myHandUpdateDisplay();
-                };
-                this_2.playerSchedules[player_id] = new DaleStock_2.DaleStock();
-                this_2.playerSchedules[player_id].init(this_2, container, wrap, recolor, myHandUpdateDisplay);
-                this_2.playerSchedules[player_id].setSelectionMode(0);
-                this_2.playerSchedules[player_id].autowidth = true;
-                this_2.playerSchedules[player_id].duration = 500;
+                this.playerSchedules[player_id] = new DaleStock_2.DaleStock();
+                this.playerSchedules[player_id].init(this, container, wrap);
+                this.playerSchedules[player_id].setSelectionMode(0);
+                this.playerSchedules[player_id].autowidth = true;
+                this.playerSchedules[player_id].duration = 500;
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];
-                    this_2.playerSchedules[player_id].addDaleCardToStock(DaleCard_6.DaleCard.of(card));
+                    this.playerSchedules[player_id].addDaleCardToStock(DaleCard_6.DaleCard.of(card));
                 }
-            };
-            var this_2 = this;
-            for (var player_id in gamedatas.schedules) {
-                _loop_2(player_id);
             }
             this.setupNotifications();
             console.log("Ending game setup");

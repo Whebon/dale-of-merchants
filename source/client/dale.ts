@@ -192,17 +192,8 @@ class Dale extends Gamegui
 		for (let player_id in gamedatas.schedules) {
 			const container = $('schedule-'+player_id)!
 			const wrap = $('schedule-wrap-'+player_id)!
-			const color = gamedatas.players[player_id]?.color ?? 'white';
-			const recolor = (itemDiv: HTMLElement, typeId: number, itemId: number) => {
-				//append color styling to new cards in the schedule
-				itemDiv.setAttribute('style', itemDiv.getAttribute('style')+`;
-					background-blend-mode: overlay;
-					background-color: #${color}20;`
-				);
-				myHandUpdateDisplay();
-			}
 			this.playerSchedules[player_id] = new DaleStock();
-			this.playerSchedules[player_id].init(this, container, wrap, recolor, myHandUpdateDisplay);
+			this.playerSchedules[player_id].init(this, container, wrap);
 			this.playerSchedules[player_id].setSelectionMode(0);
 			this.playerSchedules[player_id].autowidth = true;
 			this.playerSchedules[player_id].duration = 500;
