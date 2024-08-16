@@ -18,10 +18,13 @@ export class Images {
     static readonly MARKET_HEIGHT = 906;
 
     static readonly VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
+    static readonly STACK_MIN_OVERLAP_X = 0.25; //0=adjacent, 1=full overlap
 
     static readonly Z_INDEX_CARDBACK = 1;
     static readonly Z_INDEX_CARDFRONT = 2;
-    static readonly Z_INDEX_SLIDING_CARD = 4;
+    static readonly Z_INDEX_HAND_CARD = 100;
+    static readonly Z_INDEX_SELECTED_CARD = 200;
+    static readonly Z_INDEX_SLIDING_CARD = 300;
 
     static readonly S_SCALE = 0.28;
 
@@ -54,7 +57,7 @@ export class Images {
                 let x = card_type_id % Images.IMAGES_PER_ROW;
                 let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                 style += `background-position:-${x}00% -${y}00%;`;
-                style += `z-index: ${card_type_id == 0 ? Images.Z_INDEX_CARDBACK : Images.Z_INDEX_CARDFRONT};`;
+                //style += `z-index: ${card_type_id == 0 ? Images.Z_INDEX_CARDBACK : Images.Z_INDEX_CARDFRONT};`;
             }
             else {
                 console.error(`Card with type id ${card_type_id} does not exist!`);

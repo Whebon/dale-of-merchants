@@ -22,6 +22,8 @@ export class CardSlot {
     protected _container: HTMLElement;
     protected _card: DaleCard | undefined;
 
+    private clickable: boolean = false;
+
     /**
      * Designated space designed to hold a single card or remain empty.
      * @param parent CardSlotManager object that manages this slot
@@ -100,6 +102,7 @@ export class CardSlot {
         const cardDiv = card.toDiv(this.id);
         this._container.appendChild(cardDiv);
         this._card = card;
+        this.setClickable(this.clickable);
         if (from) {
             this.parent.page.placeOnObject(cardDiv, from);
             const animSlide = this.parent.page.slideToObject(cardDiv, this._container);
@@ -166,17 +169,21 @@ export class CardSlot {
      * @param enable
      */
     public setClickable(enable: boolean) {
-        if (enable){
-            let thiz = this;
-            this._container.onclick = function(evt: MouseEvent) {
-                evt.stopPropagation();
-                thiz.parent.onCardSlotClick(thiz);
-            };
-            this._container.classList.add("clickable");
-        }
-        else {
-            this._container.classList.remove("clickable");
-            this._container.onclick = null;
+        this.clickable = enable;
+        const div = this._card?.div;
+        if (div) {
+            if (enable){
+                const thiz = this;
+                div.onclick = function(evt: MouseEvent) {
+                    evt.stopPropagation();
+                    thiz.parent.onCardSlotClick(thiz);
+                };
+                div.classList.add("dale-clickable");
+            }
+            else {
+                div.classList.remove("dale-clickable");
+                div.onclick = null;
+            }
         }
     }
 

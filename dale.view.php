@@ -49,7 +49,7 @@ class view_dale_dale extends game_view
             "PLAYER_ID" => $current_player,
             "PLAYER_NAME_POSSESSIVE" => $this->_("Your"),
             "PLAYER_COLOR" => $players[$current_player]['player_color'],
-            "SCHEDULE" => "Your Schedule"
+            "SCHEDULE" => "Schedule"
         ));
 
         // Other players' stalls and schedules
@@ -63,6 +63,12 @@ class view_dale_dale extends game_view
                 ));
             }
         }
+
+        //Action labels
+        $this->tpl['ACTION_LABEL_TECHNIQUE'] = $this->_("Click cards to play <strong>techniques</strong>");
+        $this->tpl['ACTION_LABEL_PURCHASE'] = $this->_("Click cards to use for <strong>purchasing</strong>");
+        $this->tpl['ACTION_LABEL_BUILD'] = $this->_("Click cards to <strong>build stacks</strong>");
+        $this->tpl['ACTION_LABEL_DISCARD'] = $this->_("Click cards to <strong>discard</strong>");
 
         //Other variables
         $this->tpl['MARKET'] = $this->_("Market");

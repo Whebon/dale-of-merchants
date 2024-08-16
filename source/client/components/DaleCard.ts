@@ -14,6 +14,7 @@ export class DaleCard {
     private static readonly cardIdtoEffectiveTypeIdLocal: Map<number, number> = new Map<number, number>();
     private static readonly usedActiveAbilities: Set<number> = new Set<number>(); //encoded as <id>*MAX_TYPES + <type_id>
     static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
+    static readonly divs: Map<number, HTMLElement> = new Map<number, HTMLElement>();
     static readonly MAX_TYPES: number = 1000;
 
     static readonly CT_CARDBACK: number = 0;
@@ -61,7 +62,7 @@ export class DaleCard {
 
     public id: number
 
-    //effecst
+    //effects
     public static winterIsComing = false;
 
     /** 
@@ -288,6 +289,14 @@ export class DaleCard {
         return DaleCard.cardTypes[this.effective_type_id]!.name
     }
 
+    public get div(): HTMLElement {
+        const div = DaleCard.divs.get(this.id);
+        if (!div) {
+            throw new Error(`No div exists for card_id=${this.id}`)
+        }
+        return div;
+    }
+
     public isJunk(): boolean {
         return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
     }
@@ -367,22 +376,23 @@ export class DaleCard {
     }
 
     /**
-     * @returns a new div element representing this card
-     * @param tooltip_parent_id (optional) - if specified, the div will be added to the parent, and it will have a tooltip
+     * @returns a new div element representing this card. Overwrites the previous known div for this card.
+     * @param parent_id (optional) - if specified, the div will be added to the parent, and it will have a tooltip
      */
-    public toDiv(tooltip_parent_id?: string | HTMLElement): HTMLElement {
-        let div = document.createElement("div")
+    public toDiv(parent_id?: string | HTMLElement): HTMLElement {
+        const div = document.createElement("div")
         div.id = "dale-card-"+this.id
-        div.classList.add("card")
+        div.classList.add("dale-card")
         div.setAttribute('style', Images.getCardStyle(this.effective_type_id))
-        if (tooltip_parent_id) {
-            $(tooltip_parent_id)?.appendChild(div)
+        if (parent_id) {
+            $(parent_id)?.appendChild(div)
             this.addTooltip(div.id);
             //this.addTooltip(tooltip_parent_id); //don't add the tooltip to the container, but to the card div itself
         }
         if (this.isBoundChameleon()) {
             div.appendChild(DaleCard.createChameleonIcon());
         }
+        DaleCard.divs.set(this.id, div);
         return div;
     }
 

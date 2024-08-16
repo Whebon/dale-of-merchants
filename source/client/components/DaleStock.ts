@@ -29,6 +29,8 @@ export class DaleStock extends Stock implements DaleLocation {
 	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
 	public orderedSelection: OrderedSelection;
 
+	public static readonly MAX_HORIZONTAL_OVERLAP = 85;
+
 	public get selectionMode() {
 		return (this as any).selectable;
 	}
@@ -65,7 +67,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		//configure callback functions
 		this.onItemCreate = function(itemDiv: HTMLElement, typeId: number, itemId: number) {
 			if (hideOuterContainer) {
-				hideOuterContainer.classList.remove("hidden");
+				hideOuterContainer.classList.remove("dale-hidden");
 			}
 			if (onItemCreate) {
 				onItemCreate(itemDiv, typeId, itemId);
@@ -73,13 +75,13 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 		this.onItemDelete = function(itemDiv: HTMLElement, typeId: number, itemId: number) {
 			if (hideOuterContainer && this.count() <= 1) {
-				hideOuterContainer.classList.add("hidden");
+				hideOuterContainer.classList.add("dale-hidden");
 			}
 			if (onItemDelete) {
 				onItemDelete(itemDiv, typeId, itemId);
 			}
 		}
-		hideOuterContainer?.classList.add("hidden");
+		hideOuterContainer?.classList.add("dale-hidden");
 	}
 
 	//TODO: safely delete this
@@ -167,7 +169,16 @@ export class DaleStock extends Stock implements DaleLocation {
 			return;
 		}
 		super.setSelectionMode(mode);
-		//this.orderedSelectedCardIds = []; //TODO safely delete this. (this is not needed, super.setSelectionMode(mode) calls unselectAll)
+		for(let i in this.items){
+			const card_id = this.items[i]!.id;
+			if (mode == 0) {
+				$(this.control_name+"_item_"+card_id)?.classList.remove("dale-clickable");
+			}
+			else {
+				$(this.control_name+"_item_"+card_id)?.classList.add("dale-clickable");
+			}
+		}
+
 	}
 
 	//TODO: safely delete this
@@ -306,6 +317,47 @@ export class DaleStock extends Stock implements DaleLocation {
         }
         return false;
 	}
-}
 
-//new ebg.stock();
+	override updateDisplay(from?: string | HTMLElement): void {
+		//Stock bullshit calculations, our goal is to force perLines == 1
+		// var item_visible_width = this.item_width;
+		// var item_visible_width_lastitemlost = 0;
+		// if( this.horizontal_overlap != 0 ){
+		// 	item_visible_width = Math.round( this.item_width*this.horizontal_overlap/100 );
+		// 	item_visible_width_lastitemlost = this.item_width - item_visible_width;
+		// }
+		// const control_width = dojo.marginBox( this.control_name as any ).w!;
+		// const perLines = Math.max( 1, Math.floor( (control_width-item_visible_width_lastitemlost) / ( item_visible_width + this.item_margin ) ) );
+
+		//auto horizontal_overlap
+		const containerWidth = dojo.marginBox( this.control_name as any ).w!;
+		const totalWidth = this.item_width * this.items.length + 50; //+ 50 to prevent an unwanted linebreak by bga stock
+		
+		this.item_margin = (containerWidth-totalWidth)/Math.max(1, this.items.length);
+		this.item_margin = Math.min(-3, this.item_margin);
+
+		//const overlap = Math.min(totalWidth/containerWidth*100, DaleStock.MAX_HORIZONTAL_OVERLAP)
+		//this.centerItems = (this.horizontal_overlap == DaleStock.MAX_HORIZONTAL_OVERLAP)
+
+		//arc
+		super.updateDisplay(from);
+		var div = undefined;
+		for(var i in this.items){
+			var item = this.items[i]!;
+			var index = +i+1 as number;
+			div = $(this.getItemDivId(String(item.id))) as HTMLElement;
+			div.dataset['arc'] = index+'/'+this.items.length;
+			dojo.setStyle(div, 'z-index', String(Images.Z_INDEX_HAND_CARD+index));
+			// console.log(+i);
+			// if (+i == 0) {
+			// 	div.dataset['arc'] = 'first';
+			// }
+			// else if (+i == length - 1) {
+			// 	div.dataset['arc'] = 'last';
+			// }
+			// else {
+			// 	div.dataset['arc'] = i+'/'+length;
+			// }
+		}
+	}
+}

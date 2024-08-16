@@ -5,6 +5,7 @@ import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 import { DbCard } from './types/DbCard';
 import { DaleLocation } from './types/DaleLocation';
+import { DaleIcons } from './DaleIcons';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -12,10 +13,9 @@ declare function $(text: string | Element): HTMLElement;
  * "none": nothing is clickable
  * "single": select single non-empty card slot
  * "multiple": select multiple non-empty card slots
- * "build": click on an empty slot to build a new stack
  * "rightmoststack": click on any card in the right most stack
  */
-type StallSelectionMode = "none" | "single" | "multiple" | "build" | "rightmoststack";
+type StallSelectionMode = 'none' | 'single' | 'rightmoststack';
 
 /**
  * Major Dale of Merchants game component. Players must build 8 stacks in their Stall to win the game.
@@ -28,39 +28,73 @@ export class Stall implements CardSlotManager, DaleLocation {
     private player_id: number;
     private container: HTMLElement;
     private stackContainers: HTMLElement[];
-    private slots: CardSlot[][];
     private selectionMode: StallSelectionMode;
+    private slots: CardSlot[][];
+    private numberOfStacks;
 
     constructor(page: Gamegui, player_id: number) {
         this.page = page;
         this.player_id = player_id;
         this.container = $("stall-"+player_id);
         this.stackContainers = [];
-        this.selectionMode = "none";
+        this.selectionMode = 'none';
         this.slots = [];
-        this.createNewStack(); //first stack
+        this.numberOfStacks = 0;
+        for (let i = 0; i < Stall.MAX_STACKS; i++) {
+            this.createNewStack();
+        }
+        dojo.setStyle(this.container.parentElement!, 'max-width', Images.CARD_WIDTH_S*(1-Images.STACK_MIN_OVERLAP_X)*Stall.MAX_STACKS+'px');
+    }
+
+    private get leftMostPlaceholder(): HTMLElement | undefined {
+        const placeholder = this.container.querySelector(".dale-stack-placeholder-first") ?? this.container.querySelector(".dale-stack-placeholder");
+        if (placeholder) {
+            return placeholder as HTMLElement;
+        }
+        console.warn("Failed to find a stall placeholder")
+        return undefined;
     }
 
     /**
      * Create a new empty stack in the stall with a single empty slot.
     */
-    createNewStack() {
+    private createNewStack() {
         if (this.slots.length < Stall.MAX_STACKS) {
             if (this.stackContainers.length > 0) {
                 const prevStackContainer = this.stackContainers[this.stackContainers.length - 1]!;
-                prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S}px;`); //the last stack containers has a max width (to stay in bounds)
+                prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S*(1-Images.STACK_MIN_OVERLAP_X)}px;`); //the last stack containers has a max width (to stay in bounds)
             }
             const stackContainer = document.createElement("div");
             stackContainer.classList.add("stack-container");
             stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;`); //stack containers have a min width (to stay left aligned)
+
             const placeholder = document.createElement("div");
-            placeholder.classList.add("placeholder");
+            if (this.slots.length == 0) {
+                placeholder.classList.add("dale-stack-placeholder-first");
+                const text = document.createElement("div");
+                text.classList.add("dale-text");
+                text.textContent = _("Build a new stack");
+                placeholder.appendChild(text);
+            }
+            else {
+                placeholder.classList.add("dale-stack-placeholder");
+                stackContainer.classList.add("dale-grayed-out");
+            }
             placeholder.setAttribute('style', `${Images.getCardStyle()};`);
+            const stackIndexDiv = document.createElement("div");
+            stackIndexDiv.classList.add("dale-stack-index");
+            stackIndexDiv.innerText = String(this.slots.length+1);
+            placeholder.append(stackIndexDiv);
+            placeholder.appendChild(DaleIcons.getBuildIcon());
             stackContainer.appendChild(placeholder);
+
             this.container.appendChild(stackContainer);
             this.stackContainers.push(stackContainer);
             this.slots.push([]);
-            this.createNewSlot(this.slots.length - 1);
+            //this.createNewSlot(this.slots.length - 1); //no first slot needed
+        }
+        else {
+            throw new Error(`Attempted to create stack index ${this.slots.length} (exceeding ${Stall.MAX_STACKS})`)
         }
     }
 
@@ -146,12 +180,16 @@ export class Stall implements CardSlotManager, DaleLocation {
      * @param from
      */
     insertCard(card: DaleCard, stack_index: number, index?: number, from?: HTMLElement | string) {
-        if (stack_index >= Stall.MAX_STACKS) {
-            throw new Error(`Cannot build beyond the maximum number of ${Stall.MAX_STACKS} stacks`);
+        if (stack_index > this.numberOfStacks) {
+            throw new Error(`Cannot insert a card at stack index ${stack_index}, because only ${this.numberOfStacks} stacks exist`);
         }
-        while (stack_index >= this.slots.length-1 && this.slots.length < Stall.MAX_STACKS) { //-1 because we need a trailing empty stack
-            this.createNewStack();
+        else if (stack_index == this.numberOfStacks) {
+            this.leftMostPlaceholder?.remove(); //building a new stack, remove the placeholder.
+            this.numberOfStacks += 1;
         }
+        // while (stack_index >= this.slots.length-1 && this.slots.length < Stall.MAX_STACKS) { //-1 because we need a trailing empty stack
+        //     this.createNewStack();
+        // }
         const stack = this.slots[stack_index]!;
         if (index == undefined) {
             index = 0;
@@ -170,7 +208,7 @@ export class Stall implements CardSlotManager, DaleLocation {
      * @return number of stacks in this stall.
     */
     getNumberOfStacks() {
-        return this.slots.length;
+        return this.numberOfStacks;
     }
 
     /**
@@ -211,36 +249,70 @@ export class Stall implements CardSlotManager, DaleLocation {
     /**
      * You can specify a selection mode similar like for a Stock.
      * @param mode see StallSelectionMode
-     * @param type (optional) - default "filled". type of card slots that can be selected
     */
     setSelectionMode(mode: StallSelectionMode) {
+        console.log("Stall setSelectionMode");
+        console.log(mode);
         //important: setSelectionMode is also used as a refresh when the number of slots changes
         //therefore, we can not shortcircuit when this.selectionMode == mode
-        //TODO: make a distinction between selectionMode 1 and 2
         this.unselectAll();
         this.selectionMode = mode;
         for (let stack of this.slots) {
             for (let slot of stack) {
                 switch(mode) {
-                    case "none":
+                    case 'none':
                         slot.setClickable(false);
                         break;
-                    case "single":
-                        slot.setClickable(slot.hasCard());
+                    case 'single':
+                        slot.setClickable(true);
                         break;
-                    case "multiple":
-                        slot.setClickable(slot.hasCard());
-                        break;
-                    case "build":
-                        slot.setClickable(!slot.hasCard());
-                        break;
-                    case "rightmoststack":
-                        //TODO: IMPORTANT: this should be -1 once the build action has been refactored. 
-                        //-2 is refering to the stack before the trailing empty stack
-                        slot.setClickable(stack === this.slots[this.slots.length-2]);
+                    case 'rightmoststack':
+                        slot.setClickable(stack === this.slots[this.numberOfStacks-1]);
                         break;
                 }
             }
+        }
+    }
+
+    /**
+     * Make the left placeholder clickable or not
+     * @pararm enable
+     */
+    setLeftPlaceholderClickable(enable: boolean) {
+        const placeholder = this.leftMostPlaceholder;
+        if (placeholder) {
+            if (enable) {
+                placeholder.classList.add("dale-clickable");
+                placeholder.parentElement!.classList.remove("dale-grayed-out");
+                placeholder.onclick = (this.page as any).onRequestBuildAction.bind(this.page);
+            }
+            else {
+                placeholder.classList.remove("dale-clickable");
+                placeholder.parentElement!.classList.add("dale-grayed-out"); //parent element to also block click events of overlapping stacks
+                placeholder.onclick = null;
+            }
+        }
+    }
+
+    /**
+     * Select the leftmost placeholder, but don't make it clickable
+     */
+    selectLeftPlaceholder() {
+        const placeholder = this.leftMostPlaceholder;
+        if (placeholder) {
+            placeholder.classList.add("dale-selected");
+            placeholder.parentElement!.classList.remove("dale-grayed-out");
+        }
+    }
+
+    /**
+     * Unselect the leftmost placeholder
+     */
+    unselectLeftPlaceholder() {
+        const placeholder = this.leftMostPlaceholder;
+        if (placeholder) {
+            placeholder.classList.remove("dale-selected");
+            placeholder.parentElement!.classList.add("dale-grayed-out");
         }
     }
 

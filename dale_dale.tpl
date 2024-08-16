@@ -25,19 +25,43 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
+Change action type:<br>
+<button id="action-technique">Technique</button>
+<button id="action-market">Market</button>
+<button id="action-stall">Stall</button>
+<button id="action-inventory">Inventory</button>
+
+<br><br>
+
+Add or remove cards (angling works from 1 to 10 cards at the moment):<br>
+<button id="card-remove">- Remove card</button>
+<button id="card-add">+ Add card</button>
+
+<br><br>
+You can also select cards
+
+<div id="dale-myhand-wrap">
+  <div class="dale-label dale-technique">{ACTION_LABEL_TECHNIQUE}</div>
+  <div class="dale-label dale-purchase">{ACTION_LABEL_PURCHASE}</div>
+  <div class="dale-label dale-build">{ACTION_LABEL_BUILD}</div>
+  <div class="dale-label dale-discard">{ACTION_LABEL_DISCARD}</div>
+  <div id="dale-myhand"></div> <!-- This is where the cards go -->
+</div>
+
+
 <div id="market-wrap" class="whiteblock">
     <!-- Display the name of this area? <h3>{MARKET}</h3> -->
     <div style="display:flex; align-items: center;">
-        <div id="market-discard" class="pile-container"></div>
         <div id="market-deck" class="pile-container"></div>
         <div id="market-board-background"><div id="market-board"></div></div>
+        <div id="market-discard" class="pile-container"></div>
     </div>
 </div>
 
-<div class="horizontal-flex">
-    <div class="myhand-wrap whiteblock dale-no-vertical-margin">
+<div class="dale-horizontal-flex">
+    <div id="dale-myhand-old-wrap" class="whiteblock dale-no-vertical-margin">
         <h3> {YOUR_HAND} </h3>
-        <div id="myhand"></div>
+        <div id="dale-myhand-old"></div>
     </div> 
     <div id="mytemporary-wrap" class="whiteblock dale-no-vertical-margin dale-left-margin">
         <h3> {CARD_CHOICE} </h3>
@@ -48,9 +72,9 @@
 <!-- BEGIN stall -->
 <div class="whiteblock">
     <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
-    <div class="horizontal-flex">
-        <div id="discard-{PLAYER_ID}" class="pile-container"></div>
+    <div class="dale-horizontal-flex">
         <div id="deck-{PLAYER_ID}" class="pile-container"></div>
+        <div id="discard-{PLAYER_ID}" class="pile-container"></div>
         <div class="stall-wrap">
             <h3 class="name"> {STALL} </h3>
             <div id="stall-{PLAYER_ID}" class="stall-container"></div>
@@ -79,7 +103,7 @@
 
 // Javascript HTML templates
 
-var jstpl_hand_size = '<span id="handsize-${player.id}">0</span><i class="handsize-icon"></i>';
+var jstpl_hand_size = '<span id="handsize-${player.id}">0</span><i id="dale-myhandsize-icon-${player.id}" class="dale-myhandsize-icon"></i>';
 
 </script>
 

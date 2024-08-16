@@ -29,6 +29,7 @@ import { DbCard } from './components/types/DbCard';
 import { ChameleonClientStateArgs } from './components/types/ChameleonClientStateArgs';
 import { CardSlot } from './components/CardSlot';
 import { DaleLocation } from './components/types/DaleLocation';
+import { DaleHand } from './components/DaleHand'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -43,10 +44,10 @@ class Dale extends Gamegui
 	allCardSlots: CardSlot[] = [];
 
 	/** Pile of hidden cards representing the market deck. */
-	marketDeck: Pile = new HiddenPile(this, 'market-deck', 'Market Deck');
+	marketDeck: Pile = new HiddenPile(this, 'market-deck', 'Supply');
 
 	/** Ordered pile of known cards representing the market discard deck. */
-	marketDiscard: Pile = new Pile(this, 'market-discard', 'Market Discard');
+	marketDiscard: Pile = new Pile(this, 'market-discard', 'Bin');
 
 	/** A hand size counter at the overall player board for each player  */
 	playerHandSizes: Record<number, Counter> = {};
@@ -88,6 +89,7 @@ class Dale extends Gamegui
 
 	/** Cards in this client's player hand */
 	myHand: DaleStock = new DaleStock();
+	myHand2: DaleHand = undefined as unknown as DaleHand;
 
 	/** Cards in this client's temporary card stock */
 	myTemporary: DaleStock = new DaleStock();
@@ -131,13 +133,15 @@ class Dale extends Gamegui
 			this.playerHandSizes[player_id] = new ebg.counter();
 			this.playerHandSizes[player_id].create('handsize-'+player_id);
 			this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]!);
+			this.addTooltip('dale-myhandsize-icon-'+player_id, _("Number of cards in hand."), '');
+			this.addTooltip('icon_point_'+player_id, _("Number of stacks built."), '');
 
 			//deck per player
 			this.playerDecks[player_id] = new HiddenPile(this, 'deck-'+player_id, 'Deck', +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
 
 			//discard pile per player
-			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard Pile', +player_id);
+			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard', +player_id);
 			for (let i in gamedatas.discardPiles[player_id]) {
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));
@@ -168,7 +172,9 @@ class Dale extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand.init(this, $('myhand')!);
+		this.myHand2 = new DaleHand(this, $('dale-myhand-wrap')!, $("dale-myhand")!);
+		this.myHand.init(this, $('dale-myhand-old')!);
+		this.myHand.centerItems = true;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
@@ -231,20 +237,25 @@ class Dale extends Gamegui
 		switch( stateName ){
 			case 'playerTurn':
 				this.market!.setSelectionMode(1);
+				this.myHand2.setSelectionMode('single', 'dale-technique');
 				this.myHand.setSelectionMode(1);
-				this.myStall.setSelectionMode("build");
+				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'purchase':
 				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
 				console.log(purchaseArgs);
+				this.myHand2.setSelectionMode('multiple', 'dale-purchase');
 				this.myHand.setSelectionMode(2, 'orderedPile');
 				this.market!.setSelected(purchaseArgs.pos, true);
 				break;
 			case 'build':
+				this.myHand2.setSelectionMode('multiple', 'dale-build');
 				this.myHand.setSelectionMode(2);
 				this.onBuildSelectionChanged(); //this.myDiscard.setSelectionMode('multiple');
+				this.myStall.selectLeftPlaceholder();
 				break;
 			case 'inventory':
+				this.myHand2.setSelectionMode('multiple', 'dale-discard');
 				this.myHand.setSelectionMode(2, 'orderedPile');
 				break;
 			case 'swiftBroker':
@@ -315,18 +326,23 @@ class Dale extends Gamegui
 		{
 			case 'playerTurn':
 				this.market!.setSelectionMode(0);
+				this.myHand2.setSelectionMode('none');
 				this.myHand.setSelectionMode(0);
-				this.myStall.setSelectionMode("none");
+				this.myStall.setLeftPlaceholderClickable(false);
 				break;
 			case 'purchase':
+				this.myHand2.setSelectionMode('none');
 				this.myHand.setSelectionMode(0);
 				this.market!.unselectAll();
 				break;
 			case 'build':
+				this.myHand2.setSelectionMode('none');
 				this.myHand.setSelectionMode(0);
 				this.myDiscard.setSelectionMode('none');
+				this.myStall.unselectLeftPlaceholder();
 				break;
 			case 'inventory':
+				this.myHand2.setSelectionMode('none');
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'swiftBroker':
@@ -490,7 +506,7 @@ class Dale extends Gamegui
 		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
-				if (this.myStall.getNumberOfStacks() <= 1) { //TODO: maybe needs to get refactored to 0 if I get rid of the trailing empty stack
+				if (this.myStall.getNumberOfStacks() == 0) {
 					console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
 					callback(card);
 					return;
@@ -619,38 +635,6 @@ class Dale extends Gamegui
 			}
 		}
 	}
-
-
-
-	//TODO: safely delete this
-	// /**
-	//  * Move a card from my hand to the specified pile
-	//  * @param card card to move
-	//  * @param pile pile to move to
-	//  * @param delay
-	// */
-	// myHandToPile(card: DbCard, pile: Pile, delay: number = 0) {
-	// 	const card_id = card.id;
-	// 	if ($('myhand_item_' + card_id)) {
-	// 		pile.push(new DaleCard(card_id), 'myhand_item_' + card_id, undefined, undefined, delay);
-	// 		this.myHand.removeFromStockByIdNoAnimation(+card_id);
-	// 	}
-	// 	else {
-	// 		throw new Error(`Card ${card_id} does not exist in my hand`);
-	// 	}
-	// }
-
-	//TODO: sately delete this
-	// /**
-	//  * Move a card from any player's hand to the specified pile
-	//  * @param card card to move
-	//  * @param player_id owner of the hand to move from
-	//  * @param pile pile to move to
-	//  * @param delay
-	// */
-	// handToPile(card: DbCard, player_id: number, pile: Pile, delay: number = 0) {
-	// 	this.playerStockToPile(card, this.myHand, player_id, pile, delay);
-	// }
 
 	/**
 	 * Move a card from the specified stock to the specified pile
@@ -802,11 +786,11 @@ class Dale extends Gamegui
         console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
 
 		switch(this.gamedatas.gamestate.name) {
-			case 'playerTurn':
-				if(this.checkAction('actRequestStallAction')) {
-					this.bgaPerformAction('actRequestStallAction', {})
-				}
-				break;
+			// case 'playerTurn':
+			// 	if(this.checkAction('actRequestStallAction')) {
+			// 		this.bgaPerformAction('actRequestStallAction', {})
+			// 	}
+			// 	break;
 			case 'acorn':
 				for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
 					if (stall == player_stall) {
@@ -1166,6 +1150,12 @@ class Dale extends Gamegui
 		this.onConfirmChameleon(topCard);
 	}
 
+	onRequestBuildAction() {
+		if(this.checkAction('actRequestStallAction')) {
+			this.bgaPerformAction('actRequestStallAction', {})
+		}
+	}
+
 	onRequestInventoryAction() {
 		if(this.checkAction('actRequestInventoryAction')) {
 			this.bgaPerformAction('actRequestInventoryAction', {})
@@ -1282,8 +1272,8 @@ class Dale extends Gamegui
 		if (notif.args.player_id == this.player_id) {
 			//animate from my hand
 			const card_id = +notif.args.card.id;
-			if ($('myhand_item_' + card_id)) {
-				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), 'myhand_item_' + card_id)
+			if ($(this.myHand.control_name+'_item_' + card_id)) {
+				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_' + card_id)
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -1337,15 +1327,11 @@ class Dale extends Gamegui
 		for (let i in notif.args.cards) {
 			const dbcard = notif.args.cards[i]!
 			const card = DaleCard.of(dbcard);
-			// const newLocationArg = String(Stall.MAX_STACK_SIZE * notif.args.stack_index + index);
-			// console.log(`Build stack: [${card.location}@${card.location_arg}] -> [<current_players_stall>@${newLocationArg}]`);
-			// card.location_arg = newLocationArg;
-			//stall.insertDbCard(card, 'myhand_item_' + card.id);
 			switch(notif.args.from){
 				case 'hand':
 					if (notif.args.player_id == this.player_id) {
-						if ($('myhand_item_' + card.id)) {
-							stall.insertCard(card, notif.args.stack_index, undefined, 'myhand_item_' + card.id)
+						if ($(this.myHand.control_name+'_item_' + card.id)) {
+							stall.insertCard(card, notif.args.stack_index, undefined, this.myHand.control_name+'_item_' + card.id)
 							this.myHand.removeFromStockByIdNoAnimation(+card.id);
 						}
 						else {
@@ -1361,7 +1347,6 @@ class Dale extends Gamegui
 					//[1, 3, 5, 6, 8] is a valid sequence of location_args, but location arg 5 is at pile index 2.
 					const discard = this.playerDiscards[notif.args.player_id]!;
 					const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed
-					//TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					stall.insertCard(card, notif.args.stack_index, undefined, discard.placeholderHTML)
 					console.log("index = "+index);
 					discard.removeAt(index); 

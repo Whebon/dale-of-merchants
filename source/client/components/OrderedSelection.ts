@@ -1,16 +1,15 @@
-import Stock = require('ebg/stock'); 
-import "ebg/stock"; 
+import { DaleCard } from './DaleCard';
 
 export type SelectionIconType = 'none' | 'orderedPile' | 'hand';
 
 export class OrderedSelection {
     private iconType: SelectionIconType;
-    private divsWithIcons: Map<number, Element>;
+    //private divsWithIcons: Map<number, Element>;
     private card_ids: number[];
 
     constructor() {
-        this.iconType = 'none';
-        this.divsWithIcons = new Map<number, Element>();
+        this.iconType = 'orderedPile';
+        //this.divsWithIcons = new Map<number, Element>();
         this.card_ids = [];
     }
     
@@ -19,7 +18,8 @@ export class OrderedSelection {
      * @return div element corresponding to the card_id
      */
     protected getDiv(card_id: number): Element | null {
-        return $("dale-card-"+card_id);
+        //return $("dale-card-"+card_id);
+        return new DaleCard(card_id).div;
     }
 
 	/**
@@ -28,10 +28,12 @@ export class OrderedSelection {
 	 * @param index index of the item within the ordered card_ids
 	 */
 	private addIcon(card_id: number, index: number) {
+        const div = this.getDiv(card_id)!
+        div.classList.add("dale-selected");
         if (this.iconType == 'none') {
             return;
         }
-        const div = this.getDiv(card_id)!
+        
         let offset = Math.min(7, index);
         if (this.iconType == 'orderedPile') {
             offset += 1;
@@ -41,7 +43,7 @@ export class OrderedSelection {
         icon.setAttribute('style', `
             background-position: -${offset}00%;
         `);
-        this.divsWithIcons.set(card_id, div);
+        // this.divsWithIcons.set(card_id, div);
 		div.appendChild(icon);
 	}
 
@@ -49,7 +51,8 @@ export class OrderedSelection {
      * @param card_id card to remove the selection icon from
      */
     private removeIcon(card_id: number) {
-        const div = this.divsWithIcons.get(card_id);
+        const div = this.getDiv(card_id);
+        div?.classList.remove("dale-selected");
         div?.querySelector(".selection-icon")?.remove();
     }
 
@@ -69,22 +72,24 @@ export class OrderedSelection {
 	 * @param card_id card_id to remove from the selection
      */
     public unselectItem(card_id: number) {
-        const div = this.divsWithIcons.get(card_id);
-        if (div) {
-            div.querySelector(".selection-icon")?.remove();
-            this.divsWithIcons.delete(card_id);
-        }
+        // const div = this.divsWithIcons.get(card_id);
+        // if (div) {
+        //     div.querySelector(".selection-icon")?.remove();
+        //     this.divsWithIcons.delete(card_id);
+        // }
 		const index = this.card_ids.indexOf(card_id);
 		this.card_ids.splice(index, 1);
 		console.log(this.card_ids);
+        this.removeIcon(card_id);
     }
 
     /**
      * Reset the selection and icons
      */
     public unselectAll() {
-        this.updateIcons();
-        this.card_ids = [];
+        for (let card_id of this.card_ids) {
+            this.unselectItem(card_id);
+        }
     }
 
     /**
@@ -111,14 +116,17 @@ export class OrderedSelection {
     /**
      * If the card is selected, unselect it. If the card is unselected, select it. Also updates the icons.
      * @param card_id
+     * @returns `true` if the card is now selected
      */
     public toggle(card_id: number) {
         if (this.includes(card_id)) {
             this.unselectItem(card_id);
             this.updateIcons();
+            return false;
         }
         else {
             this.selectItem(card_id);
+            return true;
         }
     }
 

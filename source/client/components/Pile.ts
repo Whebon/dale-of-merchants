@@ -54,7 +54,7 @@ export class Pile implements DaleLocation {
             ${pile_name ? `<h3 class="name">${pile_name}</h3>` : ""}
             <div class="pile" style="${Images.getCardStyle()}">
                 <div class="placeholder" style="${Images.getCardStyle()}"></div>
-                <div id="${pile_container_id}-top-card" class="clickable card"></div>
+                <div id="${pile_container_id}-top-card" class="clickable dale-card"></div>
                 <div class="size"></div>
                 <div class="size" style="top: 16%;"></div>
             </div>
@@ -62,7 +62,7 @@ export class Pile implements DaleLocation {
         this.page = page;
         this.containerHTML = $(pile_container_id);
         this.placeholderHTML = $(pile_container_id).querySelector('.placeholder')!;
-        this.topCardHTML = $(pile_container_id).querySelector('.card')!;
+        this.topCardHTML = $(pile_container_id).querySelector('.dale-card')!;
         const sizeElements = $(pile_container_id).querySelectorAll('.size')! as unknown as HTMLElement[];
         this.sizeHTML = sizeElements[0]!;
         this.selectedSizeHTML = sizeElements[1]!;
@@ -86,11 +86,11 @@ export class Pile implements DaleLocation {
             return;
         }
         if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
-            this.selectedSizeHTML.classList.remove("hidden");
+            this.selectedSizeHTML.classList.remove("dale-hidden");
             this.selectedSizeHTML.innerHTML = `<span style="color: red;">(x ${this.orderedSelectedCardIds.length})</span>`;
         }
         else {
-            this.selectedSizeHTML.classList.add("hidden");
+            this.selectedSizeHTML.classList.add("dale-hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
         if (topCard == undefined) {
@@ -340,9 +340,9 @@ export class Pile implements DaleLocation {
         const container_id = popin_id+"-card-container";
         for (let card of this.cards) {
             const div = card.toDiv(container_id);
-            div.classList.add("relative");
+            div.classList.add("dale-relative");
             if(this.selectionMode != 'none') {
-                div.classList.add("clickable");
+                div.classList.add("dale-clickable");
                 const thiz = this;
                 dojo.connect($(div.id), 'onclick', function() {
                     thiz.onClickCard(card, div);

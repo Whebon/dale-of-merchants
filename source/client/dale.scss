@@ -23,6 +23,36 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
+.dale-action-label {
+	position: absolute;
+	left: 50%;
+	transform: translate(-50%, -10px);
+	border-radius: 0 0 10px 10px;
+	padding: 3px 6px;
+	color: white;
+	min-width: 20%;
+	text-align: center;
+}
+
+.dale-text {
+	pointer-events: none;
+	display: none; //by default, text is hidden
+}
+
+.dale-icon {
+	position: absolute;
+	width: 0px; //a more specific selector should override this
+	height: 0px; //a more specific selector should override this
+	left: 50%; //a more specific selector should override this
+	top: 50%; //a more specific selector should override this
+	background-image: url('img/icons.png');
+    transform: translate(-50%, -50%);
+}
+
+.dale-clickable {
+	cursor: pointer;
+}
+
 .selection-icon {
 	background-image: url('img/selection_icons.png');
     width: 50px;
@@ -32,10 +62,10 @@
     left: 50%;
     top: 80%;
     transform: translate(-50%, -50%);
-	z-index: 3;
+	z-index: 100;
 }
 
-.handsize-icon {
+.dale-myhandsize-icon {
 	before {
 		content: "\f005";
 	}
@@ -49,10 +79,33 @@
 	margin-right: 5px;
 }
 
-.stockitem {
-	z-index: 3;
-	border-radius: 10px;
-}
+// #dale-myhand-old {
+// 	.stockitem {
+// 		transition: transform 0.3s ease;
+
+// 		//hand size 5
+// 		&:nth-child(1):nth-last-child(5) {
+// 			transform: translate(0, 5px) rotate(-5deg);
+// 			transition: transform 0.3s ease;
+// 		}
+// 		&:nth-child(4):nth-last-child(2) {
+// 			transform: translate(0, -2px) rotate(2.5deg);
+// 			transition: transform 0.3s ease;
+// 		}
+// 		&:nth-child(3):nth-last-child(3) {
+// 			transform: translate(0, -5px) rotate(0deg);
+// 			transition: transform 0.3s ease;
+// 		}
+// 		&:nth-child(2):nth-last-child(4) {
+// 			transform: translate(0, -2px) rotate(-2.5deg);
+// 			transition: transform 0.3s ease;
+// 		}
+// 		&:nth-child(5):nth-last-child(1) {
+// 			transform: translate(0, 5px) rotate(5deg);
+// 			transition: transform 0.3s ease;
+// 		}
+// 	}
+// }
 
 .placeholder {
 	background-image: url('img/placeholder.png');
@@ -60,13 +113,18 @@
 	position: absolute;
 }
 
-.clickable {
-	cursor: pointer;
-}
+// .dale-clickable {
+// 	cursor: pointer;
+// }
 
 .selected {
-	border-radius: 10px;
-	border: 1px solid red;
+	.dale-card {
+		border-radius: 10px;
+		box-shadow: 0px 2px 8px #e4aa19;
+		border: 3px solid #e4aa19;
+		transform: scale(1.1);
+		transition: transform 0.3s ease;
+	}
 }
 
 @keyframes blinker {
@@ -94,13 +152,36 @@
     opacity: 50%;
 }
 
-.card {
+.DEPRECATED-dale-card {
 	background-image: url('img/cards.jpg');
+	box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.5);
 	border-radius: 10px;
 	position: absolute;
+	transform: scale(1);
+	transition: transform 0.3s ease;
 }
 
-.card.relative {
+.dale-card {
+	background-image: url("https://decks.daimyria.fi/cards-dom/dom-1-chameleon-1.jpg");
+	background-size: cover;
+	box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
+	border-radius: 10px;
+	width: 125px;
+	height: 200px;
+	display: inline-block;
+	box-sizing: border-box;
+	position: absolute; //this is needed for dojo animations
+	transition: transform .2s, translate .2s;
+	z-index: 100;
+	&.dale-clickable:hover {
+		transform: scale(1.1);
+		translate: 0 -10px;
+		z-index: 200;
+	}
+}
+
+
+.dale-card.dale-relative {
 	margin: 5px;
 	position: relative !important;
 }
@@ -112,26 +193,26 @@
 	//min-width: 3000px; //large enough to always fit the full the background image (2717px) + a little bit of margin for right item_margin of the right card
     // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
 
-	.clickable {
-		transition: all .2s ease-in-out; 
-	}
+	// .dale-clickable {
+	// 	transition: all .2s ease-in-out; 
+	// }
 	
-	.clickable:hover {
-		cursor: pointer;
-		transform: scale(1.05); 
-	}
+	// .dale-clickable:hover {
+	// 	cursor: pointer;
+	// 	transform: scale(1.05); 
+	// }
 }
 
 #market-board {
 	position: relative;
 }
 
-.horizontal-flex {
+.dale-horizontal-flex {
 	display:flex; 
 	width: 100%;
 }
 
-.myhand-wrap {
+#dale-myhand-old-wrap {
 	flex: 1 1;
 }
 
@@ -172,6 +253,61 @@
 			margin-left: 5px;
 			min-width: 0; /* Ensure items can shrink below their content width */
 			position: relative;
+
+			.dale-stack-placeholder-first {
+				background-image: url('img/placeholder_purple.png');
+				border-radius: 10px;
+				position: absolute;
+				&.dale-clickable:hover {
+					background-color: var(--build-a);
+					.dale-icon {
+						width: 50px;
+						height: 50px;
+						top: 40%;
+						left: 56%;
+					}
+					.dale-text {
+						display: block;
+						color: var(--build);
+						position: absolute;
+						top: 65%;
+						left: 50%;
+						transform: translate(-50%, -50%);
+						width: 60%;
+						font-weight: bold;
+						text-align: center;
+					}
+				}
+				&.dale-selected {
+					background-color: var(--build-a);
+				}
+			}
+
+			.dale-stack-placeholder {
+				clip-path: inset(0 0 0 25%); //to make sure the left corners are never visible. must match STACK_MIN_OVERLAP_X
+				background-image: url('img/placeholder_purple.png');
+				border-radius: 10px;
+				position: absolute;
+				&.dale-clickable:hover {
+					background-color: var(--build-a);
+					.dale-icon {
+						width: 50px;
+						height: 50px;
+						left: 78%;
+					}
+				}
+				&.dale-selected {
+					background-color: var(--build-a);
+				}
+			}
+
+			.dale-stack-index {
+				position: absolute;
+				color: var(--build);
+				font-weight: bold;
+				left: 82%;
+				top: 5%;
+			}
 		}
 	}
 
@@ -180,21 +316,10 @@
 		white-space: nowrap;
 	}
 	
-	.clickable:hover {
-		//growing animation glitches in stacks (maybe try z-index?)
-		cursor: pointer;
-		left: 4px;
-	}
-
-	//TODO: this can safely be removed 
-	// .build-icon {
-	// 	//width and height are set in js
-	// 	position: absolute;
-	// 	background-image: url('img/build_icon.png');
-	// 	background-size: contain;
-    // 	background-repeat: no-repeat;
-	// 	transform: translate(-50%, -50%);
-	// 	z-index: 500;
+	// .dale-clickable:hover {
+	// 	//growing animation glitches in stacks (maybe try z-index?)
+	// 	cursor: pointer;
+	// 	left: 4px;
 	// }
 }
 
@@ -241,12 +366,11 @@
 	display: flex;
 	flex-wrap: wrap;
 
-	.clickable {
+	.dale-clickable {
 		transition: all .2s ease-in-out; 
 	}
 	
-	.clickable:hover {
-		cursor: pointer;
+	.dale-clickable:hover {
 		transform: scale(1.05); 
 	}
 }
@@ -260,7 +384,13 @@
 // 	background-color: red;
 // }
 
-.hidden {
+.dale-grayed-out {
+	opacity: 0.3;
+	filter: grayscale(100%);
+	pointer-events: none;
+}
+
+.dale-hidden {
 	display: none;
 }
 
@@ -292,20 +422,924 @@
 	}
 }
 
-/*
-	Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
+////////////////////////////////////////////////////
+//////       Awesome css by Sami Laakso       //////
+////////////////////////////////////////////////////
 
-	.white_token {
-		background-image: url('img/tokens.png');
-		background-position: 0px 0px;
+:root {
+	--full: 10;
+	--deg-max: 5deg; /* Half of full, in degrees */
+	--deg-min: calc(-1 * var(--deg-max));
+	--technique: rgb(40,125,184);
+	--technique-a: rgba(40,125,184,0.15);
+	--purchase: rgb(210,128,21);
+	--purchase-a: rgba(210,128,21,0.15);
+	--build: rgb(192, 61, 120);
+	--build-a: rgb(192,61,120,0.15);
+	--discard: rgb(112,61,5);
+	--discard-a: rgb(112,61,5,0.15);
+}
+  
+body {
+	background: url('https://stories.daimyria.fi/img/background-page.jpg');
+}
+
+#dale-myhand-wrap {
+	padding: 0 10px 15px;
+	text-align: center;
+	border-radius: 10px;
+	margin: 10px;
+	font-family: helvetica;
+	background-color: rgba(255,255,255,0.5);
+
+	.dale-label {
+		color: white;
+		padding: 10px 15px;
+		border-radius: 0 0 10px 10px;
+		display: none;
+		margin-bottom: 20px;
 	}
-	.black_token {
-		background-image: url('img/tokens.png');
-		background-position: -20px 0px;
+
+	.dale-card {
+		position: relative; //TODO
+		margin: 0 -3px 0;
 	}
-	.token {
-		width: 20px;
-		height: 20px;
-		background-repeat: none;
+}
+
+#dale-myhand-wrap.dale-technique .dale-label.dale-technique { display: inline-block; }
+#dale-myhand-wrap.dale-purchase .dale-label.dale-purchase { display: inline-block; }
+#dale-myhand-wrap.dale-build .dale-label.dale-build { display: inline-block; }
+#dale-myhand-wrap.dale-discard .dale-label.dale-discard { display: inline-block; }
+
+#dale-myhand-wrap.dale-technique { outline: 3px solid var(--technique); }
+#dale-myhand-wrap.dale-technique .dale-label { background-color: var(--technique); }
+#dale-myhand-wrap.dale-purchase { outline: 3px solid var(--purchase); }
+#dale-myhand-wrap.dale-purchase .dale-label { background-color: var(--purchase); }
+#dale-myhand-wrap.dale-build { outline: 3px solid var(--build); }
+#dale-myhand-wrap.dale-build .dale-label { background-color: var(--build); }
+#dale-myhand-wrap.dale-discard { outline: 3px solid var(--discard); }
+#dale-myhand-wrap.dale-discard .dale-label { background-color: var(--discard); }
+
+.dale-card.dale-selected:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+#dale-myhand-wrap.dale-technique {
+	.dale-card.dale-selected {
+		outline: 3px solid var(--technique);
+		&:before { background-color: var(--technique-a); }
 	}
-*/
+	.dale-card:hover {
+		box-shadow: 0px 0px 8px 2px var(--technique);
+	}
+}
+
+#dale-myhand-wrap.dale-purchase {
+	.dale-card.dale-selected {
+		outline: 3px solid var(--purchase);
+		&:before { background-color: var(--purchase-a); }
+	}
+	.dale-card:hover {
+		box-shadow: 0px 0px 8px 2px var(--purchase);
+	}
+}
+
+#dale-myhand-wrap.dale-build {
+	.dale-card.dale-selected {
+		outline: 3px solid var(--build);
+		&:before { background-color: var(--build-a); }
+	}
+	.dale-card:hover {
+		box-shadow: 0px 0px 8px 2px var(--build);
+	}
+}
+
+#dale-myhand-wrap.dale-discard {
+	.dale-card.dale-selected {
+		outline: 3px solid var(--discard);
+		&:before { background-color: var(--discard-a); }
+	}
+	.dale-card:hover {
+		box-shadow: 0px 0px 8px 2px var(--discard);
+	}
+}
+
+#dale-myhand {
+	/* First and last card */
+	.dale-card:first-child { rotate: var(--deg-min); }
+	.dale-card:last-child { rotate: var(--deg-max); }
+
+	/* 2 cards */
+	.dale-card:nth-child(1).dale-card:nth-last-child(2) {
+		rotate: -2deg;
+	}
+	.dale-card:nth-child(2).dale-card:nth-last-child(1) {
+		rotate: 2deg;
+	}
+
+	/* 3 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(2) {
+		top: -6px;
+	}
+
+	/* 4 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 3);
+		top: -8px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 3);
+		top: -8px;
+	}
+
+	/* 5 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(4) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 4);
+		top: -8px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 4);
+		top: -10px;
+	}
+	.dale-card:nth-child(4).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 3deg * var(--full) / 4);
+		top: -8px;
+	}
+
+	/* 6 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(5) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 5);
+		top: -7px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(4) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 5);
+		top: -10px;
+	}
+	.dale-card:nth-child(4).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 3deg * var(--full) / 5);
+		top: -10px;
+	}
+	.dale-card:nth-child(5).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 4deg * var(--full) / 5);
+		top: -7px;
+	}
+
+	/* 7 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(6) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 6);
+		top: -7px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(5) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 6);
+		top: -9px;
+	}
+	.dale-card:nth-child(4).dale-card:nth-last-child(4) {
+		rotate: calc(var(--deg-min) + 3deg * var(--full) / 6);
+		top: -10px;
+	}
+	.dale-card:nth-child(5).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 4deg * var(--full) / 6);
+		top: -9px;
+	}
+	.dale-card:nth-child(6).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 5deg * var(--full) / 6);
+		top: -7px;
+	}
+
+	/* 8 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(7) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 7);
+		top: -7px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(6) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 7);
+		top: -9px;
+	}
+	.dale-card:nth-child(4).dale-card:nth-last-child(5) {
+		rotate: calc(var(--deg-min) + 3deg * var(--full) / 7);
+		top: -10px;
+	}
+	.dale-card:nth-child(5).dale-card:nth-last-child(4) {
+		rotate: calc(var(--deg-min) + 4deg * var(--full) / 7);
+		top: -10px;
+	}
+	.dale-card:nth-child(6).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 5deg * var(--full) / 7);
+		top: -9px;
+	}
+	.dale-card:nth-child(7).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 6deg * var(--full) / 7);
+		top: -7px;
+	}
+
+	/* 9 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(8) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 8);
+		top: -7px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(7) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 8);
+		top: -8px;
+	}
+	.dale-card:nth-child(4).dale-card:nth-last-child(6) {
+		rotate: calc(var(--deg-min) + 3deg * var(--full) / 8);
+		top: -9px;
+	}
+	.dale-card:nth-child(5).dale-card:nth-last-child(5) {
+		rotate: calc(var(--deg-min) + 4deg * var(--full) / 8);
+		top: -10px;
+	}
+	.dale-card:nth-child(6).dale-card:nth-last-child(4) {
+		rotate: calc(var(--deg-min) + 5deg * var(--full) / 8);
+		top: -9px;
+	}
+	.dale-card:nth-child(7).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 6deg * var(--full) / 8);
+		top: -8px;
+	}
+	.dale-card:nth-child(8).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 7deg * var(--full) / 8);
+		top: -7px;
+	}
+
+	/* 10 cards */
+	.dale-card:nth-child(2).dale-card:nth-last-child(9) {
+		rotate: calc(var(--deg-min) + 1deg * var(--full) / 9);
+		top: -7px;
+	}
+	.dale-card:nth-child(3).dale-card:nth-last-child(8) {
+		rotate: calc(var(--deg-min) + 2deg * var(--full) / 9);
+		top: -8px;
+	}
+	.dale-card:nth-child(4).dale-card:nth-last-child(7) {
+		rotate: calc(var(--deg-min) + 3deg * var(--full) / 9);
+		top: -9px;
+	}
+	.dale-card:nth-child(5).dale-card:nth-last-child(6) {
+		rotate: calc(var(--deg-min) + 4deg * var(--full) / 9);
+		top: -10px;
+	}
+	.dale-card:nth-child(6).dale-card:nth-last-child(5) {
+		rotate: calc(var(--deg-min) + 5deg * var(--full) / 9);
+		top: -10px;
+	}
+	.dale-card:nth-child(7).dale-card:nth-last-child(4) {
+		rotate: calc(var(--deg-min) + 6deg * var(--full) / 9);
+		top: -9px;
+	}
+	.dale-card:nth-child(8).dale-card:nth-last-child(3) {
+		rotate: calc(var(--deg-min) + 7deg * var(--full) / 9);
+		top: -8px;
+		}
+	.dale-card:nth-child(9).dale-card:nth-last-child(2) {
+		rotate: calc(var(--deg-min) + 8deg * var(--full) / 9);
+		top: -7px;
+	}
+
+	/* 1 card */
+	.dale-card:only-child { rotate: 0deg; }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#dale-myhand-old {
+	.stockitem {
+		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
+		border-radius: 10px;
+		width: 125px;
+		height: 200px;
+		display: inline-block;
+		box-sizing: border-box;
+		transition: transform .2s, translate .2s;
+		z-index: 100;
+		&:hover {
+			transform: scale(1.1);
+			translate: 0 -10px;
+			z-index: 200 !important;
+		}
+	}
+
+	/* 1 cards */
+	.stockitem[data-arc="1/1"] {
+		transform: rotate(0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 2 cards */
+	.stockitem[data-arc="1/2"] {
+		transform: rotate(-5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/2"] {
+		transform: rotate(5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 3 cards */
+	.stockitem[data-arc="1/3"] {
+		transform: rotate(-5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/3"] {
+		transform: rotate(0.0deg) translateY(-5px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/3"] {
+		transform: rotate(5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 4 cards */
+	.stockitem[data-arc="1/4"] {
+		transform: rotate(-5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/4"] {
+		transform: rotate(-1.666666666666667deg) translateY(-7px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/4"] {
+		transform: rotate(1.6666666666666663deg) translateY(-7px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/4"] {
+		transform: rotate(5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 5 cards */
+	.stockitem[data-arc="1/5"] {
+		transform: rotate(-5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/5"] {
+		transform: rotate(-2.5deg) translateY(-8px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/5"] {
+		transform: rotate(0.0deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/5"] {
+		transform: rotate(2.5deg) translateY(-8px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="5/5"] {
+		transform: rotate(5.0deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 6 cards */
+	.stockitem[data-arc="1/6"] {
+		transform: rotate(-4.581220085277042deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/6"] {
+		transform: rotate(-2.7487320511662254deg) translateY(-8px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/6"] {
+		transform: rotate(-0.9162440170554083deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/6"] {
+		transform: rotate(0.9162440170554083deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="5/6"] {
+		transform: rotate(2.748732051166226deg) translateY(-8px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="6/6"] {
+		transform: rotate(4.581220085277042deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 7 cards */
+	.stockitem[data-arc="1/7"] {
+		transform: rotate(-3.8183048659927548deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/7"] {
+		transform: rotate(-2.5455365773285035deg) translateY(-7px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/7"] {
+		transform: rotate(-1.2727682886642517deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/7"] {
+		transform: rotate(0.0deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="5/7"] {
+		transform: rotate(1.2727682886642513deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="6/7"] {
+		transform: rotate(2.5455365773285035deg) translateY(-7px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="7/7"] {
+		transform: rotate(3.8183048659927548deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 8 cards */
+	.stockitem[data-arc="1/8"] {
+		transform: rotate(-3.27315408323344deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/8"] {
+		transform: rotate(-2.3379672023096deg) translateY(-6px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/8"] {
+		transform: rotate(-1.4027803213857601deg) translateY(-10px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/8"] {
+		transform: rotate(-0.46759344046192014deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="5/8"] {
+		transform: rotate(0.4675934404619198deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="6/8"] {
+		transform: rotate(1.4027803213857601deg) translateY(-10px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="7/8"] {
+		transform: rotate(2.3379672023095996deg) translateY(-6px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="8/8"] {
+		transform: rotate(3.27315408323344deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 9 cards */
+	.stockitem[data-arc="1/9"] {
+		transform: rotate(-2.864192368329286deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/9"] {
+		transform: rotate(-2.1481442762469642deg) translateY(-5px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/9"] {
+		transform: rotate(-1.432096184164643deg) translateY(-9px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/9"] {
+		transform: rotate(-0.7160480920823215deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="5/9"] {
+		transform: rotate(0.0deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="6/9"] {
+		transform: rotate(0.7160480920823215deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="7/9"] {
+		transform: rotate(1.432096184164643deg) translateY(-9px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="8/9"] {
+		transform: rotate(2.1481442762469642deg) translateY(-5px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="9/9"] {
+		transform: rotate(2.864192368329286deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	/* 10 cards */
+	.stockitem[data-arc="1/10"] {
+		transform: rotate(-2.546060040113423deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="2/10"] {
+		transform: rotate(-1.980268920088218deg) translateY(-5px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="3/10"] {
+		transform: rotate(-1.414477800063013deg) translateY(-8px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="4/10"] {
+		transform: rotate(-0.8486866800378078deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="5/10"] {
+		transform: rotate(-0.2828955600126027deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="6/10"] {
+		transform: rotate(0.2828955600126027deg) translateY(-12px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="7/10"] {
+		transform: rotate(0.8486866800378075deg) translateY(-11px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="8/10"] {
+		transform: rotate(1.414477800063013deg) translateY(-8px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="9/10"] {
+		transform: rotate(1.9802689200882178deg) translateY(-5px);
+		transition: transform 0.3s ease;
+	}
+
+	.stockitem[data-arc="10/10"] {
+		transform: rotate(2.546060040113423deg) translateY(-0px);
+		transition: transform 0.3s ease;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// /* 1 card */
+	// .stockitem[data-arc="1/1"] {
+	// 	transform: rotate(0deg) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 2 cards */
+	// .stockitem[data-arc="1/2"] {
+	// 	transform: rotate(-2deg) translateY(-6px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/2"] {
+	// 	transform: rotate(2deg) translateY(-6px);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 3 cards */
+	// .stockitem[data-arc="1/3"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/3"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 3)) translateY(-6px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/3"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 4 cards */
+	// .stockitem[data-arc="1/4"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/4"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 3)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/4"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 3)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/4"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 5 cards */
+	// .stockitem[data-arc="1/5"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/5"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 4)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/5"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 4)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/5"] {
+	// 	transform: rotate(calc(var(--deg-min) + 3deg * var(--full) / 4)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="5/5"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 6 cards */
+	// .stockitem[data-arc="1/6"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/6"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 5)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/6"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 5)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/6"] {
+	// 	transform: rotate(calc(var(--deg-min) + 3deg * var(--full) / 5)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="5/6"] {
+	// 	transform: rotate(calc(var(--deg-min) + 4deg * var(--full) / 5)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="6/6"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 7 cards */
+	// .stockitem[data-arc="1/7"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/7"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 6)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/7"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 6)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/7"] {
+	// 	transform: rotate(calc(var(--deg-min) + 3deg * var(--full) / 6)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="5/7"] {
+	// 	transform: rotate(calc(var(--deg-min) + 4deg * var(--full) / 6)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="6/7"] {
+	// 	transform: rotate(calc(var(--deg-min) + 5deg * var(--full) / 6)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="7/7"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 8 cards */
+	// .stockitem[data-arc="1/8"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/8"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 7)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/8"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 7)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/8"] {
+	// 	transform: rotate(calc(var(--deg-min) + 3deg * var(--full) / 7)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="5/8"] {
+	// 	transform: rotate(calc(var(--deg-min) + 4deg * var(--full) / 7)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="6/8"] {
+	// 	transform: rotate(calc(var(--deg-min) + 5deg * var(--full) / 7)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="7/8"] {
+	// 	transform: rotate(calc(var(--deg-min) + 6deg * var(--full) / 7)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="8/8"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 9 cards */
+	// .stockitem[data-arc="1/9"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 8)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 8)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 3deg * var(--full) / 8)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="5/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 4deg * var(--full) / 8)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="6/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 5deg * var(--full) / 8)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="7/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 6deg * var(--full) / 8)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="8/9"] {
+	// 	transform: rotate(calc(var(--deg-min) + 7deg * var(--full) / 8)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="9/9"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+	// /* 10 cards */
+	// .stockitem[data-arc="1/10"] {
+	// 	transform: rotate(var(--deg-min)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="2/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 1deg * var(--full) / 9)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="3/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 2deg * var(--full) / 9)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="4/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 3deg * var(--full) / 9)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="5/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 4deg * var(--full) / 9)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="6/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 5deg * var(--full) / 9)) translateY(-10px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="7/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 6deg * var(--full) / 9)) translateY(-9px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="8/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 7deg * var(--full) / 9)) translateY(-8px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="9/10"] {
+	// 	transform: rotate(calc(var(--deg-min) + 8deg * var(--full) / 9)) translateY(-7px);
+	// 	transition: transform 0.3s ease;
+	// }
+	// .stockitem[data-arc="10/10"] {
+	// 	transform: rotate(var(--deg-max)) translateY(0);
+	// 	transition: transform 0.3s ease;
+	// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// /* 5 cards */
+	// .stockitem[data-arc="1/3"] {
+	// 	rotate: calc(var(--deg-min) + 1deg * var(--full) / 4);
+	// 	transform: translate(0, -8px);
+	// }
+	// .stockitem[data-arc="2/3"] {
+	// 	rotate: calc(var(--deg-min) + 2deg * var(--full) / 4);
+	// 	transform: translate(0, -10px);
+	// }
+	// .stockitem[data-arc="3/3"] {
+	// 	rotate: calc(var(--deg-min) + 3deg * var(--full) / 4);
+	// 	transform: translate(0, -8px);
+	// }
+
+	// /* 6 cards */
+	// .stockitem[data-arc="1/4"] {
+	// 	rotate: calc(var(--deg-min) + 1deg * var(--full) / 5);
+	// 	transform: translate(0, -7px) ;
+	// }
+	// .stockitem[data-arc="2/4"] {
+	// 	rotate: calc(var(--deg-min) + 2deg * var(--full) / 5);
+	// 	transform: translate(0, -10px);
+	// }
+	// .stockitem[data-arc="3/4"] {
+	// 	rotate: calc(var(--deg-min) + 3deg * var(--full) / 5);
+	// 	transform: translate(0, -10px);
+	// }
+	// .stockitem[data-arc="4/4"] {
+	// 	rotate: calc(var(--deg-min) + 4deg * var(--full) / 5);
+	// 	transform: translate(0, -7px);
+	// }
