@@ -71,8 +71,8 @@ class view_dale_dale extends game_view
         $this->tpl['ACTION_LABEL_DISCARD'] = $this->_("Click cards to <strong>discard</strong>");
 
         //Other variables
+        // $this->tpl['YOUR_HAND'] = $this->_("Your Hand");
         $this->tpl['MARKET'] = $this->_("Market");
-        $this->tpl['YOUR_HAND'] = $this->_("Your Hand");
         $this->tpl['CARD_CHOICE'] = $this->_("Card Choice");
         $this->tpl['PLAY_AREA'] = $this->_("Play Area");
         $this->tpl['STALL'] = $this->_("Stall");

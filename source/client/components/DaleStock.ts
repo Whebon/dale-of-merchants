@@ -22,10 +22,15 @@ class StockOrderedSelection extends OrderedSelection {
     }
 }
 
+type ActionLabelClass = 'dale-technique' | 'dale-purchase' | 'dale-build' | 'dale-discard';
+
 /**
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock implements DaleLocation {
+	private readonly actionLabelClasses = ['dale-technique', 'dale-purchase', 'dale-build', 'dale-discard'];
+	private actionLabelWrap: Element | undefined = undefined;
+
 	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
 	public orderedSelection: OrderedSelection;
 
@@ -82,6 +87,15 @@ export class DaleStock extends Stock implements DaleLocation {
 			}
 		}
 		hideOuterContainer?.classList.add("dale-hidden");
+	}
+
+	/**
+	 * Set a reference to the wrap div that holds the action labels
+	 */
+	initActionLabelWrap(wrap: Element) {
+		dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
+		this.actionLabelWrap = wrap
+		this.apparenceBorderWidth = '0px'; //the selection border will be managed by the action label
 	}
 
 	//TODO: safely delete this
@@ -164,6 +178,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param iconType (optional) none. types of icons to use for the selection
 	 */
 	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none'): void {
+		this.setActionLabel('dale-technique');
 		this.orderedSelection.setIconType(iconType);
 		if (mode == this.selectionMode) {
 			return;
@@ -178,7 +193,21 @@ export class DaleStock extends Stock implements DaleLocation {
 				$(this.control_name+"_item_"+card_id)?.classList.add("dale-clickable");
 			}
 		}
+	}
 
+	 /**
+     * Set the action label to one of the pre-made label classes. If no label was provided, hide the label instead.
+     * @param color hex color for the background and border of the label
+     */
+	private setActionLabel(label?: ActionLabelClass) {
+		if (this.actionLabelWrap) {
+			this.actionLabelWrap!.classList.remove(...this.actionLabelClasses);
+			if (label) {
+				console.log("Add "+label);
+				console.log(this.actionLabelWrap);
+				this.actionLabelWrap!.classList.add(label);
+			}
+		}
 	}
 
 	//TODO: safely delete this

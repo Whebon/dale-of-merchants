@@ -79,34 +79,6 @@
 	margin-right: 5px;
 }
 
-// #dale-myhand-old {
-// 	.stockitem {
-// 		transition: transform 0.3s ease;
-
-// 		//hand size 5
-// 		&:nth-child(1):nth-last-child(5) {
-// 			transform: translate(0, 5px) rotate(-5deg);
-// 			transition: transform 0.3s ease;
-// 		}
-// 		&:nth-child(4):nth-last-child(2) {
-// 			transform: translate(0, -2px) rotate(2.5deg);
-// 			transition: transform 0.3s ease;
-// 		}
-// 		&:nth-child(3):nth-last-child(3) {
-// 			transform: translate(0, -5px) rotate(0deg);
-// 			transition: transform 0.3s ease;
-// 		}
-// 		&:nth-child(2):nth-last-child(4) {
-// 			transform: translate(0, -2px) rotate(-2.5deg);
-// 			transition: transform 0.3s ease;
-// 		}
-// 		&:nth-child(5):nth-last-child(1) {
-// 			transform: translate(0, 5px) rotate(5deg);
-// 			transition: transform 0.3s ease;
-// 		}
-// 	}
-// }
-
 .placeholder {
 	background-image: url('img/placeholder.png');
 	border-radius: 10px;
@@ -166,10 +138,6 @@
 	background-size: cover;
 	box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 	border-radius: 10px;
-	width: 125px;
-	height: 200px;
-	display: inline-block;
-	box-sizing: border-box;
 	position: absolute; //this is needed for dojo animations
 	transition: transform .2s, translate .2s;
 	z-index: 100;
@@ -210,10 +178,6 @@
 .dale-horizontal-flex {
 	display:flex; 
 	width: 100%;
-}
-
-#dale-myhand-old-wrap {
-	flex: 1 1;
 }
 
 .dale-no-vertical-margin {
@@ -445,12 +409,12 @@ body {
 }
 
 #dale-myhand-wrap {
+	flex: 1 1; //taken from the original myhand-wrap
 	padding: 0 10px 15px;
 	text-align: center;
 	border-radius: 10px;
 	margin: 10px;
 	font-family: helvetica;
-	background-color: rgba(255,255,255,0.5);
 
 	.dale-label {
 		color: white;
@@ -458,11 +422,6 @@ body {
 		border-radius: 0 0 10px 10px;
 		display: none;
 		margin-bottom: 20px;
-	}
-
-	.dale-card {
-		position: relative; //TODO
-		margin: 0 -3px 0;
 	}
 }
 
@@ -491,248 +450,53 @@ body {
 }
 
 #dale-myhand-wrap.dale-technique {
-	.dale-card.dale-selected {
+	.stockitem.dale-selected {
 		outline: 3px solid var(--technique);
-		&:before { background-color: var(--technique-a); }
+		background-color: var(--technique-a);
+		background-blend-mode: overlay;
 	}
-	.dale-card:hover {
+	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--technique);
 	}
 }
 
 #dale-myhand-wrap.dale-purchase {
-	.dale-card.dale-selected {
+	.stockitem.dale-selected {
 		outline: 3px solid var(--purchase);
-		&:before { background-color: var(--purchase-a); }
+		background-color: var(--purchase-a);
+		background-blend-mode: overlay;
 	}
-	.dale-card:hover {
+	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--purchase);
 	}
 }
 
 #dale-myhand-wrap.dale-build {
-	.dale-card.dale-selected {
+	.stockitem.dale-selected {
 		outline: 3px solid var(--build);
-		&:before { background-color: var(--build-a); }
+		background-color: var(--build-a);
+		background-blend-mode: overlay;
 	}
-	.dale-card:hover {
+	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--build);
 	}
 }
 
 #dale-myhand-wrap.dale-discard {
-	.dale-card.dale-selected {
+	.stockitem.dale-selected {
 		outline: 3px solid var(--discard);
-		&:before { background-color: var(--discard-a); }
+		background-color: var(--discard-a);
+		background-blend-mode: overlay;
 	}
-	.dale-card:hover {
+	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--discard);
 	}
 }
 
 #dale-myhand {
-	/* First and last card */
-	.dale-card:first-child { rotate: var(--deg-min); }
-	.dale-card:last-child { rotate: var(--deg-max); }
-
-	/* 2 cards */
-	.dale-card:nth-child(1).dale-card:nth-last-child(2) {
-		rotate: -2deg;
-	}
-	.dale-card:nth-child(2).dale-card:nth-last-child(1) {
-		rotate: 2deg;
-	}
-
-	/* 3 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(2) {
-		top: -6px;
-	}
-
-	/* 4 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 3);
-		top: -8px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 3);
-		top: -8px;
-	}
-
-	/* 5 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(4) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 4);
-		top: -8px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 4);
-		top: -10px;
-	}
-	.dale-card:nth-child(4).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 3deg * var(--full) / 4);
-		top: -8px;
-	}
-
-	/* 6 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(5) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 5);
-		top: -7px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(4) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 5);
-		top: -10px;
-	}
-	.dale-card:nth-child(4).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 3deg * var(--full) / 5);
-		top: -10px;
-	}
-	.dale-card:nth-child(5).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 4deg * var(--full) / 5);
-		top: -7px;
-	}
-
-	/* 7 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(6) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 6);
-		top: -7px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(5) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 6);
-		top: -9px;
-	}
-	.dale-card:nth-child(4).dale-card:nth-last-child(4) {
-		rotate: calc(var(--deg-min) + 3deg * var(--full) / 6);
-		top: -10px;
-	}
-	.dale-card:nth-child(5).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 4deg * var(--full) / 6);
-		top: -9px;
-	}
-	.dale-card:nth-child(6).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 5deg * var(--full) / 6);
-		top: -7px;
-	}
-
-	/* 8 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(7) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 7);
-		top: -7px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(6) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 7);
-		top: -9px;
-	}
-	.dale-card:nth-child(4).dale-card:nth-last-child(5) {
-		rotate: calc(var(--deg-min) + 3deg * var(--full) / 7);
-		top: -10px;
-	}
-	.dale-card:nth-child(5).dale-card:nth-last-child(4) {
-		rotate: calc(var(--deg-min) + 4deg * var(--full) / 7);
-		top: -10px;
-	}
-	.dale-card:nth-child(6).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 5deg * var(--full) / 7);
-		top: -9px;
-	}
-	.dale-card:nth-child(7).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 6deg * var(--full) / 7);
-		top: -7px;
-	}
-
-	/* 9 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(8) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 8);
-		top: -7px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(7) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 8);
-		top: -8px;
-	}
-	.dale-card:nth-child(4).dale-card:nth-last-child(6) {
-		rotate: calc(var(--deg-min) + 3deg * var(--full) / 8);
-		top: -9px;
-	}
-	.dale-card:nth-child(5).dale-card:nth-last-child(5) {
-		rotate: calc(var(--deg-min) + 4deg * var(--full) / 8);
-		top: -10px;
-	}
-	.dale-card:nth-child(6).dale-card:nth-last-child(4) {
-		rotate: calc(var(--deg-min) + 5deg * var(--full) / 8);
-		top: -9px;
-	}
-	.dale-card:nth-child(7).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 6deg * var(--full) / 8);
-		top: -8px;
-	}
-	.dale-card:nth-child(8).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 7deg * var(--full) / 8);
-		top: -7px;
-	}
-
-	/* 10 cards */
-	.dale-card:nth-child(2).dale-card:nth-last-child(9) {
-		rotate: calc(var(--deg-min) + 1deg * var(--full) / 9);
-		top: -7px;
-	}
-	.dale-card:nth-child(3).dale-card:nth-last-child(8) {
-		rotate: calc(var(--deg-min) + 2deg * var(--full) / 9);
-		top: -8px;
-	}
-	.dale-card:nth-child(4).dale-card:nth-last-child(7) {
-		rotate: calc(var(--deg-min) + 3deg * var(--full) / 9);
-		top: -9px;
-	}
-	.dale-card:nth-child(5).dale-card:nth-last-child(6) {
-		rotate: calc(var(--deg-min) + 4deg * var(--full) / 9);
-		top: -10px;
-	}
-	.dale-card:nth-child(6).dale-card:nth-last-child(5) {
-		rotate: calc(var(--deg-min) + 5deg * var(--full) / 9);
-		top: -10px;
-	}
-	.dale-card:nth-child(7).dale-card:nth-last-child(4) {
-		rotate: calc(var(--deg-min) + 6deg * var(--full) / 9);
-		top: -9px;
-	}
-	.dale-card:nth-child(8).dale-card:nth-last-child(3) {
-		rotate: calc(var(--deg-min) + 7deg * var(--full) / 9);
-		top: -8px;
-		}
-	.dale-card:nth-child(9).dale-card:nth-last-child(2) {
-		rotate: calc(var(--deg-min) + 8deg * var(--full) / 9);
-		top: -7px;
-	}
-
-	/* 1 card */
-	.dale-card:only-child { rotate: 0deg; }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#dale-myhand-old {
 	.stockitem {
 		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 		border-radius: 10px;
-		width: 125px;
-		height: 200px;
-		display: inline-block;
-		box-sizing: border-box;
 		transition: transform .2s, translate .2s;
 		z-index: 100;
 		&:hover {

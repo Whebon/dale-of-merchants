@@ -40,12 +40,8 @@ Add or remove cards (angling works from 1 to 10 cards at the moment):<br>
 <br><br>
 You can also select cards
 
-<div id="dale-myhand-wrap">
-  <div class="dale-label dale-technique">{ACTION_LABEL_TECHNIQUE}</div>
-  <div class="dale-label dale-purchase">{ACTION_LABEL_PURCHASE}</div>
-  <div class="dale-label dale-build">{ACTION_LABEL_BUILD}</div>
-  <div class="dale-label dale-discard">{ACTION_LABEL_DISCARD}</div>
-  <div id="dale-myhand"></div> <!-- This is where the cards go -->
+<div id="dale-myhand-wrap-2">
+  <div id="dale-myhand-2"></div> <!-- This is where the cards go -->
 </div>
 
 
@@ -59,9 +55,13 @@ You can also select cards
 </div>
 
 <div class="dale-horizontal-flex">
-    <div id="dale-myhand-old-wrap" class="whiteblock dale-no-vertical-margin">
-        <h3> {YOUR_HAND} </h3>
-        <div id="dale-myhand-old"></div>
+    <div id="dale-myhand-wrap" class="whiteblock dale-no-vertical-margin">
+        <!-- <h3> {YOUR_HAND} </h3> -->
+        <div class="dale-label dale-technique">{ACTION_LABEL_TECHNIQUE}</div>
+        <div class="dale-label dale-purchase">{ACTION_LABEL_PURCHASE}</div>
+        <div class="dale-label dale-build">{ACTION_LABEL_BUILD}</div>
+        <div class="dale-label dale-discard">{ACTION_LABEL_DISCARD}</div>
+        <div id="dale-myhand"></div>
     </div> 
     <div id="mytemporary-wrap" class="whiteblock dale-no-vertical-margin dale-left-margin">
         <h3> {CARD_CHOICE} </h3>

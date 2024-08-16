@@ -34,6 +34,14 @@ import { DaleHand } from './components/DaleHand'
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
+	n: number = 1000;
+	quick() {
+		this.myHand2.addCard(new DaleCard(this.n+3, this.n-1000));
+		//this.myHand2.addCard(new DaleCard(this.n+3, this.n-1000), "deck-2371802-top-card");
+		//this.myHand2.removeCard(new DaleCard(this.n));
+		this.n++;
+	}
+
 	/** For conveniene, each new Pile will add a reference to itself in this array*/
 	allPiles: Pile[] = [];
 
@@ -172,8 +180,9 @@ class Dale extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand2 = new DaleHand(this, $('dale-myhand-wrap')!, $("dale-myhand")!);
-		this.myHand.init(this, $('dale-myhand-old')!);
+		this.myHand2 = new DaleHand(this, $('dale-myhand-wrap-2')!, $("dale-myhand-2")!);
+		this.myHand.init(this, $('dale-myhand')!);
+		this.myHand.initActionLabelWrap($('dale-myhand-wrap')!);
 		this.myHand.centerItems = true;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;

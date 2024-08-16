@@ -502,6 +502,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         __extends(DaleStock, _super);
         function DaleStock() {
             var _this = _super.call(this) || this;
+            _this.actionLabelClasses = ['dale-technique', 'dale-purchase', 'dale-build', 'dale-discard'];
+            _this.actionLabelWrap = undefined;
             _this.orderedSelection = new StockOrderedSelection(_this);
             _this.onChangeSelection = function (control_name, item_id) {
                 if (item_id && !this.isSelected(item_id)) {
@@ -544,6 +546,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             };
             hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("dale-hidden");
         };
+        DaleStock.prototype.initActionLabelWrap = function (wrap) {
+            dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
+            this.actionLabelWrap = wrap;
+            this.apparenceBorderWidth = '0px';
+        };
         DaleStock.prototype.selectItem = function (item_id) {
             _super.prototype.selectItem.call(this, item_id);
             this.orderedSelection.selectItem(+item_id);
@@ -555,6 +562,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         DaleStock.prototype.setSelectionMode = function (mode, iconType) {
             var _a, _b;
             if (iconType === void 0) { iconType = 'none'; }
+            this.setActionLabel('dale-technique');
             this.orderedSelection.setIconType(iconType);
             if (mode == this.selectionMode) {
                 return;
@@ -567,6 +575,17 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
                 else {
                     (_b = $(this.control_name + "_item_" + card_id)) === null || _b === void 0 ? void 0 : _b.classList.add("dale-clickable");
+                }
+            }
+        };
+        DaleStock.prototype.setActionLabel = function (label) {
+            var _a;
+            if (this.actionLabelWrap) {
+                (_a = this.actionLabelWrap.classList).remove.apply(_a, this.actionLabelClasses);
+                if (label) {
+                    console.log("Add " + label);
+                    console.log(this.actionLabelWrap);
+                    this.actionLabelWrap.classList.add(label);
                 }
             }
         };
@@ -1795,6 +1814,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         __extends(Dale, _super);
         function Dale() {
             var _this = _super.call(this) || this;
+            _this.n = 1000;
             _this.allPiles = [];
             _this.allDaleStocks = [];
             _this.allCardSlots = [];
@@ -1812,6 +1832,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log('dale constructor');
             return _this;
         }
+        Dale.prototype.quick = function () {
+            this.myHand2.addCard(new DaleCard_8.DaleCard(this.n + 3, this.n - 1000));
+            this.n++;
+        };
         Object.defineProperty(Dale.prototype, "myDeck", {
             get: function () {
                 return this.playerDecks[this.player_id];
@@ -1886,8 +1910,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card = gamedatas.market[i];
                 this.market.insertCard(DaleCard_8.DaleCard.of(card), +card.location_arg);
             }
-            this.myHand2 = new DaleHand_1.DaleHand(this, $('dale-myhand-wrap'), $("dale-myhand"));
-            this.myHand.init(this, $('dale-myhand-old'));
+            this.myHand2 = new DaleHand_1.DaleHand(this, $('dale-myhand-wrap-2'), $("dale-myhand-2"));
+            this.myHand.init(this, $('dale-myhand'));
+            this.myHand.initActionLabelWrap($('dale-myhand-wrap'));
             this.myHand.centerItems = true;
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
