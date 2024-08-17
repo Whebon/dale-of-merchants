@@ -7,7 +7,7 @@ export class MainClientState {
     private page: Gamegui;
 	public name: keyof ClientGameState;
     public descriptionmyturn: string;
-    public args: ClientGameState[keyof ClientGameState];
+    private _args: ClientGameState[keyof ClientGameState];
 
     public static readonly DESCRIPTIONS: Map<keyof ClientGameState, string> = new Map<keyof ClientGameState, string>([
         ['client_technique', _("asdsad")]
@@ -17,7 +17,14 @@ export class MainClientState {
         this.page = page;
         this.name = 'client_technique';
         this.descriptionmyturn = "";
-        this.args = {};
+        this._args = {};
+    }
+
+    public get args(): ClientGameState[keyof ClientGameState] {
+        if (Object.keys(this._args).length == 0) {
+            throw new Error(`Client state ${this.name} has no args`);
+        }
+        return this._args;
     }
 
     /**
@@ -36,7 +43,9 @@ export class MainClientState {
         if (name) {
             this.name = name;
         }
-        this.args = args ?? {} as ClientGameState[K];
+        if (args) {
+            this._args = args ?? {} as ClientGameState[K];
+        }
         this.page.setClientState(this.name, {
             descriptionmyturn: MainClientState.DESCRIPTIONS.get(this.name) ?? _("<missing client state description>")
         })

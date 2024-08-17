@@ -359,22 +359,30 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
+				DaleCard.unbindAllChameleonsLocal();
+				this.updateHTML();
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
+				DaleCard.unbindAllChameleonsLocal()
+				this.updateHTML();
 				break;
 			case 'client_build':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
+				DaleCard.unbindAllChameleonsLocal();
+				this.updateHTML();
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
+				DaleCard.unbindAllChameleonsLocal()
+				this.updateHTML();
 				break;
 			case 'winterIsComing':
 				this.myHand.setSelectionMode(0);
@@ -849,23 +857,32 @@ class Dale extends Gamegui
 
 	onMarketCardClick(card: DaleCard, pos: number) {
 		pos = this.market!.getValidPos(pos);
+		console.log("onMarketCardClick");
+		console.log(this.gamedatas.gamestate.name);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
+				const client_purchase_args = this.mainClientState.args as ClientGameState['client_purchase'];
+				console.log("AAAAAAAAAAAAAAAA");
+				console.log(client_purchase_args);
+				if (client_purchase_args.pos == pos) {
+					this.mainClientState.exit();
+				}
+				else {
+					this.mainClientState.enterClientState('client_purchase', {
+						pos: pos,
+						on_market_board: true
+					});
+				}
+				break;
 			case 'client_technique':
 			case 'client_build':
 			case 'client_inventory':
+				console.log(`${this.gamedatas.gamestate.name} --> client_purchase`);
 				this.mainClientState.enterClientState('client_purchase', {
 					pos: pos,
 					on_market_board: true
 				});
-				//TODO: safely delete
-				// if(this.checkAction('actRequestMarketAction')) {
-				// 	//TODO: check if maximum available funds are sufficient
-				// 	this.bgaPerformAction('actRequestMarketAction', {
-				// 		market_card_id: card.id
-				// 	})
-				// }
 				break;
 			case 'giftVoucher':
 				if(this.checkAction("actGiftVoucher")) {
@@ -1028,6 +1045,7 @@ class Dale extends Gamegui
 		var card_id;
 		if (args.on_market_board) {
 			card_id = this.market!.getCardId(args.pos);
+			console.log(card_id);
 		}
 		else {
 			const card = this.marketDiscard.peek();
@@ -1035,6 +1053,7 @@ class Dale extends Gamegui
 				throw new Error("Cannot purchase from the bin, as it is empty")
 			}
 			card_id = card.id;
+			throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY")
 		}
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
@@ -1170,7 +1189,6 @@ class Dale extends Gamegui
 		args.card.unbindChameleonLocal();
 		this.restoreServerGameState();
 		this.chameleonArgs = undefined;
-		//DaleCard.unbindAllChameleonsLocal(); 	//TODO: is this really needed? maybe we don't need to unbind anything AT ALL?
 		this.updateHTML();
 	}
 
@@ -1232,17 +1250,25 @@ class Dale extends Gamegui
 	}
 
 	onRequestBuildAction() {
-		this.mainClientState.enterClientState('client_build');
-		// if(this.checkAction('actRequestStallAction')) {
-		// 	this.bgaPerformAction('actRequestStallAction', {})
-		// }
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_purchase':
+			case 'client_technique':
+			case 'client_build':
+			case 'client_inventory':
+				this.mainClientState.enterClientState('client_build');
+				break;
+		}
 	}
 
 	onRequestInventoryAction() {
-		this.mainClientState.enterClientState('client_inventory');
-		// if(this.checkAction('actRequestInventoryAction')) {
-		// 	this.bgaPerformAction('actRequestInventoryAction', {})
-		// }
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_purchase':
+			case 'client_technique':
+			case 'client_build':
+			case 'client_inventory':
+				this.mainClientState.enterClientState('client_inventory');
+				break;
+		}
 	}
 
 	onInventoryAction() {

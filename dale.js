@@ -1829,8 +1829,18 @@ define("components/types/MainClientState", ["require", "exports"], function (req
             this.page = page;
             this.name = 'client_technique';
             this.descriptionmyturn = "";
-            this.args = {};
+            this._args = {};
         }
+        Object.defineProperty(MainClientState.prototype, "args", {
+            get: function () {
+                if (Object.keys(this._args).length == 0) {
+                    throw new Error("Client state ".concat(this.name, " has no args"));
+                }
+                return this._args;
+            },
+            enumerable: false,
+            configurable: true
+        });
         MainClientState.prototype.exit = function () {
             this.enterClientState('client_technique');
         };
@@ -1839,7 +1849,9 @@ define("components/types/MainClientState", ["require", "exports"], function (req
             if (name) {
                 this.name = name;
             }
-            this.args = args !== null && args !== void 0 ? args : {};
+            if (args) {
+                this._args = args !== null && args !== void 0 ? args : {};
+            }
             this.page.setClientState(this.name, {
                 descriptionmyturn: (_a = MainClientState.DESCRIPTIONS.get(this.name)) !== null && _a !== void 0 ? _a : _("<missing client state description>")
             });
@@ -2104,22 +2116,30 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
+                    DaleCard_8.DaleCard.unbindAllChameleonsLocal();
+                    this.updateHTML();
                     break;
                 case 'client_technique':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
+                    DaleCard_8.DaleCard.unbindAllChameleonsLocal();
+                    this.updateHTML();
                     break;
                 case 'client_build':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
+                    DaleCard_8.DaleCard.unbindAllChameleonsLocal();
+                    this.updateHTML();
                     break;
                 case 'client_inventory':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
+                    DaleCard_8.DaleCard.unbindAllChameleonsLocal();
+                    this.updateHTML();
                     break;
                 case 'winterIsComing':
                     this.myHand.setSelectionMode(0);
@@ -2475,11 +2495,27 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onMarketCardClick = function (card, pos) {
             pos = this.market.getValidPos(pos);
+            console.log("onMarketCardClick");
+            console.log(this.gamedatas.gamestate.name);
             switch (this.gamedatas.gamestate.name) {
                 case 'client_purchase':
+                    var client_purchase_args = this.mainClientState.args;
+                    console.log("AAAAAAAAAAAAAAAA");
+                    console.log(client_purchase_args);
+                    if (client_purchase_args.pos == pos) {
+                        this.mainClientState.exit();
+                    }
+                    else {
+                        this.mainClientState.enterClientState('client_purchase', {
+                            pos: pos,
+                            on_market_board: true
+                        });
+                    }
+                    break;
                 case 'client_technique':
                 case 'client_build':
                 case 'client_inventory':
+                    console.log("".concat(this.gamedatas.gamestate.name, " --> client_purchase"));
                     this.mainClientState.enterClientState('client_purchase', {
                         pos: pos,
                         on_market_board: true
@@ -2628,6 +2664,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var card_id;
             if (args.on_market_board) {
                 card_id = this.market.getCardId(args.pos);
+                console.log(card_id);
             }
             else {
                 var card = this.marketDiscard.peek();
@@ -2635,6 +2672,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("Cannot purchase from the bin, as it is empty");
                 }
                 card_id = card.id;
+                throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY");
             }
             if (this.checkAction('actPurchase')) {
                 this.bgaPerformAction('actPurchase', __assign({ funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()), market_card_id: card_id }, DaleCard_8.DaleCard.getLocalChameleons()));
@@ -2787,10 +2825,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.onConfirmChameleon(topCard);
         };
         Dale.prototype.onRequestBuildAction = function () {
-            this.mainClientState.enterClientState('client_build');
+            switch (this.gamedatas.gamestate.name) {
+                case 'client_purchase':
+                case 'client_technique':
+                case 'client_build':
+                case 'client_inventory':
+                    this.mainClientState.enterClientState('client_build');
+                    break;
+            }
         };
         Dale.prototype.onRequestInventoryAction = function () {
-            this.mainClientState.enterClientState('client_inventory');
+            switch (this.gamedatas.gamestate.name) {
+                case 'client_purchase':
+                case 'client_technique':
+                case 'client_build':
+                case 'client_inventory':
+                    this.mainClientState.enterClientState('client_inventory');
+                    break;
+            }
         };
         Dale.prototype.onInventoryAction = function () {
             if (this.checkAction("actInventoryAction")) {
