@@ -57,10 +57,12 @@ You can also select cards
 <div class="dale-horizontal-flex">
     <div id="dale-myhand-wrap" class="whiteblock dale-no-vertical-margin">
         <!-- <h3> {YOUR_HAND} </h3> -->
-        <div class="dale-label dale-technique">{ACTION_LABEL_TECHNIQUE}</div>
-        <div class="dale-label dale-purchase">{ACTION_LABEL_PURCHASE}</div>
-        <div class="dale-label dale-build">{ACTION_LABEL_BUILD}</div>
-        <div class="dale-label dale-discard">{ACTION_LABEL_DISCARD}</div>
+        <div class="dale-label dale-label-technique">{ACTION_LABEL_TECHNIQUE}</div>
+        <div class="dale-label dale-label-purchase">{ACTION_LABEL_PURCHASE}</div>
+        <div class="dale-label dale-label-build">{ACTION_LABEL_BUILD}</div>
+        <div class="dale-label dale-label-discard">{ACTION_LABEL_DISCARD}</div>
+        <div class="dale-label dale-label-text"></div>
+        <div class="dale-label dale-label-default">{ACTION_LABEL_DEFAULT}</div>
         <div id="dale-myhand"></div>
     </div> 
     <div id="mytemporary-wrap" class="whiteblock dale-no-vertical-margin dale-left-margin">

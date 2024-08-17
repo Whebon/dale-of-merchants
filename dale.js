@@ -502,8 +502,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         __extends(DaleStock, _super);
         function DaleStock() {
             var _this = _super.call(this) || this;
-            _this.actionLabelClasses = ['dale-technique', 'dale-purchase', 'dale-build', 'dale-discard'];
+            _this.actionLabelClasses = ['dale-label-technique', 'dale-label-purchase', 'dale-label-build', 'dale-label-discard', 'dale-label-text', 'dale-label-default'];
             _this.actionLabelWrap = undefined;
+            _this.actionLabelText = undefined;
             _this.orderedSelection = new StockOrderedSelection(_this);
             _this.onChangeSelection = function (control_name, item_id) {
                 if (item_id && !this.isSelected(item_id)) {
@@ -547,8 +548,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("dale-hidden");
         };
         DaleStock.prototype.initActionLabelWrap = function (wrap) {
+            var _a;
             dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
             this.actionLabelWrap = wrap;
+            this.actionLabelText = (_a = wrap.querySelector(".dale-label-text")) !== null && _a !== void 0 ? _a : undefined;
             this.apparenceBorderWidth = '0px';
         };
         DaleStock.prototype.selectItem = function (item_id) {
@@ -575,13 +578,18 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
             }
         };
-        DaleStock.prototype.setActionLabel = function (label) {
+        DaleStock.prototype.setActionLabel = function (label, text) {
             var _a;
+            if (label === void 0) { label = 'dale-label-default'; }
             if (this.actionLabelWrap) {
+                if (label == 'dale-label-text') {
+                    if (!this.actionLabelText) {
+                        throw new Error("Please correctly initialize actionLabelText");
+                    }
+                    this.actionLabelText.textContent = text !== null && text !== void 0 ? text : _("<Missing Text>");
+                }
                 (_a = this.actionLabelWrap.classList).remove.apply(_a, this.actionLabelClasses);
                 if (label) {
-                    console.log("Add " + label);
-                    console.log(this.actionLabelWrap);
                     this.actionLabelWrap.classList.add(label);
                 }
             }
@@ -662,9 +670,12 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         };
         DaleStock.prototype.updateDisplay = function (from) {
             var containerWidth = dojo.marginBox(this.control_name).w;
-            var totalWidth = this.item_width * this.items.length + 50;
-            this.item_margin = (containerWidth - totalWidth) / Math.max(1, this.items.length);
+            var totalWidth = this.item_width * this.items.length + 5;
+            this.item_margin = (containerWidth - totalWidth) / Math.max(1, this.items.length - 1);
             this.item_margin = Math.min(-3, this.item_margin);
+            if (this.item_margin != -3) {
+                console.log(this.item_margin);
+            }
             _super.prototype.updateDisplay.call(this, from);
             var div = undefined;
             for (var i in this.items) {
@@ -673,6 +684,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 div = $(this.getItemDivId(String(item.id)));
                 div.dataset['arc'] = index + '/' + this.items.length;
                 dojo.setStyle(div, 'z-index', String(Images_2.Images.Z_INDEX_HAND_CARD + index));
+            }
+            if (this.item_margin < 0) {
+                console.log("GOT HERE");
+                dojo.setStyle(this.container_div, 'left', "".concat(this.item_margin / 2, "px"));
             }
         };
         DaleStock.MAX_HORIZONTAL_OVERLAP = 85;
@@ -1992,24 +2007,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_purchase':
                     var client_purchase_pos = this.mainClientState.args.pos;
-                    this.myHand.setSelectionMode(2, 'pileYellow', 'dale-purchase');
+                    this.myHand.setSelectionMode(2, 'pileYellow', 'dale-label-purchase');
                     this.market.setSelectionMode(1);
                     this.market.setSelected(client_purchase_pos, true);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_technique':
-                    this.myHand.setSelectionMode(1, 'pileBlue', 'dale-technique');
+                    this.myHand.setSelectionMode(1, 'pileBlue', 'dale-label-technique');
                     this.market.setSelectionMode(1);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_build':
-                    this.myHand.setSelectionMode(2, 'build', 'dale-build');
+                    this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
                     this.market.setSelectionMode(1);
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
                 case 'client_inventory':
-                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-discard');
+                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-discard');
                     this.market.setSelectionMode(1);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
@@ -2582,7 +2597,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var card = new DaleCard_8.DaleCard(card_id);
             var isAdded = this.myHand.isSelected(card_id);
             switch (this.gamedatas.gamestate.name) {
-                case 'playerTurn':
+                case 'client_technique':
                     this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
                     this.myHand.unselectAll();
                     break;

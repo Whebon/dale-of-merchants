@@ -230,38 +230,6 @@ class Dale extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Game & client states
-
-	//TODO: safely delete this
-	// /**
-	//  * Set a client selection mode within the 'playerTurn' gamestate
-	//  */
-	// public setPlayerTurnMode(mode: PlayerTurnMode) {
-	// 	if (this.gamedatas.gamestate.name != 'playerTurn') {
-	// 		throw new Error("'setPlayerTurnMode' can only be used in gamestate 'playerTurn'")
-	// 	}
-	// 	// if (mode != this.playerTurnMode) {
-	// 	// 	console.log(`Leaving playerTurnMode ${this.playerTurnMode}`);
-	// 	// 	this.playerTurnMode = mode;
-	// 	// }
-
-	// 	console.log(`Entering playerTurnMode ${this.playerTurnMode}`);
-
-	// 	this.playerTurnMode = mode;
-	// 	switch(mode) {
-	// 		case 'purchase':
-	// 			this.myHand.setSelectionMode(2, 'pileBlue', 'dale-purchase');
-	// 			break;
-	// 		case 'technique':
-	// 			this.myHand.setSelectionMode(1, 'none', 'dale-technique');
-	// 			break;
-	// 		case 'build':
-	// 			this.myHand.setSelectionMode(2, 'pileBlue', 'dale-build');
-	// 			break;
-	// 		case 'inventory':
-	// 			this.myHand.setSelectionMode(2, 'pileBlue', 'dale-discard');
-	// 			break;
-	// 	}
-	// }
 	
 	/** @gameSpecific See {@link Gamegui.onEnteringState} for more information. */
 	override onEnteringState(stateName: GameStateName, args: CurrentStateArgs): void
@@ -285,24 +253,24 @@ class Dale extends Gamegui
 				break;
 			case 'client_purchase':
 				const client_purchase_pos = (this.mainClientState.args as ClientGameState['client_purchase']).pos;
-				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-purchase');
+				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-label-purchase');
 				this.market!.setSelectionMode(1);
 				this.market!.setSelected(client_purchase_pos, true);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
-				this.myHand.setSelectionMode(1, 'pileBlue', 'dale-technique');
+				this.myHand.setSelectionMode(1, 'pileBlue', 'dale-label-technique');
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_build':
-				this.myHand.setSelectionMode(2, 'build', 'dale-build');
+				this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
 				this.market!.setSelectionMode(1);
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_inventory':
-				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-discard');
+				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-discard');
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
@@ -900,11 +868,6 @@ class Dale extends Gamegui
         console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
 
 		switch(this.gamedatas.gamestate.name) {
-			// case 'playerTurn':
-			// 	if(this.checkAction('actRequestStallAction')) {
-			// 		this.bgaPerformAction('actRequestStallAction', {})
-			// 	}
-			// 	break;
 			case 'acorn':
 				for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
 					if (stall == player_stall) {
@@ -1030,7 +993,7 @@ class Dale extends Gamegui
 		const isAdded = this.myHand.isSelected(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
-			case 'playerTurn':
+			case 'client_technique':
 				//play card action (technique or active passive)
 				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
 				this.myHand.unselectAll();

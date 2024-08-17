@@ -224,7 +224,7 @@
 				border-radius: 10px;
 				position: absolute;
 				&.dale-clickable:hover {
-					background-color: var(--build-a);
+					background-color: var(--dale-label-build-a);
 					.dale-icon {
 						width: 50px;
 						height: 50px;
@@ -233,7 +233,7 @@
 					}
 					.dale-text {
 						display: block;
-						color: var(--build);
+						color: var(--dale-label-build);
 						position: absolute;
 						top: 65%;
 						left: 50%;
@@ -244,7 +244,7 @@
 					}
 				}
 				&.dale-selected {
-					background-color: var(--build-a);
+					background-color: var(--dale-label-build-a);
 				}
 			}
 
@@ -254,7 +254,7 @@
 				border-radius: 10px;
 				position: absolute;
 				&.dale-clickable:hover {
-					background-color: var(--build-a);
+					background-color: var(--dale-label-build-a);
 					.dale-icon {
 						width: 50px;
 						height: 50px;
@@ -262,13 +262,13 @@
 					}
 				}
 				&.dale-selected {
-					background-color: var(--build-a);
+					background-color: var(--dale-label-build-a);
 				}
 			}
 
 			.dale-stack-index {
 				position: absolute;
-				color: var(--build);
+				color: var(--dale-label-build);
 				font-weight: bold;
 				left: 82%;
 				top: 5%;
@@ -392,17 +392,18 @@
 ////////////////////////////////////////////////////
 
 :root {
-	--full: 10;
-	--deg-max: 5deg; /* Half of full, in degrees */
-	--deg-min: calc(-1 * var(--deg-max));
-	--technique: rgb(40,125,184);
-	--technique-a: rgba(40,125,184,0.15);
-	--purchase: rgb(210,128,21);
-	--purchase-a: rgba(210,128,21,0.15);
-	--build: rgb(192, 61, 120);
-	--build-a: rgb(192,61,120,0.15);
-	--discard: rgb(112,61,5);
-	--discard-a: rgb(112,61,5,0.15);
+	--dale-label-technique: rgb(40,125,184);
+	--dale-label-technique-a: rgba(40,125,184,0.15);
+	--dale-label-purchase: rgb(210,128,21);
+	--dale-label-purchase-a: rgba(210,128,21,0.15);
+	--dale-label-build: rgb(192, 61, 120);
+	--dale-label-build-a: rgb(192,61,120,0.15);
+	--dale-label-discard: rgb(112,61,5);
+	--dale-label-discard-a: rgb(112,61,5,0.15);
+	--dale-label-text: rgb(255,0,0);
+	--dale-label-text-a: rgb(255,0,0,0.15);
+	--dale-label-default: rgb(100,100,100, 0.5); //grayed out
+	--dale-label-default-a: rgb(100,100,100,0.15);
 }
   
 body {
@@ -424,21 +425,31 @@ body {
 		display: none;
 		margin-bottom: 20px;
 	}
+
+	.dale-label.dale-label-default {
+		opacity: 0.5; //grayed out
+	}
 }
 
-#dale-myhand-wrap.dale-technique .dale-label.dale-technique { display: inline-block; }
-#dale-myhand-wrap.dale-purchase .dale-label.dale-purchase { display: inline-block; }
-#dale-myhand-wrap.dale-build .dale-label.dale-build { display: inline-block; }
-#dale-myhand-wrap.dale-discard .dale-label.dale-discard { display: inline-block; }
+#dale-myhand-wrap.dale-label-technique .dale-label.dale-label-technique { display: inline-block; }
+#dale-myhand-wrap.dale-label-purchase .dale-label.dale-label-purchase { display: inline-block; }
+#dale-myhand-wrap.dale-label-build .dale-label.dale-label-build { display: inline-block; }
+#dale-myhand-wrap.dale-label-discard .dale-label.dale-label-discard { display: inline-block; }
+#dale-myhand-wrap.dale-label-text .dale-label.dale-label-text { display: inline-block; }
+#dale-myhand-wrap.dale-label-default .dale-label.dale-label-default { display: inline-block; }
 
-#dale-myhand-wrap.dale-technique { outline: 3px solid var(--technique); }
-#dale-myhand-wrap.dale-technique .dale-label { background-color: var(--technique); }
-#dale-myhand-wrap.dale-purchase { outline: 3px solid var(--purchase); }
-#dale-myhand-wrap.dale-purchase .dale-label { background-color: var(--purchase); }
-#dale-myhand-wrap.dale-build { outline: 3px solid var(--build); }
-#dale-myhand-wrap.dale-build .dale-label { background-color: var(--build); }
-#dale-myhand-wrap.dale-discard { outline: 3px solid var(--discard); }
-#dale-myhand-wrap.dale-discard .dale-label { background-color: var(--discard); }
+#dale-myhand-wrap.dale-label-technique { outline: 3px solid var(--dale-label-technique); }
+#dale-myhand-wrap.dale-label-technique .dale-label { background-color: var(--dale-label-technique); }
+#dale-myhand-wrap.dale-label-purchase { outline: 3px solid var(--dale-label-purchase); }
+#dale-myhand-wrap.dale-label-purchase .dale-label { background-color: var(--dale-label-purchase); }
+#dale-myhand-wrap.dale-label-build { outline: 3px solid var(--dale-label-build); }
+#dale-myhand-wrap.dale-label-build .dale-label { background-color: var(--dale-label-build); }
+#dale-myhand-wrap.dale-label-discard { outline: 3px solid var(--dale-label-discard); }
+#dale-myhand-wrap.dale-label-discard .dale-label { background-color: var(--dale-label-discard); }
+#dale-myhand-wrap.dale-label-text { outline: 3px solid var(--dale-label-text); }
+#dale-myhand-wrap.dale-label-text .dale-label { background-color: var(--dale-label-text); }
+#dale-myhand-wrap.dale-label-default { outline: 3px solid var(--dale-label-default); }
+#dale-myhand-wrap.dale-label-default .dale-label { background-color: var(--dale-label-default); }
 
 .dale-card.dale-selected:before {
 	content: "";
@@ -450,47 +461,69 @@ body {
 	right: 0;
 }
 
-#dale-myhand-wrap.dale-technique {
+#dale-myhand-wrap.dale-label-technique {
 	.stockitem.dale-selected {
-		outline: 3px solid var(--technique);
-		background-color: var(--technique-a);
+		outline: 3px solid var(--dale-label-technique);
+		background-color: var(--dale-label-technique-a);
 		background-blend-mode: overlay;
 	}
 	.stockitem:hover {
-		box-shadow: 0px 0px 8px 2px var(--technique);
+		box-shadow: 0px 0px 8px 2px var(--dale-label-technique);
 	}
 }
 
-#dale-myhand-wrap.dale-purchase {
+#dale-myhand-wrap.dale-label-purchase {
 	.stockitem.dale-selected {
-		outline: 3px solid var(--purchase);
-		background-color: var(--purchase-a);
+		outline: 3px solid var(--dale-label-purchase);
+		background-color: var(--dale-label-purchase-a);
 		background-blend-mode: overlay;
 	}
 	.stockitem:hover {
-		box-shadow: 0px 0px 8px 2px var(--purchase);
+		box-shadow: 0px 0px 8px 2px var(--dale-label-purchase);
 	}
 }
 
-#dale-myhand-wrap.dale-build {
+#dale-myhand-wrap.dale-label-build {
 	.stockitem.dale-selected {
-		outline: 3px solid var(--build);
-		background-color: var(--build-a);
+		outline: 3px solid var(--dale-label-build);
+		background-color: var(--dale-label-build-a);
 		background-blend-mode: overlay;
 	}
 	.stockitem:hover {
-		box-shadow: 0px 0px 8px 2px var(--build);
+		box-shadow: 0px 0px 8px 2px var(--dale-label-build);
 	}
 }
 
-#dale-myhand-wrap.dale-discard {
+#dale-myhand-wrap.dale-label-discard {
 	.stockitem.dale-selected {
-		outline: 3px solid var(--discard);
-		background-color: var(--discard-a);
+		outline: 3px solid var(--dale-label-discard);
+		background-color: var(--dale-label-discard-a);
 		background-blend-mode: overlay;
 	}
 	.stockitem:hover {
-		box-shadow: 0px 0px 8px 2px var(--discard);
+		box-shadow: 0px 0px 8px 2px var(--dale-label-discard);
+	}
+}
+
+#dale-myhand-wrap.dale-label-text {
+	.stockitem.dale-selected {
+		outline: 3px solid var(--dale-label-text);
+		background-color: var(--dale-label-text-a);
+		background-blend-mode: overlay;
+	}
+	.stockitem:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-label-text);
+	}
+}
+
+#dale-myhand-wrap.dale-label-default {
+	.stockitem.dale-selected {
+		outline: 3px solid var(--dale-label-default);
+		background-color: var(--dale-label-default-a);
+		background-blend-mode: overlay;
+	}
+	.stockitem:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-label-default);
 	}
 }
 

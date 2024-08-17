@@ -22,14 +22,15 @@ class StockOrderedSelection extends OrderedSelection {
     }
 }
 
-type ActionLabelClass = 'dale-technique' | 'dale-purchase' | 'dale-build' | 'dale-discard';
+type ActionLabelClass = 'dale-label-technique' | 'dale-label-purchase' | 'dale-label-build' | 'dale-label-discard' | 'dale-label-text' | 'dale-label-default';
 
 /**
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock implements DaleLocation {
-	private readonly actionLabelClasses = ['dale-technique', 'dale-purchase', 'dale-build', 'dale-discard'];
+	private readonly actionLabelClasses = ['dale-label-technique', 'dale-label-purchase', 'dale-label-build', 'dale-label-discard', 'dale-label-text', 'dale-label-default'];
 	private actionLabelWrap: Element | undefined = undefined;
+	private actionLabelText: Element | undefined = undefined;
 
 	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
 	public orderedSelection: OrderedSelection;
@@ -95,6 +96,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	initActionLabelWrap(wrap: Element) {
 		dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
 		this.actionLabelWrap = wrap
+		this.actionLabelText = wrap.querySelector(".dale-label-text") ?? undefined;
 		this.apparenceBorderWidth = '0px'; //the selection border will be managed by the action label
 	}
 
@@ -194,15 +196,20 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	 /**
-     * Set the action label to one of the pre-made label classes. If no label was provided, hide the label instead.
-     * @param color hex color for the background and border of the label
+     * Set the action label to one of the pre-made label classes.
+     * @param label (optional) default `'dale-label-default'`
+	 * @param text (optional) in case of `'dale-label-text'`, this text will be displayed
      */
-	private setActionLabel(label?: ActionLabelClass) {
+	private setActionLabel(label: ActionLabelClass = 'dale-label-default', text?: string) {
 		if (this.actionLabelWrap) {
+			if (label == 'dale-label-text') {
+				if (!this.actionLabelText) {
+					throw new Error("Please correctly initialize actionLabelText");
+				}
+				this.actionLabelText.textContent = text ?? _("<Missing Text>");
+			}
 			this.actionLabelWrap!.classList.remove(...this.actionLabelClasses);
 			if (label) {
-				console.log("Add "+label);
-				console.log(this.actionLabelWrap);
 				this.actionLabelWrap!.classList.add(label);
 			}
 		}
@@ -356,15 +363,15 @@ export class DaleStock extends Stock implements DaleLocation {
 		// const control_width = dojo.marginBox( this.control_name as any ).w!;
 		// const perLines = Math.max( 1, Math.floor( (control_width-item_visible_width_lastitemlost) / ( item_visible_width + this.item_margin ) ) );
 
-		//auto horizontal_overlap
+		//Automatically set the item_margin
+		//horizontal_overlap is broken! don't use it!
 		const containerWidth = dojo.marginBox( this.control_name as any ).w!;
-		const totalWidth = this.item_width * this.items.length + 50; //+ 50 to prevent an unwanted linebreak by bga stock
-		
-		this.item_margin = (containerWidth-totalWidth)/Math.max(1, this.items.length);
+		const totalWidth = this.item_width * this.items.length + 5; //+5 adds a little bit of margin and prevents an unwanted linebreak by bga stock
+		this.item_margin = (containerWidth-totalWidth)/Math.max(1, this.items.length-1);
 		this.item_margin = Math.min(-3, this.item_margin);
-
-		//const overlap = Math.min(totalWidth/containerWidth*100, DaleStock.MAX_HORIZONTAL_OVERLAP)
-		//this.centerItems = (this.horizontal_overlap == DaleStock.MAX_HORIZONTAL_OVERLAP)
+		if (this.item_margin != -3) {
+			console.log(this.item_margin);
+		}
 
 		//arc
 		super.updateDisplay(from);
@@ -375,16 +382,12 @@ export class DaleStock extends Stock implements DaleLocation {
 			div = $(this.getItemDivId(String(item.id))) as HTMLElement;
 			div.dataset['arc'] = index+'/'+this.items.length;
 			dojo.setStyle(div, 'z-index', String(Images.Z_INDEX_HAND_CARD+index));
-			// console.log(+i);
-			// if (+i == 0) {
-			// 	div.dataset['arc'] = 'first';
-			// }
-			// else if (+i == length - 1) {
-			// 	div.dataset['arc'] = 'last';
-			// }
-			// else {
-			// 	div.dataset['arc'] = i+'/'+length;
-			// }
+		}
+
+		//Conpensate for the first item having margin
+		if (this.item_margin < 0) {
+			console.log("GOT HERE");
+			dojo.setStyle(this.container_div, 'left', `${this.item_margin/2}px`)
 		}
 	}
 }
