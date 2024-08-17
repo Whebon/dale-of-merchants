@@ -48,9 +48,15 @@
 		"descriptionmyturn": "${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action",
 		"type": "activeplayer",
 		"possibleactions": {
-			"actRequestMarketAction": [
+			//Purchase Actions
+			"actPurchase": [
+				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "funds_card_ids", "type": "AT_numberlist"},
 				{"name": "market_card_id", "type": "AT_int"}
 			],
+
+			//Play Actions
 			"actPlayTechniqueCard": [
 				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
 				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
@@ -61,17 +67,34 @@
 				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
 				{"name": "card_id", "type": "AT_int"}
 			],
-			"actRequestStallAction": [],
-			"actRequestInventoryAction": []
+
+			//Build Actions
+			"actWinterIsComingSkip": [],
+			"actBuild": [
+				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "stack_card_ids", "type": "AT_numberlist"},
+				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
+			],
+
+			//Inventory Actions
+			"actInventoryAction": [
+				{"name": "ids", "type": "AT_numberlist"} //TODO: change this
+			]
+			// "actRequestMarketAction": [
+			// 	{"name": "market_card_id", "type": "AT_int"}
+			// ],
+			// "actRequestStallAction": [],
+			// "actRequestInventoryAction": []
 		},
 		"transitions": { 
 			//Main cycle
+			"trCancel": 30,
 			"trActiveAbility": 30,
-			"trPurchase": 31,
 			"trFullyResolveTechnique": 33,
-			"trBuild": 35,
-			"trInventory": 40,
+			"trWinterIsComing": 36,
 			"trNextPlayer": 41,
+			"trGameEnd": 99,
 
 			//Technique states
 			"trSwiftBroker": 50,
@@ -84,33 +107,34 @@
 		}
 	},
 
-	"31": {
-		"name": "purchase",
-		"description": "${actplayer} must pay ${cost} for ${card_name}",
-		"descriptionmyturn": "${you} must pay ${cost} for ${card_name}",
-		"type": "activeplayer",
-		"args": "argSelectedCardInMarket",
-		"argsType": {
-			"card_name": "string",
-			"card_id": "number",
-			"cost": "number",
-			"pos": "number"
-		},
-		"possibleactions": {
-			"actPurchase": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
-				{"name": "funds_card_ids", "type": "AT_numberlist"}
-			],
-			"actUseActiveAbility": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
-				{"name": "card_id", "type": "AT_int"}
-			],
-			"actCancel" : []
-		},
-		"transitions": { "trActiveAbility": 31, "trCancel" : 30, "trNextPlayer": 41 }
-	},
+	//TODO: safely delete
+	// "31": {
+	// 	"name": "purchase",
+	// 	"description": "${actplayer} must pay ${cost} for ${card_name}",
+	// 	"descriptionmyturn": "${you} must pay ${cost} for ${card_name}",
+	// 	"type": "activeplayer",
+	// 	"args": "argSelectedCardInMarket",
+	// 	"argsType": {
+	// 		"card_name": "string",
+	// 		"card_id": "number",
+	// 		"cost": "number",
+	// 		"pos": "number"
+	// 	},
+	// 	"possibleactions": {
+	// 		"actPurchase": [
+	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+	// 			{"name": "funds_card_ids", "type": "AT_numberlist"}
+	// 		],
+	// 		"actUseActiveAbility": [
+	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+	// 			{"name": "card_id", "type": "AT_int"}
+	// 		],
+	// 		"actCancel" : []
+	// 	},
+	// 	"transitions": { "trActiveAbility": 31, "trCancel" : 30, "trNextPlayer": 41 }
+	// },
 
 	"33": {
 		"name": "fullyResolveTechnique",
@@ -128,10 +152,35 @@
 		"transitions": { "trSamePlayer": 30, "trNextPlayer": 41 }
 	},
 
-	"35": {
-		"name": "build",
-		"description": "${actplayer} must select cards to build in stack ${stack_index_plus_1}",
-		"descriptionmyturn": "${you} must select cards to build in stack ${stack_index_plus_1}",
+	//TODO: safely delete
+	// "35": {
+	// 	"name": "build",
+	// 	"description": "${actplayer} must select cards to build in stack ${stack_index_plus_1}",
+	// 	"descriptionmyturn": "${you} must select cards to build in stack ${stack_index_plus_1}",
+	// 	"type": "activeplayer",
+	// 	"args": "argStackIndex",
+	// 	"possibleactions": {
+	// 		"actBuild": [
+	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+	// 			{"name": "stack_card_ids", "type": "AT_numberlist"},
+	// 			{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
+	// 		],
+	// 		"actUseActiveAbility": [
+	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
+	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+	// 			{"name": "card_id", "type": "AT_int"}
+	// 		],
+	// 		"actCancel" : [],
+	// 		"actWinterIsComingSkip": []
+	// 	},
+	// 	"transitions": { "trActiveAbility": 35, "trCancel" : 30, "trWinterIsComing": 35, "trNextPlayer": 41, "trGameEnd": 99 }
+	// },
+
+	"36": {
+		"name": "winterIsComing",
+		"description": "Winter is Coming: ${actplayer} may select cards to build in stack ${stack_index_plus_1}",
+		"descriptionmyturn": "Winter is Coming: ${you} may select cards to build in stack ${stack_index_plus_1}",
 		"type": "activeplayer",
 		"args": "argStackIndex",
 		"possibleactions": {
@@ -146,25 +195,25 @@
 				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
 				{"name": "card_id", "type": "AT_int"}
 			],
-			"actCancel" : [],
 			"actWinterIsComingSkip": []
 		},
-		"transitions": { "trActiveAbility": 35, "trCancel" : 30, "trWinterIsComing": 35, "trNextPlayer": 41, "trGameEnd": 99 }
+		"transitions": { "trActiveAbility": 36, "trNextPlayer": 41, "trGameEnd": 99 }
 	},
 
-	"40": {
-		"name": "inventory",
-		"description": "${actplayer} may discard any number of cards",
-		"descriptionmyturn": "${you} may discard any number of cards",
-		"type": "activeplayer",
-		"possibleactions": {
-			"actInventoryAction": [
-				{"name": "ids", "type": "AT_numberlist"} //TODO: change this
-			],
-			"actCancel" : []
-		},
-		"transitions": { "trCancel" : 30, "trNextPlayer": 41 }
-	},
+	//TODO: safely delete
+	// "40": {
+	// 	"name": "inventory",
+	// 	"description": "${actplayer} may discard any number of cards",
+	// 	"descriptionmyturn": "${you} may discard any number of cards",
+	// 	"type": "activeplayer",
+	// 	"possibleactions": {
+	// 		"actInventoryAction": [
+	// 			{"name": "ids", "type": "AT_numberlist"} //TODO: change this
+	// 		],
+	// 		"actCancel" : []
+	// 	},
+	// 	"transitions": { "trCancel" : 30, "trNextPlayer": 41 }
+	// },
 
 	"41": {
 		"name": "nextPlayer",

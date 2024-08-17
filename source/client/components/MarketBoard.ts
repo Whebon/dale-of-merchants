@@ -90,6 +90,17 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     }
 
     /**
+     * @return `card_id` of the card at the given `pos`
+     */
+    getCardId(pos?: number) {
+        pos = this.getValidPos(pos);
+        if (this.slots[pos]!.hasCard()) {
+            return this.slots[pos]!.card!.id;
+        }
+        throw new Error(`There is no card in market slot ${pos}`);
+    }
+
+    /**
      * converts any position to a valid market position
      * @param pos any market position
      * @param valid valid market position: 4, 3, 2, 1 or 0

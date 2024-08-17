@@ -239,6 +239,7 @@ class Dale extends Gamegui
 		if (stateName == 'nextPlayer') {
 			console.log("nextPlayer, expire all effects that last until end of turn");
 			DaleCard.removeEndOfTurnEffects();
+			this.mainClientState.exit();
 			this.updateHTML();
 		}
 
@@ -252,10 +253,12 @@ class Dale extends Gamegui
 				this.mainClientState.enterClientState();
 				break;
 			case 'client_purchase':
-				const client_purchase_pos = (this.mainClientState.args as ClientGameState['client_purchase']).pos;
+				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
 				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-label-purchase');
 				this.market!.setSelectionMode(1);
-				this.market!.setSelected(client_purchase_pos, true);
+				if (client_purchase_args.on_market_board) {
+					this.market!.setSelected(client_purchase_args.pos, true);
+				}
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
@@ -274,22 +277,10 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
-			case 'purchase':
-				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
-				console.log(purchaseArgs);
-				this.myHand2.setSelectionMode('multiple', 'dale-purchase');
-				this.myHand.setSelectionMode(2, 'pileBlue');
-				this.market!.setSelected(purchaseArgs.pos, true);
-				break;
-			case 'build':
-				this.myHand2.setSelectionMode('multiple', 'dale-build');
-				this.myHand.setSelectionMode(2);
-				this.onBuildSelectionChanged(); //this.myDiscard.setSelectionMode('multiple');
+			case 'winterIsComing':
+				this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
 				this.myStall.selectLeftPlaceholder();
-				break;
-			case 'inventory':
-				this.myHand2.setSelectionMode('multiple', 'dale-discard');
-				this.myHand.setSelectionMode(2, 'pileBlue');
+				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'swiftBroker':
 				this.myHand.setSelectionMode(2, 'pileBlue');
@@ -385,20 +376,10 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
 				break;
-			case 'purchase':
-				this.myHand2.setSelectionMode('none');
+			case 'winterIsComing':
 				this.myHand.setSelectionMode(0);
-				this.market!.unselectAll();
-				break;
-			case 'build':
-				this.myHand2.setSelectionMode('none');
-				this.myHand.setSelectionMode(0);
-				this.myDiscard.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
-				break;
-			case 'inventory':
-				this.myHand2.setSelectionMode('none');
-				this.myHand.setSelectionMode(0);
+				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'swiftBroker':
 				this.myHand.setSelectionMode(0);
@@ -473,35 +454,14 @@ class Dale extends Gamegui
 				break;
 			case 'client_build':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
-				if (DaleCard.winterIsComing) {
-					this.setMainTitle(_("Winter Is Coming: you may immediately build an additional stack"));
-					this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
-				}
-				else {
-					this.addActionButtonCancelClient();
-				}
+				this.addActionButtonCancelClient();
 				break;
 			case 'client_inventory':
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
 				this.addActionButtonCancelClient();
 				break;
-			case 'purchase':
-				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
-				this.addActionButtonCancel();
-				break;
-			case 'build':
-				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
-				if (DaleCard.winterIsComing) {
-					this.setMainTitle(_("Winter Is Coming: you may immediately build an additional stack"));
-					this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
-				}
-				else {
-					this.addActionButtonCancel();
-				}
-				break;
-			case 'inventory':
-				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
-				this.addActionButtonCancel();
+			case 'winterIsComing':
+				this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
 				break;
 			case 'swiftBroker':
 				this.addActionButton("confirm-button", _("Discard All"), "onSwiftBroker");
@@ -896,7 +856,8 @@ class Dale extends Gamegui
 			case 'client_build':
 			case 'client_inventory':
 				this.mainClientState.enterClientState('client_purchase', {
-					pos: pos
+					pos: pos,
+					on_market_board: true
 				});
 				//TODO: safely delete
 				// if(this.checkAction('actRequestMarketAction')) {
@@ -950,7 +911,7 @@ class Dale extends Gamegui
 	onMyDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
 		console.log("onMyDiscardPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
-			case 'build':
+			case 'client_build':
 				//TODO: automatically close the popin?
 				//const isUnboundChameleon = card.isUnboundChameleon();
 				this.handleChameleonCard(card, pile, this.onBuildSelectionChanged);
@@ -998,10 +959,13 @@ class Dale extends Gamegui
 				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
 				this.myHand.unselectAll();
 				break;
-			case 'purchase':
-				this.handleChameleonCard(card, this.myHand, this.onPurchaseSelectionChanged);
+			case 'client_purchase':
+				this.handleChameleonCard(card, this.myHand, this.onFundsSelectionChanged);
 				break;
-			case 'build':
+			case 'client_build':
+				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
+				break;
+			case 'winterIsComing':
 				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
 				break;
 			case 'shatteredRelic':
@@ -1052,14 +1016,30 @@ class Dale extends Gamegui
 		}
 	}
 
-	onPurchaseSelectionChanged() {
+	onFundsSelectionChanged() {
 		//TODO: pandas
 	}
 
 	onPurchase() {
+		if (this.gamedatas.gamestate.name != 'client_purchase') {
+			this.showMessage(_("You cannot purchase a card from this gamestate")+` (${this.gamedatas.gamestate})`, 'error');
+		}
+		const args = (this.mainClientState.args as ClientGameState['client_purchase'])
+		var card_id;
+		if (args.on_market_board) {
+			card_id = this.market!.getCardId(args.pos);
+		}
+		else {
+			const card = this.marketDiscard.peek();
+			if (!card) {
+				throw new Error("Cannot purchase from the bin, as it is empty")
+			}
+			card_id = card.id;
+		}
 		if(this.checkAction('actPurchase')) {
 			this.bgaPerformAction('actPurchase', {
 				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
+				market_card_id: card_id,
 				...DaleCard.getLocalChameleons()
 			})
 		}
@@ -1159,7 +1139,7 @@ class Dale extends Gamegui
 	}
 
 	onCancelClient() {
-		this.mainClientState.cancel();
+		this.mainClientState.exit();
 	}
 	
 	/**

@@ -27,14 +27,20 @@ class action_dale extends APP_GameAction
 		}
 	}
 
-	public function actRequestMarketAction()
+	public function actPurchase()
 	{
 		self::setAjaxMode();
 
+		/** @var string $chameleon_card_ids */
+		$chameleon_card_ids = self::getArg('chameleon_card_ids', AT_numberlist, true);
+		/** @var string $chameleon_type_ids */
+		$chameleon_type_ids = self::getArg('chameleon_type_ids', AT_numberlist, true);
+		/** @var string $funds_card_ids */
+		$funds_card_ids = self::getArg('funds_card_ids', AT_numberlist, true);
 		/** @var int $market_card_id */
 		$market_card_id = self::getArg('market_card_id', AT_int, true);
 
-		$this->game->actRequestMarketAction( $market_card_id );
+		$this->game->actPurchase( $chameleon_card_ids, $chameleon_type_ids, $funds_card_ids, $market_card_id );
 		self::ajaxResponse();
 	}
 
@@ -68,42 +74,11 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actRequestStallAction()
+	public function actWinterIsComingSkip()
 	{
 		self::setAjaxMode();
 
-		$this->game->actRequestStallAction(  );
-		self::ajaxResponse();
-	}
-
-	public function actRequestInventoryAction()
-	{
-		self::setAjaxMode();
-
-		$this->game->actRequestInventoryAction(  );
-		self::ajaxResponse();
-	}
-
-	public function actPurchase()
-	{
-		self::setAjaxMode();
-
-		/** @var string $chameleon_card_ids */
-		$chameleon_card_ids = self::getArg('chameleon_card_ids', AT_numberlist, true);
-		/** @var string $chameleon_type_ids */
-		$chameleon_type_ids = self::getArg('chameleon_type_ids', AT_numberlist, true);
-		/** @var string $funds_card_ids */
-		$funds_card_ids = self::getArg('funds_card_ids', AT_numberlist, true);
-
-		$this->game->actPurchase( $chameleon_card_ids, $chameleon_type_ids, $funds_card_ids );
-		self::ajaxResponse();
-	}
-
-	public function actCancel()
-	{
-		self::setAjaxMode();
-
-		$this->game->actCancel(  );
+		$this->game->actWinterIsComingSkip(  );
 		self::ajaxResponse();
 	}
 
@@ -121,14 +96,6 @@ class action_dale extends APP_GameAction
 		$stack_card_ids_from_discard = self::getArg('stack_card_ids_from_discard', AT_numberlist, true);
 
 		$this->game->actBuild( $chameleon_card_ids, $chameleon_type_ids, $stack_card_ids, $stack_card_ids_from_discard );
-		self::ajaxResponse();
-	}
-
-	public function actWinterIsComingSkip()
-	{
-		self::setAjaxMode();
-
-		$this->game->actWinterIsComingSkip(  );
 		self::ajaxResponse();
 	}
 
@@ -151,6 +118,14 @@ class action_dale extends APP_GameAction
 		$card_ids = self::getArg('card_ids', AT_numberlist, true);
 
 		$this->game->actSwiftBroker( $card_ids );
+		self::ajaxResponse();
+	}
+
+	public function actCancel()
+	{
+		self::setAjaxMode();
+
+		$this->game->actCancel(  );
 		self::ajaxResponse();
 	}
 

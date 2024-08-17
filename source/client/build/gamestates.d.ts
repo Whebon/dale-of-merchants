@@ -25,7 +25,19 @@ interface GameStates {
 		'descriptionmyturn': '${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action',
 		'type': 'activeplayer',
 		'possibleactions': {
-			'actRequestMarketAction': [{
+			'actPurchase': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'funds_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
 				'name': 'market_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -56,16 +68,37 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
-			'actRequestStallAction': [],
-			'actRequestInventoryAction': [],
+			'actWinterIsComingSkip': [],
+			'actBuild': [{
+				'name': 'chameleon_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'chameleon_type_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'stack_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'stack_card_ids_from_discard',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+			'actInventoryAction': [{
+				'name': 'ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
 		},
 		'transitions': {
+			'trCancel': 30,
 			'trActiveAbility': 30,
-			'trPurchase': 31,
 			'trFullyResolveTechnique': 33,
-			'trBuild': 35,
-			'trInventory': 40,
+			'trWinterIsComing': 36,
 			'trNextPlayer': 41,
+			'trGameEnd': 99,
 			'trSwiftBroker': 50,
 			'trShatteredRelic': 51,
 			'trSpyglass': 52,
@@ -73,53 +106,6 @@ interface GameStates {
 			'trGiftVoucher': 54,
 			'trLoyalPartner': 55,
 			'trPrepaidGood': 56,
-		},
-	},
-	31: {
-		'name': 'purchase',
-		'description': '${actplayer} must pay ${cost} for ${card_name}',
-		'descriptionmyturn': '${you} must pay ${cost} for ${card_name}',
-		'type': 'activeplayer',
-		'args': 'argSelectedCardInMarket',
-		'argsType': {
-			'card_name': string,
-			'card_id': number,
-			'cost': number,
-			'pos': number,
-		},
-		'possibleactions': {
-			'actPurchase': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'funds_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}],
-			'actUseActiveAbility': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trActiveAbility': 31,
-			'trCancel': 30,
-			'trNextPlayer': 41,
 		},
 	},
 	33: {
@@ -142,10 +128,10 @@ interface GameStates {
 			'trNextPlayer': 41,
 		},
 	},
-	35: {
-		'name': 'build',
-		'description': '${actplayer} must select cards to build in stack ${stack_index_plus_1}',
-		'descriptionmyturn': '${you} must select cards to build in stack ${stack_index_plus_1}',
+	36: {
+		'name': 'winterIsComing',
+		'description': 'Winter is Coming: ${actplayer} may select cards to build in stack ${stack_index_plus_1}',
+		'descriptionmyturn': 'Winter is Coming: ${you} may select cards to build in stack ${stack_index_plus_1}',
 		'type': 'activeplayer',
 		'args': 'argStackIndex',
 		'possibleactions': {
@@ -179,33 +165,12 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
-			'actCancel': [],
 			'actWinterIsComingSkip': [],
 		},
 		'transitions': {
-			'trActiveAbility': 35,
-			'trCancel': 30,
-			'trWinterIsComing': 35,
+			'trActiveAbility': 36,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
-		},
-	},
-	40: {
-		'name': 'inventory',
-		'description': '${actplayer} may discard any number of cards',
-		'descriptionmyturn': '${you} may discard any number of cards',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actInventoryAction': [{
-				'name': 'ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
-			'trNextPlayer': 41,
 		},
 	},
 	41: {

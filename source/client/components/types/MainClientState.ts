@@ -21,9 +21,9 @@ export class MainClientState {
     }
 
     /**
-     * Cancel the client state and return to the default client state
+     * Exit the client state and return to the default client state
      */
-    public cancel() {
+    public exit() {
         this.enterClientState('client_technique');
     }
 

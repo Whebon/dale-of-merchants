@@ -190,6 +190,8 @@ export class Stall implements CardSlotManager, DaleLocation {
         // while (stack_index >= this.slots.length-1 && this.slots.length < Stall.MAX_STACKS) { //-1 because we need a trailing empty stack
         //     this.createNewStack();
         // }
+        const stackContainer = this.stackContainers[stack_index]!;
+        stackContainer.classList.remove("dale-grayed-out");
         const stack = this.slots[stack_index]!;
         if (index == undefined) {
             index = 0;

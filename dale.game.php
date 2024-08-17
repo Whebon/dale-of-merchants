@@ -37,7 +37,7 @@ class Dale extends DaleTableBasic
         parent::__construct();
         
         $this->initGameStateLabels( array(
-            "selectedCard" => 10,
+            //"selectedCard" => 10, TODO: safely delete this
             "resolvingCard" => 11,
             "cancelableChameleon" => 12,
             "cancelableChameleonTypeId" => 13
@@ -87,7 +87,7 @@ class Dale extends DaleTableBasic
 
         // Init global values with their initial values
         //$this->setGameStateInitialValue( 'my_first_global_variable', 0 );
-        $this->setGameStateInitialValue("selectedCard", -1);
+        //$this->setGameStateInitialValue("selectedCard", -1);
         $this->setGameStateInitialValue("resolvingCard", -1);
         $this->setGameStateInitialValue("cancelableChameleon", -1);
         $this->setGameStateInitialValue("cancelableChameleonTypeId", -1);
@@ -1508,15 +1508,16 @@ class Dale extends DaleTableBasic
         (note: each method below must match an input method in dale.action.php)
     */
 
-    function actRequestMarketAction(int $market_card_id) {
-        $this->checkAction("actRequestMarketAction");
-        $this->cards->getCardsFromLocation([$market_card_id], MARKET);
+    //TODO: safely delete this
+    // function actRequestMarketAction(int $market_card_id) {
+    //     $this->checkAction("actRequestMarketAction");
+    //     $this->cards->getCardsFromLocation([$market_card_id], MARKET);
 
-        //TODO: check if maximum available funds are sufficient
+    //     //TODO: check if maximum available funds are sufficient
 
-        $this->setGameStateValue( "selectedCard", $market_card_id );
-        $this->gamestate->nextState("trPurchase");
-    }
+    //     $this->setGameStateValue( "selectedCard", $market_card_id );
+    //     $this->gamestate->nextState("trPurchase");
+    // }
     
     function actCancel() {
         $this->checkAction("actCancel");
@@ -1527,8 +1528,8 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trCancel");
     }
 
-    function actPurchase(string $chameleon_card_ids, string $chameleon_type_ids, string $funds_card_ids) {
-        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $funds_card_ids);
+    function actPurchase(string $chameleon_card_ids, string $chameleon_type_ids, string $funds_card_ids, string $market_card_id) {
+        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $funds_card_ids, $market_card_id);
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
 
@@ -1544,7 +1545,7 @@ class Dale extends DaleTableBasic
         }
 
         //Get information about the market card
-        $market_card_id = $this->getGameStateValue("selectedCard");
+        //$market_card_id = $this->getGameStateValue("selectedCard");
         $market_card = $this->cards->getCard($market_card_id);
         $cost = $this->getCost($market_card);
 
@@ -1914,10 +1915,11 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trFullyResolveTechnique");
     }
 
-    function actRequestStallAction() {
-        $this->checkAction("actRequestStallAction");
-        $this->gamestate->nextState("trBuild");
-    }
+    //TODO: safely delete this
+    // function actRequestStallAction() {
+    //     $this->checkAction("actRequestStallAction");
+    //     $this->gamestate->nextState("trBuild");
+    // }
 
     function actBuild(string $chameleon_card_ids, string $chameleon_type_ids, string $stack_card_ids, string $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $stack_card_ids, $stack_card_ids_from_discard);
@@ -1961,10 +1963,11 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actRequestInventoryAction() {
-        $this->checkAction("actRequestInventoryAction");
-        $this->gamestate->nextState("trInventory");
-    }
+    //TODO: safely delete this
+    // function actRequestInventoryAction() {
+    //     $this->checkAction("actRequestInventoryAction");
+    //     $this->gamestate->nextState("trInventory");
+    // }
 
     function actInventoryAction(string $card_ids) {
         $this->checkAction("actInventoryAction");
@@ -2000,19 +2003,20 @@ class Dale extends DaleTableBasic
         game state.
     */
 
-    function argSelectedCardInMarket(){
-        $card_id = $this->getGameStateValue("selectedCard");
-        $card = $this->cards->getCard($card_id);
-        $type_id = $card['type_arg'];
-        return array(
-            'i18n' => array('card_name'),
-            'card_name' => $this->card_types[$type_id]['name'],
-            'card_id' => $card['type_arg'],
-            'cost' => $this->getCost($card),
-            'pos' => $card['location_arg']
-        );
-    }
-
+    //TODO: safely delete this
+    // function argSelectedCardInMarket(){
+    //     $card_id = $this->getGameStateValue("selectedCard");
+    //     $card = $this->cards->getCard($card_id);
+    //     $type_id = $card['type_arg'];
+    //     return array(
+    //         'i18n' => array('card_name'),
+    //         'card_name' => $this->card_types[$type_id]['name'],
+    //         'card_id' => $card['type_arg'],
+    //         'cost' => $this->getCost($card),
+    //         'pos' => $card['location_arg']
+    //     );
+    // }
+    
     function argStackIndex(){
         $player_id = $this->getActivePlayerId();
         $stack_index = $this->cards->getNextStackIndex($player_id);
