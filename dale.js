@@ -1746,7 +1746,7 @@ define("components/types/MainClientState", ["require", "exports"], function (req
             }
             this.page.setClientState(this.name, {
                 descriptionmyturn: this.getDescription(this.name),
-                args: args
+                args: this._args
             });
         };
         return MainClientState;
