@@ -94,9 +94,7 @@
 		.dale-card {
 			border-radius: 10px;
 			box-shadow: 0px 2px 8px #e4aa19;
-			border: 3px solid #e4aa19;
-			top: -3px; //center the border
-			left: -3px; //center the border
+			outline: 3px solid #e4aa19;
 			transition: transform 0.3s ease;
 			transform: scale(1.1) translateY(5px);
 		}
@@ -111,7 +109,7 @@
 
 .chameleon-selected {
 	border-radius: 10px;
-	border: 1px solid #1d7a2a !important;
+	outline: 3px solid #1d7a2a !important;
 	animation: blinker 0.5s infinite;
 }
 
