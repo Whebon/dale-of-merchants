@@ -29,20 +29,11 @@ import { DbCard } from './components/types/DbCard';
 import { ChameleonClientStateArgs } from './components/types/ChameleonClientStateArgs';
 import { CardSlot } from './components/CardSlot';
 import { DaleLocation } from './components/types/DaleLocation';
-import { DaleHand } from './components/DaleHand';
 import { MainClientState } from './components/types/MainClientState'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
 {
-	n: number = 1000;
-	quick() {
-		this.myHand2.addCard(new DaleCard(this.n+3, this.n-1000));
-		//this.myHand2.addCard(new DaleCard(this.n+3, this.n-1000), "deck-2371802-top-card");
-		//this.myHand2.removeCard(new DaleCard(this.n));
-		this.n++;
-	}
-
 	/** For conveniene, each new Pile will add a reference to itself in this array*/
 	allPiles: Pile[] = [];
 
@@ -98,7 +89,6 @@ class Dale extends Gamegui
 
 	/** Cards in this client's player hand */
 	myHand: DaleStock = new DaleStock();
-	myHand2: DaleHand = undefined as unknown as DaleHand;
 
 	/** Cards in this client's temporary card stock */
 	myTemporary: DaleStock = new DaleStock();
@@ -184,7 +174,6 @@ class Dale extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand2 = new DaleHand(this, $('dale-myhand-wrap-2')!, $("dale-myhand-2")!);
 		this.myHand.init(this, $('dale-myhand')!);
 		this.myHand.initActionLabelWrap($('dale-myhand-wrap')!);
 		this.myHand.centerItems = true;
@@ -349,10 +338,6 @@ class Dale extends Gamegui
 		switch( stateName )
 		{
 			case 'playerTurn':
-				// this.market!.setSelectionMode(0);
-				// this.myHand2.setSelectionMode('none');
-				// this.myHand.setSelectionMode(0);
-				// this.myStall.setLeftPlaceholderClickable(false);
 				break;
 			case 'client_purchase':
 				this.market!.unselectAll();
