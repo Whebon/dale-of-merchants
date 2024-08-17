@@ -56,7 +56,15 @@
 		top: 80%;
 		width: 50px;
 		height: 50px;
-	  }
+	}
+	&.dale-chameleon-icon {
+		pointer-events: none;
+		width: 90px;
+		height: 90px;
+		top: 39%;
+		left: 50%;
+		opacity: 50%;
+	}
 }
 
 .dale-myhandsize-icon {
@@ -105,19 +113,6 @@
 	border-radius: 10px;
 	outline: 3px solid #1d7a2a !important;
 	animation: blinker 0.5s infinite;
-}
-
-.chameleon-icon {
-	pointer-events: none;
-	background-image: url('img/chameleon_icon.png');
-	background-repeat: no-repeat;
-	background-size: contain;
-	position: absolute;
-	width: 90%;
-    height: 90%;
-    top: 10%;
-    left: 5%;
-    opacity: 50%;
 }
 
 .dale-card {

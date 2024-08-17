@@ -1,3 +1,4 @@
+import { DaleIcons } from './DaleIcons';
 import { Images } from './Images';
 import { Animalfolk } from './types/Animalfolk';
 import { CardType } from './types/CardType';
@@ -265,8 +266,8 @@ export class DaleCard {
      * Returns a badge that can be attached to a card div to indicate it is a chameleon card
      */
     public static createChameleonIcon() {
-        let div = document.createElement("div");
-        div.classList.add("chameleon-icon");
+        const div = DaleIcons.getChameleonIcon();
+        div.classList.add("dale-chameleon-icon");
         return div;
     }
 

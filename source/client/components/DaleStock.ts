@@ -248,7 +248,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			//TODO: safely delete this
 			// console.log("AAAA");
 			//Remove outdated chameleon overlays. WARNING: will not add missing chameleon overlays!
-			// const chameleonIcons = this.container_div.querySelectorAll('.chameleon-icon');
+			// const chameleonIcons = this.container_div.querySelectorAll('.dale-chameleon-icon');
 			// chameleonIcons.forEach(icon => {
 			// 	const overlay = icon.parentElement!;
 			// 	const html_id = overlay.parentElement!.id;

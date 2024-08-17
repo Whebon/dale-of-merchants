@@ -24,6 +24,53 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+define("components/DaleIcons", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleIcons = void 0;
+    var DaleIcons = (function () {
+        function DaleIcons() {
+        }
+        DaleIcons.getIcon = function (row, col) {
+            var icon = document.createElement("i");
+            icon.classList.add("dale-icon");
+            icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
+            return icon;
+        };
+        DaleIcons.getBluePileIcon = function (index) {
+            return this.getIcon(0, index);
+        };
+        DaleIcons.getYellowPileIcon = function (index) {
+            return this.getIcon(1, index);
+        };
+        DaleIcons.getDiscardIcon = function () {
+            return this.getIcon(2, 0);
+        };
+        DaleIcons.getBuildIcon = function () {
+            return this.getIcon(2, 1);
+        };
+        DaleIcons.getHandIcon = function () {
+            return this.getIcon(2, 4);
+        };
+        DaleIcons.getChameleonIcon = function () {
+            return this.getIcon(2, 5);
+        };
+        DaleIcons.getSpyglassIcon = function () {
+            return this.getIcon(3, 0);
+        };
+        DaleIcons.getDitchIcon = function () {
+            return this.getIcon(3, 1);
+        };
+        DaleIcons.ROWS = 4;
+        DaleIcons.COLUMNS = 6;
+        DaleIcons.ICON_WIDTH = 150;
+        DaleIcons.ICON_HEIGHT = 150;
+        DaleIcons.BACKGROUND_WIDTH = DaleIcons.ICON_WIDTH * DaleIcons.COLUMNS;
+        DaleIcons.BACKGROUND_HEIGHT = DaleIcons.ICON_HEIGHT * DaleIcons.ROWS;
+        return DaleIcons;
+    }());
+    exports.DaleIcons = DaleIcons;
+});
 define("components/types/Animalfolk", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -102,7 +149,7 @@ define("components/types/DbEffect", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/DaleCard", ["require", "exports", "components/Images"], function (require, exports, Images_1) {
+define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images"], function (require, exports, DaleIcons_1, Images_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = void 0;
@@ -230,8 +277,8 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
             DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
         };
         DaleCard.createChameleonIcon = function () {
-            var div = document.createElement("div");
-            div.classList.add("chameleon-icon");
+            var div = DaleIcons_1.DaleIcons.getChameleonIcon();
+            div.classList.add("dale-chameleon-icon");
             return div;
         };
         DaleCard.prototype.getCost = function (pos) {
@@ -396,54 +443,7 @@ define("components/types/DaleLocation", ["require", "exports"], function (requir
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/DaleIcons", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DaleIcons = void 0;
-    var DaleIcons = (function () {
-        function DaleIcons() {
-        }
-        DaleIcons.getIcon = function (row, col) {
-            var icon = document.createElement("i");
-            icon.classList.add("dale-icon");
-            icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
-            return icon;
-        };
-        DaleIcons.getBluePileIcon = function (index) {
-            return this.getIcon(0, index);
-        };
-        DaleIcons.getYellowPileIcon = function (index) {
-            return this.getIcon(1, index);
-        };
-        DaleIcons.getDiscardIcon = function () {
-            return this.getIcon(2, 0);
-        };
-        DaleIcons.getBuildIcon = function () {
-            return this.getIcon(2, 1);
-        };
-        DaleIcons.getHandIcon = function () {
-            return this.getIcon(2, 4);
-        };
-        DaleIcons.getChameleonIcon = function () {
-            return this.getIcon(2, 5);
-        };
-        DaleIcons.getSpyglassIcon = function () {
-            return this.getIcon(3, 0);
-        };
-        DaleIcons.getDitchIcon = function () {
-            return this.getIcon(3, 1);
-        };
-        DaleIcons.ROWS = 4;
-        DaleIcons.COLUMNS = 6;
-        DaleIcons.ICON_WIDTH = 150;
-        DaleIcons.ICON_HEIGHT = 150;
-        DaleIcons.BACKGROUND_WIDTH = DaleIcons.ICON_WIDTH * DaleIcons.COLUMNS;
-        DaleIcons.BACKGROUND_HEIGHT = DaleIcons.ICON_HEIGHT * DaleIcons.ROWS;
-        return DaleIcons;
-    }());
-    exports.DaleIcons = DaleIcons;
-});
-define("components/OrderedSelection", ["require", "exports", "components/DaleCard", "components/DaleIcons"], function (require, exports, DaleCard_1, DaleIcons_1) {
+define("components/OrderedSelection", ["require", "exports", "components/DaleCard", "components/DaleIcons"], function (require, exports, DaleCard_1, DaleIcons_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.OrderedSelection = void 0;
@@ -461,16 +461,16 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
             var icon = undefined;
             switch (this.iconType) {
                 case 'spyglass':
-                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getSpyglassIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getSpyglassIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
                 case 'pileBlue':
-                    icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index, 5));
+                    icon = DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index, 5));
                     break;
                 case 'pileYellow':
-                    icon = DaleIcons_1.DaleIcons.getYellowPileIcon(Math.min(index, 5));
+                    icon = DaleIcons_2.DaleIcons.getYellowPileIcon(Math.min(index, 5));
                     break;
                 case 'build':
-                    icon = DaleIcons_1.DaleIcons.getBuildIcon();
+                    icon = DaleIcons_2.DaleIcons.getBuildIcon();
                     break;
             }
             if (icon) {
@@ -1455,7 +1455,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_5, CardSlot_2, DaleIcons_2) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_5, CardSlot_2, DaleIcons_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -1512,7 +1512,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 stackIndexDiv.classList.add("dale-stack-index");
                 stackIndexDiv.innerText = String(this.slots.length + 1);
                 placeholder.append(stackIndexDiv);
-                placeholder.appendChild(DaleIcons_2.DaleIcons.getBuildIcon());
+                placeholder.appendChild(DaleIcons_3.DaleIcons.getBuildIcon());
                 stackContainer.appendChild(placeholder);
                 this.container.appendChild(stackContainer);
                 this.stackContainers.push(stackContainer);
