@@ -45,7 +45,7 @@ You can also select cards
 </div>
 
 
-<div id="market-wrap" class="whiteblock">
+<div id="dale-market-wrap" class="whiteblock">
     <!-- Display the name of this area? <h3>{MARKET}</h3> -->
     <div style="display:flex; align-items: center;">
         <div id="market-deck" class="pile-container"></div>

@@ -169,6 +169,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * @param iconType (optional) default 'none'. types of icons to use for the selection
     */
     setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none') {
+        //TODO: action label?
         this.orderedSelection.setIconType(iconType);
         if( this.selectionMode == mode ) return;
         this.unselectAll();

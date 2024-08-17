@@ -404,7 +404,7 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
     exports.OrderedSelection = void 0;
     var OrderedSelection = (function () {
         function OrderedSelection() {
-            this.iconType = 'orderedPile';
+            this.iconType = 'pileBlue';
             this.card_ids = [];
         }
         OrderedSelection.prototype.getDiv = function (card_id) {
@@ -417,7 +417,7 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 return;
             }
             var offset = Math.min(7, index);
-            if (this.iconType == 'orderedPile') {
+            if (this.iconType == 'pileBlue') {
                 offset += 1;
             }
             var icon = document.createElement("div");
@@ -559,14 +559,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _super.prototype.unselectItem.call(this, item_id);
             this.orderedSelection.unselectItem(+item_id);
         };
-        DaleStock.prototype.setSelectionMode = function (mode, iconType) {
+        DaleStock.prototype.setSelectionMode = function (mode, iconType, actionLabel) {
             var _a, _b;
             if (iconType === void 0) { iconType = 'none'; }
-            this.setActionLabel('dale-technique');
             this.orderedSelection.setIconType(iconType);
-            if (mode == this.selectionMode) {
-                return;
-            }
+            this.setActionLabel(actionLabel);
             _super.prototype.setSelectionMode.call(this, mode);
             for (var i in this.items) {
                 var card_id = this.items[i].id;
@@ -1807,7 +1804,38 @@ define("components/DaleHand", ["require", "exports", "components/DaleCard", "com
     }());
     exports.DaleHand = DaleHand;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "components/DaleHand", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_2, Pile_3, HiddenPile_1, DaleCard_8, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1, DaleHand_1) {
+define("components/types/MainClientState", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.MainClientState = void 0;
+    var MainClientState = (function () {
+        function MainClientState(page) {
+            this.page = page;
+            this.name = 'client_technique';
+            this.descriptionmyturn = "";
+            this.args = {};
+        }
+        MainClientState.prototype.cancel = function () {
+            this.enterClientState('client_technique');
+        };
+        MainClientState.prototype.enterClientState = function (name, args) {
+            var _a;
+            if (name) {
+                this.name = name;
+            }
+            this.args = args !== null && args !== void 0 ? args : {};
+            this.page.setClientState(this.name, {
+                descriptionmyturn: (_a = MainClientState.DESCRIPTIONS.get(this.name)) !== null && _a !== void 0 ? _a : _("<missing client state description>")
+            });
+        };
+        MainClientState.DESCRIPTIONS = new Map([
+            ['client_technique', _("asdsad")]
+        ]);
+        return MainClientState;
+    }());
+    exports.MainClientState = MainClientState;
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "components/DaleHand", "components/types/MainClientState", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_2, Pile_3, HiddenPile_1, DaleCard_8, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1, DaleHand_1, MainClientState_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -1829,6 +1857,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.myHand = new DaleStock_2.DaleStock();
             _this.myHand2 = undefined;
             _this.myTemporary = new DaleStock_2.DaleStock();
+            _this.mainClientState = new MainClientState_1.MainClientState(_this);
             console.log('dale constructor');
             return _this;
         }
@@ -1959,16 +1988,36 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             switch (stateName) {
                 case 'playerTurn':
+                    this.mainClientState.enterClientState();
+                    break;
+                case 'client_purchase':
+                    var client_purchase_pos = this.mainClientState.args.pos;
+                    this.myHand.setSelectionMode(2, 'pileYellow', 'dale-purchase');
                     this.market.setSelectionMode(1);
-                    this.myHand2.setSelectionMode('single', 'dale-technique');
-                    this.myHand.setSelectionMode(1);
+                    this.market.setSelected(client_purchase_pos, true);
+                    this.myStall.setLeftPlaceholderClickable(true);
+                    break;
+                case 'client_technique':
+                    this.myHand.setSelectionMode(1, 'pileBlue', 'dale-technique');
+                    this.market.setSelectionMode(1);
+                    this.myStall.setLeftPlaceholderClickable(true);
+                    break;
+                case 'client_build':
+                    this.myHand.setSelectionMode(2, 'build', 'dale-build');
+                    this.market.setSelectionMode(1);
+                    this.myStall.selectLeftPlaceholder();
+                    this.onBuildSelectionChanged();
+                    break;
+                case 'client_inventory':
+                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-discard');
+                    this.market.setSelectionMode(1);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'purchase':
                     var purchaseArgs = args.args;
                     console.log(purchaseArgs);
                     this.myHand2.setSelectionMode('multiple', 'dale-purchase');
-                    this.myHand.setSelectionMode(2, 'orderedPile');
+                    this.myHand.setSelectionMode(2, 'pileBlue');
                     this.market.setSelected(purchaseArgs.pos, true);
                     break;
                 case 'build':
@@ -1979,10 +2028,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'inventory':
                     this.myHand2.setSelectionMode('multiple', 'dale-discard');
-                    this.myHand.setSelectionMode(2, 'orderedPile');
+                    this.myHand.setSelectionMode(2, 'pileBlue');
                     break;
                 case 'swiftBroker':
-                    this.myHand.setSelectionMode(2, 'orderedPile');
+                    this.myHand.setSelectionMode(2, 'pileBlue');
                     break;
                 case 'shatteredRelic':
                     this.myHand.setSelectionMode(1);
@@ -2001,7 +2050,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(1);
                     break;
                 case 'loyalPartner':
-                    this.market.setSelectionMode(2, 'orderedPile');
+                    this.market.setSelectionMode(2, 'pileBlue');
                     break;
                 case 'prepaidGood':
                     this.market.setSelectionMode(1);
@@ -2042,8 +2091,26 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             switch (stateName) {
                 case 'playerTurn':
+                    break;
+                case 'client_purchase':
+                    this.market.unselectAll();
                     this.market.setSelectionMode(0);
-                    this.myHand2.setSelectionMode('none');
+                    this.myHand.setSelectionMode(0);
+                    this.myStall.setLeftPlaceholderClickable(false);
+                    break;
+                case 'client_technique':
+                    this.market.setSelectionMode(0);
+                    this.myHand.setSelectionMode(0);
+                    this.myStall.setLeftPlaceholderClickable(false);
+                    break;
+                case 'client_build':
+                    this.market.setSelectionMode(0);
+                    this.myHand.setSelectionMode(0);
+                    this.myStall.unselectLeftPlaceholder();
+                    this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'client_inventory':
+                    this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
                     break;
@@ -2118,7 +2185,27 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             switch (stateName) {
                 case 'playerTurn':
+                    break;
+                case 'client_technique':
                     this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
+                    break;
+                case 'client_purchase':
+                    this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_build':
+                    this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+                    if (DaleCard_8.DaleCard.winterIsComing) {
+                        this.setMainTitle(_("Winter Is Coming: you may immediately build an additional stack"));
+                        this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
+                    }
+                    else {
+                        this.addActionButtonCancelClient();
+                    }
+                    break;
+                case 'client_inventory':
+                    this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+                    this.addActionButtonCancelClient();
                     break;
                 case 'purchase':
                     this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
@@ -2382,6 +2469,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.addActionButtonCancel = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
         };
+        Dale.prototype.addActionButtonCancelClient = function () {
+            this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
+        };
         Dale.prototype.addActionButtonCancelChameleon = function () {
             this.addActionButton("cancel-chameleons-button", _("Cancel"), "onCancelChameleon", undefined, false, 'gray');
         };
@@ -2410,12 +2500,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onMarketCardClick = function (card, pos) {
             pos = this.market.getValidPos(pos);
             switch (this.gamedatas.gamestate.name) {
-                case 'playerTurn':
-                    if (this.checkAction('actRequestMarketAction')) {
-                        this.bgaPerformAction('actRequestMarketAction', {
-                            market_card_id: card.id
-                        });
-                    }
+                case 'client_purchase':
+                case 'client_technique':
+                case 'client_build':
+                case 'client_inventory':
+                    this.mainClientState.enterClientState('client_purchase', {
+                        pos: pos
+                    });
                     break;
                 case 'giftVoucher':
                     if (this.checkAction("actGiftVoucher")) {
@@ -2626,6 +2717,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
         };
+        Dale.prototype.onCancelClient = function () {
+            this.mainClientState.cancel();
+        };
         Dale.prototype.onCancelChameleon = function (unselect) {
             if (unselect === void 0) { unselect = true; }
             console.log("onCancelChameleon");
@@ -2686,14 +2780,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.onConfirmChameleon(topCard);
         };
         Dale.prototype.onRequestBuildAction = function () {
-            if (this.checkAction('actRequestStallAction')) {
-                this.bgaPerformAction('actRequestStallAction', {});
-            }
+            this.mainClientState.enterClientState('client_build');
         };
         Dale.prototype.onRequestInventoryAction = function () {
-            if (this.checkAction('actRequestInventoryAction')) {
-                this.bgaPerformAction('actRequestInventoryAction', {});
-            }
+            this.mainClientState.enterClientState('client_inventory');
         };
         Dale.prototype.onInventoryAction = function () {
             if (this.checkAction("actInventoryAction")) {

@@ -219,6 +219,10 @@ declare global {
 		'chameleon_goodoldtimes': {}
 		'chameleon_trendsetting': {}
 		'chameleon_seeingdoubles': {}
+		'client_purchase' : { pos: number }
+		'client_technique': {}
+		'client_build': {}
+		'client_inventory': {}
 	}
 
 	//

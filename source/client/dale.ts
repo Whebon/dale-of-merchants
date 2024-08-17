@@ -29,7 +29,8 @@ import { DbCard } from './components/types/DbCard';
 import { ChameleonClientStateArgs } from './components/types/ChameleonClientStateArgs';
 import { CardSlot } from './components/CardSlot';
 import { DaleLocation } from './components/types/DaleLocation';
-import { DaleHand } from './components/DaleHand'
+import { DaleHand } from './components/DaleHand';
+import { MainClientState } from './components/types/MainClientState'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -102,8 +103,11 @@ class Dale extends Gamegui
 	/** Cards in this client's temporary card stock */
 	myTemporary: DaleStock = new DaleStock();
 
-	/** Argument for chameleon client states. This card needs to be highlighted while selecting a valid target for it. */
+	/** Arguments for chameleon client states. This card needs to be highlighted while selecting a valid target for it. */
 	chameleonArgs: ChameleonClientStateArgs | undefined;
+
+	/** Current client state */
+	mainClientState: MainClientState = new MainClientState(this);
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -226,6 +230,38 @@ class Dale extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Game & client states
+
+	//TODO: safely delete this
+	// /**
+	//  * Set a client selection mode within the 'playerTurn' gamestate
+	//  */
+	// public setPlayerTurnMode(mode: PlayerTurnMode) {
+	// 	if (this.gamedatas.gamestate.name != 'playerTurn') {
+	// 		throw new Error("'setPlayerTurnMode' can only be used in gamestate 'playerTurn'")
+	// 	}
+	// 	// if (mode != this.playerTurnMode) {
+	// 	// 	console.log(`Leaving playerTurnMode ${this.playerTurnMode}`);
+	// 	// 	this.playerTurnMode = mode;
+	// 	// }
+
+	// 	console.log(`Entering playerTurnMode ${this.playerTurnMode}`);
+
+	// 	this.playerTurnMode = mode;
+	// 	switch(mode) {
+	// 		case 'purchase':
+	// 			this.myHand.setSelectionMode(2, 'pileBlue', 'dale-purchase');
+	// 			break;
+	// 		case 'technique':
+	// 			this.myHand.setSelectionMode(1, 'none', 'dale-technique');
+	// 			break;
+	// 		case 'build':
+	// 			this.myHand.setSelectionMode(2, 'pileBlue', 'dale-build');
+	// 			break;
+	// 		case 'inventory':
+	// 			this.myHand.setSelectionMode(2, 'pileBlue', 'dale-discard');
+	// 			break;
+	// 	}
+	// }
 	
 	/** @gameSpecific See {@link Gamegui.onEnteringState} for more information. */
 	override onEnteringState(stateName: GameStateName, args: CurrentStateArgs): void
@@ -245,16 +281,36 @@ class Dale extends Gamegui
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'playerTurn':
+				this.mainClientState.enterClientState();
+				break;
+			case 'client_purchase':
+				const client_purchase_pos = (this.mainClientState.args as ClientGameState['client_purchase']).pos;
+				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-purchase');
 				this.market!.setSelectionMode(1);
-				this.myHand2.setSelectionMode('single', 'dale-technique');
-				this.myHand.setSelectionMode(1);
+				this.market!.setSelected(client_purchase_pos, true);
+				this.myStall.setLeftPlaceholderClickable(true);
+				break;
+			case 'client_technique':
+				this.myHand.setSelectionMode(1, 'pileBlue', 'dale-technique');
+				this.market!.setSelectionMode(1);
+				this.myStall.setLeftPlaceholderClickable(true);
+				break;
+			case 'client_build':
+				this.myHand.setSelectionMode(2, 'build', 'dale-build');
+				this.market!.setSelectionMode(1);
+				this.myStall.selectLeftPlaceholder();
+				this.onBuildSelectionChanged(); //check for nostalgic item
+				break;
+			case 'client_inventory':
+				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-discard');
+				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'purchase':
 				const purchaseArgs = args.args as GameStateArgs<'purchase'>;
 				console.log(purchaseArgs);
 				this.myHand2.setSelectionMode('multiple', 'dale-purchase');
-				this.myHand.setSelectionMode(2, 'orderedPile');
+				this.myHand.setSelectionMode(2, 'pileBlue');
 				this.market!.setSelected(purchaseArgs.pos, true);
 				break;
 			case 'build':
@@ -265,10 +321,10 @@ class Dale extends Gamegui
 				break;
 			case 'inventory':
 				this.myHand2.setSelectionMode('multiple', 'dale-discard');
-				this.myHand.setSelectionMode(2, 'orderedPile');
+				this.myHand.setSelectionMode(2, 'pileBlue');
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionMode(2, 'orderedPile');
+				this.myHand.setSelectionMode(2, 'pileBlue');
 				break;
 			case 'shatteredRelic':
 				this.myHand.setSelectionMode(1);
@@ -287,7 +343,7 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				break;
 			case 'loyalPartner':
-				this.market!.setSelectionMode(2, 'orderedPile');
+				this.market!.setSelectionMode(2, 'pileBlue');
 				break;
 			case 'prepaidGood':
 				this.market!.setSelectionMode(1);
@@ -334,8 +390,30 @@ class Dale extends Gamegui
 		switch( stateName )
 		{
 			case 'playerTurn':
+				// this.market!.setSelectionMode(0);
+				// this.myHand2.setSelectionMode('none');
+				// this.myHand.setSelectionMode(0);
+				// this.myStall.setLeftPlaceholderClickable(false);
+				break;
+			case 'client_purchase':
+				this.market!.unselectAll();
 				this.market!.setSelectionMode(0);
-				this.myHand2.setSelectionMode('none');
+				this.myHand.setSelectionMode(0);
+				this.myStall.setLeftPlaceholderClickable(false);
+				break;
+			case 'client_technique':
+				this.market!.setSelectionMode(0);
+				this.myHand.setSelectionMode(0);
+				this.myStall.setLeftPlaceholderClickable(false);
+				break;
+			case 'client_build':
+				this.market!.setSelectionMode(0);
+				this.myHand.setSelectionMode(0);
+				this.myStall.unselectLeftPlaceholder();
+				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_inventory':
+				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
 				break;
@@ -416,8 +494,28 @@ class Dale extends Gamegui
 		switch( stateName )
 		{
 			case 'playerTurn':
-				// Add buttons if needed
+				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
+				break;
+			case 'client_technique':
 				this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
+				break;
+			case 'client_purchase':
+				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_build':
+				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+				if (DaleCard.winterIsComing) {
+					this.setMainTitle(_("Winter Is Coming: you may immediately build an additional stack"));
+					this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
+				}
+				else {
+					this.addActionButtonCancelClient();
+				}
+				break;
+			case 'client_inventory':
+				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+				this.addActionButtonCancelClient();
 				break;
 			case 'purchase':
 				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
@@ -774,6 +872,13 @@ class Dale extends Gamegui
 	}
 
 	/**
+	 * Add a cancel button to return from the main client state
+	*/
+	addActionButtonCancelClient() {
+		this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
+	}
+
+	/**
 	 * Add a button to cancel any locally assigned chameleon targets. Also restores back to the server game state.
 	*/
 	addActionButtonCancelChameleon() {
@@ -823,13 +928,20 @@ class Dale extends Gamegui
 		pos = this.market!.getValidPos(pos);
 
 		switch(this.gamedatas.gamestate.name) {
-			case 'playerTurn':
-				if(this.checkAction('actRequestMarketAction')) {
-					//TODO: check if maximum available funds are sufficient
-					this.bgaPerformAction('actRequestMarketAction', {
-						market_card_id: card.id
-					})
-				}
+			case 'client_purchase':
+			case 'client_technique':
+			case 'client_build':
+			case 'client_inventory':
+				this.mainClientState.enterClientState('client_purchase', {
+					pos: pos
+				});
+				//TODO: safely delete
+				// if(this.checkAction('actRequestMarketAction')) {
+				// 	//TODO: check if maximum available funds are sufficient
+				// 	this.bgaPerformAction('actRequestMarketAction', {
+				// 		market_card_id: card.id
+				// 	})
+				// }
 				break;
 			case 'giftVoucher':
 				if(this.checkAction("actGiftVoucher")) {
@@ -1082,6 +1194,10 @@ class Dale extends Gamegui
 			}
 		}
 	}
+
+	onCancelClient() {
+		this.mainClientState.cancel();
+	}
 	
 	/**
 	 * To be called from within a chameleon client state. Cancels finding a target for the chameleon bind
@@ -1160,15 +1276,17 @@ class Dale extends Gamegui
 	}
 
 	onRequestBuildAction() {
-		if(this.checkAction('actRequestStallAction')) {
-			this.bgaPerformAction('actRequestStallAction', {})
-		}
+		this.mainClientState.enterClientState('client_build');
+		// if(this.checkAction('actRequestStallAction')) {
+		// 	this.bgaPerformAction('actRequestStallAction', {})
+		// }
 	}
 
 	onRequestInventoryAction() {
-		if(this.checkAction('actRequestInventoryAction')) {
-			this.bgaPerformAction('actRequestInventoryAction', {})
-		}
+		this.mainClientState.enterClientState('client_inventory');
+		// if(this.checkAction('actRequestInventoryAction')) {
+		// 	this.bgaPerformAction('actRequestInventoryAction', {})
+		// }
 	}
 
 	onInventoryAction() {

@@ -1,6 +1,6 @@
 import { DaleCard } from './DaleCard';
 
-export type SelectionIconType = 'none' | 'orderedPile' | 'hand';
+export type SelectionIconType = 'none' | 'pileBlue' | 'pileYellow' | 'build' | 'hand';
 
 export class OrderedSelection {
     private iconType: SelectionIconType;
@@ -8,7 +8,7 @@ export class OrderedSelection {
     private card_ids: number[];
 
     constructor() {
-        this.iconType = 'orderedPile';
+        this.iconType = 'pileBlue';
         //this.divsWithIcons = new Map<number, Element>();
         this.card_ids = [];
     }
@@ -35,7 +35,7 @@ export class OrderedSelection {
         }
         
         let offset = Math.min(7, index);
-        if (this.iconType == 'orderedPile') {
+        if (this.iconType == 'pileBlue') {
             offset += 1;
         }
         const icon = document.createElement("div");

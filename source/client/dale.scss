@@ -89,13 +89,15 @@
 // 	cursor: pointer;
 // }
 
-.selected {
-	.dale-card {
-		border-radius: 10px;
-		box-shadow: 0px 2px 8px #e4aa19;
-		border: 3px solid #e4aa19;
-		transform: scale(1.1);
-		transition: transform 0.3s ease;
+#dale-market-wrap {
+	.selected {
+		.dale-card {
+			border-radius: 10px;
+			box-shadow: 0px 2px 8px #e4aa19;
+			border: 3px solid #e4aa19;
+			transition: transform 0.3s ease;
+			transform: scale(1.1);
+		}
 	}
 }
 
@@ -139,11 +141,10 @@
 	box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 	border-radius: 10px;
 	position: absolute; //this is needed for dojo animations
-	transition: transform .2s, translate .2s;
+	transition: transform 0.3s ease;
 	z-index: 100;
 	&.dale-clickable:hover {
 		transform: scale(1.1);
-		translate: 0 -10px;
 		z-index: 200;
 	}
 }

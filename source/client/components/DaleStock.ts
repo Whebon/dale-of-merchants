@@ -176,13 +176,11 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * Additionally, it resets the 'orderedSelectedCardIds', which is needed to track the order in the selection
 	 * @param mode selection mode
 	 * @param iconType (optional) none. types of icons to use for the selection
+	 * @param actionLabel (optional) if provided, set the action label of this stock's wrap
 	 */
-	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none'): void {
-		this.setActionLabel('dale-technique');
+	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none', actionLabel?: ActionLabelClass): void {
 		this.orderedSelection.setIconType(iconType);
-		if (mode == this.selectionMode) {
-			return;
-		}
+		this.setActionLabel(actionLabel);
 		super.setSelectionMode(mode);
 		for(let i in this.items){
 			const card_id = this.items[i]!.id;
