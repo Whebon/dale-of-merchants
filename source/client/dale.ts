@@ -1125,7 +1125,7 @@ class Dale extends Gamegui
 
 	onCancel() {
 		if (DaleCard.unbindAllChameleonsLocal()) {
-			//undo client state
+			//undo chameleon client state
 			this.restoreServerGameState();
 			this.chameleonArgs = undefined;
 			this.updateHTML();
@@ -1139,7 +1139,20 @@ class Dale extends Gamegui
 	}
 
 	onCancelClient() {
-		this.mainClientState.exit();
+		console.log("onCancelClient");
+		if (DaleCard.unbindAllChameleonsLocal()) {
+			//exit chameleon state
+			this.chameleonArgs = undefined;
+			for (let stock of this.allDaleStocks) {
+				stock.unselectAll();
+			}
+			this.updateHTML();
+		}
+		else {
+			//exit main client state
+			this.mainClientState.exit();
+		}
+		this.updateHTML();
 	}
 	
 	/**

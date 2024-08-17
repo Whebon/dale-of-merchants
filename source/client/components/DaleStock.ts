@@ -371,9 +371,6 @@ export class DaleStock extends Stock implements DaleLocation {
 		const totalWidth = this.item_width * this.items.length + 5; //+5 adds a little bit of margin and prevents an unwanted linebreak by bga stock
 		this.item_margin = (containerWidth-totalWidth)/Math.max(1, this.items.length-1);
 		this.item_margin = Math.min(-3, this.item_margin);
-		if (this.item_margin != -3) {
-			console.log(this.item_margin);
-		}
 
 		//arc
 		super.updateDisplay(from);
@@ -388,7 +385,6 @@ export class DaleStock extends Stock implements DaleLocation {
 
 		//Conpensate for the first item having margin
 		if (this.item_margin < 0) {
-			console.log("GOT HERE");
 			dojo.setStyle(this.container_div, 'left', `${this.item_margin/2}px`)
 		}
 	}

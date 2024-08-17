@@ -54,7 +54,7 @@ export class Pile implements DaleLocation {
             ${pile_name ? `<h3 class="name">${pile_name}</h3>` : ""}
             <div class="pile" style="${Images.getCardStyle()}">
                 <div class="placeholder" style="${Images.getCardStyle()}"></div>
-                <div id="${pile_container_id}-top-card" class="clickable dale-card"></div>
+                <div id="${pile_container_id}-top-card" class="dale-clickable dale-card"></div>
                 <div class="size"></div>
                 <div class="size" style="top: 16%;"></div>
             </div>

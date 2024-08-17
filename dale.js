@@ -669,9 +669,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             var totalWidth = this.item_width * this.items.length + 5;
             this.item_margin = (containerWidth - totalWidth) / Math.max(1, this.items.length - 1);
             this.item_margin = Math.min(-3, this.item_margin);
-            if (this.item_margin != -3) {
-                console.log(this.item_margin);
-            }
             _super.prototype.updateDisplay.call(this, from);
             var div = undefined;
             for (var i in this.items) {
@@ -682,7 +679,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 dojo.setStyle(div, 'z-index', String(Images_2.Images.Z_INDEX_HAND_CARD + index));
             }
             if (this.item_margin < 0) {
-                console.log("GOT HERE");
                 dojo.setStyle(this.container_div, 'left', "".concat(this.item_margin / 2, "px"));
             }
         };
@@ -745,7 +741,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
             this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"clickable dale-card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"dale-clickable dale-card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
@@ -2717,7 +2713,19 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onCancelClient = function () {
-            this.mainClientState.exit();
+            console.log("onCancelClient");
+            if (DaleCard_8.DaleCard.unbindAllChameleonsLocal()) {
+                this.chameleonArgs = undefined;
+                for (var _i = 0, _a = this.allDaleStocks; _i < _a.length; _i++) {
+                    var stock = _a[_i];
+                    stock.unselectAll();
+                }
+                this.updateHTML();
+            }
+            else {
+                this.mainClientState.exit();
+            }
+            this.updateHTML();
         };
         Dale.prototype.onCancelChameleon = function (unselect) {
             if (unselect === void 0) { unselect = true; }
