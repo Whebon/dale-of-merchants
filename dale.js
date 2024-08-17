@@ -557,11 +557,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _super.prototype.unselectItem.call(this, item_id);
             this.orderedSelection.unselectItem(+item_id);
         };
-        DaleStock.prototype.setSelectionMode = function (mode, iconType, actionLabel) {
+        DaleStock.prototype.setSelectionMode = function (mode, iconType, actionLabel, actionLabelText) {
             var _a, _b;
             if (iconType === void 0) { iconType = 'none'; }
             this.orderedSelection.setIconType(iconType);
-            this.setActionLabel(actionLabel);
+            this.setActionLabel(actionLabel, actionLabelText);
             _super.prototype.setSelectionMode.call(this, mode);
             for (var i in this.items) {
                 var card_id = this.items[i].id;
@@ -581,7 +581,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     if (!this.actionLabelText) {
                         throw new Error("Please correctly initialize actionLabelText");
                     }
-                    this.actionLabelText.textContent = text !== null && text !== void 0 ? text : _("<Missing Text>");
+                    this.actionLabelText.innerHTML = text !== null && text !== void 0 ? text : _("<Missing Text>");
                 }
                 (_a = this.actionLabelWrap.classList).remove.apply(_a, this.actionLabelClasses);
                 if (label) {
@@ -2041,10 +2041,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.onBuildSelectionChanged();
                     break;
                 case 'swiftBroker':
-                    this.myHand.setSelectionMode(2, 'pileBlue');
+                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-text', _("Choose the order to discard your hand"));
                     break;
                 case 'shatteredRelic':
-                    this.myHand.setSelectionMode(1);
+                    this.myHand.setSelectionMode(1, 'none', 'dale-label-text', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'spyglass':
                     this.myTemporary.setSelectionMode(2, 'hand');
@@ -2221,7 +2221,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancel();
                     break;
                 case 'loyalPartner':
-                    this.addActionButton("confirm-button", _("Throw Away All"), "onLoyalPartner");
+                    this.addActionButton("confirm-button", _("Ditch All"), "onLoyalPartner");
                     this.addActionButtonCancel();
                     break;
                 case 'prepaidGood':
@@ -2235,7 +2235,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'chameleon_goodoldtimes':
                     if (this.chameleonArgs.card.hasActiveAbility()) {
-                        this.addActionButton("throw-away-button", _("Throw Away"), "onGoodOldTimesPassive");
+                        this.addActionButton("throw-away-button", _("Ditch"), "onGoodOldTimesPassive");
                     }
                     this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
                     this.addActionButtonCancelChameleon();
@@ -2306,7 +2306,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                             return;
                         }
                         this.setClientState('chameleon_goodoldtimes', {
-                            descriptionmyturn: _("Good Old Times: ${you} may throw away a card from the market deck or copy the card on top of the market's discard pile")
+                            descriptionmyturn: _("Good Old Times: ${you} may ditch the supply's top card or copy bin's top card")
                         });
                     }
                     else {
@@ -2317,8 +2317,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                         this.setClientState('chameleon_goodoldtimes', {
                             descriptionmyturn: requiresPlayable ?
-                                _("Good Old Times: ${you} must copy a playable card from the top of the market's discard pile") :
-                                _("Good Old Times: ${you} must copy a card from the top of the market's discard pile")
+                                _("Good Old Times: ${you} must copy the bin's top card") :
+                                _("Good Old Times: ${you} must copy the bin's top card")
                         });
                     }
                     break;
@@ -2836,14 +2836,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['drawMultiple', 1000],
                 ['temporaryToHand', 1000],
                 ['obtainNewJunkInHand', 1000],
-                ['throwAway', 1000],
-                ['throwAwayMultiple', 1000],
+                ['ditch', 1000],
+                ['ditchMultiple', 1000],
                 ['discard', 1000],
                 ['discardMultiple', 1000],
                 ['placeOnDeckMultiple', 1000],
                 ['reshuffleDeck', 1500],
-                ['throwAwayFromMarketDeck', 1000],
-                ['throwAwayFromMarketBoard', 1000],
+                ['ditchFromMarketDeck', 1000],
+                ['ditchFromMarketBoard', 1000],
                 ['addEffect', 1],
                 ['bindChameleon', 1],
                 ['unbindChameleon', 1],
@@ -2998,7 +2998,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var nbr = Object.keys(notif.args.cards).length;
             this.playerHandSizes[notif.args.player_id].incValue(nbr);
         };
-        Dale.prototype.notif_throwAway = function (notif) {
+        Dale.prototype.notif_ditch = function (notif) {
             var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
             if (DaleCard_8.DaleCard.of(notif.args.card).isJunk()) {
                 this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
@@ -3010,7 +3010,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerHandSizes[notif.args.player_id].incValue(-1);
             }
         };
-        Dale.prototype.notif_throwAwayMultiple = function (notif) {
+        Dale.prototype.notif_ditchMultiple = function (notif) {
             var delay = 0;
             var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
@@ -3137,11 +3137,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerDiscards[notif.args.player_id].shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
             }
         };
-        Dale.prototype.notif_throwAwayFromMarketDeck = function (notif) {
+        Dale.prototype.notif_ditchFromMarketDeck = function (notif) {
             this.marketDeck.pop();
             this.marketDiscard.push(DaleCard_8.DaleCard.of(notif.args.card), this.marketDeck.placeholderHTML);
         };
-        Dale.prototype.notif_throwAwayFromMarketBoard = function (notif) {
+        Dale.prototype.notif_ditchFromMarketBoard = function (notif) {
             var delay = 0;
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
                 var id = _a[_i];

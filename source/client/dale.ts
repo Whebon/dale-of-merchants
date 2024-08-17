@@ -283,10 +283,10 @@ class Dale extends Gamegui
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionMode(2, 'pileBlue');
+				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-text', _("Choose the order to discard your hand"));
 				break;
 			case 'shatteredRelic':
-				this.myHand.setSelectionMode(1);
+				this.myHand.setSelectionMode(1, 'none', 'dale-label-text', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
 				this.myTemporary.setSelectionMode(2, 'hand');
@@ -480,7 +480,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancel();
 				break;
 			case 'loyalPartner':
-				this.addActionButton("confirm-button", _("Throw Away All"), "onLoyalPartner");
+				this.addActionButton("confirm-button", _("Ditch All"), "onLoyalPartner");
 				this.addActionButtonCancel();
 				break;
 			case 'prepaidGood':
@@ -494,7 +494,7 @@ class Dale extends Gamegui
 				break;
 			case 'chameleon_goodoldtimes':
 				if (this.chameleonArgs!.card.hasActiveAbility()) {
-					this.addActionButton("throw-away-button", _("Throw Away"), "onGoodOldTimesPassive");
+					this.addActionButton("throw-away-button", _("Ditch"), "onGoodOldTimesPassive");
 				}
 				this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
 				this.addActionButtonCancelChameleon();
@@ -582,7 +582,7 @@ class Dale extends Gamegui
 						return;
 					}
 					this.setClientState('chameleon_goodoldtimes', {
-						descriptionmyturn: _("Good Old Times: ${you} may throw away a card from the market deck or copy the card on top of the market's discard pile")
+						descriptionmyturn: _("Good Old Times: ${you} may ditch the supply's top card or copy bin's top card")
 					});
 				}
 				else {
@@ -593,8 +593,8 @@ class Dale extends Gamegui
 					}
 					this.setClientState('chameleon_goodoldtimes', {
 						descriptionmyturn: requiresPlayable ?
-							_("Good Old Times: ${you} must copy a playable card from the top of the market's discard pile") :
-							_("Good Old Times: ${you} must copy a card from the top of the market's discard pile")
+							_("Good Old Times: ${you} must copy the bin's top card") :
+							_("Good Old Times: ${you} must copy the bin's top card")
 					});
 				}
 				break;
@@ -1294,14 +1294,14 @@ class Dale extends Gamegui
 			['drawMultiple', 1000],
 			['temporaryToHand', 1000],
 			['obtainNewJunkInHand', 1000],
-			['throwAway', 1000],
-			['throwAwayMultiple', 1000],
+			['ditch', 1000],
+			['ditchMultiple', 1000],
 			['discard', 1000],
 			['discardMultiple', 1000],
 			['placeOnDeckMultiple', 1000],
 			['reshuffleDeck', 1500],
-			['throwAwayFromMarketDeck', 1000],
-			['throwAwayFromMarketBoard', 1000],
+			['ditchFromMarketDeck', 1000],
+			['ditchFromMarketBoard', 1000],
 			['addEffect', 1],
 			['bindChameleon', 1],
 			['unbindChameleon', 1],
@@ -1508,7 +1508,7 @@ class Dale extends Gamegui
 		this.playerHandSizes[notif.args.player_id]!.incValue(nbr);
 	}
 
-	notif_throwAway(notif: NotifAs<'throwAway'>) {
+	notif_ditch(notif: NotifAs<'ditch'>) {
 		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		if (DaleCard.of(notif.args.card).isJunk()) {
 			this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
@@ -1522,7 +1522,7 @@ class Dale extends Gamegui
 		}
 	}
 
-	notif_throwAwayMultiple(notif: NotifAs<'throwAwayMultiple'>) {
+	notif_ditchMultiple(notif: NotifAs<'ditchMultiple'>) {
 		let delay = 0;
 		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
 		for (let id of notif.args.card_ids) {
@@ -1663,12 +1663,12 @@ class Dale extends Gamegui
 		}
 	}
 
-	notif_throwAwayFromMarketDeck(notif: NotifAs<'throwAwayFromMarketDeck'>) {
+	notif_ditchFromMarketDeck(notif: NotifAs<'ditchFromMarketDeck'>) {
 		this.marketDeck.pop!();
 		this.marketDiscard.push(DaleCard.of(notif.args.card), this.marketDeck.placeholderHTML);
 	}
 
-	notif_throwAwayFromMarketBoard(notif: NotifAs<'throwAwayFromMarketBoard'>) {
+	notif_ditchFromMarketBoard(notif: NotifAs<'ditchFromMarketBoard'>) {
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			const pos = this.market!.posOf(id);

@@ -186,7 +186,7 @@ interface GameStates {
 	50: {
 		'name': 'swiftBroker',
 		'description': 'Swift Broker: ${actplayer} must discard their hand',
-		'descriptionmyturn': 'Swift Broker: ${you} must discard your hand. You may select which card(s) to put on top of your discard pile.',
+		'descriptionmyturn': 'Swift Broker: ${you} must discard your hand',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actSwiftBroker': [{
@@ -203,8 +203,8 @@ interface GameStates {
 	},
 	51: {
 		'name': 'shatteredRelic',
-		'description': 'Shattered Relic: ${actplayer} must throw away a card from their hand',
-		'descriptionmyturn': 'Shattered Relic: ${you} must throw away a card from your hand',
+		'description': 'Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand',
+		'descriptionmyturn': 'Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actShatteredRelic': [{
@@ -277,8 +277,8 @@ interface GameStates {
 	},
 	55: {
 		'name': 'loyalPartner',
-		'description': 'Loyal Partner: ${actplayer} must throw away all cards from the market',
-		'descriptionmyturn': 'Loyal Partner: ${you} must throw away all cards from the market. Click on any cards to determine the order on the market discard pile',
+		'description': 'Loyal Partner: ${actplayer} must <stronger>ditch</stronger> all cards from the market',
+		'descriptionmyturn': 'Loyal Partner: ${you} must <stronger>ditch</stronger> all cards from the market. Click on any cards to determine the order on the market discard pile',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actLoyalPartner': [{

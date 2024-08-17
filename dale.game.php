@@ -429,16 +429,16 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Throw away a single specified card from the hand of the active player
+     * Ditch a single specified card from the hand of the active player
      * @param string $msg notification message for all players
      * @param array $dbcard card that needs to be thrown away
-     * @param bool $from_temporary (optional) - default false. If `false`, throw away from hand. If `true`, throw away from temporary.
+     * @param bool $from_temporary (optional) - default false. If `false`, ditch from hand. If `true`, ditch from temporary.
      */
-    function throwAway(string $msg, array $dbcard, bool $from_temporary = false) {
+    function ditch(string $msg, array $dbcard, bool $from_temporary = false) {
         $player_id = $this->getActivePlayerId();
         $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
-        $this->notifyAllPlayers('throwAway', $msg, array(
+        $this->notifyAllPlayers('ditch', $msg, array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "card_name" => $this->getCardName($dbcard), //TODO: i18n for card names
@@ -491,11 +491,11 @@ class Dale extends DaleTableBasic
      * The active player throws away a card from the market deck and notifies all players
      * @param string $msg notification message
      */
-    function throwAwayFromMarketDeck(string $msg) {
+    function ditchFromMarketDeck(string $msg) {
         $dbcard = $this->cards->pickCardForLocation(DECK.MARKET, 'unstable');
         if ($dbcard) {
             $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
-            $this->notifyAllPlayers('throwAwayFromMarketDeck', $msg, array (
+            $this->notifyAllPlayers('ditchFromMarketDeck', $msg, array (
                 'player_name' => $this->getActivePlayerName(),
                 'card' => $dbcard
             ));
@@ -507,16 +507,16 @@ class Dale extends DaleTableBasic
      * @param string $msg notification message for all players
      * @param array $card_ids cards_ids to be thrown away in that order
      * @param array $cards array with exactly the same keys as $card_ids
-     * @param array $unordered_cards (optional) - if provided, first throw away these cards
+     * @param array $unordered_cards (optional) - if provided, first ditch these cards
      */
-    function throwAwayFromMarketBoard(string $msg, array $card_ids, array $cards, array $unordered_cards = null) {
+    function ditchFromMarketBoard(string $msg, array $card_ids, array $cards, array $unordered_cards = null) {
         //1: move the unordered cards to the market discard pile (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.MARKET);
-            $this->notifyAllPlayers('throwAwayFromMarketBoard', $cards ? '' : $msg, array (
+            $this->notifyAllPlayers('ditchFromMarketBoard', $cards ? '' : $msg, array (
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $unordered_card_ids,
                 'cards' => $unordered_cards,
@@ -527,7 +527,7 @@ class Dale extends DaleTableBasic
         //2: move the ordered cards to the market discard pile 
         if ($cards) {
             $this->cards->moveCardsOnTop($card_ids, DISCARD.MARKET);
-            $this->notifyAllPlayers('throwAwayFromMarketBoard', $msg, array (
+            $this->notifyAllPlayers('ditchFromMarketBoard', $msg, array (
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $card_ids,
                 'cards' => $cards,
@@ -1607,7 +1607,7 @@ class Dale extends DaleTableBasic
                 $handsize = $this->cards->countCardInLocation(HAND.$player_id);
                 if ($handsize == 0) {
                     //shattered relic just draws a card
-                    $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to throw away'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to ditch'), array(
                         "player_name" => $this->getActivePlayerName()
                     ));
                     $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
@@ -1708,7 +1708,7 @@ class Dale extends DaleTableBasic
 
         switch($type_id) {
             case CT_GOODOLDTIMES:
-                $this->throwAwayFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to throw away a card from the market deck'));
+                $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
                 $effect = $this->effects->insert($card_id, $type_id);
                 $this->notifyAllPlayers('addEffect', '', array("effect" => $effect));
                 break;
@@ -1756,7 +1756,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
 
-        $this->throwAway(clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), $card);
+        $this->ditch(clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), $card);
         $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
 
         $this->gamestate->nextState("trFullyResolveTechnique");
@@ -1880,8 +1880,8 @@ class Dale extends DaleTableBasic
             unset($non_selected_cards[$card_id]);
         }
 
-        //1. throw away all cards from the market board
-        $this->throwAwayFromMarketBoard(
+        //1. ditch all cards from the market board
+        $this->ditchFromMarketBoard(
             clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
             $card_ids, 
             $selected_cards, 
@@ -2016,7 +2016,7 @@ class Dale extends DaleTableBasic
     //         'pos' => $card['location_arg']
     //     );
     // }
-    
+
     function argStackIndex(){
         $player_id = $this->getActivePlayerId();
         $stack_index = $this->cards->getNextStackIndex($player_id);

@@ -59,10 +59,10 @@ declare global {
 			market: boolean
 			player_id: number
 		}
-		'throwAwayFromMarketDeck': {
+		'ditchFromMarketDeck': {
 			card: DbCard
 		}
-		'throwAwayFromMarketBoard': {
+		'ditchFromMarketBoard': {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
@@ -92,12 +92,12 @@ declare global {
 			schedule_card_id: number
 			market_card_id: number
 		}
-		'throwAway': {
+		'ditch': {
 			player_id: number 
 			card: DbCard
-			from_temporary?: boolean //by default, throw away from hand. if specified, throw away from temporary instead
+			from_temporary?: boolean //by default, ditch from hand. if specified, ditch from temporary instead
 		}
-		'throwAwayMultiple': {
+		'ditchMultiple': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters

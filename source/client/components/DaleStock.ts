@@ -179,10 +179,11 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param mode selection mode
 	 * @param iconType (optional) none. types of icons to use for the selection
 	 * @param actionLabel (optional) if provided, set the action label of this stock's wrap
+	 * @param actionLabelText (optional)
 	 */
-	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none', actionLabel?: ActionLabelClass): void {
+	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none', actionLabel?: ActionLabelClass, actionLabelText?: string): void {
 		this.orderedSelection.setIconType(iconType);
-		this.setActionLabel(actionLabel);
+		this.setActionLabel(actionLabel, actionLabelText);
 		super.setSelectionMode(mode);
 		for(let i in this.items){
 			const card_id = this.items[i]!.id;
@@ -206,7 +207,7 @@ export class DaleStock extends Stock implements DaleLocation {
 				if (!this.actionLabelText) {
 					throw new Error("Please correctly initialize actionLabelText");
 				}
-				this.actionLabelText.textContent = text ?? _("<Missing Text>");
+				this.actionLabelText.innerHTML = text ?? _("<Missing Text>");
 			}
 			this.actionLabelWrap!.classList.remove(...this.actionLabelClasses);
 			if (label) {
