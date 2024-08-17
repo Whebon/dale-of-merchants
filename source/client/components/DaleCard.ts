@@ -270,6 +270,14 @@ export class DaleCard {
         return div;
     }
 
+    /**
+     * cost of this card when purchased from the market
+     * @param pos
+     */
+    public getCost(pos: number) {
+        return this.value + pos;
+    }
+
     public get value(): number {
         return DaleCard.cardTypes[this.effective_type_id]!.value
     }

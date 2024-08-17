@@ -219,9 +219,9 @@ declare global {
 		'chameleon_goodoldtimes': {}
 		'chameleon_trendsetting': {}
 		'chameleon_seeingdoubles': {}
-		'client_purchase' : { pos: number, on_market_board: boolean }
+		'client_purchase' : { pos: number, on_market_board: boolean, cost: number, card_name: string }
 		'client_technique': {}
-		'client_build': {}
+		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
 	}
 

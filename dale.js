@@ -234,6 +234,9 @@ define("components/DaleCard", ["require", "exports", "components/Images"], funct
             div.classList.add("chameleon-icon");
             return div;
         };
+        DaleCard.prototype.getCost = function (pos) {
+            return this.value + pos;
+        };
         Object.defineProperty(DaleCard.prototype, "value", {
             get: function () {
                 return DaleCard.cardTypes[this.effective_type_id].value;
@@ -1718,11 +1721,23 @@ define("components/types/MainClientState", ["require", "exports"], function (req
             enumerable: false,
             configurable: true
         });
+        MainClientState.prototype.getDescription = function (state) {
+            switch (state) {
+                case 'client_technique':
+                    return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
+                case 'client_purchase':
+                    return _("${you} must pay ${cost} for ${card_name}");
+                case 'client_build':
+                    return _("${you} must select cards to build in stack ${stack_index_plus_1}");
+                case 'client_inventory':
+                    return _("${you} must discard any number of cards");
+            }
+            return "MISSING DESCRIPTION";
+        };
         MainClientState.prototype.exit = function () {
             this.enterClientState('client_technique');
         };
         MainClientState.prototype.enterClientState = function (name, args) {
-            var _a;
             if (name) {
                 this.name = name;
             }
@@ -1730,12 +1745,10 @@ define("components/types/MainClientState", ["require", "exports"], function (req
                 this._args = args !== null && args !== void 0 ? args : {};
             }
             this.page.setClientState(this.name, {
-                descriptionmyturn: (_a = MainClientState.DESCRIPTIONS.get(this.name)) !== null && _a !== void 0 ? _a : _("<missing client state description>")
+                descriptionmyturn: this.getDescription(this.name),
+                args: args
             });
         };
-        MainClientState.DESCRIPTIONS = new Map([
-            ['client_technique', _("asdsad")]
-        ]);
         return MainClientState;
     }());
     exports.MainClientState = MainClientState;
@@ -2378,7 +2391,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else {
                         this.mainClientState.enterClientState('client_purchase', {
                             pos: pos,
-                            on_market_board: true
+                            on_market_board: true,
+                            card_name: card.name,
+                            cost: card.getCost(pos)
                         });
                     }
                     break;
@@ -2388,7 +2403,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     console.log("".concat(this.gamedatas.gamestate.name, " --> client_purchase"));
                     this.mainClientState.enterClientState('client_purchase', {
                         pos: pos,
-                        on_market_board: true
+                        on_market_board: true,
+                        card_name: card.name,
+                        cost: card.getCost(pos)
                     });
                     break;
                 case 'giftVoucher':
@@ -2700,7 +2717,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_technique':
                 case 'client_build':
                 case 'client_inventory':
-                    this.mainClientState.enterClientState('client_build');
+                    this.mainClientState.enterClientState('client_build', {
+                        stack_index_plus_1: this.myStall.getNumberOfStacks() + 1
+                    });
                     break;
             }
         };

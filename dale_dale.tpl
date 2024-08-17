@@ -12,7 +12,7 @@
 
 <div id="dale-market-wrap" class="whiteblock">
     <!-- Display the name of this area? <h3>{MARKET}</h3> -->
-    <div style="display:flex; align-items: center;">
+    <div style="display:flex; align-items: center; justify-content: space-evenly;">
         <div id="market-deck" class="pile-container"></div>
         <div id="market-board-background"><div id="market-board"></div></div>
         <div id="market-discard" class="pile-container"></div>

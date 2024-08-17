@@ -8,11 +8,6 @@ export class MainClientState {
 	public name: keyof ClientGameState;
     public descriptionmyturn: string;
     private _args: ClientGameState[keyof ClientGameState];
-
-    public static readonly DESCRIPTIONS: Map<keyof ClientGameState, string> = new Map<keyof ClientGameState, string>([
-        ['client_technique', _("asdsad")]
-    ])
-
     constructor(page: Gamegui) {
         this.page = page;
         this.name = 'client_technique';
@@ -25,6 +20,20 @@ export class MainClientState {
             throw new Error(`Client state ${this.name} has no args`);
         }
         return this._args;
+    }
+
+    public getDescription(state: keyof ClientGameState) {
+        switch(state) {
+            case 'client_technique':
+                return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
+            case 'client_purchase':
+                return _("${you} must pay ${cost} for ${card_name}");
+            case 'client_build':
+                return _("${you} must select cards to build in stack ${stack_index_plus_1}");
+            case 'client_inventory':
+                return _("${you} must discard any number of cards");
+        }
+        return "MISSING DESCRIPTION"
     }
 
     /**
@@ -47,7 +56,8 @@ export class MainClientState {
             this._args = args ?? {} as ClientGameState[K];
         }
         this.page.setClientState(this.name, {
-            descriptionmyturn: MainClientState.DESCRIPTIONS.get(this.name) ?? _("<missing client state description>")
+            descriptionmyturn: this.getDescription(this.name),
+            args: args
         })
     }
 }

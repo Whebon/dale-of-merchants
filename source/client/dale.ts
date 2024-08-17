@@ -856,7 +856,9 @@ class Dale extends Gamegui
 				else {
 					this.mainClientState.enterClientState('client_purchase', {
 						pos: pos,
-						on_market_board: true
+						on_market_board: true,
+						card_name: card.name,
+						cost: card.getCost(pos)
 					});
 				}
 				break;
@@ -866,7 +868,9 @@ class Dale extends Gamegui
 				console.log(`${this.gamedatas.gamestate.name} --> client_purchase`);
 				this.mainClientState.enterClientState('client_purchase', {
 					pos: pos,
-					on_market_board: true
+					on_market_board: true,
+					card_name: card.name,
+					cost: card.getCost(pos)
 				});
 				break;
 			case 'giftVoucher':
@@ -1240,7 +1244,9 @@ class Dale extends Gamegui
 			case 'client_technique':
 			case 'client_build':
 			case 'client_inventory':
-				this.mainClientState.enterClientState('client_build');
+				this.mainClientState.enterClientState('client_build', {
+					stack_index_plus_1: this.myStall!.getNumberOfStacks()+1
+				});
 				break;
 		}
 	}
