@@ -277,7 +277,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		if (!stockitem) {
 			return;
 		}
-		const old_overlay = stockitem?.querySelector(".card");
+		const old_overlay = stockitem?.querySelector(".dale-card");
 		if (old_overlay) {
 			if (old_overlay.classList.contains("type-id-"+card.effective_type_id)) {
 				return;
@@ -286,6 +286,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 		const overlay = card.toDiv();
 		overlay.classList.add("type-id-"+card.effective_type_id);
+		overlay.classList.add("dale-overlay");
 		stockitem.appendChild(overlay);
 		if (fadein) {
 			dojo.setStyle(overlay, 'opacity', '0');
@@ -300,7 +301,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 */
 	public removeChameleonOverlay(card: DaleCard) {
 		const stockitem = $(this.control_name+"_item_"+card.id);
-		const old_overlay = stockitem?.querySelector(".card") as HTMLElement;
+		const old_overlay = stockitem?.querySelector(".dale-card") as HTMLElement;
 		if (old_overlay) {
 			dojo.fadeOut({node: old_overlay, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
 			card.addTooltip(stockitem as HTMLElement);

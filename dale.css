@@ -61,7 +61,7 @@
   left: 50%;
   top: 80%;
   transform: translate(-50%, -50%);
-  z-index: 100;
+  z-index: 500;
 }
 
 .dale-myhandsize-icon {
@@ -124,15 +124,6 @@
   opacity: 50%;
 }
 
-.DEPRECATED-dale-card {
-  background-image: url("img/cards.jpg");
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.5);
-  border-radius: 10px;
-  position: absolute;
-  transform: scale(1);
-  transition: transform 0.3s ease;
-}
-
 .dale-card {
   background-image: url("img/cards.jpg");
   background-size: cover;
@@ -145,6 +136,9 @@
 .dale-card.dale-clickable:hover {
   transform: scale(1.1);
   z-index: 200;
+}
+.dale-card.dale-overlay {
+  box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5);
 }
 
 .dale-card.dale-relative {
@@ -458,12 +452,20 @@ body {
   background-color: var(--dale-label-technique-a);
   background-blend-mode: overlay;
 }
+#dale-myhand-wrap.dale-label-technique .stockitem.dale-selected .dale-card.dale-overlay {
+  background-color: var(--dale-label-technique-a);
+  background-blend-mode: overlay;
+}
 #dale-myhand-wrap.dale-label-technique .stockitem:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-label-technique);
 }
 
 #dale-myhand-wrap.dale-label-purchase .stockitem.dale-selected {
   outline: 3px solid var(--dale-label-purchase);
+  background-color: var(--dale-label-purchase-a);
+  background-blend-mode: overlay;
+}
+#dale-myhand-wrap.dale-label-purchase .stockitem.dale-selected .dale-card.dale-overlay {
   background-color: var(--dale-label-purchase-a);
   background-blend-mode: overlay;
 }
@@ -476,12 +478,20 @@ body {
   background-color: var(--dale-label-build-a);
   background-blend-mode: overlay;
 }
+#dale-myhand-wrap.dale-label-build .stockitem.dale-selected .dale-card.dale-overlay {
+  background-color: var(--dale-label-build-a);
+  background-blend-mode: overlay;
+}
 #dale-myhand-wrap.dale-label-build .stockitem:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-label-build);
 }
 
 #dale-myhand-wrap.dale-label-discard .stockitem.dale-selected {
   outline: 3px solid var(--dale-label-discard);
+  background-color: var(--dale-label-discard-a);
+  background-blend-mode: overlay;
+}
+#dale-myhand-wrap.dale-label-discard .stockitem.dale-selected .dale-card.dale-overlay {
   background-color: var(--dale-label-discard-a);
   background-blend-mode: overlay;
 }
@@ -494,12 +504,20 @@ body {
   background-color: var(--dale-label-text-a);
   background-blend-mode: overlay;
 }
+#dale-myhand-wrap.dale-label-text .stockitem.dale-selected .dale-card.dale-overlay {
+  background-color: var(--dale-label-text-a);
+  background-blend-mode: overlay;
+}
 #dale-myhand-wrap.dale-label-text .stockitem:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-label-text);
 }
 
 #dale-myhand-wrap.dale-label-default .stockitem.dale-selected {
   outline: 3px solid var(--dale-label-default);
+  background-color: var(--dale-label-default-a);
+  background-blend-mode: overlay;
+}
+#dale-myhand-wrap.dale-label-default .stockitem.dale-selected .dale-card.dale-overlay {
   background-color: var(--dale-label-default-a);
   background-blend-mode: overlay;
 }

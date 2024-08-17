@@ -62,7 +62,7 @@
     left: 50%;
     top: 80%;
     transform: translate(-50%, -50%);
-	z-index: 100;
+	z-index: 500;
 }
 
 .dale-myhandsize-icon {
@@ -128,15 +128,6 @@
     opacity: 50%;
 }
 
-.DEPRECATED-dale-card {
-	background-image: url('img/cards.jpg');
-	box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.5);
-	border-radius: 10px;
-	position: absolute;
-	transform: scale(1);
-	transition: transform 0.3s ease;
-}
-
 .dale-card {
 	background-image: url("img/cards.jpg");
 	background-size: cover;
@@ -148,6 +139,9 @@
 	&.dale-clickable:hover {
 		transform: scale(1.1);
 		z-index: 200;
+	}
+	&.dale-overlay {
+		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5);
 	}
 }
 
@@ -468,6 +462,10 @@ body {
 		outline: 3px solid var(--dale-label-technique);
 		background-color: var(--dale-label-technique-a);
 		background-blend-mode: overlay;
+		.dale-card.dale-overlay {
+			background-color: var(--dale-label-technique-a);
+			background-blend-mode: overlay;
+		}
 	}
 	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-label-technique);
@@ -479,6 +477,10 @@ body {
 		outline: 3px solid var(--dale-label-purchase);
 		background-color: var(--dale-label-purchase-a);
 		background-blend-mode: overlay;
+		.dale-card.dale-overlay {
+			background-color: var(--dale-label-purchase-a);
+			background-blend-mode: overlay;
+		}
 	}
 	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-label-purchase);
@@ -490,6 +492,10 @@ body {
 		outline: 3px solid var(--dale-label-build);
 		background-color: var(--dale-label-build-a);
 		background-blend-mode: overlay;
+		.dale-card.dale-overlay {
+			background-color: var(--dale-label-build-a);
+			background-blend-mode: overlay;
+		}
 	}
 	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-label-build);
@@ -501,6 +507,10 @@ body {
 		outline: 3px solid var(--dale-label-discard);
 		background-color: var(--dale-label-discard-a);
 		background-blend-mode: overlay;
+		.dale-card.dale-overlay {
+			background-color: var(--dale-label-discard-a);
+			background-blend-mode: overlay;
+		}
 	}
 	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-label-discard);
@@ -512,6 +522,10 @@ body {
 		outline: 3px solid var(--dale-label-text);
 		background-color: var(--dale-label-text-a);
 		background-blend-mode: overlay;
+		.dale-card.dale-overlay {
+			background-color: var(--dale-label-text-a);
+			background-blend-mode: overlay;
+		}
 	}
 	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-label-text);
@@ -523,6 +537,10 @@ body {
 		outline: 3px solid var(--dale-label-default);
 		background-color: var(--dale-label-default-a);
 		background-blend-mode: overlay;
+		.dale-card.dale-overlay {
+			background-color: var(--dale-label-default-a);
+			background-blend-mode: overlay;
+		}
 	}
 	.stockitem:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-label-default);

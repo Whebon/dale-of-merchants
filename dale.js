@@ -612,7 +612,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             if (!stockitem) {
                 return;
             }
-            var old_overlay = stockitem === null || stockitem === void 0 ? void 0 : stockitem.querySelector(".card");
+            var old_overlay = stockitem === null || stockitem === void 0 ? void 0 : stockitem.querySelector(".dale-card");
             if (old_overlay) {
                 if (old_overlay.classList.contains("type-id-" + card.effective_type_id)) {
                     return;
@@ -621,6 +621,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
             var overlay = card.toDiv();
             overlay.classList.add("type-id-" + card.effective_type_id);
+            overlay.classList.add("dale-overlay");
             stockitem.appendChild(overlay);
             if (fadein) {
                 dojo.setStyle(overlay, 'opacity', '0');
@@ -630,7 +631,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         };
         DaleStock.prototype.removeChameleonOverlay = function (card) {
             var stockitem = $(this.control_name + "_item_" + card.id);
-            var old_overlay = stockitem === null || stockitem === void 0 ? void 0 : stockitem.querySelector(".card");
+            var old_overlay = stockitem === null || stockitem === void 0 ? void 0 : stockitem.querySelector(".dale-card");
             if (old_overlay) {
                 dojo.fadeOut({ node: old_overlay, onEnd: function (node) { dojo.destroy(node); } }).play();
                 card.addTooltip(stockitem);
