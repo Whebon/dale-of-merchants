@@ -1,6 +1,7 @@
 import { DaleCard } from './DaleCard';
+import { DaleIcons } from './DaleIcons';
 
-export type SelectionIconType = 'none' | 'pileBlue' | 'pileYellow' | 'build' | 'hand';
+export type SelectionIconType = 'none' | 'pileBlue' | 'pileYellow' | 'build' | 'spyglass';
 
 export class OrderedSelection {
     private iconType: SelectionIconType;
@@ -30,21 +31,37 @@ export class OrderedSelection {
 	private addIcon(card_id: number, index: number) {
         const div = this.getDiv(card_id)!
         div.classList.add("dale-selected");
-        if (this.iconType == 'none') {
-            return;
+
+        let icon = undefined;
+        switch(this.iconType) {
+            case 'spyglass':
+                icon = (index == 0) ? DaleIcons.getSpyglassIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
+            case 'pileBlue':
+                icon = DaleIcons.getBluePileIcon(Math.min(index, 5));
+                break;
+            case 'pileYellow':
+                icon = DaleIcons.getYellowPileIcon(Math.min(index, 5));
+                break;
+            case 'build':
+                icon = DaleIcons.getBuildIcon();
+                break;
         }
-        
-        let offset = Math.min(7, index);
-        if (this.iconType == 'pileBlue') {
-            offset += 1;
+        if (icon) {
+            icon.classList.add("dale-selection-icon");
+            div.appendChild(icon);
         }
-        const icon = document.createElement("div");
-        icon.classList.add("selection-icon");
-        icon.setAttribute('style', `
-            background-position: -${offset}00%;
-        `);
+        //TODO: safely delete this
+        // let offset = Math.min(7, index);
+        // if (this.iconType == 'pileBlue') {
+        //     offset += 1;
+        // }
+        // const icon = document.createElement("div");
+        // icon.classList.add("selection-icon");
+        // icon.setAttribute('style', `
+        //     background-position: -${offset}00%;
+        // `);
         // this.divsWithIcons.set(card_id, div);
-		div.appendChild(icon);
 	}
 
     /**
@@ -53,7 +70,7 @@ export class OrderedSelection {
     private removeIcon(card_id: number) {
         const div = this.getDiv(card_id);
         div?.classList.remove("dale-selected");
-        div?.querySelector(".selection-icon")?.remove();
+        div?.querySelector(".dale-selection-icon")?.remove();
     }
 
 	/**

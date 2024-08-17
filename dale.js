@@ -396,7 +396,54 @@ define("components/types/DaleLocation", ["require", "exports"], function (requir
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/OrderedSelection", ["require", "exports", "components/DaleCard"], function (require, exports, DaleCard_1) {
+define("components/DaleIcons", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleIcons = void 0;
+    var DaleIcons = (function () {
+        function DaleIcons() {
+        }
+        DaleIcons.getIcon = function (row, col) {
+            var icon = document.createElement("i");
+            icon.classList.add("dale-icon");
+            icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
+            return icon;
+        };
+        DaleIcons.getBluePileIcon = function (index) {
+            return this.getIcon(0, index);
+        };
+        DaleIcons.getYellowPileIcon = function (index) {
+            return this.getIcon(1, index);
+        };
+        DaleIcons.getDiscardIcon = function () {
+            return this.getIcon(2, 0);
+        };
+        DaleIcons.getBuildIcon = function () {
+            return this.getIcon(2, 1);
+        };
+        DaleIcons.getHandIcon = function () {
+            return this.getIcon(2, 4);
+        };
+        DaleIcons.getChameleonIcon = function () {
+            return this.getIcon(2, 5);
+        };
+        DaleIcons.getSpyglassIcon = function () {
+            return this.getIcon(3, 0);
+        };
+        DaleIcons.getDitchIcon = function () {
+            return this.getIcon(3, 1);
+        };
+        DaleIcons.ROWS = 4;
+        DaleIcons.COLUMNS = 6;
+        DaleIcons.ICON_WIDTH = 150;
+        DaleIcons.ICON_HEIGHT = 150;
+        DaleIcons.BACKGROUND_WIDTH = DaleIcons.ICON_WIDTH * DaleIcons.COLUMNS;
+        DaleIcons.BACKGROUND_HEIGHT = DaleIcons.ICON_HEIGHT * DaleIcons.ROWS;
+        return DaleIcons;
+    }());
+    exports.DaleIcons = DaleIcons;
+});
+define("components/OrderedSelection", ["require", "exports", "components/DaleCard", "components/DaleIcons"], function (require, exports, DaleCard_1, DaleIcons_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.OrderedSelection = void 0;
@@ -411,23 +458,31 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
         OrderedSelection.prototype.addIcon = function (card_id, index) {
             var div = this.getDiv(card_id);
             div.classList.add("dale-selected");
-            if (this.iconType == 'none') {
-                return;
+            var icon = undefined;
+            switch (this.iconType) {
+                case 'spyglass':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getSpyglassIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'pileBlue':
+                    icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index, 5));
+                    break;
+                case 'pileYellow':
+                    icon = DaleIcons_1.DaleIcons.getYellowPileIcon(Math.min(index, 5));
+                    break;
+                case 'build':
+                    icon = DaleIcons_1.DaleIcons.getBuildIcon();
+                    break;
             }
-            var offset = Math.min(7, index);
-            if (this.iconType == 'pileBlue') {
-                offset += 1;
+            if (icon) {
+                icon.classList.add("dale-selection-icon");
+                div.appendChild(icon);
             }
-            var icon = document.createElement("div");
-            icon.classList.add("selection-icon");
-            icon.setAttribute('style', "\n            background-position: -".concat(offset, "00%;\n        "));
-            div.appendChild(icon);
         };
         OrderedSelection.prototype.removeIcon = function (card_id) {
             var _a;
             var div = this.getDiv(card_id);
             div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
-            (_a = div === null || div === void 0 ? void 0 : div.querySelector(".selection-icon")) === null || _a === void 0 ? void 0 : _a.remove();
+            (_a = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon")) === null || _a === void 0 ? void 0 : _a.remove();
         };
         OrderedSelection.prototype.selectItem = function (card_id) {
             this.card_ids.push(card_id);
@@ -1400,33 +1455,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/DaleIcons", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DaleIcons = void 0;
-    var DaleIcons = (function () {
-        function DaleIcons() {
-        }
-        DaleIcons.getIcon = function (row, col) {
-            var icon = document.createElement("i");
-            icon.classList.add("dale-icon");
-            icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
-            return icon;
-        };
-        DaleIcons.getBuildIcon = function () {
-            return this.getIcon(2, 1);
-        };
-        DaleIcons.ROWS = 4;
-        DaleIcons.COLUMNS = 6;
-        DaleIcons.ICON_WIDTH = 150;
-        DaleIcons.ICON_HEIGHT = 150;
-        DaleIcons.BACKGROUND_WIDTH = DaleIcons.ICON_WIDTH * DaleIcons.COLUMNS;
-        DaleIcons.BACKGROUND_HEIGHT = DaleIcons.ICON_HEIGHT * DaleIcons.ROWS;
-        return DaleIcons;
-    }());
-    exports.DaleIcons = DaleIcons;
-});
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_5, CardSlot_2, DaleIcons_1) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_5, CardSlot_2, DaleIcons_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -1483,7 +1512,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 stackIndexDiv.classList.add("dale-stack-index");
                 stackIndexDiv.innerText = String(this.slots.length + 1);
                 placeholder.append(stackIndexDiv);
-                placeholder.appendChild(DaleIcons_1.DaleIcons.getBuildIcon());
+                placeholder.appendChild(DaleIcons_2.DaleIcons.getBuildIcon());
                 stackContainer.appendChild(placeholder);
                 this.container.appendChild(stackContainer);
                 this.stackContainers.push(stackContainer);
@@ -1939,7 +1968,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode(1, 'none', 'dale-label-text', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'spyglass':
-                    this.myTemporary.setSelectionMode(2, 'hand');
+                    this.myTemporary.setSelectionMode(2, 'spyglass');
                     break;
                 case 'acorn':
                     for (var player_id in this.gamedatas.players) {

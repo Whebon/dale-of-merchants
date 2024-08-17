@@ -278,7 +278,7 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(1, 'none', 'dale-label-text', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
-				this.myTemporary.setSelectionMode(2, 'hand');
+				this.myTemporary.setSelectionMode(2, 'spyglass');
 				break;
 			case 'acorn':
 				for (let player_id in this.gamedatas.players) {

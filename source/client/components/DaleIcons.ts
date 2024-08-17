@@ -23,11 +23,47 @@ export class DaleIcons {
         return icon;
     }
 
+    /////////////////////////////
+    ////////    ROW 1    ////////
+    /////////////////////////////
+
+    public static getBluePileIcon(index: number): HTMLElement {
+        return this.getIcon(0, index);
+    }
+
+    public static getYellowPileIcon(index: number): HTMLElement {
+        return this.getIcon(1, index);
+    }
+
+    /////////////////////////////
+    ////////    ROW 2    ////////
+    /////////////////////////////
+
+    public static getDiscardIcon(): HTMLElement {
+        return this.getIcon(2, 0);
+    }
+
     public static getBuildIcon(): HTMLElement {
         return this.getIcon(2, 1);
     }
+
+    public static getHandIcon(): HTMLElement {
+        return this.getIcon(2, 4);
+    }
+
+    public static getChameleonIcon(): HTMLElement {
+        return this.getIcon(2, 5);
+    }
+
+    /////////////////////////////
+    ////////    ROW 3    ////////
+    /////////////////////////////
+
+    public static getSpyglassIcon(): HTMLElement {
+        return this.getIcon(3, 0);
+    }
+
+    public static getDitchIcon(): HTMLElement {
+        return this.getIcon(3, 1);
+    }
 }
-
-//background-size: ${DaleIcons.COLUMNS*width}px ${DaleIcons.ROWS*height}px;
-
-//background-size: ${width*DaleIcons.ROWS}px ${height*DaleIcons.COLUMNS}px;

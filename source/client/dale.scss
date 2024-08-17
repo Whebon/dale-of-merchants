@@ -34,6 +34,10 @@
 	text-align: center;
 }
 
+.dale-clickable {
+	cursor: pointer;
+}
+
 .dale-text {
 	pointer-events: none;
 	display: none; //by default, text is hidden
@@ -47,22 +51,12 @@
 	top: 50%; //a more specific selector should override this
 	background-image: url('img/icons.png');
     transform: translate(-50%, -50%);
-}
-
-.dale-clickable {
-	cursor: pointer;
-}
-
-.selection-icon {
-	background-image: url('img/selection_icons.png');
-    width: 50px;
-    height: 50px;
-    background-size: 800% 100%;
-    position: absolute;
-    left: 50%;
-    top: 80%;
-    transform: translate(-50%, -50%);
 	z-index: 500;
+	&.dale-selection-icon {
+		top: 80%;
+		width: 50px;
+		height: 50px;
+	  }
 }
 
 .dale-myhandsize-icon {
