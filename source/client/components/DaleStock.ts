@@ -75,6 +75,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		//configure wrap (set a reference to the wrap div that holds the action labels)
 		if (wrap) {
 			dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
+			dojo.setStyle(wrap, 'max-height', 2*Images.CARD_WIDTH_S+'px');
 			this.wrap = wrap;
 			this.actionLabel = wrap.querySelector(".dale-label") ?? undefined;
 			if (!this.actionLabel) {

@@ -592,6 +592,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
             if (wrap) {
                 dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
+                dojo.setStyle(wrap, 'max-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
                 this.wrap = wrap;
                 this.actionLabel = (_a = wrap.querySelector(".dale-label")) !== null && _a !== void 0 ? _a : undefined;
                 if (!this.actionLabel) {
