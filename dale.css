@@ -387,9 +387,6 @@ body {
   margin-bottom: 20px;
   transition: color 0.5s, color 0.5s, width 0.5s;
 }
-.dale-arc-stock .dale-label.dale-wrap-default {
-  opacity: 0.5;
-}
 
 .dale-wrap-technique {
   outline: 3px solid var(--dale-wrap-technique);
@@ -433,6 +430,7 @@ body {
   outline: 3px solid var(--dale-wrap-build);
 }
 .dale-wrap-build .dale-label {
+  opacity: 0.5;
   background-color: var(--dale-wrap-build);
 }
 .dale-wrap-build .stockitem.dale-selected {

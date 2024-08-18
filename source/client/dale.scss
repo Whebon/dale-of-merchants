@@ -441,11 +441,6 @@ body {
 		margin-bottom: 20px;
 		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "dale-hidden-transitioning"
 	}
-
-	.dale-label.dale-wrap-default {
-		//TODO: doesn't work anymore
-		opacity: 0.5; //grayed out
-	}
 }
 
 .dale-wrap-technique { 
@@ -489,6 +484,7 @@ body {
 .dale-wrap-build { 
 	outline: 3px solid var(--dale-wrap-build); 
 	.dale-label { 
+		opacity: 0.5; //a bit grayed out to indicate "this is not important right now"
 		background-color: var(--dale-wrap-build); 
 	}
 	.stockitem.dale-selected {
