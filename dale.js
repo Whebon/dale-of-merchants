@@ -43,25 +43,28 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getYellowPileIcon = function (index) {
             return this.getIcon(1, index);
         };
+        DaleIcons.getRedPileIcon = function (index) {
+            return this.getIcon(2, index);
+        };
         DaleIcons.getDiscardIcon = function () {
-            return this.getIcon(2, 0);
-        };
-        DaleIcons.getBuildIcon = function () {
-            return this.getIcon(2, 1);
-        };
-        DaleIcons.getHandIcon = function () {
-            return this.getIcon(2, 4);
-        };
-        DaleIcons.getChameleonIcon = function () {
-            return this.getIcon(2, 5);
-        };
-        DaleIcons.getSpyglassIcon = function () {
             return this.getIcon(3, 0);
         };
-        DaleIcons.getDitchIcon = function () {
+        DaleIcons.getBuildIcon = function () {
             return this.getIcon(3, 1);
         };
-        DaleIcons.ROWS = 4;
+        DaleIcons.getHandIcon = function () {
+            return this.getIcon(3, 4);
+        };
+        DaleIcons.getChameleonIcon = function () {
+            return this.getIcon(3, 5);
+        };
+        DaleIcons.getSpyglassIcon = function () {
+            return this.getIcon(4, 0);
+        };
+        DaleIcons.getDitchIcon = function () {
+            return this.getIcon(4, 1);
+        };
+        DaleIcons.ROWS = 5;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
         DaleIcons.ICON_HEIGHT = 150;
@@ -469,6 +472,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 case 'pileYellow':
                     icon = DaleIcons_2.DaleIcons.getYellowPileIcon(Math.min(index, 5));
                     break;
+                case 'pileRed':
+                    icon = DaleIcons_2.DaleIcons.getRedPileIcon(Math.min(index, 5));
+                    break;
                 case 'build':
                     icon = DaleIcons_2.DaleIcons.getBuildIcon();
                     break;
@@ -555,9 +561,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         __extends(DaleStock, _super);
         function DaleStock() {
             var _this = _super.call(this) || this;
-            _this.actionLabelClasses = ['dale-label-technique', 'dale-label-purchase', 'dale-label-build', 'dale-label-discard', 'dale-label-text', 'dale-label-default'];
-            _this.actionLabelWrap = undefined;
-            _this.actionLabelText = undefined;
+            _this.wrapClasses = ['dale-wrap-technique', 'dale-wrap-purchase', 'dale-wrap-build', 'dale-wrap-discard', 'dale-wrap-default'];
+            _this.wrap = undefined;
+            _this.actionLabel = undefined;
+            _this.actionLabelDefaultText = "<DefaultText>";
             _this.orderedSelection = new StockOrderedSelection(_this);
             _this.onChangeSelection = function (control_name, item_id) {
                 if (item_id && !this.isSelected(item_id)) {
@@ -600,12 +607,17 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             };
             hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("dale-hidden");
         };
-        DaleStock.prototype.initActionLabelWrap = function (wrap) {
+        DaleStock.prototype.initWrap = function (wrap, defaultText) {
             var _a;
             dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
-            this.actionLabelWrap = wrap;
-            this.actionLabelText = (_a = wrap.querySelector(".dale-label-text")) !== null && _a !== void 0 ? _a : undefined;
+            this.wrap = wrap;
+            this.actionLabel = (_a = wrap.querySelector(".dale-label")) !== null && _a !== void 0 ? _a : undefined;
+            if (!this.actionLabel) {
+                throw new Error("initActionLabelWrap failed: no action label found");
+            }
+            this.actionLabelDefaultText = defaultText;
             this.apparenceBorderWidth = '0px';
+            this.setWrapClass();
         };
         DaleStock.prototype.selectItem = function (item_id) {
             _super.prototype.selectItem.call(this, item_id);
@@ -615,11 +627,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _super.prototype.unselectItem.call(this, item_id);
             this.orderedSelection.unselectItem(+item_id);
         };
-        DaleStock.prototype.setSelectionMode = function (mode, iconType, actionLabel, actionLabelText) {
+        DaleStock.prototype.setSelectionMode = function (mode, iconType, wrapClass, actionLabelText) {
             var _a, _b;
             if (iconType === void 0) { iconType = 'none'; }
             this.orderedSelection.setIconType(iconType);
-            this.setActionLabel(actionLabel, actionLabelText);
+            this.setWrapClass(wrapClass, actionLabelText);
             _super.prototype.setSelectionMode.call(this, mode);
             for (var i in this.items) {
                 var card_id = this.items[i].id;
@@ -631,24 +643,22 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
             }
         };
-        DaleStock.prototype.setActionLabel = function (label, text) {
+        DaleStock.prototype.setWrapClass = function (wrapClass, labelText) {
             var _a;
-            if (label === void 0) { label = 'dale-label-default'; }
-            if (this.actionLabelWrap) {
-                if (label == 'dale-label-text') {
-                    if (!this.actionLabelText) {
-                        throw new Error("Please correctly initialize actionLabelText");
-                    }
-                    this.actionLabelText.innerHTML = text !== null && text !== void 0 ? text : _("<Missing Text>");
+            if (wrapClass === void 0) { wrapClass = 'dale-wrap-default'; }
+            if (this.actionLabel) {
+                if (!labelText) {
+                    labelText = this.actionLabelDefaultText;
                 }
-                (_a = this.actionLabelWrap.classList).remove.apply(_a, this.actionLabelClasses);
-                if (label) {
-                    this.actionLabelWrap.classList.add(label);
+                this.actionLabel.innerHTML = labelText !== null && labelText !== void 0 ? labelText : this.actionLabelDefaultText;
+                (_a = this.wrap.classList).remove.apply(_a, this.wrapClasses);
+                if (wrapClass) {
+                    this.wrap.classList.add(wrapClass);
                 }
             }
         };
         DaleStock.prototype.updateHTML = function (card) {
-            console.log("updateHTML for DaleStock '".concat(this.control_name, "'"));
+            console.log("updateHTML for DaleStock '".concat(this.control_name, "', card = ").concat(card === null || card === void 0 ? void 0 : card.id));
             if (card) {
                 if (card.isBoundChameleon()) {
                     this.addChameleonOverlay(card);
@@ -1801,7 +1811,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.playerSchedules = {};
             _this.market = null;
             _this.myHand = new DaleStock_2.DaleStock();
-            _this.myTemporary = new DaleStock_2.DaleStock();
+            _this.myLimbo = new DaleStock_2.DaleStock();
             _this.mainClientState = new MainClientState_1.MainClientState(_this);
             console.log('dale constructor');
             return _this;
@@ -1835,7 +1845,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             configurable: true
         });
         Dale.prototype.setup = function (gamedatas) {
-            var _a;
+            var _a, _b;
             console.log("Starting game setup");
             console.log("------ GAME DATAS ------ !");
             console.log(this.gamedatas);
@@ -1857,6 +1867,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]);
                 this.addTooltip('dale-myhandsize-icon-' + player_id, _("Number of cards in hand."), '');
                 this.addTooltip('icon_point_' + player_id, _("Number of stacks built."), '');
+                (_b = player_board_div.querySelector(".player_score_value")) === null || _b === void 0 ? void 0 : _b.insertAdjacentText('afterend', "/8");
                 this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, 'deck-' + player_id, 'Deck', +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
                 this.playerDiscards[player_id] = new Pile_3.Pile(this, 'discard-' + player_id, 'Discard', +player_id);
@@ -1881,7 +1892,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.market.insertCard(DaleCard_7.DaleCard.of(card), +card.location_arg);
             }
             this.myHand.init(this, $('dale-myhand'));
-            this.myHand.initActionLabelWrap($('dale-myhand-wrap'));
+            this.myHand.initWrap($('dale-myhand-wrap'), _("Your Hand"));
             this.myHand.centerItems = true;
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
@@ -1889,16 +1900,47 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             this.myHand.setSelectionMode(0);
             dojo.connect(this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged');
-            var myHand = this.myHand;
-            var myHandUpdateDisplay = function () { setTimeout(function () { myHand.updateDisplay(); }, 1); };
-            this.myTemporary.init(this, $('mytemporary'), $('mytemporary-wrap'), myHandUpdateDisplay, myHandUpdateDisplay);
-            for (var i in gamedatas.temporary) {
-                var card = gamedatas.temporary[i];
-                this.myTemporary.addDaleCardToStock(DaleCard_7.DaleCard.of(card));
+            var thiz = this;
+            var duration = 500;
+            var limboTransitionUpdateDisplay = function () {
+                console.log("limboTransitionUpdateDisplay");
+                setTimeout(function () { thiz.myLimbo.updateDisplay(); }, duration + 1);
+                setTimeout(function () { thiz.myHand.updateDisplay(); }, duration + 1);
+            };
+            var onLimboItemCreate = function () {
+                var classList = thiz.myLimbo.wrap.classList;
+                if (classList.contains("dale-hidden")) {
+                    classList.remove("dale-hidden");
+                    classList.add("dale-hidden-transitioning");
+                    setTimeout(function () {
+                        classList.remove("dale-hidden-transitioning");
+                    }, 1);
+                    limboTransitionUpdateDisplay();
+                }
+            };
+            var onLimboItemDelete = function () {
+                var classList = thiz.myLimbo.wrap.classList;
+                if (thiz.myLimbo.count() <= 1) {
+                    if (!classList.contains("dale-hidden") && !classList.contains("dale-hidden-transitioning")) {
+                        classList.add("dale-hidden-transitioning");
+                        setTimeout(function () {
+                            classList.remove("dale-hidden-transitioning");
+                            classList.add("dale-hidden");
+                        }, duration);
+                        limboTransitionUpdateDisplay();
+                    }
+                }
+            };
+            this.myLimbo.init(this, $('dale-mylimbo'), undefined, onLimboItemCreate, onLimboItemDelete);
+            this.myLimbo.initWrap($('dale-mylimbo-wrap'), _("Limbo"));
+            this.myLimbo.wrap.classList.add("dale-hidden");
+            this.myLimbo.centerItems = true;
+            for (var i in gamedatas.limbo) {
+                var card = gamedatas.limbo[i];
+                this.myLimbo.addDaleCardToStock(DaleCard_7.DaleCard.of(card));
             }
-            this.myTemporary.setSelectionMode(0);
-            this.myTemporary.autowidth = true;
-            dojo.connect(this.myTemporary, 'onChangeSelection', this, 'onTemporarySelectionChanged');
+            this.myLimbo.setSelectionMode(0);
+            dojo.connect(this.myLimbo, 'onChangeSelection', this, 'onLimboSelectionChanged');
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
@@ -1933,7 +1975,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_purchase':
                     var client_purchase_args = this.mainClientState.args;
-                    this.myHand.setSelectionMode(2, 'pileYellow', 'dale-label-purchase');
+                    this.myHand.setSelectionMode(2, 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
                     this.market.setSelectionMode(1);
                     if (client_purchase_args.on_market_board) {
                         this.market.setSelected(client_purchase_args.pos, true);
@@ -1941,34 +1983,34 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_technique':
-                    this.myHand.setSelectionMode(1, 'pileBlue', 'dale-label-technique');
+                    this.myHand.setSelectionMode(1, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
                     this.market.setSelectionMode(1);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_build':
-                    this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
+                    this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
                     this.market.setSelectionMode(1);
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
                 case 'client_inventory':
-                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-discard');
+                    this.myHand.setSelectionMode(2, 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
                     this.market.setSelectionMode(1);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'winterIsComing':
-                    this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
+                    this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
                 case 'swiftBroker':
-                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-text', _("Choose the order to discard your hand"));
+                    this.myHand.setSelectionMode(2, 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'shatteredRelic':
-                    this.myHand.setSelectionMode(1, 'none', 'dale-label-text', _("Choose a card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode(1, 'none', 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'spyglass':
-                    this.myTemporary.setSelectionMode(2, 'spyglass');
+                    this.myLimbo.setSelectionMode(2, 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'acorn':
                     for (var player_id in this.gamedatas.players) {
@@ -2029,14 +2071,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
                     DaleCard_7.DaleCard.unbindAllChameleonsLocal();
-                    this.updateHTML();
+                    this.updateHTML(this.myHand);
                     break;
                 case 'client_technique':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
                     DaleCard_7.DaleCard.unbindAllChameleonsLocal();
-                    this.updateHTML();
+                    this.updateHTML(this.myHand);
                     break;
                 case 'client_build':
                     this.market.setSelectionMode(0);
@@ -2044,14 +2086,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
                     DaleCard_7.DaleCard.unbindAllChameleonsLocal();
-                    this.updateHTML();
+                    this.updateHTML(this.myHand);
                     break;
                 case 'client_inventory':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode(0);
                     this.myStall.setLeftPlaceholderClickable(false);
                     DaleCard_7.DaleCard.unbindAllChameleonsLocal();
-                    this.updateHTML();
+                    this.updateHTML(this.myHand);
                     break;
                 case 'winterIsComing':
                     this.myHand.setSelectionMode(0);
@@ -2065,7 +2107,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode(0);
                     break;
                 case 'spyglass':
-                    this.myTemporary.setSelectionMode(0);
+                    this.myLimbo.setSelectionMode(0);
                     break;
                 case 'acorn':
                     for (var player_id in this.gamedatas.players) {
@@ -2560,7 +2602,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("gamestate.name is null");
             }
         };
-        Dale.prototype.onTemporarySelectionChanged = function () {
+        Dale.prototype.onLimboSelectionChanged = function () {
             var items = this.myHand.getSelectedItems();
             if (!items[0])
                 return;
@@ -2777,7 +2819,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onSpyglass = function () {
-            var card_ids = this.myTemporary.orderedSelection.get();
+            var card_ids = this.myLimbo.orderedSelection.get();
             console.log("Sending " + this.arrayToNumberList(card_ids));
             if (card_ids.length == 0) {
                 this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
@@ -2813,7 +2855,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['discardToHandMultiple', 1000],
                 ['draw', 1000],
                 ['drawMultiple', 1000],
-                ['temporaryToHand', 1000],
+                ['limboToHand', 1000],
                 ['obtainNewJunkInHand', 1000],
                 ['ditch', 1000],
                 ['ditchMultiple', 1000],
@@ -2952,17 +2994,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var schedule = this.playerSchedules[notif.args.schedule_player_id];
             this.market.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
         };
-        Dale.prototype.notif_temporaryToHand = function (notif) {
-            console.log("notif_temporaryToHand");
+        Dale.prototype.notif_limboToHand = function (notif) {
+            console.log("notif_limboToHand");
             if (notif.args._private) {
                 var card_id = +notif.args._private.card.id;
-                if ($(this.myTemporary.control_name + '_item_' + card_id)) {
+                if ($(this.myLimbo.control_name + '_item_' + card_id)) {
                     console.log(notif.args);
-                    this.myHand.addDaleCardToStock(DaleCard_7.DaleCard.of(notif.args._private.card), this.myTemporary.control_name + '_item_' + card_id);
-                    this.myTemporary.removeFromStockByIdNoAnimation(+card_id);
+                    this.myHand.addDaleCardToStock(DaleCard_7.DaleCard.of(notif.args._private.card), this.myLimbo.control_name + '_item_' + card_id);
+                    this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
-                    throw new Error("Card ".concat(card_id, " does not exist in myTemporary."));
+                    throw new Error("Card ".concat(card_id, " does not exist in myLimbo."));
                 }
             }
             this.playerHandSizes[notif.args.player_id].incValue(1);
@@ -2978,7 +3020,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playerHandSizes[notif.args.player_id].incValue(nbr);
         };
         Dale.prototype.notif_ditch = function (notif) {
-            var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (DaleCard_7.DaleCard.of(notif.args.card).isJunk()) {
                 this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
             }
@@ -2991,7 +3033,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_ditchMultiple = function (notif) {
             var delay = 0;
-            var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
                 var id = _a[_i];
                 var card = notif.args.cards[id];
@@ -3012,7 +3054,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
-            var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile);
             this.playerHandSizes[notif.args.player_id].incValue(-1);
         };
@@ -3020,7 +3062,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
-            var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             var delay = 0;
             for (var _i = 0, _b = notif.args.card_ids; _i < _b.length; _i++) {
                 var id = _b[_i];
@@ -3032,7 +3074,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_placeOnDeckMultiple = function (notif) {
             console.log("placeOnDeckMultiple");
-            var stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (notif.args._private) {
                 for (var _i = 0, _a = notif.args._private.card_ids; _i < _a.length; _i++) {
                     var id = _a[_i];
@@ -3051,7 +3093,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_discardToHand = function (notif) {
             var _a;
             console.log("notif_discardToHand");
-            var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : this.player_id];
             this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
             this.playerHandSizes[notif.args.player_id].incValue(1);
@@ -3059,7 +3101,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_discardToHandMultiple = function (notif) {
             var _a;
             console.log("notif_discardToHandMultiple");
-            var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : this.player_id];
             for (var i in notif.args.cards) {
                 var card = notif.args.cards[i];
@@ -3070,7 +3112,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_draw = function (notif) {
             var _a;
             console.log("notif_draw");
-            var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var deck = notif.args.deck_player_id ? (_a = this.playerDecks[notif.args.deck_player_id]) !== null && _a !== void 0 ? _a : this.marketDeck : this.myDeck;
             if (notif.args._private) {
                 var card = notif.args._private.card;
@@ -3088,7 +3130,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a, _b;
             console.log("notif_drawMultiple");
             console.log(notif.args);
-            var stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var deck = notif.args.deck_player_id ? (_a = this.playerDecks[notif.args.deck_player_id]) !== null && _a !== void 0 ? _a : this.marketDeck : this.myDeck;
             console.log(deck.size);
             if (notif.args._private) {

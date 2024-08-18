@@ -95,19 +95,19 @@ declare global {
 		'ditch': {
 			player_id: number 
 			card: DbCard
-			from_temporary?: boolean //by default, ditch from hand. if specified, ditch from temporary instead
+			from_limbo?: boolean //by default, ditch from hand. if specified, ditch from limbo instead
 		}
 		'ditchMultiple': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
-			from_temporary?: boolean
+			from_limbo?: boolean
 		}
 		'discard': {
 			player_id: number 
 			card: DbCard
 			discard_id?: number //by default, this is the same as player_id
-			from_temporary?: boolean
+			from_limbo?: boolean
 		}
 		'discardMultiple': {
 			player_id: number 
@@ -115,7 +115,7 @@ declare global {
 			card_ids: number[] //because ordering matters
 			nbr: number,
 			discard_id?: number //by default, this is the same as player_id
-			from_temporary?: boolean
+			from_limbo?: boolean
 		}
 		'placeOnDeckMultiple': {
 			player_id: number
@@ -125,20 +125,20 @@ declare global {
 			}
 			deck_player_id: number
 			nbr: number
-			from_temporary?: boolean
+			from_limbo?: boolean
 		}
 		'discardToHand': {
 			player_id: number
 			discard_id?: number
 			card: DbCard
-			to_temporary?: boolean
+			to_limbo?: boolean
 		}
 		'discardToHandMultiple': {
 			player_id: number
 			discard_id?: number
 			cards: {[card_id: number]: DbCard} //location_arg matters!
 			nbr: number
-			to_temporary?: boolean
+			to_limbo?: boolean
 		}
 		'draw': {
 			player_id: number 
@@ -146,7 +146,7 @@ declare global {
 				card: DbCard
 			}
 			deck_player_id?: number
-			to_temporary?: boolean
+			to_limbo?: boolean
 		}
 		'drawMultiple': {
 			player_id: number 
@@ -155,9 +155,9 @@ declare global {
 				cards: {[card_id: number]: DbCard}
 			}
 			deck_player_id?: number
-			to_temporary?: boolean
+			to_limbo?: boolean
 		}
-		'temporaryToHand': {
+		'limboToHand': {
 			player_id: number 
 			_private?: {
 				card: DbCard
@@ -207,7 +207,7 @@ declare global {
 		}
 		
 		'hand': {[card_id: number]: DbCard}
-		'temporary': {[card_id: number]: DbCard}
+		'limbo': {[card_id: number]: DbCard}
 		'market': {[card_id: number]: DbCard}
 		'effects': {[_index: number]: DbEffect}
 	}

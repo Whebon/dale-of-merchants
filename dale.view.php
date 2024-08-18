@@ -65,16 +65,15 @@ class view_dale_dale extends game_view
         }
 
         //Action labels
-        $this->tpl['ACTION_LABEL_TECHNIQUE'] = $this->_("Click cards to play <strong>techniques</strong>");
-        $this->tpl['ACTION_LABEL_PURCHASE'] = $this->_("Click cards to use for <strong>purchasing</strong>");
-        $this->tpl['ACTION_LABEL_BUILD'] = $this->_("Click cards to <strong>build stacks</strong>");
-        $this->tpl['ACTION_LABEL_DISCARD'] = $this->_("Click cards to <strong>discard</strong>");
-        $this->tpl['ACTION_LABEL_DEFAULT'] = $this->_("Your Hand");
+        // $this->tpl['ACTION_LABEL_TECHNIQUE'] = $this->_("Click cards to play <strong>techniques</strong>");
+        // $this->tpl['ACTION_LABEL_PURCHASE'] = $this->_("Click cards to use for <strong>purchasing</strong>");
+        // $this->tpl['ACTION_LABEL_BUILD'] = $this->_("Click cards to <strong>build stacks</strong>");
+        // $this->tpl['ACTION_LABEL_DISCARD'] = $this->_("Click cards to <strong>discard</strong>");
+        // $this->tpl['ACTION_LABEL_DEFAULT'] = $this->_("Your Hand");
 
         //Other variables
         // $this->tpl['YOUR_HAND'] = $this->_("Your Hand");
         $this->tpl['MARKET'] = $this->_("Market");
-        $this->tpl['CARD_CHOICE'] = $this->_("Card Choice");
         $this->tpl['PLAY_AREA'] = $this->_("Play Area");
         $this->tpl['STALL'] = $this->_("Stall");
         $this->tpl['CURRENT_PLAYER_COLOR'] = $players[$current_player]['player_color'];

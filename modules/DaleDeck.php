@@ -13,7 +13,7 @@ if (!defined('HAND')) {
     define('STALL', 'stal');
     define('JUNKRESERVE', 'junk');
     define('SCHEDULE', 'sche');
-    define('TEMPORARY', 'temp');
+    define('LIMBO', 'limb');
 
     //global variables
     define('MAX_STACK_SIZE', 1000); //must be the same as on the client side

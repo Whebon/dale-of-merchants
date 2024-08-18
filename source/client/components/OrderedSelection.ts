@@ -1,7 +1,7 @@
 import { DaleCard } from './DaleCard';
 import { DaleIcons } from './DaleIcons';
 
-export type SelectionIconType = 'none' | 'pileBlue' | 'pileYellow' | 'build' | 'spyglass';
+export type SelectionIconType = 'none' | 'pileBlue' | 'pileYellow' | 'pileRed' | 'build' | 'spyglass';
 
 export class OrderedSelection {
     private iconType: SelectionIconType;
@@ -42,6 +42,9 @@ export class OrderedSelection {
                 break;
             case 'pileYellow':
                 icon = DaleIcons.getYellowPileIcon(Math.min(index, 5));
+                break;
+            case 'pileRed':
+                icon = DaleIcons.getRedPileIcon(Math.min(index, 5));
                 break;
             case 'build':
                 icon = DaleIcons.getBuildIcon();

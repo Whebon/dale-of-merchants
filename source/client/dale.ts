@@ -90,8 +90,8 @@ class Dale extends Gamegui
 	/** Cards in this client's player hand */
 	myHand: DaleStock = new DaleStock();
 
-	/** Cards in this client's temporary card stock */
-	myTemporary: DaleStock = new DaleStock();
+	/** Cards in this client's limbo card stock */
+	myLimbo: DaleStock = new DaleStock();
 
 	/** Arguments for chameleon client states. This card needs to be highlighted while selecting a valid target for it. */
 	chameleonArgs: ChameleonClientStateArgs | undefined;
@@ -138,6 +138,9 @@ class Dale extends Gamegui
 			this.addTooltip('dale-myhandsize-icon-'+player_id, _("Number of cards in hand."), '');
 			this.addTooltip('icon_point_'+player_id, _("Number of stacks built."), '');
 
+			//maximum stack size
+			player_board_div.querySelector(".player_score_value")?.insertAdjacentText('afterend', "/8")
+
 			//deck per player
 			this.playerDecks[player_id] = new HiddenPile(this, 'deck-'+player_id, 'Deck', +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
@@ -175,26 +178,59 @@ class Dale extends Gamegui
 
 		//initialize the hand
 		this.myHand.init(this, $('dale-myhand')!);
-		this.myHand.initActionLabelWrap($('dale-myhand-wrap')!);
+		this.myHand.initWrap($('dale-myhand-wrap')!, _("Your Hand"));
 		this.myHand.centerItems = true;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
-		this.myHand.setSelectionMode(0);
+		this.myHand.setSelectionMode(0);	
 		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
-		const myHand = this.myHand;
-		const myHandUpdateDisplay = ()=>{setTimeout(function() {myHand.updateDisplay()}, 1)}; //TODO: only update display on hide/appear?
 
-		//initialize the temporary zone
-		this.myTemporary.init(this, $('mytemporary')!, $('mytemporary-wrap')!, myHandUpdateDisplay, myHandUpdateDisplay);
-		for (let i in gamedatas.temporary) {
-			const card = gamedatas.temporary[i]!;
-			this.myTemporary.addDaleCardToStock(DaleCard.of(card));
+		//limbo transition
+		const thiz = this;
+		const duration = 500;
+		const limboTransitionUpdateDisplay = () => {
+			console.log("limboTransitionUpdateDisplay");
+			setTimeout(function() {thiz.myLimbo.updateDisplay()}, duration+1)
+			setTimeout(function() {thiz.myHand.updateDisplay()}, duration+1)
 		}
-		this.myTemporary.setSelectionMode(0);
-		this.myTemporary.autowidth = true;
-		dojo.connect( this.myTemporary, 'onChangeSelection', this, 'onTemporarySelectionChanged' );
+		const onLimboItemCreate = () => {
+			const classList = thiz.myLimbo.wrap!.classList;
+			if (classList.contains("dale-hidden")) {
+				classList.remove("dale-hidden");
+				classList.add("dale-hidden-transitioning");
+				setTimeout(() => {
+					classList.remove("dale-hidden-transitioning");
+				}, 1);
+				limboTransitionUpdateDisplay();
+			}
+		}
+		const onLimboItemDelete = () => {
+			const classList = thiz.myLimbo.wrap!.classList;
+			if (thiz.myLimbo.count() <= 1) {
+				if (!classList.contains("dale-hidden") && !classList.contains("dale-hidden-transitioning")) {
+					classList.add("dale-hidden-transitioning")
+					setTimeout(() => {
+						classList.remove("dale-hidden-transitioning");
+						classList.add("dale-hidden");
+					}, duration)
+					limboTransitionUpdateDisplay();
+				}
+			}
+		}
+
+		//initialize limbo
+		this.myLimbo.init(this, $('dale-mylimbo')!, undefined, onLimboItemCreate, onLimboItemDelete);
+		this.myLimbo.initWrap($('dale-mylimbo-wrap')!, _("Limbo"));
+		this.myLimbo.wrap!.classList.add("dale-hidden");
+		this.myLimbo.centerItems = true;
+		for (let i in gamedatas.limbo) {
+			const card = gamedatas.limbo[i]!;
+			this.myLimbo.addDaleCardToStock(DaleCard.of(card));
+		}
+		this.myLimbo.setSelectionMode(0);
+		dojo.connect( this.myLimbo, 'onChangeSelection', this, 'onLimboSelectionChanged' );
 
 		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
@@ -243,7 +279,7 @@ class Dale extends Gamegui
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
-				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-label-purchase');
+				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1);
 				if (client_purchase_args.on_market_board) {
 					this.market!.setSelected(client_purchase_args.pos, true);
@@ -251,34 +287,34 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
-				this.myHand.setSelectionMode(1, 'pileBlue', 'dale-label-technique');
+				this.myHand.setSelectionMode(1, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_build':
-				this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
+				this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_inventory':
-				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-discard');
+				this.myHand.setSelectionMode(2, 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'winterIsComing':
-				this.myHand.setSelectionMode(2, 'build', 'dale-label-build');
+				this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-label-text', _("Choose the order to discard your hand"));
+				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'shatteredRelic':
-				this.myHand.setSelectionMode(1, 'none', 'dale-label-text', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode(1, 'none', 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
-				this.myTemporary.setSelectionMode(2, 'spyglass');
+				this.myLimbo.setSelectionMode(2, 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'acorn':
 				for (let player_id in this.gamedatas.players) {
@@ -345,14 +381,14 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal();
-				this.updateHTML();
+				this.updateHTML(this.myHand);
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal()
-				this.updateHTML();
+				this.updateHTML(this.myHand);
 				break;
 			case 'client_build':
 				this.market!.setSelectionMode(0);
@@ -360,14 +396,14 @@ class Dale extends Gamegui
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
 				DaleCard.unbindAllChameleonsLocal();
-				this.updateHTML();
+				this.updateHTML(this.myHand);
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal()
-				this.updateHTML();
+				this.updateHTML(this.myHand);
 				break;
 			case 'winterIsComing':
 				this.myHand.setSelectionMode(0);
@@ -381,7 +417,7 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(0);
 				break;
 			case 'spyglass':
-				this.myTemporary.setSelectionMode(0);
+				this.myLimbo.setSelectionMode(0);
 				break;
 			case 'acorn':
 				for (let player_id in this.gamedatas.players) {
@@ -697,7 +733,7 @@ class Dale extends Gamegui
 	/**
 	 * Move a card from the player-specific stock to the specified pile
 	 * @param card card to move
-	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
+	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or limbo). 
 	 * @param player_id owner of the stock
 	 * @param pile pile to move to
 	 * @param delay
@@ -714,7 +750,7 @@ class Dale extends Gamegui
 	/**
 	 * Remove a card from a player-specific stock (fade out)
 	 * @param card card to remove from hand
-	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
+	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or limbo). 
 	 * @param player_id owner of the hand
 	*/
 	playerStockRemove(card: DbCard, stock: DaleStock, player_id: number){
@@ -750,7 +786,7 @@ class Dale extends Gamegui
 	 * Move a card from the top of the specified pile to a player-specific stock
 	 * @param card card to move
 	 * @param pile pile to move from
-	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or temporary). 
+	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or limbo). 
 	 * @param player_id owner of the stock
 	 * @param location_arg (optional) the card needs to be retrieved from a specific location of the pile
 	*/
@@ -1011,7 +1047,7 @@ class Dale extends Gamegui
 		}
 	}
 
-	onTemporarySelectionChanged() {
+	onLimboSelectionChanged() {
 		let items = this.myHand.getSelectedItems();
 		if (!items[0]) return;
 		const card = new DaleCard(items[0].id);
@@ -1279,7 +1315,7 @@ class Dale extends Gamegui
 	}
 
 	onSpyglass() {
-		const card_ids = this.myTemporary.orderedSelection.get();
+		const card_ids = this.myLimbo.orderedSelection.get();
 		console.log("Sending "+this.arrayToNumberList(card_ids));
 		if (card_ids.length == 0) {
 			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
@@ -1322,7 +1358,7 @@ class Dale extends Gamegui
 			['discardToHandMultiple', 1000],
 			['draw', 1000],
 			['drawMultiple', 1000],
-			['temporaryToHand', 1000],
+			['limboToHand', 1000],
 			['obtainNewJunkInHand', 1000],
 			['ditch', 1000],
 			['ditchMultiple', 1000],
@@ -1508,17 +1544,17 @@ class Dale extends Gamegui
 		this.market!.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
 	}
 
-	notif_temporaryToHand(notif: NotifAs<'temporaryToHand'>) {
-		console.log("notif_temporaryToHand");
+	notif_limboToHand(notif: NotifAs<'limboToHand'>) {
+		console.log("notif_limboToHand");
 		if (notif.args._private) {
 			const card_id = +notif.args._private.card.id;
-			if ($(this.myTemporary.control_name+'_item_' + card_id)) {
+			if ($(this.myLimbo.control_name+'_item_' + card_id)) {
 				console.log(notif.args);
-				this.myHand.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.myTemporary.control_name+'_item_' + card_id)
-				this.myTemporary.removeFromStockByIdNoAnimation(+card_id);
+				this.myHand.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.myLimbo.control_name+'_item_' + card_id)
+				this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
-				throw new Error(`Card ${card_id} does not exist in myTemporary.`);
+				throw new Error(`Card ${card_id} does not exist in myLimbo.`);
 			}
 		}
 		//update the hand sizes
@@ -1539,7 +1575,7 @@ class Dale extends Gamegui
 	}
 
 	notif_ditch(notif: NotifAs<'ditch'>) {
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (DaleCard.of(notif.args.card).isJunk()) {
 			this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
 		}
@@ -1554,7 +1590,7 @@ class Dale extends Gamegui
 
 	notif_ditchMultiple(notif: NotifAs<'ditchMultiple'>) {
 		let delay = 0;
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		for (let id of notif.args.card_ids) {
 			const card = notif.args.cards[id]!;
 			if (DaleCard.of(card).isJunk()) {
@@ -1575,7 +1611,7 @@ class Dale extends Gamegui
 	notif_discard(notif: NotifAs<'discard'>) {
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile);
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
@@ -1584,7 +1620,7 @@ class Dale extends Gamegui
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
@@ -1597,7 +1633,7 @@ class Dale extends Gamegui
 
 	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
 		console.log("placeOnDeckMultiple");
-		const stock = notif.args.from_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (notif.args._private) {
 			//you GIVE the cards
 			for (let id of notif.args._private.card_ids) {
@@ -1618,7 +1654,7 @@ class Dale extends Gamegui
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.log("notif_discardToHand");
-		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
 		//update the hand sizes
@@ -1627,7 +1663,7 @@ class Dale extends Gamegui
 	
 	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
 		console.log("notif_discardToHandMultiple");
-		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
 		for (let i in notif.args.cards) {
 			const card = notif.args.cards[i]!;
@@ -1639,7 +1675,7 @@ class Dale extends Gamegui
 
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
-		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] ?? this.marketDeck : this.myDeck;
 		if (notif.args._private) {
 			//you drew the cards
@@ -1660,7 +1696,7 @@ class Dale extends Gamegui
 	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
 		console.log("notif_drawMultiple");
 		console.log(notif.args);
-		const stock = notif.args.to_temporary ? this.myTemporary : this.myHand;
+		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] ?? this.marketDeck : this.myDeck;
 		console.log(deck.size);
 		if (notif.args._private) {

@@ -22,15 +22,16 @@ class StockOrderedSelection extends OrderedSelection {
     }
 }
 
-type ActionLabelClass = 'dale-label-technique' | 'dale-label-purchase' | 'dale-label-build' | 'dale-label-discard' | 'dale-label-text' | 'dale-label-default';
+type DaleWrapClass = 'dale-wrap-technique' | 'dale-wrap-purchase' | 'dale-wrap-build' | 'dale-wrap-discard' | 'dale-wrap-default';
 
 /**
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock implements DaleLocation {
-	private readonly actionLabelClasses = ['dale-label-technique', 'dale-label-purchase', 'dale-label-build', 'dale-label-discard', 'dale-label-text', 'dale-label-default'];
-	private actionLabelWrap: Element | undefined = undefined;
-	private actionLabelText: Element | undefined = undefined;
+	private readonly wrapClasses = ['dale-wrap-technique', 'dale-wrap-purchase', 'dale-wrap-build', 'dale-wrap-discard', 'dale-wrap-default'];
+	public wrap: Element | undefined = undefined;
+	private actionLabel: Element | undefined = undefined;
+	private actionLabelDefaultText: string = "<DefaultText>";
 
 	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
 	public orderedSelection: OrderedSelection;
@@ -92,12 +93,19 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	/**
 	 * Set a reference to the wrap div that holds the action labels
+	 * @param wrap html wrap element that holds both the stock and the action label
+	 * @param defaultText default text to display on the action label
 	 */
-	initActionLabelWrap(wrap: Element) {
+	initWrap(wrap: Element, defaultText: string) {
 		dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
-		this.actionLabelWrap = wrap
-		this.actionLabelText = wrap.querySelector(".dale-label-text") ?? undefined;
-		this.apparenceBorderWidth = '0px'; //the selection border will be managed by the action label
+		this.wrap = wrap;
+		this.actionLabel = wrap.querySelector(".dale-label") ?? undefined;
+		if (!this.actionLabel) {
+			throw new Error("initActionLabelWrap failed: no action label found")
+		}
+		this.actionLabelDefaultText = defaultText;
+		this.apparenceBorderWidth = '0px'; //the selection border will be managed by the action label instead of the bga stock
+		this.setWrapClass();
 	}
 
 	//TODO: safely delete this
@@ -178,12 +186,12 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * Additionally, it resets the 'orderedSelectedCardIds', which is needed to track the order in the selection
 	 * @param mode selection mode
 	 * @param iconType (optional) none. types of icons to use for the selection
-	 * @param actionLabel (optional) if provided, set the action label of this stock's wrap
+	 * @param wrapClass (optional) if provided, set the class of this stock's wrap
 	 * @param actionLabelText (optional)
 	 */
-	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none', actionLabel?: ActionLabelClass, actionLabelText?: string): void {
+	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none', wrapClass?: DaleWrapClass, actionLabelText?: string): void {
 		this.orderedSelection.setIconType(iconType);
-		this.setActionLabel(actionLabel, actionLabelText);
+		this.setWrapClass(wrapClass, actionLabelText);
 		super.setSelectionMode(mode);
 		for(let i in this.items){
 			const card_id = this.items[i]!.id;
@@ -197,21 +205,19 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	 /**
-     * Set the action label to one of the pre-made label classes.
-     * @param label (optional) default `'dale-label-default'`
-	 * @param text (optional) in case of `'dale-label-text'`, this text will be displayed
+     * Set the wrap class to one of the pre-made wrap classes.
+     * @param wrapClass (optional) default `'dale-wrap-default'`
+	 * @param labelText (optional) this text will be displayed on the label of the wrap
      */
-	private setActionLabel(label: ActionLabelClass = 'dale-label-default', text?: string) {
-		if (this.actionLabelWrap) {
-			if (label == 'dale-label-text') {
-				if (!this.actionLabelText) {
-					throw new Error("Please correctly initialize actionLabelText");
-				}
-				this.actionLabelText.innerHTML = text ?? _("<Missing Text>");
+	private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default', labelText?: string) {
+		if (this.actionLabel) {
+			if (!labelText) {
+				labelText = this.actionLabelDefaultText
 			}
-			this.actionLabelWrap!.classList.remove(...this.actionLabelClasses);
-			if (label) {
-				this.actionLabelWrap!.classList.add(label);
+			this.actionLabel.innerHTML = labelText ?? this.actionLabelDefaultText;
+			this.wrap!.classList.remove(...this.wrapClasses);
+			if (wrapClass) {
+				this.wrap!.classList.add(wrapClass);
 			}
 		}
 	}
@@ -229,7 +235,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param card (optional) - if provided, only update this html elements of this card
 	 */
 	public updateHTML(card?: DaleCard) {
-		console.log(`updateHTML for DaleStock '${this.control_name}'`);
+		console.log(`updateHTML for DaleStock '${this.control_name}', card = ${card?.id}`);
 		if (card) {
 			if (card.isBoundChameleon()) {
 				this.addChameleonOverlay(card);

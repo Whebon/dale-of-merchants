@@ -1,5 +1,5 @@
 export class DaleIcons {
-    private static readonly ROWS = 4;
+    private static readonly ROWS = 5;
     private static readonly COLUMNS = 6;
     
     private static readonly ICON_WIDTH = 150;
@@ -24,12 +24,16 @@ export class DaleIcons {
     }
 
     /////////////////////////////
-    ////////    ROW 1    ////////
+    ////////    ROW 0    ////////
     /////////////////////////////
 
     public static getBluePileIcon(index: number): HTMLElement {
         return this.getIcon(0, index);
     }
+
+    /////////////////////////////
+    ////////    ROW 1    ////////
+    /////////////////////////////
 
     public static getYellowPileIcon(index: number): HTMLElement {
         return this.getIcon(1, index);
@@ -39,31 +43,39 @@ export class DaleIcons {
     ////////    ROW 2    ////////
     /////////////////////////////
 
-    public static getDiscardIcon(): HTMLElement {
-        return this.getIcon(2, 0);
-    }
-
-    public static getBuildIcon(): HTMLElement {
-        return this.getIcon(2, 1);
-    }
-
-    public static getHandIcon(): HTMLElement {
-        return this.getIcon(2, 4);
-    }
-
-    public static getChameleonIcon(): HTMLElement {
-        return this.getIcon(2, 5);
+    public static getRedPileIcon(index: number): HTMLElement {
+        return this.getIcon(2, index);
     }
 
     /////////////////////////////
     ////////    ROW 3    ////////
     /////////////////////////////
 
-    public static getSpyglassIcon(): HTMLElement {
+    public static getDiscardIcon(): HTMLElement {
         return this.getIcon(3, 0);
     }
 
-    public static getDitchIcon(): HTMLElement {
+    public static getBuildIcon(): HTMLElement {
         return this.getIcon(3, 1);
+    }
+
+    public static getHandIcon(): HTMLElement {
+        return this.getIcon(3, 4);
+    }
+
+    public static getChameleonIcon(): HTMLElement {
+        return this.getIcon(3, 5);
+    }
+
+    /////////////////////////////
+    ////////    ROW 4    ////////
+    /////////////////////////////
+
+    public static getSpyglassIcon(): HTMLElement {
+        return this.getIcon(4, 0);
+    }
+
+    public static getDitchIcon(): HTMLElement {
+        return this.getIcon(4, 1);
     }
 }

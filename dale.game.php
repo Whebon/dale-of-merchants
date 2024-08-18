@@ -164,7 +164,7 @@ class Dale extends DaleTableBasic
         $current_player_id = $this->getCurrentPlayerId();
 
         //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleDeck will not work as intended)
-        if (strlen(MARKET) != 4 || strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(JUNKRESERVE) != 4 || strlen(SCHEDULE) != 4 || strlen(TEMPORARY) != 4) {
+        if (strlen(MARKET) != 4 || strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(JUNKRESERVE) != 4 || strlen(SCHEDULE) != 4 || strlen(LIMBO) != 4) {
             throw new AssertionError("All location prefixes must be of length 4");
         }
     
@@ -209,7 +209,7 @@ class Dale extends DaleTableBasic
         //other
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
         $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
-        $result['temporary'] = $this->cards->getCardsInLocation(TEMPORARY.$current_player_id);
+        $result['limbo'] = $this->cards->getCardsInLocation(LIMBO.$current_player_id);
         
         $result['cardTypes'] = $this->card_types;
 
@@ -337,9 +337,9 @@ class Dale extends DaleTableBasic
      * @param array $card_ids cards_ids to be placed on top in that order
      * @param array $cards array with exactly the same keys as $card_ids
      * @param array $unordered_cards (optional) - if provided, first place this collection of unordered cards on top of the deck
-     * @param bool $from_temporary (optional) - default false. If `false`, place from hand. If `true`, place from temporary.
+     * @param bool $from_limbo (optional) - default false. If `false`, place from hand. If `true`, place from limbo.
      */
-    function placeOnDeckMultiple(int $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_temporary = false) {
+    function placeOnDeckMultiple(int $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false) {
         //1: move the unordered cards on top of the deck (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
@@ -355,7 +355,7 @@ class Dale extends DaleTableBasic
                 ),
                 'deck_player_id' => $deck_player_id,
                 'nbr' => $nbr_unordered_cards,
-                'from_temporary' => $from_temporary
+                'from_limbo' => $from_limbo
             ));
         }
         
@@ -371,7 +371,7 @@ class Dale extends DaleTableBasic
                 ),
                 'deck_player_id' => $deck_player_id,
                 'nbr' => count($cards) + $nbr_unordered_cards,
-                'from_temporary' => $from_temporary
+                'from_limbo' => $from_limbo
             ));
         }
     }
@@ -380,19 +380,19 @@ class Dale extends DaleTableBasic
      * Draw $nbr cards from your deck and place them into your hand.
      * @param string $msg notification message for all players
      * @param int $nbr (optional) default 1. number of cards to draw from the specified player's draw pile
-     * @param bool $to_temporary (optional) default false. If true, the cards are placed in temporary. If false, the cards are placed in hand.
+     * @param bool $to_limbo (optional) default false. If true, the cards are placed in limbo. If false, the cards are placed in hand.
      * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
      * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
      * @return int how much cards were actually drawn (`<= $nbr`)
      */
-    function draw(string $msg, int $nbr = 1, bool $to_temporary = false, string $from_player_id = null, string $to_player_id = null) {
+    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null) {
         if ($from_player_id == null) {
             $from_player_id = $this->getActivePlayerId();
         }
         if ($to_player_id == null) {
             $to_player_id = $this->getActivePlayerId();
         }
-        $to_location = $to_temporary ? TEMPORARY.$to_player_id : HAND.$to_player_id;
+        $to_location = $to_limbo ? LIMBO.$to_player_id : HAND.$to_player_id;
         if ($nbr == 1) {
             $card = $this->cards->pickCardForLocation(DECK.$from_player_id, $to_location);
             if ($card) {
@@ -404,7 +404,7 @@ class Dale extends DaleTableBasic
                         "card" => $card
                     ),
                     "deck_player_id" => $from_player_id,
-                    "to_temporary" => $to_temporary
+                    "to_limbo" => $to_limbo
                 ));
                 return 1;
             }
@@ -422,7 +422,7 @@ class Dale extends DaleTableBasic
                     "cards" => $cards
                 ),
                 "deck_player_id" => $from_player_id,
-                "to_temporary" => $to_temporary
+                "to_limbo" => $to_limbo
             ));
             return $actual_nbr;
         }
@@ -432,9 +432,9 @@ class Dale extends DaleTableBasic
      * Ditch a single specified card from the hand of the active player
      * @param string $msg notification message for all players
      * @param array $dbcard card that needs to be thrown away
-     * @param bool $from_temporary (optional) - default false. If `false`, ditch from hand. If `true`, ditch from temporary.
+     * @param bool $from_limbo (optional) - default false. If `false`, ditch from hand. If `true`, ditch from limbo.
      */
-    function ditch(string $msg, array $dbcard, bool $from_temporary = false) {
+    function ditch(string $msg, array $dbcard, bool $from_limbo = false) {
         $player_id = $this->getActivePlayerId();
         $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
@@ -443,7 +443,7 @@ class Dale extends DaleTableBasic
             "player_name" => $this->getPlayerNameById($player_id),
             "card_name" => $this->getCardName($dbcard), //TODO: i18n for card names
             "card" => $dbcard,
-            "from_temporary" => $from_temporary
+            "from_limbo" => $from_limbo
         ));
     }
 
@@ -454,9 +454,9 @@ class Dale extends DaleTableBasic
      * @param array $card_ids cards_ids to be discarded in that order
      * @param array $cards array with exactly the same keys as $card_ids
      * @param array $unordered_cards (optional) - if provided, first discard this collection of unordered cards
-     * @param bool $from_temporary (optional) - default false. If `false`, discard from hand. If `true`, discard from temporary.
+     * @param bool $from_limbo (optional) - default false. If `false`, discard from hand. If `true`, discard from limbo.
      */
-    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_temporary = false) {
+    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false) {
         //1: move the unordered cards to the discard pile (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
@@ -469,7 +469,7 @@ class Dale extends DaleTableBasic
                 'card_ids' => $unordered_card_ids,
                 'cards' => $unordered_cards,
                 'nbr' => $nbr_unordered_cards,
-                'from_temporary' => $from_temporary
+                'from_limbo' => $from_limbo
             ));
         }
         
@@ -482,7 +482,7 @@ class Dale extends DaleTableBasic
                 'card_ids' => $card_ids,
                 'cards' => $cards,
                 'nbr' => count($cards) + $nbr_unordered_cards,
-                'from_temporary' => $from_temporary
+                'from_limbo' => $from_limbo
             ));
         }
     }
@@ -1772,11 +1772,11 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("You must select at least 1 card to place into your hand"));
         }
         $draw_card_id = array_pop($card_ids); //the last index is the card to draw
-        $draw_card = $this->cards->getCardFromLocation($draw_card_id, TEMPORARY.$player_id);
+        $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
 
         //get the non-selected cards and selected cards to discard
-        $non_selected_cards = $this->cards->getCardsInLocation(TEMPORARY.$player_id);
-        $selected_cards = $this->cards->getCardsFromLocation($card_ids, TEMPORARY.$player_id);
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
         foreach ($selected_cards as $card_id => $card) {
             unset($non_selected_cards[$card_id]);
         }
@@ -1785,7 +1785,7 @@ class Dale extends DaleTableBasic
         //TODO !!!!!!!!!!!!!!! BUG WITH THIS NOTIFICATION!
         //1. place the selected card into the hand
         $this->cards->moveCard($draw_card_id, HAND.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('temporaryToHand', clienttranslate('Spyglass: ${player_name} places 1 card into their hand'), array(
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Spyglass: ${player_name} places 1 card into their hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "_private" => array(

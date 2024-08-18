@@ -40,11 +40,12 @@ def generate_css(num_cards):
             rotate = arc*(i/(n-1) - 1/2) if n > 1 else 0
             translate_y = math.sqrt(radius**2 - (i*CARD_WIDTH - width/2)**2) - y0
             css.append(f"\t.stockitem[data-arc=\"{i+1}/{n}\"] {{")
-            css.append(f"\t\ttransition: transform 0.3s ease;")
+            # css.append(f"\t\ttransition: transform 1s ease;")
             css.append(f"\t\ttransform: rotate({rotate}deg) translateY(-{round(translate_y)}px);")
-            css.append(f"\t\t&:hover {{ ")
-            css.append(f"\t\t\ttransform: scale({HOVER_SCALE}) rotate({rotate}deg) translateY(-{round(translate_y+HOVER_TRANSLATE_Y)}px);")
-            css.append(f"\t\t}}")
+            # css.append(f"\t\t&:hover {{ ")
+            # css.append(f"\t\t\ttransition: transform 0.3s ease;")
+            # css.append(f"\t\t\ttransform: scale({HOVER_SCALE}) rotate({rotate}deg) translateY(-{round(translate_y+HOVER_TRANSLATE_Y)}px);")
+            # css.append(f"\t\t}}")
             css.append(f"\t}}")
             css.append("")
             xs[-1].append(((num_cards-n)/2+i)*CARD_WIDTH)
@@ -57,7 +58,7 @@ def generate_css(num_cards):
     return "\n".join(css)
 
 
-num_cards = 10  # Set this to the number of cards you want
+num_cards = 12  # Set this to the number of cards you want
 css_output = generate_css(num_cards)
 
 with open('generated_arc_styles.css', 'w') as file:
