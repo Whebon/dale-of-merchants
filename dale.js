@@ -1925,6 +1925,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myLimbo.addDaleCardToStock(DaleCard_7.DaleCard.of(card));
             }
             this.myLimbo.setSelectionMode(0);
+            dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_6.Images.CARD_WIDTH_S + 'px');
             dojo.connect(this.myLimbo, 'onChangeSelection', this, 'onLimboSelectionChanged');
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);

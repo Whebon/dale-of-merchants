@@ -396,7 +396,7 @@ body {
 
 #dale-mylimbo-wrap {
 	flex-grow: 0;
-	min-width: 35%;
+	min-width: 35%; //js overrides this to 3x card width
 	transition: padding 0.5s, min-width 0.5s; //should match the js for "dale-hidden-transitioning"
 	&.dale-hidden-transitioning {
 		min-width: 0;

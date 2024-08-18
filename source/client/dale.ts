@@ -220,6 +220,7 @@ class Dale extends Gamegui
 			this.myLimbo.addDaleCardToStock(DaleCard.of(card));
 		}
 		this.myLimbo.setSelectionMode(0);
+		dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #dale-mylimbo-wrap style
 		dojo.connect( this.myLimbo, 'onChangeSelection', this, 'onLimboSelectionChanged' );
 
 		//initialize the schedules
