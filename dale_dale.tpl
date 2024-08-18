@@ -20,11 +20,11 @@
 </div>
 
 <div class="dale-horizontal-flex">
-    <div id="dale-myhand-wrap" class="whiteblock dale-arc dale-no-vertical-margin">
+    <div id="dale-myhand-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin">
         <div class="dale-label"></div>
         <div id="dale-myhand"></div>
     </div> 
-    <div id="dale-mylimbo-wrap" class="whiteblock dale-arc dale-no-vertical-margin dale-left-margin">
+    <div id="dale-mylimbo-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin dale-left-margin">
         <div class="dale-label"></div>
         <div id="dale-mylimbo"></div>
     </div>
@@ -37,7 +37,7 @@
         <div id="deck-{PLAYER_ID}" class="pile-container"></div>
         <div id="discard-{PLAYER_ID}" class="pile-container"></div>
         <div class="stall-wrap">
-            <h3 class="name"> {STALL} </h3>
+            <h3 class="dale-component-name"> {STALL} </h3>
             <div id="stall-{PLAYER_ID}" class="stall-container"></div>
             <!-- <div class="stall-container">
                 <div class="stack-container"></div>
@@ -50,8 +50,8 @@
                 <div class="stack-container"></div>
             </div> -->
         </div>
-        <div id="schedule-wrap-{PLAYER_ID}" class="margin-left-wrap">
-            <h3> {SCHEDULE} </h3>
+        <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock margin-left-wrap">
+            <h3 class="dale-component-name"> {SCHEDULE} </h3>
             <div id="schedule-{PLAYER_ID}"></div>
         </div>
     </div>

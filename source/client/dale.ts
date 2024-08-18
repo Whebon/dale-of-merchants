@@ -30,6 +30,7 @@ import { ChameleonClientStateArgs } from './components/types/ChameleonClientStat
 import { CardSlot } from './components/CardSlot';
 import { DaleLocation } from './components/types/DaleLocation';
 import { MainClientState } from './components/types/MainClientState'
+import { Images } from './components/Images';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -177,8 +178,7 @@ class Dale extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand.init(this, $('dale-myhand')!);
-		this.myHand.initWrap($('dale-myhand-wrap')!, _("Your Hand"));
+		this.myHand.init(this, $('dale-myhand')!, $('dale-myhand-wrap')!, _("Your Hand"));
 		this.myHand.centerItems = true;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
@@ -221,8 +221,7 @@ class Dale extends Gamegui
 		}
 
 		//initialize limbo
-		this.myLimbo.init(this, $('dale-mylimbo')!, undefined, onLimboItemCreate, onLimboItemDelete);
-		this.myLimbo.initWrap($('dale-mylimbo-wrap')!, _("Limbo"));
+		this.myLimbo.init(this, $('dale-mylimbo')!, $('dale-mylimbo-wrap')!, _("Limbo"), onLimboItemCreate, onLimboItemDelete);
 		this.myLimbo.wrap!.classList.add("dale-hidden");
 		this.myLimbo.centerItems = true;
 		for (let i in gamedatas.limbo) {
@@ -236,11 +235,12 @@ class Dale extends Gamegui
 		for (let player_id in gamedatas.schedules) {
 			const container = $('schedule-'+player_id)!
 			const wrap = $('schedule-wrap-'+player_id)!
+			dojo.setStyle(wrap, 'width', `${1.5*Images.CARD_WIDTH_S}px`);
 			this.playerSchedules[player_id] = new DaleStock();
-			this.playerSchedules[player_id].init(this, container, wrap);
+			this.playerSchedules[player_id].init(this, container);
 			this.playerSchedules[player_id].setSelectionMode(0);
-			this.playerSchedules[player_id].autowidth = true;
 			this.playerSchedules[player_id].duration = 500;
+			this.playerSchedules[player_id].centerItems = true;
 			for (let card_id in gamedatas.schedules[player_id]) {
 				const card = gamedatas.schedules[+player_id]![+card_id]!;
 				this.playerSchedules[player_id]!.addDaleCardToStock(DaleCard.of(card));

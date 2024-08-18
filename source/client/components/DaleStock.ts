@@ -56,11 +56,12 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * Initialize everything that is needed for a Stock
 	 * @param page Gamegui
 	 * @param container The div element to attach the stock to. This element should be empty.
-	 * @param hideOuterContainer (optional) This element will be hidden iff the stock is empty.
+	 * @param wrap (optional) html wrap element that holds both the stock and the action label
+	 * @param defaultText (optional) default text to display on the action label
 	 * @param onItemCreate (optional) Callback function to execute when a new item is added to the stock
 	 * @param onItemDelete (optional) Callback function to execute when a new item is removed from the stock
 	 */
-	init(page: Gamegui, container: Element, hideOuterContainer?: Element, onItemCreate?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void, onItemDelete?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void) {
+	init(page: Gamegui, container: Element, wrap?: Element, defaultText?: string, onItemCreate?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void, onItemDelete?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void) {
 		//configure card types
 		(page as any).allDaleStocks.push(this);
 		for (let i in page.gamedatas.cardTypes) {
@@ -70,80 +71,26 @@ export class DaleStock extends Stock implements DaleLocation {
 		this.create( page, container, Images.CARD_WIDTH, Images.CARD_HEIGHT);
 		this.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
 		this.image_items_per_row = Images.IMAGES_PER_ROW;
+
+		//configure wrap (set a reference to the wrap div that holds the action labels)
+		if (wrap) {
+			dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
+			this.wrap = wrap;
+			this.actionLabel = wrap.querySelector(".dale-label") ?? undefined;
+			if (!this.actionLabel) {
+				throw new Error("initActionLabelWrap failed: no action label found")
+			}
+			if (defaultText) {
+				this.actionLabelDefaultText = defaultText;
+			}
+			this.apparenceBorderWidth = '0px'; //the selection border will be managed by the action label instead of the bga stock
+			this.setWrapClass();
+		}
 		
 		//configure callback functions
-		this.onItemCreate = function(itemDiv: HTMLElement, typeId: number, itemId: number) {
-			if (hideOuterContainer) {
-				hideOuterContainer.classList.remove("dale-hidden");
-			}
-			if (onItemCreate) {
-				onItemCreate(itemDiv, typeId, itemId);
-			}
-		}
-		this.onItemDelete = function(itemDiv: HTMLElement, typeId: number, itemId: number) {
-			if (hideOuterContainer && this.count() <= 1) {
-				hideOuterContainer.classList.add("dale-hidden");
-			}
-			if (onItemDelete) {
-				onItemDelete(itemDiv, typeId, itemId);
-			}
-		}
-		hideOuterContainer?.classList.add("dale-hidden");
+		if (onItemCreate) this.onItemCreate = onItemCreate;
+		if (onItemDelete) this.onItemDelete = onItemDelete;
 	}
-
-	/**
-	 * Set a reference to the wrap div that holds the action labels
-	 * @param wrap html wrap element that holds both the stock and the action label
-	 * @param defaultText default text to display on the action label
-	 */
-	initWrap(wrap: Element, defaultText: string) {
-		dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
-		this.wrap = wrap;
-		this.actionLabel = wrap.querySelector(".dale-label") ?? undefined;
-		if (!this.actionLabel) {
-			throw new Error("initActionLabelWrap failed: no action label found")
-		}
-		this.actionLabelDefaultText = defaultText;
-		this.apparenceBorderWidth = '0px'; //the selection border will be managed by the action label instead of the bga stock
-		this.setWrapClass();
-	}
-
-	//TODO: safely delete this
-	// /**
-	//  * Adds the correct selection icon to the given item_div
-	//  * @param item_div div to add the selection icon to
-	//  * @param index index of the item in this.orderedSelectedCardIds
-	//  */
-	// private addSelectionIcon(item_div: Element, index: number) {
-	// 	let offset = Math.min(7, index);
-	// 	if (this.selectionIconType == 'pile') {
-	// 		offset += 1;
-	// 	}
-	// 	const icon = document.createElement("div");
-	// 	icon.classList.add("selection-icon");
-	// 	icon.setAttribute('style', `
-	// 		background-position: -${offset}00%;
-	// 	`);
-	// 	item_div.appendChild(icon);
-	// }
-
-	//TODO: safely delete this
-	// /**
-	//  * Shift selection icons to ensure the icons remain contiguous. Should be called when the user removes an element from the selection.
-	//  */
-	// private updateSelectionIcons() {
-	// 	console.log("updateSelectionIcons");
-	// 	if (this.selectionIconType != 'none') {
-	// 		for (let i = 0; i < this.orderedSelectedCardIds.length; i++) {
-	// 			const card_id = this.orderedSelectedCardIds[i]!;
-	// 			const item_div = $(this.control_name+"_item_"+card_id);
-	// 			if (item_div) {
-	// 				item_div.querySelector(".selection-icon")?.remove();
-	// 				SelectionIcons.add(this.selectionIconType, item_div, i);
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	/**
 	 * Selects the item with the specified unique id.
@@ -153,13 +100,6 @@ export class DaleStock extends Stock implements DaleLocation {
 	override selectItem(item_id: number): void {
 		super.selectItem(item_id);
 		this.orderedSelection.selectItem(+item_id);
-		//TODO: safely delete this
-		// if (this.selectionIconType != 'none') {
-		// 	const item_div = $(this.control_name+"_item_"+item_id);
-		// 	if (item_div) {
-		// 		this.addSelectionIcon(item_div, this.orderedSelectedCardIds.length-1);
-		// 	}
-		// }
 	}
 
 	/**
@@ -170,15 +110,6 @@ export class DaleStock extends Stock implements DaleLocation {
 	override unselectItem(item_id: number): void {
 		super.unselectItem(item_id);
 		this.orderedSelection.unselectItem(+item_id);
-		//TODO: safely delete this
-		// item_id = +item_id;
-		// const index = this.orderedSelectedCardIds.indexOf(item_id);
-		// this.orderedSelectedCardIds.splice(index, 1);
-		// console.log(this.orderedSelectedCardIds);
-		// this.orderedSelection.remove(item_id);
-		// if (this.selectionIconType != 'none') {
-		// 	$(this.control_name+"_item_"+item_id)?.querySelector(".selection-icon")?.remove();
-		// }
 	}
 
 	/**
@@ -222,14 +153,6 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 	}
 
-	//TODO: safely delete this
-	// public setSelectionIcons(type: SelectionIcons) {
-	// 	this.selectionIconType = type;
-	// 	if (type == 'none') {
-	// 		$(this.control_name)?.querySelectorAll(".selection-icon").forEach(icon => icon.remove());
-	// 	}
-	// }
-
 	/**
 	 * Function to be called after unbinding chameleon cards. All bound chameleon cards are removed and readded to the stock.
 	 * @param card (optional) - if provided, only update this html elements of this card
@@ -243,33 +166,11 @@ export class DaleStock extends Stock implements DaleLocation {
 			else {
 				this.removeChameleonOverlay(card);
 			}
-			// console.log("remove and add "+card.id);
-			// this.removeFromStockById(card.id);
-			// this.addDaleCardToStock(card);
 		}
 		else {
 			for (let item of this.getAllItems()) {
 				this.updateHTML(new DaleCard(item.id, item.type));
 			}
-			//TODO: safely delete this
-			// console.log("AAAA");
-			//Remove outdated chameleon overlays. WARNING: will not add missing chameleon overlays!
-			// const chameleonIcons = this.container_div.querySelectorAll('.dale-chameleon-icon');
-			// chameleonIcons.forEach(icon => {
-			// 	const overlay = icon.parentElement!;
-			// 	const html_id = overlay.parentElement!.id;
-			// 	const match = html_id.match(/\d+$/);
-			// 	if (match) {
-			// 		const card_id = +match[0];
-			// 		const card = new DaleCard(card_id);
-			// 		if (!card.isBoundChameleon()) {
-			// 			dojo.fadeOut({node: overlay, onEnd: function (node: any){dojo.destroy(node);}}).play();
-			// 			//Alternative animation:
-			// 			// this.removeFromStockById(card_id);
-			// 			// this.addDaleCardToStock(card);
-			// 		}
-			// 	}
-			// });
 		}
 	}
 

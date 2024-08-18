@@ -23,6 +23,12 @@
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
 
+.dale-component-name {
+	text-align: center;
+	margin: 10px;
+	white-space: nowrap;
+}
+
 .dale-action-label {
 	position: absolute;
 	left: 50%;
@@ -144,15 +150,6 @@
 	position: relative;
 	//min-width: 3000px; //large enough to always fit the full the background image (2717px) + a little bit of margin for right item_margin of the right card
     // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
-
-	// .dale-clickable {
-	// 	transition: all .2s ease-in-out; 
-	// }
-	
-	// .dale-clickable:hover {
-	// 	cursor: pointer;
-	// 	transform: scale(1.05); 
-	// }
 }
 
 #market-board {
@@ -160,7 +157,8 @@
 }
 
 .dale-horizontal-flex {
-	display:flex; 
+	display: flex; 
+	justify-content: space-evenly;
 	width: 100%;
 }
 
@@ -258,11 +256,6 @@
 			}
 		}
 	}
-
-	.name {
-		margin: 10px;
-		white-space: nowrap;
-	}
 	
 	// .dale-clickable:hover {
 	// 	//growing animation glitches in stacks (maybe try z-index?)
@@ -281,11 +274,6 @@
 	margin-right: 10px;
 	padding-top: 0px;
 	width: max-content;
-
-	.name {
-		margin: 10px;
-		white-space: nowrap;
-	}
 
 	.size {
 		z-index: 500; //must be higher than all sliding cards
@@ -418,7 +406,15 @@ body {
 	}
 }
 
-.dale-arc {
+.dale-flat-stock {
+	.stockitem {
+		border-radius: 10px;
+		transition: scale 0.3s ease, transform 1s ease;
+		z-index: 100;
+	}
+}
+
+.dale-arc-stock {
 	padding: 0 10px 15px;
 	text-align: center;
 	border-radius: 10px;
@@ -546,12 +542,13 @@ body {
 	right: 0;
 }
 
-.dale-arc {
+.dale-arc-stock {
 	.stockitem {
 		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 		border-radius: 10px;
 		transition: scale 0.3s ease, transform 1s ease;
 		z-index: 100;
+		
 		&:hover {
 			scale: 1.1;
 			z-index: 200 !important;

@@ -580,7 +580,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             enumerable: false,
             configurable: true
         });
-        DaleStock.prototype.init = function (page, container, hideOuterContainer, onItemCreate, onItemDelete) {
+        DaleStock.prototype.init = function (page, container, wrap, defaultText, onItemCreate, onItemDelete) {
+            var _a;
             page.allDaleStocks.push(this);
             for (var i in page.gamedatas.cardTypes) {
                 var type_id = page.gamedatas.cardTypes[i].type_id;
@@ -589,35 +590,23 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.create(page, container, Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
             this.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
             this.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
-            this.onItemCreate = function (itemDiv, typeId, itemId) {
-                if (hideOuterContainer) {
-                    hideOuterContainer.classList.remove("dale-hidden");
+            if (wrap) {
+                dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
+                this.wrap = wrap;
+                this.actionLabel = (_a = wrap.querySelector(".dale-label")) !== null && _a !== void 0 ? _a : undefined;
+                if (!this.actionLabel) {
+                    throw new Error("initActionLabelWrap failed: no action label found");
                 }
-                if (onItemCreate) {
-                    onItemCreate(itemDiv, typeId, itemId);
+                if (defaultText) {
+                    this.actionLabelDefaultText = defaultText;
                 }
-            };
-            this.onItemDelete = function (itemDiv, typeId, itemId) {
-                if (hideOuterContainer && this.count() <= 1) {
-                    hideOuterContainer.classList.add("dale-hidden");
-                }
-                if (onItemDelete) {
-                    onItemDelete(itemDiv, typeId, itemId);
-                }
-            };
-            hideOuterContainer === null || hideOuterContainer === void 0 ? void 0 : hideOuterContainer.classList.add("dale-hidden");
-        };
-        DaleStock.prototype.initWrap = function (wrap, defaultText) {
-            var _a;
-            dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
-            this.wrap = wrap;
-            this.actionLabel = (_a = wrap.querySelector(".dale-label")) !== null && _a !== void 0 ? _a : undefined;
-            if (!this.actionLabel) {
-                throw new Error("initActionLabelWrap failed: no action label found");
+                this.apparenceBorderWidth = '0px';
+                this.setWrapClass();
             }
-            this.actionLabelDefaultText = defaultText;
-            this.apparenceBorderWidth = '0px';
-            this.setWrapClass();
+            if (onItemCreate)
+                this.onItemCreate = onItemCreate;
+            if (onItemDelete)
+                this.onItemDelete = onItemDelete;
         };
         DaleStock.prototype.selectItem = function (item_id) {
             _super.prototype.selectItem.call(this, item_id);
@@ -809,7 +798,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
             this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"dale-clickable dale-card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"dale-clickable dale-card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
@@ -1792,7 +1781,7 @@ define("components/types/MainClientState", ["require", "exports"], function (req
     }());
     exports.MainClientState = MainClientState;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "components/types/MainClientState", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_2, Pile_3, HiddenPile_1, DaleCard_7, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1, MainClientState_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonClientStateArgs", "components/types/MainClientState", "components/Images", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_2, Pile_3, HiddenPile_1, DaleCard_7, MarketBoard_1, Stall_1, ChameleonClientStateArgs_1, MainClientState_1, Images_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -1891,8 +1880,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card = gamedatas.market[i];
                 this.market.insertCard(DaleCard_7.DaleCard.of(card), +card.location_arg);
             }
-            this.myHand.init(this, $('dale-myhand'));
-            this.myHand.initWrap($('dale-myhand-wrap'), _("Your Hand"));
+            this.myHand.init(this, $('dale-myhand'), $('dale-myhand-wrap'), _("Your Hand"));
             this.myHand.centerItems = true;
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
@@ -1931,8 +1919,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                 }
             };
-            this.myLimbo.init(this, $('dale-mylimbo'), undefined, onLimboItemCreate, onLimboItemDelete);
-            this.myLimbo.initWrap($('dale-mylimbo-wrap'), _("Limbo"));
+            this.myLimbo.init(this, $('dale-mylimbo'), $('dale-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
             this.myLimbo.wrap.classList.add("dale-hidden");
             this.myLimbo.centerItems = true;
             for (var i in gamedatas.limbo) {
@@ -1944,11 +1931,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
+                dojo.setStyle(wrap, 'width', "".concat(1.5 * Images_6.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_2.DaleStock();
-                this.playerSchedules[player_id].init(this, container, wrap);
+                this.playerSchedules[player_id].init(this, container);
                 this.playerSchedules[player_id].setSelectionMode(0);
-                this.playerSchedules[player_id].autowidth = true;
                 this.playerSchedules[player_id].duration = 500;
+                this.playerSchedules[player_id].centerItems = true;
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];
                     this.playerSchedules[player_id].addDaleCardToStock(DaleCard_7.DaleCard.of(card));
