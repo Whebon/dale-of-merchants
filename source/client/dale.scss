@@ -98,7 +98,7 @@
 // }
 
 #dale-market-wrap {
-	.selected {
+	.dale-selected { //note that the slot is selected, not the card
 		.dale-card {
 			border-radius: 10px;
 			box-shadow: 0px 2px 8px #e4aa19;
@@ -276,7 +276,7 @@
 	padding-top: 0px;
 	width: max-content;
 
-	.size {
+	.dale-pile-size {
 		z-index: 500; //must be higher than all sliding cards
 		position: absolute;
 		font-weight: bold;
@@ -292,6 +292,9 @@
 		margin: auto;
 		padding-top: 2px;
 		padding-bottom: 2px;
+		&.dale-pile-selected-size {
+			color: var(--dale-wrap-build)
+		}
 	}
 
 	.pile {
@@ -309,6 +312,13 @@
 	
 	.dale-clickable:hover {
 		transform: scale(1.05); 
+	}
+
+	.dale-selected {
+		transform: scale(1.05); 
+		outline: 3px solid var(--dale-wrap-build);
+		background-color: var(--dale-wrap-build-a);
+		background-blend-mode: overlay;
 	}
 }
 

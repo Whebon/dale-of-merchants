@@ -92,7 +92,7 @@
   position: absolute;
 }
 
-#dale-market-wrap .selected .dale-card {
+#dale-market-wrap .dale-selected .dale-card {
   border-radius: 10px;
   box-shadow: 0px 2px 8px #e4aa19;
   outline: 3px solid #e4aa19;
@@ -254,7 +254,7 @@
   padding-top: 0px;
   width: max-content;
 }
-.pile-container .size {
+.pile-container .dale-pile-size {
   z-index: 500;
   position: absolute;
   font-weight: bold;
@@ -271,6 +271,9 @@
   padding-top: 2px;
   padding-bottom: 2px;
 }
+.pile-container .dale-pile-size.dale-pile-selected-size {
+  color: var(--dale-wrap-build);
+}
 .pile-container .pile {
   position: relative;
 }
@@ -284,6 +287,12 @@
 }
 .popin-card-container .dale-clickable:hover {
   transform: scale(1.05);
+}
+.popin-card-container .dale-selected {
+  transform: scale(1.05);
+  outline: 3px solid var(--dale-wrap-build);
+  background-color: var(--dale-wrap-build-a);
+  background-blend-mode: overlay;
 }
 
 .dale-grayed-out {

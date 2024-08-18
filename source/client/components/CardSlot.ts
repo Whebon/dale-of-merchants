@@ -152,7 +152,7 @@ export class CardSlot {
      * Select this item
      */
     selectItem(): void {
-        this._container.classList.add("selected");
+        this._container.classList.add("dale-selected");
         this.selected = true;
     }
 
@@ -160,7 +160,7 @@ export class CardSlot {
      * Unselect this item
      */
     unselectItem(): void {
-        this._container.classList.remove("selected");
+        this._container.classList.remove("dale-selected");
         this.selected = false;
     }
 

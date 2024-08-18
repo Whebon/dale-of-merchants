@@ -799,12 +799,12 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
             this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"dale-clickable dale-card\"></div>\n                <div class=\"size\"></div>\n                <div class=\"size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"placeholder\" style=\"").concat(Images_3.Images.getCardStyle(), "\"></div>\n                <div id=\"").concat(pile_container_id, "-top-card\" class=\"dale-clickable dale-card\"></div>\n                <div class=\"dale-pile-size\"></div>\n                <div class=\"dale-pile-size dale-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = $(pile_container_id).querySelector('.placeholder');
             this.topCardHTML = $(pile_container_id).querySelector('.dale-card');
-            var sizeElements = $(pile_container_id).querySelectorAll('.size');
+            var sizeElements = $(pile_container_id).querySelectorAll('.dale-pile-size');
             this.sizeHTML = sizeElements[0];
             this.selectedSizeHTML = sizeElements[1];
             this.cards = [];
@@ -827,7 +827,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
                 this.selectedSizeHTML.classList.remove("dale-hidden");
-                this.selectedSizeHTML.innerHTML = "<span style=\"color: red;\">(x ".concat(this.orderedSelectedCardIds.length, ")</span>");
+                this.selectedSizeHTML.innerHTML = "(x ".concat(this.orderedSelectedCardIds.length, ")");
             }
             else {
                 this.selectedSizeHTML.classList.add("dale-hidden");
@@ -1016,7 +1016,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     });
                 }
                 if (this_1.orderedSelectedCardIds.includes(card.id)) {
-                    div.classList.add("selected");
+                    div.classList.add("dale-selected");
                 }
                 if (((_b = this_1.page.chameleonArgs) === null || _b === void 0 ? void 0 : _b.card.id) == card.id) {
                     div.classList.add("chameleon-selected");
@@ -1060,7 +1060,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                                 this.page.showMessage(_("You can only select 1 card from this pile!"), 'error');
                             }
                             else {
-                                this.page.showMessage(_("You already selected the maximum number of cards from this pile") + "[".concat(this.selectionMax, "]"), 'error');
+                                this.page.showMessage(_("You already selected the maximum number of cards from this pile") + " (".concat(this.selectionMax, ")"), 'error');
                             }
                             return;
                         }
@@ -1082,7 +1082,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 if (index == -1) {
                     console.error("card_id = ".concat(card_id, " was not found in the pile"));
                 }
-                div.classList.remove("selected");
+                div.classList.remove("dale-selected");
                 this.orderedSelectedCardIds.splice(index, 1);
             }
             console.log(this.orderedSelectedCardIds);
@@ -1091,7 +1091,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var _a;
             var div = this.cardIdToPopinDiv.get(card_id);
             if (div) {
-                (_a = this.cardIdToPopinDiv.get(card_id)) === null || _a === void 0 ? void 0 : _a.classList.add("selected");
+                (_a = this.cardIdToPopinDiv.get(card_id)) === null || _a === void 0 ? void 0 : _a.classList.add("dale-selected");
                 this.orderedSelectedCardIds.push(card_id);
             }
             console.log(this.orderedSelectedCardIds);
@@ -1238,11 +1238,11 @@ define("components/CardSlot", ["require", "exports", "components/DaleCard"], fun
             this._container.remove();
         };
         CardSlot.prototype.selectItem = function () {
-            this._container.classList.add("selected");
+            this._container.classList.add("dale-selected");
             this.selected = true;
         };
         CardSlot.prototype.unselectItem = function () {
-            this._container.classList.remove("selected");
+            this._container.classList.remove("dale-selected");
             this.selected = false;
         };
         CardSlot.prototype.setClickable = function (enable) {
