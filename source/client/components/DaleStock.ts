@@ -288,7 +288,13 @@ export class DaleStock extends Stock implements DaleLocation {
 			var index = +i+1 as number;
 			div = $(this.getItemDivId(String(item.id))) as HTMLElement;
 			div.dataset['arc'] = index+'/'+this.items.length;
-			dojo.setStyle(div, 'z-index', String(Images.Z_INDEX_HAND_CARD+index));
+			if (this.control_name.includes("hand")) {
+				dojo.setStyle(div, 'z-index', String(index+Images.Z_INDEX_HAND_CARD));
+			}
+			else {
+				dojo.setStyle(div, 'z-index', String(index+Images.Z_INDEX_LIMBO_CARD));
+			}
+			
 		}
 
 		//Conpensate for the first item having margin

@@ -189,32 +189,23 @@ class Dale extends Gamegui
 
 		//limbo transition
 		const thiz = this;
-		const duration = 500;
 		const limboTransitionUpdateDisplay = () => {
 			console.log("limboTransitionUpdateDisplay");
-			setTimeout(function() {thiz.myLimbo.updateDisplay()}, duration+1)
-			setTimeout(function() {thiz.myHand.updateDisplay()}, duration+1)
+			setTimeout(function() {thiz.myLimbo.updateDisplay()}, 1)
+			setTimeout(function() {thiz.myHand.updateDisplay()}, 1)
 		}
 		const onLimboItemCreate = () => {
 			const classList = thiz.myLimbo.wrap!.classList;
 			if (classList.contains("dale-hidden")) {
 				classList.remove("dale-hidden");
-				classList.add("dale-hidden-transitioning");
-				setTimeout(() => {
-					classList.remove("dale-hidden-transitioning");
-				}, 1);
 				limboTransitionUpdateDisplay();
 			}
 		}
 		const onLimboItemDelete = () => {
 			const classList = thiz.myLimbo.wrap!.classList;
 			if (thiz.myLimbo.count() <= 1) {
-				if (!classList.contains("dale-hidden") && !classList.contains("dale-hidden-transitioning")) {
-					classList.add("dale-hidden-transitioning")
-					setTimeout(() => {
-						classList.remove("dale-hidden-transitioning");
-						classList.add("dale-hidden");
-					}, duration)
+				if (!classList.contains("dale-hidden")) {
+					classList.add("dale-hidden");
 					limboTransitionUpdateDisplay();
 				}
 			}

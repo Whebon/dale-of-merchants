@@ -121,6 +121,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.Z_INDEX_CARDBACK = 1;
         Images.Z_INDEX_CARDFRONT = 2;
         Images.Z_INDEX_HAND_CARD = 100;
+        Images.Z_INDEX_LIMBO_CARD = 150;
         Images.Z_INDEX_SELECTED_CARD = 200;
         Images.Z_INDEX_SLIDING_CARD = 300;
         Images.S_SCALE = 0.28;
@@ -734,7 +735,12 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 var index = +i + 1;
                 div = $(this.getItemDivId(String(item.id)));
                 div.dataset['arc'] = index + '/' + this.items.length;
-                dojo.setStyle(div, 'z-index', String(Images_2.Images.Z_INDEX_HAND_CARD + index));
+                if (this.control_name.includes("hand")) {
+                    dojo.setStyle(div, 'z-index', String(index + Images_2.Images.Z_INDEX_HAND_CARD));
+                }
+                else {
+                    dojo.setStyle(div, 'z-index', String(index + Images_2.Images.Z_INDEX_LIMBO_CARD));
+                }
             }
             if (this.item_margin < 0) {
                 dojo.setStyle(this.container_div, 'left', "".concat(this.item_margin / 2, "px"));
@@ -1890,32 +1896,23 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.myHand.setSelectionMode(0);
             dojo.connect(this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged');
             var thiz = this;
-            var duration = 500;
             var limboTransitionUpdateDisplay = function () {
                 console.log("limboTransitionUpdateDisplay");
-                setTimeout(function () { thiz.myLimbo.updateDisplay(); }, duration + 1);
-                setTimeout(function () { thiz.myHand.updateDisplay(); }, duration + 1);
+                setTimeout(function () { thiz.myLimbo.updateDisplay(); }, 1);
+                setTimeout(function () { thiz.myHand.updateDisplay(); }, 1);
             };
             var onLimboItemCreate = function () {
                 var classList = thiz.myLimbo.wrap.classList;
                 if (classList.contains("dale-hidden")) {
                     classList.remove("dale-hidden");
-                    classList.add("dale-hidden-transitioning");
-                    setTimeout(function () {
-                        classList.remove("dale-hidden-transitioning");
-                    }, 1);
                     limboTransitionUpdateDisplay();
                 }
             };
             var onLimboItemDelete = function () {
                 var classList = thiz.myLimbo.wrap.classList;
                 if (thiz.myLimbo.count() <= 1) {
-                    if (!classList.contains("dale-hidden") && !classList.contains("dale-hidden-transitioning")) {
-                        classList.add("dale-hidden-transitioning");
-                        setTimeout(function () {
-                            classList.remove("dale-hidden-transitioning");
-                            classList.add("dale-hidden");
-                        }, duration);
+                    if (!classList.contains("dale-hidden")) {
+                        classList.add("dale-hidden");
                         limboTransitionUpdateDisplay();
                     }
                 }
