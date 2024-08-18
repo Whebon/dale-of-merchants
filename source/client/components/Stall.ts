@@ -44,6 +44,9 @@ export class Stall implements CardSlotManager, DaleLocation {
             this.createNewStack();
         }
         dojo.setStyle(this.container.parentElement!, 'max-width', Images.CARD_WIDTH_S*(1-Images.STACK_MIN_OVERLAP_X)*Stall.MAX_STACKS+'px');
+        
+        addEventListener("resize", this.onResize.bind(this));
+        this.onResize();
     }
 
     private get leftMostPlaceholder(): HTMLElement | undefined {
@@ -71,15 +74,15 @@ export class Stall implements CardSlotManager, DaleLocation {
             const placeholder = document.createElement("div");
             if (this.slots.length == 0) {
                 placeholder.classList.add("dale-stack-placeholder-first");
-                const text = document.createElement("div");
-                text.classList.add("dale-text");
-                text.textContent = _("Build a new stack");
-                placeholder.appendChild(text);
             }
             else {
                 placeholder.classList.add("dale-stack-placeholder");
                 stackContainer.classList.add("dale-grayed-out");
             }
+            const text = document.createElement("div");
+            text.classList.add("dale-text");
+            text.textContent = _("Build a new stack");
+            placeholder.appendChild(text);
             placeholder.setAttribute('style', `${Images.getCardStyle()};`);
             const stackIndexDiv = document.createElement("div");
             stackIndexDiv.classList.add("dale-stack-index");
@@ -367,6 +370,34 @@ export class Stall implements CardSlotManager, DaleLocation {
             for (let slot of stack) {
                 if (slot.card?.id == card_id) {
                     slot.swapWithStock(stock, new_card_id);
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
+     */
+    private onResize() {
+        if (this.container.getBoundingClientRect().width < Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
+            //stacks overlap
+            for (let i = 1; i < this.slots.length; i++) {
+                const placeholder = this.stackContainers[i]!.querySelector(".dale-stack-placeholder-first");
+                if (placeholder) {
+                    console.log("Stack placeholder set to overlap");
+                    placeholder.classList.remove("dale-stack-placeholder-first")
+                    placeholder.classList.add("dale-stack-placeholder")
+                }
+            }
+        }
+        else {
+            //stacks are fully visible
+            for (let i = 1; i < this.slots.length; i++) {
+                const placeholder = this.stackContainers[i]!.querySelector(".dale-stack-placeholder");
+                if (placeholder) {
+                    console.log("Stack placeholder set to fully visible");
+                    placeholder.classList.remove("dale-stack-placeholder")
+                    placeholder.classList.add("dale-stack-placeholder-first")
                 }
             }
         }

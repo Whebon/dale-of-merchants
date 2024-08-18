@@ -430,7 +430,6 @@ body {
   outline: 3px solid var(--dale-wrap-build);
 }
 .dale-wrap-build .dale-label {
-  opacity: 0.5;
   background-color: var(--dale-wrap-build);
 }
 .dale-wrap-build .stockitem.dale-selected {
@@ -469,6 +468,7 @@ body {
   outline: 3px solid var(--dale-wrap-default);
 }
 .dale-wrap-default .dale-label {
+  opacity: 0.5;
   background-color: var(--dale-wrap-default);
 }
 .dale-wrap-default .stockitem.dale-selected {

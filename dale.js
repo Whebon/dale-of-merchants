@@ -1478,6 +1478,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 this.createNewStack();
             }
             dojo.setStyle(this.container.parentElement, 'max-width', Images_5.Images.CARD_WIDTH_S * (1 - Images_5.Images.STACK_MIN_OVERLAP_X) * Stall.MAX_STACKS + 'px');
+            addEventListener("resize", this.onResize.bind(this));
+            this.onResize();
         }
         Object.defineProperty(Stall.prototype, "leftMostPlaceholder", {
             get: function () {
@@ -1504,15 +1506,15 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 var placeholder = document.createElement("div");
                 if (this.slots.length == 0) {
                     placeholder.classList.add("dale-stack-placeholder-first");
-                    var text = document.createElement("div");
-                    text.classList.add("dale-text");
-                    text.textContent = _("Build a new stack");
-                    placeholder.appendChild(text);
                 }
                 else {
                     placeholder.classList.add("dale-stack-placeholder");
                     stackContainer.classList.add("dale-grayed-out");
                 }
+                var text = document.createElement("div");
+                text.classList.add("dale-text");
+                text.textContent = _("Build a new stack");
+                placeholder.appendChild(text);
                 placeholder.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";"));
                 var stackIndexDiv = document.createElement("div");
                 stackIndexDiv.classList.add("dale-stack-index");
@@ -1725,6 +1727,28 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                     var slot = stack_6[_c];
                     if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                         slot.swapWithStock(stock, new_card_id);
+                    }
+                }
+            }
+        };
+        Stall.prototype.onResize = function () {
+            if (this.container.getBoundingClientRect().width < Images_5.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
+                for (var i = 1; i < this.slots.length; i++) {
+                    var placeholder = this.stackContainers[i].querySelector(".dale-stack-placeholder-first");
+                    if (placeholder) {
+                        console.log("Stack placeholder set to overlap");
+                        placeholder.classList.remove("dale-stack-placeholder-first");
+                        placeholder.classList.add("dale-stack-placeholder");
+                    }
+                }
+            }
+            else {
+                for (var i = 1; i < this.slots.length; i++) {
+                    var placeholder = this.stackContainers[i].querySelector(".dale-stack-placeholder");
+                    if (placeholder) {
+                        console.log("Stack placeholder set to fully visible");
+                        placeholder.classList.remove("dale-stack-placeholder");
+                        placeholder.classList.add("dale-stack-placeholder-first");
                     }
                 }
             }

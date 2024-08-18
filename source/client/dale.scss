@@ -484,7 +484,6 @@ body {
 .dale-wrap-build { 
 	outline: 3px solid var(--dale-wrap-build); 
 	.dale-label { 
-		opacity: 0.5; //a bit grayed out to indicate "this is not important right now"
 		background-color: var(--dale-wrap-build); 
 	}
 	.stockitem.dale-selected {
@@ -523,6 +522,7 @@ body {
 .dale-wrap-default { 
 	outline: 3px solid var(--dale-wrap-default); 
 	.dale-label { 
+		opacity: 0.5; //a bit grayed out to indicate "this is not important right now"
 		background-color: var(--dale-wrap-default); 
 	}
 	.stockitem.dale-selected {
