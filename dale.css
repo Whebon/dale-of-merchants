@@ -220,8 +220,7 @@
   background-color: var(--dale-wrap-build-a);
 }
 .stall-wrap .stall-container .stack-container .dale-stack-placeholder {
-  clip-path: inset(0 0 0 25%);
-  background-image: url("img/placeholder_purple.png");
+  background-image: url("img/placeholder_purple_right.png");
   border-radius: 10px;
   position: absolute;
 }

@@ -18,7 +18,7 @@ export class Images {
     static readonly MARKET_HEIGHT = 906;
 
     static readonly VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
-    static readonly STACK_MIN_OVERLAP_X = 0.25; //0=adjacent, 1=full overlap
+    static readonly STACK_MIN_OVERLAP_X = -0.05; //0.25; //0=adjacent, 1=full overlap
 
     static readonly Z_INDEX_CARDBACK = 1;
     static readonly Z_INDEX_CARDFRONT = 2;

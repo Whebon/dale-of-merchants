@@ -117,7 +117,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
         Images.VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
-        Images.STACK_MIN_OVERLAP_X = 0.25;
+        Images.STACK_MIN_OVERLAP_X = -0.05;
         Images.Z_INDEX_CARDBACK = 1;
         Images.Z_INDEX_CARDFRONT = 2;
         Images.Z_INDEX_HAND_CARD = 100;

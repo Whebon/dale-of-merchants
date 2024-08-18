@@ -230,8 +230,9 @@
 			}
 
 			.dale-stack-placeholder {
-				clip-path: inset(0 0 0 25%); //to make sure the left corners are never visible. must match STACK_MIN_OVERLAP_X
-				background-image: url('img/placeholder_purple.png');
+				//clip-path: inset(0 0 0 25%); //to make sure the left corners are never visible. must match STACK_MIN_OVERLAP_X
+				//background-image: url('img/placeholder_purple.png');
+				background-image: url('img/placeholder_purple_right.png');
 				border-radius: 10px;
 				position: absolute;
 				&.dale-clickable:hover {
