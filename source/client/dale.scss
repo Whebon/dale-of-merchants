@@ -58,7 +58,12 @@
 	background-image: url('img/icons.png');
     transform: translate(-50%, -50%);
 	z-index: 500;
-	&.dale-selection-icon {
+	&.dale-selection-icon-1 {
+		top: 80%;
+		width: 50px;
+		height: 50px;
+	}
+	&.dale-selection-icon-2 {
 		top: 80%;
 		width: 50px;
 		height: 50px;
@@ -89,6 +94,13 @@
 
 .placeholder {
 	background-image: url('img/placeholder.png');
+	border-radius: 10px;
+	position: absolute;
+}
+
+.dale-placeholder {
+	background-image: url('img/placeholders.png');
+	background-size: 300% 200%;
 	border-radius: 10px;
 	position: absolute;
 }
@@ -200,10 +212,29 @@
 			min-width: 0; /* Ensure items can shrink below their content width */
 			position: relative;
 
-			.dale-stack-placeholder-first {
-				background-image: url('img/placeholder_purple.png');
-				border-radius: 10px;
-				position: absolute;
+			&.dale-grayed-out {
+				pointer-events: none;
+				opacity: 0.5;
+				.dale-placeholder { 
+					background-position-y: -100%;
+				}
+				.dale-stack-index {
+					color:#707070; //same as in placeholders.png
+				}
+			}
+
+			.dale-placeholder {
+				background-position-x: 0%;
+				&.dale-placeholder-partially-covered {
+					background-position-x: -100%;
+					&.dale-clickable:hover {
+						.dale-icon {
+							width: 50px;
+							height: 50px;
+							left: 78%;
+						}
+					}
+				}
 				&.dale-clickable:hover {
 					background-color: var(--dale-wrap-build-a);
 					.dale-icon {
@@ -222,25 +253,6 @@
 						width: 60%;
 						font-weight: bold;
 						text-align: center;
-					}
-				}
-				&.dale-selected {
-					background-color: var(--dale-wrap-build-a);
-				}
-			}
-
-			.dale-stack-placeholder {
-				//clip-path: inset(0 0 0 25%); //to make sure the left corners are never visible. must match STACK_MIN_OVERLAP_X
-				//background-image: url('img/placeholder_purple.png');
-				background-image: url('img/placeholder_purple_right.png');
-				border-radius: 10px;
-				position: absolute;
-				&.dale-clickable:hover {
-					background-color: var(--dale-wrap-build-a);
-					.dale-icon {
-						width: 50px;
-						height: 50px;
-						left: 78%;
 					}
 				}
 				&.dale-selected {
@@ -280,18 +292,16 @@
 		z-index: 500; //must be higher than all sliding cards
 		position: absolute;
 		font-weight: bold;
-		top: 4%;	
-		left: 82%;
-		transform: translateX(-50%);
+		top: 4%;
 		color: white;
 		background-color: rgba(0, 0, 0, 0.62); /* Optional, for better visibility */
 		text-align: center;
-		padding: 5px 10px;
 		width: 40px;
 		font-size: 16px;
-		margin: auto;
-		padding-top: 2px;
-		padding-bottom: 2px;
+		right: -5%;
+		border-radius: 5px;
+		padding: 2px 7px;
+		white-space: nowrap;
 		&.dale-pile-selected-size {
 			color: var(--dale-wrap-build)
 		}
@@ -299,6 +309,10 @@
 
 	.pile {
 		position: relative;
+	}
+
+	.dale-placeholder {
+		background-position-x: -200%;
 	}
 }
 
@@ -330,12 +344,6 @@
 // 	width: 25px;
 // 	background-color: red;
 // }
-
-.dale-grayed-out {
-	opacity: 0.3;
-	filter: grayscale(100%);
-	pointer-events: none;
-}
 
 .dale-hidden {
 	display: none;
@@ -522,7 +530,6 @@ body {
 .dale-wrap-default { 
 	outline: 3px solid var(--dale-wrap-default); 
 	.dale-label { 
-		opacity: 0.5; //a bit grayed out to indicate "this is not important right now"
 		background-color: var(--dale-wrap-default); 
 	}
 	.stockitem.dale-selected {

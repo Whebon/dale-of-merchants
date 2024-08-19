@@ -96,33 +96,36 @@ export class DaleStock extends Stock implements DaleLocation {
 	/**
 	 * Selects the item with the specified unique id.
 	 * @param item_id The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
+	 * @param secondary (optional) If true, adjust the selection on the secondary level
 	 * @returns {void}
 	 */
-	override selectItem(item_id: number): void {
+	override selectItem(item_id: number, secondary?: boolean): void {
 		super.selectItem(item_id);
-		this.orderedSelection.selectItem(+item_id);
+		this.orderedSelection.selectItem(+item_id, secondary);
 	}
 
 	/**
 	 * Deselects the item with the specified unique id.
 	 * @param item_id The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
+	 * @param secondary (optional) If true, adjust the selection on the secondary level
 	 * @returns {void}
 	 */
-	override unselectItem(item_id: number): void {
+	override unselectItem(item_id: number, secondary?: boolean): void {
 		super.unselectItem(item_id);
-		this.orderedSelection.unselectItem(+item_id);
+		this.orderedSelection.unselectItem(+item_id, secondary);
 	}
 
 	/**
 	 * Sets the selection mode for the stock. The selection mode determines how the user can interact with the items in the stock.
 	 * Additionally, it resets the 'orderedSelectedCardIds', which is needed to track the order in the selection
 	 * @param mode selection mode
-	 * @param iconType (optional) none. types of icons to use for the selection
+	 * @param iconType (optional) types of icons to use for the selection
 	 * @param wrapClass (optional) if provided, set the class of this stock's wrap
 	 * @param actionLabelText (optional)
+	 * @param secondaryIconType (optional) types of icons to use for the secondary selection
 	 */
-	override setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none', wrapClass?: DaleWrapClass, actionLabelText?: string): void {
-		this.orderedSelection.setIconType(iconType);
+	override setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass?: DaleWrapClass, actionLabelText?: string, secondaryIconType?: SelectionIconType): void {
+		this.orderedSelection.setIconType(iconType, secondaryIconType);
 		this.setWrapClass(wrapClass, actionLabelText);
 		super.setSelectionMode(mode);
 		for(let i in this.items){
@@ -294,7 +297,6 @@ export class DaleStock extends Stock implements DaleLocation {
 			else {
 				dojo.setStyle(div, 'z-index', String(index+Images.Z_INDEX_LIMBO_CARD));
 			}
-			
 		}
 
 		//Conpensate for the first item having margin

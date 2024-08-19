@@ -53,7 +53,8 @@
 				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
 				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
 				{"name": "funds_card_ids", "type": "AT_numberlist"},
-				{"name": "market_card_id", "type": "AT_int"}
+				{"name": "market_card_id", "type": "AT_int"},
+				{"name": "essential_purchase_ids", "type": "AT_numberlist"}
 			],
 
 			//Play Actions

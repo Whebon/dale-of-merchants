@@ -50,11 +50,11 @@ export class Stall implements CardSlotManager, DaleLocation {
     }
 
     private get leftMostPlaceholder(): HTMLElement | undefined {
-        const placeholder = this.container.querySelector(".dale-stack-placeholder-first") ?? this.container.querySelector(".dale-stack-placeholder");
+        const placeholder = this.container.querySelector(".dale-placeholder");
         if (placeholder) {
             return placeholder as HTMLElement;
         }
-        console.warn("Failed to find a stall placeholder")
+        console.warn("Failed to find a stall placeholder");
         return undefined;
     }
 
@@ -71,19 +71,15 @@ export class Stall implements CardSlotManager, DaleLocation {
             stackContainer.classList.add("stack-container");
             stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;`); //stack containers have a min width (to stay left aligned)
 
-            const placeholder = document.createElement("div");
-            if (this.slots.length == 0) {
-                placeholder.classList.add("dale-stack-placeholder-first");
-            }
-            else {
-                placeholder.classList.add("dale-stack-placeholder");
+            const placeholder = Images.getPlaceholder();
+            if (this.slots.length > 0) {
                 stackContainer.classList.add("dale-grayed-out");
+                placeholder.classList.add("dale-placeholder-partially-covered");
             }
             const text = document.createElement("div");
             text.classList.add("dale-text");
             text.textContent = _("Build a new stack");
             placeholder.appendChild(text);
-            placeholder.setAttribute('style', `${Images.getCardStyle()};`);
             const stackIndexDiv = document.createElement("div");
             stackIndexDiv.classList.add("dale-stack-index");
             stackIndexDiv.innerText = String(this.slots.length+1);
@@ -382,23 +378,15 @@ export class Stall implements CardSlotManager, DaleLocation {
         if (this.container.getBoundingClientRect().width < Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
             //stacks overlap
             for (let i = 1; i < this.slots.length; i++) {
-                const placeholder = this.stackContainers[i]!.querySelector(".dale-stack-placeholder-first");
-                if (placeholder) {
-                    console.log("Stack placeholder set to overlap");
-                    placeholder.classList.remove("dale-stack-placeholder-first")
-                    placeholder.classList.add("dale-stack-placeholder")
-                }
+                const placeholder = this.stackContainers[i]!.querySelector(".dale-placeholder");
+                placeholder?.classList.add("dale-placeholder-partially-covered");
             }
         }
         else {
             //stacks are fully visible
             for (let i = 1; i < this.slots.length; i++) {
-                const placeholder = this.stackContainers[i]!.querySelector(".dale-stack-placeholder");
-                if (placeholder) {
-                    console.log("Stack placeholder set to fully visible");
-                    placeholder.classList.remove("dale-stack-placeholder")
-                    placeholder.classList.add("dale-stack-placeholder-first")
-                }
+                const placeholder = this.stackContainers[i]!.querySelector(".dale-placeholder");
+                placeholder?.classList.remove("dale-placeholder-partially-covered");
             }
         }
     }

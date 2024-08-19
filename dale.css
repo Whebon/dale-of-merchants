@@ -58,7 +58,12 @@
   transform: translate(-50%, -50%);
   z-index: 500;
 }
-.dale-icon.dale-selection-icon {
+.dale-icon.dale-selection-icon-1 {
+  top: 80%;
+  width: 50px;
+  height: 50px;
+}
+.dale-icon.dale-selection-icon-2 {
   top: 80%;
   width: 50px;
   height: 50px;
@@ -88,6 +93,13 @@
 
 .placeholder {
   background-image: url("img/placeholder.png");
+  border-radius: 10px;
+  position: absolute;
+}
+
+.dale-placeholder {
+  background-image: url("img/placeholders.png");
+  background-size: 300% 200%;
   border-radius: 10px;
   position: absolute;
 }
@@ -191,21 +203,37 @@
   min-width: 0; /* Ensure items can shrink below their content width */
   position: relative;
 }
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder-first {
-  background-image: url("img/placeholder_purple.png");
-  border-radius: 10px;
-  position: absolute;
+.stall-wrap .stall-container .stack-container.dale-grayed-out {
+  pointer-events: none;
+  opacity: 0.5;
 }
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder-first.dale-clickable:hover {
+.stall-wrap .stall-container .stack-container.dale-grayed-out .dale-placeholder {
+  background-position-y: -100%;
+}
+.stall-wrap .stall-container .stack-container.dale-grayed-out .dale-stack-index {
+  color: #707070;
+}
+.stall-wrap .stall-container .stack-container .dale-placeholder {
+  background-position-x: 0%;
+}
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-placeholder-partially-covered {
+  background-position-x: -100%;
+}
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
+  width: 50px;
+  height: 50px;
+  left: 78%;
+}
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover {
   background-color: var(--dale-wrap-build-a);
 }
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder-first.dale-clickable:hover .dale-icon {
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   top: 40%;
   left: 56%;
 }
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder-first.dale-clickable:hover .dale-text {
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover .dale-text {
   display: block;
   color: var(--dale-wrap-build);
   position: absolute;
@@ -216,23 +244,7 @@
   font-weight: bold;
   text-align: center;
 }
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder-first.dale-selected {
-  background-color: var(--dale-wrap-build-a);
-}
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder {
-  background-image: url("img/placeholder_purple_right.png");
-  border-radius: 10px;
-  position: absolute;
-}
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder.dale-clickable:hover {
-  background-color: var(--dale-wrap-build-a);
-}
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder.dale-clickable:hover .dale-icon {
-  width: 50px;
-  height: 50px;
-  left: 78%;
-}
-.stall-wrap .stall-container .stack-container .dale-stack-placeholder.dale-selected {
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-selected {
   background-color: var(--dale-wrap-build-a);
 }
 .stall-wrap .stall-container .stack-container .dale-stack-index {
@@ -259,23 +271,24 @@
   position: absolute;
   font-weight: bold;
   top: 4%;
-  left: 82%;
-  transform: translateX(-50%);
   color: white;
   background-color: rgba(0, 0, 0, 0.62); /* Optional, for better visibility */
   text-align: center;
-  padding: 5px 10px;
   width: 40px;
   font-size: 16px;
-  margin: auto;
-  padding-top: 2px;
-  padding-bottom: 2px;
+  right: -5%;
+  border-radius: 5px;
+  padding: 2px 7px;
+  white-space: nowrap;
 }
 .pile-container .dale-pile-size.dale-pile-selected-size {
   color: var(--dale-wrap-build);
 }
 .pile-container .pile {
   position: relative;
+}
+.pile-container .dale-placeholder {
+  background-position-x: -200%;
 }
 
 .popin-card-container {
@@ -293,12 +306,6 @@
   outline: 3px solid var(--dale-wrap-build);
   background-color: var(--dale-wrap-build-a);
   background-blend-mode: overlay;
-}
-
-.dale-grayed-out {
-  opacity: 0.3;
-  filter: grayscale(100%);
-  pointer-events: none;
 }
 
 .dale-hidden {
@@ -468,7 +475,6 @@ body {
   outline: 3px solid var(--dale-wrap-default);
 }
 .dale-wrap-default .dale-label {
-  opacity: 0.5;
   background-color: var(--dale-wrap-default);
 }
 .dale-wrap-default .stockitem.dale-selected {

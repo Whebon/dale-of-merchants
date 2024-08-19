@@ -1522,8 +1522,8 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trCancel");
     }
 
-    function actPurchase(string $chameleon_card_ids, string $chameleon_type_ids, string $funds_card_ids, string $market_card_id) {
-        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $funds_card_ids, $market_card_id);
+    function actPurchase(string $chameleon_card_ids, string $chameleon_type_ids, string $funds_card_ids, string $market_card_id, string $essential_purchase_ids) {
+        $this->addChameleonBindings($chameleon_card_ids, $chameleon_type_ids, $funds_card_ids, $market_card_id, $essential_purchase_ids);
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
 
@@ -1551,6 +1551,25 @@ class Dale extends DaleTableBasic
         //Check for overpaying
         if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
             throw new BgaUserException($this->_("Overpaying is not allowed")." ($total_value)");
+        }
+
+        //Apply essential purchase
+        if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
+            $essential_purchase_ids = $this->numberListToArray($essential_purchase_ids);
+            if (!$this->isSubset($essential_purchase_ids, $funds_card_ids)) {
+                throw new BgaVisibleSystemException("CT_ESSENTIALPURCHASE: Selected junk cards must be a subset of the selected fund cards");
+            }
+            $this->cards->moveCardsOnTop($essential_purchase_ids, DECK.MARKET);
+            $this->notifyAllPlayers('ditchMultiple', clienttranslate('${player_name} pays ${nbr} card(s)'), array (
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $funds_card_ids,
+                'cards' => $funds_cards,
+                'nbr' => count($funds_cards)
+            ));
+        }
+        else if (!empty($essential_purchase_ids)) {
+            throw new BgaVisibleSystemException("essential_purchase_ids were provided, but the purchased card is not of type CT_ESSENTIALPURCHASE");
         }
 
         //Discard the funds

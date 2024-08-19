@@ -406,6 +406,18 @@ export class DaleCard {
         return new DaleCard(card.id, card.type_arg)
     }
 
+    /**
+     * @return `true` iff at least 1 of the card_ids is of type type_id
+     */
+    public static containsTypeId(card_ids: number[], type_id: number) {
+        for (let card_id of card_ids) {
+            if ((new DaleCard(card_id)).effective_type_id == type_id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     //TODO: safely delete this
     // /**
     //  * @param card_id

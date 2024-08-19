@@ -32,6 +32,8 @@ export class MainClientState {
                 return _("${you} must select cards to build in stack ${stack_index_plus_1}");
             case 'client_inventory':
                 return _("${you} must discard any number of cards");
+            case 'client_essentialPurchase':
+                return _("${you} may select up to 3 selected junk cards to <stronger>ditch</stronger>");
         }
         return "MISSING DESCRIPTION"
     }

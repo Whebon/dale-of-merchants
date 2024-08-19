@@ -66,4 +66,14 @@ export class Images {
         }
         return style;
     }
+
+    /**
+     * @returns new placeholder div
+     */
+    static getPlaceholder(): HTMLElement {
+        const placeholder = document.createElement('div');
+        placeholder.setAttribute('style',`width:${Images.CARD_WIDTH_S}px; height:${Images.CARD_HEIGHT_S}px;`);
+        placeholder.classList.add("dale-placeholder")
+        return placeholder;
+    }
 }

@@ -41,6 +41,10 @@ interface GameStates {
 				'name': 'market_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}, {
+				'name': 'essential_purchase_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 			'actPlayTechniqueCard': [{
 				'name': 'chameleon_card_ids',

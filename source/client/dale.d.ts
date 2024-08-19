@@ -223,6 +223,7 @@ declare global {
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
+		'client_essentialPurchase': { funds_card_ids: number[] } & ClientGameState['client_purchase']
 	}
 
 	//

@@ -178,7 +178,7 @@ class Dale extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand.init(this, $('dale-myhand')!, $('dale-myhand-wrap')!, _("Your Hand"));
+		this.myHand.init(this, $('dale-myhand')!, $('dale-myhand-wrap')!, _("Your hand"));
 		this.myHand.centerItems = true;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
@@ -276,6 +276,9 @@ class Dale extends Gamegui
 				if (client_purchase_args.on_market_board) {
 					this.market!.setSelected(client_purchase_args.pos, true);
 				}
+				else {
+					throw new Error("NOT IMPLEMENTED: market discovery")
+				}
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
@@ -294,6 +297,19 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
+			case 'client_essentialPurchase':
+				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameState['client_essentialPurchase']);
+				if (client_essentialPurchase_args.on_market_board) {
+					this.market!.setSelected(client_essentialPurchase_args.pos, true);
+				}
+				else {
+					throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase")
+				}
+				this.myHand.setSelectionMode(2, 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+				for (let card_id of client_essentialPurchase_args.funds_card_ids.slice().reverse()) {
+					this.myHand.selectItem(card_id, true);
+				}
+				break;
 			case 'winterIsComing':
 				this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
 				this.myStall.selectLeftPlaceholder();
@@ -303,7 +319,7 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'shatteredRelic':
-				this.myHand.setSelectionMode(1, 'none', 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode(1, undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
 				this.myLimbo.setSelectionMode(2, 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
@@ -372,8 +388,10 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
-				DaleCard.unbindAllChameleonsLocal();
-				this.updateHTML(this.myHand);
+				if (this.mainClientState.name != 'client_essentialPurchase') {
+					DaleCard.unbindAllChameleonsLocal();
+					this.updateHTML(this.myHand);
+				}
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
@@ -396,6 +414,10 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal()
 				this.updateHTML(this.myHand);
+				break;
+			case 'client_essentialPurchase':
+				this.market!.setSelectionMode(0);
+				this.myHand.setSelectionMode(0);
 				break;
 			case 'winterIsComing':
 				this.myHand.setSelectionMode(0);
@@ -479,6 +501,10 @@ class Dale extends Gamegui
 				break;
 			case 'client_inventory':
 				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_essentialPurchase':
+				this.addActionButton("confirm-button", _("Confirm Junk"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'winterIsComing':
@@ -877,8 +903,6 @@ class Dale extends Gamegui
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
 				const client_purchase_args = this.mainClientState.args as ClientGameState['client_purchase'];
-				console.log("AAAAAAAAAAAAAAAA");
-				console.log(client_purchase_args);
 				if (client_purchase_args.pos == pos) {
 					this.mainClientState.exit();
 				}
@@ -1056,10 +1080,23 @@ class Dale extends Gamegui
 	}
 
 	onPurchase() {
-		if (this.gamedatas.gamestate.name != 'client_purchase') {
-			this.showMessage(_("You cannot purchase a card from this gamestate")+` (${this.gamedatas.gamestate})`, 'error');
+		var args;
+		var funds_card_ids: number[];
+		var essential_purchase_ids: number[];
+		switch (this.gamedatas.gamestate.name) {
+			case 'client_purchase':
+				args = (this.mainClientState.args as ClientGameState['client_purchase'])
+				funds_card_ids = this.myHand.orderedSelection.get();
+				essential_purchase_ids = [];
+				break;
+			case 'client_essentialPurchase':
+				args = (this.mainClientState.args as ClientGameState['client_essentialPurchase'])
+				funds_card_ids = args.funds_card_ids;
+				essential_purchase_ids = this.myHand.orderedSelection.get()
+				break;
+			default:
+				throw new Error(`You cannot purchase a card from gamestate '${this.gamedatas.gamestate}'`)
 		}
-		const args = (this.mainClientState.args as ClientGameState['client_purchase'])
 		var card_id;
 		if (args.on_market_board) {
 			card_id = this.market!.getCardId(args.pos);
@@ -1073,12 +1110,21 @@ class Dale extends Gamegui
 			card_id = card.id;
 			throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY")
 		}
-		if(this.checkAction('actPurchase')) {
-			this.bgaPerformAction('actPurchase', {
-				funds_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
-				market_card_id: card_id,
-				...DaleCard.getLocalChameleons()
-			})
+		if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && DaleCard.containsTypeId(funds_card_ids, DaleCard.CT_ESSENTIALPURCHASE)) {
+			this.mainClientState.enterClientState('client_essentialPurchase', {
+				funds_card_ids: funds_card_ids,
+				...args
+			});
+		}
+		else {
+			if(this.checkAction('actPurchase')) {
+				this.bgaPerformAction('actPurchase', {
+					funds_card_ids: this.arrayToNumberList(funds_card_ids),
+					market_card_id: card_id,
+					essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
+					...DaleCard.getLocalChameleons()
+				})
+			}
 		}
 	}
 

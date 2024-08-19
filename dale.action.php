@@ -39,8 +39,10 @@ class action_dale extends APP_GameAction
 		$funds_card_ids = self::getArg('funds_card_ids', AT_numberlist, true);
 		/** @var int $market_card_id */
 		$market_card_id = self::getArg('market_card_id', AT_int, true);
+		/** @var string $essential_purchase_ids */
+		$essential_purchase_ids = self::getArg('essential_purchase_ids', AT_numberlist, true);
 
-		$this->game->actPurchase( $chameleon_card_ids, $chameleon_type_ids, $funds_card_ids, $market_card_id );
+		$this->game->actPurchase( $chameleon_card_ids, $chameleon_type_ids, $funds_card_ids, $market_card_id, $essential_purchase_ids );
 		self::ajaxResponse();
 	}
 
