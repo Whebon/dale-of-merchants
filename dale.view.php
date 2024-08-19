@@ -59,7 +59,7 @@ class view_dale_dale extends game_view
                     "PLAYER_ID" => $player['player_id'],
                     "PLAYER_NAME_POSSESSIVE" => $player['player_name']."'s",
                     "PLAYER_COLOR" => $player['player_color'],
-                    "SCHEDULE" => "Opponent's Schedule"
+                    "SCHEDULE" => "Schedule"
                 ));
             }
         }

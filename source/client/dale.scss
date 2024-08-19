@@ -289,6 +289,7 @@
 	width: max-content;
 
 	.dale-pile-size {
+		pointer-events: none;
 		z-index: 500; //must be higher than all sliding cards
 		position: absolute;
 		font-weight: bold;
@@ -296,7 +297,6 @@
 		color: white;
 		background-color: rgba(0, 0, 0, 0.62); /* Optional, for better visibility */
 		text-align: center;
-		width: 40px;
 		font-size: 16px;
 		right: -5%;
 		border-radius: 5px;
@@ -336,15 +336,6 @@
 	}
 }
 
-//TODO: safely delete this
-// .show-icon {
-// 	position: absolute;
-// 	z-index: 500; //must be higher than all sliding cards
-// 	height: 25px;
-// 	width: 25px;
-// 	background-color: red;
-// }
-
 .dale-hidden {
 	display: none;
 }
@@ -357,16 +348,6 @@
 	margin-left: 5px;
 }
 
-//TODO: can be safely deleted
-// .schedule-slot {
-// 	background-color: white;
-// 	margin-left: 5px;
-// 	border-radius: 10px;
-// 	.card {
-// 		opacity: 0.8;
-// 	}
-// }
-
 .card-tooltip {
 	.chameleon-name {
 		text-decoration: line-through;
@@ -374,6 +355,12 @@
 	}
 	.text {
 		max-width: 300px;
+	}
+}
+
+.stockitem {
+	&:not(.dale-clickable) {
+		cursor: default;
 	}
 }
 
@@ -388,8 +375,8 @@
 	--dale-wrap-purchase-a: rgba(210,128,21,0.15);
 	--dale-wrap-build: rgb(192, 61, 120);
 	--dale-wrap-build-a: rgb(192,61,120,0.15);
-	--dale-wrap-discard: rgb(112,61,5);
-	--dale-wrap-discard-a: rgb(112,61,5,0.15);
+	--dale-wrap-discard: rgb(232,62,51);
+	--dale-wrap-discard-a: rgb(232,62,51,0.15);
 	--dale-wrap-default: rgb(100,100,100, 0.5); //grayed out
 	--dale-wrap-default-a: rgb(100,100,100,0.15);
 }
@@ -465,7 +452,7 @@ body {
 			background-blend-mode: overlay;
 		}
 	}
-	.stockitem:hover {
+	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
 	}
 }
@@ -484,7 +471,7 @@ body {
 			background-blend-mode: overlay;
 		}
 	}
-	.stockitem:hover {
+	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
 	}
 }
@@ -503,7 +490,7 @@ body {
 			background-blend-mode: overlay;
 		}
 	}
-	.stockitem:hover {
+	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
 	}
 }
@@ -522,7 +509,7 @@ body {
 			background-blend-mode: overlay;
 		}
 	}
-	.stockitem:hover {
+	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
 	}
 }
@@ -541,7 +528,7 @@ body {
 			background-blend-mode: overlay;
 		}
 	}
-	.stockitem:hover {
+	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-default);
 	}
 }

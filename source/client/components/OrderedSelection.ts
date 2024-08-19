@@ -14,7 +14,7 @@ export class OrderedSelection {
         this.card_ids = [];
         this.secondary_card_ids = [];
     }
-    
+
     /**
      * @param card_id
      * @return div element corresponding to the card_id
@@ -89,15 +89,40 @@ export class OrderedSelection {
         }
     }
 
+    /**
+    * Get the size of the selection
+    */
+    public getSize(secondary?: boolean) {
+        if (secondary) {
+            return this.secondary_card_ids.length;
+        }
+        return this.card_ids.length;
+    }
+
+    /**
+     * Remove the first item in the selection if it exists (and update all icons)
+     * @return the removed item
+     */
+    public dequeue(secondary?: boolean): number | null {
+        const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        const card_id = card_ids[0]
+        if (!card_id) {
+            return null;
+        }
+        this.unselectItem(card_id, secondary);
+        return card_id;
+    }
+
 	/**
 	 * Adds the given card from the selection.
 	 * @param card_id card_id to add the selection icon to
 	 */
 	public selectItem(card_id: number, secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (before)`);
         card_ids.push(card_id);
         this.addIcon(card_id, card_ids.length-1, secondary);
-        console.log(card_ids);
+        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (${card_id} was added)`);
 	}
 
     /**
@@ -106,25 +131,27 @@ export class OrderedSelection {
      */
     public unselectItem(card_id: number, secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (before)`);
 		const index = card_ids.indexOf(card_id);
 		card_ids.splice(index, 1);
         this.removeIcon(card_id, secondary);
-        console.log(card_ids);
+        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (${card_id} was removed)`);
     }
 
     /**
      * Unselect all selection and icons. On both the primary and secondary levels
      */
     public unselectAll() {
-        console.log("unselectAll (OrderedSelection)");
-        for (let card_id of this.card_ids) {
-            this.unselectItem(card_id, false);
+        console.log("unselectAll before (1): "+this.card_ids);
+        console.log("unselectAll before (2): "+this.secondary_card_ids);
+        while (this.card_ids.length > 0) { 
+            this.unselectItem(this.card_ids[this.card_ids.length-1]!, false);
         }
-        for (let card_id of this.secondary_card_ids) {
-            this.unselectItem(card_id, true);
+        while (this.secondary_card_ids.length > 0) { 
+            this.unselectItem(this.secondary_card_ids[this.secondary_card_ids.length-1]!, true);
         }
-        console.log(this.card_ids);
-        console.log(this.secondary_card_ids);
+        console.log("unselectAll after (1): "+this.card_ids);
+        console.log("unselectAll after (2): "+this.secondary_card_ids);
     }
 
     /**
@@ -139,7 +166,7 @@ export class OrderedSelection {
     }
     
     /**
-     * Shift selection icons to ensure the icons remain adjacent. Should be called when the user removes an element from the selection.
+     * Shift selection icons to ensure the icons remain adjacent. Should be called when the user removes an item from the selection.
      */
     public updateIcons(secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
@@ -179,7 +206,7 @@ export class OrderedSelection {
     }
 
     /**
-     * Get the order of the selection as shown by the selection icons
+     * Get a copy of the internal order of the selection
      * @return `card_ids`
      */
     public get(secondary?: boolean): number[] {

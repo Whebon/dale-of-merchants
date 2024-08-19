@@ -22,7 +22,18 @@ class StockOrderedSelection extends OrderedSelection {
     }
 }
 
-type DaleWrapClass = 'dale-wrap-technique' | 'dale-wrap-purchase' | 'dale-wrap-build' | 'dale-wrap-discard' | 'dale-wrap-default';
+type DaleWrapClass = 'dale-wrap-technique' | 'dale-wrap-purchase' | 'dale-wrap-build' | 'dale-wrap-discard' | 'dale-wrap-default' | 'previous';
+
+/**
+ * Selection modes for the dale stock
+ * 0: no selection possible
+ * 1: single card can be selected
+ * 2: multiple cards can be selected
+ * 3: single PLAYABLE card can be selected
+ * 'essentialPurchase': up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
+ * 'only_card_id47': no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
+ */
+type DaleStockSelectionMode = 0 | 1 | 2 | 3 | `only_card_id${number}` | 'essentialPurchase'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -38,18 +49,14 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	public static readonly MAX_HORIZONTAL_OVERLAP = 85;
 
-	public get selectionMode() {
-		return (this as any).selectable;
-	}
+	private selectionMode: DaleStockSelectionMode = 0;
+	// public get selectionMode() {
+	// 	return (this as any).selectable;
+	// }
 
 	constructor(){
 		super();
 		this.orderedSelection = new StockOrderedSelection(this);
-		this.onChangeSelection = function(control_name: string, item_id: number) {
-			if (item_id && !this.isSelected(item_id)) {
-				this.orderedSelection.updateIcons();
-			}
-		}
 	}
 	
 	/**
@@ -94,14 +101,60 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	/**
+	 * To be connected to client methods
+	 */
+	public onOrderedSelectionChanged (item_id: number) {
+		console.log("onChangeSelection");
+	}
+
+	override onClickOnItem( evt: MouseEvent ) {
+		console.log("onClickOnItem");
+		evt.stopPropagation();
+		if (this.selectionMode !== 0) {
+			const target = evt.currentTarget as HTMLElement
+			if (target.classList.contains("dale-clickable")) {
+				const match = target.id.match(/(\d+)$/)
+				const item_id = +match![0]
+				if (!this.isClickable(item_id)) {
+					//not clickable
+					return;
+				}
+				else if (this.isSelected(item_id)) {
+					//unselect
+					this.unselectItem(item_id);
+					this.orderedSelection.updateIcons();
+				}
+				else {
+					//select
+					if (this.selectionMode === 1) {
+						this.unselectAll();
+						this.orderedSelection.updateIcons();
+					}
+					else if (this.selectionMode == 'essentialPurchase') {
+						while (this.orderedSelection.getSize() >= 2) {
+							this.orderedSelection.dequeue();
+						}
+					}
+					this.selectItem(item_id);
+				}
+				this.onOrderedSelectionChanged(item_id);  
+			}
+		}
+	}
+
+	override isSelected(item_id: number): boolean {
+		return this.orderedSelection.includes(item_id);
+	}
+
+	/**
 	 * Selects the item with the specified unique id.
 	 * @param item_id The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
 	 * @param secondary (optional) If true, adjust the selection on the secondary level
 	 * @returns {void}
 	 */
 	override selectItem(item_id: number, secondary?: boolean): void {
-		super.selectItem(item_id);
 		this.orderedSelection.selectItem(+item_id, secondary);
+		this.setClickable(item_id);
 	}
 
 	/**
@@ -111,9 +164,17 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @returns {void}
 	 */
 	override unselectItem(item_id: number, secondary?: boolean): void {
-		super.unselectItem(item_id);
 		this.orderedSelection.unselectItem(+item_id, secondary);
+		this.setClickable(item_id);
 	}
+
+	/**
+	 * Unselects all items, on both the primary and selection levels
+	 */
+	override unselectAll(): void {
+		this.orderedSelection.unselectAll();
+	}
+
 
 	/**
 	 * Sets the selection mode for the stock. The selection mode determines how the user can interact with the items in the stock.
@@ -124,18 +185,57 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param actionLabelText (optional)
 	 * @param secondaryIconType (optional) types of icons to use for the secondary selection
 	 */
-	override setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass?: DaleWrapClass, actionLabelText?: string, secondaryIconType?: SelectionIconType): void {
+	override setSelectionMode(mode: DaleStockSelectionMode, iconType?: SelectionIconType, wrapClass?: DaleWrapClass, actionLabelText?: string, secondaryIconType?: SelectionIconType): void {
+		this.selectionMode = mode;
 		this.orderedSelection.setIconType(iconType, secondaryIconType);
 		this.setWrapClass(wrapClass, actionLabelText);
-		super.setSelectionMode(mode);
+		if (this.selectionMode == 0) {
+			this.unselectAll();
+		}
 		for(let i in this.items){
 			const card_id = this.items[i]!.id;
-			if (mode == 0) {
-				$(this.control_name+"_item_"+card_id)?.classList.remove("dale-clickable");
-			}
-			else {
-				$(this.control_name+"_item_"+card_id)?.classList.add("dale-clickable");
-			}
+			this.setClickable(card_id);
+		}
+	}
+
+	/**
+	 * Make the given card with the given card id clickable based on the current selectionMode 
+	 */
+	private setClickable(card_id: number) {
+		const div = $(this.control_name+"_item_"+card_id);
+		if (!div) {
+			throw new Error(`Card ${card_id} does not exist in hand, so setClickable cannot be set`);
+		}
+		if (this.isClickable(card_id)) {
+			div.classList.add("dale-clickable");
+		}
+		else {
+			div.classList.remove("dale-clickable");
+		}
+	}
+
+	/**
+	 * @returns `true` if the card id can be clicked in the current selection mode
+	 */
+	private isClickable(card_id: number): boolean {
+		const card = new DaleCard(card_id);
+		switch (this.selectionMode) {
+			case 0:
+				return false;
+			case 1:
+				return true;
+			case 2:
+				return true;
+			case 3:
+				return card.isPlayable();
+			case 'essentialPurchase':
+				return card.isJunk() && this.orderedSelection.get(true).includes(card.id);
+			default:
+				const match = this.selectionMode.match(/^only_card_id(\d+)$/);
+				if (match) {
+					return card.id == +match[1]!;
+				}
+				throw new Error(`isClickable has no definition for selectionMode '${this.selectionMode}'`)
 		}
 	}
 
@@ -145,7 +245,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param labelText (optional) this text will be displayed on the label of the wrap
      */
 	private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default', labelText?: string) {
-		if (this.actionLabel) {
+		if (this.actionLabel && wrapClass != 'previous') {
 			if (!labelText) {
 				labelText = this.actionLabelDefaultText
 			}
@@ -226,6 +326,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	*/
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
 		this.addToStockWithId(card.original_type_id, card.id, from);
+		this.setClickable(card.id);
 		card.addTooltip(this.control_name+'_item_'+card.id);
 		if (card.isBoundChameleon()) {
 			this.addChameleonOverlay(card, false);

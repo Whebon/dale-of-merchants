@@ -33,7 +33,7 @@ export class MainClientState {
             case 'client_inventory':
                 return _("${you} must discard any number of cards");
             case 'client_essentialPurchase':
-                return _("${you} may select up to 3 selected junk cards to <stronger>ditch</stronger>");
+                return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
         }
         return "MISSING DESCRIPTION"
     }

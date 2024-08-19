@@ -241,16 +241,19 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             enumerable: false,
             configurable: true
         });
-        DaleCard.prototype.isBoundChameleon = function () {
-            return DaleCard.cardIdtoEffectiveTypeIdLocal.has(this.id) || DaleCard.cardIdtoEffectiveTypeId.has(this.id);
-        };
-        DaleCard.prototype.isUnboundChameleon = function () {
+        DaleCard.prototype.isChameleon = function () {
             var type_id = this.effective_type_id;
-            return !this.isBoundChameleon() && (type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
+            return (type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
                 type_id == DaleCard.CT_REFLECTION ||
                 type_id == DaleCard.CT_GOODOLDTIMES ||
                 type_id == DaleCard.CT_TRENDSETTING ||
                 type_id == DaleCard.CT_SEEINGDOUBLES);
+        };
+        DaleCard.prototype.isBoundChameleon = function () {
+            return DaleCard.cardIdtoEffectiveTypeIdLocal.has(this.id) || DaleCard.cardIdtoEffectiveTypeId.has(this.id);
+        };
+        DaleCard.prototype.isUnboundChameleon = function () {
+            return !this.isBoundChameleon() && this.isChameleon();
         };
         DaleCard.prototype.bindChameleonLocal = function (effective_type_id) {
             console.log("BIND!");
@@ -526,31 +529,47 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 }
             }
         };
+        OrderedSelection.prototype.getSize = function (secondary) {
+            if (secondary) {
+                return this.secondary_card_ids.length;
+            }
+            return this.card_ids.length;
+        };
+        OrderedSelection.prototype.dequeue = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var card_id = card_ids[0];
+            if (!card_id) {
+                return null;
+            }
+            this.unselectItem(card_id, secondary);
+            return card_id;
+        };
         OrderedSelection.prototype.selectItem = function (card_id, secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            console.log("".concat(secondary ? "Secondary" : "Primary", " selection: [").concat(card_ids, "] (before)"));
             card_ids.push(card_id);
             this.addIcon(card_id, card_ids.length - 1, secondary);
-            console.log(card_ids);
+            console.log("".concat(secondary ? "Secondary" : "Primary", " selection: [").concat(card_ids, "] (").concat(card_id, " was added)"));
         };
         OrderedSelection.prototype.unselectItem = function (card_id, secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            console.log("".concat(secondary ? "Secondary" : "Primary", " selection: [").concat(card_ids, "] (before)"));
             var index = card_ids.indexOf(card_id);
             card_ids.splice(index, 1);
             this.removeIcon(card_id, secondary);
-            console.log(card_ids);
+            console.log("".concat(secondary ? "Secondary" : "Primary", " selection: [").concat(card_ids, "] (").concat(card_id, " was removed)"));
         };
         OrderedSelection.prototype.unselectAll = function () {
-            console.log("unselectAll (OrderedSelection)");
-            for (var _i = 0, _a = this.card_ids; _i < _a.length; _i++) {
-                var card_id = _a[_i];
-                this.unselectItem(card_id, false);
+            console.log("unselectAll before (1): " + this.card_ids);
+            console.log("unselectAll before (2): " + this.secondary_card_ids);
+            while (this.card_ids.length > 0) {
+                this.unselectItem(this.card_ids[this.card_ids.length - 1], false);
             }
-            for (var _b = 0, _c = this.secondary_card_ids; _b < _c.length; _b++) {
-                var card_id = _c[_b];
-                this.unselectItem(card_id, true);
+            while (this.secondary_card_ids.length > 0) {
+                this.unselectItem(this.secondary_card_ids[this.secondary_card_ids.length - 1], true);
             }
-            console.log(this.card_ids);
-            console.log(this.secondary_card_ids);
+            console.log("unselectAll after (1): " + this.card_ids);
+            console.log("unselectAll after (2): " + this.secondary_card_ids);
         };
         OrderedSelection.prototype.setIconType = function (iconType, secondaryIconType) {
             this.iconType = iconType;
@@ -613,21 +632,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.wrap = undefined;
             _this.actionLabel = undefined;
             _this.actionLabelDefaultText = "<DefaultText>";
+            _this.selectionMode = 0;
             _this.orderedSelection = new StockOrderedSelection(_this);
-            _this.onChangeSelection = function (control_name, item_id) {
-                if (item_id && !this.isSelected(item_id)) {
-                    this.orderedSelection.updateIcons();
-                }
-            };
             return _this;
         }
-        Object.defineProperty(DaleStock.prototype, "selectionMode", {
-            get: function () {
-                return this.selectable;
-            },
-            enumerable: false,
-            configurable: true
-        });
         DaleStock.prototype.init = function (page, container, wrap, defaultText, onItemCreate, onItemDelete) {
             var _a;
             page.allDaleStocks.push(this);
@@ -657,33 +665,103 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             if (onItemDelete)
                 this.onItemDelete = onItemDelete;
         };
+        DaleStock.prototype.onOrderedSelectionChanged = function (item_id) {
+            console.log("onChangeSelection");
+        };
+        DaleStock.prototype.onClickOnItem = function (evt) {
+            console.log("onClickOnItem");
+            evt.stopPropagation();
+            if (this.selectionMode !== 0) {
+                var target = evt.currentTarget;
+                if (target.classList.contains("dale-clickable")) {
+                    var match = target.id.match(/(\d+)$/);
+                    var item_id = +match[0];
+                    if (!this.isClickable(item_id)) {
+                        return;
+                    }
+                    else if (this.isSelected(item_id)) {
+                        this.unselectItem(item_id);
+                        this.orderedSelection.updateIcons();
+                    }
+                    else {
+                        if (this.selectionMode === 1) {
+                            this.unselectAll();
+                            this.orderedSelection.updateIcons();
+                        }
+                        else if (this.selectionMode == 'essentialPurchase') {
+                            while (this.orderedSelection.getSize() >= 2) {
+                                this.orderedSelection.dequeue();
+                            }
+                        }
+                        this.selectItem(item_id);
+                    }
+                    this.onOrderedSelectionChanged(item_id);
+                }
+            }
+        };
+        DaleStock.prototype.isSelected = function (item_id) {
+            return this.orderedSelection.includes(item_id);
+        };
         DaleStock.prototype.selectItem = function (item_id, secondary) {
-            _super.prototype.selectItem.call(this, item_id);
             this.orderedSelection.selectItem(+item_id, secondary);
+            this.setClickable(item_id);
         };
         DaleStock.prototype.unselectItem = function (item_id, secondary) {
-            _super.prototype.unselectItem.call(this, item_id);
             this.orderedSelection.unselectItem(+item_id, secondary);
+            this.setClickable(item_id);
+        };
+        DaleStock.prototype.unselectAll = function () {
+            this.orderedSelection.unselectAll();
         };
         DaleStock.prototype.setSelectionMode = function (mode, iconType, wrapClass, actionLabelText, secondaryIconType) {
-            var _a, _b;
+            this.selectionMode = mode;
             this.orderedSelection.setIconType(iconType, secondaryIconType);
             this.setWrapClass(wrapClass, actionLabelText);
-            _super.prototype.setSelectionMode.call(this, mode);
+            if (this.selectionMode == 0) {
+                this.unselectAll();
+            }
             for (var i in this.items) {
                 var card_id = this.items[i].id;
-                if (mode == 0) {
-                    (_a = $(this.control_name + "_item_" + card_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-clickable");
-                }
-                else {
-                    (_b = $(this.control_name + "_item_" + card_id)) === null || _b === void 0 ? void 0 : _b.classList.add("dale-clickable");
-                }
+                this.setClickable(card_id);
+            }
+        };
+        DaleStock.prototype.setClickable = function (card_id) {
+            var div = $(this.control_name + "_item_" + card_id);
+            if (!div) {
+                throw new Error("Card ".concat(card_id, " does not exist in hand, so setClickable cannot be set"));
+            }
+            if (this.isClickable(card_id)) {
+                div.classList.add("dale-clickable");
+            }
+            else {
+                div.classList.remove("dale-clickable");
+            }
+        };
+        DaleStock.prototype.isClickable = function (card_id) {
+            var card = new DaleCard_2.DaleCard(card_id);
+            switch (this.selectionMode) {
+                case 0:
+                    return false;
+                case 1:
+                    return true;
+                case 2:
+                    return true;
+                case 3:
+                    return card.isPlayable();
+                case 'essentialPurchase':
+                    return card.isJunk() && this.orderedSelection.get(true).includes(card.id);
+                default:
+                    var match = this.selectionMode.match(/^only_card_id(\d+)$/);
+                    if (match) {
+                        return card.id == +match[1];
+                    }
+                    throw new Error("isClickable has no definition for selectionMode '".concat(this.selectionMode, "'"));
             }
         };
         DaleStock.prototype.setWrapClass = function (wrapClass, labelText) {
             var _a;
             if (wrapClass === void 0) { wrapClass = 'dale-wrap-default'; }
-            if (this.actionLabel) {
+            if (this.actionLabel && wrapClass != 'previous') {
                 if (!labelText) {
                     labelText = this.actionLabelDefaultText;
                 }
@@ -744,6 +822,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         };
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.original_type_id, card.id, from);
+            this.setClickable(card.id);
             card.addTooltip(this.control_name + '_item_' + card.id);
             if (card.isBoundChameleon()) {
                 this.addChameleonOverlay(card, false);
@@ -1826,7 +1905,7 @@ define("components/types/MainClientState", ["require", "exports"], function (req
                 case 'client_inventory':
                     return _("${you} must discard any number of cards");
                 case 'client_essentialPurchase':
-                    return _("${you} may select up to 3 selected junk cards to <stronger>ditch</stronger>");
+                    return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
             }
             return "MISSING DESCRIPTION";
         };
@@ -1955,7 +2034,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myHand.addDaleCardToStock(DaleCard_7.DaleCard.of(card));
             }
             this.myHand.setSelectionMode(0);
-            dojo.connect(this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged');
+            dojo.connect(this.myHand, 'onOrderedSelectionChanged', this, 'onHandSelectionChanged');
             var thiz = this;
             var limboTransitionUpdateDisplay = function () {
                 console.log("limboTransitionUpdateDisplay");
@@ -1987,7 +2066,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             this.myLimbo.setSelectionMode(0);
             dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_6.Images.CARD_WIDTH_S + 'px');
-            dojo.connect(this.myLimbo, 'onChangeSelection', this, 'onLimboSelectionChanged');
+            dojo.connect(this.myLimbo, 'onOrderedSelectionChanged', this, 'onLimboSelectionChanged');
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
@@ -2034,7 +2113,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_technique':
-                    this.myHand.setSelectionMode(1, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
+                    this.myHand.setSelectionMode(3, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
                     this.market.setSelectionMode(1);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
@@ -2057,7 +2136,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else {
                         throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase");
                     }
-                    this.myHand.setSelectionMode(2, 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+                    this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
                     for (var _i = 0, _f = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _f.length; _i++) {
                         var card_id = _f[_i];
                         this.myHand.selectItem(card_id, true);
@@ -2094,10 +2173,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(1);
                     break;
                 case 'chameleon_flexibleShopkeeper':
+                    this.myHand.setSelectionMode("only_card_id".concat(this.chameleonArgs.card.id), undefined, 'previous');
                     this.myStall.setSelectionMode('rightmoststack');
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.selectChameleonCard();
                     break;
                 case 'chameleon_reflection':
+                    this.myHand.setSelectionMode("only_card_id".concat(this.chameleonArgs.card.id), undefined, 'previous');
                     for (var player_id in this.gamedatas.players) {
                         if (+player_id != this.player_id) {
                             this.playerDiscards[player_id].setSelectionMode('top');
@@ -2106,6 +2187,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     (_b = this.chameleonArgs) === null || _b === void 0 ? void 0 : _b.selectChameleonCard();
                     break;
                 case 'chameleon_goodoldtimes':
+                    this.myHand.setSelectionMode("only_card_id".concat(this.chameleonArgs.card.id), undefined, 'previous');
                     this.marketDiscard.setSelectionMode('top');
                     if (this.chameleonArgs.card.hasActiveAbility()) {
                         this.marketDeck.setSelectionMode('top');
@@ -2113,10 +2195,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     (_c = this.chameleonArgs) === null || _c === void 0 ? void 0 : _c.selectChameleonCard();
                     break;
                 case 'chameleon_trendsetting':
+                    this.myHand.setSelectionMode("only_card_id".concat(this.chameleonArgs.card.id), undefined, 'previous');
                     this.market.setSelectionMode(1);
                     (_d = this.chameleonArgs) === null || _d === void 0 ? void 0 : _d.selectChameleonCard();
                     break;
                 case 'chameleon_seeingdoubles':
+                    this.myHand.setSelectionMode(2, undefined, 'previous');
                     (_e = this.chameleonArgs) === null || _e === void 0 ? void 0 : _e.selectChameleonCard();
             }
         };
@@ -2621,15 +2705,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
         };
-        Dale.prototype.onHandSelectionChanged = function (control_name, card_id) {
-            if (!card_id)
-                return;
+        Dale.prototype.onHandSelectionChanged = function (card_id) {
+            console.log("onHandSelectionChanged: " + card_id);
             var card = new DaleCard_7.DaleCard(card_id);
-            var isAdded = this.myHand.isSelected(card_id);
             switch (this.gamedatas.gamestate.name) {
                 case 'client_technique':
                     this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
-                    this.myHand.unselectAll();
                     break;
                 case 'client_purchase':
                     this.handleChameleonCard(card, this.myHand, this.onFundsSelectionChanged);
@@ -2658,17 +2739,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.onCancelChameleon();
                     }
                     else {
+                        if (this.myHand.isSelected(card_id)) {
+                            this.myHand.unselectItem(card_id);
+                        }
+                        else {
+                            this.myHand.selectItem(card_id);
+                        }
                         if (this.gamedatas.gamestate.name == 'chameleon_seeingdoubles') {
                             this.onConfirmChameleon(card);
                         }
                         else {
                             this.showMessage(_("Please select a valid target for ") + "'".concat(args.card.name, "'"), "error");
-                        }
-                        if (isAdded) {
-                            this.myHand.unselectItem(card_id);
-                        }
-                        else {
-                            this.myHand.selectItem(card_id);
                         }
                     }
                     break;
@@ -2676,11 +2757,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("gamestate.name is null");
             }
         };
-        Dale.prototype.onLimboSelectionChanged = function () {
-            var items = this.myHand.getSelectedItems();
-            if (!items[0])
-                return;
-            var card = new DaleCard_7.DaleCard(items[0].id);
+        Dale.prototype.onLimboSelectionChanged = function (card_id) {
+            console.log("onLimboSelectionChanged: " + card_id);
             switch (this.gamedatas.gamestate.name) {
                 case null:
                     throw new Error("gamestate.name is null");
@@ -2743,8 +2821,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else if (card.hasActiveAbility()) {
                 this.onUseActiveAbility(card);
             }
-            else {
+            else if (!card.isBoundChameleon()) {
                 this.showMessage(_("This card's ability was already used"), 'error');
+            }
+            else {
+                this.showMessage(_("This chameleon card cannot be played"), 'error');
+                card.unbindChameleonLocal();
             }
             this.myHand.unselectAll();
         };
@@ -2756,11 +2838,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onBuildSelectionChanged = function (card) {
             console.log("onBuildSelectionChanged");
-            var items = this.myHand.getSelectedItems();
+            var card_ids = this.myHand.orderedSelection.get();
             var count_nostalgic_items = 0;
-            for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
-                var item = items_2[_i];
-                var card_1 = new DaleCard_7.DaleCard(item.id);
+            for (var _i = 0, card_ids_2 = card_ids; _i < card_ids_2.length; _i++) {
+                var card_id = card_ids_2[_i];
+                var card_1 = new DaleCard_7.DaleCard(card_id);
                 if (card_1.effective_type_id == DaleCard_7.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
                 }
@@ -2778,9 +2860,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.myDiscard.setSelectionMode('multiple', count_nostalgic_items);
         };
         Dale.prototype.onBuild = function () {
-            var autoSortedCards = this.myHand.getSelectedItems();
             if (this.checkAction('actBuild')) {
-                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(autoSortedCards), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds) }, DaleCard_7.DaleCard.getLocalChameleons()));
+                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds) }, DaleCard_7.DaleCard.getLocalChameleons()));
             }
         };
         Dale.prototype.onWinterIsComingSkip = function () {

@@ -172,6 +172,20 @@ export class DaleCard {
     }
 
     /**
+     * @returns true if this is a chameleon card
+     */
+    public isChameleon(): boolean {
+        const type_id = this.effective_type_id;
+        return (
+            type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
+            type_id == DaleCard.CT_REFLECTION ||
+            type_id == DaleCard.CT_GOODOLDTIMES ||
+            type_id == DaleCard.CT_TRENDSETTING ||
+            type_id == DaleCard.CT_SEEINGDOUBLES
+        );
+    }
+
+    /**
      * @returns true if this is a card that has already copied a card earlier this turn
      */
     public isBoundChameleon(): boolean {
@@ -182,14 +196,7 @@ export class DaleCard {
      * @returns true if this is an unbound chameleon card
      */
     public isUnboundChameleon(): boolean {
-        const type_id = this.effective_type_id;
-        return !this.isBoundChameleon() && (
-            type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
-            type_id == DaleCard.CT_REFLECTION ||
-            type_id == DaleCard.CT_GOODOLDTIMES ||
-            type_id == DaleCard.CT_TRENDSETTING ||
-            type_id == DaleCard.CT_SEEINGDOUBLES
-        );
+        return !this.isBoundChameleon() && this.isChameleon();
     }
 
     /**

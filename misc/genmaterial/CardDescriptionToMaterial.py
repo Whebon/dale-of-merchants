@@ -29,7 +29,7 @@ def has_active(row):
     return "false"
 
 def playable(row):
-    if (is_technique(row) == "true" or has_active(row) == "true"):
+    if (is_technique(row) == "true" or has_active(row) == "true" or row['animalfolk'] == "Chameleons"):
         return "true"
     return "false"
 

@@ -185,7 +185,7 @@ class Dale extends Gamegui
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
 		this.myHand.setSelectionMode(0);	
-		dojo.connect( this.myHand, 'onChangeSelection', this, 'onHandSelectionChanged' );
+		dojo.connect( this.myHand, 'onOrderedSelectionChanged', this, 'onHandSelectionChanged' );
 
 		//limbo transition
 		const thiz = this;
@@ -221,7 +221,7 @@ class Dale extends Gamegui
 		}
 		this.myLimbo.setSelectionMode(0);
 		dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #dale-mylimbo-wrap style
-		dojo.connect( this.myLimbo, 'onChangeSelection', this, 'onLimboSelectionChanged' );
+		dojo.connect( this.myLimbo, 'onOrderedSelectionChanged', this, 'onLimboSelectionChanged' );
 
 		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
@@ -282,7 +282,7 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
-				this.myHand.setSelectionMode(1, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
+				this.myHand.setSelectionMode(3, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
@@ -305,7 +305,7 @@ class Dale extends Gamegui
 				else {
 					throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase")
 				}
-				this.myHand.setSelectionMode(2, 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
 				for (let card_id of client_essentialPurchase_args.funds_card_ids.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 				}
@@ -341,10 +341,12 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				break;
 			case 'chameleon_flexibleShopkeeper':
+				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				this.myStall!.setSelectionMode('rightmoststack');
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_reflection':
+				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				for (let player_id in this.gamedatas.players) {
 					if (+player_id != this.player_id) {
 						this.playerDiscards[player_id]!.setSelectionMode('top');
@@ -353,6 +355,7 @@ class Dale extends Gamegui
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_goodoldtimes':
+				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				this.marketDiscard.setSelectionMode('top');
 				if (this.chameleonArgs!.card.hasActiveAbility()) {
 					this.marketDeck.setSelectionMode('top');
@@ -360,10 +363,12 @@ class Dale extends Gamegui
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_trendsetting':
+				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous');
 				this.market!.setSelectionMode(1);
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_seeingdoubles':
+				this.myHand.setSelectionMode(2, undefined, 'previous');
 				this.chameleonArgs?.selectChameleonCard();
 		}
 	}
@@ -1007,16 +1012,14 @@ class Dale extends Gamegui
 		}
 	}
 
-	onHandSelectionChanged(control_name: string, card_id?: number) {
-		if (!card_id) return;
+	onHandSelectionChanged(card_id: number) {
+		console.log("onHandSelectionChanged: "+card_id);
 		const card = new DaleCard(card_id);
-		const isAdded = this.myHand.isSelected(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_technique':
 				//play card action (technique or active passive)
 				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
-				this.myHand.unselectAll();
 				break;
 			case 'client_purchase':
 				this.handleChameleonCard(card, this.myHand, this.onFundsSelectionChanged);
@@ -1045,17 +1048,17 @@ class Dale extends Gamegui
 					this.onCancelChameleon();
 				}
 				else {
+					if (this.myHand.isSelected(card_id)) {
+						this.myHand.unselectItem(card_id);
+					}
+					else {
+						this.myHand.selectItem(card_id);
+					}
 					if (this.gamedatas.gamestate.name == 'chameleon_seeingdoubles') {
 						this.onConfirmChameleon(card);
 					}
 					else {
 						this.showMessage(_("Please select a valid target for ")+`'${args.card.name}'`, "error");
-					}
-					if (isAdded) {
-						this.myHand.unselectItem(card_id);
-					}
-					else {
-						this.myHand.selectItem(card_id);
 					}
 				}
 				break;
@@ -1064,11 +1067,8 @@ class Dale extends Gamegui
 		}
 	}
 
-	onLimboSelectionChanged() {
-		let items = this.myHand.getSelectedItems();
-		if (!items[0]) return;
-		const card = new DaleCard(items[0].id);
-		
+	onLimboSelectionChanged(card_id: number) {
+		console.log("onLimboSelectionChanged: "+card_id);
 		switch(this.gamedatas.gamestate.name) {
 			case null:
 				throw new Error("gamestate.name is null")
@@ -1146,8 +1146,12 @@ class Dale extends Gamegui
 		else if (card.hasActiveAbility()) {
 			this.onUseActiveAbility(card);
 		}
-		else {
+		else if (!card.isBoundChameleon()) {
 			this.showMessage(_("This card's ability was already used"), 'error');
+		}
+		else {
+			this.showMessage(_("This chameleon card cannot be played"), 'error');
+			card.unbindChameleonLocal();
 		}
 		this.myHand.unselectAll();
 	}
@@ -1168,10 +1172,10 @@ class Dale extends Gamegui
 
 	onBuildSelectionChanged(card?: DaleCard){
 		console.log("onBuildSelectionChanged");
-		const items = this.myHand.getSelectedItems();
+		const card_ids = this.myHand.orderedSelection.get();
 		let count_nostalgic_items = 0;
-		for (let item of items) {
-			const card = new DaleCard(item.id);
+		for (let card_id of card_ids) {
+			const card = new DaleCard(card_id);
 			if (card.effective_type_id == DaleCard.CT_NOSTALGICITEM) {
 				count_nostalgic_items++;
 			}
@@ -1190,10 +1194,9 @@ class Dale extends Gamegui
 	}
 
 	onBuild() {
-		const autoSortedCards = this.myHand.getSelectedItems();
 		if(this.checkAction('actBuild')) {
 			this.bgaPerformAction('actBuild', {
-				stack_card_ids: this.arrayToNumberList(autoSortedCards),
+				stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
 				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds),
 				...DaleCard.getLocalChameleons()
 			});
