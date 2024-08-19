@@ -10,6 +10,12 @@
 -------
 -->
 
+<div id="dale-svg-container">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100vw" height="100vh">
+        <line id="dale-chameleon-line" class="dale-hidden" x1="0" y1="0" x2="0" y2="0"/>
+    </svg>
+</div>
+
 <div id="dale-market-wrap" class="whiteblock">
     <!-- Display the name of this area? <h3>{MARKET}</h3> -->
     <div style="display:flex; align-items: center; justify-content: space-evenly;">

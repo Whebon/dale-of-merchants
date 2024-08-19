@@ -177,9 +177,9 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * 0: no item can be selected by the player.
      * 1: a maximum of one item can be selected by the player at a time.
      * 2: multiple items can be selected by the player at the same time.
-     * @param iconType (optional) default 'none'. types of icons to use for the selection
+     * @param iconType (optional) types of icons to use for the selection
     */
-    setSelectionMode(mode: 0 | 1 | 2, iconType: SelectionIconType = 'none') {
+    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType) {
         //TODO: action label?
         this.orderedSelection.setIconType(iconType);
         if( this.selectionMode == mode ) return;
@@ -245,6 +245,16 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         } else {
             this.page.showMessage(_("This card is sold out!"), 'error');
         }
+    }
+
+    public getCards(): DaleCard[] {
+        const cards = [];
+        for (let slot of this.slots) {
+            if (slot.hasCard()){
+                cards.push(slot.card!);
+            }
+        }
+        return cards;
     }
 
     /**

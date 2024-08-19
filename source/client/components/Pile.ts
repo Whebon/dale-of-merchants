@@ -352,7 +352,7 @@ export class Pile implements DaleLocation {
                 div.classList.add("dale-selected");
             }
             if ((this.page as any).chameleonArgs?.card.id == card.id) {
-                div.classList.add("chameleon-selected");
+                div.classList.add("dale-chameleon-selected");
             }
             this.cardIdToPopinDiv.set(card.id, div);
         }
