@@ -1189,7 +1189,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
 
         //Apply the rules for a valid stack
-        //$this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
+        $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
 
         //Add the cards to the stack
         $index = 0;
