@@ -482,6 +482,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'winterIsComing':
+				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
 				this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
 				break;
 			case 'swiftBroker':

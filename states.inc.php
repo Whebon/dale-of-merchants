@@ -84,6 +84,7 @@ $machinestates = array(
 		'possibleactions' => ['actBuild', 'actUseActiveAbility', 'actWinterIsComingSkip'],
 		'transitions' => array(
 			'trActiveAbility' => 36,
+			'trWinterIsComing' => 36,
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
 		),

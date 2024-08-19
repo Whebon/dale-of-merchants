@@ -2184,6 +2184,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'winterIsComing':
+                    this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
                     this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
                     break;
                 case 'swiftBroker':

@@ -197,7 +197,7 @@
 			],
 			"actWinterIsComingSkip": []
 		},
-		"transitions": { "trActiveAbility": 36, "trNextPlayer": 41, "trGameEnd": 99 }
+		"transitions": { "trActiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trGameEnd": 99 }
 	},
 
 	//TODO: safely delete

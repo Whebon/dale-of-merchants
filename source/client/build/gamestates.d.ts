@@ -169,6 +169,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trActiveAbility': 36,
+			'trWinterIsComing': 36,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
 		},
