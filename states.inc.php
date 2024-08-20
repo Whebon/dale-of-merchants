@@ -21,6 +21,8 @@ if (false) {
 	$game->stFullyResolveTechnique();
 	$game->stFullyResolveTechniqueNoDiscard();
 	$game->stNextPlayer();
+	$game->stShatteredRelic();
+	$game->stSpyglass();
 }
 
 $machinestates = array(
@@ -115,6 +117,7 @@ $machinestates = array(
 		'description' => clienttranslate('Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand'),
 		'descriptionmyturn' => clienttranslate('Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand'),
 		'type' => 'activeplayer',
+		'action' => 'stShatteredRelic',
 		'possibleactions' => ['actShatteredRelic', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
@@ -126,6 +129,7 @@ $machinestates = array(
 		'description' => clienttranslate('Spyglass: ${actplayer} must choose a card to place into their hand'),
 		'descriptionmyturn' => clienttranslate('Spyglass: ${you} must choose a card to place into your hand'),
 		'type' => 'activeplayer',
+		'action' => 'stSpyglass',
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
 			'trFullyResolveTechnique' => 33,

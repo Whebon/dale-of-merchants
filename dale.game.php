@@ -1617,26 +1617,10 @@ class Dale extends DaleTableBasic
                 break;
             case CT_SHATTEREDRELIC:
                 $this->beginToResolveCard($player_id, $card);
-                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                if ($handsize == 0) {
-                    //shattered relic just draws a card
-                    $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to ditch'), array(
-                        "player_name" => $this->getActivePlayerName()
-                    ));
-                    $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
-                    $this->gamestate->nextState("trFullyResolveTechnique");
-                    return;
-                }
                 $this->gamestate->nextState("trShatteredRelic");
                 break;
             case CT_SPYGLASS:
                 $this->beginToResolveCard($player_id, $card);
-                $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
-                if ($nbr == 0) {
-                    //skyglass has no effect
-                    $this->gamestate->nextState("trFullyResolveTechnique");
-                    return;
-                }
                 $this->gamestate->nextState("trSpyglass");
                 break;
             case CT_FLASHYSHOW:
@@ -2108,6 +2092,29 @@ class Dale extends DaleTableBasic
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
         $this->gamestate->nextState("trNextPlayer");
+    }
+
+    function stShatteredRelic() {
+        $player_id = $this->getActivePlayerId();
+        $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+        if ($handsize == 0) {
+            //shattered relic just draws a card
+            $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to ditch'), array(
+                "player_name" => $this->getActivePlayerName()
+            ));
+            $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
+            $this->gamestate->nextState("trFullyResolveTechnique");
+            return;
+        }
+    }
+
+    function stSpyglass() {
+        $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
+        if ($nbr == 0) {
+            //skyglass has no effect
+            $this->gamestate->nextState("trFullyResolveTechnique");
+            return;
+        }
     }
 
 

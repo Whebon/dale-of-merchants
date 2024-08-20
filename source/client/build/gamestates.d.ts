@@ -211,6 +211,7 @@ interface GameStates {
 		'description': 'Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand',
 		'descriptionmyturn': 'Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand',
 		'type': 'activeplayer',
+		'action': 'stShatteredRelic',
 		'possibleactions': {
 			'actShatteredRelic': [{
 				'name': 'card_id',
@@ -229,6 +230,7 @@ interface GameStates {
 		'description': 'Spyglass: ${actplayer} must choose a card to place into their hand',
 		'descriptionmyturn': 'Spyglass: ${you} must choose a card to place into your hand',
 		'type': 'activeplayer',
+		'action': 'stSpyglass',
 		'possibleactions': {
 			'actSpyglass': [{
 				'name': 'card_ids',
