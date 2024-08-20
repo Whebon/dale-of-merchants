@@ -211,7 +211,6 @@ interface GameStates {
 		'description': 'Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand',
 		'descriptionmyturn': 'Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand',
 		'type': 'activeplayer',
-		'action': 'stShatteredRelic',
 		'possibleactions': {
 			'actShatteredRelic': [{
 				'name': 'card_id',
