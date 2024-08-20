@@ -374,6 +374,16 @@
   scale: 1.1;
 }
 
+.dale-dice {
+  position: absolute;
+  background-image: url("img/dice.png");
+  background-size: 600% 500%;
+  background-position-y: 0%;
+  background-position-x: -300%;
+  width: 50px;
+  height: 50px;
+}
+
 :root {
   --dale-wrap-technique: rgb(40,125,184);
   --dale-wrap-technique-a: rgba(40,125,184,0.15);
