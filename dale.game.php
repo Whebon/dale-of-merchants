@@ -1495,7 +1495,7 @@ class Dale extends DaleTableBasic
      * Get information about a dale card from the client's perspective
      */
     function debugDaleCard($card_id) {
-        $this->notifyAllPlayers('debugClient', 'clientConsoleLog', array('arg' => 'debugDaleCard', 'card_id' => $card_id));
+        $this->notifyAllPlayers('debugClient', 'debugDaleCard', array('arg' => 'debugDaleCard', 'card_id' => $card_id));
     }
 
     function d($arg) {

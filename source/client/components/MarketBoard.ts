@@ -65,18 +65,6 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     }
 
     /**
-     * UpdateHTML for all cardslots. 
-     * @param card (optional) - if provided, only update the card slot of this card.
-     */
-    updateHTML(card?: DaleCard) {
-        for (let slot of this.slots) {
-            if (card == undefined || card.id == slot.card?.id) {
-                slot.updateHTML();
-            }
-        }
-    }
-
-    /**
      * @param card_id
      * @return `pos` of this card_id
      */

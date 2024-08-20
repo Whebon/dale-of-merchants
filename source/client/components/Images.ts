@@ -27,6 +27,7 @@ export class Images {
     static readonly Z_INDEX_LIMBO_CARD = 150;
     static readonly Z_INDEX_SELECTED_CARD = 200;
     static readonly Z_INDEX_SLIDING_CARD = 300;
+    static readonly Z_INDEX_DECK_ABOVE_SLIDING_CARD = 350;
 
     static readonly S_SCALE = 0.28;
 
@@ -44,7 +45,8 @@ export class Images {
     static readonly VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
 
     /**
-     * Returns the style of the card of the given id. 
+     * !!!!! DEPRECATED !!!!! usage of setCardStyle is prefered over this
+     * Returns the style of the card of the given type id. 
      * @param card_type_id The id of the card type that needs to be displayed. If card_type_id is null, prepare to display the placeholder image.
      * @returns {string} String that can to be set to an HTML element's style.
      */
@@ -66,6 +68,27 @@ export class Images {
             }
         }
         return style;
+    }
+
+    /**
+     * Sets the style of the card of the given type id. 
+     * @param div
+     * @param card_type_id The id of the card type that needs to be displayed. If card_type_id is undefined, only set the card dimensions
+     */
+    static setCardStyle(div: HTMLElement, card_type_id?: number) {
+        dojo.setStyle(div, 'width', `${Images.CARD_WIDTH_S}px`);
+        dojo.setStyle(div, 'height', `${Images.CARD_HEIGHT_S}px`);
+        dojo.setStyle(div, 'background-size', `${Images.SHEET_WIDTH_S}px ${Images.SHEET_HEIGHT_S}px`);
+        if (card_type_id !== undefined) {
+            if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
+                let x = card_type_id % Images.IMAGES_PER_ROW;
+                let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
+                dojo.setStyle(div, 'background-position', `-${x}00% -${y}00%`);
+            }
+            else {
+                console.error(`Card with type id ${card_type_id} does not exist!`);
+            }
+        }
     }
 
     /**

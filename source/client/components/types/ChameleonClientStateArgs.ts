@@ -16,8 +16,8 @@ export class ChameleonClientStateArgs {
     public selection: number[] | undefined;
     public isChain: boolean;
 
+    public line_origin: HTMLElement;
     private line: SVGElement;
-    private line_origin: HTMLElement;
     private updateLine: (this: Window, ev: MouseEvent) => any;
 
     /**
@@ -37,15 +37,25 @@ export class ChameleonClientStateArgs {
         this.requiresPlayable = requiresPlayable;
         this.isChain = isChain;
         this.line = $("dale-chameleon-line") as SVGLineElement;
-        if (from instanceof DaleStock) {
-            this.line_origin = $("dale-myhand_item_"+this.card.id) as HTMLElement;
-        }
-        else if (from instanceof Pile) {
-            this.line_origin = from.topCardHTML;
+        if (from instanceof Pile) {
+            //in case of a pile, create a dummy div on top of the pile, to indicate that this card is in the pile
+            this.line_origin = card.toDiv();
+            this.line_origin.classList.add("dale-chameleon-selected");
+            this.line_origin.classList.add("dale-clickable");
+            from.placeholderHTML.appendChild(this.line_origin);
         }
         else {
             this.line_origin = card.div;
         }
+        // if (from instanceof DaleStock) {
+        //     this.line_origin = $("dale-myhand_item_"+this.card.id) as HTMLElement;
+        // }
+        // else if (from instanceof Pile) {
+        //     this.line_origin = from.topCardHTML;
+        // }
+        // else {
+        //     this.line_origin = card.div;
+        // }
         
         //prevent entering a chameleon state if the chameleon has 0 targets
         if (this.targets.length == 0 && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
@@ -60,7 +70,10 @@ export class ChameleonClientStateArgs {
         //set up the chameleon line
         const thiz = this;
         if (isChain) {
-            thiz.line.classList.remove("dale-hidden");
+            thiz.line.classList.remove("dale-hidden"); //line is already at the correct position
+        }
+        else {
+            thiz.line.classList.add("dale-hidden"); //mouse event for the first frame is unknown
         }
         this.updateLine = function(this: Window, evt: MouseEvent) {
             thiz.line.classList.remove("dale-hidden");
@@ -79,27 +92,33 @@ export class ChameleonClientStateArgs {
     }
 
     public selectChameleonCard() {
-        let card_div = undefined;
-		if (this.location instanceof DaleStock) {
-			card_div = $(this.location.control_name + "_item_" + this.card.id) as (HTMLElement | null);
-		}
-        else if (this.location instanceof Pile) {
-            card_div = this.location.getPopinCardDiv(this.card.id);
-            this.location.topCardHTML.classList.add("dale-chameleon-selected"); //TODO: keep this?
-        }
-        card_div?.classList.add("dale-chameleon-selected");
+        this.line_origin.classList.add("dale-chameleon-selected");
+        
+        //TODO: safely delete this
+        // let card_div = undefined;
+		// if (this.location instanceof DaleStock) {
+		// 	card_div = $(this.location.control_name + "_item_" + this.card.id) as (HTMLElement | null);
+		// }
+        // else if (this.location instanceof Pile) {
+        //     card_div = this.location.getPopinCardDiv(this.card.id);
+        //     this.location.topCardHTML.classList.add("dale-chameleon-selected"); //TODO: keep this?
+        // }
+        // card_div?.classList.add("dale-chameleon-selected");
     }
 
     public unselectChameleonCard() {
-        let card_div = undefined;
-		if (this.location instanceof DaleStock) {
-			card_div = $(this.location.control_name + "_item_" + this.card.id) as (HTMLElement | null);
-		}
-        else if (this.location instanceof Pile) {
-            card_div = this.location.getPopinCardDiv(this.card.id);
-            this.location.topCardHTML.classList.remove("dale-chameleon-selected"); //TODO: keep this?
-        }
-        card_div?.classList.remove("dale-chameleon-selected");
+        this.line_origin.classList.remove("dale-chameleon-selected");
+
+        //TODO: safely delete this
+        // let card_div = undefined;
+		// if (this.location instanceof DaleStock) {
+		// 	card_div = $(this.location.control_name + "_item_" + this.card.id) as (HTMLElement | null);
+		// }
+        // else if (this.location instanceof Pile) {
+        //     card_div = this.location.getPopinCardDiv(this.card.id);
+        //     this.location.topCardHTML.classList.remove("dale-chameleon-selected"); //TODO: keep this?
+        // }
+        // card_div?.classList.remove("dale-chameleon-selected");
     }
 
     /**
@@ -109,7 +128,11 @@ export class ChameleonClientStateArgs {
         for (let target of this.targets) {
             target.div.classList.remove("dale-chameleon-target");
         }
-        this.line_origin.classList.remove("dale-z-index-above-svg")
+        this.line_origin.classList.remove("dale-z-index-above-svg");
+        if (this.location instanceof Pile) {
+            this.line_origin.remove(); //delete the dummy
+            this.location.openPopin();
+        }
         this.line.classList.add("dale-hidden");
         removeEventListener("mousemove", this.updateLine);
     }

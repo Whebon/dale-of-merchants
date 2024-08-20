@@ -121,13 +121,6 @@ class Dale extends Gamegui
 		//initialize the card types
 		DaleCard.init(gamedatas.cardTypes);
 
-		//display any effects on the client-side
-		console.log("DbEffects:");
-		for (let i in gamedatas.effects) {
-			const effect = gamedatas.effects[i]!;
-			DaleCard.addEffect(effect);
-		}
-
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
@@ -243,6 +236,13 @@ class Dale extends Gamegui
 			}
 		}
 
+		//display any effects on the client-side
+		console.log("DbEffects:");
+		for (let i in gamedatas.effects) {
+			const effect = gamedatas.effects[i]!;
+			DaleCard.addEffect(effect);
+		}
+
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
 
@@ -261,7 +261,6 @@ class Dale extends Gamegui
 			console.log("nextPlayer, expire all effects that last until end of turn");
 			DaleCard.removeEndOfTurnEffects();
 			this.mainClientState.exit();
-			this.updateHTML();
 		}
 
 		if (!this.isCurrentPlayerActive()) {
@@ -399,15 +398,13 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(false);
 				if (this.mainClientState.name != 'client_essentialPurchase') {
 					DaleCard.unbindAllChameleonsLocal();
-					this.updateHTML(this.myHand);
 				}
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
-				DaleCard.unbindAllChameleonsLocal()
-				this.updateHTML(this.myHand);
+				DaleCard.unbindAllChameleonsLocal();
 				break;
 			case 'client_build':
 				this.market!.setSelectionMode(0);
@@ -415,14 +412,13 @@ class Dale extends Gamegui
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
 				DaleCard.unbindAllChameleonsLocal();
-				this.updateHTML(this.myHand);
+
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode(0);
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal()
-				this.updateHTML(this.myHand);
 				break;
 			case 'client_essentialPurchase':
 				this.market!.setSelectionMode(0);
@@ -592,7 +588,6 @@ class Dale extends Gamegui
 		}
 		if (!isChain && card.isBoundChameleon() && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
 			card.unbindChameleonLocal();
-			from.updateHTML(card);
 			callback(card);
 			return;
 		}
@@ -688,6 +683,12 @@ class Dale extends Gamegui
 			this.onConfirmChameleon(targets[0]!);
 			return;
 		}
+		if (from instanceof Pile) {
+			console.log("Add event listener to");
+			console.log(this.chameleonArgs.line_origin);
+			this.chameleonArgs.line_origin.addEventListener('click', () => { this.onCancelChameleon() })
+			from.closePopin();
+		}
 	}
 
 	/**
@@ -697,29 +698,6 @@ class Dale extends Gamegui
 	 */
 	setMainTitle(text: string) {
 		$('pagemaintitletext')!.innerHTML = text;
-	}
-
-	/**
-	 * Refreshes all html elements that represent cards. Should be called after chameleon bindings are changed.
-	 * @param location (optional) - if provided, only update this location
-	 * @param card (optional) - if provided, only update this html elements of this card
-	 */
-	updateHTML(location?: DaleLocation, card?: DaleCard) {
-		if (location) {
-			location.updateHTML(card);
-		}
-		else {
-			this.market!.updateHTML(card);
-			for (let pile of this.allPiles) {
-				pile.updateHTML(card);
-			}
-			for (let stock of this.allDaleStocks) {
-				stock.updateHTML(card);
-			}
-			for (let stall of Object.values(this.playerStalls)) {
-				stall.updateHTML(card);
-			}
-		}
 	}
 
 	/**
@@ -1213,7 +1191,6 @@ class Dale extends Gamegui
 			this.restoreServerGameState();
 			this.chameleonArgs?.remove();
 			this.chameleonArgs = undefined;
-			this.updateHTML();
 		}
 		else {
 			//undo server state
@@ -1232,13 +1209,11 @@ class Dale extends Gamegui
 			for (let stock of this.allDaleStocks) {
 				stock.unselectAll();
 			}
-			this.updateHTML();
 		}
 		else {
 			//exit main client state
 			this.mainClientState.exit();
 		}
-		this.updateHTML();
 	}
 	
 	/**
@@ -1257,7 +1232,6 @@ class Dale extends Gamegui
 		this.restoreServerGameState();
 		this.chameleonArgs?.remove();
 		this.chameleonArgs = undefined;
-		this.updateHTML();
 	}
 
 	/**
@@ -1296,7 +1270,6 @@ class Dale extends Gamegui
 				this.chameleonArgs?.remove();
 				this.chameleonArgs = undefined;
 			}
-			this.updateHTML(args.location, args.card);
 		}
 	}
 
@@ -1454,7 +1427,7 @@ class Dale extends Gamegui
 			//animate from my hand
 			const card_id = +notif.args.card.id;
 			if ($(this.myHand.control_name+'_item_' + card_id)) {
-				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_' + card_id)
+				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_'+card_id)
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -1799,12 +1772,10 @@ class Dale extends Gamegui
 	notif_bindChameleon(notif: NotifAs<'bindChameleon'>) {
 		DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
 		DaleCard.unbindAllChameleonsLocal();
-		this.updateHTML();
 	}
 
 	notif_unbindChameleon(notif: NotifAs<'unbindChameleon'>) {
 		DaleCard.unbindChameleonFromServer(+notif.args.card_id);
-		this.updateHTML();
 	}
 
 	notif_message(notif: NotifAs<'message'>) {
@@ -1821,8 +1792,16 @@ class Dale extends Gamegui
 		else if (arg == 'shuffleToDiscard') {
 			this.marketDeck.shuffleToDrawPile(this.marketDiscard!)
 		}
-		else if (arg == 'shuffleToDraw') {
+		else if (arg == 'shuffleToDraw' || arg == 'shuffleToDeck') {
 			this.marketDiscard.shuffleToDrawPile(this.marketDeck!)
+		}
+		else if (arg == 'shuffle') {
+			if (this.marketDeck.size < this.marketDiscard.size) {
+				this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
+			}
+			else {
+				this.marketDeck.shuffleToDrawPile(this.marketDiscard!);
+			}
 		}
 		else if (arg == 'slideRight') {
 			this.market!.slideRight();
@@ -1845,6 +1824,12 @@ class Dale extends Gamegui
 		}
 		else if (arg == 'debugDaleCard') {
 			console.log(new DaleCard(notif.args.card_id));
+		}
+		else if (arg == '') {
+			
+		}
+		else if (arg == '') {
+			
 		}
 		else if (arg == '') {
 			

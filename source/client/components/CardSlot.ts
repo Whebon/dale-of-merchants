@@ -75,16 +75,6 @@ export class CardSlot {
     }
 
     /**
-     * Recreated the html of this slot by removing and inserting the card in the slot
-     */
-    public updateHTML() {
-        const card = this.removeCard();
-        if (card) {
-            this.insertCard(card);
-        }
-    }
-
-    /**
     * @returns `true` if the slot contains a card.
     */
     public hasCard() {

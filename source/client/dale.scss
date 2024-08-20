@@ -115,7 +115,6 @@
 			border-radius: 10px;
 			box-shadow: 0px 2px 8px #e4aa19;
 			outline: 3px solid #e4aa19;
-			transition: transform 0.3s ease, scale 0.3 ease;
 			transform: scale(1.1) translateY(5px);
 		}
 	}
@@ -137,6 +136,7 @@
 .dale-chameleon-selected {
 	border-radius: 10px;
 	outline: 3px solid rgba(31, 119, 44) !important;
+	scale: 1.1 !important;
 	//animation: blinker 0.5s infinite;
 }
 
@@ -152,15 +152,14 @@
 		transform: scale(1.1);
 		z-index: 200;
 	}
-	&.dale-overlay {
-		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5);
+	&.dale-chameleon-overlay {
+		pointer-events: none;
+		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5); //no box shadows for overlays
 	}
-}
-
-
-.dale-card.dale-relative {
-	margin: 5px;
-	position: relative !important;
+	&.dale-relative {
+		margin: 5px;
+		position: relative;
+	}
 }
 
 #market-board-background {
@@ -369,12 +368,6 @@
 	}
 }
 
-.stockitem {
-	&:not(.dale-clickable) {
-		cursor: default;
-	}
-}
-
 #dale-svg-container {
 	position: absolute;
 	top: 0;
@@ -400,9 +393,6 @@
 }
 
 .dale-z-index-above-svg {
-	&.stockitem {
-		scale: 1.1
-	}
 	z-index: 751 !important;
 }
 
@@ -465,10 +455,113 @@ body {
 	}
 }
 
+.dale-wrap-technique { 
+	outline: 3px solid var(--dale-wrap-technique); 
+	.dale-label { 
+		background-color: var(--dale-wrap-technique); 
+	}
+	.dale-card.dale-selected {
+		outline: 3px solid var(--dale-wrap-technique);
+		background-color: var(--dale-wrap-technique-a);
+		background-blend-mode: overlay;
+		.dale-card.dale-chameleon-overlay {
+			background-color: var(--dale-wrap-technique-a);
+			background-blend-mode: overlay;
+		}
+	}
+	.dale-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
+	}
+}
+
+.dale-wrap-purchase { 
+	outline: 3px solid var(--dale-wrap-purchase); 
+	.dale-label { 
+		background-color: var(--dale-wrap-purchase); 
+	}
+	.dale-card.dale-selected {
+		outline: 3px solid var(--dale-wrap-purchase);
+		background-color: var(--dale-wrap-purchase-a);
+		background-blend-mode: overlay;
+		.dale-card.dale-chameleon-overlay {
+			background-color: var(--dale-wrap-purchase-a);
+			background-blend-mode: overlay;
+		}
+	}
+	.dale-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
+	}
+}
+
+.dale-wrap-build { 
+	outline: 3px solid var(--dale-wrap-build); 
+	.dale-label { 
+		background-color: var(--dale-wrap-build); 
+	}
+	.dale-card.dale-selected {
+		outline: 3px solid var(--dale-wrap-build);
+		background-color: var(--dale-wrap-build-a);
+		background-blend-mode: overlay;
+		.dale-card.dale-chameleon-overlay {
+			background-color: var(--dale-wrap-build-a);
+			background-blend-mode: overlay;
+		}
+	}
+	.dale-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
+	}
+}
+
+.dale-wrap-discard { 
+	outline: 3px solid var(--dale-wrap-discard); 
+	.dale-label { 
+		background-color: var(--dale-wrap-discard); 
+	}
+	.dale-card.dale-selected {
+		outline: 3px solid var(--dale-wrap-discard);
+		background-color: var(--dale-wrap-discard-a);
+		background-blend-mode: overlay;
+		.dale-card.dale-chameleon-overlay {
+			background-color: var(--dale-wrap-discard-a);
+			background-blend-mode: overlay;
+		}
+	}
+	.dale-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
+	}
+}
+
+.dale-wrap-default { 
+	outline: 3px solid var(--dale-wrap-default); 
+	.dale-label { 
+		background-color: var(--dale-wrap-default); 
+	}
+	.dale-card.dale-selected {
+		outline: 3px solid var(--dale-wrap-default);
+		background-color: var(--dale-wrap-default-a);
+		background-blend-mode: overlay;
+		.dale-card.dale-chameleon-overlay {
+			background-color: var(--dale-wrap-default-a);
+			background-blend-mode: overlay;
+		}
+	}
+	.dale-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--dale-wrap-default);
+	}
+}
+
+.dale-card.dale-selected:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
 .dale-flat-stock {
-	.stockitem {
-		border-radius: 10px;
-		transition: scale 0.3s ease, transform 1s ease;
+	.dale-card {
 		z-index: 100;
 	}
 }
@@ -489,115 +582,8 @@ body {
 		margin-bottom: 20px;
 		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "dale-hidden-transitioning"
 	}
-}
 
-.dale-wrap-technique { 
-	outline: 3px solid var(--dale-wrap-technique); 
-	.dale-label { 
-		background-color: var(--dale-wrap-technique); 
-	}
-	.stockitem.dale-selected {
-		outline: 3px solid var(--dale-wrap-technique);
-		background-color: var(--dale-wrap-technique-a);
-		background-blend-mode: overlay;
-		.dale-card.dale-overlay {
-			background-color: var(--dale-wrap-technique-a);
-			background-blend-mode: overlay;
-		}
-	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
-	}
-}
-
-.dale-wrap-purchase { 
-	outline: 3px solid var(--dale-wrap-purchase); 
-	.dale-label { 
-		background-color: var(--dale-wrap-purchase); 
-	}
-	.stockitem.dale-selected {
-		outline: 3px solid var(--dale-wrap-purchase);
-		background-color: var(--dale-wrap-purchase-a);
-		background-blend-mode: overlay;
-		.dale-card.dale-overlay {
-			background-color: var(--dale-wrap-purchase-a);
-			background-blend-mode: overlay;
-		}
-	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
-	}
-}
-
-.dale-wrap-build { 
-	outline: 3px solid var(--dale-wrap-build); 
-	.dale-label { 
-		background-color: var(--dale-wrap-build); 
-	}
-	.stockitem.dale-selected {
-		outline: 3px solid var(--dale-wrap-build);
-		background-color: var(--dale-wrap-build-a);
-		background-blend-mode: overlay;
-		.dale-card.dale-overlay {
-			background-color: var(--dale-wrap-build-a);
-			background-blend-mode: overlay;
-		}
-	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
-	}
-}
-
-.dale-wrap-discard { 
-	outline: 3px solid var(--dale-wrap-discard); 
-	.dale-label { 
-		background-color: var(--dale-wrap-discard); 
-	}
-	.stockitem.dale-selected {
-		outline: 3px solid var(--dale-wrap-discard);
-		background-color: var(--dale-wrap-discard-a);
-		background-blend-mode: overlay;
-		.dale-card.dale-overlay {
-			background-color: var(--dale-wrap-discard-a);
-			background-blend-mode: overlay;
-		}
-	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
-	}
-}
-
-.dale-wrap-default { 
-	outline: 3px solid var(--dale-wrap-default); 
-	.dale-label { 
-		background-color: var(--dale-wrap-default); 
-	}
-	.stockitem.dale-selected {
-		outline: 3px solid var(--dale-wrap-default);
-		background-color: var(--dale-wrap-default-a);
-		background-blend-mode: overlay;
-		.dale-card.dale-overlay {
-			background-color: var(--dale-wrap-default-a);
-			background-blend-mode: overlay;
-		}
-	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-default);
-	}
-}
-
-.dale-card.dale-selected:before {
-	content: "";
-	display: block;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-}
-
-.dale-arc-stock {
-	.stockitem {
+	.dale-card {
 		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 		border-radius: 10px;
 		transition: scale 0.3s ease, transform 1s ease;
@@ -616,326 +602,326 @@ body {
 	/* ----------------------------- */
 
 	/* 1 cards */
-	.stockitem[data-arc="1/1"] {
+	.dale-card[data-arc="1/1"] {
 		transform: rotate(0deg) translateY(-0px);
 	}
 
 	/* 2 cards */
-	.stockitem[data-arc="1/2"] {
+	.dale-card[data-arc="1/2"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/2"] {
+	.dale-card[data-arc="2/2"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 3 cards */
-	.stockitem[data-arc="1/3"] {
+	.dale-card[data-arc="1/3"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/3"] {
+	.dale-card[data-arc="2/3"] {
 		transform: rotate(0.0deg) translateY(-5px);
 	}
 
-	.stockitem[data-arc="3/3"] {
+	.dale-card[data-arc="3/3"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 4 cards */
-	.stockitem[data-arc="1/4"] {
+	.dale-card[data-arc="1/4"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/4"] {
+	.dale-card[data-arc="2/4"] {
 		transform: rotate(-1.666666666666667deg) translateY(-7px);
 	}
 
-	.stockitem[data-arc="3/4"] {
+	.dale-card[data-arc="3/4"] {
 		transform: rotate(1.6666666666666663deg) translateY(-7px);
 	}
 
-	.stockitem[data-arc="4/4"] {
+	.dale-card[data-arc="4/4"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 5 cards */
-	.stockitem[data-arc="1/5"] {
+	.dale-card[data-arc="1/5"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/5"] {
+	.dale-card[data-arc="2/5"] {
 		transform: rotate(-2.5deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="3/5"] {
+	.dale-card[data-arc="3/5"] {
 		transform: rotate(0.0deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="4/5"] {
+	.dale-card[data-arc="4/5"] {
 		transform: rotate(2.5deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="5/5"] {
+	.dale-card[data-arc="5/5"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 6 cards */
-	.stockitem[data-arc="1/6"] {
+	.dale-card[data-arc="1/6"] {
 		transform: rotate(-4.581220085277042deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/6"] {
+	.dale-card[data-arc="2/6"] {
 		transform: rotate(-2.7487320511662254deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="3/6"] {
+	.dale-card[data-arc="3/6"] {
 		transform: rotate(-0.9162440170554083deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="4/6"] {
+	.dale-card[data-arc="4/6"] {
 		transform: rotate(0.9162440170554083deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="5/6"] {
+	.dale-card[data-arc="5/6"] {
 		transform: rotate(2.748732051166226deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="6/6"] {
+	.dale-card[data-arc="6/6"] {
 		transform: rotate(4.581220085277042deg) translateY(-0px);
 	}
 
 	/* 7 cards */
-	.stockitem[data-arc="1/7"] {
+	.dale-card[data-arc="1/7"] {
 		transform: rotate(-3.8183048659927548deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/7"] {
+	.dale-card[data-arc="2/7"] {
 		transform: rotate(-2.5455365773285035deg) translateY(-7px);
 	}
 
-	.stockitem[data-arc="3/7"] {
+	.dale-card[data-arc="3/7"] {
 		transform: rotate(-1.2727682886642517deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="4/7"] {
+	.dale-card[data-arc="4/7"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="5/7"] {
+	.dale-card[data-arc="5/7"] {
 		transform: rotate(1.2727682886642513deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="6/7"] {
+	.dale-card[data-arc="6/7"] {
 		transform: rotate(2.5455365773285035deg) translateY(-7px);
 	}
 
-	.stockitem[data-arc="7/7"] {
+	.dale-card[data-arc="7/7"] {
 		transform: rotate(3.8183048659927548deg) translateY(-0px);
 	}
 
 	/* 8 cards */
-	.stockitem[data-arc="1/8"] {
+	.dale-card[data-arc="1/8"] {
 		transform: rotate(-3.27315408323344deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/8"] {
+	.dale-card[data-arc="2/8"] {
 		transform: rotate(-2.3379672023096deg) translateY(-6px);
 	}
 
-	.stockitem[data-arc="3/8"] {
+	.dale-card[data-arc="3/8"] {
 		transform: rotate(-1.4027803213857601deg) translateY(-10px);
 	}
 
-	.stockitem[data-arc="4/8"] {
+	.dale-card[data-arc="4/8"] {
 		transform: rotate(-0.46759344046192014deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="5/8"] {
+	.dale-card[data-arc="5/8"] {
 		transform: rotate(0.4675934404619198deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="6/8"] {
+	.dale-card[data-arc="6/8"] {
 		transform: rotate(1.4027803213857601deg) translateY(-10px);
 	}
 
-	.stockitem[data-arc="7/8"] {
+	.dale-card[data-arc="7/8"] {
 		transform: rotate(2.3379672023095996deg) translateY(-6px);
 	}
 
-	.stockitem[data-arc="8/8"] {
+	.dale-card[data-arc="8/8"] {
 		transform: rotate(3.27315408323344deg) translateY(-0px);
 	}
 
 	/* 9 cards */
-	.stockitem[data-arc="1/9"] {
+	.dale-card[data-arc="1/9"] {
 		transform: rotate(-2.864192368329286deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/9"] {
+	.dale-card[data-arc="2/9"] {
 		transform: rotate(-2.1481442762469642deg) translateY(-5px);
 	}
 
-	.stockitem[data-arc="3/9"] {
+	.dale-card[data-arc="3/9"] {
 		transform: rotate(-1.432096184164643deg) translateY(-9px);
 	}
 
-	.stockitem[data-arc="4/9"] {
+	.dale-card[data-arc="4/9"] {
 		transform: rotate(-0.7160480920823215deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="5/9"] {
+	.dale-card[data-arc="5/9"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="6/9"] {
+	.dale-card[data-arc="6/9"] {
 		transform: rotate(0.7160480920823215deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="7/9"] {
+	.dale-card[data-arc="7/9"] {
 		transform: rotate(1.432096184164643deg) translateY(-9px);
 	}
 
-	.stockitem[data-arc="8/9"] {
+	.dale-card[data-arc="8/9"] {
 		transform: rotate(2.1481442762469642deg) translateY(-5px);
 	}
 
-	.stockitem[data-arc="9/9"] {
+	.dale-card[data-arc="9/9"] {
 		transform: rotate(2.864192368329286deg) translateY(-0px);
 	}
 
 	/* 10 cards */
-	.stockitem[data-arc="1/10"] {
+	.dale-card[data-arc="1/10"] {
 		transform: rotate(-2.546060040113423deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/10"] {
+	.dale-card[data-arc="2/10"] {
 		transform: rotate(-1.980268920088218deg) translateY(-5px);
 	}
 
-	.stockitem[data-arc="3/10"] {
+	.dale-card[data-arc="3/10"] {
 		transform: rotate(-1.414477800063013deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="4/10"] {
+	.dale-card[data-arc="4/10"] {
 		transform: rotate(-0.8486866800378078deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="5/10"] {
+	.dale-card[data-arc="5/10"] {
 		transform: rotate(-0.2828955600126027deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="6/10"] {
+	.dale-card[data-arc="6/10"] {
 		transform: rotate(0.2828955600126027deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="7/10"] {
+	.dale-card[data-arc="7/10"] {
 		transform: rotate(0.8486866800378075deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="8/10"] {
+	.dale-card[data-arc="8/10"] {
 		transform: rotate(1.414477800063013deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="9/10"] {
+	.dale-card[data-arc="9/10"] {
 		transform: rotate(1.9802689200882178deg) translateY(-5px);
 	}
 
-	.stockitem[data-arc="10/10"] {
+	.dale-card[data-arc="10/10"] {
 		transform: rotate(2.546060040113423deg) translateY(-0px);
 	}
 
 	/* 11 cards */
-	.stockitem[data-arc="1/11"] {
+	.dale-card[data-arc="1/11"] {
 		transform: rotate(-2.2915256763502043deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/11"] {
+	.dale-card[data-arc="2/11"] {
 		transform: rotate(-1.8332205410801636deg) translateY(-4px);
 	}
 
-	.stockitem[data-arc="3/11"] {
+	.dale-card[data-arc="3/11"] {
 		transform: rotate(-1.3749154058101225deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="4/11"] {
+	.dale-card[data-arc="4/11"] {
 		transform: rotate(-0.9166102705400818deg) translateY(-10px);
 	}
 
-	.stockitem[data-arc="5/11"] {
+	.dale-card[data-arc="5/11"] {
 		transform: rotate(-0.45830513527004074deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="6/11"] {
+	.dale-card[data-arc="6/11"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="7/11"] {
+	.dale-card[data-arc="7/11"] {
 		transform: rotate(0.45830513527004074deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="8/11"] {
+	.dale-card[data-arc="8/11"] {
 		transform: rotate(0.9166102705400815deg) translateY(-10px);
 	}
 
-	.stockitem[data-arc="9/11"] {
+	.dale-card[data-arc="9/11"] {
 		transform: rotate(1.3749154058101227deg) translateY(-8px);
 	}
 
-	.stockitem[data-arc="10/11"] {
+	.dale-card[data-arc="10/11"] {
 		transform: rotate(1.8332205410801636deg) translateY(-4px);
 	}
 
-	.stockitem[data-arc="11/11"] {
+	.dale-card[data-arc="11/11"] {
 		transform: rotate(2.2915256763502043deg) translateY(-0px);
 	}
 
 	/* 12 cards */
-	.stockitem[data-arc="1/12"] {
+	.dale-card[data-arc="1/12"] {
 		transform: rotate(-2.0832533520199354deg) translateY(-0px);
 	}
 
-	.stockitem[data-arc="2/12"] {
+	.dale-card[data-arc="2/12"] {
 		transform: rotate(-1.704480015289038deg) translateY(-4px);
 	}
 
-	.stockitem[data-arc="3/12"] {
+	.dale-card[data-arc="3/12"] {
 		transform: rotate(-1.3257066785581406deg) translateY(-7px);
 	}
 
-	.stockitem[data-arc="4/12"] {
+	.dale-card[data-arc="4/12"] {
 		transform: rotate(-0.9469333418272434deg) translateY(-10px);
 	}
 
-	.stockitem[data-arc="5/12"] {
+	.dale-card[data-arc="5/12"] {
 		transform: rotate(-0.568160005096346deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="6/12"] {
+	.dale-card[data-arc="6/12"] {
 		transform: rotate(-0.18938666836544873deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="7/12"] {
+	.dale-card[data-arc="7/12"] {
 		transform: rotate(0.1893866683654485deg) translateY(-12px);
 	}
 
-	.stockitem[data-arc="8/12"] {
+	.dale-card[data-arc="8/12"] {
 		transform: rotate(0.568160005096346deg) translateY(-11px);
 	}
 
-	.stockitem[data-arc="9/12"] {
+	.dale-card[data-arc="9/12"] {
 		transform: rotate(0.9469333418272434deg) translateY(-10px);
 	}
 
-	.stockitem[data-arc="10/12"] {
+	.dale-card[data-arc="10/12"] {
 		transform: rotate(1.3257066785581408deg) translateY(-7px);
 	}
 
-	.stockitem[data-arc="11/12"] {
+	.dale-card[data-arc="11/12"] {
 		transform: rotate(1.704480015289038deg) translateY(-4px);
 	}
 
-	.stockitem[data-arc="12/12"] {
+	.dale-card[data-arc="12/12"] {
 		transform: rotate(2.0832533520199354deg) translateY(-0px);
 	}
 

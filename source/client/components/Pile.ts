@@ -26,7 +26,7 @@ export class Pile implements DaleLocation {
     private containerHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private selectedSizeHTML: HTMLElement;
-    public topCardHTML: HTMLElement;
+    private topCardHTML: HTMLElement | undefined;
     public placeholderHTML: HTMLElement;
 
     private pile_container_id: string;
@@ -53,7 +53,7 @@ export class Pile implements DaleLocation {
         $(pile_container_id).innerHTML = `
             ${pile_name ? `<h3 class="dale-component-name">${pile_name}</h3>` : ""}
             <div class="pile" style="${Images.getCardStyle()}">
-                <div id="${pile_container_id}-top-card" class="dale-clickable dale-card"></div>
+                <div class="dale-card dale-clickable"></div>
                 <div class="dale-pile-size"></div>
                 <div class="dale-pile-size dale-pile-selected-size" style="top: 16%;"></div>
             </div>
@@ -61,7 +61,7 @@ export class Pile implements DaleLocation {
         this.page = page;
         this.containerHTML = $(pile_container_id);
         this.placeholderHTML = Images.getPlaceholder()
-        this.topCardHTML = this.containerHTML.querySelector('.dale-card')!;
+        //this.topCardHTML = this.containerHTML.querySelector('.dale-card')!;
         const sizeElements = this.containerHTML.querySelectorAll('.dale-pile-size')! as unknown as HTMLElement[];
         this.sizeHTML = sizeElements[0]!;
         this.selectedSizeHTML = sizeElements[1]!;
@@ -70,7 +70,7 @@ export class Pile implements DaleLocation {
         this.orderedSelectedCardIds = [];
         this.containerHTML.querySelector(".pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
-        dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+        //dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
 	}
 
     public get size() {
@@ -85,13 +85,10 @@ export class Pile implements DaleLocation {
     }
 
     /**
-     * @param card (optional) - if provided, only update this html elements of this card
+     * Attach the current topCard to the topCardHTML
      */
-    public updateHTML(card?: DaleCard) {
+    private updateHTML() {
         let topCard = this.peek(true);
-        if (card != undefined && card.id != topCard?.id) {
-            return;
-        }
         if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
             this.selectedSizeHTML.classList.remove("dale-hidden");
             this.selectedSizeHTML.innerHTML = `(x ${this.orderedSelectedCardIds.length})`;
@@ -100,17 +97,20 @@ export class Pile implements DaleLocation {
             this.selectedSizeHTML.classList.add("dale-hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
-        if (topCard == undefined) {
-            //the pile is empty, hide the top card so we can see the placeholder
-            this.topCardHTML.setAttribute('style', "display: none");
-        }
-        else {
-            //the pile is non-empty and its content is known, draw the top card of the pile
-            this.topCardHTML.innerHTML = ''; //delete previous badges
-            this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
-            if (topCard.isBoundChameleon()) {
-                this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
-            }
+
+        this.topCardHTML?.remove();
+        if (topCard !== undefined) {
+            this.topCardHTML = topCard.toDiv(this.placeholderHTML);
+            dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+            //TODO: safely remove this
+            // const div = topCard.toDiv(this.containerHTML);
+            // this.topCardHTML.replaceWith(div);
+            //TODO: safely remove this
+            // this.topCardHTML.innerHTML = ''; //delete previous badges
+            // this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
+            // if (topCard.isBoundChameleon()) {
+            //     this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
+            // }
         }
     }
 
@@ -178,11 +178,15 @@ export class Pile implements DaleLocation {
      */
     public push(card: DaleCard, from?: string | HTMLElement, onEnd?: Function | null, duration?: number, delay?: number) {
         this.cards.push(card);
-        card.addTooltip(this.topCardHTML.id);
-        if (from != null) {
+        if (from) {
+            console.log("111111111111111111111");
+            console.log("from");
+            console.log(from);
+            console.log($(from));
             this._slidingCards.push(card);
             let slidingElement = card.toDiv();
-            this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
+            this.placeholderHTML.appendChild(slidingElement)
+            //this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
 
             let thiz = this;
 			let callback = function (node: any) { 
@@ -196,6 +200,13 @@ export class Pile implements DaleLocation {
                     onEnd( node ); 
                 }
             };
+
+            console.log("222222222222222222222");
+            console.log("slidingElement");
+            console.log(slidingElement);
+            console.log("from");
+            console.log(from);
+            console.log($(from));
 
             this.page.placeOnObject(slidingElement, from)
             var slideAnimation = this.page.slideToObject(slidingElement, this.placeholderHTML, duration, delay) as unknown as dojo._base.Animation;
@@ -220,12 +231,12 @@ export class Pile implements DaleLocation {
         }
 
         //animate card
-        if (to != null) {
+        if (to) {
             if (to instanceof Pile) {
                 to = to.placeholderHTML;
             }
-            let slidingElement = this.topCardHTML.cloneNode() as HTMLElement;
-            this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
+            let slidingElement = this.peek()!.toDiv();
+            this.placeholderHTML.appendChild(slidingElement);
 
 			let callback = function (node: any) { 
                 dojo.destroy( node ); 
@@ -242,8 +253,7 @@ export class Pile implements DaleLocation {
         }
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
-        let card = this.cards.pop()!;
-        this.peek()?.addTooltip(this.topCardHTML.id);
+        let card = this.cards.pop()!;   
         this.updateHTML();
         return card;
     }
@@ -328,13 +338,10 @@ export class Pile implements DaleLocation {
     }
 
     /**
-     * User clicked on the top card of the pile. Show the popin.
+     * Open the pile popin
      */
-    public onClickTopCard() {
-        if (this.selectionMode == 'top') {
-            (this.page as any).onPileSelectionChanged(this, this.peek());
-            return;
-        }
+    public openPopin() {
+        this.peek()?.detachDiv();
         const player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
         const title_player = player ? `<span style="font-weight:bold;color:#${player.color}">${player.name}</span>'s ` : "";
         const title_pile_name = this.pile_name ?? "Unnamed Pile";
@@ -351,16 +358,16 @@ export class Pile implements DaleLocation {
             if(this.selectionMode != 'none') {
                 div.classList.add("dale-clickable");
                 const thiz = this;
-                dojo.connect($(div.id), 'onclick', function() {
+                dojo.connect(div, 'onclick', function() {
                     thiz.onClickCard(card, div);
                 });
             }
             if(this.orderedSelectedCardIds.includes(card.id)) {
                 div.classList.add("dale-selected");
             }
-            if ((this.page as any).chameleonArgs?.card.id == card.id) {
-                div.classList.add("dale-chameleon-selected");
-            }
+            // if ((this.page as any).chameleonArgs?.card.id == card.id) {
+            //     div.classList.add("dale-chameleon-selected");
+            // }
             this.cardIdToPopinDiv.set(card.id, div);
         }
         dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
@@ -368,9 +375,21 @@ export class Pile implements DaleLocation {
     }
 
     /**
+     * User clicked on the top card of the pile. Show the popin.
+     */
+    public onClickTopCard() {
+        if (this.selectionMode == 'top') {
+            (this.page as any).onPileSelectionChanged(this, this.peek());
+            return;
+        }
+        this.openPopin();
+    }
+
+    /**
      * User clicked on a card within the popin.
      */
     public onClickCard(card: DaleCard, div: HTMLElement) {
+        console.log("Clicked on a card in the popin");
         //when in a chameleon client state, make sure the user is directed towards selecting a target
         const chameleonArgs: ChameleonClientStateArgs = (this.page as any).chameleonArgs!;
         if (chameleonArgs) {
@@ -489,9 +508,9 @@ export class Pile implements DaleLocation {
         console.log("onClosePopin");
         //Delete all tooltips from the popin
         for (let card of this.cards) {
-            card.destroyTooltip();
+            card.detachDiv();
         }
         //Reattach the tooltip of the top card of the pile
-        this.cards[this.cards.length-1]?.addTooltip(this.topCardHTML.id);
+        this.updateHTML();
     }
 }

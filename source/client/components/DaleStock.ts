@@ -57,6 +57,8 @@ export class DaleStock extends Stock implements DaleLocation {
 	constructor(){
 		super();
 		this.orderedSelection = new StockOrderedSelection(this);
+		this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
+		//this.jstpl_stock_item = '<div id="${id}" class="stockitem ${extra_classes}" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 	}
 	
 	/**
@@ -73,11 +75,12 @@ export class DaleStock extends Stock implements DaleLocation {
 		(page as any).allDaleStocks.push(this);
 		for (let i in page.gamedatas.cardTypes) {
 			let type_id = page.gamedatas.cardTypes[i]!.type_id;
-			this.addItemType(type_id, type_id, g_gamethemeurl + 'img/cards.jpg', type_id);
+			this.addItemType(type_id, type_id); //, g_gamethemeurl + 'img/cards.jpg', type_id);
 		}
 		this.create( page, container, Images.CARD_WIDTH, Images.CARD_HEIGHT);
 		this.resizeItems(Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S, Images.SHEET_WIDTH_S, Images.SHEET_HEIGHT_S);
 		this.image_items_per_row = Images.IMAGES_PER_ROW;
+		this.create( page, container, Images.CARD_WIDTH_S, Images.CARD_HEIGHT_S);
 
 		//configure wrap (set a reference to the wrap div that holds the action labels)
 		if (wrap) {
@@ -257,68 +260,6 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 	}
 
-	/**
-	 * Function to be called after unbinding chameleon cards. All bound chameleon cards are removed and readded to the stock.
-	 * @param card (optional) - if provided, only update this html elements of this card
-	 */
-	public updateHTML(card?: DaleCard) {
-		console.log(`updateHTML for DaleStock '${this.control_name}', card = ${card?.id}`);
-		if (card) {
-			if (card.isBoundChameleon()) {
-				this.addChameleonOverlay(card);
-			}
-			else {
-				this.removeChameleonOverlay(card);
-			}
-		}
-		else {
-			for (let item of this.getAllItems()) {
-				this.updateHTML(new DaleCard(item.id, item.type));
-			}
-		}
-	}
-
-	/**
-	 * Replace the chameleon card overlay on top of the stock item with an animation. If the same type of overlay already exists, nothing will be done
-	 * @param card dale card to add an overlay to
-	 * @param fadein (default) true. If true, the overlay will be added with a fade in animation
-	 */
-	public addChameleonOverlay(card: DaleCard, fadein: boolean = true) {
-		const stockitem = $(this.control_name+"_item_"+card.id);
-		if (!stockitem) {
-			return;
-		}
-		const old_overlay = stockitem?.querySelector(".dale-card");
-		if (old_overlay) {
-			if (old_overlay.classList.contains("type-id-"+card.effective_type_id)) {
-				return;
-			}
-			this.removeChameleonOverlay(card);
-		}
-		const overlay = card.toDiv();
-		overlay.classList.add("type-id-"+card.effective_type_id);
-		overlay.classList.add("dale-overlay");
-		stockitem.appendChild(overlay);
-		if (fadein) {
-			dojo.setStyle(overlay, 'opacity', '0');
-			dojo.fadeIn({node: overlay}).play();
-		}
-		card.addTooltip(stockitem as HTMLElement);
-	}
-
-	/**
-	 * Remove the chameleon card overlay on top of the stock item with an animation
-	 * @param card_id
-	 */
-	public removeChameleonOverlay(card: DaleCard) {
-		const stockitem = $(this.control_name+"_item_"+card.id);
-		const old_overlay = stockitem?.querySelector(".dale-card") as HTMLElement;
-		if (old_overlay) {
-			dojo.fadeOut({node: old_overlay, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
-			card.addTooltip(stockitem as HTMLElement);
-		}
-	}
-
 	/** 
 	 * Add a `DaleCard` to a stock. Always use this instead of addToStockWithID. This ensures that the type id of the card id is registered in the `DaleCard` class.
 	 * @param card card to add to the stock
@@ -327,10 +268,8 @@ export class DaleStock extends Stock implements DaleLocation {
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
 		this.addToStockWithId(card.original_type_id, card.id, from);
 		this.setClickable(card.id);
-		card.connectDiv($(this.control_name+'_item_'+card.id) as HTMLElement);
-		if (card.isBoundChameleon()) {
-			this.addChameleonOverlay(card, false);
-		}
+		const stockitem_div = $(this.control_name+'_item_'+card.id) as HTMLElement;
+		card.attachDiv(stockitem_div);
 	}
 
 	/**

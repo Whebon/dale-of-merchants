@@ -142,16 +142,12 @@ export class OrderedSelection {
      * Unselect all selection and icons. On both the primary and secondary levels
      */
     public unselectAll() {
-        console.log("unselectAll before (1): "+this.card_ids);
-        console.log("unselectAll before (2): "+this.secondary_card_ids);
         while (this.card_ids.length > 0) { 
             this.unselectItem(this.card_ids[this.card_ids.length-1]!, false);
         }
         while (this.secondary_card_ids.length > 0) { 
             this.unselectItem(this.secondary_card_ids[this.secondary_card_ids.length-1]!, true);
         }
-        console.log("unselectAll after (1): "+this.card_ids);
-        console.log("unselectAll after (2): "+this.secondary_card_ids);
     }
 
     /**

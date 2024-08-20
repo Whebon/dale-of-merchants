@@ -80,7 +80,7 @@ export class DaleCard {
                 throw new Error(`Card id ${id} with type_id ${prev_type_id} cannot be set to a different type_id ${type_id}.`)
             }
         }
-        else if (!DaleCard.cardIdtoTypeId.has(id)) {
+        else if (!DaleCard.cardIdtoTypeId.has(id) && !DaleCard.cardIdtoEffectiveTypeId.has(id)) {
             console.log("cardId2TypeId");
             console.log(DaleCard.cardIdtoTypeId);
             throw new Error(`The type_id of card_id ${id} is unknown. Therefore, a card with id ${id} cannot be instantiated.`)
@@ -171,6 +171,10 @@ export class DaleCard {
         return _type_id
     }
 
+    ///////////////////////////////////////////////////////
+    //////////        Chameleon functions        //////////
+    ///////////////////////////////////////////////////////
+
     /**
      * @returns true if this is a chameleon card
      */
@@ -204,8 +208,8 @@ export class DaleCard {
      * @param effective_type_id new type id this card should be bound to
      */
     public bindChameleonLocal(effective_type_id: number) {
-        console.log("BIND!");
         DaleCard.cardIdtoEffectiveTypeIdLocal.set(this.id, effective_type_id);
+        this.updateChameleonOverlay();
     }
 
     
@@ -214,6 +218,7 @@ export class DaleCard {
      */
     public unbindChameleonLocal() {
         DaleCard.cardIdtoEffectiveTypeIdLocal.delete(this.id);
+        this.updateChameleonOverlay();
     }
 
     /**
@@ -221,9 +226,18 @@ export class DaleCard {
      * @return `size` - number of bindings deleted this way
      */
     public static unbindAllChameleonsLocal(): number {
-        const size = DaleCard.cardIdtoEffectiveTypeIdLocal.size;
+        const card_ids = Array.from(DaleCard.cardIdtoEffectiveTypeIdLocal.keys())
         DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
-        return size;
+        for (let card_id of card_ids) {
+            new DaleCard(card_id).updateChameleonOverlay();
+        }
+        return card_ids.length;
+        // const size = DaleCard.cardIdtoEffectiveTypeIdLocal.size;
+        // for (let card_id of Object.keys(DaleCard.cardIdtoEffectiveTypeIdLocal)) {
+        //     new DaleCard(card_id).updateChameleonOverlay();
+        // }
+        // DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+        // return size;
     }
 
     /**
@@ -233,6 +247,7 @@ export class DaleCard {
      */
     public static bindChameleonFromServer(card_id: number, effective_type_id: number) {
         DaleCard.cardIdtoEffectiveTypeId.set(card_id, effective_type_id);
+        new DaleCard(card_id).updateChameleonOverlay(); //undefined, false
     }
 
     /**
@@ -241,6 +256,7 @@ export class DaleCard {
      */
     public static unbindChameleonFromServer(card_id: number) {
         DaleCard.cardIdtoEffectiveTypeId.delete(card_id);
+        new DaleCard(card_id).updateChameleonOverlay(); //undefined, false
     }
 
     /**
@@ -265,18 +281,27 @@ export class DaleCard {
      * Unbinds all chameleon cards.
      */
     public static unbindAllChameleons() {
+        this.unbindAllChameleonsLocal();
+        const card_ids = Array.from(DaleCard.cardIdtoEffectiveTypeId.keys())
         DaleCard.cardIdtoEffectiveTypeId.clear();
-        DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+        for (let card_id of card_ids) {
+            new DaleCard(card_id).updateChameleonOverlay();
+        }
     }
 
-    /**
-     * Returns a badge that can be attached to a card div to indicate it is a chameleon card
-     */
-    public static createChameleonIcon() {
-        const div = DaleIcons.getChameleonIcon();
-        div.classList.add("dale-chameleon-icon");
-        return div;
-    }
+    //TODO: safely delete this
+    // /**
+    //  * Returns a badge that can be attached to a card div to indicate it is a chameleon card
+    //  */
+    // private static createChameleonIcon() {
+    //     const div = DaleIcons.getChameleonIcon();
+    //     div.classList.add("dale-chameleon-icon");
+    //     return div;
+    // }
+
+    ///////////////////////////////////////////////////////////
+    //////////        Public Card Information        //////////
+    ///////////////////////////////////////////////////////////
 
     /**
      * cost of this card when purchased from the market
@@ -341,6 +366,10 @@ export class DaleCard {
         return DaleCard.cardTypes[type_id]!.has_active
     }
 
+    /////////////////////////////////////////////////////////
+    //////////        Div related functions        //////////
+    /////////////////////////////////////////////////////////
+
     private getTooltipContent(): string {
         const cardType = DaleCard.cardTypes[this.effective_type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
@@ -356,9 +385,9 @@ export class DaleCard {
 	}
 
     /**
-     * Destroy the tooltip for this card (where-ever it is attached to)
+     * Remove the tooltip for this card (where-ever it is attached to)
      */
-    public destroyTooltip() {
+    private removeTooltip() {
         DaleCard.tooltips.get(this.id)?.destroy();
     }
 
@@ -366,7 +395,7 @@ export class DaleCard {
      * Add a tooltip to the specified tooltip_parent_id. WARNING: each DaleCard card_id can have at most 1 tooltip.
      * @param tooltip_parent_id parent id to attach the tooltip to.
      */
-    public addTooltip(tooltip_parent_id: string | HTMLElement) {
+    private addTooltip(tooltip_parent_id: string | HTMLElement) {
         if (this.id == 0) return; //card back doesn't have a tooltip
         const parent = $(tooltip_parent_id)
         if (!parent) {
@@ -380,37 +409,107 @@ export class DaleCard {
         dojo.connect(parent, "mouseleave", () => {
             tooltip.close();
         });
-        this.destroyTooltip();
+        this.removeTooltip();
         DaleCard.tooltips.set(this.id, tooltip);
     }
 
     /**
-     * @returns a new div element representing this card. Overwrites the previous known div for this card.
-     * @param parent_id (optional) - if specified, the div will be added to the parent, and it will have a tooltip
+     * Updates the chameleon card overlay according to latest card information.
+     * @param temp_div (optional) should be a div representing this cards original type
+     * @param fade (optional) default true. whether or not to animate the transition with a fade.
+     */
+    private updateChameleonOverlay(temp_div?: HTMLElement, fade: boolean = true) {
+        console.log("updateChameleonOverlay for card_id="+this.id);
+        const div = temp_div ?? DaleCard.divs.get(this.id);
+        if (!div) {
+            return;
+        }
+        const old_overlay = div.querySelector(".dale-chameleon-overlay:not(.dale-fading)");
+		if (old_overlay) {
+            // if ((old_overlay as HTMLElement).dataset['typeid'] == String(this.effective_type_id)) {
+            //     return;
+            // }
+            if (fade) {
+                old_overlay.classList.add("dale-fading");
+                dojo.fadeOut({node: old_overlay as HTMLElement, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
+            }
+            else {
+                div.remove();
+            }
+		}
+        if (this.isBoundChameleon()) {
+            const chameleon_icon = DaleIcons.getChameleonIcon();
+            chameleon_icon.classList.add("dale-chameleon-icon");
+            const new_overlay = document.createElement("div");
+            new_overlay.classList.add("dale-card");
+            new_overlay.classList.add("dale-chameleon-overlay");
+            new_overlay.setAttribute('style', Images.getCardStyle(this.effective_type_id));
+            new_overlay.appendChild(chameleon_icon);
+            //new_overlay.dataset['typeid'] = String(this.effective_type_id);
+            div.appendChild(new_overlay);
+            if (fade) {
+                dojo.setStyle(new_overlay, 'opacity', '0');
+                dojo.fadeIn({node: new_overlay}).play();
+            }
+            if (!temp_div) {
+                this.addTooltip(div);
+            }
+        }
+    }
+
+    /**
+	 * Update all of this card's modifications according to latest card information. Without any animations.
+     * This function should be private. When card information updates, this should immediately be called.
+     * @param temp_div (optional) should be a div representing this card's original type
+	 */
+	private updateHTML(temp_div?: HTMLElement) {
+        const div = temp_div ?? DaleCard.divs.get(this.id);
+        this.updateChameleonOverlay(div, false);
+        if (!temp_div && div) {
+            this.addTooltip(div);
+        }
+	}
+
+    /**
+     * @returns a new div element representing this card.
+     * @param parent_id (optional) - if specified, the div will be immediately be "detached" to the parent
      */
     public toDiv(parent_id?: string | HTMLElement): HTMLElement {
         const div = document.createElement("div")
+        div.classList.add("dale-card");
         div.id = "dale-card-"+this.id
-        div.classList.add("dale-card")
-        div.setAttribute('style', Images.getCardStyle(this.effective_type_id))
+        Images.setCardStyle(div, this.original_type_id)
         if (parent_id) {
-            $(parent_id)?.appendChild(div)
-            this.addTooltip(div.id);
-            //this.addTooltip(tooltip_parent_id); //don't add the tooltip to the container, but to the card div itself
+            $(parent_id)?.appendChild(div);
+            this.attachDiv(div);
         }
-        if (this.isBoundChameleon()) {
-            div.appendChild(DaleCard.createChameleonIcon());
+        else {
+            this.updateHTML(div);
         }
-        this.connectDiv(div);
         return div;
     }
 
     /**
-     * This card is uniquely represented by the specified div
+     * Remove the known div association of this card. Should be called of the div no longer exists.
      */
-    public connectDiv(div: HTMLElement) {
-        DaleCard.divs.set(this.id, div);
+    public detachDiv() {
+        this.removeTooltip();
+        DaleCard.divs.delete(this.id);
     }
+
+    /**
+     * Uniquely associate this card with the specified div
+     */
+    public attachDiv(div: HTMLElement) {
+        div.classList.add("dale-card");
+        Images.setCardStyle(div, this.original_type_id); //div.setAttribute('style', Images.getCardStyle(this.original_type_id))
+        DaleCard.divs.set(this.id, div);
+        this.updateHTML();
+    }
+
+    /////////////////////////////////////////////////////////
+    //////////        Static util functions        //////////
+    /////////////////////////////////////////////////////////
 
     /**
      * converts a DbCard (from the database table) to a DaleCard (typescript representation of a card)
@@ -431,14 +530,4 @@ export class DaleCard {
         }
         return false;
     }
-
-    //TODO: safely delete this
-    // /**
-    //  * @param card_id
-    //  * @param type_id
-    //  * @return `true` if a card with id `card_id` is of type `type_id`
-    //  */
-    // public static hasType(card_id: number, type_id: number){
-    //     return DaleCard.cardIdtoTypeId.get(card_id) == type_id;
-    // }
 }
