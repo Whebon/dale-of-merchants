@@ -596,107 +596,97 @@ class Dale extends Gamegui
 			callback(card);
 			return;
 		}
-		let targets: HTMLElement[] = [];
+		if (!card.isChameleon()) {
+			//card is not a chameleon card, immediately execute the callback function
+			callback(card);
+			return;
+		}
+
+		//set the chameleon client state information
+		var targets: DaleCard[] = [];
+		var chameleonStatename: keyof ClientGameState;
+		var chameleonDescriptionmyturn: string;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
-				if (this.myStall.getNumberOfStacks() == 0) {
-					console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
-					callback(card);
-					return;
-				}
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-				this.setClientState('chameleon_flexibleShopkeeper', {
-					descriptionmyturn: requiresPlayable ? 
-						_("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") : 
-						_("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
-				});
+				targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
+				chameleonStatename = 'chameleon_flexibleShopkeeper'
+				chameleonDescriptionmyturn = requiresPlayable ? 
+					_("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") :
+					_("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
 				break;
 			case DaleCard.CT_REFLECTION:
-				let has_valid_target = false;
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
 					if (+player_id != +this.player_id && pile.size > 0) {
-						has_valid_target = true;
+						targets.push(pile.peek()!)
 						break;
 					}
 				}
-				if (!has_valid_target) {
-					console.log("No valid targets for CT_REFLECTION");
-					callback(card);
-					return;
-				}
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-				this.setClientState('chameleon_reflection', {
-					descriptionmyturn: requiresPlayable ?
-						_("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
-						_("Reflection: ${you} must copy a card from the top of another player's discard pile")
-				});
+				chameleonStatename = 'chameleon_reflection'
+				chameleonDescriptionmyturn = requiresPlayable ? 
+					_("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
+					_("Reflection: ${you} must copy a card from the top of another player's discard pile")
 				break;
 			case DaleCard.CT_GOODOLDTIMES:
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
+				if (this.marketDiscard.size > 0) {
+					targets.push(this.marketDiscard.peek()!);
+				}
 				if (card.hasActiveAbility() && from == this.myHand) {
 					if (!isChain && !this.myHand.isSelected(card.id)) {
 						console.log("Deselected CT_GOODOLDTIMES");
 						callback(card);
 						return;
 					}
-					this.setClientState('chameleon_goodoldtimes', {
-						descriptionmyturn: _("Good Old Times: ${you} may ditch the supply's top card or copy bin's top card")
-					});
+					chameleonStatename = 'chameleon_goodoldtimes'
+					chameleonDescriptionmyturn = requiresPlayable ? 
+						_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card") :
+						_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card to play as a technique")
 				}
 				else {
-					if (this.marketDiscard.size == 0) {
-						console.log("No valid targets for CT_GOODOLDTIMES");
-						callback(card);
-						return;
-					}
-					this.setClientState('chameleon_goodoldtimes', {
-						descriptionmyturn: requiresPlayable ?
-							_("Good Old Times: ${you} must copy the bin's top card") :
-							_("Good Old Times: ${you} must copy the bin's top card")
-					});
+					chameleonStatename = 'chameleon_goodoldtimes'
+					chameleonDescriptionmyturn = requiresPlayable ? 
+						_("Good Old Times: ${you} must copy the bin's top card") :
+						_("Good Old Times: ${you} must copy the bin's top card to play as a technique")
 				}
 				break;
 			case DaleCard.CT_TRENDSETTING:
-				if (this.market!.size == 0) {
-					console.log("No valid targets for CT_TRENDSETTING");
-					callback(card);
-					return;
-				}
 				for (let card of this.market!.getCards()) {
-					targets.push(card.div)
+					targets.push(card)
 				}
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-				this.setClientState('chameleon_trendsetting', {
-					descriptionmyturn: requiresPlayable ? 
-						_("Trendsetting: ${you} must copy a playable card in the market") : 
-						_("Trendsetting: ${you} must copy a card in the market")
-				});
+				chameleonStatename = 'chameleon_trendsetting'
+				chameleonDescriptionmyturn = requiresPlayable ? 
+					_("Trendsetting: ${you} must copy a playable card in the market") : 
+					_("Trendsetting: ${you} must copy a card in the market")
 				break;
 			case DaleCard.CT_SEEINGDOUBLES:
 				const items = this.myHand.getAllItems()
-				let has_another_card_in_hand = false;
 				for (let item of items) {
 					if (item.id != card.id) {
-						has_another_card_in_hand = true;
-						break;
+						targets.push(new DaleCard(item.id));
 					}
 				}
-				if (!has_another_card_in_hand) {
-					console.log("No valid targets for CT_SEEINGDOUBLES");
-					callback(card);
-					return;
-				}
-				this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-				this.setClientState('chameleon_seeingdoubles', {
-					descriptionmyturn: requiresPlayable ? 
-						_("Seeing Doubles: ${you} must copy a playable card from your hand") : 
-						_("Trendsetting: ${you} must copy another card in your hand")
-				});
+				chameleonStatename = 'chameleon_seeingdoubles'
+				chameleonDescriptionmyturn = requiresPlayable ? 
+					_("Seeing Doubles: ${you} must copy a playable card from your hand") : 
+					_("Trendsetting: ${you} must copy another card in your hand")
 				break;
 			default:
-				//card is not a chameleon card, immediately execute the callback function
-				callback(card);
-				break;
+				throw new Error(`Unknown chameleon card: '${card.name}'`)
+		}
+
+		//enter the chameleon client state
+		console.log(`'${card.name}' has ${targets.length} target(s)`);
+		if (targets.length == 0) {
+			callback(card);
+			return;
+		}
+		this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
+		this.setClientState(chameleonStatename, {
+			descriptionmyturn: chameleonDescriptionmyturn
+		});
+		if(targets.length == 1) {
+			//auto-bind
+			this.onConfirmChameleon(targets[0]!);
+			return;
 		}
 	}
 
@@ -1853,8 +1843,8 @@ class Dale extends Gamegui
 			console.log("Target type_ids");
 			console.log(bindings.chameleon_type_ids);
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'debugDaleCard') {
+			console.log(new DaleCard(notif.args.card_id));
 		}
 		else if (arg == '') {
 			

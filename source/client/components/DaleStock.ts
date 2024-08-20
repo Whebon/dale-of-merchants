@@ -327,7 +327,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
 		this.addToStockWithId(card.original_type_id, card.id, from);
 		this.setClickable(card.id);
-		card.addTooltip(this.control_name+'_item_'+card.id);
+		card.connectDiv($(this.control_name+'_item_'+card.id) as HTMLElement);
 		if (card.isBoundChameleon()) {
 			this.addChameleonOverlay(card, false);
 		}

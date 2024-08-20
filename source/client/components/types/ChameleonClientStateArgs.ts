@@ -10,7 +10,7 @@ import { DaleLocation } from "./DaleLocation";
 export class ChameleonClientStateArgs {
 	public card: DaleCard;
 	public location: DaleLocation;
-    public targets: HTMLElement[];
+    public targets: DaleCard[];
 	public callback: (card?: DaleCard) => void;
     public requiresPlayable: boolean;
     public selection: number[] | undefined;
@@ -29,7 +29,7 @@ export class ChameleonClientStateArgs {
      * @param requiresPlayable (optional) default false. If true, the card to copy must be playable
      * @param saveSelection (optional) default false. If true, after copying, restored the saved selection
      */
-    constructor(card: DaleCard, from: DaleLocation, targets: HTMLElement[], callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
+    constructor(card: DaleCard, from: DaleLocation, targets: DaleCard[], callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
         this.card = card;
         this.location = from;
         this.targets = targets;
@@ -47,12 +47,14 @@ export class ChameleonClientStateArgs {
             this.line_origin = card.div;
         }
         
-        //TODO: prevents from going into a client state if the chameleon has less than 2 targets
-        if (this.targets.length < 2 && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
-            throw new Error(`Chameleon card only has ${this.targets.length} target(s)`)
+        //prevent entering a chameleon state if the chameleon has 0 targets
+        if (this.targets.length == 0 && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
+            throw new Error(`Attempting to enter a chameleon state, but the chameleon card only has 0 targets`)
         }
         for (let target of this.targets) {
-            target.classList.add("dale-chameleon-target");
+            console.log("add chameleon target");
+            console.log(target.div);
+            target.div.classList.add("dale-chameleon-target");
         }
         
         //set up the chameleon line
@@ -74,31 +76,6 @@ export class ChameleonClientStateArgs {
         }
         addEventListener("mousemove", this.updateLine);
         this.line_origin.classList.add("dale-z-index-above-svg")
-        //dojo.setStyle(this.line_origin, 'z-index', '1001');
-        // const dummyEvent = {
-        //     pageX: thiz.line_origin.getBoundingClientRect().left + window.scrollX,
-        //     pageY: thiz.line_origin.getBoundingClientRect().top + window.scrollY
-        // } as MouseEvent;
-        // this.updateLine.call(window, dummyEvent);
-        // addEventListener("mousemove", this.updateLine);
-        // this.updateLine.call(window, PrevMouseEvent.evt);
-
-        // // Add a svg line for the chameleons
-        // this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        // this.svg.setAttribute("width", "100%");
-        // this.svg.setAttribute("height", "100%");
-
-        // this.svg.style.position = "absolute";
-        // this.svg.style.top = "0";
-        // this.svg.style.left = "0";
-        // this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        // this.line.setAttribute("x1", "0");
-        // this.line.setAttribute("y1", "0");
-        // this.line.setAttribute("x2", "50vw");
-        // this.line.setAttribute("y2", "50vh");
-        // this.line.setAttribute("style", "stroke:red;stroke-width:2");
-        // this.svg.appendChild(this.line);
-        // document.body.appendChild(this.svg);
     }
 
     public selectChameleonCard() {
@@ -130,7 +107,7 @@ export class ChameleonClientStateArgs {
      */
     public remove() {
         for (let target of this.targets) {
-            target.classList.remove("dale-chameleon-target");
+            target.div.classList.remove("dale-chameleon-target");
         }
         this.line_origin.classList.remove("dale-z-index-above-svg")
         this.line.classList.add("dale-hidden");

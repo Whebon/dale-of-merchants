@@ -43,7 +43,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         for (let i = 0; i < Stall.MAX_STACKS; i++) {
             this.createNewStack();
         }
-        dojo.setStyle(this.container.parentElement!, 'max-width', Images.CARD_WIDTH_S*(1-Images.STACK_MIN_OVERLAP_X)*Stall.MAX_STACKS+'px');
+        dojo.setStyle(this.container.parentElement!, 'max-width', Images.CARD_WIDTH_S*(1+Images.STACK_MAX_MARGIN_X)*Stall.MAX_STACKS+'px');
         
         addEventListener("resize", this.onResize.bind(this));
         this.onResize();
@@ -65,7 +65,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         if (this.slots.length < Stall.MAX_STACKS) {
             if (this.stackContainers.length > 0) {
                 const prevStackContainer = this.stackContainers[this.stackContainers.length - 1]!;
-                prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S*(1-Images.STACK_MIN_OVERLAP_X)}px;`); //the last stack containers has a max width (to stay in bounds)
+                prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S*(1+Images.STACK_MAX_MARGIN_X)}px;`); //the last stack containers has a max width (to stay in bounds)
             }
             const stackContainer = document.createElement("div");
             stackContainer.classList.add("stack-container");
@@ -203,6 +203,37 @@ export class Stall implements CardSlotManager, DaleLocation {
         }
         console.log(`insertCard(stack_index=${stack_index}, index=${index})`);
         stack[index]!.insertCard(card, from);
+    }
+
+    /**
+     * @return cards in the stack of the provided index
+     * @param stack_index
+     */
+    getCardsInStack(stack_index: number): DaleCard[] {
+        let targets = [];
+        if (stack_index >= 0 && stack_index < this.getNumberOfStacks()) {
+            for (let slot of this.slots[stack_index]!) {
+                if (slot.card) {
+                    targets.push(slot.card);
+                }
+            }
+        }
+        return targets;
+    }
+
+    /**
+     * @return all cards in the stall
+     */
+    getCardsInStall(): DaleCard[] {
+        let targets = [];
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (slot.card) {
+                    targets.push(slot.card);
+                }
+            }
+        }
+        return targets;
     }
 
     /**
@@ -375,7 +406,7 @@ export class Stall implements CardSlotManager, DaleLocation {
      * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
      */
     private onResize() {
-        if (this.container.getBoundingClientRect().width < Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
+        if (this.container.getBoundingClientRect().width < (1+Images.STACK_MIN_MARGIN_X) * Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
             //stacks overlap
             for (let i = 1; i < this.slots.length; i++) {
                 const placeholder = this.stackContainers[i]!.querySelector(".dale-placeholder");

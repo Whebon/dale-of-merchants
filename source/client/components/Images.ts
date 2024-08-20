@@ -18,7 +18,8 @@ export class Images {
     static readonly MARKET_HEIGHT = 906;
 
     static readonly VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
-    static readonly STACK_MIN_OVERLAP_X = -0.05; //0.25; //0=adjacent, 1=full overlap
+    static readonly STACK_MIN_MARGIN_X = 0.05; //show full placeholders beyond this margin
+    static readonly STACK_MAX_MARGIN_X = 0.1; //maximum margin between full placeholders
 
     static readonly Z_INDEX_CARDBACK = 1;
     static readonly Z_INDEX_CARDFRONT = 2;

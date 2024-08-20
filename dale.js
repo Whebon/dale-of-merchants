@@ -123,7 +123,8 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_WIDTH = 2717;
         Images.MARKET_HEIGHT = 906;
         Images.VERTICAL_STACK_OFFSET = Images.CARD_HEIGHT / 6;
-        Images.STACK_MIN_OVERLAP_X = -0.05;
+        Images.STACK_MIN_MARGIN_X = 0.05;
+        Images.STACK_MAX_MARGIN_X = 0.1;
         Images.Z_INDEX_CARDBACK = 1;
         Images.Z_INDEX_CARDFRONT = 2;
         Images.Z_INDEX_HAND_CARD = 100;
@@ -393,8 +394,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (this.isBoundChameleon()) {
                 div.appendChild(DaleCard.createChameleonIcon());
             }
-            DaleCard.divs.set(this.id, div);
+            this.connectDiv(div);
             return div;
+        };
+        DaleCard.prototype.connectDiv = function (div) {
+            DaleCard.divs.set(this.id, div);
         };
         DaleCard.of = function (card) {
             return new DaleCard(card.id, card.type_arg);
@@ -823,7 +827,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.original_type_id, card.id, from);
             this.setClickable(card.id);
-            card.addTooltip(this.control_name + '_item_' + card.id);
+            card.connectDiv($(this.control_name + '_item_' + card.id));
             if (card.isBoundChameleon()) {
                 this.addChameleonOverlay(card, false);
             }
@@ -900,12 +904,14 @@ define("components/types/ChameleonClientStateArgs", ["require", "exports", "comp
             else {
                 this.line_origin = card.div;
             }
-            if (this.targets.length < 2 && card.effective_type_id != DaleCard_3.DaleCard.CT_GOODOLDTIMES) {
-                throw new Error("Chameleon card only has ".concat(this.targets.length, " target(s)"));
+            if (this.targets.length == 0 && card.effective_type_id != DaleCard_3.DaleCard.CT_GOODOLDTIMES) {
+                throw new Error("Attempting to enter a chameleon state, but the chameleon card only has 0 targets");
             }
             for (var _i = 0, _a = this.targets; _i < _a.length; _i++) {
                 var target = _a[_i];
-                target.classList.add("dale-chameleon-target");
+                console.log("add chameleon target");
+                console.log(target.div);
+                target.div.classList.add("dale-chameleon-target");
             }
             var thiz = this;
             if (isChain) {
@@ -952,7 +958,7 @@ define("components/types/ChameleonClientStateArgs", ["require", "exports", "comp
         ChameleonClientStateArgs.prototype.remove = function () {
             for (var _i = 0, _a = this.targets; _i < _a.length; _i++) {
                 var target = _a[_i];
-                target.classList.remove("dale-chameleon-target");
+                target.div.classList.remove("dale-chameleon-target");
             }
             this.line_origin.classList.remove("dale-z-index-above-svg");
             this.line.classList.add("dale-hidden");
@@ -999,6 +1005,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             enumerable: false,
             configurable: true
         });
+        Pile.prototype.getCards = function () {
+            return this.cards.slice();
+        };
         Pile.prototype.updateHTML = function (card) {
             var topCard = this.peek(true);
             if (card != undefined && card.id != (topCard === null || topCard === void 0 ? void 0 : topCard.id)) {
@@ -1659,7 +1668,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             for (var i = 0; i < Stall.MAX_STACKS; i++) {
                 this.createNewStack();
             }
-            dojo.setStyle(this.container.parentElement, 'max-width', Images_6.Images.CARD_WIDTH_S * (1 - Images_6.Images.STACK_MIN_OVERLAP_X) * Stall.MAX_STACKS + 'px');
+            dojo.setStyle(this.container.parentElement, 'max-width', Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
             addEventListener("resize", this.onResize.bind(this));
             this.onResize();
         }
@@ -1679,7 +1688,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (this.slots.length < Stall.MAX_STACKS) {
                 if (this.stackContainers.length > 0) {
                     var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_6.Images.CARD_WIDTH_S * (1 - Images_6.Images.STACK_MIN_OVERLAP_X), "px;"));
+                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X), "px;"));
                 }
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("stack-container");
@@ -1781,6 +1790,31 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             console.log("insertCard(stack_index=".concat(stack_index, ", index=").concat(index, ")"));
             stack[index].insertCard(card, from);
         };
+        Stall.prototype.getCardsInStack = function (stack_index) {
+            var targets = [];
+            if (stack_index >= 0 && stack_index < this.getNumberOfStacks()) {
+                for (var _i = 0, _a = this.slots[stack_index]; _i < _a.length; _i++) {
+                    var slot = _a[_i];
+                    if (slot.card) {
+                        targets.push(slot.card);
+                    }
+                }
+            }
+            return targets;
+        };
+        Stall.prototype.getCardsInStall = function () {
+            var targets = [];
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var stack = _a[_i];
+                for (var _b = 0, stack_2 = stack; _b < stack_2.length; _b++) {
+                    var slot = stack_2[_b];
+                    if (slot.card) {
+                        targets.push(slot.card);
+                    }
+                }
+            }
+            return targets;
+        };
         Stall.prototype.getNumberOfStacks = function () {
             return this.numberOfStacks;
         };
@@ -1809,8 +1843,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             this.selectionMode = mode;
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var stack = _a[_i];
-                for (var _b = 0, stack_2 = stack; _b < stack_2.length; _b++) {
-                    var slot = stack_2[_b];
+                for (var _b = 0, stack_3 = stack; _b < stack_3.length; _b++) {
+                    var slot = stack_3[_b];
                     switch (mode) {
                         case 'none':
                             slot.setClickable(false);
@@ -1858,8 +1892,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var _a;
             for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
                 var stack = _b[_i];
-                for (var _c = 0, stack_3 = stack; _c < stack_3.length; _c++) {
-                    var slot = stack_3[_c];
+                for (var _c = 0, stack_4 = stack; _c < stack_4.length; _c++) {
+                    var slot = stack_4[_c];
                     if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                         slot.selectItem();
                         return;
@@ -1872,8 +1906,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var _a;
             for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
                 var stack = _b[_i];
-                for (var _c = 0, stack_4 = stack; _c < stack_4.length; _c++) {
-                    var slot = stack_4[_c];
+                for (var _c = 0, stack_5 = stack; _c < stack_5.length; _c++) {
+                    var slot = stack_5[_c];
                     if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                         slot.unselectItem();
                         return;
@@ -1885,8 +1919,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         Stall.prototype.unselectAll = function () {
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var stack = _a[_i];
-                for (var _b = 0, stack_5 = stack; _b < stack_5.length; _b++) {
-                    var slot = stack_5[_b];
+                for (var _b = 0, stack_6 = stack; _b < stack_6.length; _b++) {
+                    var slot = stack_6[_b];
                     slot.unselectItem();
                 }
             }
@@ -1900,8 +1934,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var _a;
             for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
                 var stack = _b[_i];
-                for (var _c = 0, stack_6 = stack; _c < stack_6.length; _c++) {
-                    var slot = stack_6[_c];
+                for (var _c = 0, stack_7 = stack; _c < stack_7.length; _c++) {
+                    var slot = stack_7[_c];
                     if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                         slot.swapWithStock(stock, new_card_id);
                     }
@@ -1909,7 +1943,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             }
         };
         Stall.prototype.onResize = function () {
-            if (this.container.getBoundingClientRect().width < Images_6.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
+            if (this.container.getBoundingClientRect().width < (1 + Images_6.Images.STACK_MIN_MARGIN_X) * Images_6.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
                 for (var i = 1; i < this.slots.length; i++) {
                     var placeholder = this.stackContainers[i].querySelector(".dale-placeholder");
                     placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.add("dale-placeholder-partially-covered");
@@ -2450,109 +2484,94 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 callback(card);
                 return;
             }
+            if (!card.isChameleon()) {
+                callback(card);
+                return;
+            }
             var targets = [];
+            var chameleonStatename;
+            var chameleonDescriptionmyturn;
             switch (card.effective_type_id) {
                 case DaleCard_8.DaleCard.CT_FLEXIBLESHOPKEEPER:
-                    if (this.myStall.getNumberOfStacks() == 0) {
-                        console.log("No valid targets for CT_FLEXIBLESHOPKEEPER");
-                        callback(card);
-                        return;
-                    }
-                    this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-                    this.setClientState('chameleon_flexibleShopkeeper', {
-                        descriptionmyturn: requiresPlayable ?
-                            _("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") :
-                            _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
-                    });
+                    targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
+                    chameleonStatename = 'chameleon_flexibleShopkeeper';
+                    chameleonDescriptionmyturn = requiresPlayable ?
+                        _("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") :
+                        _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack");
                     break;
                 case DaleCard_8.DaleCard.CT_REFLECTION:
-                    var has_valid_target = false;
                     for (var _i = 0, _a = Object.entries(this.playerDiscards); _i < _a.length; _i++) {
                         var _b = _a[_i], player_id = _b[0], pile = _b[1];
                         if (+player_id != +this.player_id && pile.size > 0) {
-                            has_valid_target = true;
+                            targets.push(pile.peek());
                             break;
                         }
                     }
-                    if (!has_valid_target) {
-                        console.log("No valid targets for CT_REFLECTION");
-                        callback(card);
-                        return;
-                    }
-                    this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-                    this.setClientState('chameleon_reflection', {
-                        descriptionmyturn: requiresPlayable ?
-                            _("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
-                            _("Reflection: ${you} must copy a card from the top of another player's discard pile")
-                    });
+                    chameleonStatename = 'chameleon_reflection';
+                    chameleonDescriptionmyturn = requiresPlayable ?
+                        _("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
+                        _("Reflection: ${you} must copy a card from the top of another player's discard pile");
                     break;
                 case DaleCard_8.DaleCard.CT_GOODOLDTIMES:
-                    this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
+                    if (this.marketDiscard.size > 0) {
+                        targets.push(this.marketDiscard.peek());
+                    }
                     if (card.hasActiveAbility() && from == this.myHand) {
                         if (!isChain && !this.myHand.isSelected(card.id)) {
                             console.log("Deselected CT_GOODOLDTIMES");
                             callback(card);
                             return;
                         }
-                        this.setClientState('chameleon_goodoldtimes', {
-                            descriptionmyturn: _("Good Old Times: ${you} may ditch the supply's top card or copy bin's top card")
-                        });
+                        chameleonStatename = 'chameleon_goodoldtimes';
+                        chameleonDescriptionmyturn = requiresPlayable ?
+                            _("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card") :
+                            _("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card to play as a technique");
                     }
                     else {
-                        if (this.marketDiscard.size == 0) {
-                            console.log("No valid targets for CT_GOODOLDTIMES");
-                            callback(card);
-                            return;
-                        }
-                        this.setClientState('chameleon_goodoldtimes', {
-                            descriptionmyturn: requiresPlayable ?
-                                _("Good Old Times: ${you} must copy the bin's top card") :
-                                _("Good Old Times: ${you} must copy the bin's top card")
-                        });
+                        chameleonStatename = 'chameleon_goodoldtimes';
+                        chameleonDescriptionmyturn = requiresPlayable ?
+                            _("Good Old Times: ${you} must copy the bin's top card") :
+                            _("Good Old Times: ${you} must copy the bin's top card to play as a technique");
                     }
                     break;
                 case DaleCard_8.DaleCard.CT_TRENDSETTING:
-                    if (this.market.size == 0) {
-                        console.log("No valid targets for CT_TRENDSETTING");
-                        callback(card);
-                        return;
-                    }
                     for (var _c = 0, _d = this.market.getCards(); _c < _d.length; _c++) {
                         var card_1 = _d[_c];
-                        targets.push(card_1.div);
+                        targets.push(card_1);
                     }
-                    this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-                    this.setClientState('chameleon_trendsetting', {
-                        descriptionmyturn: requiresPlayable ?
-                            _("Trendsetting: ${you} must copy a playable card in the market") :
-                            _("Trendsetting: ${you} must copy a card in the market")
-                    });
+                    chameleonStatename = 'chameleon_trendsetting';
+                    chameleonDescriptionmyturn = requiresPlayable ?
+                        _("Trendsetting: ${you} must copy a playable card in the market") :
+                        _("Trendsetting: ${you} must copy a card in the market");
                     break;
                 case DaleCard_8.DaleCard.CT_SEEINGDOUBLES:
                     var items = this.myHand.getAllItems();
-                    var has_another_card_in_hand = false;
                     for (var _e = 0, items_1 = items; _e < items_1.length; _e++) {
                         var item = items_1[_e];
                         if (item.id != card.id) {
-                            has_another_card_in_hand = true;
-                            break;
+                            targets.push(new DaleCard_8.DaleCard(item.id));
                         }
                     }
-                    if (!has_another_card_in_hand) {
-                        console.log("No valid targets for CT_SEEINGDOUBLES");
-                        callback(card);
-                        return;
-                    }
-                    this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
-                    this.setClientState('chameleon_seeingdoubles', {
-                        descriptionmyturn: requiresPlayable ?
-                            _("Seeing Doubles: ${you} must copy a playable card from your hand") :
-                            _("Trendsetting: ${you} must copy another card in your hand")
-                    });
+                    chameleonStatename = 'chameleon_seeingdoubles';
+                    chameleonDescriptionmyturn = requiresPlayable ?
+                        _("Seeing Doubles: ${you} must copy a playable card from your hand") :
+                        _("Trendsetting: ${you} must copy another card in your hand");
                     break;
                 default:
-                    callback(card);
-                    break;
+                    throw new Error("Unknown chameleon card: '".concat(card.name, "'"));
+            }
+            console.log("'".concat(card.name, "' has ").concat(targets.length, " target(s)"));
+            if (targets.length == 0) {
+                callback(card);
+                return;
+            }
+            this.chameleonArgs = new ChameleonClientStateArgs_1.ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
+            this.setClientState(chameleonStatename, {
+                descriptionmyturn: chameleonDescriptionmyturn
+            });
+            if (targets.length == 1) {
+                this.onConfirmChameleon(targets[0]);
+                return;
             }
         };
         Dale.prototype.setMainTitle = function (text) {
@@ -3465,7 +3484,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 console.log("Target type_ids");
                 console.log(bindings.chameleon_type_ids);
             }
-            else if (arg == '') {
+            else if (arg == 'debugDaleCard') {
+                console.log(new DaleCard_8.DaleCard(notif.args.card_id));
             }
             else if (arg == '') {
             }

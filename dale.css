@@ -108,7 +108,7 @@
   border-radius: 10px;
   box-shadow: 0px 2px 8px #e4aa19;
   outline: 3px solid #e4aa19;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, scale 0.3 ease;
   transform: scale(1.1) translateY(5px);
 }
 
@@ -125,12 +125,14 @@
 }
 .dale-chameleon-target {
   border-radius: 10px;
-  outline: 3px solid #1d7a2a !important;
+  box-shadow: 0px 0px 16px rgb(31, 119, 44) !important;
+  outline: 3px solid rgb(31, 119, 44) !important;
+  scale: 1.05 !important;
 }
 
 .dale-chameleon-selected {
   border-radius: 10px;
-  outline: 3px solid #1d7a2a !important;
+  outline: 3px solid rgb(31, 119, 44) !important;
 }
 
 .dale-card {
@@ -139,7 +141,7 @@
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
   position: absolute;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, scale 0.3s ease;
   z-index: 100;
 }
 .dale-card.dale-clickable:hover {
@@ -227,6 +229,9 @@
   width: 50px;
   height: 50px;
   left: 78%;
+}
+.stall-wrap .stall-container .stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
+  display: none;
 }
 .stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover {
   background-color: var(--dale-wrap-build-a);
@@ -355,10 +360,10 @@
 }
 @keyframes dale-dash {
   from {
-    stroke-dashoffset: 1000;
+    stroke-dashoffset: 0;
   }
   to {
-    stroke-dashoffset: 0;
+    stroke-dashoffset: 1000;
   }
 }
 

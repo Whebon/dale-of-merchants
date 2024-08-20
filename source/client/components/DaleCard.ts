@@ -401,8 +401,15 @@ export class DaleCard {
         if (this.isBoundChameleon()) {
             div.appendChild(DaleCard.createChameleonIcon());
         }
-        DaleCard.divs.set(this.id, div);
+        this.connectDiv(div);
         return div;
+    }
+
+    /**
+     * This card is uniquely represented by the specified div
+     */
+    public connectDiv(div: HTMLElement) {
+        DaleCard.divs.set(this.id, div);
     }
 
     /**

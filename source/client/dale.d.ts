@@ -54,6 +54,7 @@ declare global {
 			msg: string
 			nbr: number
 			player_id: number
+			card_id: number
 		}
 		'reshuffleDeck': { 
 			market: boolean

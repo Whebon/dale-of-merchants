@@ -78,6 +78,13 @@ export class Pile implements DaleLocation {
     }
 
     /**
+     * @return copy of the internal list of cards in this pile
+     */
+    public getCards() {
+        return this.cards.slice();
+    }
+
+    /**
      * @param card (optional) - if provided, only update this html elements of this card
      */
     public updateHTML(card?: DaleCard) {
