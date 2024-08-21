@@ -4,6 +4,7 @@ import { DaleLocation } from './types/DaleLocation';
 import { Images } from './Images';
 import { DaleCard } from './DaleCard';
 import { ChameleonClientStateArgs } from './types/ChameleonClientStateArgs';
+import { OrderedSelection, SelectionIconType } from './OrderedSelection';
 
 
 declare function $(text: string | Element): HTMLElement;
@@ -34,17 +35,19 @@ export class Pile implements DaleLocation {
     private player_id: number | undefined;
 
     private selectionMode: SelectionMode = 'none';
-    private selectionMax: number = 0;
     private popin: PopInDialog = new ebg.popindialog();
+    private isPopinOpen: boolean = false;
     private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
 
-    public orderedSelectedCardIds: number[];
+    public orderedSelection: OrderedSelection;
+
+    
 
     /**
      * Array of cards that are in the pile (they should be in `cards`), but are still animating towards the pile
      */
     private _slidingCards: DaleCard[];
-
+    
     constructor(page: Gamegui, pile_container_id: string, pile_name?: string, player_id?: number){
         (page as any).allPiles.push(this);
         this.pile_container_id = pile_container_id;
@@ -67,7 +70,7 @@ export class Pile implements DaleLocation {
         this.selectedSizeHTML = sizeElements[1]!;
         this.cards = [];
         this._slidingCards = [];
-        this.orderedSelectedCardIds = [];
+        this.orderedSelection = new OrderedSelection();
         this.containerHTML.querySelector(".pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
         //dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
@@ -89,28 +92,30 @@ export class Pile implements DaleLocation {
      */
     private updateHTML() {
         let topCard = this.peek(true);
-        if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
+        if (this.selectionMode == 'multiple' && this.orderedSelection.getMaxSize() > 0) {
             this.selectedSizeHTML.classList.remove("dale-hidden");
-            this.selectedSizeHTML.innerHTML = `(x ${this.orderedSelectedCardIds.length})`;
+            this.selectedSizeHTML.innerHTML = `(x ${this.orderedSelection.getSize()})`;
         }
         else {
             this.selectedSizeHTML.classList.add("dale-hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
-
-        this.topCardHTML?.remove();
-        if (topCard !== undefined) {
-            this.topCardHTML = topCard.toDiv(this.placeholderHTML);
-            dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
-            //TODO: safely remove this
-            // const div = topCard.toDiv(this.containerHTML);
-            // this.topCardHTML.replaceWith(div);
-            //TODO: safely remove this
-            // this.topCardHTML.innerHTML = ''; //delete previous badges
-            // this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
-            // if (topCard.isBoundChameleon()) {
-            //     this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
-            // }
+        
+        if (!this.isPopinOpen) {
+            this.topCardHTML?.remove();
+            if (topCard !== undefined) {
+                this.topCardHTML = topCard.toDiv(this.placeholderHTML);
+                dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+                //TODO: safely remove this
+                // const div = topCard.toDiv(this.containerHTML);
+                // this.topCardHTML.replaceWith(div);
+                //TODO: safely remove this
+                // this.topCardHTML.innerHTML = ''; //delete previous badges
+                // this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
+                // if (topCard.isBoundChameleon()) {
+                //     this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
+                // }
+            }
         }
     }
 
@@ -331,13 +336,6 @@ export class Pile implements DaleLocation {
     }
 
     /**
-     * @returns `true` iff the popin window for this pile is currently open
-     */
-    public isPopinOpen(): boolean {
-        return $(this.pile_container_id+'-popin') !== undefined
-    }
-
-    /**
      * Open the pile popin
      */
     public openPopin() {
@@ -362,16 +360,18 @@ export class Pile implements DaleLocation {
                     thiz.onClickCard(card, div);
                 });
             }
-            if(this.orderedSelectedCardIds.includes(card.id)) {
-                div.classList.add("dale-selected");
-            }
+            // if(this.orderedSelection.includes(card.id)) {
+            //     div.classList.add("dale-selected");
+            // }
             // if ((this.page as any).chameleonArgs?.card.id == card.id) {
             //     div.classList.add("dale-chameleon-selected");
             // }
             this.cardIdToPopinDiv.set(card.id, div);
         }
         dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
+        this.isPopinOpen = true;
         this.popin.show();
+        this.orderedSelection.updateIcons();
     }
 
     /**
@@ -409,33 +409,7 @@ export class Pile implements DaleLocation {
                 this.popin.hide();
                 break;
             case 'multiple':
-                const card_id = +card.id;
-                const index = this.orderedSelectedCardIds.indexOf(card_id);
-                if (index == -1) {
-                    //add a card to selection
-                    if (this.orderedSelectedCardIds.length >= this.selectionMax) {
-                        if (this.selectionMax == 0) {
-                            this.page.showMessage(_(`You cannot select cards from this pile!`), 'error');
-                        }
-                        else if (this.selectionMax == 1) {
-                            this.page.showMessage(_(`You can only select 1 card from this pile!`), 'error');
-                        }
-                        else {
-                            this.page.showMessage(_("You already selected the maximum number of cards from this pile")+` (${this.selectionMax})`, 'error');
-                        }
-                        return;
-                    }
-                    this.selectItem(card_id);
-                    // div.classList.add("dale-selected");
-                    // this.orderedSelectedCardIds.push(card_id);
-                }
-                else {
-                    this.unselectItem(card_id);
-                    // //remove a card from selection
-                    // div.classList.remove("dale-selected");
-                    // this.orderedSelectedCardIds.splice(index, 1);
-                }
-                console.log(this.orderedSelectedCardIds);
+                this.orderedSelection.toggle(card.id);
                 this.updateHTML();
                 break;
         }
@@ -447,16 +421,7 @@ export class Pile implements DaleLocation {
      * @param card_id 
      */
     unselectItem(card_id: number) {
-        const div = this.cardIdToPopinDiv.get(card_id);
-        if (div) {
-            const index = this.orderedSelectedCardIds.indexOf(card_id);
-            if (index == -1) {
-                console.error(`card_id = ${card_id} was not found in the pile`)
-            }
-            div.classList.remove("dale-selected");
-            this.orderedSelectedCardIds.splice(index, 1);
-        }
-        console.log(this.orderedSelectedCardIds);
+        this.orderedSelection.unselectItem(card_id);
     }
 
     /**
@@ -464,12 +429,7 @@ export class Pile implements DaleLocation {
      * @param card_id 
      */
     selectItem(card_id: number) {
-        const div = this.cardIdToPopinDiv.get(card_id);
-        if (div) {
-            this.cardIdToPopinDiv.get(card_id)?.classList.add("dale-selected");
-            this.orderedSelectedCardIds.push(card_id);
-        }
-        console.log(this.orderedSelectedCardIds);
+        this.orderedSelection.selectItem(card_id);
     }
 
     /**
@@ -478,17 +438,16 @@ export class Pile implements DaleLocation {
      * 'none': nothing can be selected
      * 'single': any card can be selected from the popin. the popin is closed upon selection
      * 'multiple': multiple cards can be selected from the popin.
+     * @param iconType
      * @param max (optional) default 0.
      * if selection mode is 'multiple', a maximum number of selected cards is enforced upon the selection
      */
-    public setSelectionMode(mode: SelectionMode, max: number = 0) {
+    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, max: number = 0) {
         if (mode != 'multiple') {
-            this.orderedSelectedCardIds = [];
+            this.orderedSelection.unselectAll();
         }
-        if (max < this.selectionMax) {
-            this.orderedSelectedCardIds = this.orderedSelectedCardIds.slice(0, max);
-        }
-        this.selectionMax = max;
+        this.orderedSelection.setIconType(iconType);
+        this.orderedSelection.setMaxSize(max);
         this.selectionMode = mode;
         this.updateHTML();
     }
@@ -511,6 +470,7 @@ export class Pile implements DaleLocation {
             card.detachDiv();
         }
         //Reattach the tooltip of the top card of the pile
+        this.isPopinOpen = false;
         this.updateHTML();
     }
 }

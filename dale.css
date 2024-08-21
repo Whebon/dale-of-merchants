@@ -304,12 +304,6 @@
   display: flex;
   flex-wrap: wrap;
 }
-.popin-card-container .dale-clickable {
-  transition: all 0.2s ease-in-out;
-}
-.popin-card-container .dale-clickable:hover {
-  transform: scale(1.05);
-}
 .popin-card-container .dale-selected {
   transform: scale(1.05);
   outline: 3px solid var(--dale-wrap-build);

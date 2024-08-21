@@ -4,24 +4,28 @@ import { DaleIcons } from './DaleIcons';
 export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | undefined;
 
 export class OrderedSelection {
+    private maxSize: number;
     private iconType: SelectionIconType;
     private card_ids: number[];
 
+    private secondaryMaxSize: number;
     private secondaryIconType: SelectionIconType;
     private secondary_card_ids: number[];
     
     constructor() {
         this.card_ids = [];
         this.secondary_card_ids = [];
+        this.maxSize = Number.POSITIVE_INFINITY;
+        this.secondaryMaxSize = Number.POSITIVE_INFINITY;
     }
 
     /**
      * @param card_id
      * @return div element corresponding to the card_id
      */
-    protected getDiv(card_id: number): Element | null {
+    protected getDiv(card_id: number): HTMLElement | undefined {
         //return $("dale-card-"+card_id);
-        return new DaleCard(card_id).div;
+        return DaleCard.divs.get(card_id);
     }
 
 	/**
@@ -32,7 +36,11 @@ export class OrderedSelection {
 	 */
 	private addIcon(card_id: number, index: number, secondary?: boolean) {
         const iconType = secondary ? this.secondaryIconType : this.iconType
-        const div = this.getDiv(card_id)!
+        const div = this.getDiv(card_id);
+        if (!div) {
+            console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
+            return;
+        }
         div.classList.add("dale-selected");
 
         let icon = undefined;
@@ -73,6 +81,10 @@ export class OrderedSelection {
      */
     private removeIcon(card_id: number, secondary?: boolean) {
         const div = this.getDiv(card_id);
+        if (!div) {
+            console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
+            return;
+        }
         const primaryIcon = div?.querySelector(".dale-selection-icon-1");
         const secondaryIcon = div?.querySelector(".dale-selection-icon-2");
         if (secondary) {
@@ -87,6 +99,36 @@ export class OrderedSelection {
                 div?.classList.remove("dale-selected");
             }
         }
+    }
+
+    /**
+     * Enforce a maximum selection size upon the selection by dequeing any items exceeding the maximum
+     */
+    public setMaxSize(max: number, secondary?: boolean) {
+        console.log("setMaxSize: "+max);
+        if (max < 0) {
+            throw new Error("Maximum selection size must be non-negative");
+        }
+        if (secondary) {
+            this.secondaryMaxSize = max;
+        }
+        else {
+            this.maxSize = max;
+        }
+        const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        while (card_ids.length > max) {
+            this.dequeue(secondary)
+        }
+    }
+
+    /**
+     * Get the maximum size of the selection
+     */
+    public getMaxSize(secondary?: boolean) {
+        if (secondary) {
+            return this.secondaryMaxSize;
+        }
+        return this.maxSize;
     }
 
     /**
@@ -119,10 +161,14 @@ export class OrderedSelection {
 	 */
 	public selectItem(card_id: number, secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        const maxSize = secondary ? this.secondaryMaxSize : this.maxSize
         console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (before)`);
         card_ids.push(card_id);
         this.addIcon(card_id, card_ids.length-1, secondary);
         console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (${card_id} was added)`);
+        while (card_ids.length > maxSize) {
+            this.dequeue(secondary)
+        }
 	}
 
     /**

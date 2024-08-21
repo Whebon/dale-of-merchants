@@ -6,21 +6,22 @@ import { Images } from './Images';
 import { DaleLocation } from './types/DaleLocation';
 import { OrderedSelection, SelectionIconType } from './OrderedSelection';
 
-/**
- * Ordered selection for a stock
- */
-class StockOrderedSelection extends OrderedSelection {
-    private _stock: Stock;
+//Safely delete this
+// /**
+//  * Ordered selection for a stock
+//  */
+// class StockOrderedSelection extends OrderedSelection {
+//     private _stock: Stock;
 
-    constructor(stock: Stock) {
-        super();
-        this._stock = stock;
-    }
+//     constructor(stock: Stock) {
+//         super();
+//         this._stock = stock;
+//     }
 
-    protected override getDiv(card_id: number): Element | null {
-        return $(this._stock.control_name+"_item_"+card_id);
-    }
-}
+//     protected override getDiv(card_id: number): Element | null {
+//         return $(this._stock.control_name+"_item_"+card_id);
+//     }
+// }
 
 type DaleWrapClass = 'dale-wrap-technique' | 'dale-wrap-purchase' | 'dale-wrap-build' | 'dale-wrap-discard' | 'dale-wrap-default' | 'previous';
 
@@ -56,7 +57,7 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	constructor(){
 		super();
-		this.orderedSelection = new StockOrderedSelection(this);
+		this.orderedSelection = new OrderedSelection();
 		this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 		//this.jstpl_stock_item = '<div id="${id}" class="stockitem ${extra_classes}" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 	}
@@ -107,7 +108,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * To be connected to client methods
 	 */
 	public onOrderedSelectionChanged (item_id: number) {
-		console.log("onChangeSelection");
+		console.log("onChangeSelection (dojo connect)");
 	}
 
 	override onClickOnItem( evt: MouseEvent ) {

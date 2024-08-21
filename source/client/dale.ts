@@ -1158,7 +1158,7 @@ class Dale extends Gamegui
 		}
 		if (count_nostalgic_items > 0) {
 			//you need at least 1 nostalgic item in hand to start counting nostalgic items from discard
-			for (let card_id of this.myDiscard.orderedSelectedCardIds) {
+			for (let card_id of this.myDiscard.orderedSelection.get()) {
 				const card = new DaleCard(card_id);
 				if (card.effective_type_id == DaleCard.CT_NOSTALGICITEM) {
 					count_nostalgic_items++;
@@ -1166,14 +1166,14 @@ class Dale extends Gamegui
 			}
 		}
 		console.log("count_nostalgic_items = "+count_nostalgic_items);
-		this.myDiscard.setSelectionMode('multiple', count_nostalgic_items);
+		this.myDiscard.setSelectionMode('multiple', 'build', count_nostalgic_items);
 	}
 
 	onBuild() {
 		if(this.checkAction('actBuild')) {
 			this.bgaPerformAction('actBuild', {
 				stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
-				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds),
+				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelection.get()),
 				...DaleCard.getLocalChameleons()
 			});
 		}

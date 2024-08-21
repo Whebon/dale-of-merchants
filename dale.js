@@ -466,6 +466,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             DaleCard.divs.delete(this.id);
         };
         DaleCard.prototype.attachDiv = function (div) {
+            console.log("DaleCard(".concat(this.id, ").attachDiv(...)"));
+            console.log(div);
+            console.trace();
             div.classList.add("dale-card");
             Images_1.Images.setCardStyle(div, this.original_type_id);
             DaleCard.divs.set(this.id, div);
@@ -548,13 +551,19 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
         function OrderedSelection() {
             this.card_ids = [];
             this.secondary_card_ids = [];
+            this.maxSize = Number.POSITIVE_INFINITY;
+            this.secondaryMaxSize = Number.POSITIVE_INFINITY;
         }
         OrderedSelection.prototype.getDiv = function (card_id) {
-            return new DaleCard_1.DaleCard(card_id).div;
+            return DaleCard_1.DaleCard.divs.get(card_id);
         };
         OrderedSelection.prototype.addIcon = function (card_id, index, secondary) {
             var iconType = secondary ? this.secondaryIconType : this.iconType;
             var div = this.getDiv(card_id);
+            if (!div) {
+                console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
+                return;
+            }
             div.classList.add("dale-selected");
             var icon = undefined;
             switch (iconType) {
@@ -589,6 +598,10 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
         };
         OrderedSelection.prototype.removeIcon = function (card_id, secondary) {
             var div = this.getDiv(card_id);
+            if (!div) {
+                console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
+                return;
+            }
             var primaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-1");
             var secondaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-2");
             if (secondary) {
@@ -603,6 +616,28 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                     div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
                 }
             }
+        };
+        OrderedSelection.prototype.setMaxSize = function (max, secondary) {
+            console.log("setMaxSize: " + max);
+            if (max < 0) {
+                throw new Error("Maximum selection size must be non-negative");
+            }
+            if (secondary) {
+                this.secondaryMaxSize = max;
+            }
+            else {
+                this.maxSize = max;
+            }
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            while (card_ids.length > max) {
+                this.dequeue(secondary);
+            }
+        };
+        OrderedSelection.prototype.getMaxSize = function (secondary) {
+            if (secondary) {
+                return this.secondaryMaxSize;
+            }
+            return this.maxSize;
         };
         OrderedSelection.prototype.getSize = function (secondary) {
             if (secondary) {
@@ -621,10 +656,14 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
         };
         OrderedSelection.prototype.selectItem = function (card_id, secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var maxSize = secondary ? this.secondaryMaxSize : this.maxSize;
             console.log("".concat(secondary ? "Secondary" : "Primary", " selection: [").concat(card_ids, "] (before)"));
             card_ids.push(card_id);
             this.addIcon(card_id, card_ids.length - 1, secondary);
             console.log("".concat(secondary ? "Secondary" : "Primary", " selection: [").concat(card_ids, "] (").concat(card_id, " was added)"));
+            while (card_ids.length > maxSize) {
+                this.dequeue(secondary);
+            }
         };
         OrderedSelection.prototype.unselectItem = function (card_id, secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
@@ -683,18 +722,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleStock = void 0;
-    var StockOrderedSelection = (function (_super) {
-        __extends(StockOrderedSelection, _super);
-        function StockOrderedSelection(stock) {
-            var _this = _super.call(this) || this;
-            _this._stock = stock;
-            return _this;
-        }
-        StockOrderedSelection.prototype.getDiv = function (card_id) {
-            return $(this._stock.control_name + "_item_" + card_id);
-        };
-        return StockOrderedSelection;
-    }(OrderedSelection_1.OrderedSelection));
     var DaleStock = (function (_super) {
         __extends(DaleStock, _super);
         function DaleStock() {
@@ -704,7 +731,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.actionLabel = undefined;
             _this.actionLabelDefaultText = "<DefaultText>";
             _this.selectionMode = 0;
-            _this.orderedSelection = new StockOrderedSelection(_this);
+            _this.orderedSelection = new OrderedSelection_1.OrderedSelection();
             _this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
             return _this;
         }
@@ -739,7 +766,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 this.onItemDelete = onItemDelete;
         };
         DaleStock.prototype.onOrderedSelectionChanged = function (item_id) {
-            console.log("onChangeSelection");
+            console.log("onChangeSelection (dojo connect)");
         };
         DaleStock.prototype.onClickOnItem = function (evt) {
             console.log("onClickOnItem");
@@ -978,7 +1005,7 @@ define("components/types/ChameleonClientStateArgs", ["require", "exports", "comp
     }());
     exports.ChameleonClientStateArgs = ChameleonClientStateArgs;
 });
-define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard"], function (require, exports, Images_4, DaleCard_4) {
+define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard", "components/OrderedSelection"], function (require, exports, Images_4, DaleCard_4, OrderedSelection_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
@@ -986,8 +1013,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         function Pile(page, pile_container_id, pile_name, player_id) {
             var _a;
             this.selectionMode = 'none';
-            this.selectionMax = 0;
             this.popin = new ebg.popindialog();
+            this.isPopinOpen = false;
             this.cardIdToPopinDiv = new Map();
             page.allPiles.push(this);
             this.pile_container_id = pile_container_id;
@@ -1002,7 +1029,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.selectedSizeHTML = sizeElements[1];
             this.cards = [];
             this._slidingCards = [];
-            this.orderedSelectedCardIds = [];
+            this.orderedSelection = new OrderedSelection_2.OrderedSelection();
             (_a = this.containerHTML.querySelector(".pile")) === null || _a === void 0 ? void 0 : _a.prepend(this.placeholderHTML);
             this.updateHTML();
         }
@@ -1019,18 +1046,20 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.updateHTML = function () {
             var _a;
             var topCard = this.peek(true);
-            if (this.selectionMode == 'multiple' && this.selectionMax > 0) {
+            if (this.selectionMode == 'multiple' && this.orderedSelection.getMaxSize() > 0) {
                 this.selectedSizeHTML.classList.remove("dale-hidden");
-                this.selectedSizeHTML.innerHTML = "(x ".concat(this.orderedSelectedCardIds.length, ")");
+                this.selectedSizeHTML.innerHTML = "(x ".concat(this.orderedSelection.getSize(), ")");
             }
             else {
                 this.selectedSizeHTML.classList.add("dale-hidden");
             }
             this.sizeHTML.innerHTML = 'x ' + this.cards.length;
-            (_a = this.topCardHTML) === null || _a === void 0 ? void 0 : _a.remove();
-            if (topCard !== undefined) {
-                this.topCardHTML = topCard.toDiv(this.placeholderHTML);
-                dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+            if (!this.isPopinOpen) {
+                (_a = this.topCardHTML) === null || _a === void 0 ? void 0 : _a.remove();
+                if (topCard !== undefined) {
+                    this.topCardHTML = topCard.toDiv(this.placeholderHTML);
+                    dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+                }
             }
         };
         Pile.prototype.setZIndex = function (slidingElement) {
@@ -1182,9 +1211,6 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.getPopinCardDiv = function (card_id) {
             return this.cardIdToPopinDiv.get(card_id);
         };
-        Pile.prototype.isPopinOpen = function () {
-            return $(this.pile_container_id + '-popin') !== undefined;
-        };
         Pile.prototype.openPopin = function () {
             var _a, _b;
             (_a = this.peek()) === null || _a === void 0 ? void 0 : _a.detachDiv();
@@ -1208,9 +1234,6 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                         thiz_2.onClickCard(card, div);
                     });
                 }
-                if (this_1.orderedSelectedCardIds.includes(card.id)) {
-                    div.classList.add("dale-selected");
-                }
                 this_1.cardIdToPopinDiv.set(card.id, div);
             };
             var this_1 = this;
@@ -1219,7 +1242,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 _loop_1(card);
             }
             dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
+            this.isPopinOpen = true;
             this.popin.show();
+            this.orderedSelection.updateIcons();
         };
         Pile.prototype.onClickTopCard = function () {
             if (this.selectionMode == 'top') {
@@ -1247,62 +1272,25 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     this.popin.hide();
                     break;
                 case 'multiple':
-                    var card_id = +card.id;
-                    var index = this.orderedSelectedCardIds.indexOf(card_id);
-                    if (index == -1) {
-                        if (this.orderedSelectedCardIds.length >= this.selectionMax) {
-                            if (this.selectionMax == 0) {
-                                this.page.showMessage(_("You cannot select cards from this pile!"), 'error');
-                            }
-                            else if (this.selectionMax == 1) {
-                                this.page.showMessage(_("You can only select 1 card from this pile!"), 'error');
-                            }
-                            else {
-                                this.page.showMessage(_("You already selected the maximum number of cards from this pile") + " (".concat(this.selectionMax, ")"), 'error');
-                            }
-                            return;
-                        }
-                        this.selectItem(card_id);
-                    }
-                    else {
-                        this.unselectItem(card_id);
-                    }
-                    console.log(this.orderedSelectedCardIds);
+                    this.orderedSelection.toggle(card.id);
                     this.updateHTML();
                     break;
             }
             this.page.onPileSelectionChanged(this, card);
         };
         Pile.prototype.unselectItem = function (card_id) {
-            var div = this.cardIdToPopinDiv.get(card_id);
-            if (div) {
-                var index = this.orderedSelectedCardIds.indexOf(card_id);
-                if (index == -1) {
-                    console.error("card_id = ".concat(card_id, " was not found in the pile"));
-                }
-                div.classList.remove("dale-selected");
-                this.orderedSelectedCardIds.splice(index, 1);
-            }
-            console.log(this.orderedSelectedCardIds);
+            this.orderedSelection.unselectItem(card_id);
         };
         Pile.prototype.selectItem = function (card_id) {
-            var _a;
-            var div = this.cardIdToPopinDiv.get(card_id);
-            if (div) {
-                (_a = this.cardIdToPopinDiv.get(card_id)) === null || _a === void 0 ? void 0 : _a.classList.add("dale-selected");
-                this.orderedSelectedCardIds.push(card_id);
-            }
-            console.log(this.orderedSelectedCardIds);
+            this.orderedSelection.selectItem(card_id);
         };
-        Pile.prototype.setSelectionMode = function (mode, max) {
+        Pile.prototype.setSelectionMode = function (mode, iconType, max) {
             if (max === void 0) { max = 0; }
             if (mode != 'multiple') {
-                this.orderedSelectedCardIds = [];
+                this.orderedSelection.unselectAll();
             }
-            if (max < this.selectionMax) {
-                this.orderedSelectedCardIds = this.orderedSelectedCardIds.slice(0, max);
-            }
-            this.selectionMax = max;
+            this.orderedSelection.setIconType(iconType);
+            this.orderedSelection.setMaxSize(max);
             this.selectionMode = mode;
             this.updateHTML();
         };
@@ -1316,6 +1304,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 var card = _a[_i];
                 card.detachDiv();
             }
+            this.isPopinOpen = false;
             this.updateHTML();
         };
         return Pile;
@@ -1472,7 +1461,7 @@ define("components/CardSlot", ["require", "exports", "components/DaleCard"], fun
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot", "components/OrderedSelection"], function (require, exports, Images_5, CardSlot_1, OrderedSelection_2) {
+define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot", "components/OrderedSelection"], function (require, exports, Images_5, CardSlot_1, OrderedSelection_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -1489,7 +1478,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
-            this.orderedSelection = new OrderedSelection_2.OrderedSelection();
+            this.orderedSelection = new OrderedSelection_3.OrderedSelection();
             this.selectionMode = 0;
         }
         Object.defineProperty(MarketBoard.prototype, "size", {
@@ -2892,7 +2881,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
             if (count_nostalgic_items > 0) {
-                for (var _a = 0, _b = this.myDiscard.orderedSelectedCardIds; _a < _b.length; _a++) {
+                for (var _a = 0, _b = this.myDiscard.orderedSelection.get(); _a < _b.length; _a++) {
                     var card_id = _b[_a];
                     var card_3 = new DaleCard_8.DaleCard(card_id);
                     if (card_3.effective_type_id == DaleCard_8.DaleCard.CT_NOSTALGICITEM) {
@@ -2901,11 +2890,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
             console.log("count_nostalgic_items = " + count_nostalgic_items);
-            this.myDiscard.setSelectionMode('multiple', count_nostalgic_items);
+            this.myDiscard.setSelectionMode('multiple', 'build', count_nostalgic_items);
         };
         Dale.prototype.onBuild = function () {
             if (this.checkAction('actBuild')) {
-                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelectedCardIds) }, DaleCard_8.DaleCard.getLocalChameleons()));
+                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelection.get()) }, DaleCard_8.DaleCard.getLocalChameleons()));
             }
         };
         Dale.prototype.onWinterIsComingSkip = function () {
