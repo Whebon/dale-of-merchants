@@ -501,9 +501,6 @@ export class DaleCard {
      * Uniquely associate this card with the specified div
      */
     public attachDiv(div: HTMLElement) {
-        console.log(`DaleCard(${this.id}).attachDiv(...)`);
-        console.log(div);
-        console.trace();
         div.classList.add("dale-card");
         Images.setCardStyle(div, this.original_type_id); //div.setAttribute('style', Images.getCardStyle(this.original_type_id))
         DaleCard.divs.set(this.id, div);

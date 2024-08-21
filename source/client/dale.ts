@@ -181,8 +181,10 @@ class Dale extends Gamegui
 			let card = gamedatas.hand[i]!;
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
-		this.myHand.setSelectionMode(0);	
-		dojo.connect( this.myHand, 'onOrderedSelectionChanged', this, 'onHandSelectionChanged' );
+		this.myHand.setSelectionMode('none');
+		dojo.connect(this.myHand, 'onClick', this, 'onHandSelectionChanged');
+		dojo.connect(this.myHand.orderedSelection, 'onSelectionChanged', this, 'onHandSelectionChanged');
+		
 
 		//limbo transition
 		const thiz = this;
@@ -216,7 +218,7 @@ class Dale extends Gamegui
 			const card = gamedatas.limbo[i]!;
 			this.myLimbo.addDaleCardToStock(DaleCard.of(card));
 		}
-		this.myLimbo.setSelectionMode(0);
+		this.myLimbo.setSelectionMode('none');
 		dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #dale-mylimbo-wrap style
 		dojo.connect( this.myLimbo, 'onOrderedSelectionChanged', this, 'onLimboSelectionChanged' );
 
@@ -227,7 +229,7 @@ class Dale extends Gamegui
 			dojo.setStyle(wrap, 'width', `${1.5*Images.CARD_WIDTH_S}px`);
 			this.playerSchedules[player_id] = new DaleStock();
 			this.playerSchedules[player_id].init(this, container);
-			this.playerSchedules[player_id].setSelectionMode(0);
+			this.playerSchedules[player_id].setSelectionMode('none');
 			this.playerSchedules[player_id].duration = 500;
 			this.playerSchedules[player_id].centerItems = true;
 			for (let card_id in gamedatas.schedules[player_id]) {
@@ -274,7 +276,7 @@ class Dale extends Gamegui
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
-				this.myHand.setSelectionMode(2, 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
+				this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1);
 				if (client_purchase_args.on_market_board) {
 					this.market!.setSelected(client_purchase_args.pos, true);
@@ -285,18 +287,18 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
-				this.myHand.setSelectionMode(3, 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
+				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_build':
-				this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
+				this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_inventory':
-				this.myHand.setSelectionMode(2, 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
+				this.myHand.setSelectionMode('multiple', 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
 				this.market!.setSelectionMode(1);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
@@ -314,18 +316,18 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'winterIsComing':
-				this.myHand.setSelectionMode(2, 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
+				this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionMode(2, 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'shatteredRelic':
-				this.myHand.setSelectionMode(1, undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
-				this.myLimbo.setSelectionMode(2, 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'acorn':
 				for (let player_id in this.gamedatas.players) {
@@ -344,12 +346,14 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1);
 				break;
 			case 'chameleon_flexibleShopkeeper':
-				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
+				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
+				//this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				this.myStall!.setSelectionMode('rightmoststack');
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_reflection':
-				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
+				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
+				//this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				for (let player_id in this.gamedatas.players) {
 					if (+player_id != this.player_id) {
 						this.playerDiscards[player_id]!.setSelectionMode('top');
@@ -358,7 +362,8 @@ class Dale extends Gamegui
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_goodoldtimes':
-				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
+				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
+				//this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				this.marketDiscard.setSelectionMode('top');
 				if (this.chameleonArgs!.card.hasActiveAbility()) {
 					this.marketDeck.setSelectionMode('top');
@@ -366,12 +371,13 @@ class Dale extends Gamegui
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_trendsetting':
-				this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous');
+				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
+				//this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous');
 				this.market!.setSelectionMode(1);
 				this.chameleonArgs?.selectChameleonCard();
 				break;
 			case 'chameleon_seeingdoubles':
-				this.myHand.setSelectionMode(2, undefined, 'previous');
+				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
 				this.chameleonArgs?.selectChameleonCard();
 		}
 	}
@@ -394,7 +400,7 @@ class Dale extends Gamegui
 			case 'client_purchase':
 				this.market!.unselectAll();
 				this.market!.setSelectionMode(0);
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
 				if (this.mainClientState.name != 'client_essentialPurchase') {
 					DaleCard.unbindAllChameleonsLocal();
@@ -402,13 +408,13 @@ class Dale extends Gamegui
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal();
 				break;
 			case 'client_build':
 				this.market!.setSelectionMode(0);
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
 				DaleCard.unbindAllChameleonsLocal();
@@ -416,27 +422,27 @@ class Dale extends Gamegui
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal()
 				break;
 			case 'client_essentialPurchase':
 				this.market!.setSelectionMode(0);
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'winterIsComing':
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'swiftBroker':
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'shatteredRelic':
-				this.myHand.setSelectionMode(0);
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'spyglass':
-				this.myLimbo.setSelectionMode(0);
+				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'acorn':
 				for (let player_id in this.gamedatas.players) {
@@ -575,25 +581,22 @@ class Dale extends Gamegui
 	 * Otherwise, simply call the `callback` function with `card`.
 	 * 
 	 * @param card the card that potentially needs to be be bound. If null, immediately call the callback function without arguments
+	 * @param added if true, this card is clicked or added to a selection. If false, this card is unselected
 	 * @param from where is this card currently located?
 	 * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
 	 * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
 	 * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
 	 */
-	handleChameleonCard(card: DaleCard | undefined, from: DaleLocation, callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
+	handleChameleonCard(card: DaleCard, added: boolean = true, from: DaleLocation, callback: (card?: DaleCard, added?: boolean) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
 		callback = callback.bind(this);
-		if (!card || !this.checkLock()) {
-			callback();
-			return;
-		}
 		if (!isChain && card.isBoundChameleon() && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
 			card.unbindChameleonLocal();
-			callback(card);
+			callback(card, added);
 			return;
 		}
 		if (!card.isChameleon()) {
 			//card is not a chameleon card, immediately execute the callback function
-			callback(card);
+			callback(card, added);
 			return;
 		}
 
@@ -628,7 +631,7 @@ class Dale extends Gamegui
 				if (card.hasActiveAbility() && from == this.myHand) {
 					if (!isChain && !this.myHand.isSelected(card.id)) {
 						console.log("Deselected CT_GOODOLDTIMES");
-						callback(card);
+						callback(card, added);
 						return;
 					}
 					chameleonStatename = 'chameleon_goodoldtimes'
@@ -671,10 +674,10 @@ class Dale extends Gamegui
 		//enter the chameleon client state
 		console.log(`'${card.name}' has ${targets.length} target(s)`);
 		if (targets.length == 0) {
-			callback(card);
+			callback(card, added);
 			return;
 		}
-		this.chameleonArgs = new ChameleonClientStateArgs(card, from, targets, callback, requiresPlayable, isChain);
+		this.chameleonArgs = new ChameleonClientStateArgs(card, added, from, targets, callback, requiresPlayable, isChain);
 		this.setClientState(chameleonStatename, {
 			descriptionmyturn: chameleonDescriptionmyturn
 		});
@@ -932,29 +935,30 @@ class Dale extends Gamegui
 		console.log("You click on a card in the... schedule...?");
 	}
 
-	onPileSelectionChanged(pile: Pile, card: DaleCard) {
+	onPileSelectionChanged(pile: Pile, card_id: number, added: boolean) {
 		console.log("onPileSelectionChanged");
+		const card = new DaleCard(card_id);
 		if (pile === this.myDiscard) {
-			this.onMyDiscardPileSelectionChanged(pile, card);
+			this.onMyDiscardPileSelectionChanged(pile, card, added);
 		}
 		else if (pile === this.marketDiscard) {
-			this.onMarketDiscardPileSelectionChanged(pile, card);
+			this.onMarketDiscardPileSelectionChanged(pile, card, added);
 		}
 		else if (pile === this.marketDeck) {
-			this.onMarketDeckSelectionChanged(pile, card);
+			this.onMarketDeckSelectionChanged(pile, card, added);
 		}
 		else {
-			this.onOtherDiscardPileSelectionChanged(pile, card);
+			this.onOtherDiscardPileSelectionChanged(pile, card, added);
 		}
 	}
 
-	onMyDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
+	onMyDiscardPileSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
 		console.log("onMyDiscardPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
 				//TODO: automatically close the popin?
 				//const isUnboundChameleon = card.isUnboundChameleon();
-				this.handleChameleonCard(card, pile, this.onBuildSelectionChanged);
+				this.handleChameleonCard(card, added, pile, this.onBuildSelectionChanged);
 				// if (isUnboundChameleon) {
 				// 	pile.closePopin();
 				// }
@@ -962,7 +966,7 @@ class Dale extends Gamegui
 		}
 	}
 
-	onMarketDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
+	onMarketDiscardPileSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
 		console.log("onMarketDiscardPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'chameleon_goodoldtimes':
@@ -971,7 +975,7 @@ class Dale extends Gamegui
 		}
 	}
 
-	onMarketDeckSelectionChanged(pile: Pile, card: DaleCard) {
+	onMarketDeckSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
 		console.log("onMarketDeckSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'chameleon_goodoldtimes':
@@ -980,7 +984,7 @@ class Dale extends Gamegui
 		}
 	}
 
-	onOtherDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
+	onOtherDiscardPileSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
 		switch(this.gamedatas.gamestate.name) {
 			case 'chameleon_reflection':
 				this.onConfirmChameleon(card);
@@ -988,23 +992,23 @@ class Dale extends Gamegui
 		}
 	}
 
-	onHandSelectionChanged(card_id: number) {
+	onHandSelectionChanged(card_id: number, added: boolean) {
 		console.log("onHandSelectionChanged: "+card_id);
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_technique':
 				//play card action (technique or active passive)
-				this.handleChameleonCard(card, this.myHand, this.onPlayCard, true);
+				this.handleChameleonCard(card, true, this.myHand, this.onPlayCard, true);
 				break;
 			case 'client_purchase':
-				this.handleChameleonCard(card, this.myHand, this.onFundsSelectionChanged);
+				this.handleChameleonCard(card, added, this.myHand, this.onFundsSelectionChanged);
 				break;
 			case 'client_build':
-				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
+				this.handleChameleonCard(card, added, this.myHand, this.onBuildSelectionChanged);
 				break;
 			case 'winterIsComing':
-				this.handleChameleonCard(card, this.myHand, this.onBuildSelectionChanged);
+				this.handleChameleonCard(card, added, this.myHand, this.onBuildSelectionChanged);
 				break;
 			case 'shatteredRelic':
 				if(this.checkAction('actShatteredRelic')) {
@@ -1012,7 +1016,6 @@ class Dale extends Gamegui
 						card_id: card!.id
 					})
 				}
-				this.myHand.unselectAll();
 				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
@@ -1021,17 +1024,12 @@ class Dale extends Gamegui
 			case 'chameleon_seeingdoubles':
 				const args = this.chameleonArgs!;
 				if (args.card.id == card.id) {
-					this.onCancelChameleon();
+					this.onCancelChameleon(false);
 				}
 				else {
-					if (this.myHand.isSelected(card_id)) {
-						this.myHand.unselectItem(card_id);
-					}
-					else {
-						this.myHand.selectItem(card_id);
-					}
 					if (this.gamedatas.gamestate.name == 'chameleon_seeingdoubles') {
 						this.onConfirmChameleon(card);
+						this.myHand.unselectItem(card_id);
 					}
 					else {
 						this.showMessage(_("Please select a valid target for ")+`'${args.card.name}'`, "error");
@@ -1093,6 +1091,7 @@ class Dale extends Gamegui
 			});
 		}
 		else {
+			console.log("PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!");
 			if(this.checkAction('actPurchase')) {
 				this.bgaPerformAction('actPurchase', {
 					funds_card_ids: this.arrayToNumberList(funds_card_ids),
@@ -1226,7 +1225,7 @@ class Dale extends Gamegui
 		//return from the chameleon client state
 		const args = this.chameleonArgs!
 		if (unselect) {
-			args.location.unselectItem(args.card.id);
+			args.from.unselectItem(args.card.id);
 		}
 		args.card.unbindChameleonLocal();
 		this.restoreServerGameState();
@@ -1261,7 +1260,7 @@ class Dale extends Gamegui
 				console.log(args.card);
 				this.chameleonArgs?.remove();
 				this.chameleonArgs = undefined;
-				this.handleChameleonCard(args.card, args.location, args.callback, args.requiresPlayable, true);
+				this.handleChameleonCard(args.card, args.added, args.from, args.callback, args.requiresPlayable, true);
 			}
 			else {
 				//chameleon will be bound to the target

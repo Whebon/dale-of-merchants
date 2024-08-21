@@ -11,7 +11,7 @@ export class OrderedSelection {
     private secondaryMaxSize: number;
     private secondaryIconType: SelectionIconType;
     private secondary_card_ids: number[];
-    
+
     constructor() {
         this.card_ids = [];
         this.secondary_card_ids = [];
@@ -20,10 +20,20 @@ export class OrderedSelection {
     }
 
     /**
+     * Function to call when the selection changed. dojo.connect should be used to connect to this hook
+     * @param card_id the card that was added/removed from the selection
+     * @param isAdded `true` if the card was added to the selection. `false` if the card was removed from the selected
+     * @param secondary true if the card was added/removed from the second selection layer
+     */
+    private onSelectionChanged(card_id: number, isAdded?: boolean, secondary?: boolean) {
+        console.log(`onSelectionChanged(card_id=${card_id}, added=${isAdded}, secondary=${secondary})`);
+    }
+
+    /**
      * @param card_id
      * @return div element corresponding to the card_id
      */
-    protected getDiv(card_id: number): HTMLElement | undefined {
+    private getDiv(card_id: number): HTMLElement | undefined {
         //return $("dale-card-"+card_id);
         return DaleCard.divs.get(card_id);
     }
@@ -102,7 +112,8 @@ export class OrderedSelection {
     }
 
     /**
-     * Enforce a maximum selection size upon the selection by dequeing any items exceeding the maximum
+     * Enforce a maximum selection size upon the selection by dequeing any items exceeding the maximum.
+     * If maxSize = 0, don't add
      */
     public setMaxSize(max: number, secondary?: boolean) {
         console.log("setMaxSize: "+max);
@@ -162,13 +173,15 @@ export class OrderedSelection {
 	public selectItem(card_id: number, secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
         const maxSize = secondary ? this.secondaryMaxSize : this.maxSize
-        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (before)`);
+        if (maxSize == 0) {
+            return;
+        }
         card_ids.push(card_id);
         this.addIcon(card_id, card_ids.length-1, secondary);
-        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (${card_id} was added)`);
         while (card_ids.length > maxSize) {
             this.dequeue(secondary)
         }
+        this.onSelectionChanged(card_id, true, secondary);
 	}
 
     /**
@@ -177,15 +190,16 @@ export class OrderedSelection {
      */
     public unselectItem(card_id: number, secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
-        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (before)`);
 		const index = card_ids.indexOf(card_id);
 		card_ids.splice(index, 1);
-        this.removeIcon(card_id, secondary);
-        console.log(`${secondary ? "Secondary" : "Primary"} selection: [${card_ids}] (${card_id} was removed)`);
+        if (index != -1) {
+            this.removeIcon(card_id, secondary);
+            this.onSelectionChanged(card_id, false, secondary);
+        }
     }
 
     /**
-     * Unselect all selection and icons. On both the primary and secondary levels
+     * Unselect all selection and icons. On both the primary and secondary levels. 
      */
     public unselectAll() {
         while (this.card_ids.length > 0) { 

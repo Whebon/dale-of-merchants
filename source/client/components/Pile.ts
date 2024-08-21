@@ -56,7 +56,7 @@ export class Pile implements DaleLocation {
         $(pile_container_id).innerHTML = `
             ${pile_name ? `<h3 class="dale-component-name">${pile_name}</h3>` : ""}
             <div class="pile" style="${Images.getCardStyle()}">
-                <div class="dale-card dale-clickable"></div>
+                <div class="dale-card"></div>
                 <div class="dale-pile-size"></div>
                 <div class="dale-pile-size dale-pile-selected-size" style="top: 16%;"></div>
             </div>
@@ -73,6 +73,7 @@ export class Pile implements DaleLocation {
         this.orderedSelection = new OrderedSelection();
         this.containerHTML.querySelector(".pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
+        dojo.connect(this.orderedSelection, 'onSelectionChanged', this, 'onPileSelectionChanged');
         //dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
 	}
 
@@ -100,11 +101,11 @@ export class Pile implements DaleLocation {
             this.selectedSizeHTML.classList.add("dale-hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
-        
         if (!this.isPopinOpen) {
             this.topCardHTML?.remove();
             if (topCard !== undefined) {
                 this.topCardHTML = topCard.toDiv(this.placeholderHTML);
+                this.topCardHTML.classList.add("dale-clickable");
                 dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
                 //TODO: safely remove this
                 // const div = topCard.toDiv(this.containerHTML);
@@ -184,10 +185,6 @@ export class Pile implements DaleLocation {
     public push(card: DaleCard, from?: string | HTMLElement, onEnd?: Function | null, duration?: number, delay?: number) {
         this.cards.push(card);
         if (from) {
-            console.log("111111111111111111111");
-            console.log("from");
-            console.log(from);
-            console.log($(from));
             this._slidingCards.push(card);
             let slidingElement = card.toDiv();
             this.placeholderHTML.appendChild(slidingElement)
@@ -205,13 +202,6 @@ export class Pile implements DaleLocation {
                     onEnd( node ); 
                 }
             };
-
-            console.log("222222222222222222222");
-            console.log("slidingElement");
-            console.log(slidingElement);
-            console.log("from");
-            console.log(from);
-            console.log($(from));
 
             this.page.placeOnObject(slidingElement, from)
             var slideAnimation = this.page.slideToObject(slidingElement, this.placeholderHTML, duration, delay) as unknown as dojo._base.Animation;
@@ -353,7 +343,7 @@ export class Pile implements DaleLocation {
         for (let card of this.cards) {
             const div = card.toDiv(container_id);
             div.classList.add("dale-relative");
-            if(this.selectionMode != 'none') {
+            if(this.selectionMode != 'none' && this.orderedSelection.getMaxSize() > 0) {
                 div.classList.add("dale-clickable");
                 const thiz = this;
                 dojo.connect(div, 'onclick', function() {
@@ -379,7 +369,7 @@ export class Pile implements DaleLocation {
      */
     public onClickTopCard() {
         if (this.selectionMode == 'top') {
-            (this.page as any).onPileSelectionChanged(this, this.peek());
+            this.onPileSelectionChanged(this.peek()!.id, true);
             return;
         }
         this.openPopin();
@@ -413,7 +403,6 @@ export class Pile implements DaleLocation {
                 this.updateHTML();
                 break;
         }
-        (this.page as any).onPileSelectionChanged(this, card);
     }
 
     /**
@@ -472,5 +461,12 @@ export class Pile implements DaleLocation {
         //Reattach the tooltip of the top card of the pile
         this.isPopinOpen = false;
         this.updateHTML();
+    }
+
+    /**
+     * When a hard has been added or removed, notify the main class
+     */
+    onPileSelectionChanged(card_id: number, added: boolean){
+        (this.page as any).onPileSelectionChanged(this, card_id, added);
     }
 }

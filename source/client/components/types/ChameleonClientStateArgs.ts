@@ -9,7 +9,8 @@ import { DaleLocation } from "./DaleLocation";
  */
 export class ChameleonClientStateArgs {
 	public card: DaleCard;
-	public location: DaleLocation;
+    public added: boolean;
+	public from: DaleLocation;
     public targets: DaleCard[];
 	public callback: (card?: DaleCard) => void;
     public requiresPlayable: boolean;
@@ -23,15 +24,17 @@ export class ChameleonClientStateArgs {
     /**
      * Bundles arguments for a chameleon client state 
      * @param card the chameleon card that needs to get bound (it needs be highlighted while selecting a valid target for it)
+     * @param added if true, this card is clicked or added to a selection. If false, this card is unselected
      * @param from points to where the card is located
      * @param targets html elements that represent valid targets for this chameleon
      * @param callback callback method to execute after the chameleon has been bound
      * @param requiresPlayable (optional) default false. If true, the card to copy must be playable
      * @param saveSelection (optional) default false. If true, after copying, restored the saved selection
      */
-    constructor(card: DaleCard, from: DaleLocation, targets: DaleCard[], callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
+    constructor(card: DaleCard, added: boolean, from: DaleLocation, targets: DaleCard[], callback: (card?: DaleCard) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
         this.card = card;
-        this.location = from;
+        this.added = added;
+        this.from = from;
         this.targets = targets;
         this.callback = callback;
         this.requiresPlayable = requiresPlayable;
@@ -129,9 +132,9 @@ export class ChameleonClientStateArgs {
             target.div.classList.remove("dale-chameleon-target");
         }
         this.line_origin.classList.remove("dale-z-index-above-svg");
-        if (this.location instanceof Pile) {
+        if (this.from instanceof Pile) {
             this.line_origin.remove(); //delete the dummy
-            this.location.openPopin();
+            this.from.openPopin();
         }
         this.line.classList.add("dale-hidden");
         removeEventListener("mousemove", this.updateLine);
