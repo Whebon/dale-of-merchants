@@ -72,8 +72,8 @@ class DaleDeck extends Deck {
         if ($prefix != STALL) {
             throw new BgaVisibleSystemException("moveCardsToStall must be called with a stall location");
         }
-        for ($i = $index; $i < $index + count($card_ids); $i++) {
-            $pos = $stack_index * MAX_STACK_SIZE + $i;
+        for ($i = 0; $i < count($card_ids); $i++) {
+            $pos = $stack_index * MAX_STACK_SIZE + $index + $i;
             $this->moveCard($card_ids[$i], $stall_location, $pos);
         }
     }
