@@ -213,6 +213,10 @@
   min-width: 0; /* Ensure items can shrink below their content width */
   position: relative;
 }
+.stall-wrap .stall-container .stack-container .dale-card:hover {
+  transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
+  transition-delay: 0.05s;
+}
 .stall-wrap .stall-container .stack-container.dale-grayed-out {
   pointer-events: none;
   opacity: 0.5;

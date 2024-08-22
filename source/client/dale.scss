@@ -222,6 +222,12 @@
 			min-width: 0; /* Ensure items can shrink below their content width */
 			position: relative;
 
+			.dale-card:hover {
+				//add a delay to the z-index to (issue #47)
+				transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
+				transition-delay: 0.05s;
+			}
+
 			&.dale-grayed-out {
 				pointer-events: none;
 				opacity: 0.5;
