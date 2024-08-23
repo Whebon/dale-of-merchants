@@ -39,12 +39,8 @@ declare global {
 		'addEffect': {
 			effect: DbEffect;
 		}
-		'bindChameleon': {
-			card_id: string,
-			type_id: string
-		}
-		'unbindChameleon': {
-			card_id: string
+		'expireEffects': {
+			effects: DbEffect[];
 		}
 		'message': {
 			//no args

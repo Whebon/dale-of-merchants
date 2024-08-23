@@ -26,12 +26,8 @@ interface GameStates {
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actPurchase': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
+				'name': 'chameleons_json',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}, {
 				'name': 'funds_card_ids',
@@ -47,12 +43,8 @@ interface GameStates {
 				'typescriptType': string,
 			}],
 			'actPlayTechniqueCard': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
+				'name': 'chameleons_json',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}, {
 				'name': 'card_id',
@@ -60,12 +52,8 @@ interface GameStates {
 				'typescriptType': number,
 			}],
 			'actUseActiveAbility': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
+				'name': 'chameleons_json',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}, {
 				'name': 'card_id',
@@ -74,12 +62,8 @@ interface GameStates {
 			}],
 			'actWinterIsComingSkip': [],
 			'actBuild': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
+				'name': 'chameleons_json',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}, {
 				'name': 'stack_card_ids',
@@ -140,12 +124,8 @@ interface GameStates {
 		'args': 'argStackIndex',
 		'possibleactions': {
 			'actBuild': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
+				'name': 'chameleons_json',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}, {
 				'name': 'stack_card_ids',
@@ -157,12 +137,8 @@ interface GameStates {
 				'typescriptType': string,
 			}],
 			'actUseActiveAbility': [{
-				'name': 'chameleon_card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}, {
-				'name': 'chameleon_type_ids',
-				'type': 'AT_numberlist',
+				'name': 'chameleons_json',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}, {
 				'name': 'card_id',

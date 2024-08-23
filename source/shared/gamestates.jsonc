@@ -50,8 +50,7 @@
 		"possibleactions": {
 			//Purchase Actions
 			"actPurchase": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "funds_card_ids", "type": "AT_numberlist"},
 				{"name": "market_card_id", "type": "AT_int"},
 				{"name": "essential_purchase_ids", "type": "AT_numberlist"}
@@ -59,21 +58,18 @@
 
 			//Play Actions
 			"actPlayTechniqueCard": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"}
 			],
 			"actUseActiveAbility": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"}
 			],
 
 			//Build Actions
 			"actWinterIsComingSkip": [],
 			"actBuild": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
 			],
@@ -186,14 +182,12 @@
 		"args": "argStackIndex",
 		"possibleactions": {
 			"actBuild": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
 			],
 			"actUseActiveAbility": [
-				{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-				{"name": "chameleon_type_ids", "type": "AT_numberlist"},
+				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"}
 			],
 			"actWinterIsComingSkip": []

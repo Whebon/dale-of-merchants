@@ -176,7 +176,38 @@ define("components/types/DbEffect", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images"], function (require, exports, DaleIcons_1, Images_1) {
+define("components/types/ChameleonChain", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ChameleonChain = void 0;
+    var ChameleonChain = (function () {
+        function ChameleonChain(card_id, type_id) {
+            this.card_ids = [card_id];
+            this.type_ids = [type_id];
+        }
+        Object.defineProperty(ChameleonChain.prototype, "card_id", {
+            get: function () {
+                return this.card_ids[this.card_ids.length - 1];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(ChameleonChain.prototype, "type_id", {
+            get: function () {
+                return this.type_ids[this.type_ids.length - 1];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        ChameleonChain.prototype.push = function (card_id, type_id) {
+            this.card_ids.push(card_id);
+            this.type_ids.push(type_id);
+        };
+        return ChameleonChain;
+    }());
+    exports.ChameleonChain = ChameleonChain;
+});
+define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/ChameleonChain"], function (require, exports, DaleIcons_1, Images_1, ChameleonChain_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = void 0;
@@ -193,9 +224,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     throw new Error("Card id ".concat(id, " with type_id ").concat(prev_type_id, " cannot be set to a different type_id ").concat(type_id, "."));
                 }
             }
-            else if (!DaleCard.cardIdtoTypeId.has(id) && !DaleCard.cardIdtoEffectiveTypeId.has(id)) {
-                console.log("cardId2TypeId");
-                console.log(DaleCard.cardIdtoTypeId);
+            else if (!DaleCard.cardIdtoTypeId.has(id)) {
                 throw new Error("The type_id of card_id ".concat(id, " is unknown. Therefore, a card with id ").concat(id, " cannot be instantiated."));
             }
         }
@@ -206,54 +235,91 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             DaleCard.cardTypes = Object.values(cardTypes);
         };
         DaleCard.addEffect = function (effect) {
-            if (DaleCard.hasActiveAbility(+effect.type_id)) {
-                if (+effect.type_id != DaleCard.CT_GOODOLDTIMES || +effect.target != DaleCard.CT_GOODOLDTIMES) {
-                    var encoding = (+effect.card_id) * DaleCard.MAX_TYPES + (+effect.type_id);
-                    DaleCard.usedActiveAbilities.add(encoding);
+            DaleCard.effects.push(effect);
+            if (effect.chameleon_target_id != null) {
+                var target_card_id = effect.chameleon_target_id;
+                var target_type_id = effect.arg;
+                var chain = DaleCard.cardIdToChameleonChain.get(effect.card_id);
+                if (chain) {
+                    chain.push(target_card_id, target_type_id);
+                }
+                else {
+                    chain = new ChameleonChain_1.ChameleonChain(target_card_id, target_type_id);
+                    DaleCard.cardIdToChameleonChain.set(effect.card_id, chain);
+                    DaleCard.cardIdToChameleonChainLocal.delete(effect.card_id);
+                }
+                console.log("Commited Chameleon Chain for card_id=".concat(effect.card_id));
+                console.log(chain);
+            }
+            if (effect.effect_class == DaleCard.EC_GLOBAL) {
+                for (var card_id in DaleCard.divs.keys()) {
+                    new DaleCard(card_id).updateHTML();
                 }
             }
-            switch (+effect.type_id) {
-                case DaleCard.CT_FLEXIBLESHOPKEEPER:
-                case DaleCard.CT_REFLECTION:
-                case DaleCard.CT_GOODOLDTIMES:
-                case DaleCard.CT_TRENDSETTING:
-                case DaleCard.CT_SEEINGDOUBLES:
-                    if (+effect.target != -1) {
-                        console.log("Bind Chameleon: ".concat(+effect.card_id, " -> ").concat(+effect.target));
-                        DaleCard.bindChameleonFromServer(+effect.card_id, +effect.target);
-                    }
-                    break;
-                default:
-                    break;
+            else {
+                new DaleCard(effect.card_id).updateHTML();
             }
         };
-        DaleCard.removeEndOfTurnEffects = function () {
-            console.log("removeEndOfTurnEffects");
-            DaleCard.usedActiveAbilities.clear();
-            DaleCard.unbindAllChameleons();
+        DaleCard.expireEffects = function (effects) {
+            var affected_card_ids = new Set();
+            var _loop_1 = function (effect) {
+                var index = DaleCard.effects.findIndex(function (e) { return e.effect_id == effect.effect_id; });
+                if (index == -1) {
+                    console.log(effect);
+                    throw new Error("Attempted to remove a non-existing effect");
+                }
+                DaleCard.effects.splice(index, 1);
+                if (effect.effect_class == DaleCard.EC_GLOBAL) {
+                    affected_card_ids = Array.from(DaleCard.divs.keys());
+                    return "break";
+                }
+                affected_card_ids.add(DaleCard.effects[index].card_id);
+            };
+            for (var _i = 0, effects_1 = effects; _i < effects_1.length; _i++) {
+                var effect = effects_1[_i];
+                var state_1 = _loop_1(effect);
+                if (state_1 === "break")
+                    break;
+            }
+            affected_card_ids.forEach(function (card_id) {
+                new DaleCard(card_id).updateHTML();
+            });
         };
-        Object.defineProperty(DaleCard.prototype, "original_type_id", {
+        DaleCard.prototype.isPassiveUsed = function () {
+            console.log("isPassiveUsed");
+            if (!DaleCard.cardTypes[this.effective_type_id].has_active) {
+                return true;
+            }
+            var type_id = this.effective_type_id;
+            for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                var effect = _a[_i];
+                if (effect.card_id == this.id && effect.type_id == type_id) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        Object.defineProperty(DaleCard.prototype, "effective_type_id", {
             get: function () {
-                var _type_id = DaleCard.cardIdtoTypeId.get(this.id);
-                if (_type_id == undefined) {
-                    console.warn("id ".concat(this.id, " does not have a corresponding type_id"));
-                    return 0;
-                }
-                return _type_id;
+                var _a, _b, _c, _d;
+                return (_d = (_b = (_a = DaleCard.cardIdToChameleonChain.get(this.id)) === null || _a === void 0 ? void 0 : _a.type_id) !== null && _b !== void 0 ? _b : (_c = DaleCard.cardIdToChameleonChainLocal.get(this.id)) === null || _c === void 0 ? void 0 : _c.type_id) !== null && _d !== void 0 ? _d : this.original_type_id;
             },
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(DaleCard.prototype, "effective_type_id", {
+        Object.defineProperty(DaleCard.prototype, "effective_value", {
             get: function () {
-                var _type_id = DaleCard.cardIdtoEffectiveTypeIdLocal.get(this.id);
-                if (_type_id == undefined) {
-                    _type_id = DaleCard.cardIdtoEffectiveTypeId.get(this.id);
+                var value = this.original_value;
+                for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                    var effect = _a[_i];
+                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
+                        switch (effect.card_id) {
+                            case DaleCard.CT_FLASHYSHOW:
+                                value += 1;
+                        }
+                    }
                 }
-                if (_type_id == undefined) {
-                    return this.original_type_id;
-                }
-                return _type_id;
+                return value;
             },
             enumerable: false,
             configurable: true
@@ -267,67 +333,72 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 type_id == DaleCard.CT_SEEINGDOUBLES);
         };
         DaleCard.prototype.isBoundChameleon = function () {
-            return DaleCard.cardIdtoEffectiveTypeIdLocal.has(this.id) || DaleCard.cardIdtoEffectiveTypeId.has(this.id);
+            return DaleCard.cardIdToChameleonChain.has(this.id) || DaleCard.cardIdToChameleonChainLocal.has(this.id);
         };
         DaleCard.prototype.isUnboundChameleon = function () {
             return !this.isBoundChameleon() && this.isChameleon();
         };
-        DaleCard.prototype.bindChameleonLocal = function (effective_type_id) {
-            DaleCard.cardIdtoEffectiveTypeIdLocal.set(this.id, effective_type_id);
-            this.updateChameleonOverlay();
+        DaleCard.prototype.bindChameleonLocal = function (card) {
+            DaleCard.cardIdToChameleonChainLocal.set(this.id, new ChameleonChain_1.ChameleonChain(card.id, card.effective_type_id));
+            this.updateHTML();
         };
         DaleCard.prototype.unbindChameleonLocal = function () {
-            DaleCard.cardIdtoEffectiveTypeIdLocal.delete(this.id);
-            this.updateChameleonOverlay();
+            DaleCard.cardIdToChameleonChainLocal.delete(this.id);
+            this.updateHTML();
         };
         DaleCard.unbindAllChameleonsLocal = function () {
-            var card_ids = Array.from(DaleCard.cardIdtoEffectiveTypeIdLocal.keys());
-            DaleCard.cardIdtoEffectiveTypeIdLocal.clear();
+            var card_ids = Array.from(DaleCard.cardIdToChameleonChainLocal.keys());
+            DaleCard.cardIdToChameleonChainLocal.clear();
             for (var _i = 0, card_ids_1 = card_ids; _i < card_ids_1.length; _i++) {
                 var card_id = card_ids_1[_i];
-                new DaleCard(card_id).updateChameleonOverlay();
+                new DaleCard(card_id).updateHTML();
             }
             return card_ids.length;
         };
-        DaleCard.bindChameleonFromServer = function (card_id, effective_type_id) {
-            DaleCard.cardIdtoEffectiveTypeId.set(card_id, effective_type_id);
-            new DaleCard(card_id).updateChameleonOverlay();
-        };
-        DaleCard.unbindChameleonFromServer = function (card_id) {
-            DaleCard.cardIdtoEffectiveTypeId.delete(card_id);
-            new DaleCard(card_id).updateChameleonOverlay();
-        };
-        DaleCard.getLocalChameleons = function () {
-            var card_ids = [];
-            var type_ids = [];
-            DaleCard.cardIdtoEffectiveTypeIdLocal.forEach(function (type_id, card_id) {
-                card_ids.push(card_id);
-                type_ids.push(type_id);
+        DaleCard.getLocalChameleonsJSON = function () {
+            console.log(this.cardIdToChameleonChain);
+            console.log(this.cardIdToChameleonChainLocal);
+            var array = Array.from(this.cardIdToChameleonChainLocal.entries()).map(function (_a) {
+                var card_id = _a[0], target = _a[1];
+                return ({
+                    card_id: card_id,
+                    chameleon_target_ids: target.card_ids,
+                    target_type_ids: target.type_ids
+                });
             });
-            return {
-                chameleon_card_ids: card_ids.join(";"),
-                chameleon_type_ids: type_ids.join(";")
-            };
+            return JSON.stringify(array);
         };
         DaleCard.unbindAllChameleons = function () {
             this.unbindAllChameleonsLocal();
-            var card_ids = Array.from(DaleCard.cardIdtoEffectiveTypeId.keys());
-            DaleCard.cardIdtoEffectiveTypeId.clear();
+            var card_ids = Array.from(DaleCard.cardIdToChameleonChain.keys());
+            DaleCard.cardIdToChameleonChain.clear();
             for (var _i = 0, card_ids_2 = card_ids; _i < card_ids_2.length; _i++) {
                 var card_id = card_ids_2[_i];
-                new DaleCard(card_id).updateChameleonOverlay();
+                new DaleCard(card_id).updateHTML();
             }
         };
-        DaleCard.prototype.getCost = function (pos) {
-            return this.value + pos;
-        };
-        Object.defineProperty(DaleCard.prototype, "value", {
+        Object.defineProperty(DaleCard.prototype, "original_type_id", {
+            get: function () {
+                var _type_id = DaleCard.cardIdtoTypeId.get(this.id);
+                if (_type_id == undefined) {
+                    console.warn("id ".concat(this.id, " does not have a corresponding type_id"));
+                    return 0;
+                }
+                return _type_id;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "original_value", {
             get: function () {
                 return DaleCard.cardTypes[this.effective_type_id].value;
             },
             enumerable: false,
             configurable: true
         });
+        DaleCard.prototype.getCost = function (pos) {
+            return this.effective_value + pos;
+        };
         Object.defineProperty(DaleCard.prototype, "animalfolk", {
             get: function () {
                 return DaleCard.cardTypes[this.effective_type_id].animalfolk;
@@ -364,17 +435,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.isPlayable = function (type_id) {
             return DaleCard.cardTypes[type_id].playable;
-        };
-        DaleCard.prototype.hasActiveAbility = function () {
-            var type_id = this.effective_type_id;
-            if (!DaleCard.hasActiveAbility(type_id)) {
-                return false;
-            }
-            var encoding = this.id * DaleCard.MAX_TYPES + type_id;
-            return !DaleCard.usedActiveAbilities.has(encoding);
-        };
-        DaleCard.hasActiveAbility = function (type_id) {
-            return DaleCard.cardTypes[type_id].has_active;
         };
         DaleCard.prototype.getTooltipContent = function () {
             var cardType = DaleCard.cardTypes[this.effective_type_id];
@@ -484,12 +544,13 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return false;
         };
         DaleCard.cardIdtoTypeId = new Map();
-        DaleCard.cardIdtoEffectiveTypeId = new Map();
-        DaleCard.cardIdtoEffectiveTypeIdLocal = new Map();
-        DaleCard.usedActiveAbilities = new Set();
+        DaleCard.cardIdToChameleonChain = new Map();
+        DaleCard.cardIdToChameleonChainLocal = new Map();
         DaleCard.tooltips = new Map();
         DaleCard.divs = new Map();
-        DaleCard.MAX_TYPES = 1000;
+        DaleCard.effects = [];
+        DaleCard.EC_GLOBAL = 0;
+        DaleCard.EC_MODIFICATION = 1;
         DaleCard.CT_CARDBACK = 0;
         DaleCard.CT_JUNK = 1;
         DaleCard.CT_JUNK2 = 2;
@@ -1222,7 +1283,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.popin.setMaxWidth(1000);
             this.popin.setContent("<div id=\"".concat(popin_id, "-card-container\" class=\"popin-card-container\"></div>"));
             var container_id = popin_id + "-card-container";
-            var _loop_1 = function (card) {
+            var _loop_2 = function (card) {
                 var div = card.toDiv(container_id);
                 div.classList.add("dale-relative");
                 if (this_1.selectionMode != 'none' && this_1.orderedSelection.getMaxSize() > 0) {
@@ -1237,7 +1298,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var this_1 = this;
             for (var _i = 0, _c = this.cards; _i < _c.length; _i++) {
                 var card = _c[_i];
-                _loop_1(card);
+                _loop_2(card);
             }
             dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
             this.isPopinOpen = true;
@@ -2152,7 +2213,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log('Entering state: ' + stateName);
             if (stateName == 'nextPlayer') {
                 console.log("nextPlayer, expire all effects that last until end of turn");
-                DaleCard_8.DaleCard.removeEndOfTurnEffects();
                 this.mainClientState.exit();
             }
             if (!this.isCurrentPlayerActive()) {
@@ -2251,7 +2311,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_goodoldtimes':
                     this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
                     this.marketDiscard.setSelectionMode('top');
-                    if (this.chameleonArgs.card.hasActiveAbility()) {
+                    if (!this.chameleonArgs.card.isPassiveUsed()) {
                         this.marketDeck.setSelectionMode('top');
                     }
                     (_c = this.chameleonArgs) === null || _c === void 0 ? void 0 : _c.selectChameleonCard();
@@ -2423,7 +2483,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelChameleon();
                     break;
                 case 'chameleon_goodoldtimes':
-                    if (this.chameleonArgs.card.hasActiveAbility()) {
+                    if (!this.chameleonArgs.card.isPassiveUsed()) {
                         this.addActionButton("throw-away-button", _("Ditch"), "onGoodOldTimesPassive");
                     }
                     this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
@@ -2480,7 +2540,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (this.marketDiscard.size > 0) {
                         targets.push(this.marketDiscard.peek());
                     }
-                    if (card.hasActiveAbility() && from == this.myHand) {
+                    if (!card.isPassiveUsed() && from == this.myHand) {
                         if (!isChain && !this.myHand.isSelected(card.id)) {
                             console.log("Deselected CT_GOODOLDTIMES");
                             callback(card, added);
@@ -2829,7 +2889,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else {
                 console.log("PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!");
                 if (this.checkAction('actPurchase')) {
-                    this.bgaPerformAction('actPurchase', __assign({ funds_card_ids: this.arrayToNumberList(funds_card_ids), market_card_id: card_id, essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids) }, DaleCard_8.DaleCard.getLocalChameleons()));
+                    this.bgaPerformAction('actPurchase', {
+                        funds_card_ids: this.arrayToNumberList(funds_card_ids),
+                        market_card_id: card_id,
+                        essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
+                        chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
+                    });
                 }
             }
         };
@@ -2842,11 +2907,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             else if (card.isTechnique()) {
                 if (this.checkAction('actPlayTechniqueCard')) {
-                    this.bgaPerformAction('actPlayTechniqueCard', __assign({ card_id: card.id }, DaleCard_8.DaleCard.getLocalChameleons()));
+                    this.bgaPerformAction('actPlayTechniqueCard', {
+                        card_id: card.id,
+                        chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
+                    });
                 }
             }
-            else if (card.hasActiveAbility()) {
-                this.onUseActiveAbility(card);
+            else if (!card.isPassiveUsed()) {
+                this.onUsePassiveAbility(card);
             }
             else if (!card.isChameleon()) {
                 this.showMessage(_("This card's ability was already used"), 'error');
@@ -2857,11 +2925,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             this.myHand.unselectAll();
         };
-        Dale.prototype.onUseActiveAbility = function (card) {
-            if (!card.hasActiveAbility()) {
+        Dale.prototype.onUsePassiveAbility = function (card) {
+            if (card.isPassiveUsed()) {
                 throw new Error("Card '".concat(card.name, "' has no active ability remaining"));
             }
-            this.bgaPerformAction('actUseActiveAbility', __assign({ card_id: card.id }, DaleCard_8.DaleCard.getLocalChameleons()));
+            this.bgaPerformAction('actUseActiveAbility', {
+                card_id: card.id,
+                chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
+            });
         };
         Dale.prototype.onBuildSelectionChanged = function (card) {
             console.log("onBuildSelectionChanged");
@@ -2888,7 +2959,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onBuild = function () {
             if (this.checkAction('actBuild')) {
-                this.bgaPerformAction('actBuild', __assign({ stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()), stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelection.get()) }, DaleCard_8.DaleCard.getLocalChameleons()));
+                this.bgaPerformAction('actBuild', {
+                    stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
+                    stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelection.get()),
+                    chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
+                });
             }
         };
         Dale.prototype.onWinterIsComingSkip = function () {
@@ -2954,7 +3029,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     console.log("isDifferentUnboundChameleon");
                     console.log("type_id = " + args.card.effective_type_id);
                     console.log("target_type_id = " + type_id);
-                    args.card.bindChameleonLocal(type_id);
+                    args.card.bindChameleonLocal(target);
                     console.log("type_id = " + args.card.effective_type_id);
                     console.log(args.card);
                     (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.remove();
@@ -2962,7 +3037,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.handleChameleonCard(args.card, args.added, args.from, args.callback, args.requiresPlayable, true);
                 }
                 else {
-                    args.card.bindChameleonLocal(type_id);
+                    args.card.bindChameleonLocal(target);
                     args.callback(args.card);
                     (_b = this.chameleonArgs) === null || _b === void 0 ? void 0 : _b.remove();
                     this.chameleonArgs = undefined;
@@ -2970,7 +3045,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onGoodOldTimesPassive = function () {
-            this.onUseActiveAbility(this.chameleonArgs.card);
+            this.onUsePassiveAbility(this.chameleonArgs.card);
             this.onCancelChameleon();
         };
         Dale.prototype.onGoodOldTimesBind = function () {
@@ -3070,8 +3145,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['ditchFromMarketDeck', 1000],
                 ['ditchFromMarketBoard', 1000],
                 ['addEffect', 1],
-                ['bindChameleon', 1],
-                ['unbindChameleon', 1],
+                ['expireEffects', 1],
                 ['message', 1],
                 ['debugClient', 1],
             ];
@@ -3382,12 +3456,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log(notif.args.effect);
             DaleCard_8.DaleCard.addEffect(notif.args.effect);
         };
-        Dale.prototype.notif_bindChameleon = function (notif) {
-            DaleCard_8.DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
-            DaleCard_8.DaleCard.unbindAllChameleonsLocal();
-        };
-        Dale.prototype.notif_unbindChameleon = function (notif) {
-            DaleCard_8.DaleCard.unbindChameleonFromServer(+notif.args.card_id);
+        Dale.prototype.notif_expireEffects = function (notif) {
+            console.log("notif_expireEffects");
+            console.log(notif.args.effects);
+            DaleCard_8.DaleCard.expireEffects(notif.args.effects);
         };
         Dale.prototype.notif_message = function (notif) {
             return;
@@ -3425,11 +3497,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerDecks[notif.args.player_id].pushHiddenCards(notif.args.nbr);
             }
             else if (arg == 'bindings') {
-                var bindings = DaleCard_8.DaleCard.getLocalChameleons();
-                console.log("(Chameleon) cards_ids");
-                console.log(bindings.chameleon_card_ids);
-                console.log("Target type_ids");
-                console.log(bindings.chameleon_type_ids);
+                console.log(DaleCard_8.DaleCard.getLocalChameleonsJSON());
             }
             else if (arg == 'debugDaleCard') {
                 console.log(new DaleCard_8.DaleCard(notif.args.card_id));

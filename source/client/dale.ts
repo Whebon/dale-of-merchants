@@ -261,7 +261,7 @@ class Dale extends Gamegui
 
 		if (stateName == 'nextPlayer') {
 			console.log("nextPlayer, expire all effects that last until end of turn");
-			DaleCard.removeEndOfTurnEffects();
+			//DaleCard.removeEndOfTurnEffects();
 			this.mainClientState.exit();
 		}
 
@@ -365,7 +365,7 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
 				//this.myHand.setSelectionMode(`only_card_id${this.chameleonArgs!.card.id}`, undefined, 'previous')
 				this.marketDiscard.setSelectionMode('top');
-				if (this.chameleonArgs!.card.hasActiveAbility()) {
+				if (!this.chameleonArgs!.card.isPassiveUsed()) {
 					this.marketDeck.setSelectionMode('top');
 				}
 				this.chameleonArgs?.selectChameleonCard();
@@ -552,7 +552,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancelChameleon();
 				break;
 			case 'chameleon_goodoldtimes':
-				if (this.chameleonArgs!.card.hasActiveAbility()) {
+				if (!this.chameleonArgs!.card.isPassiveUsed()) {
 					this.addActionButton("throw-away-button", _("Ditch"), "onGoodOldTimesPassive");
 				}
 				this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
@@ -628,7 +628,7 @@ class Dale extends Gamegui
 				if (this.marketDiscard.size > 0) {
 					targets.push(this.marketDiscard.peek()!);
 				}
-				if (card.hasActiveAbility() && from == this.myHand) {
+				if (!card.isPassiveUsed() && from == this.myHand) {
 					if (!isChain && !this.myHand.isSelected(card.id)) {
 						console.log("Deselected CT_GOODOLDTIMES");
 						callback(card, added);
@@ -1097,7 +1097,7 @@ class Dale extends Gamegui
 					funds_card_ids: this.arrayToNumberList(funds_card_ids),
 					market_card_id: card_id,
 					essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
-					...DaleCard.getLocalChameleons()
+					chameleons_json: DaleCard.getLocalChameleonsJSON()
 				})
 			}
 		}
@@ -1114,12 +1114,12 @@ class Dale extends Gamegui
 			if(this.checkAction('actPlayTechniqueCard')) {
 				this.bgaPerformAction('actPlayTechniqueCard', {
 					card_id: card.id, 
-					...DaleCard.getLocalChameleons()
+					chameleons_json: DaleCard.getLocalChameleonsJSON()
 				});
 			}
 		}
-		else if (card.hasActiveAbility()) {
-			this.onUseActiveAbility(card);
+		else if (!card.isPassiveUsed()) {
+			this.onUsePassiveAbility(card);
 		}
 		else if (!card.isChameleon()) {
 			this.showMessage(_("This card's ability was already used"), 'error');
@@ -1135,13 +1135,13 @@ class Dale extends Gamegui
 	 * Use the active ability of a card, then return to the current game state
 	 * @param card the card that wants to use its active ability
 	 */
-	onUseActiveAbility(card: DaleCard){
-		if (!card.hasActiveAbility()) {
+	onUsePassiveAbility(card: DaleCard){
+		if (card.isPassiveUsed()) {
 			throw new Error(`Card '${card.name}' has no active ability remaining`)
 		}
 		this.bgaPerformAction('actUseActiveAbility', {
 			card_id: card.id, 
-			...DaleCard.getLocalChameleons()
+			chameleons_json: DaleCard.getLocalChameleonsJSON()
 		});
 	}
 
@@ -1173,7 +1173,7 @@ class Dale extends Gamegui
 			this.bgaPerformAction('actBuild', {
 				stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
 				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelection.get()),
-				...DaleCard.getLocalChameleons()
+				chameleons_json: DaleCard.getLocalChameleonsJSON()
 			});
 		}
 	}
@@ -1255,7 +1255,7 @@ class Dale extends Gamegui
 				console.log("isDifferentUnboundChameleon");
 				console.log("type_id = "+args.card.effective_type_id);
 				console.log("target_type_id = "+type_id);
-				args.card.bindChameleonLocal(type_id);
+				args.card.bindChameleonLocal(target);
 				console.log("type_id = "+args.card.effective_type_id);
 				console.log(args.card);
 				this.chameleonArgs?.remove();
@@ -1264,7 +1264,7 @@ class Dale extends Gamegui
 			}
 			else {
 				//chameleon will be bound to the target
-				args.card.bindChameleonLocal(type_id);
+				args.card.bindChameleonLocal(target);
 				args.callback(args.card);
 				this.chameleonArgs?.remove();
 				this.chameleonArgs = undefined;
@@ -1273,7 +1273,7 @@ class Dale extends Gamegui
 	}
 
 	onGoodOldTimesPassive() {
-		this.onUseActiveAbility(this.chameleonArgs!.card);
+		this.onUsePassiveAbility(this.chameleonArgs!.card);
 		this.onCancelChameleon();
 	}
 
@@ -1386,8 +1386,7 @@ class Dale extends Gamegui
 			['ditchFromMarketDeck', 1000],
 			['ditchFromMarketBoard', 1000],
 			['addEffect', 1],
-			['bindChameleon', 1],
-			['unbindChameleon', 1],
+			['expireEffects', 1],
 			['message', 1],
 			['debugClient', 1],
 		];
@@ -1768,13 +1767,10 @@ class Dale extends Gamegui
 		DaleCard.addEffect(notif.args.effect);
 	}
 
-	notif_bindChameleon(notif: NotifAs<'bindChameleon'>) {
-		DaleCard.bindChameleonFromServer(+notif.args.card_id, +notif.args.type_id);
-		DaleCard.unbindAllChameleonsLocal();
-	}
-
-	notif_unbindChameleon(notif: NotifAs<'unbindChameleon'>) {
-		DaleCard.unbindChameleonFromServer(+notif.args.card_id);
+	notif_expireEffects(notif: NotifAs<'expireEffects'>){
+		console.log("notif_expireEffects");
+		console.log(notif.args.effects);
+		DaleCard.expireEffects(notif.args.effects);
 	}
 
 	notif_message(notif: NotifAs<'message'>) {
@@ -1815,11 +1811,7 @@ class Dale extends Gamegui
 			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
 		else if (arg == 'bindings') {
-			const bindings = DaleCard.getLocalChameleons()
-			console.log("(Chameleon) cards_ids");
-			console.log(bindings.chameleon_card_ids);
-			console.log("Target type_ids");
-			console.log(bindings.chameleon_type_ids);
+			console.log(DaleCard.getLocalChameleonsJSON());
 		}
 		else if (arg == 'debugDaleCard') {
 			console.log(new DaleCard(notif.args.card_id));
