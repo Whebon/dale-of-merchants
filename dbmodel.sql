@@ -31,10 +31,11 @@ CREATE TABLE IF NOT EXISTS `card` (
 
 CREATE TABLE IF NOT EXISTS `effect` (
   `effect_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `effect_class` int(10) unsigned NOT NULL,
   `card_id` int(10) unsigned NOT NULL,
-  `type_id` int(11) NOT NULL,
-  `target` int(11) NOT NULL,
-  `expires` int(11) NOT NULL,
+  `type_id` int(10) unsigned NOT NULL,
+  `arg` int(10) unsigned,
+  `chameleon_target_id` int(10) unsigned,
   PRIMARY KEY (`effect_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
