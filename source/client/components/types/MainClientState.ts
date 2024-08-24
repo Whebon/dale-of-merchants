@@ -1,28 +1,40 @@
 import Gamegui = require('ebg/core/gamegui');
 
+class PreviousState {
+    constructor(
+        public name: keyof ClientGameState,
+        public args?: ClientGameState[keyof ClientGameState]
+    ) {}
+}
+
 /**
- * Main non-chameleon client state with arguments
+ * Main client state with arguments
  */
 export class MainClientState {
-    private page: Gamegui;
-	public name: keyof ClientGameState;
-    public descriptionmyturn: string;
+    private _page: Gamegui;
+	private _name: keyof ClientGameState;
     private _args: ClientGameState[keyof ClientGameState];
+    private _stack: PreviousState[];
+
     constructor(page: Gamegui) {
-        this.page = page;
-        this.name = 'client_technique';
-        this.descriptionmyturn = "";
+        this._page = page;
+        this._name = 'client_technique';
         this._args = {};
+        this._stack = [];
+    }
+
+    public get name(): string {
+        return this._name;
     }
 
     public get args(): ClientGameState[keyof ClientGameState] {
         if (Object.keys(this._args).length == 0) {
-            throw new Error(`Client state ${this.name} has no args`);
+            throw new Error(`Client state ${this._name} has no args`);
         }
         return this._args;
     }
 
-    public getDescription(state: keyof ClientGameState) {
+    private getDescription(state: keyof ClientGameState) {
         switch(state) {
             case 'client_technique':
                 return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
@@ -39,28 +51,53 @@ export class MainClientState {
     }
 
     /**
-     * Exit the client state and return to the default client state
+     * Cancel the client state and return to the previous client state
      */
-    public exit() {
-        this.enterClientState('client_technique');
+    public cancel() {
+        const previous = this._stack.pop();
+        if (previous) {
+            this.enter(previous.name, previous.args);
+        }
+        else {
+            //default client state
+            this.enter('client_technique');
+        }
     }
 
     /**
-     * Enter the current client state
+     * Cancel all client states and return to the default client state
+     */
+    public cancelAll() {
+        this._stack = [];
+        this.enter('client_technique');
+    }
+
+    /**
+     * Replace the current client state
      * @param name (optional) if provided, switch to the given client state. Otherwise, use the previously set client state
      * @param args (optional) if provided, pass arguments to the client state
      */
-    public enterClientState<K extends keyof ClientGameState>(name?: K, args?: ClientGameState[K]) {
+    public enter<K extends keyof ClientGameState>(name?: K, args?: ClientGameState[K]) {
         if (name) {
-            this.name = name;
+            this._name = name;
         }
         if (args) {
             this._args = args ?? {} as ClientGameState[K];
         }
-        this.page.setClientState(this.name, {
-            descriptionmyturn: this.getDescription(this.name),
+        this._page.setClientState(this._name, {
+            descriptionmyturn: this.getDescription(this._name),
             args: this._args
         })
+    }
+
+    /**
+     * Push a copy of the current client state on the stack, then replace the current client state
+     * @param name name of the client state
+     * @param args (optional) if provided, pass arguments to the client state
+     */
+    public enterOnStack<K extends keyof ClientGameState>(name: K, args?: ClientGameState[K]) {
+        this._stack.push(new PreviousState(this._name, this._args));
+        this.enter(name, args);
     }
 }
 

@@ -424,6 +424,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             enumerable: false,
             configurable: true
         });
+        DaleCard.prototype.isOriginalJunk = function () {
+            return (this.original_type_id >= 1 && this.original_type_id <= 5);
+        };
         DaleCard.prototype.isJunk = function () {
             return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
         };
@@ -737,12 +740,10 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 this.onSelectionChanged(card_id, false, secondary);
             }
         };
-        OrderedSelection.prototype.unselectAll = function () {
-            while (this.card_ids.length > 0) {
-                this.unselectItem(this.card_ids[this.card_ids.length - 1], false);
-            }
-            while (this.secondary_card_ids.length > 0) {
-                this.unselectItem(this.secondary_card_ids[this.secondary_card_ids.length - 1], true);
+        OrderedSelection.prototype.unselectAll = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            while (card_ids.length > 0) {
+                this.unselectItem(card_ids[card_ids.length - 1], secondary);
             }
         };
         OrderedSelection.prototype.setIconType = function (iconType, secondaryIconType) {
@@ -777,6 +778,16 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
         OrderedSelection.prototype.get = function (secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
             return card_ids.slice().reverse();
+        };
+        OrderedSelection.prototype.secondaryToPrimary = function () {
+            this.unselectAll();
+            this.iconType = this.secondaryIconType;
+            this.maxSize = this.secondaryMaxSize;
+            for (var _i = 0, _a = this.secondary_card_ids.slice(); _i < _a.length; _i++) {
+                var card_id = _a[_i];
+                this.unselectItem(card_id, true);
+                this.selectItem(card_id);
+            }
         };
         return OrderedSelection;
     }());
@@ -860,13 +871,14 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.orderedSelection.unselectItem(+item_id, secondary);
             this.setClickable(item_id);
         };
-        DaleStock.prototype.unselectAll = function () {
-            this.orderedSelection.unselectAll();
+        DaleStock.prototype.unselectAll = function (secondary) {
+            this.orderedSelection.unselectAll(secondary);
         };
         DaleStock.prototype.setSelectionMode = function (mode, iconType, wrapClass, actionLabelText, secondaryIconType) {
             this.selectionMode = mode;
             this.orderedSelection.setIconType(iconType, secondaryIconType);
             this.setSelectionMaxSize();
+            this.unselectAll(true);
             this.setWrapClass(wrapClass, actionLabelText);
             for (var i in this.items) {
                 var card_id = this.items[i].id;
@@ -1998,17 +2010,31 @@ define("components/types/MainClientState", ["require", "exports"], function (req
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MainClientState = void 0;
+    var PreviousState = (function () {
+        function PreviousState(name, args) {
+            this.name = name;
+            this.args = args;
+        }
+        return PreviousState;
+    }());
     var MainClientState = (function () {
         function MainClientState(page) {
-            this.page = page;
-            this.name = 'client_technique';
-            this.descriptionmyturn = "";
+            this._page = page;
+            this._name = 'client_technique';
             this._args = {};
+            this._stack = [];
         }
+        Object.defineProperty(MainClientState.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(MainClientState.prototype, "args", {
             get: function () {
                 if (Object.keys(this._args).length == 0) {
-                    throw new Error("Client state ".concat(this.name, " has no args"));
+                    throw new Error("Client state ".concat(this._name, " has no args"));
                 }
                 return this._args;
             },
@@ -2030,20 +2056,34 @@ define("components/types/MainClientState", ["require", "exports"], function (req
             }
             return "MISSING DESCRIPTION";
         };
-        MainClientState.prototype.exit = function () {
-            this.enterClientState('client_technique');
+        MainClientState.prototype.cancel = function () {
+            var previous = this._stack.pop();
+            if (previous) {
+                this.enter(previous.name, previous.args);
+            }
+            else {
+                this.enter('client_technique');
+            }
         };
-        MainClientState.prototype.enterClientState = function (name, args) {
+        MainClientState.prototype.cancelAll = function () {
+            this._stack = [];
+            this.enter('client_technique');
+        };
+        MainClientState.prototype.enter = function (name, args) {
             if (name) {
-                this.name = name;
+                this._name = name;
             }
             if (args) {
                 this._args = args !== null && args !== void 0 ? args : {};
             }
-            this.page.setClientState(this.name, {
-                descriptionmyturn: this.getDescription(this.name),
+            this._page.setClientState(this._name, {
+                descriptionmyturn: this.getDescription(this._name),
                 args: this._args
             });
+        };
+        MainClientState.prototype.enterOnStack = function (name, args) {
+            this._stack.push(new PreviousState(this._name, this._args));
+            this.enter(name, args);
         };
         return MainClientState;
     }());
@@ -2213,14 +2253,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log('Entering state: ' + stateName);
             if (stateName == 'nextPlayer') {
                 console.log("nextPlayer, expire all effects that last until end of turn");
-                this.mainClientState.exit();
+                this.mainClientState.cancelAll();
             }
             if (!this.isCurrentPlayerActive()) {
                 return;
             }
             switch (stateName) {
                 case 'playerTurn':
-                    this.mainClientState.enterClientState();
+                    this.mainClientState.enter();
                     break;
                 case 'client_purchase':
                     var client_purchase_args = this.mainClientState.args;
@@ -2259,9 +2299,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase");
                     }
                     this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+                    var junk_selected = 0;
                     for (var _i = 0, _f = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _f.length; _i++) {
                         var card_id = _f[_i];
                         this.myHand.selectItem(card_id, true);
+                        if (junk_selected < 3 && new DaleCard_8.DaleCard(card_id).isOriginalJunk()) {
+                            this.myHand.selectItem(card_id);
+                            junk_selected++;
+                        }
                     }
                     break;
                 case 'winterIsComing':
@@ -2366,7 +2411,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_essentialPurchase':
                     this.market.setSelectionMode(0);
-                    this.myHand.setSelectionMode('none');
+                    this.myHand.orderedSelection.secondaryToPrimary();
                     break;
                 case 'winterIsComing':
                     this.myHand.setSelectionMode('none');
@@ -2706,10 +2751,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_purchase':
                     var client_purchase_args = this.mainClientState.args;
                     if (client_purchase_args.pos == pos) {
-                        this.mainClientState.exit();
+                        this.mainClientState.cancel();
                     }
                     else {
-                        this.mainClientState.enterClientState('client_purchase', {
+                        this.mainClientState.enter('client_purchase', {
                             pos: pos,
                             on_market_board: true,
                             card_name: card.name,
@@ -2721,7 +2766,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_build':
                 case 'client_inventory':
                     console.log("".concat(this.gamedatas.gamestate.name, " --> client_purchase"));
-                    this.mainClientState.enterClientState('client_purchase', {
+                    this.mainClientState.enter('client_purchase', {
                         pos: pos,
                         on_market_board: true,
                         card_name: card.name,
@@ -2884,7 +2929,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY");
             }
             if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && DaleCard_8.DaleCard.containsTypeId(funds_card_ids, DaleCard_8.DaleCard.CT_ESSENTIALPURCHASE)) {
-                this.mainClientState.enterClientState('client_essentialPurchase', __assign({ funds_card_ids: funds_card_ids }, args));
+                this.mainClientState.enterOnStack('client_essentialPurchase', __assign({ funds_card_ids: funds_card_ids }, args));
             }
             else {
                 console.log("PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!");
@@ -2985,19 +3030,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onCancelClient = function () {
-            var _a;
             console.log("onCancelClient");
-            if (DaleCard_8.DaleCard.unbindAllChameleonsLocal()) {
-                (_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.remove();
-                this.chameleonArgs = undefined;
-                for (var _i = 0, _b = this.allDaleStocks; _i < _b.length; _i++) {
-                    var stock = _b[_i];
-                    stock.unselectAll();
-                }
-            }
-            else {
-                this.mainClientState.exit();
-            }
+            this.mainClientState.cancel();
         };
         Dale.prototype.onCancelChameleon = function (unselect) {
             var _a;
@@ -3067,7 +3101,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_technique':
                 case 'client_build':
                 case 'client_inventory':
-                    this.mainClientState.enterClientState('client_build', {
+                    this.mainClientState.enter('client_build', {
                         stack_index_plus_1: this.myStall.getNumberOfStacks() + 1
                     });
                     break;
@@ -3079,7 +3113,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_technique':
                 case 'client_build':
                 case 'client_inventory':
-                    this.mainClientState.enterClientState('client_inventory');
+                    this.mainClientState.enter('client_inventory');
                     break;
             }
         };
@@ -3299,7 +3333,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_ditch = function (notif) {
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-            if (DaleCard_8.DaleCard.of(notif.args.card).isJunk()) {
+            if (DaleCard_8.DaleCard.of(notif.args.card).isOriginalJunk()) {
                 this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
             }
             else {
@@ -3315,7 +3349,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
                 var id = _a[_i];
                 var card = notif.args.cards[id];
-                if (DaleCard_8.DaleCard.of(card).isJunk()) {
+                if (DaleCard_8.DaleCard.of(card).isOriginalJunk()) {
                     this.playerStockRemove(card, stock, notif.args.player_id);
                 }
                 else {

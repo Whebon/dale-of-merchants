@@ -449,6 +449,10 @@ export class DaleCard {
     }
 
     public isJunk(): boolean {
+        return (this.original_type_id >= 1 && this.original_type_id <= 5);
+    }
+
+    public isEffectiveJunk(): boolean {
         return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
     }
 

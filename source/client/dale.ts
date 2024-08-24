@@ -262,7 +262,7 @@ class Dale extends Gamegui
 		if (stateName == 'nextPlayer') {
 			console.log("nextPlayer, expire all effects that last until end of turn");
 			//DaleCard.removeEndOfTurnEffects();
-			this.mainClientState.exit();
+			this.mainClientState.cancelAll();
 		}
 
 		if (!this.isCurrentPlayerActive()) {
@@ -272,7 +272,7 @@ class Dale extends Gamegui
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'playerTurn':
-				this.mainClientState.enterClientState();
+				this.mainClientState.enter();
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
@@ -311,8 +311,13 @@ class Dale extends Gamegui
 					throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase")
 				}
 				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+				let junk_selected = 0;
 				for (let card_id of client_essentialPurchase_args.funds_card_ids.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
+					if (junk_selected < 3 && new DaleCard(card_id).isJunk()) {
+						this.myHand.selectItem(card_id);
+						junk_selected++;
+					}
 				}
 				break;
 			case 'winterIsComing':
@@ -418,7 +423,6 @@ class Dale extends Gamegui
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
 				DaleCard.unbindAllChameleonsLocal();
-
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
@@ -426,9 +430,10 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(false);
 				DaleCard.unbindAllChameleonsLocal()
 				break;
-			case 'client_essentialPurchase':
+			case 'client_essentialPurchase':	
 				this.market!.setSelectionMode(0);
-				this.myHand.setSelectionMode('none');
+				this.myHand.orderedSelection.secondaryToPrimary();
+				//this.myHand.setSelectionMode('none'); //purchase state will be restored
 				break;
 			case 'winterIsComing':
 				this.myHand.setSelectionMode('none');
@@ -888,10 +893,12 @@ class Dale extends Gamegui
 			case 'client_purchase':
 				const client_purchase_args = this.mainClientState.args as ClientGameState['client_purchase'];
 				if (client_purchase_args.pos == pos) {
-					this.mainClientState.exit();
+					//user click on the same card again, return to the default client state
+					this.mainClientState.cancel();
 				}
 				else {
-					this.mainClientState.enterClientState('client_purchase', {
+					//user clicked on a different card, enter a new client state
+					this.mainClientState.enter('client_purchase', {
 						pos: pos,
 						on_market_board: true,
 						card_name: card.name,
@@ -903,7 +910,7 @@ class Dale extends Gamegui
 			case 'client_build':
 			case 'client_inventory':
 				console.log(`${this.gamedatas.gamestate.name} --> client_purchase`);
-				this.mainClientState.enterClientState('client_purchase', {
+				this.mainClientState.enter('client_purchase', {
 					pos: pos,
 					on_market_board: true,
 					card_name: card.name,
@@ -1085,7 +1092,7 @@ class Dale extends Gamegui
 			throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY")
 		}
 		if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && DaleCard.containsTypeId(funds_card_ids, DaleCard.CT_ESSENTIALPURCHASE)) {
-			this.mainClientState.enterClientState('client_essentialPurchase', {
+			this.mainClientState.enterOnStack('client_essentialPurchase', {
 				funds_card_ids: funds_card_ids,
 				...args
 			});
@@ -1201,18 +1208,19 @@ class Dale extends Gamegui
 
 	onCancelClient() {
 		console.log("onCancelClient");
-		if (DaleCard.unbindAllChameleonsLocal()) {
-			//exit chameleon state
-			this.chameleonArgs?.remove();
-			this.chameleonArgs = undefined;
-			for (let stock of this.allDaleStocks) {
-				stock.unselectAll();
-			}
-		}
-		else {
-			//exit main client state
-			this.mainClientState.exit();
-		}
+		this.mainClientState.cancel();
+		//TODO: safely delete this
+		// if (DaleCard.unbindAllChameleonsLocal()) {
+		// 	//exit chameleon state
+		// 	this.chameleonArgs?.remove();
+		// 	this.chameleonArgs = undefined;
+		// 	for (let stock of this.allDaleStocks) {
+		// 		stock.unselectAll();
+		// 	}
+		// }
+		// else {
+		// 	this.mainClientState.cancel();
+		// }
 	}
 	
 	/**
@@ -1297,7 +1305,7 @@ class Dale extends Gamegui
 			case 'client_technique':
 			case 'client_build':
 			case 'client_inventory':
-				this.mainClientState.enterClientState('client_build', {
+				this.mainClientState.enter('client_build', {
 					stack_index_plus_1: this.myStall!.getNumberOfStacks()+1
 				});
 				break;
@@ -1310,7 +1318,7 @@ class Dale extends Gamegui
 			case 'client_technique':
 			case 'client_build':
 			case 'client_inventory':
-				this.mainClientState.enterClientState('client_inventory');
+				this.mainClientState.enter('client_inventory');
 				break;
 		}
 	}

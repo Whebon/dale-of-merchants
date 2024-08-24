@@ -164,8 +164,8 @@ export class DaleStock extends Stock implements DaleLocation {
 	/**
 	 * Unselects all items, on both the primary and selection levels
 	 */
-	override unselectAll(): void {
-		this.orderedSelection.unselectAll();
+	override unselectAll(secondary?: boolean): void {
+		this.orderedSelection.unselectAll(secondary);
 	}
 
 
@@ -182,6 +182,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		this.selectionMode = mode;
 		this.orderedSelection.setIconType(iconType, secondaryIconType);
 		this.setSelectionMaxSize();
+		this.unselectAll(true);
 		this.setWrapClass(wrapClass, actionLabelText);
 		for(let i in this.items){
 			const card_id = this.items[i]!.id;
@@ -246,7 +247,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'multiple':
 				return true;
 			case 'essentialPurchase':
-				return card.isJunk() && this.orderedSelection.get(true).includes(card.id);
+				return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
 			default:
 				const match = this.selectionMode.match(/^only_card_id(\d+)$/);
 				if (match) {

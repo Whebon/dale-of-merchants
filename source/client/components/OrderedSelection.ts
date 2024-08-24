@@ -199,14 +199,12 @@ export class OrderedSelection {
     }
 
     /**
-     * Unselect all selection and icons. On both the primary and secondary levels. 
+     * Unselect all selection and icons
      */
-    public unselectAll() {
-        while (this.card_ids.length > 0) { 
-            this.unselectItem(this.card_ids[this.card_ids.length-1]!, false);
-        }
-        while (this.secondary_card_ids.length > 0) { 
-            this.unselectItem(this.secondary_card_ids[this.secondary_card_ids.length-1]!, true);
+    public unselectAll(secondary?: boolean) {
+        const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        while (card_ids.length > 0) { 
+            this.unselectItem(card_ids[card_ids.length-1]!, secondary);
         }
     }
 
@@ -268,5 +266,18 @@ export class OrderedSelection {
     public get(secondary?: boolean): number[] {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
         return card_ids.slice().reverse();
+    }
+
+    /**
+     * Moves the secondary selection to the primary selection
+     */
+    public secondaryToPrimary() {
+        this.unselectAll();
+        this.iconType = this.secondaryIconType;
+        this.maxSize = this.secondaryMaxSize;
+        for (let card_id of this.secondary_card_ids.slice()) {
+            this.unselectItem(card_id, true);
+            this.selectItem(card_id)
+        }
     }
 }
