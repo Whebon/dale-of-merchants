@@ -31,6 +31,7 @@ import { CardSlot } from './components/CardSlot';
 import { DaleLocation } from './components/types/DaleLocation';
 import { MainClientState } from './components/types/MainClientState'
 import { Images } from './components/Images';
+import { TargetingLine } from './components/TargetingLine'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -106,6 +107,20 @@ class Dale extends Gamegui
 		console.log('dale constructor');
 	}
 
+	quick() {
+		const source = new DaleCard(41);
+		const targets = [new DaleCard(18), new DaleCard(4)];
+		new TargetingLine(
+			source, 
+			targets, 
+			"dale-line-source-chameleon", 
+			"dale-line-target-chameleon", 
+			"dale-line-chameleon",
+			(card: DaleCard)=> {console.log(card);},
+			(card: DaleCard, target: DaleCard)=> {console.log(target);}
+		)
+	}
+
 	/** @gameSpecific See {@link Gamegui.setup} for more information. */
 	override setup(gamedatas: Gamedatas): void
 	{
@@ -117,6 +132,7 @@ class Dale extends Gamegui
 		//positioning the svg container
 		const svgContainer = $("dale-svg-container") as HTMLElement;
 		$("ebd-body")?.appendChild(svgContainer);
+		addEventListener("mousemove", function(this: Window, evt: MouseEvent) { TargetingLine.previousMouseEvent = evt; });
 
 		//initialize the card types
 		DaleCard.init(gamedatas.cardTypes);
@@ -277,7 +293,7 @@ class Dale extends Gamegui
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
-				this.market!.setSelectionMode(1);
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
 				if (client_purchase_args.on_market_board) {
 					this.market!.setSelected(client_purchase_args.pos, true);
 				}
@@ -288,18 +304,18 @@ class Dale extends Gamegui
 				break;
 			case 'client_technique':
 				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
-				this.market!.setSelectionMode(1);
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_build':
 				this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
-				this.market!.setSelectionMode(1);
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_inventory':
 				this.myHand.setSelectionMode('multiple', 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
-				this.market!.setSelectionMode(1);
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_essentialPurchase':
@@ -342,13 +358,13 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'giftVoucher':
-				this.market!.setSelectionMode(1);
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
 				break;
 			case 'loyalPartner':
-				this.market!.setSelectionMode(2, 'pileBlue');
+				this.market!.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
 				break;
 			case 'prepaidGood':
-				this.market!.setSelectionMode(1);
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.myHand.setSelectionMode('clickRetainSelection', undefined, 'previous');
@@ -683,7 +699,7 @@ class Dale extends Gamegui
 			return;
 		}
 		this.chameleonArgs = new ChameleonClientStateArgs(card, added, from, targets, callback, requiresPlayable, isChain);
-		this.setClientState(chameleonStatename, {
+		this.mainClientState.enterOnStack(chameleonStatename, {
 			descriptionmyturn: chameleonDescriptionmyturn
 		});
 		if(targets.length == 1) {
@@ -1172,7 +1188,13 @@ class Dale extends Gamegui
 			}
 		}
 		console.log("count_nostalgic_items = "+count_nostalgic_items);
-		this.myDiscard.setSelectionMode('multiple', 'build', count_nostalgic_items);
+		if (count_nostalgic_items == 0) {
+			this.myDiscard.setSelectionMode('none');
+		}
+		else {
+			this.myDiscard.setSelectionMode('multiple', 'build', "dale-wrap-build", count_nostalgic_items);
+		}
+		
 	}
 
 	onBuild() {

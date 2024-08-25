@@ -11,9 +11,7 @@
 -->
 
 <div id="dale-svg-container">
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100vw" height="100vh">
-        <line id="dale-chameleon-line" class="dale-hidden" x1="0" y1="0" x2="0" y2="0"/>
-    </svg>
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100vw" height="100vh"></svg>
 </div>
 
 <div id="dale-market-wrap" class="whiteblock">

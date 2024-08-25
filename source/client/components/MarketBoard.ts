@@ -5,6 +5,7 @@ import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 import { DaleLocation } from './types/DaleLocation';
 import { OrderedSelection, SelectionIconType } from './OrderedSelection';
+import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -159,6 +160,15 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         return this.slots[pos]!.id;
     }
 
+	private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default') {
+		if (wrapClass != 'previous') {
+			this.container.classList.remove(...DALE_WRAP_CLASSES);
+			if (wrapClass) {
+				this.container.classList.add(wrapClass);
+			}
+		}
+	}
+
     /**
      * You can specify a selection mode similar like for a Stock.
      * @param mode
@@ -167,10 +177,11 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * 2: multiple items can be selected by the player at the same time.
      * @param iconType (optional) types of icons to use for the selection
     */
-    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType) {
+    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass: DaleWrapClass = "dale-wrap-default") {
         //TODO: action label?
         this.orderedSelection.setIconType(iconType);
         if( this.selectionMode == mode ) return;
+        this.setWrapClass(wrapClass);
         this.unselectAll();
         this.selectionMode = mode;
         let clickable = mode != 0;

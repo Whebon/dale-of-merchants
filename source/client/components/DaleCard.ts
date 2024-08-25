@@ -497,7 +497,7 @@ export class DaleCard {
         const cardType = DaleCard.cardTypes[this.effective_type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
         const chameleonName = this.isBoundChameleon() ? `<span class=chameleon-name>${DaleCard.cardTypes[this.original_type_id]!.name}</span> ` : ""
-        return `<div class="card-tooltip">
+        return `<div class="dale-card-tooltip">
             <h3>${chameleonName}${cardType.name}</h3>
             <hr>
             ${cardType.value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}

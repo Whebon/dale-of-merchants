@@ -5,8 +5,7 @@ import { DaleCard } from './DaleCard';
 import { Images } from './Images';
 import { DaleLocation } from './types/DaleLocation';
 import { OrderedSelection, SelectionIconType } from './OrderedSelection';
-
-type DaleWrapClass = 'dale-wrap-technique' | 'dale-wrap-purchase' | 'dale-wrap-build' | 'dale-wrap-discard' | 'dale-wrap-default' | 'previous';
+import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
 /**
  * Selection modes for the dale stock
@@ -24,7 +23,6 @@ type DaleStockSelectionMode = 'none' | 'click' | 'clickTechnique' | 'clickRetain
  * Decorator of the standard BGA Stock component.
  */
 export class DaleStock extends Stock implements DaleLocation {
-	private readonly wrapClasses = ['dale-wrap-technique', 'dale-wrap-purchase', 'dale-wrap-build', 'dale-wrap-discard', 'dale-wrap-default'];
 	public wrap: Element | undefined = undefined;
 	private actionLabel: Element | undefined = undefined;
 	private actionLabelDefaultText: string = "<DefaultText>";
@@ -268,7 +266,7 @@ export class DaleStock extends Stock implements DaleLocation {
 				labelText = this.actionLabelDefaultText
 			}
 			this.actionLabel.innerHTML = labelText ?? this.actionLabelDefaultText;
-			this.wrap!.classList.remove(...this.wrapClasses);
+			this.wrap!.classList.remove(...DALE_WRAP_CLASSES);
 			if (wrapClass) {
 				this.wrap!.classList.add(wrapClass);
 			}

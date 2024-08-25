@@ -111,8 +111,12 @@
   transform: translateY(5px);
   scale: 1.1;
 }
-#dale-market-wrap .dale-selected .dale-card.dale-chameleon-target {
+#dale-market-wrap .dale-selected .dale-card.dale-line-target-chameleon {
   transform: translateY(0);
+}
+
+.dale-blinking {
+  animation: blinker 0.5s infinite;
 }
 
 @keyframes blinker {
@@ -126,17 +130,21 @@
     opacity: 1;
   }
 }
-.dale-chameleon-target {
+.dale-line-node {
+  cursor: pointer;
   border-radius: 10px;
-  box-shadow: 0px 0px 16px rgb(31, 119, 44) !important;
-  outline: 3px solid rgb(31, 119, 44) !important;
   scale: 1.05 !important;
+  z-index: 202 !important;
 }
 
-.dale-chameleon-selected {
+.dale-line-target-chameleon {
+  box-shadow: 0px 0px 16px rgb(31, 119, 44) !important;
+  outline: 3px solid rgb(31, 119, 44) !important;
+}
+
+.dale-line-source-chameleon {
   border-radius: 10px;
   outline: 3px solid rgb(31, 119, 44) !important;
-  scale: 1.1 !important;
 }
 
 .dale-card {
@@ -312,12 +320,6 @@
   display: flex;
   flex-wrap: wrap;
 }
-.popin-card-container .dale-selected {
-  transform: scale(1.05);
-  outline: 3px solid var(--dale-wrap-build);
-  background-color: var(--dale-wrap-build-a);
-  background-blend-mode: overlay;
-}
 
 .dale-hidden {
   display: none;
@@ -331,11 +333,14 @@
   margin-left: 5px;
 }
 
-.card-tooltip .chameleon-name {
+.dale-card-tooltip {
+  pointer-events: none;
+}
+.dale-card-tooltip .chameleon-name {
   text-decoration: line-through;
   color: #1d7a2a;
 }
-.card-tooltip .text {
+.dale-card-tooltip .text {
   max-width: 300px;
 }
 
@@ -347,9 +352,9 @@
   height: 100vh;
   overflow: hidden;
   pointer-events: none;
-  z-index: 750;
+  z-index: 201;
 }
-#dale-svg-container #dale-chameleon-line {
+#dale-svg-container .dale-line-chameleon {
   stroke: green;
   stroke-width: 10;
   stroke-dashoffset: 1000;
@@ -358,15 +363,22 @@
 }
 @keyframes dale-dash {
   from {
-    stroke-dashoffset: 0;
+    stroke-dashoffset: 1000;
   }
   to {
-    stroke-dashoffset: 1000;
+    stroke-dashoffset: 0;
   }
 }
 
-.dale-z-index-above-svg {
-  z-index: 751 !important;
+.dijitTooltip {
+  pointer-events: none;
+}
+.dijitTooltip div {
+  pointer-events: none;
+}
+
+.dijitTooltipContainer {
+  pointer-events: none;
 }
 
 .dale-dice {
@@ -423,7 +435,7 @@ body {
   display: none;
 }
 
-.dale-wrap-technique {
+.dale-wrap-technique.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-technique);
 }
 .dale-wrap-technique .dale-label {
@@ -442,7 +454,7 @@ body {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
 }
 
-.dale-wrap-purchase {
+.dale-wrap-purchase.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-purchase);
 }
 .dale-wrap-purchase .dale-label {
@@ -461,7 +473,7 @@ body {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
 }
 
-.dale-wrap-build {
+.dale-wrap-build.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-build);
 }
 .dale-wrap-build .dale-label {
@@ -480,7 +492,7 @@ body {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
 }
 
-.dale-wrap-discard {
+.dale-wrap-discard.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-discard);
 }
 .dale-wrap-discard .dale-label {
@@ -499,7 +511,7 @@ body {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
 }
 
-.dale-wrap-default {
+.dale-wrap-default.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-default);
 }
 .dale-wrap-default .dale-label {
@@ -572,10 +584,8 @@ body {
   transition: scale 0.3s ease, transform 1s ease;
   z-index: 100;
 }
-.dale-arc-stock .dale-card:hover {
+.dale-arc-stock .dale-card:hover:not(.dale-line-node) {
   scale: 1.1;
-}
-.dale-arc-stock .dale-card:hover:not(.dale-z-index-above-svg) {
   z-index: 200 !important;
 }
 .dale-arc-stock .dale-card[data-arc="1/1"] {

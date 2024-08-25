@@ -5,6 +5,7 @@ import { Images } from './Images';
 import { DaleCard } from './DaleCard';
 import { ChameleonClientStateArgs } from './types/ChameleonClientStateArgs';
 import { OrderedSelection, SelectionIconType } from './OrderedSelection';
+import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
 
 declare function $(text: string | Element): HTMLElement;
@@ -38,6 +39,7 @@ export class Pile implements DaleLocation {
     private popin: PopInDialog = new ebg.popindialog();
     private isPopinOpen: boolean = false;
     private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
+    private wrapClass: DaleWrapClass = "dale-wrap-default";
 
     public orderedSelection: OrderedSelection;
 
@@ -338,7 +340,7 @@ export class Pile implements DaleLocation {
         this.popin.create(popin_id);
 		this.popin.setTitle(title);
         this.popin.setMaxWidth(1000);
-        this.popin.setContent(`<div id="${popin_id}-card-container" class="popin-card-container"></div>`);
+        this.popin.setContent(`<div id="${popin_id}-card-container" class="popin-card-container ${this.wrapClass}"></div>`);
         const container_id = popin_id+"-card-container";
         for (let card of this.cards) {
             const div = card.toDiv(container_id);
@@ -421,6 +423,16 @@ export class Pile implements DaleLocation {
         this.orderedSelection.selectItem(card_id);
     }
 
+    private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default') {
+		if (wrapClass != 'previous') {
+			this.containerHTML.classList.remove(...DALE_WRAP_CLASSES);
+			if (wrapClass) {
+				this.containerHTML.classList.add(wrapClass);
+			}
+            this.wrapClass = wrapClass;
+		}
+	}
+
     /**
      * Set the selection mode for within the popin
      * @param mode 
@@ -431,12 +443,27 @@ export class Pile implements DaleLocation {
      * @param max (optional) default 0.
      * if selection mode is 'multiple', a maximum number of selected cards is enforced upon the selection
      */
-    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, max: number = 0) {
-        if (mode != 'multiple') {
-            this.orderedSelection.unselectAll();
-        }
-        this.orderedSelection.setIconType(iconType);
+    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, wrapClass: DaleWrapClass = 'dale-wrap-default', max: number = 0) {
+        this.setWrapClass(wrapClass);
         this.orderedSelection.setMaxSize(max);
+        this.orderedSelection.setIconType(iconType);
+        switch (mode) {
+            case 'multiple':
+                if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+                    this.containerHTML.classList.add("dale-blinking");
+                }
+                else {
+                    this.containerHTML.classList.remove("dale-blinking");
+                }
+                break;
+            case 'single':
+                this.containerHTML.classList.add("dale-blinking");
+                break;
+            default:
+                this.containerHTML.classList.remove("dale-blinking");
+                this.orderedSelection.unselectAll();
+                break;
+        }
         this.selectionMode = mode;
         this.updateHTML();
     }

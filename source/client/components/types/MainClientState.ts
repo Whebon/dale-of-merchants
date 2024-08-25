@@ -23,7 +23,7 @@ export class MainClientState {
         this._stack = [];
     }
 
-    public get name(): string {
+    public get name(): keyof ClientGameState {
         return this._name;
     }
 
@@ -34,8 +34,9 @@ export class MainClientState {
         return this._args;
     }
 
-    private getDescription(state: keyof ClientGameState) {
-        switch(state) {
+    private get _descriptionmyturn() {
+        switch(this.name) {
+            //Main Client States
             case 'client_technique':
                 return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
             case 'client_purchase':
@@ -46,8 +47,20 @@ export class MainClientState {
                 return _("${you} must discard any number of cards");
             case 'client_essentialPurchase':
                 return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+            //Chameleon States
+            case 'chameleon_flexibleShopkeeper':
+                return _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack");
+            case 'chameleon_reflection':
+                return _("Reflection: ${you} must copy a card from the top of another player's discard pile")
+            case 'chameleon_goodoldtimes':
+                return _("Good Old Times: ${you} must copy the bin's top card"); //or... passive...
+            case 'chameleon_trendsetting':
+                return _("Trendsetting: ${you} must copy a card in the market");
+            case 'chameleon_seeingdoubles':
+                return _("Seeing Doubles: ${you} must copy another card in your hand");
+            //Technique States
         }
-        return "MISSING DESCRIPTION"
+        return "MISSING DESCRIPTION";
     }
 
     /**
@@ -85,7 +98,7 @@ export class MainClientState {
             this._args = args ?? {} as ClientGameState[K];
         }
         this._page.setClientState(this._name, {
-            descriptionmyturn: this.getDescription(this._name),
+            descriptionmyturn: this._descriptionmyturn,
             args: this._args
         })
     }

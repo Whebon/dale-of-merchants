@@ -117,11 +117,15 @@
 			outline: 3px solid #e4aa19;
 			transform: translateY(5px);
 			scale: 1.1;
-			&.dale-chameleon-target {
+			&.dale-line-target-chameleon {
 				transform: translateY(0);
 			}
 		}
 	}
+}
+
+.dale-blinking {
+	animation: blinker 0.5s infinite;
 }
 
 @keyframes blinker {
@@ -130,17 +134,22 @@
 	to { opacity: 1.0; }
 }
 
-.dale-chameleon-target {
+.dale-line-node {
+	cursor: pointer;
 	border-radius: 10px;
-	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
-	outline: 3px solid rgba(31, 119, 44) !important;
 	scale: 1.05 !important;
+	z-index: 202 !important;
 }
 
-.dale-chameleon-selected {
+.dale-line-target-chameleon {
+	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
+	outline: 3px solid rgba(31, 119, 44) !important;
+	
+}
+
+.dale-line-source-chameleon {
 	border-radius: 10px;
 	outline: 3px solid rgba(31, 119, 44) !important;
-	scale: 1.1 !important;
 	//animation: blinker 0.5s infinite;
 }
 
@@ -340,12 +349,13 @@
 	display: flex;
 	flex-wrap: wrap;
 
-	.dale-selected {
-		transform: scale(1.05); 
-		outline: 3px solid var(--dale-wrap-build);
-		background-color: var(--dale-wrap-build-a);
-		background-blend-mode: overlay;
-	}
+	//TODO: safely delete this
+	// .dale-selected {
+	// 	transform: scale(1.05); 
+	// 	outline: 3px solid var(--dale-wrap-build);
+	// 	background-color: var(--dale-wrap-build-a);
+	// 	background-blend-mode: overlay;
+	// }
 }
 
 .dale-hidden {
@@ -360,7 +370,8 @@
 	margin-left: 5px;
 }
 
-.card-tooltip {
+.dale-card-tooltip {
+	pointer-events: none;
 	.chameleon-name {
 		text-decoration: line-through;
 		color: #1d7a2a;
@@ -379,8 +390,8 @@
 	overflow: hidden;
 
 	pointer-events: none;
-	z-index: 750;
-	#dale-chameleon-line {
+	z-index: 201; //just above 'selected'
+	.dale-line-chameleon {
 		stroke: green;
 		stroke-width: 10;
 		stroke-dashoffset: 1000;
@@ -389,13 +400,19 @@
 	}
 	  
 	@keyframes dale-dash {
-		from { stroke-dashoffset: 0; }
-		to { stroke-dashoffset: 1000; }
+		from { stroke-dashoffset: 1000; }
+		to { stroke-dashoffset: 0; }
 	}
 }
 
-.dale-z-index-above-svg {
-	z-index: 751 !important;
+.dijitTooltip {
+	pointer-events: none;
+	div {
+		pointer-events: none;
+	}
+}
+.dijitTooltipContainer {
+	pointer-events: none;
 }
 
 .dale-dice {
@@ -458,7 +475,9 @@ body {
 }
 
 .dale-wrap-technique { 
-	outline: 3px solid var(--dale-wrap-technique); 
+	&.dale-arc-stock {
+		outline: 3px solid var(--dale-wrap-technique); 
+	}
 	.dale-label { 
 		background-color: var(--dale-wrap-technique); 
 	}
@@ -477,7 +496,9 @@ body {
 }
 
 .dale-wrap-purchase { 
-	outline: 3px solid var(--dale-wrap-purchase); 
+	&.dale-arc-stock {
+		outline: 3px solid var(--dale-wrap-purchase); 
+	}
 	.dale-label { 
 		background-color: var(--dale-wrap-purchase); 
 	}
@@ -496,7 +517,9 @@ body {
 }
 
 .dale-wrap-build { 
-	outline: 3px solid var(--dale-wrap-build); 
+	&.dale-arc-stock {
+		outline: 3px solid var(--dale-wrap-build); 
+	}
 	.dale-label { 
 		background-color: var(--dale-wrap-build); 
 	}
@@ -515,7 +538,9 @@ body {
 }
 
 .dale-wrap-discard { 
-	outline: 3px solid var(--dale-wrap-discard); 
+	&.dale-arc-stock {
+		outline: 3px solid var(--dale-wrap-discard); 
+	}
 	.dale-label { 
 		background-color: var(--dale-wrap-discard); 
 	}
@@ -534,7 +559,9 @@ body {
 }
 
 .dale-wrap-default { 
-	outline: 3px solid var(--dale-wrap-default); 
+	&.dale-arc-stock {
+		outline: 3px solid var(--dale-wrap-default); 
+	}
 	.dale-label { 
 		background-color: var(--dale-wrap-default); 
 	}
@@ -591,11 +618,9 @@ body {
 		transition: scale 0.3s ease, transform 1s ease;
 		z-index: 100;
 		
-		&:hover {
+		&:hover:not(.dale-line-node) {
 			scale: 1.1;
-			&:not(.dale-z-index-above-svg) {
-				z-index: 200 !important;
-			}
+			z-index: 200 !important;
 		}
 	}
 
