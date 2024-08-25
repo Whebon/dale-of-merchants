@@ -143,14 +143,12 @@
 
 .dale-line-target-chameleon {
 	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
-	outline: 3px solid rgba(31, 119, 44) !important;
-	
+	outline: 3px solid rgba(31, 119, 44, 0.5) !important;
 }
 
 .dale-line-source-chameleon {
-	border-radius: 10px;
+	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
 	outline: 3px solid rgba(31, 119, 44) !important;
-	//animation: blinker 0.5s infinite;
 }
 
 .dale-card {

@@ -20,13 +20,22 @@ export class OrderedSelection {
     }
 
     /**
-     * Function to call when the selection changed. dojo.connect should be used to connect to this hook
+     * Function to call when a card is added to the selection. dojo.connect should be used to connect to this hook
      * @param card_id the card that was added/removed from the selection
-     * @param isAdded `true` if the card was added to the selection. `false` if the card was removed from the selected
      * @param secondary true if the card was added/removed from the second selection layer
      */
-    private onSelectionChanged(card_id: number, isAdded?: boolean, secondary?: boolean) {
-        console.log(`onSelectionChanged(card_id=${card_id}, added=${isAdded}, secondary=${secondary})`);
+    private onSelect(card_id: number, secondary?: boolean) {
+        console.log(`onSelect(card_id=${card_id}, secondary=${secondary})`);
+    }
+
+    /**
+     * Function to call when a card is added to the selection. dojo.connect should be used to connect to this hook
+     * NOTE: I also prefer "deselect" over "unselect", but I was forced into "unselect" by the bga stock
+     * @param card_id the card that was added/removed from the selection
+     * @param secondary true if the card was added/removed from the second selection layer
+     */
+    private onUnselect(card_id: number, secondary?: boolean) {
+        console.log(`onUnselect(card_id=${card_id}, secondary=${secondary})`);
     }
 
     /**
@@ -181,7 +190,7 @@ export class OrderedSelection {
         while (card_ids.length > maxSize) {
             this.dequeue(secondary)
         }
-        this.onSelectionChanged(card_id, true, secondary);
+        this.onSelect(card_id, secondary);
 	}
 
     /**
@@ -194,7 +203,7 @@ export class OrderedSelection {
 		card_ids.splice(index, 1);
         if (index != -1) {
             this.removeIcon(card_id, secondary);
-            this.onSelectionChanged(card_id, false, secondary);
+            this.onUnselect(card_id, secondary);
         }
     }
 

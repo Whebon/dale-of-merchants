@@ -32,6 +32,7 @@ import { DaleLocation } from './components/types/DaleLocation';
 import { MainClientState } from './components/types/MainClientState'
 import { Images } from './components/Images';
 import { TargetingLine } from './components/TargetingLine'
+import { ChameleonChain } from './components/types/ChameleonChain';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -101,6 +102,9 @@ class Dale extends Gamegui
 	/** Current client state */
 	mainClientState: MainClientState = new MainClientState(this);
 
+	/** current targeting line */
+	targetingLine: TargetingLine | undefined;
+
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
@@ -109,15 +113,15 @@ class Dale extends Gamegui
 
 	quick() {
 		const source = new DaleCard(41);
-		const targets = [new DaleCard(18), new DaleCard(4)];
-		new TargetingLine(
+		const targets = [new DaleCard(3), new DaleCard(31)];
+		this.targetingLine = new TargetingLine(
 			source, 
 			targets, 
 			"dale-line-source-chameleon", 
 			"dale-line-target-chameleon", 
 			"dale-line-chameleon",
-			(card: DaleCard)=> {console.log(card);},
-			(card: DaleCard, target: DaleCard)=> {console.log(target);}
+			(card: DaleCard) => {console.log(card);},
+			(card: DaleCard, target: DaleCard) => {console.log(target);}
 		)
 	}
 
@@ -198,9 +202,9 @@ class Dale extends Gamegui
 			this.myHand.addDaleCardToStock(DaleCard.of(card));
 		}
 		this.myHand.setSelectionMode('none');
-		dojo.connect(this.myHand, 'onClick', this, 'onHandSelectionChanged');
-		dojo.connect(this.myHand.orderedSelection, 'onSelectionChanged', this, 'onHandSelectionChanged');
-		
+		dojo.connect(this.myHand, 'onClick', this, 'onSelectHandCard');
+		dojo.connect(this.myHand.orderedSelection, 'onSelect', this, 'onSelectHandCard');
+		dojo.connect(this.myHand.orderedSelection, 'onUnselect', this, 'onUnselectHandCard');
 
 		//limbo transition
 		const thiz = this;
@@ -597,41 +601,26 @@ class Dale extends Gamegui
 	*/
 
 	/**
-	 * If the card is an UNBOUND chameleon card, first set the client state to bind the chameleon, then call the `callback` with the bound `card`.
+	 * If the card is an unbound chameleon card, set the client state to bind the chameleon and return `false`
 	 * 
-	 * Otherwise, simply call the `callback` function with `card`.
-	 * 
-	 * @param card the card that potentially needs to be be bound. If null, immediately call the callback function without arguments
-	 * @param added if true, this card is clicked or added to a selection. If false, this card is unselected
+	 * @param card the card that potentially needs to be be bound.
 	 * @param from where is this card currently located?
 	 * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
 	 * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
 	 * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
 	 */
-	handleChameleonCard(card: DaleCard, added: boolean = true, from: DaleLocation, callback: (card?: DaleCard, added?: boolean) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
-		callback = callback.bind(this);
-		if (!isChain && card.isBoundChameleon() && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
-			card.unbindChameleonLocal();
-			callback(card, added);
-			return;
+	verifyChameleon(card: DaleCard): boolean {
+		if (!card.isUnboundChameleon()) {
+			return true;
 		}
-		if (!card.isChameleon()) {
-			//card is not a chameleon card, immediately execute the callback function
-			callback(card, added);
-			return;
-		}
-
-		//set the chameleon client state information
+		
+		//find the chameleon targets the chameleon client state information
 		var targets: DaleCard[] = [];
 		var chameleonStatename: keyof ClientGameState;
-		var chameleonDescriptionmyturn: string;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
 				chameleonStatename = 'chameleon_flexibleShopkeeper'
-				chameleonDescriptionmyturn = requiresPlayable ? 
-					_("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") :
-					_("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
 				break;
 			case DaleCard.CT_REFLECTION:
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
@@ -641,40 +630,21 @@ class Dale extends Gamegui
 					}
 				}
 				chameleonStatename = 'chameleon_reflection'
-				chameleonDescriptionmyturn = requiresPlayable ? 
-					_("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
-					_("Reflection: ${you} must copy a card from the top of another player's discard pile")
 				break;
 			case DaleCard.CT_GOODOLDTIMES:
 				if (this.marketDiscard.size > 0) {
 					targets.push(this.marketDiscard.peek()!);
 				}
-				if (!card.isPassiveUsed() && from == this.myHand) {
-					if (!isChain && !this.myHand.isSelected(card.id)) {
-						console.log("Deselected CT_GOODOLDTIMES");
-						callback(card, added);
-						return;
-					}
-					chameleonStatename = 'chameleon_goodoldtimes'
-					chameleonDescriptionmyturn = requiresPlayable ? 
-						_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card") :
-						_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card to play as a technique")
+				if (!card.isPassiveUsed() && this.marketDeck.size > 0) {
+					targets.push(this.marketDeck.peek()!);
 				}
-				else {
-					chameleonStatename = 'chameleon_goodoldtimes'
-					chameleonDescriptionmyturn = requiresPlayable ? 
-						_("Good Old Times: ${you} must copy the bin's top card") :
-						_("Good Old Times: ${you} must copy the bin's top card to play as a technique")
-				}
+				chameleonStatename = 'chameleon_goodoldtimes'
 				break;
 			case DaleCard.CT_TRENDSETTING:
 				for (let card of this.market!.getCards()) {
 					targets.push(card)
 				}
 				chameleonStatename = 'chameleon_trendsetting'
-				chameleonDescriptionmyturn = requiresPlayable ? 
-					_("Trendsetting: ${you} must copy a playable card in the market") : 
-					_("Trendsetting: ${you} must copy a card in the market")
 				break;
 			case DaleCard.CT_SEEINGDOUBLES:
 				const items = this.myHand.getAllItems()
@@ -684,9 +654,6 @@ class Dale extends Gamegui
 					}
 				}
 				chameleonStatename = 'chameleon_seeingdoubles'
-				chameleonDescriptionmyturn = requiresPlayable ? 
-					_("Seeing Doubles: ${you} must copy a playable card from your hand") : 
-					_("Trendsetting: ${you} must copy another card in your hand")
 				break;
 			default:
 				throw new Error(`Unknown chameleon card: '${card.name}'`)
@@ -695,25 +662,134 @@ class Dale extends Gamegui
 		//enter the chameleon client state
 		console.log(`'${card.name}' has ${targets.length} target(s)`);
 		if (targets.length == 0) {
-			callback(card, added);
-			return;
+			return true;
 		}
-		this.chameleonArgs = new ChameleonClientStateArgs(card, added, from, targets, callback, requiresPlayable, isChain);
 		this.mainClientState.enterOnStack(chameleonStatename, {
-			descriptionmyturn: chameleonDescriptionmyturn
+			card: card,
+			targets: targets
 		});
-		if(targets.length == 1) {
-			//auto-bind
-			this.onConfirmChameleon(targets[0]!);
-			return;
-		}
-		if (from instanceof Pile) {
-			console.log("Add event listener to");
-			console.log(this.chameleonArgs.line_origin);
-			this.chameleonArgs.line_origin.addEventListener('click', () => { this.onCancelChameleon() })
-			from.closePopin();
-		}
+		return false;
 	}
+
+	//TODO: safely delete this
+	// /**
+	//  * If the card is an UNBOUND chameleon card, first set the client state to bind the chameleon, then call the `callback` with the bound `card`.
+	//  * 
+	//  * Otherwise, simply call the `callback` function with `card`.
+	//  * 
+	//  * @param card the card that potentially needs to be be bound. If null, immediately call the callback function without arguments
+	//  * @param added if true, this card is clicked or added to a selection. If false, this card is unselected
+	//  * @param from where is this card currently located?
+	//  * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
+	//  * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
+	//  * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
+	//  */
+	// handleChameleonCard(card: DaleCard, added: boolean = true, from: DaleLocation, callback: (card?: DaleCard, added?: boolean) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
+	// 	callback = callback.bind(this);
+	// 	if (!isChain && card.isBoundChameleon() && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
+	// 		card.unbindChameleonLocal();
+	// 		callback(card, added);
+	// 		return;
+	// 	}
+	// 	if (!card.isChameleon()) {
+	// 		//card is not a chameleon card, immediately execute the callback function
+	// 		callback(card, added);
+	// 		return;
+	// 	}
+
+	// 	//set the chameleon client state information
+	// 	var targets: DaleCard[] = [];
+	// 	var chameleonStatename: keyof ClientGameState;
+	// 	var chameleonDescriptionmyturn: string;
+	// 	switch(card.effective_type_id) {
+	// 		case DaleCard.CT_FLEXIBLESHOPKEEPER:
+	// 			targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
+	// 			chameleonStatename = 'chameleon_flexibleShopkeeper'
+	// 			chameleonDescriptionmyturn = requiresPlayable ? 
+	// 				_("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") :
+	// 				_("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
+	// 			break;
+	// 		case DaleCard.CT_REFLECTION:
+	// 			for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+	// 				if (+player_id != +this.player_id && pile.size > 0) {
+	// 					targets.push(pile.peek()!)
+	// 					break;
+	// 				}
+	// 			}
+	// 			chameleonStatename = 'chameleon_reflection'
+	// 			chameleonDescriptionmyturn = requiresPlayable ? 
+	// 				_("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
+	// 				_("Reflection: ${you} must copy a card from the top of another player's discard pile")
+	// 			break;
+	// 		case DaleCard.CT_GOODOLDTIMES:
+	// 			if (this.marketDiscard.size > 0) {
+	// 				targets.push(this.marketDiscard.peek()!);
+	// 			}
+	// 			if (!card.isPassiveUsed() && from == this.myHand) {
+	// 				if (!isChain && !this.myHand.isSelected(card.id)) {
+	// 					console.log("Deselected CT_GOODOLDTIMES");
+	// 					callback(card, added);
+	// 					return;
+	// 				}
+	// 				chameleonStatename = 'chameleon_goodoldtimes'
+	// 				chameleonDescriptionmyturn = requiresPlayable ? 
+	// 					_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card") :
+	// 					_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card to play as a technique")
+	// 			}
+	// 			else {
+	// 				chameleonStatename = 'chameleon_goodoldtimes'
+	// 				chameleonDescriptionmyturn = requiresPlayable ? 
+	// 					_("Good Old Times: ${you} must copy the bin's top card") :
+	// 					_("Good Old Times: ${you} must copy the bin's top card to play as a technique")
+	// 			}
+	// 			break;
+	// 		case DaleCard.CT_TRENDSETTING:
+	// 			for (let card of this.market!.getCards()) {
+	// 				targets.push(card)
+	// 			}
+	// 			chameleonStatename = 'chameleon_trendsetting'
+	// 			chameleonDescriptionmyturn = requiresPlayable ? 
+	// 				_("Trendsetting: ${you} must copy a playable card in the market") : 
+	// 				_("Trendsetting: ${you} must copy a card in the market")
+	// 			break;
+	// 		case DaleCard.CT_SEEINGDOUBLES:
+	// 			const items = this.myHand.getAllItems()
+	// 			for (let item of items) {
+	// 				if (item.id != card.id) {
+	// 					targets.push(new DaleCard(item.id));
+	// 				}
+	// 			}
+	// 			chameleonStatename = 'chameleon_seeingdoubles'
+	// 			chameleonDescriptionmyturn = requiresPlayable ? 
+	// 				_("Seeing Doubles: ${you} must copy a playable card from your hand") : 
+	// 				_("Trendsetting: ${you} must copy another card in your hand")
+	// 			break;
+	// 		default:
+	// 			throw new Error(`Unknown chameleon card: '${card.name}'`)
+	// 	}
+
+	// 	//enter the chameleon client state
+	// 	console.log(`'${card.name}' has ${targets.length} target(s)`);
+	// 	if (targets.length == 0) {
+	// 		callback(card, added);
+	// 		return;
+	// 	}
+	// 	this.chameleonArgs = new ChameleonClientStateArgs(card, added, from, targets, callback, requiresPlayable, isChain);
+	// 	this.mainClientState.enterOnStack(chameleonStatename, {
+	// 		descriptionmyturn: chameleonDescriptionmyturn
+	// 	});
+	// 	if(targets.length == 1) {
+	// 		//auto-bind
+	// 		this.onConfirmChameleon(targets[0]!);
+	// 		return;
+	// 	}
+	// 	if (from instanceof Pile) {
+	// 		console.log("Add event listener to");
+	// 		console.log(this.chameleonArgs.line_origin);
+	// 		this.chameleonArgs.line_origin.addEventListener('click', () => { this.onCancelChameleon() })
+	// 		from.closePopin();
+	// 	}
+	// }
 
 	/**
 	 * Update the state prompt message displayed
@@ -958,39 +1034,42 @@ class Dale extends Gamegui
 		console.log("You click on a card in the... schedule...?");
 	}
 
-	onPileSelectionChanged(pile: Pile, card_id: number, added: boolean) {
-		console.log("onPileSelectionChanged");
-		const card = new DaleCard(card_id);
-		if (pile === this.myDiscard) {
-			this.onMyDiscardPileSelectionChanged(pile, card, added);
-		}
-		else if (pile === this.marketDiscard) {
-			this.onMarketDiscardPileSelectionChanged(pile, card, added);
-		}
-		else if (pile === this.marketDeck) {
-			this.onMarketDeckSelectionChanged(pile, card, added);
-		}
-		else {
-			this.onOtherDiscardPileSelectionChanged(pile, card, added);
-		}
-	}
-
-	onMyDiscardPileSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
-		console.log("onMyDiscardPileSelectionChanged");
+	onUnselectPileCard(pile: Pile, card_id: number) {
+		console.log("onUnselectPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
-				//TODO: automatically close the popin?
-				//const isUnboundChameleon = card.isUnboundChameleon();
-				this.handleChameleonCard(card, added, pile, this.onBuildSelectionChanged);
-				// if (isUnboundChameleon) {
-				// 	pile.closePopin();
-				// }
+				this.onBuildSelectionChanged();
 				break;
 		}
 	}
 
-	onMarketDiscardPileSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
-		console.log("onMarketDiscardPileSelectionChanged");
+	onSelectPileCard(pile: Pile, card_id: number) {
+		console.log("onSelectPileCard");
+		const card = new DaleCard(card_id);
+		if (pile === this.myDiscard) {
+			this.onSelectMyDiscardPileCard(pile, card);
+		}
+		else if (pile === this.marketDiscard || pile === this.marketDeck) {
+			this.onSelectMarketPileCard(pile, card);
+		}
+		else {
+			this.onOtherDiscardPileSelectionChanged(pile, card);
+		}
+	}
+
+	onSelectMyDiscardPileCard(pile: Pile, card: DaleCard) {
+		console.log("onSelectMyDiscardPileCard");
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_build':
+				if (this.verifyChameleon(card)) {
+					this.onBuildSelectionChanged();
+				}
+				break;
+		}
+	}
+
+	onSelectMarketPileCard(pile: Pile, card: DaleCard) {
+		console.log("onSelectMarketPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'chameleon_goodoldtimes':
 				this.onGoodOldTimesBind();
@@ -998,16 +1077,8 @@ class Dale extends Gamegui
 		}
 	}
 
-	onMarketDeckSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
-		console.log("onMarketDeckSelectionChanged");
-		switch(this.gamedatas.gamestate.name) {
-			case 'chameleon_goodoldtimes':
-				this.onGoodOldTimesPassive();
-				break;
-		}
-	}
-
-	onOtherDiscardPileSelectionChanged(pile: Pile, card: DaleCard, added: boolean) {
+	onOtherDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
+		console.log("onOtherDiscardPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'chameleon_reflection':
 				this.onConfirmChameleon(card);
@@ -1015,23 +1086,49 @@ class Dale extends Gamegui
 		}
 	}
 
-	onHandSelectionChanged(card_id: number, added: boolean) {
-		console.log("onHandSelectionChanged: "+card_id);
+	onUnselectHandCard(card_id: number) {
+		console.log("onUnselectHandCard: "+card_id);
+		const card = new DaleCard(card_id);
+
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_purchase':
+				this.onFundsSelectionChanged();
+				break;
+			case 'client_build':
+				this.onBuildSelectionChanged();
+				break;
+			case 'winterIsComing':
+				this.onBuildSelectionChanged();
+				break;
+		}
+	}
+
+	onSelectHandCard(card_id: number) {
+		console.log("onSelectHandCard: "+card_id);
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_technique':
 				//play card action (technique or active passive)
-				this.handleChameleonCard(card, true, this.myHand, this.onPlayCard, true);
+				if (this.verifyChameleon(card)) {
+					this.showMessage(_("IMPLEMENTED EXCEPTION !!!"), 'error');
+				}
+				//this.handleChameleonCard(card, true, this.myHand, this.onPlayCard, true);
 				break;
 			case 'client_purchase':
-				this.handleChameleonCard(card, added, this.myHand, this.onFundsSelectionChanged);
+				if (this.verifyChameleon(card)) {
+					this.onFundsSelectionChanged();
+				}
 				break;
 			case 'client_build':
-				this.handleChameleonCard(card, added, this.myHand, this.onBuildSelectionChanged);
+				if (this.verifyChameleon(card)) {
+					this.onBuildSelectionChanged();
+				}
 				break;
 			case 'winterIsComing':
-				this.handleChameleonCard(card, added, this.myHand, this.onBuildSelectionChanged);
+				if (this.verifyChameleon(card)) {
+					this.onBuildSelectionChanged();
+				}
 				break;
 			case 'shatteredRelic':
 				if(this.checkAction('actShatteredRelic')) {

@@ -75,7 +75,8 @@ export class Pile implements DaleLocation {
         this.orderedSelection = new OrderedSelection();
         this.containerHTML.querySelector(".pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
-        dojo.connect(this.orderedSelection, 'onSelectionChanged', this, 'onPileSelectionChanged');
+        dojo.connect(this.orderedSelection, 'onSelect', this.page, 'onSelectPileCard');
+        dojo.connect(this.orderedSelection, 'onUnselect', this.page, 'onUnselectPileCard');
         //dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
 	}
 
@@ -371,7 +372,7 @@ export class Pile implements DaleLocation {
      */
     public onClickTopCard() {
         if (this.selectionMode == 'top') {
-            this.onPileSelectionChanged(this.peek()!.id, true);
+            (this.page as any).onSelectPileCard(this, this.peek()!.id);
             return;
         }
         this.openPopin();
@@ -488,12 +489,5 @@ export class Pile implements DaleLocation {
         //Reattach the tooltip of the top card of the pile
         this.isPopinOpen = false;
         this.updateHTML();
-    }
-
-    /**
-     * When a hard has been added or removed, notify the main class
-     */
-    onPileSelectionChanged(card_id: number, added: boolean){
-        (this.page as any).onPileSelectionChanged(this, card_id, added);
     }
 }

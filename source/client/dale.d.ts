@@ -211,11 +211,11 @@ declare global {
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameState {
-		'chameleon_flexibleShopkeeper': {}
-		'chameleon_reflection': {}
-		'chameleon_goodoldtimes': {}
-		'chameleon_trendsetting': {}
-		'chameleon_seeingdoubles': {}
+		'chameleon_flexibleShopkeeper': { card: DaleCard, targets: DaleCard[] }
+		'chameleon_reflection': { card: DaleCard, targets: DaleCard[] }
+		'chameleon_goodoldtimes': { card: DaleCard, targets: DaleCard[] }
+		'chameleon_trendsetting': { card: DaleCard, targets: DaleCard[] }
+		'chameleon_seeingdoubles': { card: DaleCard, targets: DaleCard[] }
 		'client_purchase' : { pos: number, on_market_board: boolean, cost: number, card_name: string }
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }
