@@ -499,6 +499,7 @@ class Dale extends DaleTableBasic
                 'card' => $dbcard
             ));
         }
+        return $dbcard;
     }
 
     /**
@@ -971,6 +972,10 @@ class Dale extends DaleTableBasic
                         return true;
                     }
                 }
+                $fakedbcard = array("id" => $chameleon_card_id, "type_arg" => $chameleon_type_id);
+                if (!$this->effects->isPassiveUsed($fakedbcard)) {
+                    return true;
+                }
                 break;
             case CT_TRENDSETTING:
                 $valid_targets = $this->cards->getCardsInLocation(MARKET);
@@ -1089,18 +1094,12 @@ class Dale extends DaleTableBasic
                     $chameleon_target_id = $chameleon_target_ids[$i];
                     $target_type_id = $target_type_ids[$i];
                     if (!$this->isValidChameleonTarget($curr_card_id, $curr_type_id, $chameleon_target_id)) {
-                        throw new BgaVisibleSystemException("Unable to bind [card_id = $card_id] to [chameleon_target_id = $chameleon_target_id]");
+                        $name = $this->getCardName($dbcard);
+                        throw new BgaVisibleSystemException("Unable to bind '$name' [card_id = $card_id] to [chameleon_target_id = $chameleon_target_id]");
                     }
-                    $this->effects->insertModification($curr_card_id, $curr_type_id, $target_type_id, $chameleon_target_id); //commit
+                    $this->effects->insertModification($card_id, $curr_type_id, $target_type_id, $chameleon_target_id); //commit
                     $curr_card_id = $chameleon_target_id;
                     $curr_type_id = $target_type_id;
-                }
-                if ($curr_type_id == CT_FLEXIBLESHOPKEEPER ||
-                    $curr_type_id == CT_REFLECTION ||
-                    $curr_type_id == CT_TRENDSETTING ||
-                    $curr_type_id == CT_SEEINGDOUBLES
-                ) {
-                    throw new BgaVisibleSystemException("Chameleon chains cannot end with a non-CT_GOODOLDTIMES chameleon card");
                 }
             }
         }
@@ -1420,7 +1419,7 @@ class Dale extends DaleTableBasic
 
     function assertEquals(mixed $expected, mixed $actual, string $testname) {
         if ($expected != $actual) {
-            die("Test '$testname' failed: expected: '$expected', actual: '$actual'");
+            die("TEST FAILED '$testname': expected: '$expected', actual: '$actual'");
         }
     }
     
@@ -1457,7 +1456,6 @@ class Dale extends DaleTableBasic
             }
         }
         die("SUCCESS ! TESTS PASSED !");
-        die(print_r($location_args));
     }
 
     //TODO: safely delete this
@@ -1653,7 +1651,7 @@ class Dale extends DaleTableBasic
                 return $type_id;
             }
         }
-        die("No card name matches prefix '$prefix'");
+        throw new BgaVisibleSystemException("No card name matches prefix '$prefix'");
         return -1;
     }
 
@@ -1895,11 +1893,11 @@ class Dale extends DaleTableBasic
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $type_id = $this->getTypeId($card);
         if ($this->card_types[$type_id]['has_active'] == false) {
-            throw new BgaUserException($this->_("That card has no active ability!"));
+            throw new BgaUserException($this->_("That card has no ability!"));
         }
 
         if ($this->effects->isPassiveUsed($card)) {
-            throw new BgaUserException($this->_("That card's active ability has already been used this turn!"));
+            throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
 
         //TODO: safely delete this
@@ -1910,8 +1908,10 @@ class Dale extends DaleTableBasic
 
         switch($type_id) {
             case CT_GOODOLDTIMES:
-                $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
-                $this->effects->insertModification($card_id, CT_GOODOLDTIMES);
+                $dbcard = $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
+                $target_type_id = $this->getTypeId($dbcard);
+                $chameleon_target_id = $dbcard["id"];
+                $this->effects->insertModification($card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id); //immediately copy the new card
                 break;
             default:
                 $name = $this->getCardName($card);
@@ -2132,6 +2132,9 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $stack_cards = $this->cards->getCardsFromLocation($stack_card_ids, HAND.$player_id);
         $stack_index = $this->cards->getNextStackIndex($player_id);
+
+        //die(print_r($this->effects->cache));
+        //die("type id ".$this->getTypeId($stack_cards[46]));
 
         //Get information about the stack cards from discard (CT_NOSTALGICITEM)
         $stack_cards_from_discard = null;

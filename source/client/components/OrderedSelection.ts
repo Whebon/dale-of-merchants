@@ -200,8 +200,8 @@ export class OrderedSelection {
     public unselectItem(card_id: number, secondary?: boolean) {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
 		const index = card_ids.indexOf(card_id);
-		card_ids.splice(index, 1);
         if (index != -1) {
+            card_ids.splice(index, 1);
             this.removeIcon(card_id, secondary);
             this.onUnselect(card_id, secondary);
         }

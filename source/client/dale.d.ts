@@ -11,7 +11,7 @@
 import { DaleCard } from './components/DaleCard';
 import { CardType } from './components/types/CardType';
 import { DbCard } from './components/types/DbCard';
-import { DbEffect } from './components/types/DbEffect';
+import { DbEffect, RawDbEffect } from './components/types/DbEffect';
 import { DbLocationPrefix } from './components/types/DbLocationPrefix';
 import { Pile } from './components/Pile';
 import { DaleStock } from './components/DaleStock';
@@ -37,10 +37,10 @@ declare global {
 			card: DbCard
 		}
 		'addEffect': {
-			effect: DbEffect;
+			effect: RawDbEffect;
 		}
 		'expireEffects': {
-			effects: DbEffect[];
+			effects: RawDbEffect[];
 		}
 		'message': {
 			//no args
@@ -206,16 +206,16 @@ declare global {
 		'hand': {[card_id: number]: DbCard}
 		'limbo': {[card_id: number]: DbCard}
 		'market': {[card_id: number]: DbCard}
-		'effects': {[_index: number]: DbEffect}
+		'effects': {[_index: number]: RawDbEffect}
 	}
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameState {
-		'chameleon_flexibleShopkeeper': { card: DaleCard, targets: DaleCard[] }
-		'chameleon_reflection': { card: DaleCard, targets: DaleCard[] }
-		'chameleon_goodoldtimes': { card: DaleCard, targets: DaleCard[] }
-		'chameleon_trendsetting': { card: DaleCard, targets: DaleCard[] }
-		'chameleon_seeingdoubles': { card: DaleCard, targets: DaleCard[] }
+		'chameleon_flexibleShopkeeper': {}
+		'chameleon_reflection': {}
+		'chameleon_goodoldtimes': { passiveUsed: boolean }
+		'chameleon_trendsetting': {}
+		'chameleon_seeingdoubles': {}
 		'client_purchase' : { pos: number, on_market_board: boolean, cost: number, card_name: string }
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }

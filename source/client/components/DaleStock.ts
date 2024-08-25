@@ -10,6 +10,7 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 /**
  * Selection modes for the dale stock
  * 'none':                 no selection possible
+ * 'noneRetainSelection':  no selection possible, the previous selection is maintained
  * 'click':                no selection possible, cards are clickable
  * 'clickRetainSelection': no selection possible, cards are clickable, the previous selection is maintained
  * 'clickTechnique':       no selection possible, PLAYABLE cards are clickable
@@ -17,7 +18,7 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'only_card_id47':       no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  */
-type DaleStockSelectionMode = 'none' | 'click' | 'clickTechnique' | 'clickRetainSelection' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickRetainSelection' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -235,6 +236,8 @@ export class DaleStock extends Stock implements DaleLocation {
 		const card = new DaleCard(card_id);
 		switch (this.selectionMode) {
 			case 'none':
+				return false;
+			case 'noneRetainSelection':
 				return false;
 			case 'click':
 				return true;

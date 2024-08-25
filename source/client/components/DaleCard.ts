@@ -120,6 +120,8 @@ export class DaleCard {
      * @param local (optional) default false. If true, mark the effect as local.
      */
     public static addEffect(effect: DbEffect) {
+        console.log("addEffect");
+        console.log(effect);
         DaleCard.effects.push(effect);
         
         //TODO: safely delete this
@@ -168,15 +170,23 @@ export class DaleCard {
         for (let effect of effects) {
             const index = DaleCard.effects.findIndex(e => e.effect_id == effect.effect_id);
             if (index == -1) {
+                console.log("Known effects:");
+                console.log(DaleCard.effects);
+                console.log("Expired effect:");
                 console.log(effect);
                 throw new Error("Attempted to remove a non-existing effect");
             }
-            DaleCard.effects.splice(index, 1);
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
                 affected_card_ids = Array.from(DaleCard.divs.keys());
                 break;
             }
             affected_card_ids.add(DaleCard.effects[index]!.card_id);
+            DaleCard.effects.splice(index, 1);
+            
+            //a chameleon effect was expired
+            if (effect.chameleon_target_id != null) {
+                DaleCard.cardIdToChameleonChain.delete(effect.card_id);
+            }
         }
         affected_card_ids.forEach(card_id => {
             new DaleCard(card_id).updateHTML();
@@ -230,8 +240,8 @@ export class DaleCard {
      * Returns the effective type_id of this card (after applying chameleon targets)
      * */
     public get effective_type_id(): number {
-        return DaleCard.cardIdToChameleonChain.get(this.id)?.type_id ?? 
-            DaleCard.cardIdToChameleonChainLocal.get(this.id)?.type_id ?? 
+        return DaleCard.cardIdToChameleonChainLocal.get(this.id)?.type_id ?? 
+            DaleCard.cardIdToChameleonChain.get(this.id)?.type_id ?? 
             this.original_type_id;
     }
 
@@ -283,7 +293,7 @@ export class DaleCard {
      * @returns true if this is a card that has already copied a card earlier this turn
      */
     public isBoundChameleon(): boolean {
-        return DaleCard.cardIdToChameleonChain.has(this.id) || DaleCard.cardIdToChameleonChainLocal.has(this.id);
+        return DaleCard.cardIdToChameleonChainLocal.has(this.id) || DaleCard.cardIdToChameleonChain.has(this.id);
     }
 
     /**
@@ -297,8 +307,9 @@ export class DaleCard {
      * Bind an effective type to this card. The bind still needs to be commited to the server later.
      * @param effective_type_id new type id this card should be bound to
      */
-    public bindChameleonLocal(card: DaleCard) {
-        DaleCard.cardIdToChameleonChainLocal.set(this.id, new ChameleonChain(card.id, card.effective_type_id));
+    public bindChameleonLocal(chain: ChameleonChain) {
+        DaleCard.cardIdToChameleonChainLocal.delete(this.id);
+        DaleCard.cardIdToChameleonChainLocal.set(this.id, chain);
         this.updateHTML();
     }
 
@@ -448,6 +459,10 @@ export class DaleCard {
         return div;
     }
 
+    public isCardBack() {
+        return this.original_type_id == 0;
+    }
+
     public isJunk(): boolean {
         return (this.original_type_id >= 1 && this.original_type_id <= 5);
     }
@@ -558,7 +573,7 @@ export class DaleCard {
                 dojo.fadeOut({node: old_overlay as HTMLElement, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
             }
             else {
-                div.remove();
+                old_overlay.remove();
             }
 		}
         if (this.isBoundChameleon()) {

@@ -15,6 +15,7 @@ if (!defined('EC_GLOBAL')) {
 class DaleEffects {
     public DaleTableBasic $game;
     public array $cache;
+    public int $last_effect_id;
 
     function __construct(DaleTableBasic $game) {
         $this->game = $game;
@@ -27,7 +28,13 @@ class DaleEffects {
     function loadFromDb() {
         $sql = "SELECT * FROM effect";
         $this->cache = $this->game->getCollectionFromDB($sql);
-        $this->cache;
+        if (count($this->cache) == 0) {
+            $this->last_effect_id = 0;
+        }
+        else {
+            $this->last_effect_id = max(array_keys($this->cache));
+        }
+        return $this->cache;
     }
 
     /**
@@ -40,11 +47,14 @@ class DaleEffects {
      * @return array newly added effect
      */
     private function insert(int $effect_class, int $card_id, int $type_id, ?int $arg, ?int $chameleon_target_id) {
+        $this->last_effect_id += 1;
+        $effect_id = $this->last_effect_id;
         $nullable_arg = ($arg == null) ? "NULL" : $arg;
         $nullable_chameleon_target_id = ($chameleon_target_id == null) ? "NULL" : $chameleon_target_id;
-        $sql = "INSERT INTO effect (effect_class, card_id, type_id, arg, chameleon_target_id) VALUES ($effect_class, $card_id, $type_id, $nullable_arg, $nullable_chameleon_target_id)";
+        $sql = "INSERT INTO effect (effect_id, effect_class, card_id, type_id, arg, chameleon_target_id) VALUES ($effect_id, $effect_class, $card_id, $type_id, $nullable_arg, $nullable_chameleon_target_id)";
         $this->game->DbQuery($sql);
         $row = array(
+            "effect_id" => $effect_id,
             "effect_class" => $effect_class,
             "card_id" => $card_id,
             "type_id" => $type_id,
@@ -166,7 +176,7 @@ class DaleEffects {
      */
     function getArg(int $card_id, int $type_id) {
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != "NULL") {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != null) {
                 return $row["arg"];
             }
         }

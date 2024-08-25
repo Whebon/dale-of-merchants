@@ -35,7 +35,7 @@ export class MainClientState {
     }
 
     private get _descriptionmyturn() {
-        switch(this.name) {
+        switch(this._name) {
             //Main Client States
             case 'client_technique':
                 return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
@@ -53,7 +53,12 @@ export class MainClientState {
             case 'chameleon_reflection':
                 return _("Reflection: ${you} must copy a card from the top of another player's discard pile")
             case 'chameleon_goodoldtimes':
-                return _("Good Old Times: ${you} must copy the bin's top card"); //or... passive...
+                if ((this._args as ClientGameState['chameleon_goodoldtimes']).passiveUsed) {
+                    return _("Good Old Times: ${you} must copy the bin's top card");
+                }
+                else {
+                    return _("Good Old Times: ${you} must copy the bin's top card or ditch the supply's top card");
+                }
             case 'chameleon_trendsetting':
                 return _("Trendsetting: ${you} must copy a card in the market");
             case 'chameleon_seeingdoubles':
@@ -64,9 +69,9 @@ export class MainClientState {
     }
 
     /**
-     * Cancel the client state and return to the previous client state
+     * Leave the client state and return to the previous client state
      */
-    public cancel() {
+    public leave() {
         const previous = this._stack.pop();
         if (previous) {
             this.enter(previous.name, previous.args);

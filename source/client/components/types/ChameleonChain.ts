@@ -23,13 +23,27 @@ export class ChameleonChain {
         return this.type_ids[this.type_ids.length-1]!;
     }
 
-    constructor(card_id: number, type_id: number) {
-        this.card_ids = [card_id];
-        this.type_ids = [type_id];
+    /**
+     * Length of the chameleon chain
+     */
+    get length(): number {
+        return this.card_ids.length
+    }
+
+    constructor(card_id?: number, type_id?: number) {
+        this.card_ids = [];
+        this.type_ids = [];
+        if (card_id !== undefined && type_id !== undefined) {
+            this.push(card_id, type_id);
+        }
     }
 
     public push(card_id: number, type_id: number) {
         this.card_ids.push(card_id);
         this.type_ids.push(type_id);
+    }
+
+    public containsCardId(card_id: number) {
+       return this.card_ids.includes(card_id);
     }
 }

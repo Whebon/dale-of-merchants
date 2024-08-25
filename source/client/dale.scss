@@ -134,16 +134,21 @@
 	to { opacity: 1.0; }
 }
 
-.dale-line-node {
+.dale-line-source {
 	cursor: pointer;
 	border-radius: 10px;
 	scale: 1.05 !important;
 	z-index: 202 !important;
 }
 
+.dale-line-target {
+	cursor: pointer;
+	border-radius: 10px;
+	scale: 1.025 !important;
+}
+
 .dale-line-target-chameleon {
 	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
-	outline: 3px solid rgba(31, 119, 44, 0.5) !important;
 }
 
 .dale-line-source-chameleon {
@@ -616,7 +621,7 @@ body {
 		transition: scale 0.3s ease, transform 1s ease;
 		z-index: 100;
 		
-		&:hover:not(.dale-line-node) {
+		&:hover:not(.dale-line-source):not(.dale-line-target) {
 			scale: 1.1;
 			z-index: 200 !important;
 		}

@@ -3,7 +3,7 @@ import PopInDialog = require('bga-ts-template/typescript/types/ebg/popindialog')
 import { DaleLocation } from './types/DaleLocation';
 import { Images } from './Images';
 import { DaleCard } from './DaleCard';
-import { ChameleonClientStateArgs } from './types/ChameleonClientStateArgs';
+import { ChameleonArgs } from './types/ChameleonArgs';
 import { OrderedSelection, SelectionIconType } from './OrderedSelection';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
@@ -11,12 +11,13 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 declare function $(text: string | Element): HTMLElement;
 
 /**
- * 'none': content popin can be viewed, but no cards can be selected
- * 'single': a single card can be selected from the popin
- * 'multiple': multiple cards (up to the selectionMax) can be selected from the popin
- * 'top': only the top card of the pile can be selected. furthermore, the popin cannot be opened.
+ * 'none':                  content popin can be viewed, but no cards can be selected
+ * 'noneCantViewContent':   content popin can cannot be viewed, and no cards can be selected
+ * 'single':                a single card can be selected from the popin
+ * 'multiple':              multiple cards (up to the selectionMax) can be selected from the popin
+ * 'top':                   content popin can cannot be viewed, and only the top card of the pile can be selected.
  */
-type SelectionMode = 'none' | 'single' | 'multiple' | 'top';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'multiple' | 'top';
 
 /**
  * A component to display a set of cards in a pile.
@@ -28,7 +29,7 @@ export class Pile implements DaleLocation {
     private containerHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private selectedSizeHTML: HTMLElement;
-    private topCardHTML: HTMLElement | undefined;
+    public topCardHTML: HTMLElement | undefined;
     public placeholderHTML: HTMLElement;
 
     private pile_container_id: string;
@@ -375,6 +376,9 @@ export class Pile implements DaleLocation {
             (this.page as any).onSelectPileCard(this, this.peek()!.id);
             return;
         }
+        if (this.selectionMode == 'noneCantViewContent') {
+            return;
+        }
         this.openPopin();
     }
 
@@ -384,13 +388,13 @@ export class Pile implements DaleLocation {
     public onClickCard(card: DaleCard, div: HTMLElement) {
         console.log("Clicked on a card in the popin");
         //when in a chameleon client state, make sure the user is directed towards selecting a target
-        const chameleonArgs: ChameleonClientStateArgs = (this.page as any).chameleonArgs!;
+        const chameleonArgs: ChameleonArgs = (this.page as any).chameleonArgs!;
         if (chameleonArgs) {
-            if (chameleonArgs.card.id == card.id) {
+            if (chameleonArgs.currentSource.id == card.id) {
                 (this.page as any).onCancelChameleon();
             }
             else {
-                this.page.showMessage(_("Please select a valid target for ")+`'${chameleonArgs.card.name}'`, "error");
+                this.page.showMessage(_("Please select a valid target for ")+`'${chameleonArgs.currentSource.name}'`, "error");
             }
             return;
         }
@@ -448,7 +452,10 @@ export class Pile implements DaleLocation {
         this.setWrapClass(wrapClass);
         this.orderedSelection.setMaxSize(max);
         this.orderedSelection.setIconType(iconType);
+        this.selectionMode = mode;
         switch (mode) {
+            case 'noneCantViewContent':
+                return; //don't update html!
             case 'multiple':
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("dale-blinking");
@@ -465,7 +472,6 @@ export class Pile implements DaleLocation {
                 this.orderedSelection.unselectAll();
                 break;
         }
-        this.selectionMode = mode;
         this.updateHTML();
     }
 
