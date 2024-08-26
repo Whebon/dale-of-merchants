@@ -360,6 +360,10 @@
   max-width: 300px;
 }
 
+.dale-fizzle {
+  scale: 1.1;
+}
+
 #dale-svg-container {
   position: absolute;
   top: 0;

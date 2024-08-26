@@ -397,6 +397,9 @@ class Dale extends Gamegui
 					(source: DaleCard, target: DaleCard) => this.onConfirmChameleon(target)
 				)
 				break;
+			case 'client_fizzle':
+				new DaleCard((this.mainClientState.args as ClientGameState['client_fizzle']).card_id).div.classList.add("dale-fizzle");
+				break;
 		}
 	}
 
@@ -475,6 +478,9 @@ class Dale extends Gamegui
 			case 'chameleon_goodoldtimes':
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
+				break;
+			case 'client_fizzle':
+				document.querySelector(".dale-fizzle")?.classList.remove("dale-fizzle");
 				break;
 		}
 	}

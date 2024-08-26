@@ -2611,9 +2611,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
                     new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onConfirmChameleon(target); });
                     break;
+                case 'client_fizzle':
+                    new DaleCard_8.DaleCard(this.mainClientState.args.card_id).div.classList.add("dale-fizzle");
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
+            var _a;
             console.log('Leaving state: ' + stateName);
             if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
                 console.log("this.chameleonArgs => don't turn off selection modes");
@@ -2672,8 +2676,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(0);
                     break;
                 case 'chameleon_reflection':
-                    for (var _i = 0, _a = Object.entries(this.playerDiscards); _i < _a.length; _i++) {
-                        var _b = _a[_i], player_id = _b[0], pile = _b[1];
+                    for (var _i = 0, _b = Object.entries(this.playerDiscards); _i < _b.length; _i++) {
+                        var _c = _b[_i], player_id = _c[0], pile = _c[1];
                         if (+player_id != +this.player_id) {
                             pile.setSelectionMode('none');
                         }
@@ -2682,6 +2686,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_goodoldtimes':
                     this.marketDeck.setSelectionMode('none');
                     this.marketDiscard.setSelectionMode('none');
+                    break;
+                case 'client_fizzle':
+                    (_a = document.querySelector(".dale-fizzle")) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-fizzle");
                     break;
             }
         };
