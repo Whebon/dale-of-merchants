@@ -44,16 +44,16 @@ class Dale extends DaleTableBasic
             // "cancelableChameleonTypeId" => 13, TODO: safely delete this
         ) );
 
-        $this->cards = new DaleDeck($this, "onLocationExhausted");
-        $this->cards->init("card");
         $this->effects = new DaleEffects($this);
+        $this->cards = new DaleDeck($this, $this->effects, "onLocationExhausted");
+        $this->cards->init("card");
 	}
 	
     protected function getGameName( )
     {
 		// Used for translations and stuff. Please do not modify.
         return "dale";
-    }	
+    }
 
     /*
         setupNewGame:

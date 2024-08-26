@@ -22,11 +22,13 @@ if (!defined('HAND')) {
 
 class DaleDeck extends Deck {
     private $game;
+    private DaleEffects $effects;
     public string $on_location_exhausted_method;
 
-    function __construct($game, string $on_location_exhausted_method) {
+    function __construct($game, $effects, string $on_location_exhausted_method) {
         parent::__construct();
         $this->game = $game;
+        $this->effects = $effects;
         $this->on_location_exhausted_method = $on_location_exhausted_method;
     }
 
@@ -122,12 +124,43 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * @return bool `true` if the specified location is outside the union of locations `{HAND, LIMBO, SCHEDULE}`
+     */
+    function isOuterLocation($location) {
+        $prefix = substr($location, 0, 4);
+        return $prefix != HAND && $prefix != LIMBO && $prefix != SCHEDULE;
+    }
+
+    /**
+     * Move cards to specific location
+     */
+    function moveCards($cards, $location, $location_arg=0) {
+        parent::moveCards($cards, $location, $location_arg);
+        if ($this->isOuterLocation($location)) {
+            $this->effects->expireModificationsMultiple($cards);
+        }
+    }
+
+    /**
+     * Move a card to specific location
+     */
+    function moveCard($card_id, $location, $location_arg=0) {
+        parent::moveCard($card_id, $location, $location_arg);
+        if ($this->isOuterLocation($location)) {
+            $this->effects->expireModifications($card_id);
+        }
+    }
+
+    /**
      * Move 1 card on top of the provided location
      * @param mixed $card_id string or int representing the card id of the card to move
      * @param string $location location to put the card
      */
     function moveCardOnTop($card_id, string $location) {
         $this->insertCardOnExtremePosition($card_id, $location, true);
+        if ($this->isOuterLocation($location)) {
+            $this->effects->expireModifications($card_id);
+        }
     }
 
     /**

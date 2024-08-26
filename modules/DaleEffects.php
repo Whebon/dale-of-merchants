@@ -260,6 +260,9 @@ class DaleEffects {
                 $expired_effects[] = $row;
             }
         }
+        if (count($expired_effects) == 0) {
+            return;
+        }
         $this->notifyExpireEffects($expired_effects);
         //for the db
         $sql = "DELETE FROM effect WHERE card_id = $card_id AND effect_class = ".EC_MODIFICATION;
@@ -281,6 +284,9 @@ class DaleEffects {
                 $expired_effects[] = $row;
             }
         }
+        if (count($expired_effects) == 0) {
+            return;
+        }
         $this->notifyExpireEffects($expired_effects);
         //for the db
         $card_ids_string = implode(",", $card_ids);
@@ -299,6 +305,9 @@ class DaleEffects {
             if (!in_array($row["card_id"], $card_ids)) {
                 $expired_effects[] = $row;
             }
+        }
+        if (count($expired_effects) == 0) {
+            return;
         }
         $this->notifyExpireEffects($expired_effects);
         //for the db
