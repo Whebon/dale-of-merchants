@@ -47,6 +47,7 @@ export class MainClientState {
                 return _("${you} must discard any number of cards");
             case 'client_essentialPurchase':
                 return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+            
             //Chameleon States
             case 'chameleon_flexibleShopkeeper':
                 return _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack");
@@ -68,7 +69,12 @@ export class MainClientState {
                 return _("Trendsetting: ${you} must copy a card in the market");
             case 'chameleon_seeingdoubles':
                 return _("Seeing Doubles: ${you} must copy another card in your hand");
+            case 'client_fizzle':
+                return _("Are you sure you want to play '${card_name}' without any effects?");
+
             //Technique States
+            case 'client_acorn':
+                return _("Acorn: ${you} must select a card from an opponent's stall to swap with");
         }
         return "MISSING DESCRIPTION";
     }

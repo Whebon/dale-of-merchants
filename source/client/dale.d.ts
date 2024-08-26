@@ -221,6 +221,10 @@ declare global {
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
 		'client_essentialPurchase': { funds_card_ids: number[] } & ClientGameState['client_purchase']
+		'client_fizzle': { card_id: number, card_name: string }
+
+		//techniques
+		'client_acorn': { card_id: number }
 	}
 
 	//

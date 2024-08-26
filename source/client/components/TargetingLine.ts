@@ -2,9 +2,9 @@ import { DaleCard } from "./DaleCard";
 import { Images } from "./Images";
 import { Pile } from "./Pile";
 
-type lineClass = "dale-line-chameleon";
-type targetClass = "dale-line-target-chameleon";
-type sourceClass = "dale-line-source-chameleon";
+type lineClass = "dale-line-chameleon" | "dale-line-technique";
+type targetClass = "dale-line-target-chameleon" | "dale-line-target-technique";
+type sourceClass = "dale-line-source-chameleon" | "dale-line-source-technique";
 
 /**
  * Can be used to draw a svg lines
@@ -83,6 +83,7 @@ export class TargetingLine {
         }
 
         //setup line
+        let readjustments = 0;
         this.updateLine = function(this: Window, evt: MouseEvent) {
             const sourceRect = thiz.cardDiv.getBoundingClientRect();
             const x1 = sourceRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
@@ -91,12 +92,19 @@ export class TargetingLine {
             let x2 = evt.pageX;
             let y2 = evt.pageY;
             if (currTarget != thiz.prevTarget) {
+                readjustments = 0;
                 thiz.prevTarget?.classList.remove("dale-line-source", thiz.sourceClass);
                 thiz.prevTarget?.classList.add("dale-line-target", thiz.targetClass);
             }
             for (let targetCard of thiz.targetDivs) {
                 if (currTarget == targetCard) {
                     //snap to new target
+                    if (currTarget == thiz.prevTarget && readjustments >= 3) {
+                        thiz.line.setAttribute("x1", String(x1));
+                        thiz.line.setAttribute("y1", String(y1));
+                        return;
+                    }
+                    readjustments += 1;
                     const targetRect = currTarget.getBoundingClientRect();
                     x2 = targetRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
                     y2 = targetRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;

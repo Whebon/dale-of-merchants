@@ -120,7 +120,7 @@ class Dale extends Gamegui
 
 		//positioning the svg container
 		const svgContainer = $("dale-svg-container") as HTMLElement;
-		$("ebd-body")?.appendChild(svgContainer);
+		$("overall-content")?.appendChild(svgContainer);
 		addEventListener("mousemove", function(this: Window, evt: MouseEvent) { TargetingLine.previousMouseEvent = evt; });
 
 		//initialize the card types
@@ -343,12 +343,23 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
 				break;
-			case 'acorn':
+			case 'client_acorn':
+				let client_acorn_targets: DaleCard[] = [];
 				for (let player_id in this.gamedatas.players) {
 					if (+player_id != this.player_id) {
-						this.playerStalls[player_id]!.setSelectionMode('single');
+						client_acorn_targets = client_acorn_targets.concat(this.playerStalls[player_id]!.getCardsInStall());
 					}
 				}
+				const client_acorn_args = (this.mainClientState.args as ClientGameState['client_acorn']);
+				new TargetingLine(
+					new DaleCard(client_acorn_args.card_id),
+					client_acorn_targets,
+					"dale-line-source-technique",
+					"dale-line-target-technique",
+					"dale-line-technique",
+					(source: DaleCard) => this.onCancelClient(),
+					(source: DaleCard, target: DaleCard) => this.playSwapCard(source, target)
+				)
 				break;
 			case 'giftVoucher':
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
@@ -445,13 +456,6 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'acorn':
-				for (let player_id in this.gamedatas.players) {
-					if (+player_id != this.player_id) {
-						this.playerStalls[player_id]!.setSelectionMode('none');
-					}
-				}
-				break;
 			case 'giftVoucher':
 				this.market!.setSelectionMode(0);
 				break;
@@ -521,8 +525,8 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
 				break;
-			case 'acorn':
-				this.addActionButtonCancel();
+			case 'client_acorn':
+				this.addActionButtonCancelClient();
 				break;
 			case 'giftVoucher':
 				this.addActionButtonCancel();
@@ -565,6 +569,10 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_seeingdoubles':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_fizzle':
+				this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -1140,13 +1148,29 @@ class Dale extends Gamegui
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_technique':
 				//play card action (technique or active passive)
+				let fizzle = true;
 				if (this.verifyChameleon(card)) {
 					if (card.isTechnique()) {
-						if(this.checkAction('actPlayTechniqueCard')) {
-							this.bgaPerformAction('actPlayTechniqueCard', {
-								card_id: card.id, 
-								chameleons_json: DaleCard.getLocalChameleonsJSON()
-							});
+						switch(card.effective_type_id) {
+							case DaleCard.CT_ACORN:
+								for (let player_id in this.gamedatas.players) {
+									if (+player_id != this.player_id) {
+										if (this.playerStalls[player_id]!.getNumberOfStacks() > 0) {
+											fizzle = false;
+											break;
+										}
+									}
+								}
+								if (fizzle) {
+									this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
+								}
+								else {
+									this.mainClientState.enterOnStack('client_acorn', { card_id: card.id });
+								}
+								break;
+							default:
+								this.playTechniqueCard(card);
+								break;
 						}
 					}
 					else {
@@ -1262,6 +1286,25 @@ class Dale extends Gamegui
 				})
 			}
 		}
+	}
+
+	onFizzle() {
+		const card_id = (this.mainClientState.args as ClientGameState['client_fizzle']).card_id;
+		this.playTechniqueCard(new DaleCard(card_id));
+		this.mainClientState.leave();
+	}
+
+	playTechniqueCard(card: DaleCard) {
+		if(this.checkAction('actPlayTechniqueCard')) {
+			this.bgaPerformAction('actPlayTechniqueCard', {
+				card_id: card.id, 
+				chameleons_json: DaleCard.getLocalChameleonsJSON()
+			});
+		}
+	}
+
+	playSwapCard(source: DaleCard, target: DaleCard) {
+		throw new Error("NOT IMPLEMENTED: playSwapCard");
 	}
 
 	//TODO: safely delete this

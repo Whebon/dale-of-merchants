@@ -2171,6 +2171,10 @@ define("components/types/MainClientState", ["require", "exports"], function (req
                         return _("Trendsetting: ${you} must copy a card in the market");
                     case 'chameleon_seeingdoubles':
                         return _("Seeing Doubles: ${you} must copy another card in your hand");
+                    case 'client_fizzle':
+                        return _("Are you sure you want to play '${card_name}' without any effects?");
+                    case 'client_acorn':
+                        return _("Acorn: ${you} must select a card from an opponent's stall to swap with");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -2257,6 +2261,7 @@ define("components/TargetingLine", ["require", "exports", "components/Images"], 
                 var targetCard = targets_1[_i];
                 _loop_3(targetCard);
             }
+            var readjustments = 0;
             this.updateLine = function (evt) {
                 var _a, _b;
                 var sourceRect = thiz.cardDiv.getBoundingClientRect();
@@ -2266,12 +2271,19 @@ define("components/TargetingLine", ["require", "exports", "components/Images"], 
                 var x2 = evt.pageX;
                 var y2 = evt.pageY;
                 if (currTarget != thiz.prevTarget) {
+                    readjustments = 0;
                     (_a = thiz.prevTarget) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-line-source", thiz.sourceClass);
                     (_b = thiz.prevTarget) === null || _b === void 0 ? void 0 : _b.classList.add("dale-line-target", thiz.targetClass);
                 }
                 for (var _i = 0, _c = thiz.targetDivs; _i < _c.length; _i++) {
                     var targetCard = _c[_i];
                     if (currTarget == targetCard) {
+                        if (currTarget == thiz.prevTarget && readjustments >= 3) {
+                            thiz.line.setAttribute("x1", String(x1));
+                            thiz.line.setAttribute("y1", String(y1));
+                            return;
+                        }
+                        readjustments += 1;
                         var targetRect = currTarget.getBoundingClientRect();
                         x2 = targetRect.left + window.scrollX + Images_6.Images.CARD_WIDTH_S / 2;
                         y2 = targetRect.top + window.scrollY + Images_6.Images.CARD_HEIGHT_S / 2;
@@ -2379,7 +2391,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log(this.gamedatas);
             console.log("------------------------");
             var svgContainer = $("dale-svg-container");
-            (_a = $("ebd-body")) === null || _a === void 0 ? void 0 : _a.appendChild(svgContainer);
+            (_a = $("overall-content")) === null || _a === void 0 ? void 0 : _a.appendChild(svgContainer);
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
             DaleCard_8.DaleCard.init(gamedatas.cardTypes);
             for (var player_id in gamedatas.players) {
@@ -2560,12 +2572,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
-                case 'acorn':
+                case 'client_acorn':
+                    var client_acorn_targets = [];
                     for (var player_id in this.gamedatas.players) {
                         if (+player_id != this.player_id) {
-                            this.playerStalls[player_id].setSelectionMode('single');
+                            client_acorn_targets = client_acorn_targets.concat(this.playerStalls[player_id].getCardsInStall());
                         }
                     }
+                    var client_acorn_args = this.mainClientState.args;
+                    new TargetingLine_1.TargetingLine(new DaleCard_8.DaleCard(client_acorn_args.card_id), client_acorn_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.playSwapCard(source, target); });
                     break;
                 case 'giftVoucher':
                     this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
@@ -2647,13 +2662,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'acorn':
-                    for (var player_id in this.gamedatas.players) {
-                        if (+player_id != this.player_id) {
-                            this.playerStalls[player_id].setSelectionMode('none');
-                        }
-                    }
-                    break;
                 case 'giftVoucher':
                     this.market.setSelectionMode(0);
                     break;
@@ -2717,8 +2725,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'spyglass':
                     this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
                     break;
-                case 'acorn':
-                    this.addActionButtonCancel();
+                case 'client_acorn':
+                    this.addActionButtonCancelClient();
                     break;
                 case 'giftVoucher':
                     this.addActionButtonCancel();
@@ -2761,6 +2769,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_seeingdoubles':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_fizzle':
+                    this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -3083,13 +3095,29 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var card = new DaleCard_8.DaleCard(card_id);
             switch (this.gamedatas.gamestate.name) {
                 case 'client_technique':
+                    var fizzle = true;
                     if (this.verifyChameleon(card)) {
                         if (card.isTechnique()) {
-                            if (this.checkAction('actPlayTechniqueCard')) {
-                                this.bgaPerformAction('actPlayTechniqueCard', {
-                                    card_id: card.id,
-                                    chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
-                                });
+                            switch (card.effective_type_id) {
+                                case DaleCard_8.DaleCard.CT_ACORN:
+                                    for (var player_id in this.gamedatas.players) {
+                                        if (+player_id != this.player_id) {
+                                            if (this.playerStalls[player_id].getNumberOfStacks() > 0) {
+                                                fizzle = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (fizzle) {
+                                        this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
+                                    }
+                                    else {
+                                        this.mainClientState.enterOnStack('client_acorn', { card_id: card.id });
+                                    }
+                                    break;
+                                default:
+                                    this.playTechniqueCard(card);
+                                    break;
                             }
                         }
                         else {
@@ -3177,6 +3205,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                 }
             }
+        };
+        Dale.prototype.onFizzle = function () {
+            var card_id = this.mainClientState.args.card_id;
+            this.playTechniqueCard(new DaleCard_8.DaleCard(card_id));
+            this.mainClientState.leave();
+        };
+        Dale.prototype.playTechniqueCard = function (card) {
+            if (this.checkAction('actPlayTechniqueCard')) {
+                this.bgaPerformAction('actPlayTechniqueCard', {
+                    card_id: card.id,
+                    chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
+                });
+            }
+        };
+        Dale.prototype.playSwapCard = function (source, target) {
+            throw new Error("NOT IMPLEMENTED: playSwapCard");
         };
         Dale.prototype.onUsePassiveAbility = function (card) {
             if (card.effective_type_id != DaleCard_8.DaleCard.CT_GOODOLDTIMES) {
