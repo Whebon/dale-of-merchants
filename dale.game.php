@@ -1223,6 +1223,11 @@ class Dale extends DaleTableBasic
                         $curr_card_id = $chameleon_target_id;
                         $curr_type_id = $target_type_id;
                     }
+                    $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} copy a ${target_card_name}'), array(
+                        'chameleon_card_name' => $this->card_types[$type_id]['name'],
+                        'target_card_name' => $this->getCardName($dbcard),
+                        'player_name' => $this->getActivePlayerName()
+                    ));
                 }
             }
         }
