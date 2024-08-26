@@ -1896,7 +1896,7 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("That card has no ability!"));
         }
 
-        if ($this->effects->isPassiveUsed($card)) {
+        if ($this->effects->isPassiveUsed($card) && ($type_id != CT_GOODOLDTIMES || $this->effects->getArg($card_id, $type_id) == null)) {
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
 
@@ -1911,11 +1911,14 @@ class Dale extends DaleTableBasic
                 $dbcard = $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
                 $target_type_id = $this->getTypeId($dbcard);
                 $chameleon_target_id = $dbcard["id"];
-                $this->effects->insertModification($card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id); //immediately copy the new card
+                if ($this->effects->getArg($card_id, $type_id) != null) {
+                    //if the chain was not broken by the ditch effect, immediately copy the new card
+                    $this->effects->insertModification($card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
+                }
                 break;
             default:
                 $name = $this->getCardName($card);
-                throw new BgaVisibleSystemException("ACTIVE ABILITY NOT IMPLEMENTED: '$name'");
+                throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
         }
 
         $this->gamestate->nextState("trActiveAbility");

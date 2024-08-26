@@ -140,18 +140,18 @@ class DaleEffects {
     function getTypeId(array $dbcard) {
         $card_id = $dbcard["id"];
         $type_id = $dbcard["type_arg"];
-        while (
+        if (
             $type_id == CT_FLEXIBLESHOPKEEPER || 
             $type_id == CT_REFLECTION ||  
             $type_id == CT_GOODOLDTIMES || 
             $type_id == CT_TRENDSETTING || 
             $type_id == CT_SEEINGDOUBLES
         ) {
-            $chameleon_type_id = $this->getArg($card_id, $type_id);
-            if ($chameleon_type_id == $type_id || $chameleon_type_id == null) {
-                break; //the chameleon is itself
+            foreach ($this->cache as $row) {
+                if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != null && $row["arg"] != "NULL") {
+                    $type_id = $row["arg"];
+                }
             }
-            $type_id = $chameleon_type_id;
         }
         return $type_id;
     }
@@ -176,7 +176,7 @@ class DaleEffects {
      */
     function getArg(int $card_id, int $type_id) {
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != null) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != null && $row["arg"] != "NULL") {
                 return $row["arg"];
             }
         }

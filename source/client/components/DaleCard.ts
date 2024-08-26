@@ -152,12 +152,12 @@ export class DaleCard {
 
         //update card affected divs
         if (effect.effect_class == DaleCard.EC_GLOBAL) {
-            for (let card_id in DaleCard.divs.keys()) {
-                new DaleCard(card_id).updateHTML();
+            for (let card_id of Array.from(DaleCard.divs.keys())) {
+                DaleCard.updateHTML(card_id);
             }
         }
         else {
-            new DaleCard(effect.card_id).updateHTML();
+            DaleCard.updateHTML(effect.card_id);
         }
     }
 
@@ -189,7 +189,7 @@ export class DaleCard {
             }
         }
         affected_card_ids.forEach(card_id => {
-            new DaleCard(card_id).updateHTML();
+            DaleCard.updateHTML(card_id);
         });
     }
 
@@ -593,6 +593,15 @@ export class DaleCard {
             if (!temp_div) {
                 this.addTooltip(div);
             }
+        }
+    }
+
+    /**
+    * Update the HTML of a card_id, if it is attached to a div
+    */
+    private static updateHTML(card_id: number) {
+        if (DaleCard.divs.has(card_id)) {
+            new DaleCard(card_id).updateHTML();
         }
     }
 

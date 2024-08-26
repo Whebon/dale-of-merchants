@@ -1,15 +1,16 @@
 import { DaleCard } from "../DaleCard";
 import { ChameleonChain } from "./ChameleonChain";
+import { ChameleonTree } from "./ChameleonTree";
 
 /**
- * Holds arguments for a chameleon client state
+ * Holds arguments for a chameleon client state(s)
  */
 export class ChameleonArgs {
     public firstSource: DaleCard;
-    public firstTypeId: number;
     public currentSource: DaleCard;
-    public currentTargets: DaleCard[];
     public chain: ChameleonChain;
+    private tree: ChameleonTree;
+    private _onlyContainsGoodOldTimes: boolean | undefined;
 
     /**
      * Bundles arguments for a chameleon client state 
@@ -17,39 +18,74 @@ export class ChameleonArgs {
      * @param targets the potential targets for this chameleon card
      * @param chain (optional) the chain of intermediate chameleon targets so far
      */
-    constructor(card: DaleCard, targets: DaleCard[]) {
-        this.firstSource = card;
-        this.firstTypeId = card.effective_type_id;
-        this.currentSource = card;
-        this.currentTargets = targets;
+    constructor(tree: ChameleonTree) {
+        this.firstSource = tree.card;
+        this.currentSource = tree.card;
         this.chain = new ChameleonChain();
+        this.tree = tree;
     }
 
-    /**
-     * Extend the chain with a new source and new targets
-     * @param source the chameleon card that needs to get bound
-     * @param targets the potential targets for this chameleon card
-     */
-    extendChain(source: DaleCard, targets: DaleCard[]) {
-        this.pickTarget(source);
-        this.currentSource = source;
-        this.currentTargets = targets;
+    get currentTargets() {
+        return this.tree.children.map(child => child.card);
     }
 
+    get onlyContainsGoodOldTimes(): boolean {
+        if (this._onlyContainsGoodOldTimes === undefined) {
+            throw new Error("'_onlyContainsGoodOldTimes' was not setup");
+        }
+        return this._onlyContainsGoodOldTimes;
+    }
+    
     /**
      * Pick the chosen target
      */
     pickTarget(target: DaleCard) {
         console.log("pickTarget");
-        console.log(this.currentTargets);
-        for (let validTarget of this.currentTargets) {
-            if (target.id == validTarget.id) {
+        for (let child of this.tree.children) {
+            if (target.id == child.card.id) {
                 this.chain.push(target.id, target.effective_type_id);
-                this.currentTargets = [];
+                this.tree = child;
                 this.firstSource.bindChameleonLocal(this.chain);
+                this.currentSource = target;
                 return;
             }
         }
         throw new Error(`Card ${target.id} is not a valid chameleon target`);
     }
+
+    /**
+     * Get all valid targets, also removes any dead branches as a side effect
+     * @returns all reachable non-chameleon cards in the `tree`
+     */
+    getAllTargets(tree?: ChameleonTree) {
+        //base case
+        tree = tree ?? this.tree;
+        let validTargets = new Set<DaleCard>();
+        if (!tree.card.isChameleon()) {
+            validTargets.add(tree.card);
+            return validTargets;
+        }
+        //recursive case
+        for (let child of tree.children.slice()) {
+            const childValidTargets = this.getAllTargets(child);
+            if (childValidTargets.size > 0) {
+                validTargets = validTargets.union(childValidTargets);
+            }
+            else {
+                const index = tree.children.indexOf(child);
+                tree.children.slice(index, 1);
+            }
+        }
+        //if this is the root, set up '_onlyGoodOldTimes'
+        if (tree === this.tree) {
+            this._onlyContainsGoodOldTimes = true;
+            for (let target of Array.from(validTargets)) {
+                if (!target.isCardBack() && target.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
+                    this._onlyContainsGoodOldTimes = false;
+                    break;
+                }
+            }
+        }
+        return validTargets;
+	}
 }

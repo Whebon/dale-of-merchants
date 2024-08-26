@@ -213,7 +213,7 @@ declare global {
 	interface ClientGameState {
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
-		'chameleon_goodoldtimes': { passiveUsed: boolean }
+		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }
 		'chameleon_trendsetting': {}
 		'chameleon_seeingdoubles': {}
 		'client_purchase' : { pos: number, on_market_board: boolean, cost: number, card_name: string }

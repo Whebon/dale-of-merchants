@@ -53,12 +53,17 @@ export class MainClientState {
             case 'chameleon_reflection':
                 return _("Reflection: ${you} must copy a card from the top of another player's discard pile")
             case 'chameleon_goodoldtimes':
-                if ((this._args as ClientGameState['chameleon_goodoldtimes']).passiveUsed) {
-                    return _("Good Old Times: ${you} must copy the bin's top card");
+                switch ((this._args as ClientGameState['chameleon_goodoldtimes']).mode) {
+                    case 'copy':
+                        return _("Good Old Times: ${you} must copy the bin's top card");
+                    case 'ditchOrCopy':
+                        return _("Good Old Times: ${you} must copy the bin's top card or ditch the supply's top card");
+                    case 'ditchOptional':
+                        return _("Good Old Times: ${you} may ditch the supply's top card");
+                    case 'ditchMandatory':
+                        return _("Good Old Times: ${you} must ditch the supply's top card");
                 }
-                else {
-                    return _("Good Old Times: ${you} must copy the bin's top card or ditch the supply's top card");
-                }
+                break;
             case 'chameleon_trendsetting':
                 return _("Trendsetting: ${you} must copy a card in the market");
             case 'chameleon_seeingdoubles':
