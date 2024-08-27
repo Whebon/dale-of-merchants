@@ -284,9 +284,7 @@ class Dale extends Gamegui
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'playerTurn':
-				if (this.mainClientState.isStackEmpty()) {
-					this.mainClientState.enter();
-				}
+				this.mainClientState.enter();
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase'])
@@ -417,9 +415,10 @@ class Dale extends Gamegui
 					this.chameleonArgs!.pile
 				)
 				break;
-			case 'client_fizzle':
-				new DaleCard((this.mainClientState.args as ClientGameStates['client_fizzle']).card_id).div.classList.add("dale-fizzle");
-				break;
+			//TODO: safely remove this
+			// case 'client_fizzle':
+			// 	new DaleCard((this.mainClientState.args as ClientGameStates['client_fizzle']).technique_card_id).div.classList.add("dale-fizzle");
+			// 	break;
 		}
 	}
 
@@ -496,9 +495,10 @@ class Dale extends Gamegui
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
 				break;
-			case 'client_fizzle':
-				document.querySelector(".dale-fizzle")?.classList.remove("dale-fizzle");
-				break;
+			//TODO: safely remove this
+			// case 'client_fizzle':
+			// 	document.querySelector(".dale-fizzle")?.classList.remove("dale-fizzle");
+			// 	break;
 		}
 	}
 
@@ -1169,7 +1169,8 @@ class Dale extends Gamegui
 									}
 								}
 								if (fizzle) {
-									this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
+									this.clientScheduleTechnique('client_fizzle', card.id);
+									//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
 								}
 								else {
 									this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
@@ -1178,7 +1179,8 @@ class Dale extends Gamegui
 							case DaleCard.CT_GIFTVOUCHER:
 								fizzle = this.market!.getCards().length == 0;
 								if (fizzle) {
-									this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
+									this.clientScheduleTechnique('client_fizzle', card.id);
+									//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
 								}
 								else {
 									this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
@@ -1287,14 +1289,19 @@ class Dale extends Gamegui
 	}
 
 	onFizzle() {
-		const card_id = (this.mainClientState.args as ClientGameStates['client_fizzle']).card_id;
-		this.bgaPerformAction('actPlayTechniqueCard', {
-			card_id: card_id, 
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
-			args: JSON.stringify({
-				fizzle: true
-			})
-		});
+		this.playTechniqueCard<'client_fizzle'>({
+			fizzle: true
+		})
+		//TODO: safely remove this
+		// const card_id = (this.mainClientState.args as ClientGameStates['client_fizzle']).card_id;
+		// this.bgaPerformAction('actPlayTechniqueCard', {
+		// 	card_id: card_id, 
+		// 	chameleons_json: DaleCard.getLocalChameleonsJSON(),
+		// 	args: JSON.stringify({
+		// 		is_locally_scheduled: true,
+		// 		fizzle: true
+		// 	})
+		// });
 	}
 
 	/**
@@ -1305,7 +1312,10 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actPlayTechniqueCard', {
 			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
-			args: JSON.stringify(args)
+			args: JSON.stringify({
+				is_locally_scheduled: true,
+				...args
+			})
 		});
 		this.mainClientState.leave();
 	}
@@ -1493,9 +1503,13 @@ class Dale extends Gamegui
 		if ('technique_card_id' in this.mainClientState.args) {
 			//undo the technique choice state
 			const card_id = this.mainClientState.args.technique_card_id
-			this.myHand.addDaleCardToStock(new DaleCard(card_id), this.mySchedule.control_name+'_item_'+card_id)
-			this.mySchedule.removeFromStockByIdNoAnimation(card_id);
-			this.myHandSize.incValue(1);
+			const card = new DaleCard(card_id);
+			const type_id = card.effective_type_id;
+			if (type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER) {
+				this.myHand.addDaleCardToStock(card, this.mySchedule.control_name+'_item_'+card_id)
+				this.mySchedule.removeFromStockByIdNoAnimation(card_id);
+				this.myHandSize.incValue(1);
+			}
 		}
 		this.mainClientState.leave();
 	}
@@ -1640,6 +1654,7 @@ class Dale extends Gamegui
 		console.log( 'notifications subscriptions setup42' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
+			['instant_scheduleTechnique', 1],
 			['scheduleTechnique', 1000],
 			['resolveTechnique', 1000],
 			['cancelTechnique', 1000],
@@ -1696,6 +1711,10 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_instant_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
+		this.notif_scheduleTechnique(notif); //same as scheduleTechnique, but without a delay
+	}
 
 	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
 		//hand to schedule

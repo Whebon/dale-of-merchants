@@ -1,4 +1,5 @@
 import Gamegui = require('ebg/core/gamegui');
+import { DaleCard } from '../DaleCard';
 
 class PreviousState {
     constructor(
@@ -28,9 +29,9 @@ export class MainClientState {
     }
 
     public get args(): ClientGameStates[keyof ClientGameStates] {
-        if (Object.keys(this._args).length == 0) {
-            throw new Error(`Client state ${this._name} has no args`);
-        }
+        // if (Object.keys(this._args).length == 0) {
+        //     throw new Error(`Client state ${this._name} has no args`);
+        // }
         return this._args;
     }
 
@@ -113,6 +114,12 @@ export class MainClientState {
             this._name = name;
         }
         if (args) {
+            if ('technique_card_id' in args) {
+                args = {
+                    card_name: new DaleCard(args.technique_card_id).name,
+                    ...args, 
+                }
+            }
             this._args = args ?? {} as ClientGameStates[K];
         }
         this._page.setClientState(this._name, {

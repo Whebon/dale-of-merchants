@@ -87,26 +87,13 @@ interface GameStates {
 		'transitions': {
 			'trCancel': 30,
 			'trActiveAbility': 30,
-			'trFullyResolveTechnique': 33,
-			'trFullyResolveSwap': 30,
 			'trWinterIsComing': 36,
+			'trSamePlayer': 30,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
-			'trSwiftBroker': 50,
-			'trShatteredRelic': 51,
 			'trSpyglass': 52,
 			'trLoyalPartner': 55,
 			'trPrepaidGood': 56,
-		},
-	},
-	33: {
-		'name': 'fullyResolveTechnique',
-		'description': '',
-		'type': 'game',
-		'action': 'stFullyResolveTechnique',
-		'transitions': {
-			'trSamePlayer': 30,
-			'trNextPlayer': 41,
 		},
 	},
 	36: {
@@ -157,42 +144,6 @@ interface GameStates {
 			'trNextPlayer': 30,
 		},
 	},
-	50: {
-		'name': 'swiftBroker',
-		'description': 'Swift Broker: ${actplayer} must discard their hand',
-		'descriptionmyturn': 'Swift Broker: ${you} must discard your hand',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actSwiftBroker': [{
-				'name': 'card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
-			'trFullyResolveTechnique': 33,
-		},
-	},
-	51: {
-		'name': 'shatteredRelic',
-		'description': 'Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand',
-		'descriptionmyturn': 'Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actShatteredRelic': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
-			'trFullyResolveTechnique': 33,
-		},
-	},
 	52: {
 		'name': 'spyglass',
 		'description': 'Spyglass: ${actplayer} must choose a card to place into their hand',
@@ -207,7 +158,7 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
-			'trFullyResolveTechnique': 33,
+			'trSamePlayer': 30,
 		},
 	},
 	55: {
@@ -225,7 +176,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCancel': 30,
-			'trFullyResolveTechnique': 33,
+			'trSamePlayer': 30,
 		},
 	},
 	56: {
@@ -243,7 +194,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCancel': 30,
-			'trFullyResolveTechnique': 33,
+			'trSamePlayer': 30,
 		},
 	},
 	99: {

@@ -24,6 +24,7 @@ declare global {
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
+		'instant_scheduleTechnique': {},
 		'scheduleTechnique': {
 			player_id: number
 			card: DbCard
@@ -215,6 +216,7 @@ declare global {
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
 	interface ClientTechniqueChoice {
+		'client_fizzle': { fizzle: boolean }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }
 		'client_acorn': { stall_player_id: number, stall_card_id: number }
@@ -236,7 +238,6 @@ declare global {
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
 		'client_essentialPurchase': { funds_card_ids: number[] } & ClientGameStates['client_purchase']
-		'client_fizzle': { card_id: number, card_name: string }
 	}
 
 	//

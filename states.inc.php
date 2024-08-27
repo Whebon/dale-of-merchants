@@ -18,7 +18,6 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var dale $game */
-	$game->stFullyResolveTechnique();
 	$game->stNextPlayer();
 	$game->stSpyglass();
 }
@@ -42,26 +41,13 @@ $machinestates = array(
 		'transitions' => array(
 			'trCancel' => 30,
 			'trActiveAbility' => 30,
-			'trFullyResolveTechnique' => 33,
-			'trFullyResolveSwap' => 30,
 			'trWinterIsComing' => 36,
+			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
-			'trSwiftBroker' => 50,
-			'trShatteredRelic' => 51,
 			'trSpyglass' => 52,
 			'trLoyalPartner' => 55,
 			'trPrepaidGood' => 56,
-		),
-	),
-	33 => array(
-		'name' => 'fullyResolveTechnique',
-		'description' => '',
-		'type' => 'game',
-		'action' => 'stFullyResolveTechnique',
-		'transitions' => array(
-			'trSamePlayer' => 30,
-			'trNextPlayer' => 41,
 		),
 	),
 	36 => array(
@@ -88,28 +74,6 @@ $machinestates = array(
 			'trNextPlayer' => 30,
 		),
 	),
-	50 => array(
-		'name' => 'swiftBroker',
-		'description' => clienttranslate('Swift Broker: ${actplayer} must discard their hand'),
-		'descriptionmyturn' => clienttranslate('Swift Broker: ${you} must discard your hand'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actSwiftBroker', 'actCancel'],
-		'transitions' => array(
-			'trCancel' => 30,
-			'trFullyResolveTechnique' => 33,
-		),
-	),
-	51 => array(
-		'name' => 'shatteredRelic',
-		'description' => clienttranslate('Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand'),
-		'descriptionmyturn' => clienttranslate('Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actShatteredRelic', 'actCancel'],
-		'transitions' => array(
-			'trCancel' => 30,
-			'trFullyResolveTechnique' => 33,
-		),
-	),
 	52 => array(
 		'name' => 'spyglass',
 		'description' => clienttranslate('Spyglass: ${actplayer} must choose a card to place into their hand'),
@@ -118,7 +82,7 @@ $machinestates = array(
 		'action' => 'stSpyglass',
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
-			'trFullyResolveTechnique' => 33,
+			'trSamePlayer' => 30,
 		),
 	),
 	55 => array(
@@ -129,7 +93,7 @@ $machinestates = array(
 		'possibleactions' => ['actLoyalPartner', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
-			'trFullyResolveTechnique' => 33,
+			'trSamePlayer' => 30,
 		),
 	),
 	56 => array(
@@ -140,7 +104,7 @@ $machinestates = array(
 		'possibleactions' => ['actPrepaidGood', 'actCancel'],
 		'transitions' => array(
 			'trCancel' => 30,
-			'trFullyResolveTechnique' => 33,
+			'trSamePlayer' => 30,
 		),
 	),
 	99 => array(

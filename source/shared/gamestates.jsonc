@@ -89,82 +89,17 @@
 			//Main cycle
 			"trCancel": 30,
 			"trActiveAbility": 30,
-			"trFullyResolveTechnique": 33,
-			"trFullyResolveSwap": 30,
 			"trWinterIsComing": 36,
+			"trSamePlayer": 30,
 			"trNextPlayer": 41,
 			"trGameEnd": 99,
 
 			//Technique states
-			"trSwiftBroker": 50,
-			"trShatteredRelic": 51,
 			"trSpyglass": 52,
 			"trLoyalPartner": 55,
 			"trPrepaidGood": 56
 		}
 	},
-
-	//TODO: safely delete
-	// "31": {
-	// 	"name": "purchase",
-	// 	"description": "${actplayer} must pay ${cost} for ${card_name}",
-	// 	"descriptionmyturn": "${you} must pay ${cost} for ${card_name}",
-	// 	"type": "activeplayer",
-	// 	"args": "argSelectedCardInMarket",
-	// 	"argsType": {
-	// 		"card_name": "string",
-	// 		"card_id": "number",
-	// 		"cost": "number",
-	// 		"pos": "number"
-	// 	},
-	// 	"possibleactions": {
-	// 		"actPurchase": [
-	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
-	// 			{"name": "funds_card_ids", "type": "AT_numberlist"}
-	// 		],
-	// 		"actUseActiveAbility": [
-	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
-	// 			{"name": "card_id", "type": "AT_int"}
-	// 		],
-	// 		"actCancel" : []
-	// 	},
-	// 	"transitions": { "trActiveAbility": 31, "trCancel" : 30, "trNextPlayer": 41 }
-	// },
-
-	"33": {
-		"name": "fullyResolveTechnique",
-		"description": "",
-		"type": "game",
-		"action": "stFullyResolveTechnique",
-		"transitions": { "trSamePlayer": 30, "trNextPlayer": 41 }
-	},
-
-	//TODO: safely delete
-	// "35": {
-	// 	"name": "build",
-	// 	"description": "${actplayer} must select cards to build in stack ${stack_index_plus_1}",
-	// 	"descriptionmyturn": "${you} must select cards to build in stack ${stack_index_plus_1}",
-	// 	"type": "activeplayer",
-	// 	"args": "argStackIndex",
-	// 	"possibleactions": {
-	// 		"actBuild": [
-	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
-	// 			{"name": "stack_card_ids", "type": "AT_numberlist"},
-	// 			{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
-	// 		],
-	// 		"actUseActiveAbility": [
-	// 			{"name": "chameleon_card_ids", "type": "AT_numberlist"},
-	// 			{"name": "chameleon_type_ids", "type": "AT_numberlist"},
-	// 			{"name": "card_id", "type": "AT_int"}
-	// 		],
-	// 		"actCancel" : [],
-	// 		"actWinterIsComingSkip": []
-	// 	},
-	// 	"transitions": { "trActiveAbility": 35, "trCancel" : 30, "trWinterIsComing": 35, "trNextPlayer": 41, "trGameEnd": 99 }
-	// },
 
 	"36": {
 		"name": "winterIsComing",
@@ -187,21 +122,6 @@
 		"transitions": { "trActiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trGameEnd": 99 }
 	},
 
-	//TODO: safely delete
-	// "40": {
-	// 	"name": "inventory",
-	// 	"description": "${actplayer} may discard any number of cards",
-	// 	"descriptionmyturn": "${you} may discard any number of cards",
-	// 	"type": "activeplayer",
-	// 	"possibleactions": {
-	// 		"actInventoryAction": [
-	// 			{"name": "ids", "type": "AT_numberlist"} //TODO: change this
-	// 		],
-	// 		"actCancel" : []
-	// 	},
-	// 	"transitions": { "trCancel" : 30, "trNextPlayer": 41 }
-	// },
-
 	"41": {
 		"name": "nextPlayer",
 		"description": "",
@@ -212,34 +132,6 @@
 	},
 
 	//////////////// TECHNIQUES ////////////////
-
-	"50": {
-		"name": "swiftBroker",
-		"description": "Swift Broker: ${actplayer} must discard their hand",
-		"descriptionmyturn": "Swift Broker: ${you} must discard your hand",
-		"type": "activeplayer",
-		"possibleactions": {
-			"actSwiftBroker": [
-				{"name": "card_ids", "type": "AT_numberlist"}
-			],
-			"actCancel" : []
-		},
-		"transitions": { "trCancel" : 30, "trFullyResolveTechnique" : 33 }
-	},
-
-	"51": {
-		"name": "shatteredRelic",
-		"description": "Shattered Relic: ${actplayer} must <stronger>ditch</stronger> a card from their hand",
-		"descriptionmyturn": "Shattered Relic: ${you} must <stronger>ditch</stronger> a card from your hand",
-		"type": "activeplayer",
-		"possibleactions": {
-			"actShatteredRelic": [
-				{"name": "card_id", "type": "AT_int"}
-			],
-			"actCancel" : []
-		},
-		"transitions": { "trCancel" : 30, "trFullyResolveTechnique" : 33 }
-	},
 
 	"52": {
 		"name": "spyglass",
@@ -252,7 +144,7 @@
 				{"name": "card_ids", "type": "AT_numberlist"}
 			]
 		},
-		"transitions": { "trFullyResolveTechnique": 33 }
+		"transitions": { "trSamePlayer": 30 }
 	},
 
 	"55": {
@@ -266,7 +158,7 @@
 			],
 			"actCancel" : []
 		},
-		"transitions": { "trCancel" : 30, "trFullyResolveTechnique" : 33 }
+		"transitions": { "trCancel" : 30, "trSamePlayer" : 30 }
 	},
 
 	"56": {
@@ -280,7 +172,7 @@
 			],
 			"actCancel" : []
 		},
-		"transitions": { "trCancel" : 30, "trFullyResolveTechnique" : 33 }
+		"transitions": { "trCancel" : 30, "trSamePlayer" : 30 }
 	},
 
 

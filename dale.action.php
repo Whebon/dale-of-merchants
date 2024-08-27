@@ -106,36 +106,6 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actSwiftBroker()
-	{
-		self::setAjaxMode();
-
-		/** @var string $card_ids */
-		$card_ids = self::getArg('card_ids', AT_numberlist, true);
-
-		$this->game->actSwiftBroker( $card_ids );
-		self::ajaxResponse();
-	}
-
-	public function actCancel()
-	{
-		self::setAjaxMode();
-
-		$this->game->actCancel(  );
-		self::ajaxResponse();
-	}
-
-	public function actShatteredRelic()
-	{
-		self::setAjaxMode();
-
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
-
-		$this->game->actShatteredRelic( $card_id );
-		self::ajaxResponse();
-	}
-
 	public function actSpyglass()
 	{
 		self::setAjaxMode();
@@ -155,6 +125,14 @@ class action_dale extends APP_GameAction
 		$card_ids = self::getArg('card_ids', AT_numberlist, true);
 
 		$this->game->actLoyalPartner( $card_ids );
+		self::ajaxResponse();
+	}
+
+	public function actCancel()
+	{
+		self::setAjaxMode();
+
+		$this->game->actCancel(  );
 		self::ajaxResponse();
 	}
 

@@ -86,9 +86,6 @@ export class TargetingLine {
         //setup line
         let readjustments = 0;
         this.updateLine = function(this: Window, evt: MouseEvent) {
-            if (!document.body.contains(thiz.cardDiv)) {
-                thiz.onSource(); //the source is gone! cancel the effect
-            }
             const sourceRect = thiz.cardDiv.getBoundingClientRect();
             const x1 = sourceRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
             const y1 = sourceRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
@@ -104,11 +101,9 @@ export class TargetingLine {
                 if (currTarget == targetCard) {
                     //snap to new target
                     if (currTarget == thiz.prevTarget && readjustments >= 3) {
-                        thiz.line.setAttribute("x1", String(x1));
-                        thiz.line.setAttribute("y1", String(y1));
-                        return;
+                        break;
                     }
-                    readjustments += 1;
+                    readjustments += 1; //this is needed because a target in the stall slightly readjusts after the delayed hover
                     const targetRect = currTarget.getBoundingClientRect();
                     x2 = targetRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
                     y2 = targetRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
@@ -117,12 +112,16 @@ export class TargetingLine {
                     thiz.prevTarget = currTarget;
                 }
             }
-            // console.log(currTarget);
-            // console.log(`(${x1}, ${y1}) -> (${x2}, ${y2}))`);
             thiz.line.setAttribute("x1", String(x1));
             thiz.line.setAttribute("y1", String(y1));
-            thiz.line.setAttribute("x2", String(x2));
-            thiz.line.setAttribute("y2", String(y2));
+            if (readjustments < 3) {
+                thiz.line.setAttribute("x2", String(x2));
+                thiz.line.setAttribute("y2", String(y2));
+            }
+            //the source is gone, cancel the effect
+            if (!document.body.contains(thiz.cardDiv)) {
+                thiz.onSource(); 
+            }
         }
         addEventListener("mousemove", this.updateLine);
         if (TargetingLine.previousMouseEvent) {
@@ -134,6 +133,7 @@ export class TargetingLine {
      * Removes the chameleon svg line
      */
     private remove() {
+        removeEventListener("mousemove", this.updateLine);
         this.cardDiv.classList.remove("dale-line-source", this.sourceClass);
         this.cardDiv.removeEventListener("click", this.onSource);
         if (this.pile) {
@@ -146,7 +146,6 @@ export class TargetingLine {
             this.targetDivs[i]!.removeEventListener("click", this.onTargets[i]!);
         }
         this.line.remove();
-        removeEventListener("mousemove", this.updateLine);
         const index = TargetingLine.targetingLines.indexOf(this);
         if (index != -1) {
             TargetingLine.targetingLines.splice(index, 1);

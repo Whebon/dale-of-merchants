@@ -1302,7 +1302,7 @@ class Dale extends DaleTableBasic
     */
 
     /**
-     * Schedule a card from hand for a player and notify all players. 
+     * Schedule a card from hand for a player and notify all players. The card is stored in "resolvingCard"
      * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
      * @param string $player_id player to schedule a card for
      * @param array $dbcard card to be scheduled
@@ -1315,46 +1315,98 @@ class Dale extends DaleTableBasic
             'card_name' => $this->getCardName($dbcard),
             'card' => $dbcard,
         ));
-    }
-
-    /**
-     * Begin resolving a scheduled card by storing it in "resolvingCard" and notifying all players. Makes 2 db calls.
-     * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule. Typically called after a "scheduleCard".
-     * @param array $dbcard card to be scheduled
-    */
-    function beginToResolveCard(string $player_id, array $dbcard) {
         $previous = $this->getGameStateValue("resolvingCard");
         if ($previous != -1) {
             throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
         }
-        $this->notifyAllPlayers('message', clienttranslate('${player_name} begins to resolve their ${card_name}'), array(
-            'player_name' => $this->getPlayerNameById($player_id),
-            'card_name' => $this->getCardName($dbcard),
-        ));
         $this->setGameStateValue("resolvingCard", $dbcard["id"]);
+        die("db schedule");
     }
 
     /**
-     * Discard the resolved card stored in "resolvingCard" and notify all players. Makes 3 db calls.
-     * @param mixed $player_id id of the owner of the scheduled card
-     * @return array dbcard that just resolved
+     * Schedule a card from hand for a player and notify all other players (the active player locally scheduled the card already).
+     * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
+     * @param string $player_id player to schedule a card for
+     * @param array $dbcard card to be scheduled
      */
-    function fullyResolveCard(string $player_id) {
-        //fully resolve the card from the schedule
-        $card_id = $this->getGameStateValue("resolvingCard");
-        if ($card_id == -1) {
-            throw new Error("Trying to 'fullyResolveCard' without 'beginToResolveCard'");
+    function scheduleCardForOtherPlayers(string $player_id, array $dbcard){
+        $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $other_player_id => $player) {
+            if ($other_player_id != $player_id) {
+                $this->notifyPlayer($other_player_id, 'scheduleTechnique', '${player_name} schedules their ${card_name}', array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getPlayerNameById($player_id),
+                    'card_name' => $this->getCardName($dbcard),
+                    'card' => $dbcard,
+                ));
+            }
+            else {
+                //for replays: notify about the scheduled card, but without a synchronization delay
+                $this->notifyPlayer($other_player_id, 'instant_scheduleTechnique', '${player_name} schedules their ${card_name}', array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getPlayerNameById($player_id),
+                    'card_name' => $this->getCardName($dbcard),
+                    'card' => $dbcard,
+                ));
+            }
         }
-        $dbcard = $this->cards->getCard($card_id);
-        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
+    }
+
+    //TODO: safely delete this
+    // /**
+    //  * Begin resolving a scheduled card by storing it in "resolvingCard" and notifying all players. Makes 2 db calls.
+    //  * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule. Typically called after a "scheduleCard".
+    //  * @param array $dbcard card to be scheduled
+    // */
+    // function beginToResolveCard(string $player_id, array $dbcard) {
+    //     $previous = $this->getGameStateValue("resolvingCard");
+    //     if ($previous != -1) {
+    //         throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
+    //     }
+    //     $this->notifyAllPlayers('message', clienttranslate('${player_name} begins to resolve their ${card_name}'), array(
+    //         'player_name' => $this->getPlayerNameById($player_id),
+    //         'card_name' => $this->getCardName($dbcard),
+    //     ));
+    //     $this->setGameStateValue("resolvingCard", $dbcard["id"]);
+    // }
+
+    /**
+     * Discard the resolving card, notify all players and transition to the next state. 
+     * @param mixed $player_id id of the owner of the scheduled card
+     * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
+     */
+    function fullyResolveCard(mixed $player_id, array $technique_card = null) {
+        //get the resolving card
+        if ($technique_card != null) {
+            $technique_card_id = $technique_card["id"];
+        }
+        else {
+            $technique_card_id = $this->getGameStateValue("resolvingCard");
+            $technique_card = $this->cards->getCard($technique_card_id);
+            if ($technique_card_id == -1) {
+                throw new Error("Trying to 'fullyResolveCard' without 'scheduleCard'");
+            }
+            $this->setGameStateValue("resolvingCard", -1);
+        }
+        $type_id = $this->getTypeId($technique_card);
+
+        //move the card from the schedule to the discard pile
+        $this->cards->moveCardOnTop($technique_card_id, DISCARD.$player_id);
         $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
-            'card_name' => $this->getCardName($dbcard),
-            'card' => $dbcard
+            'card_name' => $this->getCardName($technique_card),
+            'card' => $technique_card
         ));
-        $this->setGameStateValue("resolvingCard", -1);
-        return $dbcard;
+
+        //decide if the player can go again
+        if ($this->card_types[$type_id]["has_plus"]) {
+            $this->gamestate->nextState("trSamePlayer");
+        }
+        else {
+            $this->gamestate->nextState("trNextPlayer");
+        }
     }
 
     /**
@@ -1648,8 +1700,7 @@ class Dale extends DaleTableBasic
         $cards = $this->spawn("Swift");
         $card = reset($cards);
         $this->scheduleCard($player_id, $card);
-        $this->beginToResolveCard($player_id, $card);
-        $this->fullyResolveCard($player_id);
+        $this->fullyResolveCard($player_id, $card);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1915,30 +1966,30 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("That card is not playable!"));
         }
 
-        //Schedule Technique (and check for fizzle)
-        $fizzle = array_key_exists("fizzle", $args);
-        if ($fizzle || ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER)) {
-            $this->scheduleCard($player_id, $technique_card);
-        }
-        if ($fizzle) {
-            $this->beginToResolveCard($player_id, $technique_card);
-            $this->gamestate->nextState("trFullyResolveTechnique");
-            return;
+        //Schedule Technique
+        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER) {
+            if (array_key_exists("is_locally_scheduled", $args)) {
+                $this->scheduleCardForOtherPlayers($player_id, $technique_card);
+                if (array_key_exists("fizzle", $args)) {
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+            }
+            else {
+                $this->scheduleCard($player_id, $technique_card);
+            }
         }
 
         //Resolve Technique
         switch($technique_type_id) {
             case CT_SWIFTBROKER:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $card_ids = $args["card_ids"];
-
                 //get the non-selected cards and selected cards
                 $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
                 $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
                 foreach ($selected_cards as $card_id => $card) {
                     unset($non_selected_cards[$card_id]);
                 }
-
                 //discard all
                 $this->discardMultiple(
                     clienttranslate('Swift Broker: ${player_name} discards their hand'),
@@ -1947,18 +1998,15 @@ class Dale extends DaleTableBasic
                     $selected_cards, 
                     $non_selected_cards
                 );
-
                 //draw an equal amount of new cards
                 $nbr = count($selected_cards) + count($non_selected_cards);
                 $this->draw(
                     clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
                     $nbr
                 );
-
-                $this->gamestate->nextState("trFullyResolveTechnique");
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SHATTEREDRELIC:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $handsize = $this->cards->countCardInLocation(HAND.$player_id);
                 if ($handsize > 0) {
                     if (!array_key_exists("card_id", $args)) {
@@ -1974,22 +2022,19 @@ class Dale extends DaleTableBasic
                     ));
                 }
                 $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
-                $this->gamestate->nextState("trFullyResolveTechnique");
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SPYGLASS:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $this->gamestate->nextState("trSpyglass");
                 break;
             case CT_FLASHYSHOW:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $this->effects->insertGlobal($technique_card_id, CT_FLASHYSHOW);
                 $this->notifyAllPlayers('message', clienttranslate('Flashy Show: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
-                $this->gamestate->nextState("trFullyResolveTechnique");
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_FAVORITETOY:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $recovered_card = $this->cards->getCardOnTop(DISCARD.$player_id);
                 if ($recovered_card != null) {
                     $this->cards->moveCard($recovered_card["id"], HAND.$player_id);
@@ -2000,7 +2045,7 @@ class Dale extends DaleTableBasic
                         "card" => $recovered_card
                     ));
                 }
-                $this->gamestate->nextState("trFullyResolveTechnique");
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_ACORN:
                 $stall_card_id = $args["stall_card_id"];
@@ -2016,7 +2061,7 @@ class Dale extends DaleTableBasic
                     "stall_player_id" => $stall_player_id,
                     "stall_card_id" => $stall_card_id
                 ));
-                $this->gamestate->nextState("trFullyResolveSwap");
+                $this->gamestate->nextState("trSamePlayer");
                 break;
             case CT_GIFTVOUCHER:
                 $market_card_id = $args["market_card_id"];
@@ -2030,14 +2075,12 @@ class Dale extends DaleTableBasic
                     "card" => $technique_card,
                     "market_card_id" => $market_card_id
                 ));
-                $this->gamestate->nextState("trFullyResolveSwap");
+                $this->gamestate->nextState("trSamePlayer");
                 break;
             case CT_LOYALPARTNER:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $this->gamestate->nextState("trLoyalPartner");
                 break;
             case CT_PREPAIDGOOD:
-                $this->beginToResolveCard($player_id, $technique_card);
                 $this->gamestate->nextState("trPrepaidGood");
                 break;
             default:
@@ -2087,49 +2130,6 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trActiveAbility");
     }
 
-    //TODO: safely delete this
-    // function actSwiftBroker(string $card_ids) {
-    //     $this->checkAction("actSwiftBroker");
-    //     $card_ids = $this->numberListToArray($card_ids);
-    //     $player_id = $this->getCurrentPlayerId();
-
-    //     //get the non-selected cards and selected cards
-    //     $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
-    //     $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
-    //     foreach ($selected_cards as $card_id => $card) {
-    //         unset($non_selected_cards[$card_id]);
-    //     }
-
-    //     //discard all
-    //     $this->discardMultiple(
-    //         clienttranslate('Swift Broker: ${player_name} discards their hand'),
-    //         $player_id, 
-    //         $card_ids, 
-    //         $selected_cards, 
-    //         $non_selected_cards
-    //     );
-
-    //     //draw an equal amount of new cards
-    //     $nbr = count($selected_cards) + count($non_selected_cards);
-    //     $this->draw(
-    //         clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
-    //         $nbr
-    //     );
-        
-    //     $this->gamestate->nextState("trFullyResolveTechnique");
-    // }
-
-    function actShatteredRelic($card_id) {
-        $this->checkAction("actShatteredRelic");
-        $player_id = $this->getActivePlayerId();
-        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-
-        $this->ditch(clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), $card);
-        $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
-
-        $this->gamestate->nextState("trFullyResolveTechnique");
-    }
-
     function actSpyglass($card_ids) {
         $this->checkAction("actSpyglass");
         $card_ids = $this->numberListToArray($card_ids);
@@ -2171,7 +2171,7 @@ class Dale extends DaleTableBasic
             true
         );
 
-        $this->gamestate->nextState("trFullyResolveTechnique");
+        $this->fullyResolveCard($player_id);
     }
 
     function actLoyalPartner($card_ids) {
@@ -2196,7 +2196,7 @@ class Dale extends DaleTableBasic
         //2. refill the market
         $this->refillMarket(false);
         
-        $this->gamestate->nextState("trFullyResolveTechnique");
+        $this->gamestate->nextState("trSamePlayer");
     }
 
     function actPrepaidGood($card_id) {
@@ -2217,7 +2217,7 @@ class Dale extends DaleTableBasic
             'pos' => $card["location_arg"],
         ));
 
-        $this->gamestate->nextState("trFullyResolveTechnique");
+        $this->gamestate->nextState("trSamePlayer");
     }
 
     //TODO: safely delete this
@@ -2357,21 +2357,6 @@ class Dale extends DaleTableBasic
         The action method of state X is called everytime the current game state is set to X.
     */
 
-    function stFullyResolveTechnique() {
-        //resolve the current resolvingCard
-        $player_id = $this->getActivePlayerId();
-        $dbcard = $this->fullyResolveCard($player_id);
-        
-        //decide if the player can go again
-        $type_id = $this->getTypeId($dbcard);
-        if ($this->card_types[$type_id]["has_plus"]) {
-            $this->gamestate->nextState("trSamePlayer");
-        }
-        else {
-            $this->gamestate->nextState("trNextPlayer");
-        }
-    }
-
     function stNextPlayer() {
         //aka the "clean-up phase"
 
@@ -2402,7 +2387,7 @@ class Dale extends DaleTableBasic
         $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
         if ($nbr == 0) {
             //skyglass has no effect
-            $this->gamestate->nextState("trFullyResolveTechnique");
+            $this->gamestate->nextState("trSamePlayer");
             return;
         }
     }
