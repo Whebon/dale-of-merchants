@@ -70,14 +70,22 @@ export class MainClientState {
                 return _("Trendsetting: ${you} must copy a card in the market");
             case 'chameleon_seeingdoubles':
                 return _("Seeing Doubles: ${you} must copy another card in your hand");
+            
+            //Generic Technique States
             case 'client_fizzle':
                 return _("Are you sure you want to play '${card_name}' without any effects?");
+            case 'client_choicelessTechniqueCard':
+                return _("${card_name}: ${you} may play this card as a technique");
 
-            //Technique States
+            //Specific Technique States
+            case 'client_swiftBroker':
+                return _("${card_name}: ${you} may choose the order to discard your hand");
+            case 'client_shatteredRelic':
+                return _("${card_name}: ${you} must <stronger>ditch</stronger> a card from your hand");
             case 'client_acorn':
-                return _("Acorn: ${you} must select a card from an opponent's stall to swap with");
+                return _("${card_name}: ${you} must select a card from an opponent's stall to swap with");
             case 'client_giftVoucher':
-                return _("Gift Voucher: ${you} must select a card from the market to swap with");
+                return _("${card_name}: ${you} must select a card from the market to swap with");
         }
         return "MISSING DESCRIPTION";
     }

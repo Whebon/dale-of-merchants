@@ -2235,10 +2235,16 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("Seeing Doubles: ${you} must copy another card in your hand");
                     case 'client_fizzle':
                         return _("Are you sure you want to play '${card_name}' without any effects?");
+                    case 'client_choicelessTechniqueCard':
+                        return _("${card_name}: ${you} may play this card as a technique");
+                    case 'client_swiftBroker':
+                        return _("${card_name}: ${you} may choose the order to discard your hand");
+                    case 'client_shatteredRelic':
+                        return _("${card_name}: ${you} must <stronger>ditch</stronger> a card from your hand");
                     case 'client_acorn':
-                        return _("Acorn: ${you} must select a card from an opponent's stall to swap with");
+                        return _("${card_name}: ${you} must select a card from an opponent's stall to swap with");
                     case 'client_giftVoucher':
-                        return _("Gift Voucher: ${you} must select a card from the market to swap with");
+                        return _("${card_name}: ${you} must select a card from the market to swap with");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -2647,12 +2653,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_shatteredRelic':
-                    if (this.myHand.count() == 0) {
-                        this.playTechniqueCard({});
-                    }
-                    else {
-                        this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
-                    }
+                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
@@ -2852,6 +2853,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_seeingdoubles':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_choicelessTechniqueCard':
+                    this.addActionButton("confirm-button", _("Play"), "onChoicelessTechniqueCard");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_fizzle':
@@ -3165,7 +3170,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                                     this.clientScheduleTechnique('client_swiftBroker', card.id);
                                     break;
                                 case DaleCard_8.DaleCard.CT_SHATTEREDRELIC:
-                                    this.clientScheduleTechnique('client_shatteredRelic', card.id);
+                                    if (this.myHand.count() == 1) {
+                                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                                    }
+                                    else {
+                                        this.clientScheduleTechnique('client_shatteredRelic', card.id);
+                                    }
                                     break;
                                 case DaleCard_8.DaleCard.CT_ACORN:
                                     for (var player_id in this.gamedatas.players) {
@@ -3193,11 +3203,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                                     }
                                     break;
                                 default:
-                                    this.bgaPerformAction('actPlayTechniqueCard', {
-                                        card_id: card_id,
-                                        chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON(),
-                                        args: JSON.stringify({})
-                                    });
+                                    this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                                     break;
                             }
                         }
@@ -3289,6 +3295,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playTechniqueCard({
                 fizzle: true
             });
+        };
+        Dale.prototype.onChoicelessTechniqueCard = function () {
+            this.playTechniqueCard({});
         };
         Dale.prototype.playTechniqueCard = function (args) {
             this.bgaPerformAction('actPlayTechniqueCard', {

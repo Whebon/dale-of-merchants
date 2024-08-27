@@ -1302,28 +1302,6 @@ class Dale extends DaleTableBasic
     */
 
     /**
-     * Schedule a card from hand for a player and notify all players. The card is stored in "resolvingCard"
-     * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
-     * @param string $player_id player to schedule a card for
-     * @param array $dbcard card to be scheduled
-     */
-    function scheduleCard(string $player_id, array $dbcard){
-        $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
-        $this->notifyAllPlayers('scheduleTechnique', clienttranslate('${player_name} schedules their ${card_name}'), array(
-            'player_id' => $player_id,
-            'player_name' => $this->getPlayerNameById($player_id),
-            'card_name' => $this->getCardName($dbcard),
-            'card' => $dbcard,
-        ));
-        $previous = $this->getGameStateValue("resolvingCard");
-        if ($previous != -1) {
-            throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
-        }
-        $this->setGameStateValue("resolvingCard", $dbcard["id"]);
-        die("db schedule");
-    }
-
-    /**
      * Schedule a card from hand for a player and notify all other players (the active player locally scheduled the card already).
      * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
      * @param string $player_id player to schedule a card for
@@ -1351,6 +1329,19 @@ class Dale extends DaleTableBasic
                 ));
             }
         }
+    }
+
+    /**
+     * Begin resolving a scheduled card by storing it in "resolvingCard". This is needed for techniques with hidden information.
+     * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule.
+     * @param int $card_id the card id of the card to resolve
+     */
+    function beginResolvingCard(int $card_id){
+        $previous = $this->getGameStateValue("resolvingCard");
+        if ($previous != -1) {
+            throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
+        }
+        $this->setGameStateValue("resolvingCard", $card_id);
     }
 
     //TODO: safely delete this
@@ -1385,7 +1376,7 @@ class Dale extends DaleTableBasic
             $technique_card_id = $this->getGameStateValue("resolvingCard");
             $technique_card = $this->cards->getCard($technique_card_id);
             if ($technique_card_id == -1) {
-                throw new Error("Trying to 'fullyResolveCard' without 'scheduleCard'");
+                throw new Error("Trying to 'fullyResolveCard' without 'beginResolvingCard'");
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
@@ -2025,6 +2016,7 @@ class Dale extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SPYGLASS:
+                $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSpyglass");
                 break;
             case CT_FLASHYSHOW:

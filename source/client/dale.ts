@@ -341,12 +341,7 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_shatteredRelic':
-				if (this.myHand.count() == 0) {
-					this.playTechniqueCard<'client_shatteredRelic'>({});
-				}
-				else {
-					this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
-				}
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
@@ -592,6 +587,11 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_seeingdoubles':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_choicelessTechniqueCard':
+				//this.onChoicelessTechniqueCard(); //TODO: skip confirmation on choiceless technique cards?
+				this.addActionButton("confirm-button", _("Play"), "onChoicelessTechniqueCard");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_fizzle':
@@ -1157,7 +1157,13 @@ class Dale extends Gamegui
 								this.clientScheduleTechnique('client_swiftBroker', card.id);
 								break;
 							case DaleCard.CT_SHATTEREDRELIC:
-								this.clientScheduleTechnique('client_shatteredRelic', card.id);
+								if (this.myHand.count() == 1) {
+									//the hand only consists of the shatteredRelic itself
+									this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+								}
+								else {
+									this.clientScheduleTechnique('client_shatteredRelic', card.id);
+								}
 								break;
 							case DaleCard.CT_ACORN:
 								for (let player_id in this.gamedatas.players) {
@@ -1187,11 +1193,7 @@ class Dale extends Gamegui
 								}
 								break;
 							default:
-								this.bgaPerformAction('actPlayTechniqueCard', {
-									card_id: card_id, 
-									chameleons_json: DaleCard.getLocalChameleonsJSON(),
-									args: JSON.stringify({})
-								});
+								this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 								break;
 						}
 					}
@@ -1302,6 +1304,10 @@ class Dale extends Gamegui
 		// 		fizzle: true
 		// 	})
 		// });
+	}
+
+	onChoicelessTechniqueCard() {
+		this.playTechniqueCard<'client_choicelessTechniqueCard'>({})
 	}
 
 	/**
