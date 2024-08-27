@@ -1294,16 +1294,6 @@ class Dale extends Gamegui
 		this.playTechniqueCard<'client_fizzle'>({
 			fizzle: true
 		})
-		//TODO: safely remove this
-		// const card_id = (this.mainClientState.args as ClientGameStates['client_fizzle']).card_id;
-		// this.bgaPerformAction('actPlayTechniqueCard', {
-		// 	card_id: card_id, 
-		// 	chameleons_json: DaleCard.getLocalChameleonsJSON(),
-		// 	args: JSON.stringify({
-		// 		is_locally_scheduled: true,
-		// 		fizzle: true
-		// 	})
-		// });
 	}
 
 	onChoicelessTechniqueCard() {
@@ -1318,10 +1308,7 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actPlayTechniqueCard', {
 			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
-			args: JSON.stringify({
-				is_locally_scheduled: true,
-				...args
-			})
+			args: JSON.stringify(args)
 		});
 		this.mainClientState.leave();
 	}

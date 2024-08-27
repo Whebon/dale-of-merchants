@@ -347,7 +347,7 @@ class Dale extends DaleTableBasic
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DECK.$deck_player_id);
-            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', $cards ? '' : $msg, array (
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array (
                 'player_id' => $this->getActivePlayerId(),
                 'player_name' => $this->getActivePlayerName(),
                 "_private" => array(
@@ -363,7 +363,7 @@ class Dale extends DaleTableBasic
         //2: move the ordered cards on top of the deck
         if ($cards) {
             $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
-            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', $msg, array (
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array (
                 'player_id' => $this->getActivePlayerId(),
                 'player_name' => $this->getActivePlayerName(),
                 "_private" => array(
@@ -371,10 +371,17 @@ class Dale extends DaleTableBasic
                     'cards' => $cards,
                 ),
                 'deck_player_id' => $deck_player_id,
-                'nbr' => count($cards) + $nbr_unordered_cards,
+                'nbr' => count($cards),
                 'from_limbo' => $from_limbo
             ));
         }
+
+        //only send a single message to the players
+        $this->notifyAllPlayers('message', $msg, array (
+            'player_id' => $this->getActivePlayerId(),
+            'player_name' => $this->getActivePlayerName(),
+            'nbr' => count($cards) + $nbr_unordered_cards,
+        ));
     }
 
     /**
@@ -464,7 +471,7 @@ class Dale extends DaleTableBasic
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.$player_id);
-            $this->notifyAllPlayers('discardMultiple', $cards ? '' : $msg, array (
+            $this->notifyAllPlayers('discardMultiple', '', array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $unordered_card_ids,
@@ -477,15 +484,22 @@ class Dale extends DaleTableBasic
         //2: move the ordered cards to the discard pile
         if ($cards) {
             $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
-            $this->notifyAllPlayers('discardMultiple', $msg, array (
+            $this->notifyAllPlayers('discardMultiple', '', array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $card_ids,
                 'cards' => $cards,
-                'nbr' => count($cards) + $nbr_unordered_cards,
+                'nbr' => count($cards),
                 'from_limbo' => $from_limbo
             ));
         }
+
+        //only leave a single log message to the players
+        $this->notifyAllPlayers('message', $msg, array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'nbr' => count($cards) + $nbr_unordered_cards,
+        ));
     }
 
     /**
@@ -1307,7 +1321,7 @@ class Dale extends DaleTableBasic
      * @param string $player_id player to schedule a card for
      * @param array $dbcard card to be scheduled
      */
-    function scheduleCardForOtherPlayers(string $player_id, array $dbcard){
+    function scheduleCard(string $player_id, array $dbcard){
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $other_player_id => $player) {
@@ -1959,15 +1973,10 @@ class Dale extends DaleTableBasic
 
         //Schedule Technique
         if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER) {
-            if (array_key_exists("is_locally_scheduled", $args)) {
-                $this->scheduleCardForOtherPlayers($player_id, $technique_card);
-                if (array_key_exists("fizzle", $args)) {
-                    $this->fullyResolveCard($player_id, $technique_card);
-                    return;
-                }
-            }
-            else {
-                $this->scheduleCard($player_id, $technique_card);
+            $this->scheduleCard($player_id, $technique_card);
+            if (array_key_exists("fizzle", $args)) {
+                $this->fullyResolveCard($player_id, $technique_card);
+                return;
             }
         }
 

@@ -3303,7 +3303,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.bgaPerformAction('actPlayTechniqueCard', {
                 card_id: this.mainClientState.args.technique_card_id,
                 chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON(),
-                args: JSON.stringify(__assign({ is_locally_scheduled: true }, args))
+                args: JSON.stringify(args)
             });
             this.mainClientState.leave();
         };
