@@ -235,7 +235,6 @@ class Dale extends Gamegui
 			this.playerSchedules[player_id] = new DaleStock();
 			this.playerSchedules[player_id].init(this, container);
 			this.playerSchedules[player_id].setSelectionMode('none');
-			this.playerSchedules[player_id].duration = 500;
 			this.playerSchedules[player_id].centerItems = true;
 			for (let card_id in gamedatas.schedules[player_id]) {
 				const card = gamedatas.schedules[+player_id]![+card_id]!;

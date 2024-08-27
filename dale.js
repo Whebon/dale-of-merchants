@@ -858,6 +858,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.actionLabel = undefined;
             _this.actionLabelDefaultText = "<DefaultText>";
             _this.selectionMode = 'none';
+            _this.duration = 500;
             _this.orderedSelection = new OrderedSelection_1.OrderedSelection();
             _this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
             return _this;
@@ -2548,7 +2549,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container);
                 this.playerSchedules[player_id].setSelectionMode('none');
-                this.playerSchedules[player_id].duration = 500;
                 this.playerSchedules[player_id].centerItems = true;
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];

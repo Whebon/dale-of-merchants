@@ -41,6 +41,7 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	constructor(){
 		super();
+		this.duration = 500;
 		this.orderedSelection = new OrderedSelection();
 		this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 		//this.jstpl_stock_item = '<div id="${id}" class="stockitem ${extra_classes}" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
