@@ -2,8 +2,8 @@ import Gamegui = require('ebg/core/gamegui');
 
 class PreviousState {
     constructor(
-        public name: keyof ClientGameState,
-        public args?: ClientGameState[keyof ClientGameState]
+        public name: keyof ClientGameStates,
+        public args?: ClientGameStates[keyof ClientGameStates]
     ) {}
 }
 
@@ -12,8 +12,8 @@ class PreviousState {
  */
 export class MainClientState {
     private _page: Gamegui;
-	private _name: keyof ClientGameState;
-    private _args: ClientGameState[keyof ClientGameState];
+	private _name: keyof ClientGameStates;
+    private _args: ClientGameStates[keyof ClientGameStates];
     private _stack: PreviousState[];
 
     constructor(page: Gamegui) {
@@ -23,11 +23,11 @@ export class MainClientState {
         this._stack = [];
     }
 
-    public get name(): keyof ClientGameState {
+    public get name(): keyof ClientGameStates {
         return this._name;
     }
 
-    public get args(): ClientGameState[keyof ClientGameState] {
+    public get args(): ClientGameStates[keyof ClientGameStates] {
         if (Object.keys(this._args).length == 0) {
             throw new Error(`Client state ${this._name} has no args`);
         }
@@ -54,7 +54,7 @@ export class MainClientState {
             case 'chameleon_reflection':
                 return _("Reflection: ${you} must copy a card from the top of another player's discard pile")
             case 'chameleon_goodoldtimes':
-                switch ((this._args as ClientGameState['chameleon_goodoldtimes']).mode) {
+                switch ((this._args as ClientGameStates['chameleon_goodoldtimes']).mode) {
                     case 'copy':
                         return _("Good Old Times: ${you} must copy the bin's top card");
                     case 'ditchOrCopy':
@@ -108,12 +108,12 @@ export class MainClientState {
      * @param name (optional) if provided, switch to the given client state. Otherwise, use the previously set client state
      * @param args (optional) if provided, pass arguments to the client state
      */
-    public enter<K extends keyof ClientGameState>(name?: K, args?: ClientGameState[K]) {
+    public enter<K extends keyof ClientGameStates>(name?: K, args?: ClientGameStates[K]) {
         if (name) {
             this._name = name;
         }
         if (args) {
-            this._args = args ?? {} as ClientGameState[K];
+            this._args = args ?? {} as ClientGameStates[K];
         }
         this._page.setClientState(this._name, {
             descriptionmyturn: this._descriptionmyturn,
@@ -126,7 +126,7 @@ export class MainClientState {
      * @param name name of the client state
      * @param args (optional) if provided, pass arguments to the client state
      */
-    public enterOnStack<K extends keyof ClientGameState>(name: K, args?: ClientGameState[K]) {
+    public enterOnStack<K extends keyof ClientGameStates>(name: K, args?: ClientGameStates[K]) {
         this._stack.push(new PreviousState(this._name, this._args));
         this.enter(name, args);
     }

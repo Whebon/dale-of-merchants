@@ -3184,7 +3184,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                                     }
                                     break;
                                 default:
-                                    this.playTechniqueCard(card);
+                                    this.bgaPerformAction('actPlayTechniqueCard', {
+                                        card_id: card_id,
+                                        chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
+                                        args: JSON.stringify({})
+                                    });
                                     break;
                             }
                         }
@@ -3283,42 +3287,32 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     fizzle: true
                 })
             });
-            this.mainClientState.leave();
         };
-        Dale.prototype.playTechniqueCard = function (card) {
+        Dale.prototype.playTechniqueCard = function (args) {
             this.bgaPerformAction('actPlayTechniqueCard', {
-                card_id: card.id,
+                card_id: this.mainClientState.args.card_id,
                 chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
-                args: JSON.stringify({})
+                args: JSON.stringify(args)
             });
+            this.mainClientState.leave();
         };
         Dale.prototype.onAcorn = function (source, target) {
             for (var _i = 0, _a = Object.entries(this.playerStalls); _i < _a.length; _i++) {
                 var _b = _a[_i], player_id = _b[0], player_stall = _b[1];
                 if (player_stall.contains(target)) {
-                    this.bgaPerformAction('actPlayTechniqueCard', {
-                        card_id: source.id,
-                        chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
-                        args: JSON.stringify({
-                            stall_player_id: +player_id,
-                            stall_card_id: target.id
-                        })
+                    this.playTechniqueCard({
+                        stall_player_id: +player_id,
+                        stall_card_id: target.id
                     });
-                    this.mainClientState.leave();
                     break;
                 }
             }
         };
         Dale.prototype.onGiftVoucher = function (source, target) {
             if (this.market.contains(target)) {
-                this.bgaPerformAction('actPlayTechniqueCard', {
-                    card_id: source.id,
-                    chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
-                    args: JSON.stringify({
-                        market_card_id: target.id
-                    })
+                this.playTechniqueCard({
+                    market_card_id: target.id
                 });
-                this.mainClientState.leave();
             }
         };
         Dale.prototype.onUsePassiveAbility = function (card) {

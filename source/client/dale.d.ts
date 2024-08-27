@@ -209,8 +209,12 @@ declare global {
 		'effects': {[_index: number]: RawDbEffect}
 	}
 
+	type ClientChoiceSubsetValidation<T extends Record<keyof T, unknown>, U extends Record<string, unknown>> = {
+		[K in keyof T]: K extends keyof U ? T[K] : never;
+	};
+
 	/** @gameSpecific Add game specific client game states */
-	interface ClientGameState {
+	interface ClientGameStates {
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
 		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }
@@ -220,13 +224,25 @@ declare global {
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
-		'client_essentialPurchase': { funds_card_ids: number[] } & ClientGameState['client_purchase']
+		'client_essentialPurchase': { funds_card_ids: number[] } & ClientGameStates['client_purchase']
 		'client_fizzle': { card_id: number, card_name: string }
 
 		//techniques
+		'client_shatteredRelic': { card_id: number }
 		'client_acorn': { card_id: number }
 		'client_giftVoucher': { card_id: number }
 	}
+
+	/** @gameSpecific Add the choices to send to the server to resolve the technique */
+	interface ClientChoice {
+		'client_shatteredRelic': { card_id: number }
+		'client_acorn': { stall_player_id: number, stall_card_id: number }
+		'client_giftVoucher': { market_card_id: number }
+	}
+
+	//enforce ClientGameStates and ClientChoice are subsets
+	type AssertSubset<Subset extends { [K in keyof Subset]: K extends keyof FullSet ? Subset[K] : never }, FullSet> = keyof FullSet
+	type ClientGameStateNames = AssertSubset<ClientChoice, ClientGameStates>;
 
 	//
 	// When gamestates.jsonc is enabled in the config, the following types are automatically generated. And you should not add to anything to 'GameStates' or 'PlayerActions'. If gamestates.jsonc is enabled, 'GameStates' and 'PlayerActions' can be removed from this file.

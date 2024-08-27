@@ -285,7 +285,7 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'client_purchase':
-				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
+				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase'])
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
 				if (client_purchase_args.on_market_board) {
@@ -313,7 +313,7 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_essentialPurchase':
-				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameState['client_essentialPurchase']);
+				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);
 				if (client_essentialPurchase_args.on_market_board) {
 					this.market!.setSelected(client_essentialPurchase_args.pos, true);
 				}
@@ -351,7 +351,7 @@ class Dale extends Gamegui
 						client_acorn_targets = client_acorn_targets.concat(this.playerStalls[player_id]!.getCardsInStall());
 					}
 				}
-				const client_acorn_args = (this.mainClientState.args as ClientGameState['client_acorn']);
+				const client_acorn_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
 				new TargetingLine(
 					new DaleCard(client_acorn_args.card_id),
 					client_acorn_targets,
@@ -363,7 +363,7 @@ class Dale extends Gamegui
 				)
 				break;
 			case 'client_giftVoucher':
-				const client_giftVoucher_args = (this.mainClientState.args as ClientGameState['client_acorn']);
+				const client_giftVoucher_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
 				new TargetingLine(
 					new DaleCard(client_giftVoucher_args.card_id),
 					this.market!.getCards(),
@@ -409,7 +409,7 @@ class Dale extends Gamegui
 				)
 				break;
 			case 'client_fizzle':
-				new DaleCard((this.mainClientState.args as ClientGameState['client_fizzle']).card_id).div.classList.add("dale-fizzle");
+				new DaleCard((this.mainClientState.args as ClientGameStates['client_fizzle']).card_id).div.classList.add("dale-fizzle");
 				break;
 		}
 	}
@@ -559,7 +559,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_goodoldtimes':
-				switch ((this.mainClientState.args as ClientGameState['chameleon_goodoldtimes']).mode) {
+				switch ((this.mainClientState.args as ClientGameStates['chameleon_goodoldtimes']).mode) {
 					case 'copy':
 						this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
 						this.addActionButtonCancelClient();
@@ -617,8 +617,8 @@ class Dale extends Gamegui
 		}
 		
 		//set the chameleon client state name and args
-		let chameleonStatename: keyof ClientGameState;
-		let args: ClientGameState['chameleon_goodoldtimes'] = { mode: undefined };
+		let chameleonStatename: keyof ClientGameStates;
+		let args: ClientGameStates['chameleon_goodoldtimes'] = { mode: undefined };
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				chameleonStatename = 'chameleon_flexibleShopkeeper'
@@ -1028,7 +1028,7 @@ class Dale extends Gamegui
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
-				const client_purchase_args = this.mainClientState.args as ClientGameState['client_purchase'];
+				const client_purchase_args = this.mainClientState.args as ClientGameStates['client_purchase'];
 				if (client_purchase_args.pos == pos) {
 					//user click on the same card again, return to the default client state
 					this.mainClientState.leave();
@@ -1170,7 +1170,11 @@ class Dale extends Gamegui
 								}
 								break;
 							default:
-								this.playTechniqueCard(card);
+								this.bgaPerformAction('actPlayTechniqueCard', {
+									card_id: card_id, 
+									chameleons_json: DaleCard.getLocalChameleonsJSON(),
+									args: JSON.stringify({})
+								});
 								break;
 						}
 					}
@@ -1245,12 +1249,12 @@ class Dale extends Gamegui
 		var essential_purchase_ids: number[];
 		switch (this.gamedatas.gamestate.name) {
 			case 'client_purchase':
-				args = (this.mainClientState.args as ClientGameState['client_purchase'])
+				args = (this.mainClientState.args as ClientGameStates['client_purchase'])
 				funds_card_ids = this.myHand.orderedSelection.get();
 				essential_purchase_ids = [];
 				break;
 			case 'client_essentialPurchase':
-				args = (this.mainClientState.args as ClientGameState['client_essentialPurchase'])
+				args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase'])
 				funds_card_ids = args.funds_card_ids;
 				essential_purchase_ids = this.myHand.orderedSelection.get()
 				break;
@@ -1290,7 +1294,7 @@ class Dale extends Gamegui
 	}
 
 	onFizzle() {
-		const card_id = (this.mainClientState.args as ClientGameState['client_fizzle']).card_id;
+		const card_id = (this.mainClientState.args as ClientGameStates['client_fizzle']).card_id;
 		this.bgaPerformAction('actPlayTechniqueCard', {
 			card_id: card_id, 
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
@@ -1298,29 +1302,38 @@ class Dale extends Gamegui
 				fizzle: true
 			})
 		});
-		this.mainClientState.leave();
 	}
 
-	playTechniqueCard(card: DaleCard) {
+	/**
+	 * Play a technique card that is already locally inside your schedule for an open-information choice
+	 * @param args result of the open-infomation choice to send to the server
+	 */
+	playTechniqueCard<K extends keyof ClientChoice>(args: ClientChoice[K]) {
 		this.bgaPerformAction('actPlayTechniqueCard', {
-			card_id: card.id, 
+			card_id: (this.mainClientState.args as any).card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
-			args: JSON.stringify({})
+			args: JSON.stringify(args)
 		});
+		this.mainClientState.leave();
 	}
 
 	onAcorn(source: DaleCard, target: DaleCard) {
 		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
 			if (player_stall.contains(target)) {
-				this.bgaPerformAction('actPlayTechniqueCard', {
-					card_id: source.id, 
-					chameleons_json: DaleCard.getLocalChameleonsJSON(),
-					args: JSON.stringify({
-						stall_player_id: +player_id,
-						stall_card_id: target.id
-					})
-				});
-				this.mainClientState.leave();
+				this.playTechniqueCard<'client_acorn'>({
+					stall_player_id: +player_id,
+					stall_card_id: target.id
+				})
+				//TODO: safely delete this
+				// this.bgaPerformAction('actPlayTechniqueCard', {
+				// 	card_id: source.id, 
+				// 	chameleons_json: DaleCard.getLocalChameleonsJSON(),
+				// 	args: JSON.stringify({
+				// 		stall_player_id: +player_id,
+				// 		stall_card_id: target.id
+				// 	})
+				// });
+				// this.mainClientState.leave();
 				break;
 			}
 		}
@@ -1328,14 +1341,16 @@ class Dale extends Gamegui
 
 	onGiftVoucher(source: DaleCard, target: DaleCard) {
 		if (this.market!.contains(target)) {
-			this.bgaPerformAction('actPlayTechniqueCard', {
-				card_id: source.id, 
-				chameleons_json: DaleCard.getLocalChameleonsJSON(),
-				args: JSON.stringify({
-					market_card_id: target.id
-				})
-			});
-			this.mainClientState.leave();
+			this.playTechniqueCard<'client_giftVoucher'>({
+				market_card_id: target.id
+			})
+			//TODO: safely delete this
+			// card_id: source.id, 
+			// chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			// args: JSON.stringify({
+			// 	market_card_id: target.id
+			// })
+			//this.mainClientState.leave();
 		}
 	}
 
