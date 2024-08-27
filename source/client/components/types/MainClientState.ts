@@ -75,6 +75,8 @@ export class MainClientState {
             //Technique States
             case 'client_acorn':
                 return _("Acorn: ${you} must select a card from an opponent's stall to swap with");
+            case 'client_giftVoucher':
+                return _("Gift Voucher: ${you} must select a card from the market to swap with");
         }
         return "MISSING DESCRIPTION";
     }
@@ -127,6 +129,13 @@ export class MainClientState {
     public enterOnStack<K extends keyof ClientGameState>(name: K, args?: ClientGameState[K]) {
         this._stack.push(new PreviousState(this._name, this._args));
         this.enter(name, args);
+    }
+
+    /**
+     * @return true if the client state stack is empty
+     */
+    public isStackEmpty() {
+        return this._stack.length == 0;
     }
 }
 

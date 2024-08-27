@@ -19,7 +19,6 @@ declare(strict_types=1);
 if (false) {
 	/** @var dale $game */
 	$game->stFullyResolveTechnique();
-	$game->stFullyResolveTechniqueNoDiscard();
 	$game->stNextPlayer();
 	$game->stSpyglass();
 }
@@ -37,21 +36,20 @@ $machinestates = array(
 	30 => array(
 		'name' => 'playerTurn',
 		'description' => clienttranslate('${actplayer} must take an action'),
-		'descriptionmyturn' => clienttranslate('${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action'),
+		'descriptionmyturn' => clienttranslate('${you} must take an action'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUseActiveAbility', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction'],
 		'transitions' => array(
 			'trCancel' => 30,
 			'trActiveAbility' => 30,
 			'trFullyResolveTechnique' => 33,
+			'trFullyResolveSwap' => 30,
 			'trWinterIsComing' => 36,
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
 			'trSwiftBroker' => 50,
 			'trShatteredRelic' => 51,
 			'trSpyglass' => 52,
-			'trAcorn' => 53,
-			'trGiftVoucher' => 54,
 			'trLoyalPartner' => 55,
 			'trPrepaidGood' => 56,
 		),
@@ -61,16 +59,6 @@ $machinestates = array(
 		'description' => '',
 		'type' => 'game',
 		'action' => 'stFullyResolveTechnique',
-		'transitions' => array(
-			'trSamePlayer' => 30,
-			'trNextPlayer' => 41,
-		),
-	),
-	34 => array(
-		'name' => 'fullyResolveTechniqueNoDiscard',
-		'description' => '',
-		'type' => 'game',
-		'action' => 'stFullyResolveTechniqueNoDiscard',
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
@@ -131,28 +119,6 @@ $machinestates = array(
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
 			'trFullyResolveTechnique' => 33,
-		),
-	),
-	53 => array(
-		'name' => 'acorn',
-		'description' => clienttranslate('Acorn: ${actplayer} must select a card from an opponent\'s stall to swap with'),
-		'descriptionmyturn' => clienttranslate('Acorn: ${you} must select a card from an opponent\'s stall to swap with'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actAcorn', 'actCancel'],
-		'transitions' => array(
-			'trCancel' => 30,
-			'trFullyResolveTechniqueNoDiscard' => 34,
-		),
-	),
-	54 => array(
-		'name' => 'giftVoucher',
-		'description' => clienttranslate('Gift Voucher: ${actplayer} must select a card in the market to swap with'),
-		'descriptionmyturn' => clienttranslate('Gift Voucher: ${you} must select a card in the market to swap with'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actGiftVoucher', 'actCancel'],
-		'transitions' => array(
-			'trCancel' => 30,
-			'trFullyResolveTechniqueNoDiscard' => 34,
 		),
 	),
 	55 => array(

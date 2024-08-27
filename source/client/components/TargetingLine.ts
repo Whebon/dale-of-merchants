@@ -85,6 +85,9 @@ export class TargetingLine {
         //setup line
         let readjustments = 0;
         this.updateLine = function(this: Window, evt: MouseEvent) {
+            if (!document.body.contains(thiz.cardDiv)) {
+                thiz.onSource(); //the source is gone! cancel the effect
+            }
             const sourceRect = thiz.cardDiv.getBoundingClientRect();
             const x1 = sourceRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
             const y1 = sourceRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;

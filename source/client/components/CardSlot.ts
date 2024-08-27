@@ -182,16 +182,30 @@ export class CardSlot {
      * @param stock location of the new card for this slot
      * @param card_id id of the new card for this slot
      */
-    public swapWithStock(stock: DaleStock, card_id: number) {
+    public swapWithStock(stock: DaleStock, new_card: DaleCard) {
         if (!this.hasCard()) {
             throw new Error("'swapWithStock' called on an empty slot");
         }
-        if (!stock.getItemById(card_id)) {
-            throw new Error(`'swapWithStock' called with a card that is not in '${stock.control_name}' (card_id = ${card_id})`);
+        if (!stock.getItemById(new_card.id)) {
+            throw new Error(`'swapWithStock' called with a card that is not in '${stock.control_name}' (card_id = ${new_card.id})`);
         }
-        const div = $(stock.control_name + "_item_" + card_id) as HTMLElement;
+        const div = $(stock.control_name + "_item_" + new_card.id) as HTMLElement;
         stock.addDaleCardToStock(this._card!, this._container); 
-        this.insertCard(new DaleCard(card_id), div); //remove + add for a slot
-        stock.removeFromStockByIdNoAnimation(card_id);
+        this.insertCard(new_card, div); //remove + add for a slot
+        stock.removeFromStockByIdNoAnimation(new_card.id);
+    }
+
+    /**
+     * Swaps a card in this stall with a card with the overall player board of the given player_id
+     * @param player_id
+     * @param new_card new card for this slot
+     */
+    public swapWithOverallPlayerBoard(player_id: number, new_card: DaleCard) {
+        if (!this.hasCard()) {
+            throw new Error("'swapWithOverallPlayerBoard' called on an empty slot");
+        }
+        const player_board = $('overall_player_board_'+player_id) as HTMLElement;
+        this.removeCard(player_board);
+        this.insertCard(new_card, player_board);
     }
 }

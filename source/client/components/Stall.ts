@@ -375,17 +375,47 @@ export class Stall implements CardSlotManager, DaleLocation {
     /**
      * Swaps a card in this stall with a card with a stock
      * @param card_id card id in this stall
-     * @param stock location of the new card for this slot
-     * @param new_card_id id of the new card for this slot
+     * @param stock location of the new card for this slot or the player id
+     * @param new_card new card for this slot
      */
-    public swapWithStock(card_id: number, stock: DaleStock, new_card_id: number) {
+    public swapWithStock(card_id: number, stock: DaleStock, new_card: DaleCard) {
         for (let stack of this.slots) {
             for (let slot of stack) {
                 if (slot.card?.id == card_id) {
-                    slot.swapWithStock(stock, new_card_id);
+                    slot.swapWithStock(stock, new_card);
                 }
             }
         }
+    }
+
+    /**
+     * Swaps a card in this stall with a card with the overall player board of the given player_id
+     * @param card_id card id in this stall
+     * @param player_id
+     * @param new_card new card for this slot
+     */
+    public swapWithOverallPlayerBoard(card_id: number, player_id: number, new_card: DaleCard) {
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (slot.card?.id == card_id) {
+                    slot.swapWithOverallPlayerBoard(player_id, new_card);
+                }
+            }
+        }
+    }
+
+    /**
+     * @returns `true` if the card is somewhere in this stall
+     */
+    public contains(card: DaleCard) {
+        for (let stack of this.slots) {
+            for (let slot of stack) {
+                if (slot.card?.id == card.id) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

@@ -52,8 +52,10 @@ class action_dale extends APP_GameAction
 		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var string $args */
+		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actPlayTechniqueCard( $chameleons_json, $card_id );
+		$this->game->actPlayTechniqueCard( $chameleons_json, $card_id, $args );
 		self::ajaxResponse();
 	}
 
@@ -142,30 +144,6 @@ class action_dale extends APP_GameAction
 		$card_ids = self::getArg('card_ids', AT_numberlist, true);
 
 		$this->game->actSpyglass( $card_ids );
-		self::ajaxResponse();
-	}
-
-	public function actAcorn()
-	{
-		self::setAjaxMode();
-
-		/** @var int $stall_player_id */
-		$stall_player_id = self::getArg('stall_player_id', AT_int, true);
-		/** @var int $stall_card_id */
-		$stall_card_id = self::getArg('stall_card_id', AT_int, true);
-
-		$this->game->actAcorn( $stall_player_id, $stall_card_id );
-		self::ajaxResponse();
-	}
-
-	public function actGiftVoucher()
-	{
-		self::setAjaxMode();
-
-		/** @var int $market_card_id */
-		$market_card_id = self::getArg('market_card_id', AT_int, true);
-
-		$this->game->actGiftVoucher( $market_card_id );
 		self::ajaxResponse();
 	}
 

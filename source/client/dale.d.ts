@@ -78,15 +78,15 @@ declare global {
 			market_card_id: number
 			pos: number
 		}
-		'swapScheduleStall': {
-			schedule_player_id: number
-			schedule_card_id: number
+		'swapHandStall': {
+			player_id: number
+			card: DbCard
 			stall_player_id: number
 			stall_card_id: number
 		}
-		'swapScheduleMarket': {
-			schedule_player_id: number
-			schedule_card_id: number
+		'swapHandMarket': {
+			player_id: number
+			card: DbCard
 			market_card_id: number
 		}
 		'ditch': {
@@ -225,6 +225,7 @@ declare global {
 
 		//techniques
 		'client_acorn': { card_id: number }
+		'client_giftVoucher': { card_id: number }
 	}
 
 	//

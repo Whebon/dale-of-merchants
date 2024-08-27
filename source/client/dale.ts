@@ -281,7 +281,9 @@ class Dale extends Gamegui
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'playerTurn':
-				this.mainClientState.enter();
+				if (this.mainClientState.isStackEmpty()) {
+					this.mainClientState.enter();
+				}
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameState['client_purchase'])
@@ -358,11 +360,20 @@ class Dale extends Gamegui
 					"dale-line-target-technique",
 					"dale-line-technique",
 					(source: DaleCard) => this.onCancelClient(),
-					(source: DaleCard, target: DaleCard) => this.playSwapCard(source, target)
+					(source: DaleCard, target: DaleCard) => this.onAcorn(source, target)
 				)
 				break;
-			case 'giftVoucher':
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
+			case 'client_giftVoucher':
+				const client_giftVoucher_args = (this.mainClientState.args as ClientGameState['client_acorn']);
+				new TargetingLine(
+					new DaleCard(client_giftVoucher_args.card_id),
+					this.market!.getCards(),
+					"dale-line-source-technique",
+					"dale-line-target-technique",
+					"dale-line-technique",
+					(source: DaleCard) => this.onCancelClient(),
+					(source: DaleCard, target: DaleCard) => this.onGiftVoucher(source, target)
+				)
 				break;
 			case 'loyalPartner':
 				this.market!.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
@@ -459,9 +470,6 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'giftVoucher':
-				this.market!.setSelectionMode(0);
-				break;
 			case 'loyalPartner':
 				this.market!.setSelectionMode(0);
 				break;
@@ -534,8 +542,8 @@ class Dale extends Gamegui
 			case 'client_acorn':
 				this.addActionButtonCancelClient();
 				break;
-			case 'giftVoucher':
-				this.addActionButtonCancel();
+			case 'client_giftVoucher':
+				this.addActionButtonCancelClient();
 				break;
 			case 'loyalPartner':
 				this.addActionButton("confirm-button", _("Ditch All"), "onLoyalPartner");
@@ -1012,19 +1020,7 @@ class Dale extends Gamegui
         console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
 
 		switch(this.gamedatas.gamestate.name) {
-			case 'acorn':
-				for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
-					if (stall == player_stall) {
-						if(this.checkAction("actAcorn")) {
-							this.bgaPerformAction('actAcorn', {
-								stall_player_id: +player_id,
-								stall_card_id: card.id
-							})
-						}
-						break;
-					}
-				}
-				break;
+
 		}
 	}
 
@@ -1060,13 +1056,6 @@ class Dale extends Gamegui
 					card_name: card.name,
 					cost: card.getCost(pos)
 				});
-				break;
-			case 'giftVoucher':
-				if(this.checkAction("actGiftVoucher")) {
-					this.bgaPerformAction('actGiftVoucher', {
-						market_card_id: card.id
-					})
-				}
 				break;
 			case 'prepaidGood':
 				if(this.checkAction("actPrepaidGood")) {
@@ -1172,6 +1161,15 @@ class Dale extends Gamegui
 								}
 								else {
 									this.mainClientState.enterOnStack('client_acorn', { card_id: card.id });
+								}
+								break;
+							case DaleCard.CT_GIFTVOUCHER:
+								fizzle = this.market!.getCards().length == 0;
+								if (fizzle) {
+									this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
+								}
+								else {
+									this.mainClientState.enterOnStack('client_giftVoucher', { card_id: card.id });
 								}
 								break;
 							default:
@@ -1301,16 +1299,44 @@ class Dale extends Gamegui
 	}
 
 	playTechniqueCard(card: DaleCard) {
+		console.log("GOT HERE");
 		if(this.checkAction('actPlayTechniqueCard')) {
 			this.bgaPerformAction('actPlayTechniqueCard', {
 				card_id: card.id, 
-				chameleons_json: DaleCard.getLocalChameleonsJSON()
+				chameleons_json: DaleCard.getLocalChameleonsJSON(),
+				args: JSON.stringify({})
 			});
 		}
 	}
 
-	playSwapCard(source: DaleCard, target: DaleCard) {
-		throw new Error("NOT IMPLEMENTED: playSwapCard");
+	onAcorn(source: DaleCard, target: DaleCard) {
+		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
+			if (player_stall.contains(target)) {
+				this.bgaPerformAction('actPlayTechniqueCard', {
+					card_id: source.id, 
+					chameleons_json: DaleCard.getLocalChameleonsJSON(),
+					args: JSON.stringify({
+						stall_player_id: +player_id,
+						stall_card_id: target.id
+					})
+				});
+				this.mainClientState.leave();
+				break;
+			}
+		}
+	}
+
+	onGiftVoucher(source: DaleCard, target: DaleCard) {
+		if (this.market!.contains(target)) {
+			this.bgaPerformAction('actPlayTechniqueCard', {
+				card_id: source.id, 
+				chameleons_json: DaleCard.getLocalChameleonsJSON(),
+				args: JSON.stringify({
+					market_card_id: target.id
+				})
+			});
+			this.mainClientState.leave();
+		}
 	}
 
 	//TODO: safely delete this
@@ -1594,8 +1620,8 @@ class Dale extends Gamegui
 			['fillEmptyMarketSlots', 1],
 			['marketSlideRight', 1000],
 			['marketToHand', 1500],
-			['swapScheduleStall', 1],
-			['swapScheduleMarket', 1],
+			['swapHandStall', 1],
+			['swapHandMarket', 1],
 			['discardToHand', 1000],
 			['discardToHandMultiple', 1000],
 			['draw', 1000],
@@ -1774,15 +1800,25 @@ class Dale extends Gamegui
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 
-	notif_swapScheduleStall(notif: NotifAs<'swapScheduleStall'>) {
-		const schedule = this.playerSchedules[notif.args.schedule_player_id]!
+	notif_swapHandStall(notif: NotifAs<'swapHandStall'>) {
+		console.log("swapHandStall");
 		const stall = this.playerStalls[notif.args.stall_player_id]!;
-		stall.swapWithStock(notif.args.stall_card_id, schedule, notif.args.schedule_card_id);
+		if (notif.args.player_id == this.player_id) {
+			stall.swapWithStock(notif.args.stall_card_id, this.myHand, DaleCard.of(notif.args.card));
+		}
+		else {
+			stall.swapWithOverallPlayerBoard(notif.args.stall_card_id, this.player_id, DaleCard.of(notif.args.card));
+		}
 	}
 
-	notif_swapScheduleMarket(notif: NotifAs<'swapScheduleMarket'>) {
-		const schedule = this.playerSchedules[notif.args.schedule_player_id]!
-		this.market!.swapWithStock(notif.args.market_card_id, schedule, notif.args.schedule_card_id);
+	notif_swapHandMarket(notif: NotifAs<'swapHandMarket'>) {
+		console.log("swapHandMarket");
+		if (notif.args.player_id == this.player_id) {
+			this.market!.swapWithStock(notif.args.market_card_id, this.myHand, DaleCard.of(notif.args.card));
+		}
+		else {
+			this.market!.swapWithOverallPlayerBoard(notif.args.market_card_id, this.player_id, DaleCard.of(notif.args.card));
+		}
 	}
 
 	notif_limboToHand(notif: NotifAs<'limboToHand'>) {

@@ -22,7 +22,7 @@ interface GameStates {
 	30: {
 		'name': 'playerTurn',
 		'description': '${actplayer} must take an action',
-		'descriptionmyturn': '${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action',
+		'descriptionmyturn': '${you} must take an action',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actPurchase': [{
@@ -50,6 +50,10 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
 			}],
 			'actUseActiveAbility': [{
 				'name': 'chameleons_json',
@@ -84,14 +88,13 @@ interface GameStates {
 			'trCancel': 30,
 			'trActiveAbility': 30,
 			'trFullyResolveTechnique': 33,
+			'trFullyResolveSwap': 30,
 			'trWinterIsComing': 36,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
 			'trSwiftBroker': 50,
 			'trShatteredRelic': 51,
 			'trSpyglass': 52,
-			'trAcorn': 53,
-			'trGiftVoucher': 54,
 			'trLoyalPartner': 55,
 			'trPrepaidGood': 56,
 		},
@@ -101,16 +104,6 @@ interface GameStates {
 		'description': '',
 		'type': 'game',
 		'action': 'stFullyResolveTechnique',
-		'transitions': {
-			'trSamePlayer': 30,
-			'trNextPlayer': 41,
-		},
-	},
-	34: {
-		'name': 'fullyResolveTechniqueNoDiscard',
-		'description': '',
-		'type': 'game',
-		'action': 'stFullyResolveTechniqueNoDiscard',
 		'transitions': {
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
@@ -215,46 +208,6 @@ interface GameStates {
 		},
 		'transitions': {
 			'trFullyResolveTechnique': 33,
-		},
-	},
-	53: {
-		'name': 'acorn',
-		'description': 'Acorn: ${actplayer} must select a card from an opponent\\\'s stall to swap with',
-		'descriptionmyturn': 'Acorn: ${you} must select a card from an opponent\\\'s stall to swap with',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actAcorn': [{
-				'name': 'stall_player_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}, {
-				'name': 'stall_card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
-			'trFullyResolveTechniqueNoDiscard': 34,
-		},
-	},
-	54: {
-		'name': 'giftVoucher',
-		'description': 'Gift Voucher: ${actplayer} must select a card in the market to swap with',
-		'descriptionmyturn': 'Gift Voucher: ${you} must select a card in the market to swap with',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actGiftVoucher': [{
-				'name': 'market_card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
-			'trFullyResolveTechniqueNoDiscard': 34,
 		},
 	},
 	55: {

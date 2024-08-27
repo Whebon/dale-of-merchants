@@ -1337,30 +1337,22 @@ class Dale extends DaleTableBasic
     /**
      * Discard the resolved card stored in "resolvingCard" and notify all players. Makes 3 db calls.
      * @param mixed $player_id id of the owner of the scheduled card
-     * @param bool $should_discard (optional) default true. If true, move the resolved card to discard.
      * @return array dbcard that just resolved
      */
-    function fullyResolveCard(string $player_id, bool $should_discard = true) {
+    function fullyResolveCard(string $player_id) {
         //fully resolve the card from the schedule
         $card_id = $this->getGameStateValue("resolvingCard");
         if ($card_id == -1) {
             throw new Error("Trying to 'fullyResolveCard' without 'beginToResolveCard'");
         }
         $dbcard = $this->cards->getCard($card_id);
-        if ($should_discard) {
-            $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
-            $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
-                'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
-                'card_name' => $this->getCardName($dbcard),
-                'card' => $dbcard
-            ));
-        }
-        else {
-            $this->notifyAllPlayers('message', clienttranslate('${player_name} fully resolves their swapping technique'), array(
-                'player_name' => $this->getActivePlayerName(),
-            ));
-        }
+        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
+        $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($dbcard),
+            'card' => $dbcard
+        ));
         $this->setGameStateValue("resolvingCard", -1);
         return $dbcard;
     }
@@ -1913,7 +1905,7 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPlayTechniqueCard($chameleons_json, $card_id) {
+    function actPlayTechniqueCard($chameleons_json, $card_id, $args) {
         $this->addChameleonBindings($chameleons_json, $card_id);
         $this->checkAction("actPlayTechniqueCard");
         $player_id = $this->getActivePlayerId();
@@ -1922,10 +1914,10 @@ class Dale extends DaleTableBasic
         if ($this->card_types[$type_id]['playable'] == false) {
             throw new BgaUserException($this->_("That card is not playable!"));
         }
-        
-        //technique
-        //$this->setGameStateValue("cancelableChameleon", intval($chameleon_card_ids));
-        $this->scheduleCard($player_id, $card);
+
+        if ($type_id != CT_ACORN && $type_id != CT_GIFTVOUCHER) {
+            $this->scheduleCard($player_id, $card);
+        }
         switch($type_id) {
             case CT_SWIFTBROKER:
                 $this->beginToResolveCard($player_id, $card);
@@ -1972,32 +1964,34 @@ class Dale extends DaleTableBasic
                 $this->gamestate->nextState("trFullyResolveTechnique");
                 break;
             case CT_ACORN:
-                $this->beginToResolveCard($player_id, $card);
-                $stallsize = 0;
-                foreach ($this->players as $opponent_id => $opponent) {
-                    if ($opponent_id != $player_id) {
-                        $stallsize += $this->cards->countCardInLocation(STALL.$opponent_id);
-                        if ($stallsize > 0) {
-                            break;
-                        }
-                    }
-                }
-                if ($stallsize == 0) {
-                    //acorn has no effect
-                    $this->gamestate->nextState("trFullyResolveTechnique");
-                    return;
-                }
-                $this->gamestate->nextState("trAcorn");
+                $stall_card_id = $args["stall_card_id"];
+                $stall_player_id = $args["stall_player_id"];
+                $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
+                $this->cards->moveCard($card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
+                $this->cards->moveCard($stall_card_id, HAND.$player_id);
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Acorn: ${player_name} swaps with a ${card_name}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "card_name" => $this->getCardName($stall_card),
+                    "player_id" => $player_id,
+                    "card" => $card,
+                    "stall_player_id" => $stall_player_id,
+                    "stall_card_id" => $stall_card_id
+                ));
+                $this->gamestate->nextState("trFullyResolveSwap");
                 break;
             case CT_GIFTVOUCHER:
-                $this->beginToResolveCard($player_id, $card);
-                $marketsize = $this->cards->countCardInLocation(MARKET);
-                if ($marketsize == 0) {
-                    //gift voucher has no effect
-                    $this->gamestate->nextState("trFullyResolveTechnique");
-                    return;
-                }
-                $this->gamestate->nextState("trGiftVoucher");
+                $market_card_id = $args["market_card_id"];
+                $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
+                $this->cards->moveCard($card_id, MARKET, $market_card["location_arg"]);
+                $this->cards->moveCard($market_card_id, HAND.$player_id);
+                $this->notifyAllPlayers('swapHandMarket', clienttranslate('Gift Voucher: ${player_name} swaps with a ${card_name}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "card_name" => $this->getCardName($market_card),
+                    "player_id" => $player_id,
+                    "card" => $card,
+                    "market_card_id" => $market_card_id
+                ));
+                $this->gamestate->nextState("trFullyResolveSwap");
                 break;
             case CT_LOYALPARTNER:
                 $this->beginToResolveCard($player_id, $card);
@@ -2138,69 +2132,6 @@ class Dale extends DaleTableBasic
         );
 
         $this->gamestate->nextState("trFullyResolveTechnique");
-    }
-
-    function actAcorn($stall_player_id, $stall_card_id) {
-        $this->checkAction("actAcorn");
-        $schedule_card_id = $this->getGameStateValue("resolvingCard");
-        $schedule_player_id = $this->getActivePlayerId();
-
-        //get the cards (+enforce they exist in their claimed locations)
-        $schedule_card = $this->cards->getCardFromLocation($schedule_card_id, SCHEDULE.$schedule_player_id);
-        $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
-
-        //swap the cards
-        $this->cards->moveCard($schedule_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
-        $this->cards->moveCard($stall_card_id, HAND.$schedule_player_id);
-
-        //client: 1. swap the cards
-        $this->notifyAllPlayers('swapScheduleStall', clienttranslate('Acorn: ${player_name} swaps with a ${card_name}'), array(
-            "player_name" => $this->getActivePlayerName(),
-            "card_name" => $this->getCardName($stall_card),
-            "schedule_player_id" => $schedule_player_id,
-			"schedule_card_id" => $schedule_card_id,
-			"stall_player_id" => $stall_player_id,
-			"stall_card_id" => $stall_card_id
-        ));
-
-        //client: 2. move the new card from schedule to hand
-        $this->notifyAllPlayers('cancelTechnique', '', array(
-            'player_id' => $schedule_player_id,
-            'card' => $stall_card
-        ));
-
-        $this->gamestate->nextState("trFullyResolveTechniqueNoDiscard");
-    }
-
-    function actGiftVoucher($market_card_id) {
-        $this->checkAction("actGiftVoucher");
-        $schedule_card_id = $this->getGameStateValue("resolvingCard");
-        $schedule_player_id = $this->getActivePlayerId();
-
-        //get the cards (+enforce they exist in their claimed locations)
-        $schedule_card = $this->cards->getCardFromLocation($schedule_card_id, SCHEDULE.$schedule_player_id);
-        $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
-
-        //swap the cards
-        $this->cards->moveCard($schedule_card_id, MARKET, $market_card["location_arg"]);
-        $this->cards->moveCard($market_card_id, HAND.$schedule_player_id);
-
-        //client: 1. swap the cards
-        $this->notifyAllPlayers('swapScheduleMarket', clienttranslate('Gift Voucher: ${player_name} swaps with a ${card_name}'), array(
-            "player_name" => $this->getActivePlayerName(),
-            "card_name" => $this->getCardName($market_card),
-            "schedule_player_id" => $schedule_player_id,
-			"schedule_card_id" => $schedule_card_id,
-			"market_card_id" => $market_card_id
-        ));
-
-        //client: 2. move the new card from schedule to hand
-        $this->notifyAllPlayers('cancelTechnique', '', array(
-            'player_id' => $schedule_player_id,
-            'card' => $market_card
-        ));
-
-        $this->gamestate->nextState("trFullyResolveTechniqueNoDiscard");
     }
 
     function actLoyalPartner($card_ids) {
@@ -2390,21 +2321,6 @@ class Dale extends DaleTableBasic
         //resolve the current resolvingCard
         $player_id = $this->getActivePlayerId();
         $dbcard = $this->fullyResolveCard($player_id);
-        
-        //decide if the player can go again
-        $type_id = $this->getTypeId($dbcard);
-        if ($this->card_types[$type_id]["has_plus"]) {
-            $this->gamestate->nextState("trSamePlayer");
-        }
-        else {
-            $this->gamestate->nextState("trNextPlayer");
-        }
-    }
-
-    function stFullyResolveTechniqueNoDiscard(){
-        //resolve the current resolvingCard
-        $player_id = $this->getActivePlayerId();
-        $dbcard = $this->fullyResolveCard($player_id, false);
         
         //decide if the player can go again
         $type_id = $this->getTypeId($dbcard);
