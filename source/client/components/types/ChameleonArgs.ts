@@ -1,4 +1,5 @@
 import { DaleCard } from "../DaleCard";
+import { Pile } from "../Pile";
 import { ChameleonChain } from "./ChameleonChain";
 import { ChameleonTree } from "./ChameleonTree";
 
@@ -9,20 +10,21 @@ export class ChameleonArgs {
     public firstSource: DaleCard;
     public currentSource: DaleCard;
     public chain: ChameleonChain;
+    public pile: Pile | undefined;
     private tree: ChameleonTree;
     private _onlyContainsGoodOldTimes: boolean | undefined;
 
     /**
      * Bundles arguments for a chameleon client state 
-     * @param card the chameleon card that needs to get bound
-     * @param targets the potential targets for this chameleon card
-     * @param chain (optional) the chain of intermediate chameleon targets so far
+     * @param tree the chameleon tree of all possible (recursive) targets
+     * @param pile (optional) if provided, the chameleon card is selected from a pile popin
      */
-    constructor(tree: ChameleonTree) {
+    constructor(tree: ChameleonTree, pile?: Pile) {
         this.firstSource = tree.card;
         this.currentSource = tree.card;
         this.chain = new ChameleonChain();
         this.tree = tree;
+        this.pile = pile;
     }
 
     get currentTargets() {

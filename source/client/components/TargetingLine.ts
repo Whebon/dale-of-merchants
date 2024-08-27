@@ -54,6 +54,7 @@ export class TargetingLine {
         const finalSource = source;
         if (pile) {
             this.pile = pile;
+            this.pile.closePopin();
             this.cardDiv = source.toDiv();
             this.pile.placeholderHTML.appendChild(this.cardDiv);
         }

@@ -404,7 +404,8 @@ class Dale extends Gamegui
 					"dale-line-target-chameleon",
 					"dale-line-chameleon",
 					(source: DaleCard) => this.onCancelClient(),
-					(source: DaleCard, target: DaleCard) => this.onConfirmChameleon(target)
+					(source: DaleCard, target: DaleCard) => this.onConfirmChameleon(target),
+					this.chameleonArgs!.pile
 				)
 				break;
 			case 'client_fizzle':
@@ -603,12 +604,9 @@ class Dale extends Gamegui
 	 * If the card is an unbound chameleon card, set the client state to bind the chameleon and return `false`
 	 * 
 	 * @param card the card that potentially needs to be be bound.
-	 * @param from where is this card currently located?
-	 * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
-	 * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
-	 * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
+	 * @param pile (optional) if provided, the chameleon card is currently inside a pile popin
 	 */
-	verifyChameleon(card: DaleCard): boolean {
+	verifyChameleon(card: DaleCard, pile?: Pile): boolean {
 		if (!card.isChameleon()) {
 			return true;
 		}
@@ -656,7 +654,7 @@ class Dale extends Gamegui
 
 		if (!this.chameleonArgs) {
 			//create a new chameleon tree and enter the chameleon client state on the stack
-			this.chameleonArgs = new ChameleonArgs(this.createChameleonTree(card));
+			this.chameleonArgs = new ChameleonArgs(this.createChameleonTree(card), pile);
 			const targets = this.chameleonArgs.getAllTargets();
 			console.log(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
 			console.log(`'${card.name}' has ${targets.size} total target(s)`);
@@ -1098,7 +1096,7 @@ class Dale extends Gamegui
 		console.log("onSelectMyDiscardPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
-				if (this.verifyChameleon(card)) {
+				if (this.verifyChameleon(card, pile)) {
 					this.onBuildSelectionChanged();
 				}
 				break;
@@ -1457,7 +1455,12 @@ class Dale extends Gamegui
 		TargetingLine.removeAll();
 		if (this.chameleonArgs) {
 			this.chameleonArgs.firstSource.unbindChameleonLocal();
-			this.myHand.unselectItem(this.chameleonArgs.firstSource.id);
+			if (this.chameleonArgs.pile) {
+				this.chameleonArgs.pile.unselectItem(this.chameleonArgs.firstSource.id);
+			}
+			else {
+				this.myHand.unselectItem(this.chameleonArgs.firstSource.id);
+			}
 			this.chameleonArgs = undefined;
 		}
 		this.mainClientState.leave();

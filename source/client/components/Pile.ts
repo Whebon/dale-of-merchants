@@ -76,8 +76,8 @@ export class Pile implements DaleLocation {
         this.orderedSelection = new OrderedSelection();
         this.containerHTML.querySelector(".pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
-        dojo.connect(this.orderedSelection, 'onSelect', this.page, 'onSelectPileCard');
-        dojo.connect(this.orderedSelection, 'onUnselect', this.page, 'onUnselectPileCard');
+        dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
+        dojo.connect(this.orderedSelection, 'onUnselect', this, 'onUnselectPileCard');
         //dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
 	}
 
@@ -392,6 +392,14 @@ export class Pile implements DaleLocation {
         this.openPopin();
     }
 
+    public onUnselectPileCard(card_id: number) {
+        (this.page as any).onUnselectPileCard(this, card_id);
+    }
+
+    public onSelectPileCard(card_id: number) {
+        (this.page as any).onSelectPileCard(this, card_id);
+    }
+
     /**
      * User clicked on a card within the popin.
      */
@@ -400,12 +408,8 @@ export class Pile implements DaleLocation {
         //when in a chameleon client state, make sure the user is directed towards selecting a target
         const chameleonArgs: ChameleonArgs = (this.page as any).chameleonArgs!;
         if (chameleonArgs) {
-            if (chameleonArgs.currentSource.id == card.id) {
-                (this.page as any).onCancelChameleon();
-            }
-            else {
-                this.page.showMessage(_("Please select a valid target for ")+`'${chameleonArgs.currentSource.name}'`, "error");
-            }
+            //DEPRECATED: this code should be unreachable
+            this.page.showMessage(_("Please select a valid target for ")+`'${chameleonArgs.currentSource.name}'`, "error");
             return;
         }
         //normal behavior

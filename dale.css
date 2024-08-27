@@ -116,7 +116,7 @@
 }
 
 .dale-blinking {
-  animation: blinker 0.5s infinite;
+  animation: blinker 1s infinite;
 }
 
 @keyframes blinker {
@@ -124,7 +124,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.75;
   }
   to {
     opacity: 1;

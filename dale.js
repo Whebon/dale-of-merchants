@@ -1068,11 +1068,12 @@ define("components/types/ChameleonArgs", ["require", "exports", "components/Dale
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ChameleonArgs = void 0;
     var ChameleonArgs = (function () {
-        function ChameleonArgs(tree) {
+        function ChameleonArgs(tree, pile) {
             this.firstSource = tree.card;
             this.currentSource = tree.card;
             this.chain = new ChameleonChain_2.ChameleonChain();
             this.tree = tree;
+            this.pile = pile;
         }
         Object.defineProperty(ChameleonArgs.prototype, "currentTargets", {
             get: function () {
@@ -1167,8 +1168,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.orderedSelection = new OrderedSelection_2.OrderedSelection();
             (_a = this.containerHTML.querySelector(".pile")) === null || _a === void 0 ? void 0 : _a.prepend(this.placeholderHTML);
             this.updateHTML();
-            dojo.connect(this.orderedSelection, 'onSelect', this.page, 'onSelectPileCard');
-            dojo.connect(this.orderedSelection, 'onUnselect', this.page, 'onUnselectPileCard');
+            dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
+            dojo.connect(this.orderedSelection, 'onUnselect', this, 'onUnselectPileCard');
         }
         Object.defineProperty(Pile.prototype, "size", {
             get: function () {
@@ -1394,16 +1395,17 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             this.openPopin();
         };
+        Pile.prototype.onUnselectPileCard = function (card_id) {
+            this.page.onUnselectPileCard(this, card_id);
+        };
+        Pile.prototype.onSelectPileCard = function (card_id) {
+            this.page.onSelectPileCard(this, card_id);
+        };
         Pile.prototype.onClickCard = function (card, div) {
             console.log("Clicked on a card in the popin");
             var chameleonArgs = this.page.chameleonArgs;
             if (chameleonArgs) {
-                if (chameleonArgs.currentSource.id == card.id) {
-                    this.page.onCancelChameleon();
-                }
-                else {
-                    this.page.showMessage(_("Please select a valid target for ") + "'".concat(chameleonArgs.currentSource.name, "'"), "error");
-                }
+                this.page.showMessage(_("Please select a valid target for ") + "'".concat(chameleonArgs.currentSource.name, "'"), "error");
                 return;
             }
             switch (this.selectionMode) {
@@ -2299,6 +2301,7 @@ define("components/TargetingLine", ["require", "exports", "components/Images"], 
             var finalSource = source;
             if (pile) {
                 this.pile = pile;
+                this.pile.closePopin();
                 this.cardDiv = source.toDiv();
                 this.pile.placeholderHTML.appendChild(this.cardDiv);
             }
@@ -2682,7 +2685,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.marketDiscard.setSelectionMode('noneCantViewContent');
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
-                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onConfirmChameleon(target); });
+                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onConfirmChameleon(target); }, this.chameleonArgs.pile);
                     break;
                 case 'client_fizzle':
                     new DaleCard_7.DaleCard(this.mainClientState.args.card_id).div.classList.add("dale-fizzle");
@@ -2854,7 +2857,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
         };
-        Dale.prototype.verifyChameleon = function (card) {
+        Dale.prototype.verifyChameleon = function (card, pile) {
             var _a;
             if (!card.isChameleon()) {
                 return true;
@@ -2897,7 +2900,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("Unknown chameleon card: '".concat(card.name, "'"));
             }
             if (!this.chameleonArgs) {
-                this.chameleonArgs = new ChameleonArgs_1.ChameleonArgs(this.createChameleonTree(card));
+                this.chameleonArgs = new ChameleonArgs_1.ChameleonArgs(this.createChameleonTree(card), pile);
                 var targets = this.chameleonArgs.getAllTargets();
                 console.log("'".concat(card.name, "' has ").concat(this.chameleonArgs.currentTargets.length, " direct target(s)"));
                 console.log("'".concat(card.name, "' has ").concat(targets.size, " total target(s)"));
@@ -3115,7 +3118,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("onSelectMyDiscardPileCard");
             switch (this.gamedatas.gamestate.name) {
                 case 'client_build':
-                    if (this.verifyChameleon(card)) {
+                    if (this.verifyChameleon(card, pile)) {
                         this.onBuildSelectionChanged();
                     }
                     break;
@@ -3384,7 +3387,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             TargetingLine_1.TargetingLine.removeAll();
             if (this.chameleonArgs) {
                 this.chameleonArgs.firstSource.unbindChameleonLocal();
-                this.myHand.unselectItem(this.chameleonArgs.firstSource.id);
+                if (this.chameleonArgs.pile) {
+                    this.chameleonArgs.pile.unselectItem(this.chameleonArgs.firstSource.id);
+                }
+                else {
+                    this.myHand.unselectItem(this.chameleonArgs.firstSource.id);
+                }
                 this.chameleonArgs = undefined;
             }
             this.mainClientState.leave();
