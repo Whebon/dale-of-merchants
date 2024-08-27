@@ -2430,6 +2430,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log('dale constructor');
             return _this;
         }
+        Object.defineProperty(Dale.prototype, "myHandSize", {
+            get: function () {
+                return this.playerHandSizes[this.player_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(Dale.prototype, "myDeck", {
             get: function () {
                 return this.playerDecks[this.player_id];
@@ -2638,11 +2645,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
-                case 'swiftBroker':
+                case 'client_swiftBroker':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
                     break;
-                case 'shatteredRelic':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                case 'client_shatteredRelic':
+                    if (this.myHand.count() == 0) {
+                        this.playTechniqueCard({});
+                    }
+                    else {
+                        this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    }
                     break;
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
@@ -2655,11 +2667,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     var client_acorn_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_7.DaleCard(client_acorn_args.card_id), client_acorn_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onAcorn(source, target); });
+                    new TargetingLine_1.TargetingLine(new DaleCard_7.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onAcorn(source, target); });
                     break;
                 case 'client_giftVoucher':
                     var client_giftVoucher_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_7.DaleCard(client_giftVoucher_args.card_id), this.market.getCards(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onGiftVoucher(source, target); });
+                    new TargetingLine_1.TargetingLine(new DaleCard_7.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onGiftVoucher(source, target); });
                     break;
                 case 'loyalPartner':
                     this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
@@ -2733,10 +2745,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'swiftBroker':
+                case 'client_swiftBroker':
                     this.myHand.setSelectionMode('none');
                     break;
-                case 'shatteredRelic':
+                case 'client_shatteredRelic':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'spyglass':
@@ -2795,12 +2807,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
                     this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
                     break;
-                case 'swiftBroker':
+                case 'client_swiftBroker':
                     this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
-                    this.addActionButtonCancel();
+                    this.addActionButtonCancelClient();
                     break;
-                case 'shatteredRelic':
-                    this.addActionButtonCancel();
+                case 'client_shatteredRelic':
+                    this.addActionButtonCancelClient();
                     break;
                 case 'spyglass':
                     this.addActionButton("confirm-button", _("Confirm selection"), "onSpyglass");
@@ -3158,6 +3170,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (this.verifyChameleon(card)) {
                         if (card.isTechnique()) {
                             switch (card.effective_type_id) {
+                                case DaleCard_7.DaleCard.CT_SWIFTBROKER:
+                                    this.clientScheduleTechnique('client_swiftBroker', card.id);
+                                    break;
+                                case DaleCard_7.DaleCard.CT_SHATTEREDRELIC:
+                                    this.clientScheduleTechnique('client_shatteredRelic', card.id);
+                                    break;
                                 case DaleCard_7.DaleCard.CT_ACORN:
                                     for (var player_id in this.gamedatas.players) {
                                         if (+player_id != this.player_id) {
@@ -3171,7 +3189,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                                         this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
                                     }
                                     else {
-                                        this.mainClientState.enterOnStack('client_acorn', { card_id: card.id });
+                                        this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
                                     }
                                     break;
                                 case DaleCard_7.DaleCard.CT_GIFTVOUCHER:
@@ -3180,7 +3198,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                                         this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
                                     }
                                     else {
-                                        this.mainClientState.enterOnStack('client_giftVoucher', { card_id: card.id });
+                                        this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
                                     }
                                     break;
                                 default:
@@ -3212,12 +3230,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.onBuildSelectionChanged();
                     }
                     break;
-                case 'shatteredRelic':
-                    if (this.checkAction('actShatteredRelic')) {
-                        this.bgaPerformAction('actShatteredRelic', {
-                            card_id: card.id
-                        });
-                    }
+                case 'client_shatteredRelic':
+                    this.playTechniqueCard({
+                        card_id: card.id
+                    });
                     break;
                 case null:
                     throw new Error("gamestate.name is null");
@@ -3290,11 +3306,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.playTechniqueCard = function (args) {
             this.bgaPerformAction('actPlayTechniqueCard', {
-                card_id: this.mainClientState.args.card_id,
+                card_id: this.mainClientState.args.technique_card_id,
                 chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
             });
             this.mainClientState.leave();
+        };
+        Dale.prototype.clientScheduleTechnique = function (stateName, technique_card_id) {
+            if (this.checkLock()) {
+                if ($(this.myHand.control_name + '_item_' + technique_card_id)) {
+                    this.mySchedule.addDaleCardToStock(new DaleCard_7.DaleCard(technique_card_id), this.myHand.control_name + '_item_' + technique_card_id);
+                    this.myHand.removeFromStockByIdNoAnimation(+technique_card_id);
+                }
+                else {
+                    throw new Error("Cannot schedule the technique card. Card ".concat(technique_card_id, " does not exist in my hand"));
+                }
+                this.myHandSize.incValue(-1);
+                this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+            }
         };
         Dale.prototype.onAcorn = function (source, target) {
             for (var _i = 0, _a = Object.entries(this.playerStalls); _i < _a.length; _i++) {
@@ -3389,6 +3418,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
                 this.chameleonArgs = undefined;
             }
+            if ('technique_card_id' in this.mainClientState.args) {
+                var card_id = this.mainClientState.args.technique_card_id;
+                this.myHand.addDaleCardToStock(new DaleCard_7.DaleCard(card_id), this.mySchedule.control_name + '_item_' + card_id);
+                this.mySchedule.removeFromStockByIdNoAnimation(card_id);
+                this.myHandSize.incValue(1);
+            }
             this.mainClientState.leave();
         };
         Dale.prototype.onConfirmChameleon = function (target) {
@@ -3459,11 +3494,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onSwiftBroker = function () {
-            if (this.checkAction("actSwiftBroker")) {
-                this.bgaPerformAction('actSwiftBroker', {
-                    card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get())
-                });
-            }
+            this.playTechniqueCard({
+                card_ids: this.myHand.orderedSelection.get()
+            });
         };
         Dale.prototype.onSpyglass = function () {
             var card_ids = this.myLimbo.orderedSelection.get();
@@ -3531,7 +3564,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
-                    throw new Error("Card ".concat(card_id, " does not exist in my hand"));
+                    console.log("SKIP scheduling the technique: already done by client");
+                    return;
                 }
             }
             else {
@@ -3548,7 +3582,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
-                    throw new Error("Unable to cancel a techqniue. Techqniue card ".concat(card_id, " does not exist in the schedule."));
+                    throw new Error("Unable to cancel a technique. Technique card ".concat(card_id, " does not exist in the schedule."));
                 }
             }
             else {

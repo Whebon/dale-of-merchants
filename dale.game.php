@@ -1905,61 +1905,91 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPlayTechniqueCard($chameleons_json, $card_id, $args) {
-        $this->addChameleonBindings($chameleons_json, $card_id);
+    function actPlayTechniqueCard($chameleons_json, $technique_card_id, $args) {
+        $this->addChameleonBindings($chameleons_json, $technique_card_id);
         $this->checkAction("actPlayTechniqueCard");
         $player_id = $this->getActivePlayerId();
-        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-        $type_id = $this->getTypeId($card);
-        if ($this->card_types[$type_id]['playable'] == false) {
+        $technique_card = $this->cards->getCardFromLocation($technique_card_id, HAND.$player_id);
+        $technique_type_id = $this->getTypeId($technique_card);
+        if ($this->card_types[$technique_type_id]['playable'] == false) {
             throw new BgaUserException($this->_("That card is not playable!"));
         }
 
         //Schedule Technique (and check for fizzle)
         $fizzle = array_key_exists("fizzle", $args);
-        if ($fizzle || ($type_id != CT_ACORN && $type_id != CT_GIFTVOUCHER)) {
-            $this->scheduleCard($player_id, $card);
+        if ($fizzle || ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER)) {
+            $this->scheduleCard($player_id, $technique_card);
         }
         if ($fizzle) {
-            $this->beginToResolveCard($player_id, $card);
+            $this->beginToResolveCard($player_id, $technique_card);
             $this->gamestate->nextState("trFullyResolveTechnique");
             return;
         }
 
         //Resolve Technique
-        switch($type_id) {
+        switch($technique_type_id) {
             case CT_SWIFTBROKER:
-                $this->beginToResolveCard($player_id, $card);
-                $this->gamestate->nextState("trSwiftBroker");
+                $this->beginToResolveCard($player_id, $technique_card);
+                $card_ids = $args["card_ids"];
+
+                //get the non-selected cards and selected cards
+                $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+                foreach ($selected_cards as $card_id => $card) {
+                    unset($non_selected_cards[$card_id]);
+                }
+
+                //discard all
+                $this->discardMultiple(
+                    clienttranslate('Swift Broker: ${player_name} discards their hand'),
+                    $player_id, 
+                    $card_ids, 
+                    $selected_cards, 
+                    $non_selected_cards
+                );
+
+                //draw an equal amount of new cards
+                $nbr = count($selected_cards) + count($non_selected_cards);
+                $this->draw(
+                    clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
+                    $nbr
+                );
+
+                $this->gamestate->nextState("trFullyResolveTechnique");
                 break;
             case CT_SHATTEREDRELIC:
-                $this->beginToResolveCard($player_id, $card);
+                $this->beginToResolveCard($player_id, $technique_card);
                 $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                if ($handsize == 0) {
-                    //shattered relic just draws a card (no choice game state needed)
+                if ($handsize > 0) {
+                    if (!array_key_exists("card_id", $args)) {
+                        throw new BgaVisibleSystemException("Shattered Relic: the player did not select a card to ditch");
+                    }
+                    $card_id = $args["card_id"];
+                    $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                    $this->ditch(clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), $card);
+                }
+                else {
                     $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to ditch'), array(
                         "player_name" => $this->getActivePlayerName()
                     ));
-                    $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
-                    $this->gamestate->nextState("trFullyResolveTechnique");
-                    return;
                 }
-                $this->gamestate->nextState("trShatteredRelic");
+                $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
+                $this->gamestate->nextState("trFullyResolveTechnique");
                 break;
             case CT_SPYGLASS:
-                $this->beginToResolveCard($player_id, $card);
+                $this->beginToResolveCard($player_id, $technique_card);
                 $this->gamestate->nextState("trSpyglass");
                 break;
             case CT_FLASHYSHOW:
-                $this->beginToResolveCard($player_id, $card);
-                $this->effects->insertGlobal($card["id"], CT_FLASHYSHOW);
+                $this->beginToResolveCard($player_id, $technique_card);
+                $this->effects->insertGlobal($technique_card_id, CT_FLASHYSHOW);
                 $this->notifyAllPlayers('message', clienttranslate('Flashy Show: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
                 $this->gamestate->nextState("trFullyResolveTechnique");
                 break;
             case CT_FAVORITETOY:
-                $this->beginToResolveCard($player_id, $card);
+                $this->beginToResolveCard($player_id, $technique_card);
                 $recovered_card = $this->cards->getCardOnTop(DISCARD.$player_id);
                 if ($recovered_card != null) {
                     $this->cards->moveCard($recovered_card["id"], HAND.$player_id);
@@ -1976,13 +2006,13 @@ class Dale extends DaleTableBasic
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
-                $this->cards->moveCard($card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
+                $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
                 $this->notifyAllPlayers('swapHandStall', clienttranslate('Acorn: ${player_name} swaps with a ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
-                    "card" => $card,
+                    "card" => $technique_card,
                     "stall_player_id" => $stall_player_id,
                     "stall_card_id" => $stall_card_id
                 ));
@@ -1991,27 +2021,27 @@ class Dale extends DaleTableBasic
             case CT_GIFTVOUCHER:
                 $market_card_id = $args["market_card_id"];
                 $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
-                $this->cards->moveCard($card_id, MARKET, $market_card["location_arg"]);
+                $this->cards->moveCard($technique_card_id, MARKET, $market_card["location_arg"]);
                 $this->cards->moveCard($market_card_id, HAND.$player_id);
                 $this->notifyAllPlayers('swapHandMarket', clienttranslate('Gift Voucher: ${player_name} swaps with a ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($market_card),
                     "player_id" => $player_id,
-                    "card" => $card,
+                    "card" => $technique_card,
                     "market_card_id" => $market_card_id
                 ));
                 $this->gamestate->nextState("trFullyResolveSwap");
                 break;
             case CT_LOYALPARTNER:
-                $this->beginToResolveCard($player_id, $card);
+                $this->beginToResolveCard($player_id, $technique_card);
                 $this->gamestate->nextState("trLoyalPartner");
                 break;
             case CT_PREPAIDGOOD:
-                $this->beginToResolveCard($player_id, $card);
+                $this->beginToResolveCard($player_id, $technique_card);
                 $this->gamestate->nextState("trPrepaidGood");
                 break;
             default:
-                $name = $this->getCardName($card);
+                $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
         }
     }
@@ -2057,36 +2087,37 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trActiveAbility");
     }
 
-    function actSwiftBroker(string $card_ids) {
-        $this->checkAction("actSwiftBroker");
-        $card_ids = $this->numberListToArray($card_ids);
-        $player_id = $this->getCurrentPlayerId();
+    //TODO: safely delete this
+    // function actSwiftBroker(string $card_ids) {
+    //     $this->checkAction("actSwiftBroker");
+    //     $card_ids = $this->numberListToArray($card_ids);
+    //     $player_id = $this->getCurrentPlayerId();
 
-        //get the non-selected cards and selected cards
-        $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
-        $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
-        foreach ($selected_cards as $card_id => $card) {
-            unset($non_selected_cards[$card_id]);
-        }
+    //     //get the non-selected cards and selected cards
+    //     $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+    //     $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+    //     foreach ($selected_cards as $card_id => $card) {
+    //         unset($non_selected_cards[$card_id]);
+    //     }
 
-        //discard all
-        $this->discardMultiple(
-            clienttranslate('Swift Broker: ${player_name} discards their hand'),
-            $player_id, 
-            $card_ids, 
-            $selected_cards, 
-            $non_selected_cards
-        );
+    //     //discard all
+    //     $this->discardMultiple(
+    //         clienttranslate('Swift Broker: ${player_name} discards their hand'),
+    //         $player_id, 
+    //         $card_ids, 
+    //         $selected_cards, 
+    //         $non_selected_cards
+    //     );
 
-        //draw an equal amount of new cards
-        $nbr = count($selected_cards) + count($non_selected_cards);
-        $this->draw(
-            clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
-            $nbr
-        );
+    //     //draw an equal amount of new cards
+    //     $nbr = count($selected_cards) + count($non_selected_cards);
+    //     $this->draw(
+    //         clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
+    //         $nbr
+    //     );
         
-        $this->gamestate->nextState("trFullyResolveTechnique");
-    }
+    //     $this->gamestate->nextState("trFullyResolveTechnique");
+    // }
 
     function actShatteredRelic($card_id) {
         $this->checkAction("actShatteredRelic");

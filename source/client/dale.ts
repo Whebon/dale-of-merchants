@@ -69,6 +69,10 @@ class Dale extends Gamegui
 	/** A schedule for each player */
 	playerSchedules: Record<number, DaleStock> = {};
 
+	get myHandSize(): Counter {
+		return this.playerHandSizes[this.player_id]!;
+	}
+
 	/** Current player's draw pile (this client's draw pil) */
 	get myDeck(): Pile {
 		return this.playerDecks[this.player_id]!;
@@ -335,11 +339,16 @@ class Dale extends Gamegui
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
-			case 'swiftBroker':
+			case 'client_swiftBroker':
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
 				break;
-			case 'shatteredRelic':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+			case 'client_shatteredRelic':
+				if (this.myHand.count() == 0) {
+					this.playTechniqueCard<'client_shatteredRelic'>({});
+				}
+				else {
+					this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				}
 				break;
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
@@ -353,7 +362,7 @@ class Dale extends Gamegui
 				}
 				const client_acorn_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
 				new TargetingLine(
-					new DaleCard(client_acorn_args.card_id),
+					new DaleCard(client_acorn_args.technique_card_id),
 					client_acorn_targets,
 					"dale-line-source-technique",
 					"dale-line-target-technique",
@@ -365,7 +374,7 @@ class Dale extends Gamegui
 			case 'client_giftVoucher':
 				const client_giftVoucher_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
 				new TargetingLine(
-					new DaleCard(client_giftVoucher_args.card_id),
+					new DaleCard(client_giftVoucher_args.technique_card_id),
 					this.market!.getCards(),
 					"dale-line-source-technique",
 					"dale-line-target-technique",
@@ -461,10 +470,10 @@ class Dale extends Gamegui
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
 				break;
-			case 'swiftBroker':
+			case 'client_swiftBroker':
 				this.myHand.setSelectionMode('none');
 				break;
-			case 'shatteredRelic':
+			case 'client_shatteredRelic':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'spyglass':
@@ -529,12 +538,12 @@ class Dale extends Gamegui
 				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
 				this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
 				break;
-			case 'swiftBroker':
+			case 'client_swiftBroker':
 				this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
-				this.addActionButtonCancel();
+				this.addActionButtonCancelClient();
 				break;
-			case 'shatteredRelic':
-				this.addActionButtonCancel();
+			case 'client_shatteredRelic':
+				this.addActionButtonCancelClient();
 				break;
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm selection"), "onSpyglass");
@@ -1144,6 +1153,12 @@ class Dale extends Gamegui
 				if (this.verifyChameleon(card)) {
 					if (card.isTechnique()) {
 						switch(card.effective_type_id) {
+							case DaleCard.CT_SWIFTBROKER:
+								this.clientScheduleTechnique('client_swiftBroker', card.id);
+								break;
+							case DaleCard.CT_SHATTEREDRELIC:
+								this.clientScheduleTechnique('client_shatteredRelic', card.id);
+								break;
 							case DaleCard.CT_ACORN:
 								for (let player_id in this.gamedatas.players) {
 									if (+player_id != this.player_id) {
@@ -1157,7 +1172,7 @@ class Dale extends Gamegui
 									this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
 								}
 								else {
-									this.mainClientState.enterOnStack('client_acorn', { card_id: card.id });
+									this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
 								}
 								break;
 							case DaleCard.CT_GIFTVOUCHER:
@@ -1166,7 +1181,7 @@ class Dale extends Gamegui
 									this.mainClientState.enterOnStack('client_fizzle', { card_id: card.id, card_name: card.name });
 								}
 								else {
-									this.mainClientState.enterOnStack('client_giftVoucher', { card_id: card.id });
+									this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
 								}
 								break;
 							default:
@@ -1199,33 +1214,11 @@ class Dale extends Gamegui
 					this.onBuildSelectionChanged();
 				}
 				break;
-			case 'shatteredRelic':
-				if(this.checkAction('actShatteredRelic')) {
-					this.bgaPerformAction('actShatteredRelic', {
-						card_id: card!.id
-					})
-				}
+			case 'client_shatteredRelic':
+				this.playTechniqueCard<'client_shatteredRelic'>({
+					card_id: card!.id
+				})
 				break;
-			//TODO: safely remove this
-			// case 'chameleon_flexibleShopkeeper':
-			// case 'chameleon_reflection':
-			// case 'chameleon_goodoldtimes':
-			// case 'chameleon_trendsetting':
-			// case 'chameleon_seeingdoubles':
-			// 	const args = this.chameleonArgs!;
-			// 	if (args.card.id == card.id) {
-			// 		this.onCancelChameleon(false);
-			// 	}
-			// 	else {
-			// 		if (this.gamedatas.gamestate.name == 'chameleon_seeingdoubles') {
-			// 			this.onConfirmChameleon(card);
-			// 			this.myHand.unselectItem(card_id);
-			// 		}
-			// 		else {
-			// 			this.showMessage(_("Please select a valid target for ")+`'${args.card.name}'`, "error");
-			// 		}
-			// 	}
-			// 	break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -1308,14 +1301,32 @@ class Dale extends Gamegui
 	 * Play a technique card that is already locally inside your schedule for an open-information choice
 	 * @param args result of the open-infomation choice to send to the server
 	 */
-	playTechniqueCard<K extends keyof ClientChoice>(args: ClientChoice[K]) {
+	playTechniqueCard<K extends keyof ClientTechniqueChoice>(args: ClientTechniqueChoice[K]) {
 		this.bgaPerformAction('actPlayTechniqueCard', {
-			card_id: (this.mainClientState.args as any).card_id,
+			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
 		this.mainClientState.leave();
 	}
+
+	/**
+	 * Locally schedule a technique, then open the related client technique choice state
+	 */
+	clientScheduleTechnique<K extends keyof ClientTechniqueChoice>(stateName: K, technique_card_id: number) {
+		if (this.checkLock()) {
+			if ($(this.myHand.control_name+'_item_' + technique_card_id)) {
+				this.mySchedule.addDaleCardToStock(new DaleCard(technique_card_id), this.myHand.control_name+'_item_'+technique_card_id)
+				this.myHand.removeFromStockByIdNoAnimation(+technique_card_id);
+			}
+			else {
+				throw new Error(`Cannot schedule the technique card. Card ${technique_card_id} does not exist in my hand`);
+			}
+			this.myHandSize.incValue(-1);
+			this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+		}
+	}
+	
 
 	onAcorn(source: DaleCard, target: DaleCard) {
 		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
@@ -1469,6 +1480,7 @@ class Dale extends Gamegui
 		console.log("onCancelClient");
 		TargetingLine.removeAll();
 		if (this.chameleonArgs) {
+			//undo the chameleon state
 			this.chameleonArgs.firstSource.unbindChameleonLocal();
 			if (this.chameleonArgs.pile) {
 				this.chameleonArgs.pile.unselectItem(this.chameleonArgs.firstSource.id);
@@ -1478,19 +1490,14 @@ class Dale extends Gamegui
 			}
 			this.chameleonArgs = undefined;
 		}
+		if ('technique_card_id' in this.mainClientState.args) {
+			//undo the technique choice state
+			const card_id = this.mainClientState.args.technique_card_id
+			this.myHand.addDaleCardToStock(new DaleCard(card_id), this.mySchedule.control_name+'_item_'+card_id)
+			this.mySchedule.removeFromStockByIdNoAnimation(card_id);
+			this.myHandSize.incValue(1);
+		}
 		this.mainClientState.leave();
-		//TODO: safely delete this
-		// if (DaleCard.unbindAllChameleonsLocal()) {
-		// 	//exit chameleon state
-		// 	this.chameleonArgs?.remove();
-		// 	this.chameleonArgs = undefined;
-		// 	for (let stock of this.allDaleStocks) {
-		// 		stock.unselectAll();
-		// 	}
-		// }
-		// else {
-		// 	this.mainClientState.cancel();
-		// }
 	}
 
 	//TODO: safely remove this
@@ -1595,11 +1602,11 @@ class Dale extends Gamegui
 	}
 
 	onSwiftBroker() {
-		if(this.checkAction("actSwiftBroker")) {
-			this.bgaPerformAction('actSwiftBroker', {
-				card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get())
-			})
-		}
+		//TODO: check if convertion to number list is needed
+		//this.arrayToNumberList(this.myHand.orderedSelection.get())
+		this.playTechniqueCard<'client_swiftBroker'>({
+			card_ids: this.myHand.orderedSelection.get()
+		})
 	}
 
 	onSpyglass() {
@@ -1693,14 +1700,15 @@ class Dale extends Gamegui
 	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
 		//hand to schedule
 		if (notif.args.player_id == this.player_id) {
-			//animate from my hand
+			//animate from my hand (if not done already by the client state)
 			const card_id = +notif.args.card.id;
 			if ($(this.myHand.control_name+'_item_' + card_id)) {
 				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_'+card_id)
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
-				throw new Error(`Card ${card_id} does not exist in my hand`);
+				console.log("SKIP scheduling the technique: already done by client")
+				return;
 			}
 		}
 		else {
@@ -1722,7 +1730,7 @@ class Dale extends Gamegui
 				this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
-				throw new Error(`Unable to cancel a techqniue. Techqniue card ${card_id} does not exist in the schedule.`);
+				throw new Error(`Unable to cancel a technique. Technique card ${card_id} does not exist in the schedule.`);
 			}
 		}
 		else {
