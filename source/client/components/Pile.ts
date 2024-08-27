@@ -335,9 +335,19 @@ export class Pile implements DaleLocation {
     public openPopin() {
         this.peek()?.detachDiv();
         const player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
-        const title_player = player ? `<span style="font-weight:bold;color:#${player.color}">${player.name}</span>'s ` : "";
-        const title_pile_name = this.pile_name ?? "Unnamed Pile";
-        const title = title_player + title_pile_name;
+        var title = "";
+        if (player) {
+            if (this.player_id == this.page.player_id) {
+                title = `<span style="font-weight:bold;color:#${player.color}">Your</span> `;
+            }
+            else {
+                title = `<span style="font-weight:bold;color:#${player.color}">${player.name}</span>'s `
+            }
+            title += this.pile_name?.toLowerCase() ?? "unnamed pile";
+        }
+        else {
+            title += this.pile_name ?? "Unnamed pile";
+        }
         const popin_id = this.pile_container_id+'-popin';
         this.popin.create(popin_id);
 		this.popin.setTitle(title);

@@ -1339,12 +1339,22 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             return this.cardIdToPopinDiv.get(card_id);
         };
         Pile.prototype.openPopin = function () {
-            var _a, _b;
+            var _a, _b, _c, _d;
             (_a = this.peek()) === null || _a === void 0 ? void 0 : _a.detachDiv();
             var player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
-            var title_player = player ? "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player.name, "</span>'s ") : "";
-            var title_pile_name = (_b = this.pile_name) !== null && _b !== void 0 ? _b : "Unnamed Pile";
-            var title = title_player + title_pile_name;
+            var title = "";
+            if (player) {
+                if (this.player_id == this.page.player_id) {
+                    title = "<span style=\"font-weight:bold;color:#".concat(player.color, "\">Your</span> ");
+                }
+                else {
+                    title = "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player.name, "</span>'s ");
+                }
+                title += (_c = (_b = this.pile_name) === null || _b === void 0 ? void 0 : _b.toLowerCase()) !== null && _c !== void 0 ? _c : "unnamed pile";
+            }
+            else {
+                title += (_d = this.pile_name) !== null && _d !== void 0 ? _d : "Unnamed pile";
+            }
             var popin_id = this.pile_container_id + '-popin';
             this.popin.create(popin_id);
             this.popin.setTitle(title);
@@ -1364,8 +1374,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this_1.cardIdToPopinDiv.set(card.id, div);
             };
             var this_1 = this;
-            for (var _i = 0, _c = this.cards; _i < _c.length; _i++) {
-                var card = _c[_i];
+            for (var _i = 0, _e = this.cards; _i < _e.length; _i++) {
+                var card = _e[_i];
                 _loop_2(card);
             }
             dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
@@ -2194,13 +2204,13 @@ define("components/types/MainClientState", ["require", "exports"], function (req
             get: function () {
                 switch (this._name) {
                     case 'client_technique':
-                        return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
+                        return _("${you} must play a technique, purchase, build, or");
                     case 'client_purchase':
                         return _("${you} must pay ${cost} for ${card_name}");
                     case 'client_build':
                         return _("${you} must select cards to build in stack ${stack_index_plus_1}");
                     case 'client_inventory':
-                        return _("${you} must discard any number of cards");
+                        return _("${you} must select any number of cards to discard");
                     case 'client_essentialPurchase':
                         return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
                     case 'chameleon_flexibleShopkeeper':
@@ -2760,37 +2770,37 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'playerTurn':
                     break;
                 case 'client_technique':
-                    this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
+                    this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
                     break;
                 case 'client_purchase':
-                    this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
+                    this.addActionButton("confirm-button", _("Confirm funds"), "onPurchase");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_build':
-                    this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+                    this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_inventory':
-                    this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+                    this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_essentialPurchase':
-                    this.addActionButton("confirm-button", _("Confirm Junk"), "onPurchase");
+                    this.addActionButton("confirm-button", _("Ditch selected junk"), "onPurchase");
                     this.addActionButtonCancelClient();
                     break;
                 case 'winterIsComing':
-                    this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+                    this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
                     this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
                     break;
                 case 'swiftBroker':
-                    this.addActionButton("confirm-button", _("Discard All"), "onSwiftBroker");
+                    this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
                     this.addActionButtonCancel();
                     break;
                 case 'shatteredRelic':
                     this.addActionButtonCancel();
                     break;
                 case 'spyglass':
-                    this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
+                    this.addActionButton("confirm-button", _("Confirm selection"), "onSpyglass");
                     break;
                 case 'client_acorn':
                     this.addActionButtonCancelClient();
@@ -3263,18 +3273,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onFizzle = function () {
             var card_id = this.mainClientState.args.card_id;
-            this.playTechniqueCard(new DaleCard_7.DaleCard(card_id));
+            this.bgaPerformAction('actPlayTechniqueCard', {
+                card_id: card_id,
+                chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
+                args: JSON.stringify({
+                    fizzle: true
+                })
+            });
             this.mainClientState.leave();
         };
         Dale.prototype.playTechniqueCard = function (card) {
-            console.log("GOT HERE");
-            if (this.checkAction('actPlayTechniqueCard')) {
-                this.bgaPerformAction('actPlayTechniqueCard', {
-                    card_id: card.id,
-                    chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
-                    args: JSON.stringify({})
-                });
-            }
+            this.bgaPerformAction('actPlayTechniqueCard', {
+                card_id: card.id,
+                chameleons_json: DaleCard_7.DaleCard.getLocalChameleonsJSON(),
+                args: JSON.stringify({})
+            });
         };
         Dale.prototype.onAcorn = function (source, target) {
             for (var _i = 0, _a = Object.entries(this.playerStalls); _i < _a.length; _i++) {

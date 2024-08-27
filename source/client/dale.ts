@@ -507,37 +507,37 @@ class Dale extends Gamegui
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
 				break;
 			case 'client_technique':
-				this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
+				this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
 				break;
 			case 'client_purchase':
-				this.addActionButton("confirm-button", _("Confirm Funds"), "onPurchase");
+				this.addActionButton("confirm-button", _("Confirm funds"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_build':
-				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_inventory':
-				this.addActionButton("confirm-button", _("Discard Selection"), "onInventoryAction");
+				this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_essentialPurchase':
-				this.addActionButton("confirm-button", _("Confirm Junk"), "onPurchase");
+				this.addActionButton("confirm-button", _("Ditch selected junk"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'winterIsComing':
-				this.addActionButton("confirm-button", _("Confirm Selection"), "onBuild");
+				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
 				this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
 				break;
 			case 'swiftBroker':
-				this.addActionButton("confirm-button", _("Discard All"), "onSwiftBroker");
+				this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
 				this.addActionButtonCancel();
 				break;
 			case 'shatteredRelic':
 				this.addActionButtonCancel();
 				break;
 			case 'spyglass':
-				this.addActionButton("confirm-button", _("Confirm Selection"), "onSpyglass");
+				this.addActionButton("confirm-button", _("Confirm selection"), "onSpyglass");
 				break;
 			case 'client_acorn':
 				this.addActionButtonCancelClient();
@@ -1294,19 +1294,22 @@ class Dale extends Gamegui
 
 	onFizzle() {
 		const card_id = (this.mainClientState.args as ClientGameState['client_fizzle']).card_id;
-		this.playTechniqueCard(new DaleCard(card_id));
+		this.bgaPerformAction('actPlayTechniqueCard', {
+			card_id: card_id, 
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify({
+				fizzle: true
+			})
+		});
 		this.mainClientState.leave();
 	}
 
 	playTechniqueCard(card: DaleCard) {
-		console.log("GOT HERE");
-		if(this.checkAction('actPlayTechniqueCard')) {
-			this.bgaPerformAction('actPlayTechniqueCard', {
-				card_id: card.id, 
-				chameleons_json: DaleCard.getLocalChameleonsJSON(),
-				args: JSON.stringify({})
-			});
-		}
+		this.bgaPerformAction('actPlayTechniqueCard', {
+			card_id: card.id, 
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify({})
+		});
 	}
 
 	onAcorn(source: DaleCard, target: DaleCard) {

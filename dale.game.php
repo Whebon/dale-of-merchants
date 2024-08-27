@@ -1915,9 +1915,18 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("That card is not playable!"));
         }
 
-        if ($type_id != CT_ACORN && $type_id != CT_GIFTVOUCHER) {
+        //Schedule Technique (and check for fizzle)
+        $fizzle = array_key_exists("fizzle", $args);
+        if ($fizzle || ($type_id != CT_ACORN && $type_id != CT_GIFTVOUCHER)) {
             $this->scheduleCard($player_id, $card);
         }
+        if ($fizzle) {
+            $this->beginToResolveCard($player_id, $card);
+            $this->gamestate->nextState("trFullyResolveTechnique");
+            return;
+        }
+
+        //Resolve Technique
         switch($type_id) {
             case CT_SWIFTBROKER:
                 $this->beginToResolveCard($player_id, $card);

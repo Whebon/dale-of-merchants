@@ -38,13 +38,13 @@ export class MainClientState {
         switch(this._name) {
             //Main Client States
             case 'client_technique':
-                return _("${you} must (a) purchase a card, (b) play a technique, (c) build a stack, or (d) take an inventory action");
+                return _("${you} must play a technique, purchase, build, or");
             case 'client_purchase':
                 return _("${you} must pay ${cost} for ${card_name}");
             case 'client_build':
                 return _("${you} must select cards to build in stack ${stack_index_plus_1}");
             case 'client_inventory':
-                return _("${you} must discard any number of cards");
+                return _("${you} must select any number of cards to discard");
             case 'client_essentialPurchase':
                 return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
             
