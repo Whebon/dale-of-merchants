@@ -229,6 +229,15 @@ define("components/types/ChameleonChain", ["require", "exports"], function (requ
         ChameleonChain.prototype.containsCardId = function (card_id) {
             return this.card_ids.includes(card_id);
         };
+        ChameleonChain.prototype.expireTargetId = function (chameleon_target_id) {
+            for (var i = 0; i < this.type_ids.length; i++) {
+                if (this.card_ids[i] == chameleon_target_id) {
+                    this.card_ids.length = i;
+                    this.type_ids.length = i;
+                    break;
+                }
+            }
+        };
         ChameleonChain.concat = function () {
             var chains = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -323,7 +332,13 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 affected_card_ids.add(DaleCard.effects[index].card_id);
                 DaleCard.effects.splice(index, 1);
                 if (effect.chameleon_target_id != null) {
-                    DaleCard.cardIdToChameleonChain.delete(effect.card_id);
+                    var chain = DaleCard.cardIdToChameleonChain.get(effect.card_id);
+                    if (chain) {
+                        chain.expireTargetId(effect.chameleon_target_id);
+                        if (chain.length == 0) {
+                            DaleCard.cardIdToChameleonChain.delete(effect.card_id);
+                        }
+                    }
                 }
             };
             for (var _i = 0, effects_1 = effects; _i < effects_1.length; _i++) {
@@ -2897,7 +2912,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.verifyChameleon = function (card, pile) {
-            var _a;
+            var _a, _b;
             if (!card.isChameleon()) {
                 return true;
             }
@@ -2914,11 +2929,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     chameleonStatename = 'chameleon_reflection';
                     break;
                 case DaleCard_8.DaleCard.CT_GOODOLDTIMES:
+                    console.log(" this.chameleonArgs?.onlyContainsGoodOldTimes");
+                    console.log((_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.onlyContainsGoodOldTimes);
                     var ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
                     if (!ditchAvailable) {
                         args.mode = 'copy';
                     }
-                    else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || ((_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.onlyContainsGoodOldTimes)) {
+                    else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || ((_b = this.chameleonArgs) === null || _b === void 0 ? void 0 : _b.onlyContainsGoodOldTimes)) {
                         args.mode = 'ditchOptional';
                     }
                     else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.includes(card)) && this.marketDiscard.size > 0) {
@@ -2962,7 +2979,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 card: card,
                 children: []
             };
-            for (var _i = 0, _a = this.getChameleonTargets(card); _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.getChameleonTargets(card, visited_ids.length == 1); _i < _a.length; _i++) {
                 var target = _a[_i];
                 if (!visited_ids.includes(target.id)) {
                     var child = this.createChameleonTree(target, visited_ids);
@@ -2972,7 +2989,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             visited_ids.pop();
             return tree;
         };
-        Dale.prototype.getChameleonTargets = function (card) {
+        Dale.prototype.getChameleonTargets = function (card, isRoot) {
             var targets = [];
             switch (card.effective_type_id) {
                 case DaleCard_8.DaleCard.CT_FLEXIBLESHOPKEEPER:
@@ -2990,7 +3007,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (this.marketDiscard.size > 0) {
                         targets.push(this.marketDiscard.peek());
                     }
-                    if (this.marketDeck.size > 0 || this.marketDiscard.size > 0) {
+                    if ((this.marketDeck.size > 0 || this.marketDiscard.size > 0) && (!isRoot || !card.isPassiveUsed())) {
                         var cardBack = this.marketDeck.peek();
                         if (cardBack) {
                             cardBack.attachDiv(this.marketDeck.topCardHTML);

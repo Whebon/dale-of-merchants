@@ -48,6 +48,19 @@ export class ChameleonChain {
     }
 
     /**
+     * Expire one of the targets in the chain
+     */
+    public expireTargetId(chameleon_target_id: number) {
+        for (let i = 0; i < this.type_ids.length; i++) {
+            if (this.card_ids[i] == chameleon_target_id) {
+                this.card_ids.length = i;
+                this.type_ids.length = i;
+                break;
+            }
+        }
+    }
+
+    /**
      * Concatenate a series of chameleon chains. `undefined` chains will be ignored.
      * @param chains ChameleonChains to concatenate
      * @returns new ChameleonChain 

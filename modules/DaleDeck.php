@@ -132,9 +132,36 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * This function should be called if the top card a location will be changed.
+     * If the provided location is a discard pile, expire CT_REFLECTION or CT_GOODOLDTIMES card modifications.
+     */
+    function expireChameleonTargetInDiscard(string $location) {
+        $prefix = substr($location, 0, 4);
+        if ($prefix == DISCARD) {
+            $player_id = substr($location, 4);
+            //TODO: safely remove this
+            // if ($player_id == MARKET) {
+            //     foreach ($this->effects->getChameleonIdsByTypeId(CT_GOODOLDTIMES) as $chameleon_card_id) {
+            //         $this->effects->expireModifications($chameleon_card_id);
+            //         $this->effects->insertModification($chameleon_card_id, CT_GOODOLDTIMES); //passive used
+            //     }
+            // }
+            if ($player_id != $this->game->getActivePlayerId()) {
+                $target = $this->getCardOnTop($location);
+                if ($target) {
+                    $this->effects->expireChameleonTarget($target["id"]);
+                }
+            }
+        }
+    }
+
+    /**
      * Move cards to specific location
      */
     function moveCards($cards, $location, $location_arg=0) {
+        foreach ($cards as $card) {
+            $this->effects->expireChameleonTarget($card); //is this really needed?
+        }
         parent::moveCards($cards, $location, $location_arg);
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModificationsMultiple($cards);
@@ -145,6 +172,7 @@ class DaleDeck extends Deck {
      * Move a card to specific location
      */
     function moveCard($card_id, $location, $location_arg=0) {
+        $this->effects->expireChameleonTarget($card_id);
         parent::moveCard($card_id, $location, $location_arg);
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModifications($card_id);
@@ -155,8 +183,12 @@ class DaleDeck extends Deck {
      * Move 1 card on top of the provided location
      * @param mixed $card_id string or int representing the card id of the card to move
      * @param string $location location to put the card
+     * @param bool $expire_chameleon if true, expire the chameleon target that was on top of this pile
      */
-    function moveCardOnTop($card_id, string $location) {
+    function moveCardOnTop($card_id, string $location, bool $expire_chameleon_target = true) {
+        if ($expire_chameleon_target) {
+            $this->expireChameleonTargetInDiscard($location);
+        }
         $this->insertCardOnExtremePosition($card_id, $location, true);
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModifications($card_id);
@@ -169,8 +201,9 @@ class DaleDeck extends Deck {
      * @param string $location location to put the card
      */
     function moveCardsOnTop(array $card_ids, string $location) {
+        $this->expireChameleonTargetInDiscard($location); //only once
         foreach ($card_ids as $card_id) {
-            $this->moveCardOnTop($card_id, $location);
+            $this->moveCardOnTop($card_id, $location, false);
         }
     }
 

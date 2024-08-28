@@ -185,7 +185,13 @@ export class DaleCard {
             
             //a chameleon effect was expired
             if (effect.chameleon_target_id != null) {
-                DaleCard.cardIdToChameleonChain.delete(effect.card_id);
+                const chain = DaleCard.cardIdToChameleonChain.get(effect.card_id);
+                if (chain) {
+                    chain.expireTargetId(effect.chameleon_target_id);
+                    if (chain.length == 0) {
+                        DaleCard.cardIdToChameleonChain.delete(effect.card_id);
+                    }
+                }
             }
         }
         affected_card_ids.forEach(card_id => {

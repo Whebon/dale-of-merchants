@@ -636,6 +636,8 @@ class Dale extends Gamegui
 				chameleonStatename = 'chameleon_reflection'
 				break;
 			case DaleCard.CT_GOODOLDTIMES:
+				console.log(" this.chameleonArgs?.onlyContainsGoodOldTimes");
+				console.log( this.chameleonArgs?.onlyContainsGoodOldTimes);
 				const ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
 				if (!ditchAvailable) {
 					args.mode = 'copy'
@@ -687,7 +689,7 @@ class Dale extends Gamegui
 			card: card, 
 			children: []
 		};
-		for (let target of this.getChameleonTargets(card)) {
+		for (let target of this.getChameleonTargets(card, visited_ids.length == 1)) {
 			if (!visited_ids.includes(target.id)) {
 				const child = this.createChameleonTree(target, visited_ids);
 				tree.children.push(child);
@@ -697,7 +699,7 @@ class Dale extends Gamegui
 		return tree;
 	}
 
-	getChameleonTargets(card: DaleCard) {
+	getChameleonTargets(card: DaleCard, isRoot: boolean) {
 		let targets: DaleCard[] = [];
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
@@ -714,7 +716,7 @@ class Dale extends Gamegui
 				if (this.marketDiscard.size > 0) {
 					targets.push(this.marketDiscard.peek()!);
 				}
-				if (this.marketDeck.size > 0 || this.marketDiscard.size > 0) {
+				if ((this.marketDeck.size > 0 || this.marketDiscard.size > 0) && (!isRoot || !card.isPassiveUsed())) {
 					const cardBack = this.marketDeck.peek();
 					if (cardBack) {
 						cardBack.attachDiv(this.marketDeck.topCardHTML!);
