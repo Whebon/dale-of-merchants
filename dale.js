@@ -3464,11 +3464,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
                 this.chameleonArgs = undefined;
             }
+            console.log(this.mainClientState.args);
             if ('technique_card_id' in this.mainClientState.args) {
                 var card_id = this.mainClientState.args.technique_card_id;
                 var card = new DaleCard_8.DaleCard(card_id);
                 var type_id = card.effective_type_id;
-                if (type_id != DaleCard_8.DaleCard.CT_ACORN && type_id != DaleCard_8.DaleCard.CT_GIFTVOUCHER) {
+                if ((type_id != DaleCard_8.DaleCard.CT_ACORN && type_id != DaleCard_8.DaleCard.CT_GIFTVOUCHER) || this.mainClientState.name == 'client_fizzle') {
                     this.myHand.addDaleCardToStock(card, this.mySchedule.control_name + '_item_' + card_id);
                     this.mySchedule.removeFromStockByIdNoAnimation(card_id);
                     this.myHandSize.incValue(1);

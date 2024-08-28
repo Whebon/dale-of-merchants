@@ -1498,12 +1498,13 @@ class Dale extends Gamegui
 			}
 			this.chameleonArgs = undefined;
 		}
+		console.log(this.mainClientState.args);
 		if ('technique_card_id' in this.mainClientState.args) {
 			//undo the technique choice state
 			const card_id = this.mainClientState.args.technique_card_id
 			const card = new DaleCard(card_id);
 			const type_id = card.effective_type_id;
-			if (type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER) {
+			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER) || this.mainClientState.name == 'client_fizzle') {
 				this.myHand.addDaleCardToStock(card, this.mySchedule.control_name+'_item_'+card_id)
 				this.mySchedule.removeFromStockByIdNoAnimation(card_id);
 				this.myHandSize.incValue(1);
