@@ -46,4 +46,21 @@ export class ChameleonChain {
     public containsCardId(card_id: number) {
        return this.card_ids.includes(card_id);
     }
+
+    /**
+     * Concatenate a series of chameleon chains. `undefined` chains will be ignored.
+     * @param chains ChameleonChains to concatenate
+     * @returns new ChameleonChain 
+     */
+    public static concat(...chains: (ChameleonChain | undefined)[]): ChameleonChain {
+        let newChain = new ChameleonChain();
+        for (let chain of chains) {
+            if (chain) {
+                for (let i = 0; i < chain.type_ids.length; i++) {
+                    newChain.push(chain.card_ids[i]!, chain.type_ids[i]!);
+                }
+            }
+        }
+        return newChain;
+    }
 }

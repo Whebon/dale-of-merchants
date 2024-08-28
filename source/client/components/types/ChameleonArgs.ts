@@ -68,14 +68,15 @@ export class ChameleonArgs {
             return validTargets;
         }
         //recursive case
-        for (let child of tree.children.slice()) {
+        for (let i = 0; i < tree.children.length; i++) {
+            const child = tree.children[i];
             const childValidTargets = this.getAllTargets(child);
-            if (childValidTargets.size > 0) {
+            if (childValidTargets.size > 0 || child?.card.effective_type_id == DaleCard.CT_GOODOLDTIMES) {
                 validTargets = validTargets.union(childValidTargets);
-            }
+            } 
             else {
-                const index = tree.children.indexOf(child);
-                tree.children.slice(index, 1);
+                tree.children.splice(i, 1);
+                i--;
             }
         }
         //if this is the root, set up '_onlyGoodOldTimes'

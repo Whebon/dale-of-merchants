@@ -229,6 +229,22 @@ define("components/types/ChameleonChain", ["require", "exports"], function (requ
         ChameleonChain.prototype.containsCardId = function (card_id) {
             return this.card_ids.includes(card_id);
         };
+        ChameleonChain.concat = function () {
+            var chains = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                chains[_i] = arguments[_i];
+            }
+            var newChain = new ChameleonChain();
+            for (var _a = 0, chains_1 = chains; _a < chains_1.length; _a++) {
+                var chain = chains_1[_a];
+                if (chain) {
+                    for (var i = 0; i < chain.type_ids.length; i++) {
+                        newChain.push(chain.card_ids[i], chain.type_ids[i]);
+                    }
+                }
+            }
+            return newChain;
+        };
         return ChameleonChain;
     }());
     exports.ChameleonChain = ChameleonChain;
@@ -481,8 +497,21 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.getTooltipContent = function () {
             var cardType = DaleCard.cardTypes[this.effective_type_id];
             var animalfolkWithBull = cardType.animalfolk_displayed ? " • " + cardType.animalfolk_displayed : "";
-            var chameleonName = this.isBoundChameleon() ? "<span class=chameleon-name>".concat(DaleCard.cardTypes[this.original_type_id].name, "</span> ") : "";
-            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(cardType.value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            var name = cardType.name;
+            var reminderText = "";
+            if (this.isBoundChameleon()) {
+                var type_ids = [this.original_type_id];
+                var chain = ChameleonChain_1.ChameleonChain.concat(DaleCard.cardIdToChameleonChain.get(this.id), DaleCard.cardIdToChameleonChainLocal.get(this.id));
+                for (var i = 0; i < chain.length - 1; i++) {
+                    type_ids.push(chain.type_ids[i]);
+                }
+                for (var _i = 0, _a = chain.type_ids; _i < _a.length; _i++) {
+                    var type_id = _a[_i];
+                    name = "<span class=chameleon-name>".concat(DaleCard.cardTypes[type_id].name, "</span><br>") + name;
+                }
+                reminderText += _("<br><br>A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.");
+            }
+            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(name, "</h3>\n            <hr>\n            ").concat(cardType.value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -1113,21 +1142,21 @@ define("components/types/ChameleonArgs", ["require", "exports", "components/Dale
                 validTargets.add(tree.card);
                 return validTargets;
             }
-            for (var _i = 0, _a = tree.children.slice(); _i < _a.length; _i++) {
-                var child = _a[_i];
+            for (var i = 0; i < tree.children.length; i++) {
+                var child = tree.children[i];
                 var childValidTargets = this.getAllTargets(child);
-                if (childValidTargets.size > 0) {
+                if (childValidTargets.size > 0 || (child === null || child === void 0 ? void 0 : child.card.effective_type_id) == DaleCard_3.DaleCard.CT_GOODOLDTIMES) {
                     validTargets = validTargets.union(childValidTargets);
                 }
                 else {
-                    var index = tree.children.indexOf(child);
-                    tree.children.slice(index, 1);
+                    tree.children.splice(i, 1);
+                    i--;
                 }
             }
             if (tree === this.tree) {
                 this._onlyContainsGoodOldTimes = true;
-                for (var _b = 0, _c = Array.from(validTargets); _b < _c.length; _b++) {
-                    var target = _c[_b];
+                for (var _i = 0, _a = Array.from(validTargets); _i < _a.length; _i++) {
+                    var target = _a[_i];
                     if (!target.isCardBack() && target.effective_type_id != DaleCard_3.DaleCard.CT_GOODOLDTIMES) {
                         this._onlyContainsGoodOldTimes = false;
                         break;

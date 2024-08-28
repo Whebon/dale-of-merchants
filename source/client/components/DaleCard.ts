@@ -511,13 +511,26 @@ export class DaleCard {
     private getTooltipContent(): string {
         const cardType = DaleCard.cardTypes[this.effective_type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
-        const chameleonName = this.isBoundChameleon() ? `<span class=chameleon-name>${DaleCard.cardTypes[this.original_type_id]!.name}</span> ` : ""
+        let name = cardType.name;
+        let reminderText = "";
+        if (this.isBoundChameleon()) {
+            let type_ids = [this.original_type_id];
+            let chain = ChameleonChain.concat(DaleCard.cardIdToChameleonChain.get(this.id), DaleCard.cardIdToChameleonChainLocal.get(this.id));
+            for (let i = 0; i < chain.length-1; i++) {
+                type_ids.push(chain.type_ids[i]!);
+            }
+            for(let type_id of chain.type_ids) {
+                name = `<span class=chameleon-name>${DaleCard.cardTypes[type_id]!.name}</span><br>` + name;
+            }
+            reminderText += _("<br><br>A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.")
+        }
+
         return `<div class="dale-card-tooltip">
-            <h3>${chameleonName}${cardType.name}</h3>
+            <h3>${name}</h3>
             <hr>
             ${cardType.value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="text">${cardType.text}</div>
+            <div class="text">${cardType.text}${reminderText}</div>
             <br style="line-height: 10px" />
         </div>`
 	}
