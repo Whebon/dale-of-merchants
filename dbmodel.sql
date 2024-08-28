@@ -18,7 +18,7 @@
 -- Note: The database schema is created from this file when the game starts. If you modify this file,
 --       you have to restart a game to see your changes in database.
 
--- Example 1: create a standard "card" table to be used with the "Deck" tools (see example game "hearts"):
+-- Create a standard "card" table to be used with the "Deck" tools
 
 CREATE TABLE IF NOT EXISTS `card` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS `card` (
   `card_location_arg` int(11) NOT NULL,
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- Create a table for the "DaleEffects" class
 
 CREATE TABLE IF NOT EXISTS `effect` (
   `effect_id` int(10) unsigned NOT NULL,
@@ -39,6 +41,15 @@ CREATE TABLE IF NOT EXISTS `effect` (
   PRIMARY KEY (`effect_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
--- Example 2: add a custom field to the standard "player" table
--- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
+-- Create a table for character cards (future compatibility)
 
+CREATE TABLE IF NOT EXISTS `character` (
+  `character_id` int(10) unsigned NOT NULL,
+  `player_id` int(10) unsigned NOT NULL,
+  `arg` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`character_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+
+-- Add a custom field to the standard "player" table
+
+ALTER TABLE `player` ADD `player_coins` INT UNSIGNED NOT NULL DEFAULT '0';
