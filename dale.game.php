@@ -2243,8 +2243,7 @@ class Dale extends DaleTableBasic
         $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
         if ($nbr == 0) {
             //skyglass has no effect
-            $this->gamestate->nextState("trSamePlayer");
-            return;
+            $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 

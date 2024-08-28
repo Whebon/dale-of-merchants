@@ -142,8 +142,10 @@ export class MainClientState {
      * @param args (optional) if provided, pass arguments to the client state
      */
     public enterOnStack<K extends keyof ClientGameStates>(name: K, args?: ClientGameStates[K]) {
-        this._stack.push(new PreviousState(this._name, this._args));
-        this.enter(name, args);
+        if (this._page.checkLock()) {
+            this._stack.push(new PreviousState(this._name, this._args));
+            this.enter(name, args);
+        }
     }
 
     /**

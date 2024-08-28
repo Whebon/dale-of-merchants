@@ -2326,8 +2326,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             });
         };
         MainClientState.prototype.enterOnStack = function (name, args) {
-            this._stack.push(new PreviousState(this._name, this._args));
-            this.enter(name, args);
+            if (this._page.checkLock()) {
+                this._stack.push(new PreviousState(this._name, this._args));
+                this.enter(name, args);
+            }
         };
         MainClientState.prototype.isStackEmpty = function () {
             return this._stack.length == 0;
