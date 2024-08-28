@@ -3122,7 +3122,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (client_purchase_args.pos == pos) {
                         this.mainClientState.leave();
                     }
-                    else {
+                    else if (this.checkLock()) {
                         this.mainClientState.enter('client_purchase', {
                             pos: pos,
                             on_market_board: true,
@@ -3134,13 +3134,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_technique':
                 case 'client_build':
                 case 'client_inventory':
-                    console.log("".concat(this.gamedatas.gamestate.name, " --> client_purchase"));
-                    this.mainClientState.enter('client_purchase', {
-                        pos: pos,
-                        on_market_board: true,
-                        card_name: card.name,
-                        cost: card.getCost(pos)
-                    });
+                    if (this.checkLock()) {
+                        this.mainClientState.enter('client_purchase', {
+                            pos: pos,
+                            on_market_board: true,
+                            card_name: card.name,
+                            cost: card.getCost(pos)
+                        });
+                    }
                     break;
                 case 'prepaidGood':
                     if (this.checkAction("actPrepaidGood")) {

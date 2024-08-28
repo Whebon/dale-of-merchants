@@ -1826,13 +1826,16 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("That card is not playable!"));
         }
 
+        //Fizzle
+        if (array_key_exists("fizzle", $args)) {
+            $this->scheduleCard($player_id, $technique_card);
+            $this->fullyResolveCard($player_id, $technique_card);
+            return;
+        }
+
         //Schedule Technique
         if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER) {
             $this->scheduleCard($player_id, $technique_card);
-            if (array_key_exists("fizzle", $args)) {
-                $this->fullyResolveCard($player_id, $technique_card);
-                return;
-            }
         }
 
         //Resolve Technique

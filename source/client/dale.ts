@@ -1047,7 +1047,7 @@ class Dale extends Gamegui
 					//user click on the same card again, return to the default client state
 					this.mainClientState.leave();
 				}
-				else {
+				else if (this.checkLock()) {
 					//user clicked on a different card, enter a new client state
 					this.mainClientState.enter('client_purchase', {
 						pos: pos,
@@ -1060,13 +1060,14 @@ class Dale extends Gamegui
 			case 'client_technique':
 			case 'client_build':
 			case 'client_inventory':
-				console.log(`${this.gamedatas.gamestate.name} --> client_purchase`);
-				this.mainClientState.enter('client_purchase', {
-					pos: pos,
-					on_market_board: true,
-					card_name: card.name,
-					cost: card.getCost(pos)
-				});
+				if (this.checkLock()) {
+					this.mainClientState.enter('client_purchase', {
+						pos: pos,
+						on_market_board: true,
+						card_name: card.name,
+						cost: card.getCost(pos)
+					});
+				}
 				break;
 			case 'prepaidGood':
 				if(this.checkAction("actPrepaidGood")) {
