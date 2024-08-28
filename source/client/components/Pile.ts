@@ -190,7 +190,7 @@ export class Pile implements DaleLocation {
         this.cards.push(card);
         if (from) {
             this._slidingCards.push(card);
-            let slidingElement = card.toDiv();
+            let slidingElement = card.toDiv(this.placeholderHTML);
             this.placeholderHTML.appendChild(slidingElement)
             //this.topCardHTML.insertAdjacentElement('afterend', slidingElement);
 

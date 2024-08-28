@@ -619,6 +619,9 @@ class Dale extends Gamegui
 		if (!card.isChameleon()) {
 			return true;
 		}
+		if (!this.checkLock()) {
+			return false;
+		}
 
 		if (this.chameleonArgs) {
 			//pick a target in the pre-computed tree

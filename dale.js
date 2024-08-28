@@ -1285,7 +1285,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.cards.push(card);
             if (from) {
                 this._slidingCards.push(card);
-                var slidingElement = card.toDiv();
+                var slidingElement = card.toDiv(this.placeholderHTML);
                 this.placeholderHTML.appendChild(slidingElement);
                 var thiz_1 = this;
                 var callback = function (node) {
@@ -2915,6 +2915,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a, _b;
             if (!card.isChameleon()) {
                 return true;
+            }
+            if (!this.checkLock()) {
+                return false;
             }
             if (this.chameleonArgs) {
                 this.chameleonArgs.pickTarget(card);
