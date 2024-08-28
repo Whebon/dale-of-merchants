@@ -1742,7 +1742,7 @@ class Dale extends DaleTableBasic
     }
 
     function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $essential_purchase_ids) {
-        $this->addChameleonBindings($chameleons_json, $funds_card_ids, $market_card_id, $essential_purchase_ids);
+        $this->addChameleonBindings($chameleons_json, $funds_card_ids, $essential_purchase_ids); //$market_card_id is not "used"
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
 
