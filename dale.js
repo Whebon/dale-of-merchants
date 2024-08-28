@@ -497,7 +497,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.getTooltipContent = function () {
             var cardType = DaleCard.cardTypes[this.effective_type_id];
             var animalfolkWithBull = cardType.animalfolk_displayed ? " • " + cardType.animalfolk_displayed : "";
-            var name = cardType.name;
+            var chameleonName = "";
             var reminderText = "";
             if (this.isBoundChameleon()) {
                 var type_ids = [this.original_type_id];
@@ -505,13 +505,15 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 for (var i = 0; i < chain.length - 1; i++) {
                     type_ids.push(chain.type_ids[i]);
                 }
-                for (var _i = 0, _a = chain.type_ids; _i < _a.length; _i++) {
-                    var type_id = _a[_i];
-                    name = "<span class=chameleon-name>".concat(DaleCard.cardTypes[type_id].name, "</span><br>") + name;
+                for (var _i = 0, type_ids_1 = type_ids; _i < type_ids_1.length; _i++) {
+                    var type_id = type_ids_1[_i];
+                    chameleonName += "<span class=chameleon-name>".concat(DaleCard.cardTypes[type_id].name, "</span><br>");
                 }
+            }
+            if (this.isChameleon()) {
                 reminderText += _("<br><br>A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.");
             }
-            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(name, "</h3>\n            <hr>\n            ").concat(cardType.value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(cardType.value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
