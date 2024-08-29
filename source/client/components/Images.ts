@@ -31,10 +31,10 @@ export class Images {
 
     static readonly S_SCALE = 0.28;
 
-    static readonly SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
-    static readonly SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
-    static readonly CARD_WIDTH_S = Images.S_SCALE * Images.CARD_WIDTH;
-    static readonly CARD_HEIGHT_S = Images.S_SCALE * Images.CARD_HEIGHT;
+    static readonly SHEET_WIDTH_S =  Math.round(Images.S_SCALE * Images.SHEET_WIDTH);
+    static readonly SHEET_HEIGHT_S =  Math.round(Images.S_SCALE * Images.SHEET_HEIGHT);
+    static readonly CARD_WIDTH_S =  Math.round(Images.S_SCALE * Images.CARD_WIDTH);
+    static readonly CARD_HEIGHT_S =  Math.round(Images.S_SCALE * Images.CARD_HEIGHT);
     static readonly MARKET_PADDING_TOP_S = Images.S_SCALE * Images.MARKET_PADDING_TOP;
     static readonly MARKET_PADDING_BOTTOM_S = Images.S_SCALE * Images.MARKET_PADDING_BOTTOM;
     static readonly MARKET_PADDING_LEFT_S = Images.S_SCALE * Images.MARKET_PADDING_LEFT;

@@ -148,10 +148,10 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.Z_INDEX_SLIDING_CARD = 300;
         Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD = 350;
         Images.S_SCALE = 0.28;
-        Images.SHEET_WIDTH_S = Images.S_SCALE * Images.SHEET_WIDTH;
-        Images.SHEET_HEIGHT_S = Images.S_SCALE * Images.SHEET_HEIGHT;
-        Images.CARD_WIDTH_S = Images.S_SCALE * Images.CARD_WIDTH;
-        Images.CARD_HEIGHT_S = Images.S_SCALE * Images.CARD_HEIGHT;
+        Images.SHEET_WIDTH_S = Math.round(Images.S_SCALE * Images.SHEET_WIDTH);
+        Images.SHEET_HEIGHT_S = Math.round(Images.S_SCALE * Images.SHEET_HEIGHT);
+        Images.CARD_WIDTH_S = Math.round(Images.S_SCALE * Images.CARD_WIDTH);
+        Images.CARD_HEIGHT_S = Math.round(Images.S_SCALE * Images.CARD_HEIGHT);
         Images.MARKET_PADDING_TOP_S = Images.S_SCALE * Images.MARKET_PADDING_TOP;
         Images.MARKET_PADDING_BOTTOM_S = Images.S_SCALE * Images.MARKET_PADDING_BOTTOM;
         Images.MARKET_PADDING_LEFT_S = Images.S_SCALE * Images.MARKET_PADDING_LEFT;
