@@ -1011,13 +1011,6 @@ class Dale extends Gamegui
 	}
 
 	/**
-	 * Add a cancel button (The state must have an "actCancel" action and "trCancel" transition)
-	*/
-	addActionButtonCancel() {
-		this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
-	}
-
-	/**
 	 * Add a cancel button to return from the main client state
 	*/
 	addActionButtonCancelClient() {
@@ -1488,22 +1481,6 @@ class Dale extends Gamegui
 		if(this.checkAction('actWinterIsComingSkip')) {
 			this.bgaPerformAction('actWinterIsComingSkip', {})
 		}
-	}
-
-	onCancel() {
-		throw new Error("REFACTOR EXCEPTION: server canceling is no longer available");
-		// if (DaleCard.unbindAllChameleonsLocal()) {
-		// 	//undo chameleon client state
-		// 	this.restoreServerGameState();
-		// 	this.chameleonArgs?.remove();
-		// 	this.chameleonArgs = undefined;
-		// }
-		// else {
-		// 	//undo server state
-		// 	if(this.checkAction('actCancel')) {
-		// 		this.bgaPerformAction('actCancel', {})
-		// 	}
-		// }
 	}
 
 	onCancelClient() {

@@ -39,7 +39,6 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUseActiveAbility', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction'],
 		'transitions' => array(
-			'trCancel' => 30,
 			'trActiveAbility' => 30,
 			'trWinterIsComing' => 36,
 			'trSamePlayer' => 30,

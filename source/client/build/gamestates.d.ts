@@ -85,7 +85,6 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
-			'trCancel': 30,
 			'trActiveAbility': 30,
 			'trWinterIsComing': 36,
 			'trSamePlayer': 30,

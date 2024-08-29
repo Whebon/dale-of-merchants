@@ -3115,9 +3115,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             return array.join(";");
         };
-        Dale.prototype.addActionButtonCancel = function () {
-            this.addActionButton("cancel-button", _("Cancel"), "onCancel", undefined, false, 'gray');
-        };
         Dale.prototype.addActionButtonCancelClient = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
         };
@@ -3469,9 +3466,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (this.checkAction('actWinterIsComingSkip')) {
                 this.bgaPerformAction('actWinterIsComingSkip', {});
             }
-        };
-        Dale.prototype.onCancel = function () {
-            throw new Error("REFACTOR EXCEPTION: server canceling is no longer available");
         };
         Dale.prototype.onCancelClient = function () {
             console.log("onCancelClient");

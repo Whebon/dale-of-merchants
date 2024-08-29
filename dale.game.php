@@ -38,10 +38,7 @@ class Dale extends DaleTableBasic
         parent::__construct();
         
         $this->initGameStateLabels( array(
-            //"selectedCard" => 10, TODO: safely delete this
             "resolvingCard" => 11
-            // "cancelableChameleon" => 12,, TODO: safely delete this
-            // "cancelableChameleonTypeId" => 13, TODO: safely delete this
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -87,11 +84,7 @@ class Dale extends DaleTableBasic
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        //$this->setGameStateInitialValue( 'my_first_global_variable', 0 );
-        //$this->setGameStateInitialValue("selectedCard", -1);
         $this->setGameStateInitialValue("resolvingCard", -1);
-        // $this->setGameStateInitialValue("cancelableChameleon", -1); TODO: safely delete this
-        // $this->setGameStateInitialValue("cancelableChameleonTypeId", -1);  TODO: safely delete this
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -1265,55 +1258,6 @@ class Dale extends DaleTableBasic
         }
     }
 
-    /**
-     * If there is an ongoing resolving card, abort the resolving process.
-     */
-    function abortResolvingCard() {
-        throw new BgaVisibleSystemException("MAINTENANCE EXCEPTION: abortResolvingCard is temporarily disabled");
-        // $card_id = $this->getGameStateValue("resolvingCard");
-        // if ($card_id != -1) {
-        //     //cancelling involves aborting an already initiated resolving card
-        //     $player_id = $this->getActivePlayerId();
-        //     $dbcard = $this->cards->getCard($card_id);
-        //     $this->cards->moveCard($dbcard["id"], HAND.$player_id);
-        //     $this->notifyAllPlayers('cancelTechnique', clienttranslate('${player_name} cancels resolving their ${card_name}'), array(
-        //         'player_id' => $player_id,
-        //         'player_name' => $this->getActivePlayerName(),
-        //         'card_name' => $this->getCardName($dbcard),
-        //         'card' => $dbcard,
-        //     ));
-        //     if ($card_id == $this->getGameStateValue("cancelableChameleon")) {
-        //         //the resolving (chameleon) card was bound for this reason. undo this.
-        //         $type_id = $this->getGameStateValue("cancelableChameleonTypeId");
-        //         $bindings = $this->effects->unbindChameleon($card_id, $type_id);
-        //         $this->notifyAllPlayers('unbindChameleon', clienttranslate('${original_name} takes back its original form'), array(
-        //             "original_name" => $this->getCardName($dbcard),
-        //             "card_id" => $card_id
-        //         ));
-        //         if (count($bindings) > 2) {
-        //             throw new BgaVisibleSystemException("A chameleon has more than 2 bindings. This should not be possible");
-        //         }
-        //         else if (count($bindings) == 2) {
-        //             //edge case: chameleon -> good old times (passive) -> technique
-        //             //"technique -> good old times" is cancelable
-        //             //"good old times -> original chameleon" is not. rebind.
-        //             $original_type_id = $this->getTypeId($dbcard);
-        //             foreach ($bindings as $binding) {
-        //                 if ($binding["type_id"] != CT_GOODOLDTIMES) {
-        //                     $this->effects->insert($card_id, $original_type_id, $binding["target"]);
-        //                     $this->notifyAllPlayers('bindChameleon', '', array(
-        //                         "card_id" => $card_id,
-        //                         "type_id" => $binding["target"]
-        //                     ));
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     $this->setGameStateValue("resolvingCard", -1);
-        // }
-    }
-
-
 //////////////////////////////////////////////////////////////////////////////
 //////////// Building functions
 ////////////
@@ -1734,12 +1678,6 @@ class Dale extends DaleTableBasic
     //     $this->setGameStateValue( "selectedCard", $market_card_id );
     //     $this->gamestate->nextState("trPurchase");
     // }
-    
-    function actCancel() {
-        $this->checkAction("actCancel");
-        $this->abortResolvingCard();
-        $this->gamestate->nextState("trCancel");
-    }
 
     function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $essential_purchase_ids) {
         $this->addChameleonBindings($chameleons_json, $funds_card_ids, $essential_purchase_ids); //$market_card_id is not "used"
