@@ -46,8 +46,6 @@ $machinestates = array(
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
 			'trSpyglass' => 52,
-			'trLoyalPartner' => 55,
-			'trPrepaidGood' => 56,
 		),
 	),
 	36 => array(
@@ -82,28 +80,6 @@ $machinestates = array(
 		'action' => 'stSpyglass',
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
-			'trSamePlayer' => 30,
-		),
-	),
-	55 => array(
-		'name' => 'loyalPartner',
-		'description' => clienttranslate('Loyal Partner: ${actplayer} must <stronger>ditch</stronger> all cards from the market'),
-		'descriptionmyturn' => clienttranslate('Loyal Partner: ${you} must <stronger>ditch</stronger> all cards from the market. Click on any cards to determine the order on the market discard pile'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actLoyalPartner', 'actCancel'],
-		'transitions' => array(
-			'trCancel' => 30,
-			'trSamePlayer' => 30,
-		),
-	),
-	56 => array(
-		'name' => 'prepaidGood',
-		'description' => clienttranslate('Prepaid Good: ${actplayer} must choose a card from the market'),
-		'descriptionmyturn' => clienttranslate('Prepaid Good: ${you} must choose a card from the market'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actPrepaidGood', 'actCancel'],
-		'transitions' => array(
-			'trCancel' => 30,
 			'trSamePlayer' => 30,
 		),
 	),

@@ -116,34 +116,4 @@ class action_dale extends APP_GameAction
 		$this->game->actSpyglass( $card_ids );
 		self::ajaxResponse();
 	}
-
-	public function actLoyalPartner()
-	{
-		self::setAjaxMode();
-
-		/** @var string $card_ids */
-		$card_ids = self::getArg('card_ids', AT_numberlist, true);
-
-		$this->game->actLoyalPartner( $card_ids );
-		self::ajaxResponse();
-	}
-
-	public function actCancel()
-	{
-		self::setAjaxMode();
-
-		$this->game->actCancel(  );
-		self::ajaxResponse();
-	}
-
-	public function actPrepaidGood()
-	{
-		self::setAjaxMode();
-
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
-
-		$this->game->actPrepaidGood( $card_id );
-		self::ajaxResponse();
-	}
 }

@@ -2720,10 +2720,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var client_giftVoucher_args = this.mainClientState.args;
                     this.targetingLine = new TargetingLine_1.TargetingLine(new DaleCard_8.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onGiftVoucher(source, target); });
                     break;
-                case 'loyalPartner':
+                case 'client_loyalPartner':
                     this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
                     break;
-                case 'prepaidGood':
+                case 'client_prepaidGood':
                     this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2804,10 +2804,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_giftVoucher':
                     (_b = this.targetingLine) === null || _b === void 0 ? void 0 : _b.remove();
                     break;
-                case 'loyalPartner':
+                case 'client_loyalPartner':
                     this.market.setSelectionMode(0);
                     break;
-                case 'prepaidGood':
+                case 'client_prepaidGood':
                     this.market.setSelectionMode(0);
                     break;
                 case 'chameleon_reflection':
@@ -2877,12 +2877,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_giftVoucher':
                     this.addActionButtonCancelClient();
                     break;
-                case 'loyalPartner':
+                case 'client_loyalPartner':
                     this.addActionButton("confirm-button", _("Ditch All"), "onLoyalPartner");
-                    this.addActionButtonCancel();
+                    this.addActionButtonCancelClient();
                     break;
-                case 'prepaidGood':
-                    this.addActionButtonCancel();
+                case 'client_prepaidGood':
+                    this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelClient();
@@ -3157,12 +3157,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         });
                     }
                     break;
-                case 'prepaidGood':
-                    if (this.checkAction("actPrepaidGood")) {
-                        this.bgaPerformAction('actPrepaidGood', {
-                            card_id: card.id
-                        });
-                    }
+                case 'client_prepaidGood':
+                    this.playTechniqueCard({
+                        card_id: card.id
+                    });
                     break;
             }
         };
@@ -3269,6 +3267,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                                     else {
                                         this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
                                     }
+                                    break;
+                                case DaleCard_8.DaleCard.CT_LOYALPARTNER:
+                                    this.clientScheduleTechnique('client_loyalPartner', card.id);
+                                    break;
+                                case DaleCard_8.DaleCard.CT_PREPAIDGOOD:
+                                    fizzle = this.market.getCards().length == 0;
+                                    this.clientScheduleTechnique(fizzle ? 'client_fizzle' : 'client_prepaidGood', card.id);
                                     break;
                                 default:
                                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -3580,11 +3585,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onLoyalPartner = function () {
-            if (this.checkAction("actLoyalPartner")) {
-                this.bgaPerformAction('actLoyalPartner', {
-                    card_ids: this.arrayToNumberList(this.market.orderedSelection.get())
-                });
-            }
+            this.playTechniqueCard({
+                card_ids: this.market.orderedSelection.get()
+            });
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;

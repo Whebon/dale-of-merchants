@@ -222,6 +222,8 @@ declare global {
 		'client_shatteredRelic': { card_id?: number }
 		'client_acorn': { stall_player_id: number, stall_card_id: number }
 		'client_giftVoucher': { market_card_id: number }
+		'client_loyalPartner': { card_ids: number[] }
+		'client_prepaidGood': { card_id: number }
 	}
 
 	//add all client states with a ClientTechniqueChoice

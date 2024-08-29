@@ -1937,10 +1937,39 @@ class Dale extends DaleTableBasic
                 $this->gamestate->nextState("trSamePlayer");
                 break;
             case CT_LOYALPARTNER:
-                $this->gamestate->nextState("trLoyalPartner");
+                //get the non-selected cards and selected cards
+                $card_ids = $args["card_ids"];
+                $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
+                $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
+                foreach ($selected_cards as $card_id => $card) {
+                    unset($non_selected_cards[$card_id]);
+                }
+                //1. ditch all cards from the market board
+                $this->ditchFromMarketBoard(
+                    clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
+                    $card_ids, 
+                    $selected_cards, 
+                    $non_selected_cards
+                );
+                //2. refill the market
+                $this->refillMarket(false);
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_PREPAIDGOOD:
-                $this->gamestate->nextState("trPrepaidGood");
+                //Get the card from the market
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, MARKET);
+                //Place the card into the player's hand
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
+                    'i18n' => array('card_name'),
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_name' => $this->getCardName($card),
+                    'market_card_id' => $card_id,
+                    'pos' => $card["location_arg"],
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -2033,51 +2062,53 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actLoyalPartner($card_ids) {
-        $this->checkAction("actLoyalPartner");
-        $card_ids = $this->numberListToArray($card_ids);
+    //TODO: safely remove this
+    // function actLoyalPartner($card_ids) {
+    //     $this->checkAction("actLoyalPartner");
+    //     $card_ids = $this->numberListToArray($card_ids);
 
-        //get the non-selected cards and selected cards
-        $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
-        $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
-        foreach ($selected_cards as $card_id => $card) {
-            unset($non_selected_cards[$card_id]);
-        }
+    //     //get the non-selected cards and selected cards
+    //     $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
+    //     $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
+    //     foreach ($selected_cards as $card_id => $card) {
+    //         unset($non_selected_cards[$card_id]);
+    //     }
 
-        //1. ditch all cards from the market board
-        $this->ditchFromMarketBoard(
-            clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
-            $card_ids, 
-            $selected_cards, 
-            $non_selected_cards
-        );
+    //     //1. ditch all cards from the market board
+    //     $this->ditchFromMarketBoard(
+    //         clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
+    //         $card_ids, 
+    //         $selected_cards, 
+    //         $non_selected_cards
+    //     );
 
-        //2. refill the market
-        $this->refillMarket(false);
+    //     //2. refill the market
+    //     $this->refillMarket(false);
         
-        $this->gamestate->nextState("trSamePlayer");
-    }
+    //     $this->gamestate->nextState("trSamePlayer");
+    // }
 
-    function actPrepaidGood($card_id) {
-        $this->checkAction("actPrepaidGood");
-        $player_id = $this->getActivePlayerId();
+    //TODO: safely remove this
+    // function actPrepaidGood($card_id) {
+    //     $this->checkAction("actPrepaidGood");
+    //     $player_id = $this->getActivePlayerId();
 
-        //Get the card from the market
-        $card = $this->cards->getCardFromLocation($card_id, MARKET);
+    //     //Get the card from the market
+    //     $card = $this->cards->getCardFromLocation($card_id, MARKET);
 
-        //Place the card into the player's hand
-        $this->cards->moveCard($card_id, HAND.$player_id);
-        $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
-            'i18n' => array('card_name'),
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_name' => $this->getCardName($card),
-            'market_card_id' => $card_id,
-            'pos' => $card["location_arg"],
-        ));
+    //     //Place the card into the player's hand
+    //     $this->cards->moveCard($card_id, HAND.$player_id);
+    //     $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
+    //         'i18n' => array('card_name'),
+    //         'player_id' => $player_id,
+    //         'player_name' => $this->getActivePlayerName(),
+    //         'card_name' => $this->getCardName($card),
+    //         'market_card_id' => $card_id,
+    //         'pos' => $card["location_arg"],
+    //     ));
 
-        $this->gamestate->nextState("trSamePlayer");
-    }
+    //     $this->gamestate->nextState("trSamePlayer");
+    // }
 
     //TODO: safely delete this
     // function actRequestStallAction() {

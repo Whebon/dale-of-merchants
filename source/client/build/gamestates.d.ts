@@ -92,8 +92,6 @@ interface GameStates {
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
 			'trSpyglass': 52,
-			'trLoyalPartner': 55,
-			'trPrepaidGood': 56,
 		},
 	},
 	36: {
@@ -158,42 +156,6 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
-			'trSamePlayer': 30,
-		},
-	},
-	55: {
-		'name': 'loyalPartner',
-		'description': 'Loyal Partner: ${actplayer} must <stronger>ditch</stronger> all cards from the market',
-		'descriptionmyturn': 'Loyal Partner: ${you} must <stronger>ditch</stronger> all cards from the market. Click on any cards to determine the order on the market discard pile',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actLoyalPartner': [{
-				'name': 'card_ids',
-				'type': 'AT_numberlist',
-				'typescriptType': string,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
-			'trSamePlayer': 30,
-		},
-	},
-	56: {
-		'name': 'prepaidGood',
-		'description': 'Prepaid Good: ${actplayer} must choose a card from the market',
-		'descriptionmyturn': 'Prepaid Good: ${you} must choose a card from the market',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actPrepaidGood': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-			'actCancel': [],
-		},
-		'transitions': {
-			'trCancel': 30,
 			'trSamePlayer': 30,
 		},
 	},
