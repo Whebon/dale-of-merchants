@@ -432,7 +432,7 @@ class Dale extends DaleTableBasic
     /**
      * Ditch a single specified card from the hand of the active player
      * @param string $msg notification message for all players
-     * @param array $dbcard card that needs to be thrown away
+     * @param array $dbcard card that needs to be ditched
      * @param bool $from_limbo (optional) - default false. If `false`, ditch from hand. If `true`, ditch from limbo.
      */
     function ditch(string $msg, array $dbcard, bool $from_limbo = false) {
@@ -446,6 +446,24 @@ class Dale extends DaleTableBasic
             "card" => $dbcard,
             "from_limbo" => $from_limbo
         ));
+    }
+
+    /**
+     * Ditch multiple cards from the hand of the active player (only sends 1 notification for all ditched cards)
+     * @param string $msg notification message for all players
+     * @param array $dbcards cards that need to be ditched
+     * @param bool $from_limbo (optional) - default false. If `false`, ditch from hand. If `true`, ditch from limbo.
+     */
+    function ditchMultiple(string $msg, array $dbcards, bool $from_limbo = false) {
+        $player_id = $this->getActivePlayerId();
+        $this->notifyAllPlayers('message', $msg, array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'nbr' => count($dbcards)
+        ));
+        foreach ($dbcards as $dbcard) {
+            $this->ditch('', $dbcard, $from_limbo);
+        }
     }
 
     /**
@@ -1680,7 +1698,7 @@ class Dale extends DaleTableBasic
     // }
 
     function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $essential_purchase_ids) {
-        $this->addChameleonBindings($chameleons_json, $funds_card_ids, $essential_purchase_ids); //$market_card_id is not "used"
+        $this->addChameleonBindings($chameleons_json, $funds_card_ids);
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
 
@@ -1716,14 +1734,17 @@ class Dale extends DaleTableBasic
             if (!$this->isSubset($essential_purchase_ids, $funds_card_ids)) {
                 throw new BgaVisibleSystemException("CT_ESSENTIALPURCHASE: Selected junk cards must be a subset of the selected fund cards");
             }
-            $this->cards->moveCardsOnTop($essential_purchase_ids, DECK.MARKET);
-            $this->notifyAllPlayers('ditchMultiple', clienttranslate('${player_name} pays ${nbr} card(s)'), array (
-                'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
-                'card_ids' => $funds_card_ids,
-                'cards' => $funds_cards,
-                'nbr' => count($funds_cards)
-            ));
+            //Move cards from funds to essential purchase
+            $funds_card_ids = array_values(array_diff($funds_card_ids, $essential_purchase_ids));
+            $essential_purchase_cards = array();
+            foreach ($essential_purchase_ids as $essential_purchase_id) {
+                $essential_purchase_cards[] = $funds_cards[$essential_purchase_id];
+                unset($funds_cards[$essential_purchase_id]);
+            }
+            $this->ditchMultiple(
+                clienttranslate('Essential Purchase: ${player_name} ditches ${nbr} junk card(s)'), 
+                $essential_purchase_cards
+            );
         }
         else if (!empty($essential_purchase_ids)) {
             throw new BgaVisibleSystemException("essential_purchase_ids were provided, but the purchased card is not of type CT_ESSENTIALPURCHASE");
@@ -1731,7 +1752,7 @@ class Dale extends DaleTableBasic
 
         //Discard the funds
         $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays ${nbr} card(s)'), array (
+        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_ids' => $funds_card_ids,

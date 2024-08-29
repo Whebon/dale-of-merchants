@@ -1291,22 +1291,19 @@ class Dale extends Gamegui
 			card_id = card.id;
 			throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY")
 		}
-		if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && DaleCard.containsTypeId(funds_card_ids, DaleCard.CT_ESSENTIALPURCHASE)) {
+		if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
 			this.mainClientState.enterOnStack('client_essentialPurchase', {
 				funds_card_ids: funds_card_ids,
 				...args
 			});
 		}
 		else {
-			console.log("PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!");
-			if(this.checkAction('actPurchase')) {
-				this.bgaPerformAction('actPurchase', {
-					funds_card_ids: this.arrayToNumberList(funds_card_ids),
-					market_card_id: card_id,
-					essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
-					chameleons_json: DaleCard.getLocalChameleonsJSON()
-				})
-			}
+			this.bgaPerformAction('actPurchase', {
+				funds_card_ids: this.arrayToNumberList(funds_card_ids),
+				market_card_id: card_id,
+				essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
+				chameleons_json: DaleCard.getLocalChameleonsJSON()
+			})
 		}
 	}
 
@@ -1938,12 +1935,19 @@ class Dale extends Gamegui
 	}
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
+		console.log("discardMultiple");
+		console.log(notif.args);
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
+			console.log("DISCARD");
+			console.log(card);
+			console.log(stock);
+			console.log(notif.args.player_id);
+			console.log(discardPile);
 			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
 			delay += 75; //delay indicates that ordering matters
 		}

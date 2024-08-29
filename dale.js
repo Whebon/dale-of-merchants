@@ -3346,19 +3346,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 card_id = card.id;
                 throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY");
             }
-            if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && DaleCard_8.DaleCard.containsTypeId(funds_card_ids, DaleCard_8.DaleCard.CT_ESSENTIALPURCHASE)) {
+            if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && new DaleCard_8.DaleCard(card_id).effective_type_id == DaleCard_8.DaleCard.CT_ESSENTIALPURCHASE) {
                 this.mainClientState.enterOnStack('client_essentialPurchase', __assign({ funds_card_ids: funds_card_ids }, args));
             }
             else {
-                console.log("PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!PURCHASE!");
-                if (this.checkAction('actPurchase')) {
-                    this.bgaPerformAction('actPurchase', {
-                        funds_card_ids: this.arrayToNumberList(funds_card_ids),
-                        market_card_id: card_id,
-                        essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
-                        chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
-                    });
-                }
+                this.bgaPerformAction('actPurchase', {
+                    funds_card_ids: this.arrayToNumberList(funds_card_ids),
+                    market_card_id: card_id,
+                    essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
+                    chameleons_json: DaleCard_8.DaleCard.getLocalChameleonsJSON()
+                });
             }
         };
         Dale.prototype.onFizzle = function () {
@@ -3819,6 +3816,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_discardMultiple = function (notif) {
             var _a;
+            console.log("discardMultiple");
+            console.log(notif.args);
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -3826,6 +3825,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var _i = 0, _b = notif.args.card_ids; _i < _b.length; _i++) {
                 var id = _b[_i];
                 var card = notif.args.cards[id];
+                console.log("DISCARD");
+                console.log(card);
+                console.log(stock);
+                console.log(notif.args.player_id);
+                console.log(discardPile);
                 this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
                 delay += 75;
             }
