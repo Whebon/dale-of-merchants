@@ -644,7 +644,7 @@ body {
 	.dale-card {
 		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 		border-radius: 10px;
-		transition: scale 0.3s ease, transform 1s ease;
+		transition: scale 0.3s ease, transform 0.5s ease;
 		z-index: 100;
 		
 		&:hover:not(.dale-line-source):not(.dale-line-target) {
