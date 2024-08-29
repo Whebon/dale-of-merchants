@@ -73,7 +73,7 @@ export class MainClientState {
             
             //Generic Technique States
             case 'client_fizzle':
-                return _("Are you sure you want to play '${card_name}' without any effects?");
+                return _("${card_name}: Are you sure you want to play this technique without any effects?");
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
 
@@ -86,6 +86,10 @@ export class MainClientState {
                 return _("${card_name}: ${you} must select a card from an opponent's stall to swap with");
             case 'client_giftVoucher':
                 return _("${card_name}: ${you} must select a card from the market to swap with");
+            case 'client_loyalPartner':
+                return _("${card_name}: ${you} may choose the order to <stronger>ditch</stronger> all cards from the market");
+            case 'client_prepaidGood':
+                return _("${card_name}: ${you} must choose a card from the market");
         }
         return "MISSING DESCRIPTION";
     }
