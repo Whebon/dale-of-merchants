@@ -132,7 +132,7 @@ export class TargetingLine {
     /**
      * Removes the chameleon svg line
      */
-    private remove() {
+    public remove() {
         removeEventListener("mousemove", this.updateLine);
         this.cardDiv.classList.remove("dale-line-source", this.sourceClass);
         this.cardDiv.removeEventListener("click", this.onSource);

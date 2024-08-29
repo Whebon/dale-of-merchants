@@ -2714,11 +2714,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     var client_acorn_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_8.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onAcorn(source, target); });
+                    this.targetingLine = new TargetingLine_1.TargetingLine(new DaleCard_8.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onAcorn(source, target); });
                     break;
                 case 'client_giftVoucher':
                     var client_giftVoucher_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_8.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onGiftVoucher(source, target); });
+                    this.targetingLine = new TargetingLine_1.TargetingLine(new DaleCard_8.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onGiftVoucher(source, target); });
                     break;
                 case 'loyalPartner':
                     this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
@@ -2744,11 +2744,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.marketDiscard.setSelectionMode('noneCantViewContent');
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
-                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onConfirmChameleon(target); }, this.chameleonArgs.pile);
+                    this.targetingLine = new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onConfirmChameleon(target); }, this.chameleonArgs.pile);
                     break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
+            var _a, _b, _c, _d, _e;
             console.log('Leaving state: ' + stateName);
             if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
                 console.log("this.chameleonArgs => don't turn off selection modes");
@@ -2797,6 +2798,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('none');
                     break;
+                case 'client_acorn':
+                    (_a = this.targetingLine) === null || _a === void 0 ? void 0 : _a.remove();
+                    break;
+                case 'client_giftVoucher':
+                    (_b = this.targetingLine) === null || _b === void 0 ? void 0 : _b.remove();
+                    break;
                 case 'loyalPartner':
                     this.market.setSelectionMode(0);
                     break;
@@ -2804,16 +2811,23 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(0);
                     break;
                 case 'chameleon_reflection':
-                    for (var _i = 0, _a = Object.entries(this.playerDiscards); _i < _a.length; _i++) {
-                        var _b = _a[_i], player_id = _b[0], pile = _b[1];
+                    (_c = this.targetingLine) === null || _c === void 0 ? void 0 : _c.remove();
+                    for (var _i = 0, _f = Object.entries(this.playerDiscards); _i < _f.length; _i++) {
+                        var _g = _f[_i], player_id = _g[0], pile = _g[1];
                         if (+player_id != +this.player_id) {
                             pile.setSelectionMode('none');
                         }
                     }
                     break;
                 case 'chameleon_goodoldtimes':
+                    (_d = this.targetingLine) === null || _d === void 0 ? void 0 : _d.remove();
                     this.marketDeck.setSelectionMode('none');
                     this.marketDiscard.setSelectionMode('none');
+                    break;
+                case 'chameleon_flexibleShopkeeper':
+                case 'chameleon_trendsetting':
+                case 'chameleon_seeingdoubles':
+                    (_e = this.targetingLine) === null || _e === void 0 ? void 0 : _e.remove();
                     break;
             }
         };

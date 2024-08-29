@@ -105,6 +105,9 @@ class Dale extends Gamegui
 	/** Arguments for chameleon client states. This card needs to be highlighted while selecting a valid target for it. */
 	chameleonArgs: ChameleonArgs | undefined;
 
+	/** the main targetingLine used as the current selection mode. */
+	targetingLine: TargetingLine | undefined;
+
 	/** Current client state */
 	mainClientState: MainClientState = new MainClientState(this);
 
@@ -354,7 +357,7 @@ class Dale extends Gamegui
 					}
 				}
 				const client_acorn_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
-				new TargetingLine(
+				this.targetingLine = new TargetingLine(
 					new DaleCard(client_acorn_args.technique_card_id),
 					client_acorn_targets,
 					"dale-line-source-technique",
@@ -366,7 +369,7 @@ class Dale extends Gamegui
 				break;
 			case 'client_giftVoucher':
 				const client_giftVoucher_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
-				new TargetingLine(
+				this.targetingLine = new TargetingLine(
 					new DaleCard(client_giftVoucher_args.technique_card_id),
 					this.market!.getCards(),
 					"dale-line-source-technique",
@@ -399,7 +402,7 @@ class Dale extends Gamegui
 					this.marketDiscard.setSelectionMode('noneCantViewContent');
 				}
 				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
-				new TargetingLine(
+				this.targetingLine = new TargetingLine(
 					this.chameleonArgs!.firstSource,
 					this.chameleonArgs!.currentTargets,
 					"dale-line-source-chameleon",
@@ -473,6 +476,12 @@ class Dale extends Gamegui
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('none');
 				break;
+			case 'client_acorn':
+				this.targetingLine?.remove();
+				break;
+			case 'client_giftVoucher':
+				this.targetingLine?.remove();
+				break;
 			case 'loyalPartner':
 				this.market!.setSelectionMode(0);
 				break;
@@ -480,6 +489,7 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(0);
 				break;
 			case 'chameleon_reflection':
+				this.targetingLine?.remove();
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
 					if (+player_id != +this.player_id) {
 						pile.setSelectionMode('none');
@@ -487,8 +497,14 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'chameleon_goodoldtimes':
+				this.targetingLine?.remove();
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
+				break;
+			case 'chameleon_flexibleShopkeeper':
+			case 'chameleon_trendsetting':
+			case 'chameleon_seeingdoubles':
+				this.targetingLine?.remove();
 				break;
 			//TODO: safely remove this
 			// case 'client_fizzle':
