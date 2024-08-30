@@ -125,6 +125,11 @@ declare global {
 			nbr: number
 			from_limbo?: boolean
 		}
+		'marketDiscardToHand': {
+			player_id: number
+			card: DbCard
+			to_limbo?: boolean
+		}
 		'discardToHand': {
 			player_id: number
 			discard_id?: number
@@ -242,7 +247,7 @@ declare global {
 		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }
 		'chameleon_trendsetting': {}
 		'chameleon_seeingdoubles': {}
-		'client_purchase' : { pos: number, on_market_board: boolean, cost: number, card_name: string }
+		'client_purchase' : { pos: number, market_discovery_card_id: number | undefined, cost: number, card_name: string }
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}

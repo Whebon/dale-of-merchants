@@ -150,6 +150,8 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.S_SCALE = 0.28;
         Images.CARD_WIDTH_S = Math.round(Images.S_SCALE * Images.CARD_WIDTH);
         Images.CARD_HEIGHT_S = Math.round(Images.S_SCALE * Images.CARD_HEIGHT);
+        Images.SHEET_WIDTH_S = Images.CARD_WIDTH_S * Images.IMAGES_PER_ROW;
+        Images.SHEET_HEIGHT_S = Images.CARD_HEIGHT_S * Images.IMAGES_PER_COLUMN;
         Images.MARKET_PADDING_TOP_S = Images.S_SCALE * Images.MARKET_PADDING_TOP;
         Images.MARKET_PADDING_BOTTOM_S = Images.S_SCALE * Images.MARKET_PADDING_BOTTOM;
         Images.MARKET_PADDING_LEFT_S = Images.S_SCALE * Images.MARKET_PADDING_LEFT;
@@ -2685,10 +2687,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var client_purchase_args = this.mainClientState.args;
                     this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
                     this.market.setSelectionMode(1, undefined, "dale-wrap-purchase");
-                    if (client_purchase_args.on_market_board) {
+                    if (client_purchase_args.market_discovery_card_id === undefined) {
                         this.market.setSelected(client_purchase_args.pos, true);
                     }
                     else {
+                        if (this.myHand.orderedSelection.getSize() == 0) {
+                            this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
+                        }
                         this.marketDiscard.selectTopCard();
                         this.marketDiscard.setSelectionMode("top");
                     }
@@ -2712,11 +2717,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_essentialPurchase':
                     var client_essentialPurchase_args = this.mainClientState.args;
-                    if (client_essentialPurchase_args.on_market_board) {
-                        this.market.setSelected(client_essentialPurchase_args.pos, true);
+                    if (client_essentialPurchase_args.market_discovery_card_id) {
+                        throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase");
                     }
                     else {
-                        throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase");
+                        this.market.setSelected(client_essentialPurchase_args.pos, true);
                     }
                     this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
                     var junk_selected = 0;
@@ -2783,6 +2788,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
                     this.targetingLine = new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source) { return _this.onCancelClient(); }, function (source, target) { return _this.onConfirmChameleon(target); }, this.chameleonArgs.pile);
                     break;
+                case 'client_marketDiscovery':
+                    this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
+                    this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-purchase');
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -2868,6 +2876,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_seeingdoubles':
                     (_e = this.targetingLine) === null || _e === void 0 ? void 0 : _e.remove();
                     break;
+                case 'client_marketDiscovery':
+                    this.marketDeck.setSelectionMode('none');
+                    this.marketDiscard.setSelectionMode('none');
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -3141,6 +3152,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
             else {
+                console.log("GOT HERE!");
                 if (pile.pop().id != +card.id) {
                     throw new Error("Card ".concat(+card.id, " was not found on top of the pile"));
                 }
@@ -3184,7 +3196,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else if (this.checkLock()) {
                         this.mainClientState.enter('client_purchase', {
                             pos: pos,
-                            on_market_board: true,
+                            market_discovery_card_id: undefined,
                             card_name: card.name,
                             cost: card.getCost(pos)
                         });
@@ -3196,7 +3208,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (this.checkLock()) {
                         this.mainClientState.enter('client_purchase', {
                             pos: pos,
-                            on_market_board: true,
+                            market_discovery_card_id: undefined,
                             card_name: card.name,
                             cost: card.getCost(pos)
                         });
@@ -3246,6 +3258,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onSelectMarketPileCard = function (pile, card) {
             console.log("onSelectMarketPileCard");
             switch (this.gamedatas.gamestate.name) {
+                case 'client_purchase':
+                    this.mainClientState.leave();
+                    break;
+                case 'client_marketDiscovery':
+                    if (pile === this.marketDeck) {
+                        this.onMarketDiscoveryDitch();
+                    }
+                    else if (pile === this.marketDiscard) {
+                        this.onMarketDiscoveryPurchase();
+                    }
             }
         };
         Dale.prototype.onOtherDiscardPileSelectionChanged = function (pile, card) {
@@ -3334,7 +3356,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("You cannot purchase a card from gamestate '".concat(this.gamedatas.gamestate, "'"));
             }
             var card_id;
-            if (args.on_market_board) {
+            if (args.market_discovery_card_id === undefined) {
                 card_id = this.market.getCardId(args.pos);
                 console.log(card_id);
             }
@@ -3344,7 +3366,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("Cannot purchase from the bin, as it is empty");
                 }
                 card_id = card.id;
-                throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY");
             }
             if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && new DaleCard_8.DaleCard(card_id).effective_type_id == DaleCard_8.DaleCard.CT_ESSENTIALPURCHASE) {
                 this.mainClientState.enterOnStack('client_essentialPurchase', __assign({ funds_card_ids: funds_card_ids }, args));
@@ -3361,7 +3382,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onMarketDiscoveryDitch = function () {
             this.playPassiveCard({});
         };
-        Dale.prototype.onMarketDiscoveryPurchase = function () {
+        Dale.prototype.onMarketDiscoveryPurchase = function (market_discovery_card_id) {
+            if (market_discovery_card_id == undefined || market_discovery_card_id instanceof PointerEvent) {
+                market_discovery_card_id = this.mainClientState.args.passive_card_id;
+            }
             var card = this.marketDiscard.peek();
             if (!card) {
                 this.showMessage(_("The bin is empty"), 'error');
@@ -3370,7 +3394,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (this.checkLock()) {
                 this.mainClientState.enter('client_purchase', {
                     pos: -1,
-                    on_market_board: false,
+                    market_discovery_card_id: market_discovery_card_id,
                     card_name: card.name,
                     cost: card.getCost(0)
                 });
@@ -3503,7 +3527,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
                 case DaleCard_8.DaleCard.CT_MARKETDISCOVERY:
                     if (card.isPassiveUsed()) {
-                        this.onMarketDiscoveryPurchase();
+                        this.onMarketDiscoveryPurchase(card.id);
                     }
                     else {
                         this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
@@ -3690,6 +3714,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['marketToHand', 500],
                 ['swapHandStall', 1],
                 ['swapHandMarket', 1],
+                ['marketDiscardToHand', 500],
                 ['discardToHand', 500],
                 ['discardToHandMultiple', 500],
                 ['draw', 500],
@@ -3921,11 +3946,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var _i = 0, _b = notif.args.card_ids; _i < _b.length; _i++) {
                 var id = _b[_i];
                 var card = notif.args.cards[id];
-                console.log("DISCARD");
-                console.log(card);
-                console.log(stock);
-                console.log(notif.args.player_id);
-                console.log(discardPile);
                 this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
                 delay += 75;
             }
@@ -3948,6 +3968,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (stock === this.myHand) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
             }
+        };
+        Dale.prototype.notif_marketDiscardToHand = function (notif) {
+            console.log("notif_marketDiscardToHand");
+            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+            this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
+            this.playerHandSizes[notif.args.player_id].incValue(1);
         };
         Dale.prototype.notif_discardToHand = function (notif) {
             var _a;

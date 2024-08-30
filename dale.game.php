@@ -808,7 +808,7 @@ class Dale extends DaleTableBasic
     */
     function getCost(array $dbcard) {
         $base_cost = $this->getValue($dbcard);
-        $additional_cost = $dbcard['location_arg'];
+        $additional_cost = $dbcard['location'] == MARKET ? $dbcard['location_arg'] : 0;
         return $base_cost + $additional_cost;
     }
 
@@ -1716,6 +1716,17 @@ class Dale extends DaleTableBasic
         //Get information about the market card
         //$market_card_id = $this->getGameStateValue("selectedCard");
         $market_card = $this->cards->getCard($market_card_id);
+        if ($market_card['location'] != MARKET && $market_card['location'] != DISCARD.MARKET) {
+            $invalid_location = $market_card['location'];
+            throw new BgaVisibleSystemException($this->_("Cards cannot be purchased from '$invalid_location'"));
+        }
+        $from_bin = $market_card['location'] == DISCARD.MARKET;
+        if ($from_bin) {
+            $market_card = $this->cards->getCardOnTop(DISCARD.MARKET);
+            if (!$this->containsTypeId($funds_cards, CT_MARKETDISCOVERY)) {
+                throw new BgaUserException($this->_("To purchase from the bin, 'Market Discovery' must be included in the funds"));
+            }
+        }
         $cost = $this->getCost($market_card);
 
         //Check if funds are sufficient
@@ -1762,14 +1773,26 @@ class Dale extends DaleTableBasic
 
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
-        $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${card_name}'), array (
-            'i18n' => array('card_name'),
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_name' => $this->getCardName($market_card),
-            'market_card_id' => $market_card_id,
-            'pos' => $market_card["location_arg"],
-        ));
+        if ($from_bin) {
+            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${card_name}'), array (
+                'i18n' => array('card_name'),
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($market_card),
+                'card' => $market_card,
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${card_name}'), array (
+                'i18n' => array('card_name'),
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($market_card),
+                'market_card_id' => $market_card_id,
+                'pos' => $market_card["location_arg"],
+            ));
+        }
+
 
         //end turn
         $this->gamestate->nextState("trNextPlayer");

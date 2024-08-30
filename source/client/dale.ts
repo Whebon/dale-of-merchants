@@ -293,10 +293,13 @@ class Dale extends Gamegui
 				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase'])
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
-				if (client_purchase_args.on_market_board) {
+				if (client_purchase_args.market_discovery_card_id === undefined) {
 					this.market!.setSelected(client_purchase_args.pos, true);
 				}
 				else {
+					if (this.myHand.orderedSelection.getSize() == 0) {
+						this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
+					}
 					this.marketDiscard.selectTopCard();
 					this.marketDiscard.setSelectionMode("top");
 				}
@@ -320,11 +323,11 @@ class Dale extends Gamegui
 				break;
 			case 'client_essentialPurchase':
 				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);
-				if (client_essentialPurchase_args.on_market_board) {
-					this.market!.setSelected(client_essentialPurchase_args.pos, true);
+				if (client_essentialPurchase_args.market_discovery_card_id) {
+					throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase")
 				}
 				else {
-					throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase")
+					this.market!.setSelected(client_essentialPurchase_args.pos, true);
 				}
 				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
 				let junk_selected = 0;
@@ -418,6 +421,9 @@ class Dale extends Gamegui
 			// case 'client_fizzle':
 			// 	new DaleCard((this.mainClientState.args as ClientGameStates['client_fizzle']).technique_card_id).div.classList.add("dale-fizzle");
 			// 	break;
+			case 'client_marketDiscovery':
+				this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
+				this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-purchase');
 		}
 	}
 
@@ -513,6 +519,9 @@ class Dale extends Gamegui
 			// case 'client_fizzle':
 			// 	document.querySelector(".dale-fizzle")?.classList.remove("dale-fizzle");
 			// 	break;
+			case 'client_marketDiscovery':
+				this.marketDeck.setSelectionMode('none');
+				this.marketDiscard.setSelectionMode('none');
 		}
 	}
 
@@ -977,6 +986,7 @@ class Dale extends Gamegui
 		}
 		else {
 			//remove from top
+			console.log("GOT HERE!");
 			if(pile.pop().id != +card.id) {
 				throw new Error(`Card ${+card.id} was not found on top of the pile`);
 			}
@@ -1072,7 +1082,7 @@ class Dale extends Gamegui
 					//user clicked on a different card, enter a new client state
 					this.mainClientState.enter('client_purchase', {
 						pos: pos,
-						on_market_board: true,
+						market_discovery_card_id: undefined,
 						card_name: card.name,
 						cost: card.getCost(pos)
 					});
@@ -1084,7 +1094,7 @@ class Dale extends Gamegui
 				if (this.checkLock()) {
 					this.mainClientState.enter('client_purchase', {
 						pos: pos,
-						on_market_board: true,
+						market_discovery_card_id: undefined,
 						card_name: card.name,
 						cost: card.getCost(pos)
 					});
@@ -1140,6 +1150,16 @@ class Dale extends Gamegui
 	onSelectMarketPileCard(pile: Pile, card: DaleCard) {
 		console.log("onSelectMarketPileCard");
 		switch(this.gamedatas.gamestate.name) {
+			case 'client_purchase':
+				this.mainClientState.leave();
+				break;
+			case 'client_marketDiscovery':
+				if (pile === this.marketDeck) {
+					this.onMarketDiscoveryDitch();
+				}
+				else if (pile === this.marketDiscard) {
+					this.onMarketDiscoveryPurchase();
+				}
 		}
 	}
 
@@ -1240,7 +1260,7 @@ class Dale extends Gamegui
 				throw new Error(`You cannot purchase a card from gamestate '${this.gamedatas.gamestate}'`)
 		}
 		var card_id;
-		if (args.on_market_board) {
+		if (args.market_discovery_card_id === undefined) {
 			card_id = this.market!.getCardId(args.pos);
 			console.log(card_id);
 		}
@@ -1250,7 +1270,6 @@ class Dale extends Gamegui
 				throw new Error("Cannot purchase from the bin, as it is empty")
 			}
 			card_id = card.id;
-			throw new Error("NOT IMPLEMENTED: CT_MARKETDISCOVERY")
 		}
 		if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
 			this.mainClientState.enterOnStack('client_essentialPurchase', {
@@ -1272,7 +1291,10 @@ class Dale extends Gamegui
 		this.playPassiveCard<'client_marketDiscovery'>({});
 	}
 
-	onMarketDiscoveryPurchase() {
+	onMarketDiscoveryPurchase(market_discovery_card_id?: number | PointerEvent) {
+		if (market_discovery_card_id == undefined || market_discovery_card_id instanceof PointerEvent) { //for dojo.connect
+			market_discovery_card_id = (this.mainClientState.args as ClientGameStates['client_marketDiscovery']).passive_card_id
+		}
 		const card = this.marketDiscard.peek();
 		if (!card) {
 			this.showMessage(_("The bin is empty"), 'error');
@@ -1281,7 +1303,7 @@ class Dale extends Gamegui
 		if (this.checkLock()) {
 			this.mainClientState.enter('client_purchase', {
 				pos: -1,
-				on_market_board: false,
+				market_discovery_card_id: market_discovery_card_id,
 				card_name: card.name,
 				cost: card.getCost(0)
 			});
@@ -1461,7 +1483,7 @@ class Dale extends Gamegui
 				throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
 			case DaleCard.CT_MARKETDISCOVERY:
 				if (card.isPassiveUsed()) {
-					this.onMarketDiscoveryPurchase();
+					this.onMarketDiscoveryPurchase(card.id);
 				}
 				else {
 					this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
@@ -1699,6 +1721,7 @@ class Dale extends Gamegui
 			['marketToHand', 500],
 			['swapHandStall', 1],
 			['swapHandMarket', 1],
+			['marketDiscardToHand', 500],
 			['discardToHand', 500],
 			['discardToHandMultiple', 500],
 			['draw', 500],
@@ -1985,11 +2008,6 @@ class Dale extends Gamegui
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
-			console.log("DISCARD");
-			console.log(card);
-			console.log(stock);
-			console.log(notif.args.player_id);
-			console.log(discardPile);
 			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
 			delay += 75; //delay indicates that ordering matters
 		}
@@ -2016,7 +2034,15 @@ class Dale extends Gamegui
 		if (stock === this.myHand) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
 		}
-	} 
+	}
+
+	notif_marketDiscardToHand(notif: NotifAs<'marketDiscardToHand'>) {
+		console.log("notif_marketDiscardToHand");
+		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+	}
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.log("notif_discardToHand");

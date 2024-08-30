@@ -33,6 +33,8 @@ export class Images {
 
     static readonly CARD_WIDTH_S =  Math.round(Images.S_SCALE * Images.CARD_WIDTH);
     static readonly CARD_HEIGHT_S =  Math.round(Images.S_SCALE * Images.CARD_HEIGHT);
+    static readonly SHEET_WIDTH_S =  Images.CARD_WIDTH_S * Images.IMAGES_PER_ROW;
+    static readonly SHEET_HEIGHT_S =  Images.CARD_HEIGHT_S * Images.IMAGES_PER_COLUMN;
     static readonly MARKET_PADDING_TOP_S = Images.S_SCALE * Images.MARKET_PADDING_TOP;
     static readonly MARKET_PADDING_BOTTOM_S = Images.S_SCALE * Images.MARKET_PADDING_BOTTOM;
     static readonly MARKET_PADDING_LEFT_S = Images.S_SCALE * Images.MARKET_PADDING_LEFT;
