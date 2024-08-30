@@ -31,8 +31,6 @@ export class Images {
 
     static readonly S_SCALE = 0.28;
 
-    static readonly SHEET_WIDTH_S =  Math.round(Images.S_SCALE * Images.SHEET_WIDTH);
-    static readonly SHEET_HEIGHT_S =  Math.round(Images.S_SCALE * Images.SHEET_HEIGHT);
     static readonly CARD_WIDTH_S =  Math.round(Images.S_SCALE * Images.CARD_WIDTH);
     static readonly CARD_HEIGHT_S =  Math.round(Images.S_SCALE * Images.CARD_HEIGHT);
     static readonly MARKET_PADDING_TOP_S = Images.S_SCALE * Images.MARKET_PADDING_TOP;
@@ -56,7 +54,7 @@ export class Images {
             style += `background-size: ${Images.CARD_WIDTH_S}px ${Images.CARD_HEIGHT_S}px;`
         }
         else {
-            style += `background-size: ${Images.SHEET_WIDTH_S}px ${Images.SHEET_HEIGHT_S}px;`
+            style += `background-size: ${Images.IMAGES_PER_ROW}00% ${Images.IMAGES_PER_COLUMN}00%;`
             if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
                 let x = card_type_id % Images.IMAGES_PER_ROW;
                 let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
@@ -78,7 +76,7 @@ export class Images {
     static setCardStyle(div: HTMLElement, card_type_id?: number) {
         dojo.setStyle(div, 'width', `${Images.CARD_WIDTH_S}px`);
         dojo.setStyle(div, 'height', `${Images.CARD_HEIGHT_S}px`);
-        dojo.setStyle(div, 'background-size', `${Images.SHEET_WIDTH_S}px ${Images.SHEET_HEIGHT_S}px`);
+        dojo.setStyle(div, 'background-size', `${Images.IMAGES_PER_ROW}00% ${Images.IMAGES_PER_COLUMN}00%`);
         if (card_type_id !== undefined) {
             if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
                 let x = card_type_id % Images.IMAGES_PER_ROW;
