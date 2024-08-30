@@ -21,15 +21,15 @@ def has_plus(row):
         return "true"
     return "false"
 
-def has_active(row):
-    if (row['has_active'] == "X"):
+def has_ability(row):
+    if (row['has_ability'] == "X"):
         if (row['is_technique'] == "X"):
             raise Exception("Techniques cannot have an active ability")
         return "true"
     return "false"
 
 def playable(row):
-    if (is_technique(row) == "true" or has_active(row) == "true" or row['animalfolk'] == "Chameleons"):
+    if (is_technique(row) == "true" or has_ability(row) == "true" or row['animalfolk'] == "Chameleons"):
         return "true"
     return "false"
 
@@ -56,7 +56,7 @@ for index, row in df.iterrows():
         'type_displayed': type_displayed(row),
         'is_technique': is_technique(row),
         'has_plus': has_plus(row),
-        'has_active': has_active(row),
+        'has_ability': has_ability(row),
         'playable': playable(row),
         'value': row['value'],
         'nbr': row['nbr'],

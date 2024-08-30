@@ -25,7 +25,7 @@ class Dale extends DaleTableBasic
     var DaleDeck $cards;
     var DaleEffects $effects;
     var $chameleon_targets_cache = array();
-    var bool $inActUseActiveAbility;
+    var bool $inactUsePassiveAbility;
 
 	function __construct( )
 	{
@@ -1080,7 +1080,7 @@ class Dale extends DaleTableBasic
                     $visited_chameleons = array();
                     $targets = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
                     $number_of_targets = count($targets);
-                    $goodoldtimes = (isset($this->inActUseActiveAbility) && in_array(CT_GOODOLDTIMES, $visited_chameleons));
+                    $goodoldtimes = (isset($this->inactUsePassiveAbility) && in_array(CT_GOODOLDTIMES, $visited_chameleons));
                     if ($number_of_targets > 0 && !$goodoldtimes) {
                         $name = $this->getCardName($dbcard);
                         throw new BgaVisibleSystemException("Client did not provide a target for '$name', but $number_of_targets valid target(s) exist(s)");
@@ -1936,27 +1936,21 @@ class Dale extends DaleTableBasic
         }
     }
     
-    function actUseActiveAbility($chameleons_json, $card_id) {
-        $this->inActUseActiveAbility = true;
+    function actUsePassiveAbility($chameleons_json, $card_id, $args) {
+        $this->inactUsePassiveAbility = true;
         $this->addChameleonBindings($chameleons_json, $card_id);
-        $this->checkAction("actUseActiveAbility");
+        $this->checkAction("actUsePassiveAbility");
 
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $type_id = $this->getTypeId($card);
-        if ($this->card_types[$type_id]['has_active'] == false) {
+        if ($this->card_types[$type_id]['has_ability'] == false) {
             throw new BgaUserException($this->_("That card has no ability!"));
         }
 
         if ($this->effects->isPassiveUsed($card) && ($type_id != CT_GOODOLDTIMES || $this->effects->getArg($card_id, $type_id) == null)) {
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
-
-        //TODO: safely delete this
-        // $target = $this->effects->getTarget($card_id, $type_id);
-        // if ($target != null && ($type_id != CT_GOODOLDTIMES || $target != CT_GOODOLDTIMES)) {
-        //     throw new BgaUserException($this->_("That card's active ability has already been used this turn!"));
-        // }
 
         switch($type_id) {
             case CT_GOODOLDTIMES:
@@ -1969,12 +1963,16 @@ class Dale extends DaleTableBasic
                     $this->effects->insertModification($card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
                 }
                 break;
+            case CT_MARKETDISCOVERY:
+                $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to ditch a card from the market deck'));
+                $this->effects->insertModification($card_id, CT_MARKETDISCOVERY);
+                break;
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
         }
 
-        $this->gamestate->nextState("trActiveAbility");
+        $this->gamestate->nextState("trPassiveAbility");
     }
 
     function actSpyglass($card_ids) {

@@ -16,12 +16,14 @@ export class MainClientState {
 	private _name: keyof ClientGameStates;
     private _args: ClientGameStates[keyof ClientGameStates];
     private _stack: PreviousState[];
+    private leaveThis: ()=>void;
 
     constructor(page: Gamegui) {
         this._page = page;
         this._name = 'client_technique';
         this._args = {};
         this._stack = [];
+        this.leaveThis = this.leave.bind(this);
     }
 
     public get name(): keyof ClientGameStates {
@@ -70,6 +72,14 @@ export class MainClientState {
                 return _("Trendsetting: ${you} must copy a card in the market");
             case 'chameleon_seeingdoubles':
                 return _("Seeing Doubles: ${you} must copy another card in your hand");
+            
+            //Generic Passive States
+            case 'client_choicelessPassiveCard':
+                return _("${card_name}: ${you} may use this card's ability");
+            
+            //Specific Passive States
+            case 'client_marketDiscovery':
+                return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
             
             //Generic Technique States
             case 'client_fizzle':
@@ -125,6 +135,7 @@ export class MainClientState {
         if (name) {
             this._name = name;
         }
+        this.setPassiveSelected(false);
         if (args) {
             if ('technique_card_id' in args) {
                 args = {
@@ -132,8 +143,15 @@ export class MainClientState {
                     ...args, 
                 }
             }
+            if ('passive_card_id' in args) {
+                args = {
+                    card_name: new DaleCard(args.passive_card_id).name,
+                    ...args, 
+                }
+            }
             this._args = args ?? {} as ClientGameStates[K];
         }
+        this.setPassiveSelected(true);
         this._page.setClientState(this._name, {
             descriptionmyturn: this._descriptionmyturn,
             args: this._args
@@ -157,6 +175,25 @@ export class MainClientState {
      */
     public isStackEmpty() {
         return this._stack.length == 0;
+    }
+
+    /**
+     * (de)select the current passive card
+     */
+    public setPassiveSelected(enable: boolean) {
+        if ('passive_card_id' in this._args) {
+            const div = new DaleCard(this._args.passive_card_id).div;
+            if (div) {
+                if (enable) {
+                    div.classList.add("dale-passive-selected");
+                    div.addEventListener('click', this.leaveThis);
+                }
+                else {
+                    div.classList.remove("dale-passive-selected");
+                    div.removeEventListener('click', this.leaveThis);
+                }
+            }
+        }
     }
 }
 

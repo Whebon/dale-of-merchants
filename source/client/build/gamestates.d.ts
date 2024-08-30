@@ -55,7 +55,7 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
-			'actUseActiveAbility': [{
+			'actUsePassiveAbility': [{
 				'name': 'chameleons_json',
 				'type': 'AT_json',
 				'typescriptType': string,
@@ -63,6 +63,10 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
 			}],
 			'actWinterIsComingSkip': [],
 			'actBuild': [{
@@ -85,7 +89,7 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
-			'trActiveAbility': 30,
+			'trPassiveAbility': 30,
 			'trWinterIsComing': 36,
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
@@ -113,7 +117,7 @@ interface GameStates {
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],
-			'actUseActiveAbility': [{
+			'actUsePassiveAbility': [{
 				'name': 'chameleons_json',
 				'type': 'AT_json',
 				'typescriptType': string,
@@ -121,11 +125,15 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
 			}],
 			'actWinterIsComingSkip': [],
 		},
 		'transitions': {
-			'trActiveAbility': 36,
+			'trPassiveAbility': 36,
 			'trWinterIsComing': 36,
 			'trNextPlayer': 41,
 			'trGameEnd': 99,

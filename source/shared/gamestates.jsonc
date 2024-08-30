@@ -62,9 +62,10 @@
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
-			"actUseActiveAbility": [
+			"actUsePassiveAbility": [
 				{"name": "chameleons_json", "type": "AT_json"},
-				{"name": "card_id", "type": "AT_int"}
+				{"name": "card_id", "type": "AT_int"},
+				{"name": "args", "type": "AT_json"}
 			],
 
 			//Build Actions
@@ -82,7 +83,7 @@
 		},
 		"transitions": { 
 			//Main cycle
-			"trActiveAbility": 30,
+			"trPassiveAbility": 30,
 			"trWinterIsComing": 36,
 			"trSamePlayer": 30,
 			"trNextPlayer": 41,
@@ -105,13 +106,14 @@
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
 			],
-			"actUseActiveAbility": [
+			"actUsePassiveAbility": [
 				{"name": "chameleons_json", "type": "AT_json"},
-				{"name": "card_id", "type": "AT_int"}
+				{"name": "card_id", "type": "AT_int"},
+				{"name": "args", "type": "AT_json"}
 			],
 			"actWinterIsComingSkip": []
 		},
-		"transitions": { "trActiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trGameEnd": 99 }
+		"transitions": { "trPassiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trGameEnd": 99 }
 	},
 
 	"41": {

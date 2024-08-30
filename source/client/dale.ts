@@ -297,7 +297,8 @@ class Dale extends Gamegui
 					this.market!.setSelected(client_purchase_args.pos, true);
 				}
 				else {
-					throw new Error("NOT IMPLEMENTED: market discovery")
+					this.marketDiscard.selectTopCard();
+					this.marketDiscard.setSelectionMode("top");
 				}
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
@@ -438,6 +439,8 @@ class Dale extends Gamegui
 			case 'client_purchase':
 				this.market!.unselectAll();
 				this.market!.setSelectionMode(0);
+				this.marketDiscard.unselectTopCard();
+				this.marketDiscard.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
 				break;
@@ -612,6 +615,15 @@ class Dale extends Gamegui
 				break;
 			case 'client_fizzle':
 				this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_choicelessPassiveCard':
+				this.addActionButton("confirm-button", _("Play"), "onChoicelessPassiveCard");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_marketDiscovery':
+				this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
+				this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -1162,63 +1174,12 @@ class Dale extends Gamegui
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_technique':
 				//play card action (technique or active passive)
-				let fizzle = true;
 				if (this.verifyChameleon(card)) {
 					if (card.isTechnique()) {
-						switch(card.effective_type_id) {
-							case DaleCard.CT_SWIFTBROKER:
-								this.clientScheduleTechnique('client_swiftBroker', card.id);
-								break;
-							case DaleCard.CT_SHATTEREDRELIC:
-								if (this.myHand.count() == 1) {
-									//the hand only consists of the shatteredRelic itself
-									this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
-								}
-								else {
-									this.clientScheduleTechnique('client_shatteredRelic', card.id);
-								}
-								break;
-							case DaleCard.CT_ACORN:
-								for (let player_id in this.gamedatas.players) {
-									if (+player_id != this.player_id) {
-										if (this.playerStalls[player_id]!.getNumberOfStacks() > 0) {
-											fizzle = false;
-											break;
-										}
-									}
-								}
-								if (fizzle) {
-									this.clientScheduleTechnique('client_fizzle', card.id);
-									//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
-								}
-								else {
-									this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
-								}
-								break;
-							case DaleCard.CT_GIFTVOUCHER:
-								fizzle = this.market!.getCards().length == 0;
-								if (fizzle) {
-									this.clientScheduleTechnique('client_fizzle', card.id);
-									//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
-								}
-								else {
-									this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
-								}
-								break;
-							case DaleCard.CT_LOYALPARTNER:
-								this.clientScheduleTechnique('client_loyalPartner', card.id);
-								break;
-							case DaleCard.CT_PREPAIDGOOD:
-								fizzle = this.market!.getCards().length == 0;
-								this.clientScheduleTechnique(fizzle ? 'client_fizzle' : 'client_prepaidGood', card.id);
-								break;
-							default:
-								this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
-								break;
-						}
+						this.onClickTechnique(card);
 					}
 					else {
-						this.onUsePassiveAbility(card);
+						this.onClickPassive(card);
 					}
 				}
 				//this.handleChameleonCard(card, true, this.myHand, this.onPlayCard, true);
@@ -1307,6 +1268,26 @@ class Dale extends Gamegui
 		}
 	}
 
+	onMarketDiscoveryDitch() {
+		this.playPassiveCard<'client_marketDiscovery'>({});
+	}
+
+	onMarketDiscoveryPurchase() {
+		const card = this.marketDiscard.peek();
+		if (!card) {
+			this.showMessage(_("The bin is empty"), 'error');
+			return;
+		}
+		if (this.checkLock()) {
+			this.mainClientState.enter('client_purchase', {
+				pos: -1,
+				on_market_board: false,
+				card_name: card.name,
+				cost: card.getCost(0)
+			});
+		}
+	}
+
 	onFizzle() {
 		this.playTechniqueCard<'client_fizzle'>({
 			fizzle: true
@@ -1315,6 +1296,22 @@ class Dale extends Gamegui
 
 	onChoicelessTechniqueCard() {
 		this.playTechniqueCard<'client_choicelessTechniqueCard'>({})
+	}
+
+	onChoicelessPassiveCard() {
+		this.playPassiveCard<'client_choicelessPassiveCard'>({})
+	}
+
+	/**
+	 * Use a passive for its ability
+	 */
+	playPassiveCard<K extends keyof ClientPassiveChoice>(args: ClientPassiveChoice[K]) {
+		this.bgaPerformAction('actUsePassiveAbility', {
+			card_id: (this.mainClientState.args as ClientGameStates[K]).passive_card_id, 
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify(args)
+		});
+		this.mainClientState.leave();
 	}
 
 	/**
@@ -1385,54 +1382,95 @@ class Dale extends Gamegui
 		}
 	}
 
-	//TODO: safely delete this
-	// onPlayCard(card?: DaleCard) {
-	// 	if (!card) {
-	// 		console.warn("Attempted to play 'undefined' card");
-	// 	}
-	// 	else if (!card.isPlayable()) {
-	// 		this.showMessage(_("This card cannot be played"), 'error');
-	// 	}
-	// 	else if (card.isTechnique()) {
-	// 		if(this.checkAction('actPlayTechniqueCard')) {
-	// 			this.bgaPerformAction('actPlayTechniqueCard', {
-	// 				card_id: card.id, 
-	// 				chameleons_json: DaleCard.getLocalChameleonsJSON()
-	// 			});
-	// 		}
-	// 	}
-	// 	else if (!card.isPassiveUsed()) {
-	// 		this.onUsePassiveAbility(card);
-	// 	}
-	// 	else if (!card.isChameleon()) {
-	// 		this.showMessage(_("This card's ability was already used"), 'error');
-	// 	}
-	// 	else {
-	// 		this.showMessage(_("This chameleon card cannot be played"), 'error');
-	// 		card.unbindChameleonLocal();
-	// 	}
-	// 	this.myHand.unselectAll();
-	// }
+	/**
+	 * The player want to use a technique card as a technique. Locally schedule that card.
+	 */
+	onClickTechnique(card: DaleCard) {
+		let fizzle = true;
+		switch(card.effective_type_id) {
+			case DaleCard.CT_SWIFTBROKER:
+				this.clientScheduleTechnique('client_swiftBroker', card.id);
+				break;
+			case DaleCard.CT_SHATTEREDRELIC:
+				if (this.myHand.count() == 1) {
+					//the hand only consists of the shatteredRelic itself
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_shatteredRelic', card.id);
+				}
+				break;
+			case DaleCard.CT_ACORN:
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						if (this.playerStalls[player_id]!.getNumberOfStacks() > 0) {
+							fizzle = false;
+							break;
+						}
+					}
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+					//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
+				}
+				else {
+					this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
+				}
+				break;
+			case DaleCard.CT_GIFTVOUCHER:
+				fizzle = this.market!.getCards().length == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+					//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
+				}
+				else {
+					this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
+				}
+				break;
+			case DaleCard.CT_LOYALPARTNER:
+				this.clientScheduleTechnique('client_loyalPartner', card.id);
+				break;
+			case DaleCard.CT_PREPAIDGOOD:
+				fizzle = this.market!.getCards().length == 0;
+				this.clientScheduleTechnique(fizzle ? 'client_fizzle' : 'client_prepaidGood', card.id);
+				break;
+			default:
+				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				break;
+		}
+	}
 
 	/**
-	 * Use the active ability of a card, then return to the current game state
-	 * @param card the card that wants to use its active ability
+	 * The user clicked on a card with a passive ability. Jump to the related choice state
+	 * @param card the card that wants to use its passive ability
 	 */
-	onUsePassiveAbility(card: DaleCard) {
-		if (card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
+	onClickPassive(card: DaleCard) {
+		const type_id = card.effective_type_id;
+		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.CT_MARKETDISCOVERY) {
 			if (card.isChameleon()) {
 				this.showMessage(_("This chameleon card has no valid targets"), 'error');
 				return;
 			}
 			if (card.isPassiveUsed()) {
-				this.showMessage(_("This card's ability was already used"), 'error');
+				this.showMessage(_("This passive's ability was already used"), 'error');
 				return;
 			}
 		}
-		this.bgaPerformAction('actUseActiveAbility', {
-			card_id: card.id, 
-			chameleons_json: DaleCard.getLocalChameleonsJSON()
-		});
+		switch(card.effective_type_id) {
+			case DaleCard.CT_GOODOLDTIMES:
+				throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
+			case DaleCard.CT_MARKETDISCOVERY:
+				if (card.isPassiveUsed()) {
+					this.onMarketDiscoveryPurchase();
+				}
+				else {
+					this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
+				}
+				break;
+			default:
+				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
+				break;
+		}
 	}
 
 	onBuildSelectionChanged(card?: DaleCard){
@@ -1555,7 +1593,11 @@ class Dale extends Gamegui
 	}
 
 	onGoodOldTimesPassive() {
-		this.onUsePassiveAbility(this.chameleonArgs!.firstSource);
+		this.bgaPerformAction('actUsePassiveAbility', {
+			card_id: this.chameleonArgs!.firstSource.id, 
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify({})
+		});
 		this.onCancelClient();
 	}
 

@@ -59,7 +59,7 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actUseActiveAbility()
+	public function actUsePassiveAbility()
 	{
 		self::setAjaxMode();
 
@@ -67,8 +67,10 @@ class action_dale extends APP_GameAction
 		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var string $args */
+		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actUseActiveAbility( $chameleons_json, $card_id );
+		$this->game->actUsePassiveAbility( $chameleons_json, $card_id, $args );
 		self::ajaxResponse();
 	}
 

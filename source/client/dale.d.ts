@@ -226,11 +226,17 @@ declare global {
 		'client_prepaidGood': { card_id: number }
 	}
 
-	//add all client states with a ClientTechniqueChoice
+	interface ClientPassiveChoice {
+		'client_choicelessPassiveCard': {},
+		'client_marketDiscovery': {}
+	}
+
+	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
 	type TechniqueClientStates = { [K in keyof ClientTechniqueChoice]: { technique_card_id: number } }
+	type PassiveClientStates = { [K in keyof ClientPassiveChoice]: { passive_card_id: number } }
 
 	/** @gameSpecific Add game specific client game states */
-	interface ClientGameStates extends TechniqueClientStates {
+	interface ClientGameStates extends TechniqueClientStates, PassiveClientStates {
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
 		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }

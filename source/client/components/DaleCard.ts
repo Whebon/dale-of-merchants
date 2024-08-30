@@ -123,15 +123,6 @@ export class DaleCard {
         console.log("addEffect");
         console.log(effect);
         DaleCard.effects.push(effect);
-        
-        //TODO: safely delete this
-        //an active passive effect has been used
-        // if (DaleCard.hasActiveAbility(+effect.type_id)) {
-        //     if (+effect.type_id != DaleCard.CT_GOODOLDTIMES || +effect.chameleon_target_id != DaleCard.CT_GOODOLDTIMES) {
-        //         const encoding = (+effect.card_id)*DaleCard.MAX_TYPES+(+effect.type_id)
-        //         DaleCard.usedActiveAbilities.add(encoding);
-        //     }
-        // }
 
         //a chameleon effect was added
         if (effect.chameleon_target_id != null) {
@@ -229,7 +220,7 @@ export class DaleCard {
      */
     public isPassiveUsed() {
         console.log("isPassiveUsed");
-        if (!DaleCard.cardTypes[this.effective_type_id]!.has_active) {
+        if (!DaleCard.cardTypes[this.effective_type_id]!.has_ability) {
             //N/A, this card doesn't have a usable passive, therefore it is considered "used"
             return true;
         }
@@ -266,16 +257,6 @@ export class DaleCard {
         }
         return value;
     }
-
-    //TODO: safely remove this
-    // /**
-    //  * Should be called when a turn ends. Removes all effects that last until end of turn.
-    //  */
-    // public static removeEndOfTurnEffects() {
-    //     console.log("removeEndOfTurnEffects");
-    //     DaleCard.usedActiveAbilities.clear();
-    //     DaleCard.unbindAllChameleons();
-    // }
 
     ///////////////////////////////////////////////////////
     //////////        Chameleon functions        //////////
@@ -488,27 +469,6 @@ export class DaleCard {
     public static isPlayable(type_id: number): boolean {
         return DaleCard.cardTypes[type_id]!.playable
     }
-    
-    //TODO: safely delete this
-    // /**
-    //  * @returns `true` if this card has an unused active ability
-    //  */
-    // public hasActiveAbility(): boolean {
-    //     const type_id = this.effective_type_id;
-    //     if (!DaleCard.hasActiveAbility(type_id)) {
-    //         return false;
-    //     }
-    //     const encoding = this.id * DaleCard.MAX_TYPES + type_id;
-    //     return !DaleCard.usedActiveAbilities.has(encoding);
-    // }
-
-    //TODO: safely delete this
-    // /**
-    //  * @returns `true` if this card type can have an active ability
-    //  */
-    // public static hasActiveAbility(type_id: number): boolean {
-    //     return DaleCard.cardTypes[type_id]!.has_active
-    // }
 
     /////////////////////////////////////////////////////////
     //////////        Div related functions        //////////

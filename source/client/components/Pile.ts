@@ -31,6 +31,7 @@ export class Pile implements DaleLocation {
     private selectedSizeHTML: HTMLElement;
     public topCardHTML: HTMLElement | undefined;
     public placeholderHTML: HTMLElement;
+    public previousTopCard: DaleCard | undefined;
 
     private pile_container_id: string;
     private pile_name: string | undefined;
@@ -105,7 +106,7 @@ export class Pile implements DaleLocation {
             this.selectedSizeHTML.classList.add("dale-hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
-        if (!this.isPopinOpen) {
+        if (!this.isPopinOpen && this.previousTopCard != topCard) {
             this.topCardHTML?.remove();
             if (topCard !== undefined) {
                 this.topCardHTML = topCard.toDiv(this.placeholderHTML);
@@ -121,6 +122,7 @@ export class Pile implements DaleLocation {
                 //     this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
                 // }
             }
+            this.previousTopCard = topCard;
         }
     }
 
@@ -441,7 +443,24 @@ export class Pile implements DaleLocation {
     selectItem(card_id: number) {
         this.orderedSelection.selectItem(card_id);
     }
+    
+    /**
+     * Unselect the top card of this pile (html only)
+     */
+    unselectTopCard() {
+        this.containerHTML?.classList.remove("dale-selected");
+    }
 
+    /**
+     * Select the top card of this pile (html only)
+     */
+    selectTopCard() {
+        this.containerHTML?.classList.add("dale-selected");
+    }
+
+    /**
+     * Give the pile's wrap the specified css class
+     */
     private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default') {
 		if (wrapClass != 'previous') {
 			this.containerHTML.classList.remove(...DALE_WRAP_CLASSES);

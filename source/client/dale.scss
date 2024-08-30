@@ -124,6 +124,19 @@
 	}
 }
 
+.dale-passive-selected {
+	cursor: pointer;
+	scale: 1.1;
+	z-index: 200 !important;
+	outline: 3px solid var(--dale-wrap-technique);
+	// background-color: var(--dale-wrap-technique-a);
+	// background-blend-mode: overlay;
+	// .dale-chameleon-overlay {
+	// 	background-color: var(--dale-wrap-technique-a);
+	// 	background-blend-mode: overlay;
+	// }
+}
+
 .dale-blinking {
 	animation: blinker 1s infinite;
 }
