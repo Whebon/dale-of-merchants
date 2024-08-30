@@ -2517,10 +2517,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.marketDeck = new HiddenPile_1.HiddenPile(_this, 'market-deck', 'Supply');
             _this.marketDiscard = new Pile_2.Pile(_this, 'market-discard', 'Bin');
             _this.playerHandSizes = {};
-            _this.playerDecks = { 'mark': _this.marketDeck };
-            _this.playerDiscards = { 'disc': _this.marketDiscard };
+            _this.playerDecks = {};
+            _this.playerDiscards = {};
             _this.playerStalls = {};
             _this.playerSchedules = {};
+            _this.allDecks = { 'mark': _this.marketDeck };
             _this.market = null;
             _this.myHand = new DaleStock_1.DaleStock();
             _this.myLimbo = new DaleStock_1.DaleStock();
@@ -2587,6 +2588,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 (_c = player_board_div.querySelector(".player_score_value")) === null || _c === void 0 ? void 0 : _c.insertAdjacentText('afterend', "/8");
                 this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, 'deck-' + player_id, 'Deck', +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
+                this.allDecks[player_id] = this.playerDecks[player_id];
                 this.playerDiscards[player_id] = new Pile_2.Pile(this, 'discard-' + player_id, 'Discard', +player_id);
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
@@ -4001,7 +4003,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 for (var _i = 0, _a = notif.args._private.card_ids; _i < _a.length; _i++) {
                     var id = _a[_i];
                     var card = notif.args._private.cards[id];
-                    var deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] : this.myDeck;
+                    var deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id] : this.myDeck;
                     this.stockToPile(card, stock, deck);
                 }
             }
@@ -4040,14 +4042,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_draw = function (notif) {
             console.log("notif_draw");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] : this.myDeck;
+            var deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id] : this.myDeck;
             if (notif.args._private) {
                 var card = notif.args._private.card;
                 stock.addDaleCardToStock(DaleCard_8.DaleCard.of(card), deck.placeholderHTML);
                 deck.pop();
             }
             else {
-                this.playerDecks[notif.args.player_id].pop('overall_player_board_' + notif.args.player_id);
+                deck.pop('overall_player_board_' + notif.args.player_id);
             }
             if (stock === this.myHand) {
                 this.playerHandSizes[notif.args.player_id].incValue(1);
@@ -4058,7 +4060,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("notif_drawMultiple");
             console.log(notif.args);
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] : this.myDeck;
+            var deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id] : this.myDeck;
             console.log(deck.size);
             if (notif.args._private) {
                 for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
@@ -4069,7 +4071,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             else {
                 for (var i = 0; i < notif.args.nbr; i++) {
-                    this.playerDecks[notif.args.player_id].pop('overall_player_board_' + notif.args.player_id);
+                    deck.pop('overall_player_board_' + notif.args.player_id);
                 }
             }
             if (stock === this.myHand) {

@@ -58,10 +58,10 @@ class Dale extends Gamegui
 	playerHandSizes: Record<number, Counter> = {};
 
 	/** A hidden draw pile for each player */
-	playerDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
+	playerDecks: Record<number, Pile> = {};
 
 	/** An open discard pile for each player */
-	playerDiscards: Record<number | 'disc', Pile> = {'disc': this.marketDiscard};
+	playerDiscards: Record<number, Pile> = {};
 
 	/** A stall for each player */
 	playerStalls: Record<number, Stall> = {};
@@ -69,6 +69,10 @@ class Dale extends Gamegui
 	/** A schedule for each player */
 	playerSchedules: Record<number, DaleStock> = {};
 
+	/** A hidden draw pile for each player AND the market */
+	allDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
+
+	/** The Counter component for my handsize */
 	get myHandSize(): Counter {
 		return this.playerHandSizes[this.player_id]!;
 	}
@@ -154,6 +158,7 @@ class Dale extends Gamegui
 			//deck per player
 			this.playerDecks[player_id] = new HiddenPile(this, 'deck-'+player_id, 'Deck', +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
+			this.allDecks[player_id] = this.playerDecks[player_id];
 
 			//discard pile per player
 			this.playerDiscards[player_id] = new Pile(this, 'discard-'+player_id, 'Discard', +player_id);
@@ -2060,7 +2065,7 @@ class Dale extends Gamegui
 			//you GIVE the cards
 			for (let id of notif.args._private.card_ids) {
 				const card = notif.args._private.cards[id]!;
-				const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id]! : this.myDeck;
+				const deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id]! : this.myDeck;
 				this.stockToPile(card, stock, deck);
 			}
 		}
@@ -2106,7 +2111,7 @@ class Dale extends Gamegui
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id]! : this.myDeck;
+		const deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id]! : this.myDeck;
 		if (notif.args._private) {
 			//you drew the cards
 			let card = notif.args._private.card
@@ -2115,7 +2120,7 @@ class Dale extends Gamegui
 		}
 		else {
 			//another player drew cards
-			this.playerDecks[notif.args.player_id]!.pop('overall_player_board_'+notif.args.player_id);
+			deck.pop('overall_player_board_'+notif.args.player_id);
 		}
 		//update the hand sizes
 		if (stock === this.myHand) {
@@ -2127,7 +2132,7 @@ class Dale extends Gamegui
 		console.log("notif_drawMultiple");
 		console.log(notif.args);
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id]! : this.myDeck;
+		const deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id]! : this.myDeck;
 		console.log(deck.size);
 		if (notif.args._private) {
 			//you drew the cards
@@ -2140,7 +2145,7 @@ class Dale extends Gamegui
 		else {
 			//another player drew cards
 			for (let i = 0; i < notif.args.nbr; i++) {
-				this.playerDecks[notif.args.player_id]!.pop('overall_player_board_'+notif.args.player_id);
+				deck.pop('overall_player_board_'+notif.args.player_id);
 			}
 		}
 		//update the hand sizes
