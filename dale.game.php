@@ -820,7 +820,9 @@ class Dale extends DaleTableBasic
      * @param array $dbcard card to calculate the cost of
     */
     function getCost(array $dbcard) {
-        $base_cost = $this->getValue($dbcard);
+        //TODO: scary gunfight
+        $type_id = $this->getTypeId($dbcard);
+        $base_cost = $this->card_types[$type_id]['value'];
         $additional_cost = $dbcard['location'] == MARKET ? $dbcard['location_arg'] : 0;
         return $base_cost + $additional_cost;
     }

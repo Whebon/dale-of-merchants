@@ -250,7 +250,7 @@ export class DaleCard {
         let value = this.original_value;
         for (let effect of DaleCard.effects) {
             if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
-                switch(effect.card_id) {
+                switch(effect.type_id) {
                     case DaleCard.CT_FLASHYSHOW:
                         value += 1;
                 }
@@ -437,7 +437,8 @@ export class DaleCard {
      * @param pos
      */
     public getCost(pos: number) {
-        return this.effective_value + pos;
+        //TODO: scary gunfight
+        return this.original_value + pos;
     }
 
     public get animalfolk(): Animalfolk {

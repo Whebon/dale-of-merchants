@@ -379,7 +379,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                     var effect = _a[_i];
                     if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
-                        switch (effect.card_id) {
+                        switch (effect.type_id) {
                             case DaleCard.CT_FLASHYSHOW:
                                 value += 1;
                         }
@@ -469,7 +469,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             configurable: true
         });
         DaleCard.prototype.getCost = function (pos) {
-            return this.effective_value + pos;
+            return this.original_value + pos;
         };
         Object.defineProperty(DaleCard.prototype, "animalfolk", {
             get: function () {
