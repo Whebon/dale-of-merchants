@@ -725,10 +725,6 @@ class Dale extends Gamegui
 			console.log(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
 			console.log(`'${card.name}' has ${targets.size} total target(s)`);
 			console.log(Array.from(targets).map(target => target.div));
-			if (targets.size == 0) {
-				this.chameleonArgs = undefined;
-				return true;
-			}
 			if (this.chameleonArgs.onlyContainsGoodOldTimes) {
 				if (ditchAvailable) {
 					args.mode = 'ditchOptional'
@@ -737,6 +733,10 @@ class Dale extends Gamegui
 					this.chameleonArgs = undefined;
 					return true;
 				}
+			}
+			else if (targets.size == 0) {
+				this.chameleonArgs = undefined;
+				return true;
 			}
 			this.mainClientState.enterOnStack(chameleonStatename, args);
 		}
@@ -1502,11 +1502,11 @@ class Dale extends Gamegui
 		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_GOODOLDTIMES:
-				if (card.isPassiveUsed() && this.verifyChameleon(card)) {
+				if (card.isPassiveUsed()) {
 					this.showMessage(_("This passive's ability was already used"), 'error');
 				}
 				else {
-					throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
+					throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state by 'verifyChameleon'");
 				}
 				break;
 			case DaleCard.CT_MARKETDISCOVERY:
