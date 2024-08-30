@@ -326,14 +326,14 @@ class Dale extends DaleTableBasic
 
     /**
      * Place multiple cards on top of a player's deck
-     * @param int $deck_player_id player that will receive the cards on top of the deck
+     * @param int $deck_player_id player that will receive the cards on top of the deck or `MARKET`
      * @param string $msg notification message for all players
      * @param array $card_ids cards_ids to be placed on top in that order
      * @param array $cards array with exactly the same keys as $card_ids
      * @param array $unordered_cards (optional) - if provided, first place this collection of unordered cards on top of the deck
      * @param bool $from_limbo (optional) - default false. If `false`, place from hand. If `true`, place from limbo.
      */
-    function placeOnDeckMultiple(int $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false) {
+    function placeOnDeckMultiple(mixed $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false) {
         //1: move the unordered cards on top of the deck (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
@@ -412,7 +412,7 @@ class Dale extends DaleTableBasic
             return 0;
         }
         else {
-            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$to_player_id, $to_location);
+            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$from_player_id, $to_location);
             $actual_nbr = count($cards);
             if ($actual_nbr > 0)
             $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array(
@@ -453,16 +453,29 @@ class Dale extends DaleTableBasic
      * @param string $msg notification message for all players
      * @param array $dbcards cards that need to be ditched
      * @param bool $from_limbo (optional) - default false. If `false`, ditch from hand. If `true`, ditch from limbo.
+     * @param array $ordered_card_ids (optional) - if provided, ditch these cards last
      */
-    function ditchMultiple(string $msg, array $dbcards, bool $from_limbo = false) {
+    function ditchMultiple(string $msg, array $dbcards, bool $from_limbo = false, mixed $ordered_card_ids = array()) {
         $player_id = $this->getActivePlayerId();
         $this->notifyAllPlayers('message', $msg, array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'nbr' => count($dbcards)
         ));
+        //ditch the unordered cards
         foreach ($dbcards as $dbcard) {
-            $this->ditch('', $dbcard, $from_limbo);
+            if (!in_array($dbcard["id"], $ordered_card_ids)) {
+                $this->ditch('', $dbcard, $from_limbo);
+            }
+        }
+        //ditch the ordered cards
+        foreach ($ordered_card_ids as $ordered_card_id) {
+            foreach ($dbcards as $dbcard) {
+                if ($dbcard["id"] == $ordered_card_id) {
+                    $this->ditch('', $dbcard, $from_limbo);
+                    break;
+                }
+            }
         }
     }
 
@@ -1953,6 +1966,10 @@ class Dale extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_SPECIALOFFER:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trSpecialOffer");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2018,7 +2035,6 @@ class Dale extends DaleTableBasic
         }
         unset($non_selected_cards[$draw_card_id]);
 
-        //TODO !!!!!!!!!!!!!!! BUG WITH THIS NOTIFICATION!
         //1. place the selected card into the hand
         $this->cards->moveCard($draw_card_id, HAND.$player_id);
         $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Spyglass: ${player_name} places 1 card into their hand'), array(
@@ -2037,6 +2053,47 @@ class Dale extends DaleTableBasic
             $selected_cards, 
             $non_selected_cards,
             true
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actSpecialOffer($card_ids) {
+        $this->checkAction("actSpecialOffer");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+
+        //get the card to draw (first card from the card_ids array)
+        if (count($card_ids) == 0) {
+            throw new BgaUserException($this->_("You must select at least 1 card to place into your hand"));
+        }
+        $draw_card_id = array_pop($card_ids); //the last index is the card to draw
+        $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
+
+        //get the non-selected cards and selected cards to discard
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+        unset($non_selected_cards[$draw_card_id]);
+        
+        //1. place the selected card into the hand
+        $this->cards->moveCard($draw_card_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Special Offer: ${player_name} places 1 card into their hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "_private" => array(
+                "card" => $draw_card
+            )
+        ));
+
+        //2. ditch the rest
+        $this->ditchMultiple(
+            clienttranslate('Special Offer: ${player_name} ditches the other ${nbr} cards'),
+            array_merge($non_selected_cards, $selected_cards), 
+            true,
+            $card_ids
         );
 
         $this->fullyResolveCard($player_id);
@@ -2257,6 +2314,14 @@ class Dale extends DaleTableBasic
         $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
         if ($nbr == 0) {
             //skyglass has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
+        }
+    }
+
+    function stSpecialOffer() {
+        $nbr = $this->draw(clienttranslate('Special Offer: ${player_name} draws 3 card'), 3, true, MARKET);
+        if ($nbr == 0) {
+            //special offer has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
     }

@@ -20,6 +20,7 @@ if (false) {
 	/** @var dale $game */
 	$game->stNextPlayer();
 	$game->stSpyglass();
+	$game->stSpecialOffer();
 }
 
 $machinestates = array(
@@ -45,6 +46,7 @@ $machinestates = array(
 			'trNextPlayer' => 41,
 			'trGameEnd' => 99,
 			'trSpyglass' => 52,
+			'trSpecialOffer' => 53,
 		),
 	),
 	36 => array(
@@ -80,6 +82,17 @@ $machinestates = array(
 		'possibleactions' => ['actSpyglass'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	53 => array(
+		'name' => 'specialOffer',
+		'description' => clienttranslate('Special Offer: ${actplayer} must choose a card to take'),
+		'descriptionmyturn' => clienttranslate('Special Offer: ${you} must choose a card to take'),
+		'type' => 'activeplayer',
+		'action' => 'stSpecialOffer',
+		'possibleactions' => ['actSpecialOffer'],
+		'transitions' => array(
+			'trNextPlayer' => 41,
 		),
 	),
 	99 => array(

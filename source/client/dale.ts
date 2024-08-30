@@ -58,10 +58,10 @@ class Dale extends Gamegui
 	playerHandSizes: Record<number, Counter> = {};
 
 	/** A hidden draw pile for each player */
-	playerDecks: Record<number, Pile> = {};
+	playerDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
 
 	/** An open discard pile for each player */
-	playerDiscards: Record<number, Pile> = {};
+	playerDiscards: Record<number | 'disc', Pile> = {'disc': this.marketDiscard};
 
 	/** A stall for each player */
 	playerStalls: Record<number, Stall> = {};
@@ -232,7 +232,8 @@ class Dale extends Gamegui
 		}
 		this.myLimbo.setSelectionMode('none');
 		dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #dale-mylimbo-wrap style
-		dojo.connect( this.myLimbo, 'onOrderedSelectionChanged', this, 'onLimboSelectionChanged' );
+		dojo.connect( this.myLimbo, 'onClick', this, 'onSelectLimboCard' );
+		dojo.connect( this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard' );
 
 		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
@@ -389,6 +390,9 @@ class Dale extends Gamegui
 			case 'client_prepaidGood':
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
 				break;
+			case 'specialOffer':
+				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
@@ -496,6 +500,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_prepaidGood':
 				this.market!.setSelectionMode(0);
+				break;
+			case 'specialOffer':
+				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
@@ -618,9 +625,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_choicelessTechniqueCard':
-				//this.onChoicelessTechniqueCard(); //TODO: skip confirmation on choiceless technique cards?
-				this.addActionButton("confirm-button", _("Play"), "onChoicelessTechniqueCard");
-				this.addActionButtonCancelClient();
+				this.onChoicelessTechniqueCard(); //immediately leave this state
 				break;
 			case 'client_fizzle':
 				this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
@@ -634,6 +639,9 @@ class Dale extends Gamegui
 				this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
 				this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
+				break;
+			case 'specialOffer':
+				this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
 				break;
 		}
 	}
@@ -1229,11 +1237,9 @@ class Dale extends Gamegui
 		}
 	}
 
-	onLimboSelectionChanged(card_id: number) {
-		console.log("onLimboSelectionChanged: "+card_id);
+	onSelectLimboCard(card_id: number) {
+		console.log("onSelectLimboCard: "+card_id);
 		switch(this.gamedatas.gamestate.name) {
-			case null:
-				throw new Error("gamestate.name is null")
 		}
 	}
 
@@ -1689,16 +1695,26 @@ class Dale extends Gamegui
 			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
 			return;
 		}
-		if(this.checkAction("actSpyglass")) {
-			this.bgaPerformAction('actSpyglass', {
-				card_ids: this.arrayToNumberList(card_ids)
-			})
-		}
+		this.bgaPerformAction('actSpyglass', {
+			card_ids: this.arrayToNumberList(card_ids)
+		})
 	}
 
 	onLoyalPartner() {
 		this.playTechniqueCard<'client_loyalPartner'>({
 			card_ids: this.market!.orderedSelection.get()
+		})
+	}
+
+	onSpecialOffer() {
+		const card_ids = this.myLimbo.orderedSelection.get();
+		console.log("Sending "+this.arrayToNumberList(card_ids));
+		if (card_ids.length == 0) {
+			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
+			return;
+		}
+		this.bgaPerformAction('actSpecialOffer', {
+			card_ids: this.arrayToNumberList(card_ids)
 		})
 	}
 
@@ -2022,7 +2038,7 @@ class Dale extends Gamegui
 			//you GIVE the cards
 			for (let id of notif.args._private.card_ids) {
 				const card = notif.args._private.cards[id]!;
-				const deck = this.playerDecks[notif.args.deck_player_id]!;
+				const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id]! : this.myDeck;
 				this.stockToPile(card, stock, deck);
 			}
 		}
@@ -2068,7 +2084,7 @@ class Dale extends Gamegui
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] ?? this.marketDeck : this.myDeck;
+		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id]! : this.myDeck;
 		if (notif.args._private) {
 			//you drew the cards
 			let card = notif.args._private.card
@@ -2089,7 +2105,7 @@ class Dale extends Gamegui
 		console.log("notif_drawMultiple");
 		console.log(notif.args);
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] ?? this.marketDeck : this.myDeck;
+		const deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id]! : this.myDeck;
 		console.log(deck.size);
 		if (notif.args._private) {
 			//you drew the cards

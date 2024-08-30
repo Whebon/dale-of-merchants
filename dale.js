@@ -2511,8 +2511,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.marketDeck = new HiddenPile_1.HiddenPile(_this, 'market-deck', 'Supply');
             _this.marketDiscard = new Pile_2.Pile(_this, 'market-discard', 'Bin');
             _this.playerHandSizes = {};
-            _this.playerDecks = {};
-            _this.playerDiscards = {};
+            _this.playerDecks = { 'mark': _this.marketDeck };
+            _this.playerDiscards = { 'disc': _this.marketDiscard };
             _this.playerStalls = {};
             _this.playerSchedules = {};
             _this.market = null;
@@ -2643,7 +2643,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             this.myLimbo.setSelectionMode('none');
             dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_7.Images.CARD_WIDTH_S + 'px');
-            dojo.connect(this.myLimbo, 'onOrderedSelectionChanged', this, 'onLimboSelectionChanged');
+            dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
+            dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
@@ -2768,6 +2769,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_prepaidGood':
                     this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
                     break;
+                case 'specialOffer':
+                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                 case 'chameleon_reflection':
                 case 'chameleon_goodoldtimes':
@@ -2856,6 +2860,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_prepaidGood':
                     this.market.setSelectionMode(0);
+                    break;
+                case 'specialOffer':
+                    this.myLimbo.setSelectionMode('none');
                     break;
                 case 'chameleon_reflection':
                     (_c = this.targetingLine) === null || _c === void 0 ? void 0 : _c.remove();
@@ -2968,8 +2975,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_choicelessTechniqueCard':
-                    this.addActionButton("confirm-button", _("Play"), "onChoicelessTechniqueCard");
-                    this.addActionButtonCancelClient();
+                    this.onChoicelessTechniqueCard();
                     break;
                 case 'client_fizzle':
                     this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
@@ -2983,6 +2989,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
                     this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'specialOffer':
+                    this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
                     break;
             }
         };
@@ -3328,11 +3337,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("gamestate.name is null");
             }
         };
-        Dale.prototype.onLimboSelectionChanged = function (card_id) {
-            console.log("onLimboSelectionChanged: " + card_id);
+        Dale.prototype.onSelectLimboCard = function (card_id) {
+            console.log("onSelectLimboCard: " + card_id);
             switch (this.gamedatas.gamestate.name) {
-                case null:
-                    throw new Error("gamestate.name is null");
             }
         };
         Dale.prototype.onFundsSelectionChanged = function () {
@@ -3689,15 +3696,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
                 return;
             }
-            if (this.checkAction("actSpyglass")) {
-                this.bgaPerformAction('actSpyglass', {
-                    card_ids: this.arrayToNumberList(card_ids)
-                });
-            }
+            this.bgaPerformAction('actSpyglass', {
+                card_ids: this.arrayToNumberList(card_ids)
+            });
         };
         Dale.prototype.onLoyalPartner = function () {
             this.playTechniqueCard({
                 card_ids: this.market.orderedSelection.get()
+            });
+        };
+        Dale.prototype.onSpecialOffer = function () {
+            var card_ids = this.myLimbo.orderedSelection.get();
+            console.log("Sending " + this.arrayToNumberList(card_ids));
+            if (card_ids.length == 0) {
+                this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
+                return;
+            }
+            this.bgaPerformAction('actSpecialOffer', {
+                card_ids: this.arrayToNumberList(card_ids)
             });
         };
         Dale.prototype.setupNotifications = function () {
@@ -3958,7 +3974,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 for (var _i = 0, _a = notif.args._private.card_ids; _i < _a.length; _i++) {
                     var id = _a[_i];
                     var card = notif.args._private.cards[id];
-                    var deck = this.playerDecks[notif.args.deck_player_id];
+                    var deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] : this.myDeck;
                     this.stockToPile(card, stock, deck);
                 }
             }
@@ -3995,10 +4011,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
         };
         Dale.prototype.notif_draw = function (notif) {
-            var _a;
             console.log("notif_draw");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var deck = notif.args.deck_player_id ? (_a = this.playerDecks[notif.args.deck_player_id]) !== null && _a !== void 0 ? _a : this.marketDeck : this.myDeck;
+            var deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] : this.myDeck;
             if (notif.args._private) {
                 var card = notif.args._private.card;
                 stock.addDaleCardToStock(DaleCard_8.DaleCard.of(card), deck.placeholderHTML);
@@ -4012,14 +4027,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.notif_drawMultiple = function (notif) {
-            var _a, _b;
+            var _a;
             console.log("notif_drawMultiple");
             console.log(notif.args);
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var deck = notif.args.deck_player_id ? (_a = this.playerDecks[notif.args.deck_player_id]) !== null && _a !== void 0 ? _a : this.marketDeck : this.myDeck;
+            var deck = notif.args.deck_player_id ? this.playerDecks[notif.args.deck_player_id] : this.myDeck;
             console.log(deck.size);
             if (notif.args._private) {
-                for (var i in (_b = notif.args._private) === null || _b === void 0 ? void 0 : _b.cards) {
+                for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
                     var card = notif.args._private.cards[i];
                     stock.addDaleCardToStock(DaleCard_8.DaleCard.of(card), deck.placeholderHTML);
                     deck.pop();

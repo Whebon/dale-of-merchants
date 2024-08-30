@@ -95,6 +95,7 @@ interface GameStates {
 			'trNextPlayer': 41,
 			'trGameEnd': 99,
 			'trSpyglass': 52,
+			'trSpecialOffer': 53,
 		},
 	},
 	36: {
@@ -164,6 +165,23 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	53: {
+		'name': 'specialOffer',
+		'description': 'Special Offer: ${actplayer} must choose a card to take',
+		'descriptionmyturn': 'Special Offer: ${you} must choose a card to take',
+		'type': 'activeplayer',
+		'action': 'stSpecialOffer',
+		'possibleactions': {
+			'actSpecialOffer': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trNextPlayer': 41,
 		},
 	},
 	99: {

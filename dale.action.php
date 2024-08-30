@@ -118,4 +118,15 @@ class action_dale extends APP_GameAction
 		$this->game->actSpyglass( $card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actSpecialOffer()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actSpecialOffer( $card_ids );
+		self::ajaxResponse();
+	}
 }

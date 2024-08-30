@@ -121,7 +121,7 @@ declare global {
 				card_ids: number[] //because ordering matters
 				cards: {[card_id: number]: DbCard}
 			}
-			deck_player_id: number
+			deck_player_id: number | 'mark'
 			nbr: number
 			from_limbo?: boolean
 		}
@@ -148,7 +148,7 @@ declare global {
 			_private?: {
 				card: DbCard
 			}
-			deck_player_id?: number
+			deck_player_id?: number | 'mark'
 			to_limbo?: boolean
 		}
 		'drawMultiple': {
@@ -157,7 +157,7 @@ declare global {
 			_private?: {
 				cards: {[card_id: number]: DbCard}
 			}
-			deck_player_id?: number
+			deck_player_id?: number | 'mark'
 			to_limbo?: boolean
 		}
 		'limboToHand': {
