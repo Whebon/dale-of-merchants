@@ -1363,6 +1363,10 @@ class Dale extends DaleTableBasic
         //Apply the rules for a valid stack
         $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
 
+        //Check for winter is coming (before effects expire)
+        $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
+        $winter_is_coming = $this->containsTypeId($cards, CT_WINTERISCOMING);
+
         //Add the cards to the stack
         $index = 0;
         if ($cards_from_discard) {
@@ -1399,8 +1403,7 @@ class Dale extends DaleTableBasic
         }
 
         //Winter is coming
-        $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
-        if ($this->containsTypeId($cards, CT_WINTERISCOMING)) {
+        if ($winter_is_coming) {
             $this->notifyAllPlayers('message', clienttranslate('Winter Is Coming: ${player_name} may build an additional stack'), array(
                 "player_name" => $this->getPlayerNameById($player_id)
             ));
