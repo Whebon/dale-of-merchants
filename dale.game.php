@@ -1361,7 +1361,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
 
         //Apply the rules for a valid stack
-        //$this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
+        $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
 
         //Check for winter is coming (before effects expire)
         $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
