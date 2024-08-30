@@ -299,10 +299,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 else {
                     chain = new ChameleonChain_1.ChameleonChain(target_card_id, target_type_id);
                     DaleCard.cardIdToChameleonChain.set(effect.card_id, chain);
-                    DaleCard.cardIdToChameleonChainLocal.delete(effect.card_id);
+                    if (DaleCard.cardIdToChameleonChainLocal.delete(effect.card_id)) {
+                        return;
+                    }
                 }
-                console.log("Commited Chameleon Chain for card_id=".concat(effect.card_id));
-                console.log(chain);
             }
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
                 for (var _i = 0, _a = Array.from(DaleCard.divs.keys()); _i < _a.length; _i++) {
@@ -353,13 +353,13 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.isPassiveUsed = function () {
             console.log("isPassiveUsed");
-            if (!DaleCard.cardTypes[this.effective_type_id].has_ability) {
+            var type_id = this.effective_type_id;
+            if (!DaleCard.cardTypes[type_id].has_ability) {
                 return true;
             }
-            var type_id = this.effective_type_id;
             for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                 var effect = _a[_i];
-                if (effect.card_id == this.id && effect.type_id == type_id) {
+                if (effect.card_id == this.id && effect.type_id == type_id && effect.chameleon_target_id == null) {
                     return true;
                 }
             }
@@ -407,20 +407,25 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.bindChameleonLocal = function (chain) {
             DaleCard.cardIdToChameleonChainLocal.delete(this.id);
             DaleCard.cardIdToChameleonChainLocal.set(this.id, chain);
-            this.updateHTML();
+            DaleCard.updateHTML(this.id);
         };
         DaleCard.prototype.unbindChameleonLocal = function () {
             DaleCard.cardIdToChameleonChainLocal.delete(this.id);
-            this.updateHTML();
+            DaleCard.updateHTML(this.id);
         };
         DaleCard.unbindAllChameleonsLocal = function () {
             var card_ids = Array.from(DaleCard.cardIdToChameleonChainLocal.keys());
             DaleCard.cardIdToChameleonChainLocal.clear();
             for (var _i = 0, card_ids_1 = card_ids; _i < card_ids_1.length; _i++) {
                 var card_id = card_ids_1[_i];
-                new DaleCard(card_id).updateHTML();
+                DaleCard.updateHTML(card_id);
             }
             return card_ids.length;
+        };
+        DaleCard.countChameleonsLocal = function () {
+            console.log("countChameleonsLocal");
+            console.log(DaleCard.cardIdToChameleonChainLocal);
+            return DaleCard.cardIdToChameleonChainLocal.size;
         };
         DaleCard.getLocalChameleonsJSON = function () {
             console.log(this.cardIdToChameleonChain);
@@ -441,7 +446,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             DaleCard.cardIdToChameleonChain.clear();
             for (var _i = 0, card_ids_2 = card_ids; _i < card_ids_2.length; _i++) {
                 var card_id = card_ids_2[_i];
-                new DaleCard(card_id).updateHTML();
+                DaleCard.updateHTML(card_id);
             }
         };
         Object.defineProperty(DaleCard.prototype, "original_type_id", {
@@ -589,12 +594,13 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.updateHTML = function (card_id) {
             if (DaleCard.divs.has(card_id)) {
-                new DaleCard(card_id).updateHTML();
+                new DaleCard(card_id).updateHTML(undefined, true);
             }
         };
-        DaleCard.prototype.updateHTML = function (temp_div) {
+        DaleCard.prototype.updateHTML = function (temp_div, fade) {
+            if (fade === void 0) { fade = false; }
             var div = temp_div !== null && temp_div !== void 0 ? temp_div : DaleCard.divs.get(this.id);
-            this.updateChameleonOverlay(div, false);
+            this.updateChameleonOverlay(div, fade);
             if (!temp_div && div) {
                 this.addTooltip(div);
             }
@@ -2897,6 +2903,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_technique':
                     this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
+                    if (DaleCard_8.DaleCard.countChameleonsLocal() > 0) {
+                        this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
+                    }
                     break;
                 case 'client_purchase':
                     this.addActionButton("confirm-button", _("Confirm funds"), "onPurchase");
@@ -2996,7 +3005,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.verifyChameleon = function (card, pile) {
-            var _a, _b;
+            var _a;
             if (!card.isChameleon()) {
                 return true;
             }
@@ -3008,6 +3017,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             var chameleonStatename;
             var args = { mode: undefined };
+            var ditchAvailable = false;
             switch (card.effective_type_id) {
                 case DaleCard_8.DaleCard.CT_FLEXIBLESHOPKEEPER:
                     chameleonStatename = 'chameleon_flexibleShopkeeper';
@@ -3016,13 +3026,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     chameleonStatename = 'chameleon_reflection';
                     break;
                 case DaleCard_8.DaleCard.CT_GOODOLDTIMES:
-                    console.log(" this.chameleonArgs?.onlyContainsGoodOldTimes");
-                    console.log((_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.onlyContainsGoodOldTimes);
-                    var ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
+                    ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
                     if (!ditchAvailable) {
                         args.mode = 'copy';
                     }
-                    else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || ((_b = this.chameleonArgs) === null || _b === void 0 ? void 0 : _b.onlyContainsGoodOldTimes)) {
+                    else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || ((_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.onlyContainsGoodOldTimes)) {
                         args.mode = 'ditchOptional';
                     }
                     else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.includes(card)) && this.marketDiscard.size > 0) {
@@ -3051,6 +3059,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 if (targets.size == 0) {
                     this.chameleonArgs = undefined;
                     return true;
+                }
+                if (this.chameleonArgs.onlyContainsGoodOldTimes) {
+                    if (ditchAvailable) {
+                        args.mode = 'ditchOptional';
+                    }
+                    else {
+                        this.chameleonArgs = undefined;
+                        return true;
+                    }
                 }
                 this.mainClientState.enterOnStack(chameleonStatename, args);
             }
@@ -3531,7 +3548,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             switch (card.effective_type_id) {
                 case DaleCard_8.DaleCard.CT_GOODOLDTIMES:
-                    throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
+                    if (card.isPassiveUsed() && this.verifyChameleon(card)) {
+                        this.showMessage(_("This passive's ability was already used"), 'error');
+                    }
+                    else {
+                        throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
+                    }
+                    break;
                 case DaleCard_8.DaleCard.CT_MARKETDISCOVERY:
                     if (card.isPassiveUsed()) {
                         this.onMarketDiscoveryPurchase(card.id);
@@ -3654,6 +3677,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else {
                 this.onCancelClient();
             }
+        };
+        Dale.prototype.onUnbindChameleons = function () {
+            DaleCard_8.DaleCard.unbindAllChameleonsLocal();
+            this.mainClientState.enter();
         };
         Dale.prototype.onRequestBuildAction = function () {
             switch (this.gamedatas.gamestate.name) {

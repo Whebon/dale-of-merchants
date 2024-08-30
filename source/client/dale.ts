@@ -547,6 +547,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_technique':
 				this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
+				if (DaleCard.countChameleonsLocal() > 0) {
+					this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
+				}
 				break;
 			case 'client_purchase':
 				this.addActionButton("confirm-button", _("Confirm funds"), "onPurchase");
@@ -676,6 +679,7 @@ class Dale extends Gamegui
 		//set the chameleon client state name and args
 		let chameleonStatename: keyof ClientGameStates;
 		let args: ClientGameStates['chameleon_goodoldtimes'] = { mode: undefined };
+		let ditchAvailable = false;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				chameleonStatename = 'chameleon_flexibleShopkeeper'
@@ -684,9 +688,7 @@ class Dale extends Gamegui
 				chameleonStatename = 'chameleon_reflection'
 				break;
 			case DaleCard.CT_GOODOLDTIMES:
-				console.log(" this.chameleonArgs?.onlyContainsGoodOldTimes");
-				console.log( this.chameleonArgs?.onlyContainsGoodOldTimes);
-				const ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
+				ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
 				if (!ditchAvailable) {
 					args.mode = 'copy'
 				}
@@ -721,6 +723,15 @@ class Dale extends Gamegui
 			if (targets.size == 0) {
 				this.chameleonArgs = undefined;
 				return true;
+			}
+			if (this.chameleonArgs.onlyContainsGoodOldTimes) {
+				if (ditchAvailable) {
+					args.mode = 'ditchOptional'
+				}
+				else {
+					this.chameleonArgs = undefined;
+					return true;
+				}
 			}
 			this.mainClientState.enterOnStack(chameleonStatename, args);
 		}
@@ -1486,7 +1497,13 @@ class Dale extends Gamegui
 		}
 		switch(card.effective_type_id) {
 			case DaleCard.CT_GOODOLDTIMES:
-				throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
+				if (card.isPassiveUsed() && this.verifyChameleon(card)) {
+					this.showMessage(_("This passive's ability was already used"), 'error');
+				}
+				else {
+					throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state");
+				}
+				break;
 			case DaleCard.CT_MARKETDISCOVERY:
 				if (card.isPassiveUsed()) {
 					this.onMarketDiscoveryPurchase(card.id);
@@ -1646,6 +1663,11 @@ class Dale extends Gamegui
 		else {
 			this.onCancelClient();
 		}
+	}
+
+	onUnbindChameleons() {
+		DaleCard.unbindAllChameleonsLocal();
+		this.mainClientState.enter();
 	}
 
 	onRequestBuildAction() {

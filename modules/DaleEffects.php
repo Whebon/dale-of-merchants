@@ -163,7 +163,7 @@ class DaleEffects {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["chameleon_target_id"] == null) {
                 return true;
             }
         }

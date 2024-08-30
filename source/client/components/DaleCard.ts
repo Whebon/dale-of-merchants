@@ -135,10 +135,11 @@ export class DaleCard {
             else {
                 chain = new ChameleonChain(target_card_id, target_type_id);
                 DaleCard.cardIdToChameleonChain.set(effect.card_id, chain);
-                DaleCard.cardIdToChameleonChainLocal.delete(effect.card_id);
+                if (DaleCard.cardIdToChameleonChainLocal.delete(effect.card_id)) {
+                    //a chain was commited, no need to update the html
+                    return;
+                }
             }
-            console.log(`Commited Chameleon Chain for card_id=${effect.card_id}`);
-            console.log(chain);
         }
 
         //update card affected divs
@@ -220,13 +221,13 @@ export class DaleCard {
      */
     public isPassiveUsed() {
         console.log("isPassiveUsed");
-        if (!DaleCard.cardTypes[this.effective_type_id]!.has_ability) {
+        const type_id = this.effective_type_id;
+        if (!DaleCard.cardTypes[type_id]!.has_ability) {
             //N/A, this card doesn't have a usable passive, therefore it is considered "used"
             return true;
         }
-        const type_id = this.effective_type_id;
         for (let effect of DaleCard.effects) {
-            if (effect.card_id == this.id && effect.type_id == type_id) {
+            if (effect.card_id == this.id && effect.type_id == type_id && effect.chameleon_target_id == null) {
                 return true;
             }
         }
@@ -297,7 +298,7 @@ export class DaleCard {
     public bindChameleonLocal(chain: ChameleonChain) {
         DaleCard.cardIdToChameleonChainLocal.delete(this.id);
         DaleCard.cardIdToChameleonChainLocal.set(this.id, chain);
-        this.updateHTML();
+        DaleCard.updateHTML(this.id);
     }
 
     
@@ -306,7 +307,7 @@ export class DaleCard {
      */
     public unbindChameleonLocal() {
         DaleCard.cardIdToChameleonChainLocal.delete(this.id);
-        this.updateHTML();
+        DaleCard.updateHTML(this.id);
     }
 
     /**
@@ -317,9 +318,18 @@ export class DaleCard {
         const card_ids = Array.from(DaleCard.cardIdToChameleonChainLocal.keys())
         DaleCard.cardIdToChameleonChainLocal.clear();
         for (let card_id of card_ids) {
-            new DaleCard(card_id).updateHTML();
+            DaleCard.updateHTML(card_id);
         }
         return card_ids.length;
+    }
+
+    /**
+     * @return `size` - number of local chameleon bindings
+     */
+    public static countChameleonsLocal(): number {
+        console.log("countChameleonsLocal");
+        console.log(DaleCard.cardIdToChameleonChainLocal);
+        return DaleCard.cardIdToChameleonChainLocal.size;
     }
 
     //TODO: safely delete this
@@ -384,7 +394,7 @@ export class DaleCard {
         const card_ids = Array.from(DaleCard.cardIdToChameleonChain.keys())
         DaleCard.cardIdToChameleonChain.clear();
         for (let card_id of card_ids) {
-            new DaleCard(card_id).updateHTML();
+            DaleCard.updateHTML(card_id);
         }
     }
 
@@ -578,11 +588,12 @@ export class DaleCard {
     }
 
     /**
-    * Update the HTML of a card_id, if it is attached to a div
+    * Update the HTML of a card_id, if it is attached to a div.
+    * It is assumed the div already exists, so `fade == true`
     */
     private static updateHTML(card_id: number) {
         if (DaleCard.divs.has(card_id)) {
-            new DaleCard(card_id).updateHTML();
+            new DaleCard(card_id).updateHTML(undefined, true);
         }
     }
 
@@ -590,10 +601,11 @@ export class DaleCard {
 	 * Update all of this card's modifications according to latest card information. Without any animations.
      * This function should be private. When card information updates, this should immediately be called.
      * @param temp_div (optional) should be a div representing this card's original type
+     * @param fade (optional) should the chameleon overlay be faded in?
 	 */
-	private updateHTML(temp_div?: HTMLElement) {
+	private updateHTML(temp_div?: HTMLElement, fade: boolean = false) {
         const div = temp_div ?? DaleCard.divs.get(this.id);
-        this.updateChameleonOverlay(div, false);
+        this.updateChameleonOverlay(div, fade);
         if (!temp_div && div) {
             this.addTooltip(div);
         }
