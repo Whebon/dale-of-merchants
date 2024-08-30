@@ -3997,13 +3997,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
         };
         Dale.prototype.notif_placeOnDeckMultiple = function (notif) {
+            var _a;
             console.log("placeOnDeckMultiple");
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (notif.args._private) {
-                for (var _i = 0, _a = notif.args._private.card_ids; _i < _a.length; _i++) {
-                    var id = _a[_i];
+                for (var _i = 0, _b = notif.args._private.card_ids; _i < _b.length; _i++) {
+                    var id = _b[_i];
                     var card = notif.args._private.cards[id];
-                    var deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id] : this.myDeck;
+                    var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
                     this.stockToPile(card, stock, deck);
                 }
             }
@@ -4024,7 +4025,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             console.log("notif_discardToHand");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : this.player_id];
+            var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
             this.playerHandSizes[notif.args.player_id].incValue(1);
         };
@@ -4032,7 +4033,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             console.log("notif_discardToHandMultiple");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : this.player_id];
+            var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             for (var i in notif.args.cards) {
                 var card = notif.args.cards[i];
                 this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
@@ -4040,9 +4041,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
         };
         Dale.prototype.notif_draw = function (notif) {
+            var _a;
             console.log("notif_draw");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id] : this.myDeck;
+            var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             if (notif.args._private) {
                 var card = notif.args._private.card;
                 stock.addDaleCardToStock(DaleCard_8.DaleCard.of(card), deck.placeholderHTML);
@@ -4056,14 +4058,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.notif_drawMultiple = function (notif) {
-            var _a;
+            var _a, _b;
             console.log("notif_drawMultiple");
             console.log(notif.args);
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            var deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id] : this.myDeck;
+            var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             console.log(deck.size);
             if (notif.args._private) {
-                for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
+                for (var i in (_b = notif.args._private) === null || _b === void 0 ? void 0 : _b.cards) {
                     var card = notif.args._private.cards[i];
                     stock.addDaleCardToStock(DaleCard_8.DaleCard.of(card), deck.placeholderHTML);
                     deck.pop();

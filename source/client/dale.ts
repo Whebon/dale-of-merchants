@@ -2065,7 +2065,7 @@ class Dale extends Gamegui
 			//you GIVE the cards
 			for (let id of notif.args._private.card_ids) {
 				const card = notif.args._private.cards[id]!;
-				const deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id]! : this.myDeck;
+				const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 				this.stockToPile(card, stock, deck);
 			}
 		}
@@ -2090,7 +2090,7 @@ class Dale extends Gamegui
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.log("notif_discardToHand");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
+		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
@@ -2099,7 +2099,7 @@ class Dale extends Gamegui
 	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
 		console.log("notif_discardToHandMultiple");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const discardPile = this.playerDiscards[notif.args.discard_id ?? this.player_id]!;
+		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		for (let i in notif.args.cards) {
 			const card = notif.args.cards[i]!;
 			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
@@ -2111,7 +2111,7 @@ class Dale extends Gamegui
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.log("notif_draw");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id]! : this.myDeck;
+		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		if (notif.args._private) {
 			//you drew the cards
 			let card = notif.args._private.card
@@ -2132,7 +2132,7 @@ class Dale extends Gamegui
 		console.log("notif_drawMultiple");
 		console.log(notif.args);
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const deck = notif.args.deck_player_id ? this.allDecks[notif.args.deck_player_id]! : this.myDeck;
+		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		console.log(deck.size);
 		if (notif.args._private) {
 			//you drew the cards
