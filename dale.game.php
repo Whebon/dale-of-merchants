@@ -1172,12 +1172,13 @@ class Dale extends DaleTableBasic
      * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
      * @param string $player_id player to schedule a card for
      * @param array $dbcard card to be scheduled
+     * @param bool $choiceless (optional) default false. If true, add a synchronization delay to scheduling
      */
-    function scheduleCard(string $player_id, array $dbcard){
+    function scheduleCard(string $player_id, array $dbcard, bool $choiceless = false){
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $other_player_id => $player) {
-            if ($other_player_id != $player_id) {
+            if ($other_player_id != $player_id || $choiceless) {
                 $this->notifyPlayer($other_player_id, 'scheduleTechnique', '${player_name} schedules their ${card_name}', array(
                     'player_id' => $player_id,
                     'player_name' => $this->getPlayerNameById($player_id),
@@ -1842,7 +1843,7 @@ class Dale extends DaleTableBasic
 
         //Schedule Technique
         if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER) {
-            $this->scheduleCard($player_id, $technique_card);
+            $this->scheduleCard($player_id, $technique_card, array_key_exists("choiceless", $args));
         }
 
         //Resolve Technique

@@ -3604,7 +3604,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             });
         };
         Dale.prototype.onChoicelessTechniqueCard = function () {
-            this.playTechniqueCard({});
+            this.playTechniqueCard({
+                choiceless: true
+            });
         };
         Dale.prototype.onChoicelessPassiveCard = function () {
             this.playPassiveCard({});

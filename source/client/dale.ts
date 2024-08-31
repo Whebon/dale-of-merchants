@@ -1371,7 +1371,9 @@ class Dale extends Gamegui
 	}
 
 	onChoicelessTechniqueCard() {
-		this.playTechniqueCard<'client_choicelessTechniqueCard'>({})
+		this.playTechniqueCard<'client_choicelessTechniqueCard'>({
+			choiceless: true
+		})
 	}
 
 	onChoicelessPassiveCard() {
