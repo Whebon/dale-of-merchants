@@ -533,7 +533,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (this.isChameleon()) {
                 reminderText += _("<br><br>A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.");
             }
-            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(cardType.value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            var effective_value = this.effective_value;
+            if (effective_value != cardType.value) {
+                effective_value = "<span class=dale-original-value>".concat(cardType.value, "</span> ").concat(effective_value);
+            }
+            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -587,9 +591,20 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     dojo.setStyle(new_overlay, 'opacity', '0');
                     dojo.fadeIn({ node: new_overlay }).play();
                 }
-                if (!temp_div) {
-                    this.addTooltip(div);
-                }
+            }
+        };
+        DaleCard.prototype.updateEffectiveValue = function (card_div) {
+            var _a, _b;
+            console.log("updateEffectiveValue");
+            var value = (card_div.dataset['location'] == 'stock') ? this.effective_value : this.original_value;
+            if (value == this.original_value) {
+                (_a = card_div.querySelector(".dale-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
+            }
+            else {
+                var value_div = (_b = card_div.querySelector(".dale-effective-value")) !== null && _b !== void 0 ? _b : document.createElement('div');
+                value_div.classList.add("dale-effective-value");
+                value_div.innerHTML = String(value);
+                card_div.append(value_div);
             }
         };
         DaleCard.updateHTML = function (card_id) {
@@ -603,6 +618,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             this.updateChameleonOverlay(div, fade);
             if (!temp_div && div) {
                 this.addTooltip(div);
+            }
+            if (div) {
+                this.updateEffectiveValue(div);
             }
         };
         DaleCard.prototype.toDiv = function (parent_id) {
@@ -1061,6 +1079,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.addToStockWithId(card.original_type_id, card.id, from);
             this.setClickable(card.id);
             var stockitem_div = $(this.control_name + '_item_' + card.id);
+            stockitem_div.dataset['location'] = 'stock';
             card.attachDiv(stockitem_div);
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {

@@ -48,6 +48,22 @@
   display: none;
 }
 
+.dale-effective-value {
+  height: 20px;
+  width: 20px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: 6%;
+  position: absolute;
+  top: 2%;
+  color: lightgreen;
+  font-weight: bold;
+  font-size: large;
+  text-shadow: -1px -1px 0px #000, 0px -1px 0px #000, 1px -1px 0px #000, -1px 0px 0px #000, 1px 0px 0px #000, -1px 1px 0px #000, 0px 1px 0px #000, 1px 1px 0px #000, -2px -2px 0px #000, -1px -2px 0px #000, 0px -2px 0px #000, 1px -2px 0px #000, 2px -2px 0px #000, 2px -1px 0px #000, 2px 0px 0px #000, 2px 1px 0px #000, 2px 2px 0px #000, 1px 2px 0px #000, 0px 2px 0px #000, -1px 2px 0px #000, -2px 2px 0px #000, -2px 1px 0px #000, -2px 0px 0px #000, -2px -1px 0px #000;
+}
+
 .dale-icon {
   position: absolute;
   width: 0px;
@@ -362,6 +378,10 @@
 .dale-card-tooltip .chameleon-name {
   text-decoration: line-through;
   color: #1d7a2a;
+}
+.dale-card-tooltip .dale-original-value {
+  text-decoration: line-through;
+  color: gray;
 }
 .dale-card-tooltip .text {
   max-width: 300px;

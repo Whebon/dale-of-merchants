@@ -503,11 +503,14 @@ export class DaleCard {
         if (this.isChameleon()) {
             reminderText += _("<br><br>A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.")
         }
-
+        let effective_value: string | number = this.effective_value;
+        if (effective_value != cardType.value) {
+            effective_value =  `<span class=dale-original-value>${cardType.value}</span> ${effective_value}`;
+        }
         return `<div class="dale-card-tooltip">
             <h3>${chameleonName}${cardType.name}</h3>
             <hr>
-            ${cardType.value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
+            ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
             <div class="text">${cardType.text}${reminderText}</div>
             <br style="line-height: 10px" />
@@ -582,9 +585,24 @@ export class DaleCard {
                 dojo.setStyle(new_overlay, 'opacity', '0');
                 dojo.fadeIn({node: new_overlay}).play();
             }
-            if (!temp_div) {
-                this.addTooltip(div);
-            }
+            //TODO: safely remove this
+            // if (!temp_div) {
+            //     this.addTooltip(div); //does this do anything?
+            // }
+        }
+    }
+
+    private updateEffectiveValue(card_div: HTMLElement) {
+        console.log("updateEffectiveValue");
+        const value = (card_div.dataset['location'] == 'stock') ? this.effective_value : this.original_value;
+        if (value == this.original_value) {
+            card_div.querySelector(".dale-effective-value")?.remove();
+        }
+        else {
+            const value_div = card_div.querySelector(".dale-effective-value") ?? document.createElement('div');
+            value_div.classList.add("dale-effective-value");
+            value_div.innerHTML = String(value);
+            card_div.append(value_div);
         }
     }
 
@@ -609,6 +627,9 @@ export class DaleCard {
         this.updateChameleonOverlay(div, fade);
         if (!temp_div && div) {
             this.addTooltip(div);
+        }
+        if (div) {
+            this.updateEffectiveValue(div);
         }
 	}
 
