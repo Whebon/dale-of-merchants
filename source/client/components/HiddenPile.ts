@@ -1,5 +1,7 @@
 import { DaleCard } from "./DaleCard";
+import { SelectionIconType } from "./OrderedSelection";
 import { Pile } from "./Pile";
+import { DaleWrapClass } from "./types/DaleWrapClass";
 
 /**
  * A pile with only face-down cards
@@ -11,5 +13,12 @@ export class HiddenPile extends Pile {
     override push(_card: DaleCard, from?: string | HTMLElement, onEnd?: Function | null, duration?: number, delay?: number) {
         //we simply ignore the '_card' and push a hidden card instead.
         super.push(new DaleCard(0, 0), from, onEnd, duration, delay);
+    }
+
+    /**
+     * The popin can't be opened for hidden piles
+     */
+    override openPopin() {
+        this.page.showMessage(_("This deck contains ")+this.size+_(" cards"), 'info');
     }
 }

@@ -111,6 +111,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     insertCard(card: DaleCard, pos?: number, from?: HTMLElement | string): void {
         pos = this.getValidPos(pos);
         this.slots[pos]!.insertCard(card, from);
+        this.slots[pos]!.card_div.dataset['value'] = 'market';
     }
 
     /**

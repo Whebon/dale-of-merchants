@@ -24,7 +24,7 @@ type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'multiple' | 't
  * Only displays the size and top card of the pile.
  */
 export class Pile implements DaleLocation {
-    private page: Gamegui;
+    protected page: Gamegui;
     private cards: DaleCard[];
     private containerHTML: HTMLElement;
     private sizeHTML: HTMLElement;
@@ -109,7 +109,8 @@ export class Pile implements DaleLocation {
         if (!this.isPopinOpen && this.previousTopCard != topCard) {
             this.topCardHTML?.remove();
             if (topCard !== undefined) {
-                this.topCardHTML = topCard.toDiv(this.placeholderHTML);
+                const dataValue = this.player_id == this.page.player_id ? 'effective' : undefined;
+                this.topCardHTML = topCard.toDiv(this.placeholderHTML, dataValue);
                 this.topCardHTML.classList.add("dale-clickable");
                 dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
                 //TODO: safely remove this
@@ -357,7 +358,7 @@ export class Pile implements DaleLocation {
         this.popin.setContent(`<div id="${popin_id}-card-container" class="popin-card-container ${this.wrapClass}"></div>`);
         const container_id = popin_id+"-card-container";
         for (let card of this.cards) {
-            const div = card.toDiv(container_id);
+            const div = card.toDiv(container_id, 'effective');
             div.classList.add("dale-relative");
             if(this.selectionMode != 'none' && this.orderedSelection.getMaxSize() > 0) {
                 div.classList.add("dale-clickable");

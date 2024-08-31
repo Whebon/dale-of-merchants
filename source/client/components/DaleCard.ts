@@ -1,3 +1,4 @@
+import Gamegui = require('ebg/core/gamegui');
 import { DaleIcons } from './DaleIcons';
 import { Images } from './Images';
 import { Animalfolk } from './types/Animalfolk';
@@ -16,10 +17,7 @@ export class DaleCard {
     private static readonly cardIdToChameleonChain: Map<number, ChameleonChain> = new Map<number, ChameleonChain>();
     private static readonly cardIdToChameleonChainLocal: Map<number, ChameleonChain> = new Map<number, ChameleonChain>();
 
-    //TODO: safely delete this
-    // private static readonly cardIdtoEffectiveTypeId: Map<number, number> = new Map<number, number>();
-    // private static readonly cardIdtoEffectiveTypeIdLocal: Map<number, number> = new Map<number, number>();
-
+    static page: Gamegui | undefined;
     static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
     static readonly divs: Map<number, HTMLElement> = new Map<number, HTMLElement>();
 
@@ -98,11 +96,12 @@ export class DaleCard {
     /** 
      * Statically initialize the card types.
      * */
-    public static init(cardTypes: {[type_id: number]: CardType}) {
+    public static init(page: Gamegui, cardTypes: {[type_id: number]: CardType}) {
         if (DaleCard.cardTypes) {
             throw new Error("Card types are only be initialized once")
         }
         DaleCard.cardTypes = Object.values(cardTypes);
+        DaleCard.page = page;
         // for (let i = 0; i < DaleCard.cardTypes.length; i++) {
         //     const card = cards[i];
         //     // Process the card object
@@ -593,7 +592,10 @@ export class DaleCard {
     }
 
     private updateEffectiveValue(card_div: HTMLElement) {
-        const value = (card_div.dataset['location'] == 'stock') ? this.effective_value : this.original_value;
+        let value = this.original_value;
+        if (DaleCard.page?.isCurrentPlayerActive() && card_div.dataset['value'] == 'effective') {
+            value = this.effective_value;
+        }
         if (value == this.original_value) {
             card_div.querySelector(".dale-effective-value")?.remove();
         }
@@ -635,12 +637,16 @@ export class DaleCard {
     /**
      * @returns a new div element representing this card.
      * @param parent_id (optional) - if specified, the div will be immediately be "detached" to the parent
+     * @param dataValue (optional) - if specified, set the data-value attribute of the div to display modified values
      */
-    public toDiv(parent_id?: string | HTMLElement): HTMLElement {
+    public toDiv(parent_id?: string | HTMLElement, dataValue?: 'effective' | 'market'): HTMLElement {
         const div = document.createElement("div")
         div.classList.add("dale-card");
-        div.id = "dale-card-"+this.id
-        Images.setCardStyle(div, this.original_type_id)
+        div.id = "dale-card-"+this.id;
+        Images.setCardStyle(div, this.original_type_id);
+        if (dataValue) {
+            div.dataset['value'] = dataValue;
+        }
         if (parent_id) {
             $(parent_id)?.appendChild(div);
             this.attachDiv(div);

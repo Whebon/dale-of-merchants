@@ -279,11 +279,12 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 throw new Error("The type_id of card_id ".concat(id, " is unknown. Therefore, a card with id ").concat(id, " cannot be instantiated."));
             }
         }
-        DaleCard.init = function (cardTypes) {
+        DaleCard.init = function (page, cardTypes) {
             if (DaleCard.cardTypes) {
                 throw new Error("Card types are only be initialized once");
             }
             DaleCard.cardTypes = Object.values(cardTypes);
+            DaleCard.page = page;
         };
         DaleCard.addEffect = function (effect) {
             console.log("addEffect");
@@ -592,13 +593,16 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
-            var _a, _b;
-            var value = (card_div.dataset['location'] == 'stock') ? this.effective_value : this.original_value;
+            var _a, _b, _c;
+            var value = this.original_value;
+            if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()) && card_div.dataset['value'] == 'effective') {
+                value = this.effective_value;
+            }
             if (value == this.original_value) {
-                (_a = card_div.querySelector(".dale-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
+                (_b = card_div.querySelector(".dale-effective-value")) === null || _b === void 0 ? void 0 : _b.remove();
             }
             else {
-                var value_div = (_b = card_div.querySelector(".dale-effective-value")) !== null && _b !== void 0 ? _b : document.createElement('div');
+                var value_div = (_c = card_div.querySelector(".dale-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
                 value_div.classList.add("dale-effective-value");
                 value_div.innerHTML = String(value);
                 card_div.append(value_div);
@@ -620,12 +624,15 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 this.updateEffectiveValue(div);
             }
         };
-        DaleCard.prototype.toDiv = function (parent_id) {
+        DaleCard.prototype.toDiv = function (parent_id, dataValue) {
             var _a;
             var div = document.createElement("div");
             div.classList.add("dale-card");
             div.id = "dale-card-" + this.id;
             Images_1.Images.setCardStyle(div, this.original_type_id);
+            if (dataValue) {
+                div.dataset['value'] = dataValue;
+            }
             if (parent_id) {
                 (_a = $(parent_id)) === null || _a === void 0 ? void 0 : _a.appendChild(div);
                 this.attachDiv(div);
@@ -1076,7 +1083,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.addToStockWithId(card.original_type_id, card.id, from);
             this.setClickable(card.id);
             var stockitem_div = $(this.control_name + '_item_' + card.id);
-            stockitem_div.dataset['location'] = 'stock';
+            stockitem_div.dataset['value'] = 'effective';
             card.attachDiv(stockitem_div);
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
@@ -1263,7 +1270,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             if (!this.isPopinOpen && this.previousTopCard != topCard) {
                 (_a = this.topCardHTML) === null || _a === void 0 ? void 0 : _a.remove();
                 if (topCard !== undefined) {
-                    this.topCardHTML = topCard.toDiv(this.placeholderHTML);
+                    var dataValue = this.player_id == this.page.player_id ? 'effective' : undefined;
+                    this.topCardHTML = topCard.toDiv(this.placeholderHTML, dataValue);
                     this.topCardHTML.classList.add("dale-clickable");
                     dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
                 }
@@ -1433,7 +1441,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.popin.setContent("<div id=\"".concat(popin_id, "-card-container\" class=\"popin-card-container ").concat(this.wrapClass, "\"></div>"));
             var container_id = popin_id + "-card-container";
             var _loop_2 = function (card) {
-                var div = card.toDiv(container_id);
+                var div = card.toDiv(container_id, 'effective');
                 div.classList.add("dale-relative");
                 if (this_1.selectionMode != 'none' && this_1.orderedSelection.getMaxSize() > 0) {
                     div.classList.add("dale-clickable");
@@ -1570,6 +1578,9 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
         }
         HiddenPile.prototype.push = function (_card, from, onEnd, duration, delay) {
             _super.prototype.push.call(this, new DaleCard_5.DaleCard(0, 0), from, onEnd, duration, delay);
+        };
+        HiddenPile.prototype.openPopin = function () {
+            this.page.showMessage(_("This deck contains ") + this.size + _(" cards"), 'info');
         };
         return HiddenPile;
     }(Pile_1.Pile));
@@ -1778,6 +1789,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         MarketBoard.prototype.insertCard = function (card, pos, from) {
             pos = this.getValidPos(pos);
             this.slots[pos].insertCard(card, from);
+            this.slots[pos].card_div.dataset['value'] = 'market';
         };
         MarketBoard.prototype.removeCard = function (pos, to) {
             pos = this.getValidPos(pos);
@@ -2602,7 +2614,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var svgContainer = $("dale-svg-container");
             (_a = $("overall-content")) === null || _a === void 0 ? void 0 : _a.appendChild(svgContainer);
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
-            DaleCard_8.DaleCard.init(gamedatas.cardTypes);
+            DaleCard_8.DaleCard.init(this, gamedatas.cardTypes);
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
                 var player_board_div = (_b = $('player_board_' + player_id)) === null || _b === void 0 ? void 0 : _b.querySelector(".player_score");

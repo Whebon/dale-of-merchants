@@ -11,7 +11,6 @@
 
 //needed for the IDE
 import Gamegui = require('ebg/core/gamegui');
-import Stock = require('ebg/stock'); 
 import Counter = require('ebg/counter'); 
 
 //needed for BGA
@@ -135,7 +134,7 @@ class Dale extends Gamegui
 		addEventListener("mousemove", function(this: Window, evt: MouseEvent) { TargetingLine.previousMouseEvent = evt; });
 
 		//initialize the card types
-		DaleCard.init(gamedatas.cardTypes);
+		DaleCard.init(this, gamedatas.cardTypes);
 
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
