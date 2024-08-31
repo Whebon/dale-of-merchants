@@ -77,10 +77,6 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
     }());
     exports.DaleIcons = DaleIcons;
 });
-define("components/types/Animalfolk", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("components/Images", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -122,7 +118,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
             }
         };
         Images.setCardStyleForDeckSelection = function (div, animalfolk_id) {
-            Images.setCardStyle(div, animalfolk_id);
+            Images.setCardStyle(div, animalfolk_id - 1);
             dojo.setStyle(div, 'background-size', "".concat(Images.DECK_SELECTION_IMAGES_PER_ROW, "00% ").concat(Images.DECK_SELECTION_IMAGES_PER_COLUMN, "00%"));
         };
         Images.getPlaceholder = function () {
@@ -482,7 +478,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         Object.defineProperty(DaleCard.prototype, "animalfolk", {
             get: function () {
-                return DaleCard.cardTypes[this.effective_type_id].animalfolk;
+                return DaleCard.cardTypes[this.effective_type_id].animalfolk_displayed;
             },
             enumerable: false,
             configurable: true
@@ -2583,9 +2579,11 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
     var DaleDeckSelection = (function () {
         function DaleDeckSelection(page, deckSelectionHTML, gameHTML, inDeckSelection) {
             this.orderedSelection = new OrderedDeckSelection();
+            this.tooltips = [];
             this.deckSelectionHTML = deckSelectionHTML;
             this.gameHTML = gameHTML;
             this.cardContainer = this.deckSelectionHTML.querySelector(".dale-deck-selection-container");
+            this.cardContainer.classList.add("dale-wrap-technique");
             if (!inDeckSelection) {
                 this.deckSelectionHTML.classList.add("dale-hidden");
                 return;
@@ -2604,7 +2602,11 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                     label: this_3.getTooltipContent(animalfolk_id),
                     showDelay: 400,
                 });
-                var unavailable = (animalfolk_id >= 6);
+                dojo.connect(card_div, "mouseleave", function () {
+                    tooltip.close();
+                });
+                this_3.tooltips.push(tooltip);
+                var unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
                 if (unavailable) {
                     card_div.classList.add("dale-deck-selection-unavailable");
                 }
@@ -2615,24 +2617,40 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                         page.showMessage(_("This animalfolk does not exist"), 'error');
                         return;
                     }
-                    thiz.orderedSelection.toggle(card_id);
+                    if (page.isCurrentPlayerActive()) {
+                        thiz.orderedSelection.toggle(card_id);
+                    }
                 });
             };
             var this_3 = this;
-            for (var animalfolk_id = 0; animalfolk_id < 26; animalfolk_id++) {
+            for (var animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
                 _loop_4(animalfolk_id);
             }
         }
         DaleDeckSelection.prototype.getTooltipContent = function (animalfolk_id) {
             return "TODO: TOOLTIP";
         };
-        DaleDeckSelection.animalfolkNames = {
-            0: "Macaws",
-            1: "Pandas",
-            2: "Raccoons",
-            3: "Squirrels",
-            4: "Ocelots",
-            5: "Chameleons"
+        DaleDeckSelection.prototype.remove = function () {
+            this.cardContainer.remove();
+            for (var _i = 0, _a = this.tooltips; _i < _a.length; _i++) {
+                var tooltip = _a[_i];
+                tooltip.destroy();
+            }
+            this.gameHTML.classList.remove("dale-hidden");
+        };
+        DaleDeckSelection.prototype.setResult = function (animalfolk_id) {
+            var _a;
+            if (this.cardContainer.classList.contains("dale-wrap-technique")) {
+                this.cardContainer.classList.remove("dale-wrap-technique");
+                this.cardContainer.classList.add("dale-wrap-purchase");
+                this.orderedSelection.unselectAll();
+                this.orderedSelection.setIconType(undefined);
+                this.cardContainer.querySelectorAll(".dale-deck-selection").forEach(function (card_div) {
+                    card_div.classList.add("dale-deck-selection-unavailable");
+                });
+            }
+            (_a = $("deck-" + animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-deck-selection-unavailable");
+            this.orderedSelection.selectItem(animalfolk_id);
         };
         return DaleDeckSelection;
     }());
@@ -3036,6 +3054,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (!this.isCurrentPlayerActive())
                 return;
             switch (stateName) {
+                case 'deckSelection':
+                    this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
+                    this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
+                    break;
                 case 'playerTurn':
                     break;
                 case 'client_technique':
@@ -3340,6 +3362,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.addActionButtonCancelClient = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
+        };
+        Dale.prototype.onSubmitPreference = function () {
+            var animalfolk_ids = this.deckSelection.orderedSelection.get().reverse();
+            if (animalfolk_ids.length == 0) {
+                this.showMessage(_("Please select at least 1 animalfolk to vote"), 'error');
+                return;
+            }
+            this.bgaPerformAction('actSubmitPreference', {
+                animalfolk_ids: this.arrayToNumberList(animalfolk_ids)
+            });
+        };
+        Dale.prototype.onSubmitPreferenceAbstain = function () {
+            this.bgaPerformAction('actSubmitPreference', {
+                animalfolk_ids: ''
+            });
         };
         Dale.prototype.onStallCardClick = function (stall, card, stack_index, index) {
             console.log("Clicked on CardStack[".concat(stack_index, ", ").concat(index, "]"));
@@ -3884,6 +3921,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _this = this;
             console.log('notifications subscriptions setup42');
             var notifs = [
+                ['deckSelectionResult', 500],
+                ['delay', 500],
+                ['startGame', 500],
                 ['instant_scheduleTechnique', 1],
                 ['scheduleTechnique', 500],
                 ['resolveTechnique', 500],
@@ -3919,6 +3959,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
             console.log('notifications subscriptions setup done');
+        };
+        Dale.prototype.notif_delay = function (notif) {
+            console.log("notif_delay (500ms)");
+        };
+        Dale.prototype.notif_deckSelectionResult = function (notif) {
+            this.deckSelection.setResult(notif.args.animalfolk_id);
+        };
+        Dale.prototype.notif_startGame = function (notif) {
+            this.deckSelection.remove();
+            var n = Object.keys(this.gamedatas.players).length;
+            this.marketDeck.pushHiddenCards(11 * (n + 1));
+            for (var player_id in this.gamedatas.players) {
+                this.playerDecks[+player_id].pushHiddenCards(10);
+            }
         };
         Dale.prototype.notif_instant_scheduleTechnique = function (notif) {
             this.notif_scheduleTechnique(notif);

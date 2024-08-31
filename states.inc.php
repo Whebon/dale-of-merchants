@@ -18,6 +18,8 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var dale $game */
+	$game->stDeckSelection();
+	$game->stStartGame();
 	$game->stNextPlayer();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
@@ -30,7 +32,28 @@ $machinestates = array(
 		'type' => 'manager',
 		'action' => 'stGameSetup',
 		'transitions' => array(
-			'' => 30,
+			'' => 2,
+		),
+	),
+	2 => array(
+		'name' => 'deckSelection',
+		'description' => clienttranslate('Other players may vote for up to ${n_plus_1} animalfolk sets to play with'),
+		'descriptionmyturn' => clienttranslate('${you} may vote for up to ${n_plus_1} animalfolk sets to play with'),
+		'args' => 'argNumberOfPlayers',
+		'type' => 'multipleactiveplayer',
+		'action' => 'stDeckSelection',
+		'possibleactions' => ['actSubmitPreference'],
+		'transitions' => array(
+			'trStartGame' => 3,
+		),
+	),
+	3 => array(
+		'name' => 'startGame',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stStartGame',
+		'transitions' => array(
+			'trStartGame' => 30,
 		),
 	),
 	30 => array(

@@ -1,5 +1,3 @@
-import { Animalfolk } from "./types/Animalfolk";
-
 export class Images {
     static readonly IMAGES_PER_ROW = 6;
     static readonly IMAGES_PER_COLUMN = 7;
@@ -100,7 +98,7 @@ export class Images {
      * @param animalfolk_id
      */
     static setCardStyleForDeckSelection(div: HTMLElement, animalfolk_id: number) {
-        Images.setCardStyle(div, animalfolk_id);
+        Images.setCardStyle(div, animalfolk_id-1);
         dojo.setStyle(div, 'background-size', `${Images.DECK_SELECTION_IMAGES_PER_ROW}00% ${Images.DECK_SELECTION_IMAGES_PER_COLUMN}00%`);
     }
 

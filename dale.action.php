@@ -27,6 +27,17 @@ class action_dale extends APP_GameAction
 		}
 	}
 
+	public function actSubmitPreference()
+	{
+		self::setAjaxMode();
+
+		/** @var string $animalfolk_ids */
+		$animalfolk_ids = self::getArg('animalfolk_ids', AT_numberlist, true);
+
+		$this->game->actSubmitPreference( $animalfolk_ids );
+		self::ajaxResponse();
+	}
+
 	public function actPurchase()
 	{
 		self::setAjaxMode();

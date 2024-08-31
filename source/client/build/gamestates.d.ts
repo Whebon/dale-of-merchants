@@ -16,7 +16,34 @@ interface GameStates {
 		'type': 'manager',
 		'action': 'stGameSetup',
 		'transitions': {
-			'': 30,
+			'': 2,
+		},
+	},
+	2: {
+		'name': 'deckSelection',
+		'description': 'Other players may vote for up to ${n_plus_one} animalfolk sets to play with',
+		'descriptionmyturn': '${you} may vote for up to ${n_plus_one} animalfolk sets to play with',
+		'args': 'argNumberOfPlayers',
+		'type': 'multipleactiveplayer',
+		'action': 'stDeckSelection',
+		'possibleactions': {
+			'actSubmitPreference': [{
+				'name': 'animalfolk_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trStartGame': 3,
+		},
+	},
+	3: {
+		'name': 'startGame',
+		'description': '',
+		'type': 'game',
+		'action': 'stStartGame',
+		'transitions': {
+			'trStartGame': 30,
 		},
 	},
 	30: {

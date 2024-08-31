@@ -23,22 +23,31 @@
 		"description": "",
 		"type": "manager",
 		"action": "stGameSetup",
-		"transitions": { "": 30 }
+		"transitions": { "": 2 }
 	},
 
 	//////////////// Game Setup (+choosing animalfolk sets) ////////////////
 
-	// "2": {
-	// 	"name": "dummmy",
-	// 	"description": "${actplayer} must play a card or pass",
-	// 	"descriptionmyturn": "${you} must play a card or pass",
-	// 	"type": "activeplayer",
-	// 	"possibleactions": {
-	// 		"playCard": [{ "name": "card_id", "type": "AT_int" }],
-	// 		"pass": []
-	// 	},
-	// 	"transitions": { "playCard": 2, "pass": 2 }
-	// },
+	"2": {
+		"name": "deckSelection",
+		"description": "Other players may vote for up to ${n_plus_one} animalfolk sets to play with",
+		"descriptionmyturn": "${you} may vote for up to ${n_plus_one} animalfolk sets to play with",
+		"args": "argNumberOfPlayers",
+		"type": "multipleactiveplayer",
+		"action": "stDeckSelection",
+		"possibleactions": {
+			"actSubmitPreference": [{ "name": "animalfolk_ids", "type": "AT_numberlist" }]
+		},
+		"transitions": { "trStartGame": 3 }
+	},
+
+	"3": {
+		"name": "startGame",
+		"description": "",
+		"type": "game",
+		"action": "stStartGame",
+		"transitions": { "trStartGame": 30 }
+	},
 
 	//////////////// Main Cycle ////////////////
 

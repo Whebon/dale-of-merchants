@@ -15,7 +15,7 @@
 </div>
 
 <div id="dale-page-deck-selection">
-    <div class="dale-deck-selection-container dale-wrap-technique"></div>
+    <div class="dale-deck-selection-container"></div>
 </div>
 
 <div id="dale-page-game">

@@ -1,7 +1,6 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleIcons } from './DaleIcons';
 import { Images } from './Images';
-import { Animalfolk } from './types/Animalfolk';
 import { CardType } from './types/CardType';
 import { DbCard } from './types/DbCard';
 import { DbEffect } from './types/DbEffect';
@@ -442,8 +441,8 @@ export class DaleCard {
         return this.original_value + pos;
     }
 
-    public get animalfolk(): Animalfolk {
-        return DaleCard.cardTypes[this.effective_type_id]!.animalfolk
+    public get animalfolk(): string {
+        return DaleCard.cardTypes[this.effective_type_id]!.animalfolk_displayed
     }
 
     public get name(): string {

@@ -60,8 +60,8 @@ for index, row in df.iterrows():
         'playable': playable(row),
         'value': row['value'],
         'nbr': row['nbr'],
-        'animalfolk': animalfolk,
-        'animalfolk_displayed': '""' if animalfolk == "null" else f"clienttranslate({animalfolk})"
+        'animalfolk_displayed': '""' if animalfolk == "null" else f"clienttranslate({animalfolk})",
+        'animalfolk_id': row['animalfolk_id']
     }
 
 

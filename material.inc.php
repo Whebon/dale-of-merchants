@@ -67,12 +67,13 @@ if (!defined('CT_CARDBACK')) {
 
 //define all animalfolk
 if (!defined('ANIMALFOLK_MACAWS')) {
-    define('ANIMALFOLK_MACAWS', "Macaws");
-    define('ANIMALFOLK_PANDAS', "Pandas");
-    define('ANIMALFOLK_RACCOONS', "Raccoons");
-    define('ANIMALFOLK_SQUIRRELS', "Squirrels");
-    define('ANIMALFOLK_OCELOTS', "Ocelots");
-    define('ANIMALFOLK_CHAMELEONS', "Chameleons");
+    define('ANIMALFOLK_NONE', 0);
+    define('ANIMALFOLK_MACAWS', 1);
+    define('ANIMALFOLK_PANDAS', 2);
+    define('ANIMALFOLK_RACCOONS', 3);
+    define('ANIMALFOLK_SQUIRRELS', 4);
+    define('ANIMALFOLK_OCELOTS', 5);
+    define('ANIMALFOLK_CHAMELEONS', 6);
 }
 
 $this->card_types = array(
@@ -87,8 +88,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 0,
         'nbr' => 0,
-        'animalfolk' => null,
-        'animalfolk_displayed' => ""
+        'animalfolk_displayed' => "",
+        'animalfolk_id' => 0
     ),
     1 => array(
         'type_id' => 1,
@@ -101,8 +102,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => null,
-        'animalfolk_displayed' => ""
+        'animalfolk_displayed' => "",
+        'animalfolk_id' => 0
     ),
     2 => array(
         'type_id' => 2,
@@ -115,8 +116,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => null,
-        'animalfolk_displayed' => ""
+        'animalfolk_displayed' => "",
+        'animalfolk_id' => 0
     ),
     3 => array(
         'type_id' => 3,
@@ -129,8 +130,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => null,
-        'animalfolk_displayed' => ""
+        'animalfolk_displayed' => "",
+        'animalfolk_id' => 0
     ),
     4 => array(
         'type_id' => 4,
@@ -143,8 +144,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => null,
-        'animalfolk_displayed' => ""
+        'animalfolk_displayed' => "",
+        'animalfolk_id' => 0
     ),
     5 => array(
         'type_id' => 5,
@@ -157,8 +158,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => null,
-        'animalfolk_displayed' => ""
+        'animalfolk_displayed' => "",
+        'animalfolk_id' => 0
     ),
     6 => array(
         'type_id' => 6,
@@ -171,8 +172,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => "Macaws",
-        'animalfolk_displayed' => clienttranslate("Macaws")
+        'animalfolk_displayed' => clienttranslate("Macaws"),
+        'animalfolk_id' => 1
     ),
     7 => array(
         'type_id' => 7,
@@ -185,8 +186,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 2,
         'nbr' => 3,
-        'animalfolk' => "Macaws",
-        'animalfolk_displayed' => clienttranslate("Macaws")
+        'animalfolk_displayed' => clienttranslate("Macaws"),
+        'animalfolk_id' => 1
     ),
     8 => array(
         'type_id' => 8,
@@ -199,8 +200,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 3,
         'nbr' => 3,
-        'animalfolk' => "Macaws",
-        'animalfolk_displayed' => clienttranslate("Macaws")
+        'animalfolk_displayed' => clienttranslate("Macaws"),
+        'animalfolk_id' => 1
     ),
     9 => array(
         'type_id' => 9,
@@ -213,8 +214,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 4,
         'nbr' => 3,
-        'animalfolk' => "Macaws",
-        'animalfolk_displayed' => clienttranslate("Macaws")
+        'animalfolk_displayed' => clienttranslate("Macaws"),
+        'animalfolk_id' => 1
     ),
     10 => array(
         'type_id' => 10,
@@ -227,8 +228,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Macaws",
-        'animalfolk_displayed' => clienttranslate("Macaws")
+        'animalfolk_displayed' => clienttranslate("Macaws"),
+        'animalfolk_id' => 1
     ),
     11 => array(
         'type_id' => 11,
@@ -241,8 +242,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Macaws",
-        'animalfolk_displayed' => clienttranslate("Macaws")
+        'animalfolk_displayed' => clienttranslate("Macaws"),
+        'animalfolk_id' => 1
     ),
     12 => array(
         'type_id' => 12,
@@ -255,8 +256,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => "Pandas",
-        'animalfolk_displayed' => clienttranslate("Pandas")
+        'animalfolk_displayed' => clienttranslate("Pandas"),
+        'animalfolk_id' => 2
     ),
     13 => array(
         'type_id' => 13,
@@ -269,8 +270,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 2,
         'nbr' => 3,
-        'animalfolk' => "Pandas",
-        'animalfolk_displayed' => clienttranslate("Pandas")
+        'animalfolk_displayed' => clienttranslate("Pandas"),
+        'animalfolk_id' => 2
     ),
     14 => array(
         'type_id' => 14,
@@ -283,8 +284,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 3,
         'nbr' => 3,
-        'animalfolk' => "Pandas",
-        'animalfolk_displayed' => clienttranslate("Pandas")
+        'animalfolk_displayed' => clienttranslate("Pandas"),
+        'animalfolk_id' => 2
     ),
     15 => array(
         'type_id' => 15,
@@ -297,8 +298,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 4,
         'nbr' => 3,
-        'animalfolk' => "Pandas",
-        'animalfolk_displayed' => clienttranslate("Pandas")
+        'animalfolk_displayed' => clienttranslate("Pandas"),
+        'animalfolk_id' => 2
     ),
     16 => array(
         'type_id' => 16,
@@ -311,8 +312,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Pandas",
-        'animalfolk_displayed' => clienttranslate("Pandas")
+        'animalfolk_displayed' => clienttranslate("Pandas"),
+        'animalfolk_id' => 2
     ),
     17 => array(
         'type_id' => 17,
@@ -325,8 +326,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Pandas",
-        'animalfolk_displayed' => clienttranslate("Pandas")
+        'animalfolk_displayed' => clienttranslate("Pandas"),
+        'animalfolk_id' => 2
     ),
     18 => array(
         'type_id' => 18,
@@ -339,8 +340,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => "Raccoons",
-        'animalfolk_displayed' => clienttranslate("Raccoons")
+        'animalfolk_displayed' => clienttranslate("Raccoons"),
+        'animalfolk_id' => 3
     ),
     19 => array(
         'type_id' => 19,
@@ -353,8 +354,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 2,
         'nbr' => 3,
-        'animalfolk' => "Raccoons",
-        'animalfolk_displayed' => clienttranslate("Raccoons")
+        'animalfolk_displayed' => clienttranslate("Raccoons"),
+        'animalfolk_id' => 3
     ),
     20 => array(
         'type_id' => 20,
@@ -367,8 +368,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 3,
         'nbr' => 3,
-        'animalfolk' => "Raccoons",
-        'animalfolk_displayed' => clienttranslate("Raccoons")
+        'animalfolk_displayed' => clienttranslate("Raccoons"),
+        'animalfolk_id' => 3
     ),
     21 => array(
         'type_id' => 21,
@@ -381,8 +382,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 4,
         'nbr' => 3,
-        'animalfolk' => "Raccoons",
-        'animalfolk_displayed' => clienttranslate("Raccoons")
+        'animalfolk_displayed' => clienttranslate("Raccoons"),
+        'animalfolk_id' => 3
     ),
     22 => array(
         'type_id' => 22,
@@ -395,8 +396,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Raccoons",
-        'animalfolk_displayed' => clienttranslate("Raccoons")
+        'animalfolk_displayed' => clienttranslate("Raccoons"),
+        'animalfolk_id' => 3
     ),
     23 => array(
         'type_id' => 23,
@@ -409,8 +410,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Raccoons",
-        'animalfolk_displayed' => clienttranslate("Raccoons")
+        'animalfolk_displayed' => clienttranslate("Raccoons"),
+        'animalfolk_id' => 3
     ),
     24 => array(
         'type_id' => 24,
@@ -423,8 +424,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => "Squirrels",
-        'animalfolk_displayed' => clienttranslate("Squirrels")
+        'animalfolk_displayed' => clienttranslate("Squirrels"),
+        'animalfolk_id' => 4
     ),
     25 => array(
         'type_id' => 25,
@@ -437,8 +438,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 2,
         'nbr' => 3,
-        'animalfolk' => "Squirrels",
-        'animalfolk_displayed' => clienttranslate("Squirrels")
+        'animalfolk_displayed' => clienttranslate("Squirrels"),
+        'animalfolk_id' => 4
     ),
     26 => array(
         'type_id' => 26,
@@ -451,8 +452,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 3,
         'nbr' => 3,
-        'animalfolk' => "Squirrels",
-        'animalfolk_displayed' => clienttranslate("Squirrels")
+        'animalfolk_displayed' => clienttranslate("Squirrels"),
+        'animalfolk_id' => 4
     ),
     27 => array(
         'type_id' => 27,
@@ -465,8 +466,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 4,
         'nbr' => 3,
-        'animalfolk' => "Squirrels",
-        'animalfolk_displayed' => clienttranslate("Squirrels")
+        'animalfolk_displayed' => clienttranslate("Squirrels"),
+        'animalfolk_id' => 4
     ),
     28 => array(
         'type_id' => 28,
@@ -479,8 +480,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Squirrels",
-        'animalfolk_displayed' => clienttranslate("Squirrels")
+        'animalfolk_displayed' => clienttranslate("Squirrels"),
+        'animalfolk_id' => 4
     ),
     29 => array(
         'type_id' => 29,
@@ -493,8 +494,8 @@ $this->card_types = array(
         'playable' => false,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Squirrels",
-        'animalfolk_displayed' => clienttranslate("Squirrels")
+        'animalfolk_displayed' => clienttranslate("Squirrels"),
+        'animalfolk_id' => 4
     ),
     30 => array(
         'type_id' => 30,
@@ -507,8 +508,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => "Ocelots",
-        'animalfolk_displayed' => clienttranslate("Ocelots")
+        'animalfolk_displayed' => clienttranslate("Ocelots"),
+        'animalfolk_id' => 5
     ),
     31 => array(
         'type_id' => 31,
@@ -521,8 +522,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 2,
         'nbr' => 3,
-        'animalfolk' => "Ocelots",
-        'animalfolk_displayed' => clienttranslate("Ocelots")
+        'animalfolk_displayed' => clienttranslate("Ocelots"),
+        'animalfolk_id' => 5
     ),
     32 => array(
         'type_id' => 32,
@@ -535,8 +536,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 3,
         'nbr' => 3,
-        'animalfolk' => "Ocelots",
-        'animalfolk_displayed' => clienttranslate("Ocelots")
+        'animalfolk_displayed' => clienttranslate("Ocelots"),
+        'animalfolk_id' => 5
     ),
     33 => array(
         'type_id' => 33,
@@ -549,8 +550,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 4,
         'nbr' => 3,
-        'animalfolk' => "Ocelots",
-        'animalfolk_displayed' => clienttranslate("Ocelots")
+        'animalfolk_displayed' => clienttranslate("Ocelots"),
+        'animalfolk_id' => 5
     ),
     34 => array(
         'type_id' => 34,
@@ -563,8 +564,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Ocelots",
-        'animalfolk_displayed' => clienttranslate("Ocelots")
+        'animalfolk_displayed' => clienttranslate("Ocelots"),
+        'animalfolk_id' => 5
     ),
     35 => array(
         'type_id' => 35,
@@ -577,8 +578,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Ocelots",
-        'animalfolk_displayed' => clienttranslate("Ocelots")
+        'animalfolk_displayed' => clienttranslate("Ocelots"),
+        'animalfolk_id' => 5
     ),
     36 => array(
         'type_id' => 36,
@@ -591,8 +592,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 1,
         'nbr' => 0,
-        'animalfolk' => "Chameleons",
-        'animalfolk_displayed' => clienttranslate("Chameleons")
+        'animalfolk_displayed' => clienttranslate("Chameleons"),
+        'animalfolk_id' => 6
     ),
     37 => array(
         'type_id' => 37,
@@ -605,8 +606,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 2,
         'nbr' => 3,
-        'animalfolk' => "Chameleons",
-        'animalfolk_displayed' => clienttranslate("Chameleons")
+        'animalfolk_displayed' => clienttranslate("Chameleons"),
+        'animalfolk_id' => 6
     ),
     38 => array(
         'type_id' => 38,
@@ -619,8 +620,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 3,
         'nbr' => 3,
-        'animalfolk' => "Chameleons",
-        'animalfolk_displayed' => clienttranslate("Chameleons")
+        'animalfolk_displayed' => clienttranslate("Chameleons"),
+        'animalfolk_id' => 6
     ),
     39 => array(
         'type_id' => 39,
@@ -633,8 +634,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 4,
         'nbr' => 3,
-        'animalfolk' => "Chameleons",
-        'animalfolk_displayed' => clienttranslate("Chameleons")
+        'animalfolk_displayed' => clienttranslate("Chameleons"),
+        'animalfolk_id' => 6
     ),
     40 => array(
         'type_id' => 40,
@@ -647,8 +648,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Chameleons",
-        'animalfolk_displayed' => clienttranslate("Chameleons")
+        'animalfolk_displayed' => clienttranslate("Chameleons"),
+        'animalfolk_id' => 6
     ),
     41 => array(
         'type_id' => 41,
@@ -661,8 +662,8 @@ $this->card_types = array(
         'playable' => true,
         'value' => 5,
         'nbr' => 1,
-        'animalfolk' => "Chameleons",
-        'animalfolk_displayed' => clienttranslate("Chameleons")
+        'animalfolk_displayed' => clienttranslate("Chameleons"),
+        'animalfolk_id' => 6
     )
   );
   

@@ -2,7 +2,6 @@ import Gamegui = require("ebg/core/gamegui");
 
 import { Images } from "./Images";
 import { OrderedSelection } from "./OrderedSelection";
-import { Animalfolk } from "./types/Animalfolk";
 
 class OrderedDeckSelection extends OrderedSelection {
     override getDiv(card_id: number): HTMLElement | undefined {
@@ -14,21 +13,15 @@ export class DaleDeckSelection {
     private gameHTML: HTMLElement;
     private deckSelectionHTML: HTMLElement;
     private cardContainer: HTMLElement;
-    private orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
+    public orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
 
-    public static animalfolkNames: Record<number, Animalfolk> = {
-        0: "Macaws",
-        1: "Pandas",
-        2: "Raccoons",
-        3: "Squirrels",
-        4: "Ocelots",
-        5: "Chameleons"
-    }
+    private tooltips: dijit.Tooltip[] = [];
 
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
         this.cardContainer = (this.deckSelectionHTML.querySelector(".dale-deck-selection-container") as HTMLElement)!;
+        this.cardContainer.classList.add("dale-wrap-technique");
         if (!inDeckSelection) {
             this.deckSelectionHTML.classList.add("dale-hidden");
             return;
@@ -37,7 +30,7 @@ export class DaleDeckSelection {
 
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1)
-        for (let animalfolk_id = 0; animalfolk_id < 26; animalfolk_id++) {
+        for (let animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;
@@ -51,9 +44,13 @@ export class DaleDeckSelection {
                 label: this.getTooltipContent(animalfolk_id),
                 showDelay: 400,
             });
+            dojo.connect(card_div, "mouseleave", () => {
+                tooltip.close();
+            });
+            this.tooltips.push(tooltip);
 
             //disable some animalfolk
-            const unavailable = (animalfolk_id >= 6);
+            const unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
             if (unavailable) {
                 card_div.classList.add("dale-deck-selection-unavailable");
             }
@@ -66,7 +63,9 @@ export class DaleDeckSelection {
                     page.showMessage(_("This animalfolk does not exist"), 'error');
                     return;
                 }
-                thiz.orderedSelection.toggle(card_id);
+                if (page.isCurrentPlayerActive()) {
+                    thiz.orderedSelection.toggle(card_id);
+                }
             })
         }
     }
@@ -74,4 +73,29 @@ export class DaleDeckSelection {
     private getTooltipContent(animalfolk_id: number): string {
         return `TODO: TOOLTIP`;
 	}
+
+    /**
+     * Remove all elements related to the deck selection and show the actual game
+     */
+    public remove() {
+        this.cardContainer.remove();
+        for (let tooltip of this.tooltips) {
+            tooltip.destroy();
+        }
+        this.gameHTML.classList.remove("dale-hidden");
+    }
+
+    public setResult(animalfolk_id: number) {
+        if (this.cardContainer.classList.contains("dale-wrap-technique")) {
+            this.cardContainer.classList.remove("dale-wrap-technique");
+            this.cardContainer.classList.add("dale-wrap-purchase");
+            this.orderedSelection.unselectAll();
+            this.orderedSelection.setIconType(undefined);
+            this.cardContainer.querySelectorAll(".dale-deck-selection").forEach(card_div => {
+                card_div.classList.add("dale-deck-selection-unavailable");
+            });
+        }
+        $("deck-"+animalfolk_id)?.classList.remove("dale-deck-selection-unavailable");
+        this.orderedSelection.selectItem(animalfolk_id);
+    }
 }

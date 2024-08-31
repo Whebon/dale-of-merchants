@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `effect` (
 CREATE TABLE IF NOT EXISTS `deckselection` (
   `preference_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `player_id` int(10) unsigned NOT NULL,
-  `animalfolk` varchar(16) NOT NULL,
+  `animalfolk_id` varchar(16) NOT NULL,
   `score` int(10) unsigned NOT NULL,
   PRIMARY KEY (`preference_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

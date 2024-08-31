@@ -558,6 +558,10 @@ class Dale extends Gamegui
 
 		switch( stateName )
 		{
+			case 'deckSelection':
+				this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
+				this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
+				break;
 			case 'playerTurn':
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
 				break;
@@ -1092,6 +1096,23 @@ class Dale extends Gamegui
 		- check the action is possible at this game state.
 		- make a call to the game server
 	*/
+
+	onSubmitPreference() {
+		let animalfolk_ids = this.deckSelection!.orderedSelection.get().reverse();
+		if (animalfolk_ids.length == 0) {
+			this.showMessage(_("Please select at least 1 animalfolk to vote"), 'error');
+			return;
+		}
+		this.bgaPerformAction('actSubmitPreference', {
+			animalfolk_ids: this.arrayToNumberList(animalfolk_ids)
+		})
+	}
+
+	onSubmitPreferenceAbstain() {
+		this.bgaPerformAction('actSubmitPreference', {
+			animalfolk_ids: '' 
+		})
+	}
 
 	onStallCardClick(stall: Stall, card: DaleCard, stack_index: number, index: number) {
         console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
@@ -1765,6 +1786,9 @@ class Dale extends Gamegui
 		console.log( 'notifications subscriptions setup42' );
 		
 		const notifs: [keyof NotifTypes, number][] = [
+			['deckSelectionResult', 500],
+			['delay', 500],
+			['startGame', 500],
 			['instant_scheduleTechnique', 1],
 			['scheduleTechnique', 500],
 			['resolveTechnique', 500],
@@ -1823,6 +1847,23 @@ class Dale extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_delay(notif: NotifAs<'delay'>) {
+		console.log("notif_delay (500ms)");
+	}
+
+	notif_deckSelectionResult(notif: NotifAs<'deckSelectionResult'>) {
+		this.deckSelection!.setResult(notif.args.animalfolk_id);
+	}
+
+	notif_startGame(notif: NotifAs<'startGame'>) {
+		this.deckSelection!.remove();
+		const n = Object.keys(this.gamedatas.players).length;
+		this.marketDeck.pushHiddenCards(11*(n+1));
+		for (let player_id in this.gamedatas.players) {
+			this.playerDecks[+player_id]!.pushHiddenCards(10);
+		}
+	}
 
 	notif_instant_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
 		this.notif_scheduleTechnique(notif); //same as scheduleTechnique, but without a delay

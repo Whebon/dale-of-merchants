@@ -95,55 +95,6 @@ class Dale extends DaleTableBasic
         //$this->initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //$this->initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
-        // TODO: decide which animalfolk sets to play with
-        $animalfolks = array(
-            ANIMALFOLK_MACAWS, 
-            ANIMALFOLK_SQUIRRELS, 
-            ANIMALFOLK_CHAMELEONS
-        );
-
-        //Create the market deck
-        $cards = array();
-        foreach ($this->card_types as $type_id => $card_type) {
-            if (in_array($card_type['animalfolk'], $animalfolks)) {
-                $cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $card_type['nbr']);
-            }
-        }
-        $this->cards->createCards($cards, DECK.MARKET);
-        $this->cards->shuffle(DECK.MARKET);
-
-        //Create the initial player decks
-        $nbr_junk = 10 - count($animalfolks);
-        $player_cards = array(array('type' => 'null', 'type_arg' => 1, 'nbr' => $nbr_junk));
-        foreach ($this->card_types as $type_id => $card_type) {
-            if (in_array($card_type['animalfolk'], $animalfolks) && $card_type['value'] == 1) {
-                $player_cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1);
-            }
-        }
-        foreach ($players as $player_id => $player) {
-            $this->cards->createCards($player_cards, DECK.$player_id);
-            $this->cards->shuffle(DECK.$player_id);
-        }
-
-        //Each player draws an initial hand of 5 cards
-        foreach($players as $player_id => $player) {
-            $cards = $this->cards->pickCardsForLocation(5, DECK.$player_id, HAND.$player_id);
-            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws their initial hand of ${nbr} cards'), array(
-                "player_id" => $player_id,
-                "player_name" => $this->getPlayerNameById($player_id),
-                "nbr" => count($cards),
-                "_private" => array(
-                    "cards" => $cards
-                )
-            ));
-        }
-
-        //fill the initial market
-        $this->refillMarket(true);
-
-        // Activate first player (which is in general a good idea :) )
-        $this->activeNextPlayer();
-
         /************ End of the game initialization *****/
     }
 
@@ -210,7 +161,7 @@ class Dale extends DaleTableBasic
         $result['limbo'] = $this->cards->getCardsInLocation(LIMBO.$current_player_id);
         $result['cardTypes'] = $this->card_types;
         $result['effects'] = $this->effects->loadFromDb();
-        $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection");
+        $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
   
         return $result;
     }
@@ -239,6 +190,15 @@ class Dale extends DaleTableBasic
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+    /**
+     * Delay client notifications by 500ms multiple times
+     */
+    function delay500ms(int $times = 1) {
+        for ($i = 0; $i < $times; $i++) { 
+            $this->notifyAllPlayers('delay', '', array());
+        }
+    }
 
     /**
      * @param string $AT_numberlist
@@ -783,12 +743,24 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Returns the effective animalfolk of a dbcard. null represents rubbish/junk.
+     * Returns the effective animalfolk of a dbcard. 0 represents rubbish/junk.
      * @param array $dbcard dbcard object
     */
-    function getAnimalfolk(array $dbcard): string | null {
+    function getAnimalfolk(array $dbcard): int {
         $type_id = $this->getTypeId($dbcard);
-        return $this->card_types[$type_id]['animalfolk'];
+        return $this->card_types[$type_id]['animalfolk_id'];
+    }
+
+    /**
+     * Converts an animalfolk id into its displayed name
+     */
+    function getAnimalfolkDisplayedName(int $animalfolk_id): string {
+        foreach ($this->card_types as $card_type) {
+            if ($card_type['animalfolk_id'] == $animalfolk_id) {
+                return $card_type['animalfolk_displayed'];
+            }
+        }
+        return "MISSING ANIMALFOLK NAME";
     }
 
     /**
@@ -1732,16 +1704,23 @@ class Dale extends DaleTableBasic
         (note: each method below must match an input method in dale.action.php)
     */
 
-    //TODO: safely delete this
-    // function actRequestMarketAction(int $market_card_id) {
-    //     $this->checkAction("actRequestMarketAction");
-    //     $this->cards->getCardsFromLocation([$market_card_id], MARKET);
-
-    //     //TODO: check if maximum available funds are sufficient
-
-    //     $this->setGameStateValue( "selectedCard", $market_card_id );
-    //     $this->gamestate->nextState("trPurchase");
-    // }
+    function actSubmitPreference($animalfolk_ids) {
+        $this->checkAction("actSubmitPreference");
+        $animalfolk_ids = $this->numberListToArray($animalfolk_ids);
+        $player_id = $this->getCurrentPlayerId();
+        $this->deckSelection->submitPreference($player_id, $animalfolk_ids);
+        if (count($animalfolk_ids) > 0) {
+            $this->notifyAllPlayers('message', clienttranslate('Deck Selection: ${player_name} voted'), array(
+                "player_name" => $this->getPlayerNameById($player_id)
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('message', clienttranslate('Deck Selection: ${player_name} abstained'), array(
+                "player_name" => $this->getPlayerNameById($player_id)
+            ));
+        }
+        $this->gamestate->setPlayerNonMultiactive($player_id, "trStartGame");
+    }
 
     function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $essential_purchase_ids) {
         $this->addChameleonBindings($chameleons_json, $funds_card_ids);
@@ -2132,60 +2111,6 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    //TODO: safely remove this
-    // function actLoyalPartner($card_ids) {
-    //     $this->checkAction("actLoyalPartner");
-    //     $card_ids = $this->numberListToArray($card_ids);
-
-    //     //get the non-selected cards and selected cards
-    //     $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
-    //     $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
-    //     foreach ($selected_cards as $card_id => $card) {
-    //         unset($non_selected_cards[$card_id]);
-    //     }
-
-    //     //1. ditch all cards from the market board
-    //     $this->ditchFromMarketBoard(
-    //         clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
-    //         $card_ids, 
-    //         $selected_cards, 
-    //         $non_selected_cards
-    //     );
-
-    //     //2. refill the market
-    //     $this->refillMarket(false);
-        
-    //     $this->gamestate->nextState("trSamePlayer");
-    // }
-
-    //TODO: safely remove this
-    // function actPrepaidGood($card_id) {
-    //     $this->checkAction("actPrepaidGood");
-    //     $player_id = $this->getActivePlayerId();
-
-    //     //Get the card from the market
-    //     $card = $this->cards->getCardFromLocation($card_id, MARKET);
-
-    //     //Place the card into the player's hand
-    //     $this->cards->moveCard($card_id, HAND.$player_id);
-    //     $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
-    //         'i18n' => array('card_name'),
-    //         'player_id' => $player_id,
-    //         'player_name' => $this->getActivePlayerName(),
-    //         'card_name' => $this->getCardName($card),
-    //         'market_card_id' => $card_id,
-    //         'pos' => $card["location_arg"],
-    //     ));
-
-    //     $this->gamestate->nextState("trSamePlayer");
-    // }
-
-    //TODO: safely delete this
-    // function actRequestStallAction() {
-    //     $this->checkAction("actRequestStallAction");
-    //     $this->gamestate->nextState("trBuild");
-    // }
-
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
@@ -2227,12 +2152,6 @@ class Dale extends DaleTableBasic
         ));
         $this->gamestate->nextState("trNextPlayer");
     }
-
-    //TODO: safely delete this
-    // function actRequestInventoryAction() {
-    //     $this->checkAction("actRequestInventoryAction");
-    //     $this->gamestate->nextState("trInventory");
-    // }
 
     function actInventoryAction(string $card_ids) {
         $this->checkAction("actInventoryAction");
@@ -2282,6 +2201,14 @@ class Dale extends DaleTableBasic
     //     );
     // }
 
+    function argNumberOfPlayers() {
+        $n = $this->getPlayersNumber();
+        return array(
+            'n' => $n,
+            'n_plus_1' => $n + 1
+        );
+    }
+
     function argStackIndex(){
         $player_id = $this->getActivePlayerId();
         $stack_index = $this->cards->getNextStackIndex($player_id);
@@ -2316,6 +2243,68 @@ class Dale extends DaleTableBasic
         Here, you can create methods defined as "game state actions" (see "action" property in states.inc.php).
         The action method of state X is called everytime the current game state is set to X.
     */
+
+    function stDeckSelection() {
+        $this->gamestate->setAllPlayersMultiactive();
+    }
+
+    function stStartGame() {
+        //Complete the deck selection and get the results
+        $this->setGameStateValue("inDeckSelection", 0);
+        $players = $this->loadPlayersBasicInfos();
+        $animalfolk_ids = $this->deckSelection->getAnimalfolkIds();
+        foreach ($animalfolk_ids as $animalfolk_id) {
+            $this->notifyAllPlayers('deckSelectionResult', clienttranslate('${animalfolk_displayed_name} have been selected'), array(
+                "animalfolk_displayed_name" => $this->getAnimalfolkDisplayedName($animalfolk_id),
+                "animalfolk_id" => $animalfolk_id
+            ));
+        }
+        $this->delay500ms(6);
+        $this->notifyAllPlayers('startGame', '', array());
+
+        //Create the market deck
+        $cards = array();
+        foreach ($this->card_types as $type_id => $card_type) {
+            if (in_array($card_type['animalfolk_id'], $animalfolk_ids)) {
+                $cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $card_type['nbr']);
+            }
+        }
+        $this->cards->createCards($cards, DECK.MARKET);
+        $this->cards->shuffle(DECK.MARKET);
+
+        //Create the initial player decks
+        $nbr_junk = 10 - count($animalfolk_ids);
+        $player_cards = array(array('type' => 'null', 'type_arg' => 1, 'nbr' => $nbr_junk));
+        foreach ($this->card_types as $type_id => $card_type) {
+            if (in_array($card_type['animalfolk_id'], $animalfolk_ids) && $card_type['value'] == 1) {
+                $player_cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1);
+            }
+        }
+        foreach ($players as $player_id => $player) {
+            $this->cards->createCards($player_cards, DECK.$player_id);
+            $this->cards->shuffle(DECK.$player_id);
+        }
+
+        //Each player draws an initial hand of 5 cards
+        foreach($players as $player_id => $player) {
+            $cards = $this->cards->pickCardsForLocation(5, DECK.$player_id, HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws their initial hand of ${nbr} cards'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "nbr" => count($cards),
+                "_private" => array(
+                    "cards" => $cards
+                )
+            ));
+        }
+
+        //Fill the initial market
+        $this->refillMarket(true);
+
+        //Activate the first player and start the game
+        $this->activeNextPlayer();
+        $this->gamestate->nextState("trStartGame");
+    }
 
     function stNextPlayer() {
         //aka the "clean-up phase"
