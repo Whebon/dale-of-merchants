@@ -315,6 +315,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.expireEffects = function (effects) {
+            var includes_global_effect = false;
             var affected_card_ids = new Set();
             var _loop_1 = function (effect) {
                 var index = DaleCard.effects.findIndex(function (e) { return e.effect_id == effect.effect_id; });
@@ -326,8 +327,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     throw new Error("Attempted to remove a non-existing effect");
                 }
                 if (effect.effect_class == DaleCard.EC_GLOBAL) {
-                    affected_card_ids = Array.from(DaleCard.divs.keys());
-                    return "break";
+                    includes_global_effect = true;
                 }
                 affected_card_ids.add(DaleCard.effects[index].card_id);
                 DaleCard.effects.splice(index, 1);
@@ -343,10 +343,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             };
             for (var _i = 0, effects_1 = effects; _i < effects_1.length; _i++) {
                 var effect = effects_1[_i];
-                var state_1 = _loop_1(effect);
-                if (state_1 === "break")
-                    break;
+                _loop_1(effect);
             }
+            affected_card_ids = includes_global_effect ? Array.from(DaleCard.divs.keys()) : affected_card_ids;
             affected_card_ids.forEach(function (card_id) {
                 DaleCard.updateHTML(card_id);
             });
@@ -563,7 +562,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.updateChameleonOverlay = function (temp_div, fade) {
             if (fade === void 0) { fade = true; }
-            console.log("updateChameleonOverlay for card_id=" + this.id);
             var div = temp_div !== null && temp_div !== void 0 ? temp_div : DaleCard.divs.get(this.id);
             if (!div) {
                 return;
@@ -595,7 +593,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
             var _a, _b;
-            console.log("updateEffectiveValue");
             var value = (card_div.dataset['location'] == 'stock') ? this.effective_value : this.original_value;
             if (value == this.original_value) {
                 (_a = card_div.querySelector(".dale-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();

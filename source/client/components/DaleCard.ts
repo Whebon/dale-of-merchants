@@ -158,6 +158,7 @@ export class DaleCard {
      * @param effect 
      */
     public static expireEffects(effects: DbEffect[]) {
+        let includes_global_effect = false;
         let affected_card_ids: Set<number> | number[] = new Set<number>();
         for (let effect of effects) {
             const index = DaleCard.effects.findIndex(e => e.effect_id == effect.effect_id);
@@ -169,8 +170,7 @@ export class DaleCard {
                 throw new Error("Attempted to remove a non-existing effect");
             }
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
-                affected_card_ids = Array.from(DaleCard.divs.keys());
-                break;
+                includes_global_effect = true;
             }
             affected_card_ids.add(DaleCard.effects[index]!.card_id);
             DaleCard.effects.splice(index, 1);
@@ -186,6 +186,8 @@ export class DaleCard {
                 }
             }
         }
+        
+        affected_card_ids = includes_global_effect ? Array.from(DaleCard.divs.keys()) : affected_card_ids;
         affected_card_ids.forEach(card_id => {
             DaleCard.updateHTML(card_id);
         });
@@ -552,8 +554,6 @@ export class DaleCard {
      * @param fade (optional) default true. whether or not to animate the transition with a fade.
      */
     private updateChameleonOverlay(temp_div?: HTMLElement, fade: boolean = true) {
-        //TODO: remove this, rework the overlay
-        console.log("updateChameleonOverlay for card_id="+this.id);
         const div = temp_div ?? DaleCard.divs.get(this.id);
         if (!div) {
             return;
@@ -593,7 +593,6 @@ export class DaleCard {
     }
 
     private updateEffectiveValue(card_div: HTMLElement) {
-        console.log("updateEffectiveValue");
         const value = (card_div.dataset['location'] == 'stock') ? this.effective_value : this.original_value;
         if (value == this.original_value) {
             card_div.querySelector(".dale-effective-value")?.remove();
