@@ -113,8 +113,8 @@ export class MainClientState {
             this.enter(previous.name, previous.args);
         }
         else {
-            //default client state
-            this.enter('client_technique');
+            //return to the server game state
+            this._page.restoreServerGameState();
         }
     }
 

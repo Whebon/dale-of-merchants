@@ -2327,7 +2327,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                 this.enter(previous.name, previous.args);
             }
             else {
-                this.enter('client_technique');
+                this._page.restoreServerGameState();
             }
         };
         MainClientState.prototype.cancelAll = function () {
