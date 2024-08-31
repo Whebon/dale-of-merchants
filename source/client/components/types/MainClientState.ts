@@ -1,12 +1,14 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from '../DaleCard';
 
+class ServerState {}
 class PreviousState {
     constructor(
         public name: keyof ClientGameStates,
         public args?: ClientGameStates[keyof ClientGameStates]
     ) {}
 }
+
 
 /**
  * Main client state with arguments
@@ -15,7 +17,7 @@ export class MainClientState {
     private _page: Gamegui;
 	private _name: keyof ClientGameStates;
     private _args: ClientGameStates[keyof ClientGameStates];
-    private _stack: PreviousState[];
+    private _stack: (PreviousState | ServerState)[];
     private leaveThis: ()=>void;
 
     constructor(page: Gamegui) {
@@ -109,12 +111,14 @@ export class MainClientState {
      */
     public leave() {
         const previous = this._stack.pop();
-        if (previous) {
+        if (previous instanceof ServerState) {
+            this._page.restoreServerGameState();
+        }
+        else if (previous instanceof PreviousState) {
             this.enter(previous.name, previous.args);
         }
         else {
-            //return to the server game state
-            this._page.restoreServerGameState();
+            this.enter('client_technique');
         }
     }
 
@@ -165,7 +169,12 @@ export class MainClientState {
      */
     public enterOnStack<K extends keyof ClientGameStates>(name: K, args?: ClientGameStates[K]) {
         if (this._page.checkLock()) {
-            this._stack.push(new PreviousState(this._name, this._args));
+            if (this._page.gamedatas.gamestate.name == this._name) {
+                this._stack.push(new PreviousState(this._name, this._args));
+            }
+            else {
+                this._stack.push(new ServerState());
+            }
             this.enter(name, args);
         }
     }

@@ -2249,6 +2249,11 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MainClientState = void 0;
+    var ServerState = (function () {
+        function ServerState() {
+        }
+        return ServerState;
+    }());
     var PreviousState = (function () {
         function PreviousState(name, args) {
             this.name = name;
@@ -2339,11 +2344,14 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         });
         MainClientState.prototype.leave = function () {
             var previous = this._stack.pop();
-            if (previous) {
+            if (previous instanceof ServerState) {
+                this._page.restoreServerGameState();
+            }
+            else if (previous instanceof PreviousState) {
                 this.enter(previous.name, previous.args);
             }
             else {
-                this._page.restoreServerGameState();
+                this.enter('client_technique');
             }
         };
         MainClientState.prototype.cancelAll = function () {
@@ -2372,7 +2380,12 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         };
         MainClientState.prototype.enterOnStack = function (name, args) {
             if (this._page.checkLock()) {
-                this._stack.push(new PreviousState(this._name, this._args));
+                if (this._page.gamedatas.gamestate.name == this._name) {
+                    this._stack.push(new PreviousState(this._name, this._args));
+                }
+                else {
+                    this._stack.push(new ServerState());
+                }
                 this.enter(name, args);
             }
         };
