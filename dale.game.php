@@ -2260,7 +2260,7 @@ class Dale extends DaleTableBasic
                 "animalfolk_id" => $animalfolk_id
             ));
         }
-        $this->delay500ms(6);
+        $this->delay500ms(3);
         $this->notifyAllPlayers('startGame', '', array());
 
         //Create the market deck
