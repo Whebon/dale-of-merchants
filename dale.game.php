@@ -18,10 +18,11 @@
 
 
 require_once "modules/DaleEffects.php";
-
+require_once "modules/DaleDeckSelection.php";
 
 class Dale extends DaleTableBasic
 {
+    var DaleDeckSelection $deckSelection;
     var DaleDeck $cards;
     var DaleEffects $effects;
     var $chameleon_targets_cache = array();
@@ -38,12 +39,14 @@ class Dale extends DaleTableBasic
         parent::__construct();
         
         $this->initGameStateLabels( array(
+            "inDeckSelection" => 10,
             "resolvingCard" => 11
         ) );
 
         $this->effects = new DaleEffects($this);
         $this->cards = new DaleDeck($this, $this->effects, "onLocationExhausted");
         $this->cards->init("card");
+        $this->deckSelection = new DaleDeckSelection($this);
 	}
 	
     protected function getGameName( )
@@ -85,6 +88,7 @@ class Dale extends DaleTableBasic
 
         // Init global values with their initial values
         $this->setGameStateInitialValue("resolvingCard", -1);
+        $this->setGameStateInitialValue("inDeckSelection", 1);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -204,10 +208,9 @@ class Dale extends DaleTableBasic
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
         $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
         $result['limbo'] = $this->cards->getCardsInLocation(LIMBO.$current_player_id);
-        
         $result['cardTypes'] = $this->card_types;
-
         $result['effects'] = $this->effects->loadFromDb();
+        $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection");
   
         return $result;
     }
@@ -1429,6 +1432,31 @@ class Dale extends DaleTableBasic
         if ($expected != $actual) {
             die("TEST FAILED '$testname': expected: '$expected', actual: '$actual'");
         }
+    }
+
+    function testDeckSelection() {
+        $this->deckSelection->submitPreference(123124, array(
+            ANIMALFOLK_MACAWS,
+            ANIMALFOLK_PANDAS, #3
+            ANIMALFOLK_SQUIRRELS
+        ));
+        $this->deckSelection->submitPreference(231512, array(
+            ANIMALFOLK_CHAMELEONS, #2
+            ANIMALFOLK_OCELOTS, #5
+            ANIMALFOLK_PANDAS
+        ));
+        $this->deckSelection->submitPreference(345123, array(
+            ANIMALFOLK_MACAWS, #1
+            ANIMALFOLK_SQUIRRELS, #4
+            ANIMALFOLK_PANDAS
+        ));
+        $animalfolks = $this->deckSelection->getPreferences();
+        $this->assertEquals(ANIMALFOLK_MACAWS, current($animalfolks), "selection #1");
+        $this->assertEquals(ANIMALFOLK_CHAMELEONS, next($animalfolks), "selection #2");
+        $this->assertEquals(ANIMALFOLK_PANDAS, next($animalfolks), "selection #3");
+        $this->assertEquals(ANIMALFOLK_SQUIRRELS, next($animalfolks), "selection #4");
+        $this->assertEquals(ANIMALFOLK_OCELOTS, next($animalfolks), "selection #5");
+        die("SUCCESS ! TESTS PASSED !");
     }
     
     function testRemoveCardsFromPile() {

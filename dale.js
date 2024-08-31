@@ -64,7 +64,10 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getDitchIcon = function () {
             return this.getIcon(4, 1);
         };
-        DaleIcons.ROWS = 5;
+        DaleIcons.getNumberIcon = function (index) {
+            return this.getIcon(5, index);
+        };
+        DaleIcons.ROWS = 6;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
         DaleIcons.ICON_HEIGHT = 150;
@@ -118,6 +121,10 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                 }
             }
         };
+        Images.setCardStyleForDeckSelection = function (div, animalfolk_id) {
+            Images.setCardStyle(div, animalfolk_id);
+            dojo.setStyle(div, 'background-size', "".concat(Images.DECK_SELECTION_IMAGES_PER_ROW, "00% ").concat(Images.DECK_SELECTION_IMAGES_PER_COLUMN, "00%"));
+        };
         Images.getPlaceholder = function () {
             var placeholder = document.createElement('div');
             placeholder.setAttribute('style', "width:".concat(Images.CARD_WIDTH_S, "px; height:").concat(Images.CARD_HEIGHT_S, "px;"));
@@ -160,6 +167,8 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
         Images.MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
         Images.VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
+        Images.DECK_SELECTION_IMAGES_PER_ROW = 6;
+        Images.DECK_SELECTION_IMAGES_PER_COLUMN = 5;
         return Images;
     }());
     exports.Images = Images;
@@ -770,6 +779,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 case 'spyglass':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getSpyglassIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
+                case 'numbers':
+                    icon = DaleIcons_2.DaleIcons.getNumberIcon(Math.min(index, 4));
+                    break;
             }
             if (icon) {
                 if (secondary) {
@@ -815,7 +827,7 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
             }
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
             while (card_ids.length > max) {
-                this.dequeue(secondary);
+                this.pop(secondary);
             }
         };
         OrderedSelection.prototype.getMaxSize = function (secondary) {
@@ -833,7 +845,16 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
         OrderedSelection.prototype.dequeue = function (secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
             var card_id = card_ids[0];
-            if (!card_id) {
+            if (card_id === undefined) {
+                return null;
+            }
+            this.unselectItem(card_id, secondary);
+            return card_id;
+        };
+        OrderedSelection.prototype.pop = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var card_id = card_ids[card_ids.length - 1];
+            if (card_id === undefined) {
                 return null;
             }
             this.unselectItem(card_id, secondary);
@@ -845,11 +866,11 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
             if (maxSize == 0) {
                 return;
             }
+            while (card_ids.length >= maxSize) {
+                this.pop(secondary);
+            }
             card_ids.push(card_id);
             this.addIcon(card_id, card_ids.length - 1, secondary);
-            while (card_ids.length > maxSize) {
-                this.dequeue(secondary);
-            }
             this.onSelect(card_id, secondary);
         };
         OrderedSelection.prototype.unselectItem = function (card_id, secondary) {
@@ -2545,7 +2566,79 @@ define("components/TargetingLine", ["require", "exports", "components/Images"], 
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_8, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_7, TargetingLine_1, DbEffect_1) {
+define("components/DaleDeckSelection", ["require", "exports", "components/Images", "components/OrderedSelection"], function (require, exports, Images_7, OrderedSelection_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleDeckSelection = void 0;
+    var OrderedDeckSelection = (function (_super) {
+        __extends(OrderedDeckSelection, _super);
+        function OrderedDeckSelection() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        OrderedDeckSelection.prototype.getDiv = function (card_id) {
+            return document.querySelector("#deck-".concat(card_id));
+        };
+        return OrderedDeckSelection;
+    }(OrderedSelection_4.OrderedSelection));
+    var DaleDeckSelection = (function () {
+        function DaleDeckSelection(page, deckSelectionHTML, gameHTML, inDeckSelection) {
+            this.orderedSelection = new OrderedDeckSelection();
+            this.deckSelectionHTML = deckSelectionHTML;
+            this.gameHTML = gameHTML;
+            this.cardContainer = this.deckSelectionHTML.querySelector(".dale-deck-selection-container");
+            if (!inDeckSelection) {
+                this.deckSelectionHTML.classList.add("dale-hidden");
+                return;
+            }
+            this.gameHTML.classList.add("dale-hidden");
+            this.orderedSelection.setIconType('numbers');
+            this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1);
+            var _loop_4 = function (animalfolk_id) {
+                var card_div = document.createElement('div');
+                card_div.id = "deck-" + animalfolk_id;
+                card_div.classList.add("dale-card", "dale-relative", "dale-clickable", "dale-deck-selection");
+                this_3.cardContainer.appendChild(card_div);
+                Images_7.Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
+                var tooltip = new dijit.Tooltip({
+                    connectId: [card_div.id],
+                    label: this_3.getTooltipContent(animalfolk_id),
+                    showDelay: 400,
+                });
+                var unavailable = (animalfolk_id >= 6);
+                if (unavailable) {
+                    card_div.classList.add("dale-deck-selection-unavailable");
+                }
+                var thiz = this_3;
+                var card_id = animalfolk_id;
+                card_div.addEventListener('click', function () {
+                    if (unavailable) {
+                        page.showMessage(_("This animalfolk does not exist"), 'error');
+                        return;
+                    }
+                    thiz.orderedSelection.toggle(card_id);
+                });
+            };
+            var this_3 = this;
+            for (var animalfolk_id = 0; animalfolk_id < 26; animalfolk_id++) {
+                _loop_4(animalfolk_id);
+            }
+        }
+        DaleDeckSelection.prototype.getTooltipContent = function (animalfolk_id) {
+            return "TODO: TOOLTIP";
+        };
+        DaleDeckSelection.animalfolkNames = {
+            0: "Macaws",
+            1: "Pandas",
+            2: "Raccoons",
+            3: "Squirrels",
+            4: "Ocelots",
+            5: "Chameleons"
+        };
+        return DaleDeckSelection;
+    }());
+    exports.DaleDeckSelection = DaleDeckSelection;
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_8, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -2614,6 +2707,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var svgContainer = $("dale-svg-container");
             (_a = $("overall-content")) === null || _a === void 0 ? void 0 : _a.appendChild(svgContainer);
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
+            this.deckSelection = new DaleDeckSelection_1.DaleDeckSelection(this, $("dale-page-deck-selection"), $("dale-page-game"), gamedatas.inDeckSelection);
             DaleCard_8.DaleCard.init(this, gamedatas.cardTypes);
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
@@ -2691,13 +2785,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myLimbo.addDaleCardToStock(DaleCard_8.DaleCard.of(card));
             }
             this.myLimbo.setSelectionMode('none');
-            dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_7.Images.CARD_WIDTH_S + 'px');
+            dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_8.Images.CARD_WIDTH_S + 'px');
             dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
             dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
-                dojo.setStyle(wrap, 'width', "".concat(1.5 * Images_7.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container);
                 this.playerSchedules[player_id].setSelectionMode('none');

@@ -1,7 +1,7 @@
 import { DaleCard } from './DaleCard';
 import { DaleIcons } from './DaleIcons';
 
-export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | undefined;
+export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | 'numbers' | undefined;
 
 export class OrderedSelection {
     private maxSize: number;
@@ -42,7 +42,7 @@ export class OrderedSelection {
      * @param card_id
      * @return div element corresponding to the card_id
      */
-    private getDiv(card_id: number): HTMLElement | undefined {
+    protected getDiv(card_id: number): HTMLElement | undefined {
         //return $("dale-card-"+card_id);
         return DaleCard.divs.get(card_id);
     }
@@ -81,6 +81,9 @@ export class OrderedSelection {
                 break;
             case 'spyglass':
                 icon = (index == 0) ? DaleIcons.getSpyglassIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
+            case 'numbers':
+                icon = DaleIcons.getNumberIcon(Math.min(index, 4));
                 break;
         }
         if (icon) {
@@ -137,7 +140,7 @@ export class OrderedSelection {
         }
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
         while (card_ids.length > max) {
-            this.dequeue(secondary)
+            this.pop(secondary)
         }
     }
 
@@ -168,7 +171,21 @@ export class OrderedSelection {
     public dequeue(secondary?: boolean): number | null {
         const card_ids = secondary ? this.secondary_card_ids : this.card_ids
         const card_id = card_ids[0]
-        if (!card_id) {
+        if (card_id === undefined) {
+            return null;
+        }
+        this.unselectItem(card_id, secondary);
+        return card_id;
+    }
+
+    /**
+     * Remove the last item in the selection if it exists (and update all icons)
+     * @return the removed item
+     */
+    public pop(secondary?: boolean): number | null {
+        const card_ids = secondary ? this.secondary_card_ids : this.card_ids
+        const card_id = card_ids[card_ids.length-1]
+        if (card_id === undefined) {
             return null;
         }
         this.unselectItem(card_id, secondary);
@@ -185,11 +202,11 @@ export class OrderedSelection {
         if (maxSize == 0) {
             return;
         }
+        while (card_ids.length >= maxSize) {
+            this.pop(secondary);
+        }
         card_ids.push(card_id);
         this.addIcon(card_id, card_ids.length-1, secondary);
-        while (card_ids.length > maxSize) {
-            this.dequeue(secondary)
-        }
         this.onSelect(card_id, secondary);
 	}
 

@@ -22,6 +22,19 @@
 
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
+.dale-deck-selection-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 20px;
+}
+
+.dale-deck-selection-unavailable {
+  background-color: black;
+  background-blend-mode: luminosity;
+  opacity: 0.5;
+}
+
 .dale-component-name {
   text-align: center;
   margin: 10px;
@@ -207,6 +220,9 @@
 .dale-card.dale-relative {
   margin: 5px;
   position: relative;
+}
+.dale-card.dale-deck-selection {
+  background-image: url("img/cards_selection.jpg");
 }
 
 #market-board-background {

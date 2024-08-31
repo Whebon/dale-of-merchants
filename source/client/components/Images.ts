@@ -44,6 +44,9 @@ export class Images {
     static readonly MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
     static readonly VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
 
+    static readonly DECK_SELECTION_IMAGES_PER_ROW = 6;
+    static readonly DECK_SELECTION_IMAGES_PER_COLUMN = 5;
+
     /**
      * !!!!! DEPRECATED !!!!! usage of setCardStyle is prefered over this
      * Returns the style of the card of the given type id. 
@@ -89,6 +92,16 @@ export class Images {
                 console.error(`Card with type id ${card_type_id} does not exist!`);
             }
         }
+    }
+
+    /**
+     * Sets the style of the card of the given type id. 
+     * @param div
+     * @param animalfolk_id
+     */
+    static setCardStyleForDeckSelection(div: HTMLElement, animalfolk_id: number) {
+        Images.setCardStyle(div, animalfolk_id);
+        dojo.setStyle(div, 'background-size', `${Images.DECK_SELECTION_IMAGES_PER_ROW}00% ${Images.DECK_SELECTION_IMAGES_PER_COLUMN}00%`);
     }
 
     /**

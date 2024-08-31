@@ -34,6 +34,7 @@ import { TargetingLine } from './components/TargetingLine'
 import { ChameleonChain } from './components/types/ChameleonChain';
 import { ChameleonTree } from './components/types/ChameleonTree';
 import { DbEffect } from './components/types/DbEffect';
+import { DaleDeckSelection } from './components/DaleDeckSelection'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -114,6 +115,9 @@ class Dale extends Gamegui
 	/** Current client state */
 	mainClientState: MainClientState = new MainClientState(this);
 
+	/** Current client state */
+	deckSelection: DaleDeckSelection | undefined;
+
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
@@ -132,6 +136,14 @@ class Dale extends Gamegui
 		const svgContainer = $("dale-svg-container") as HTMLElement;
 		$("overall-content")?.appendChild(svgContainer);
 		addEventListener("mousemove", function(this: Window, evt: MouseEvent) { TargetingLine.previousMouseEvent = evt; });
+
+		//initialize the deck selection
+		this.deckSelection = new DaleDeckSelection(
+			this,
+			$("dale-page-deck-selection") as HTMLElement,
+			$("dale-page-game") as HTMLElement,
+			gamedatas.inDeckSelection
+		);
 
 		//initialize the card types
 		DaleCard.init(this, gamedatas.cardTypes);

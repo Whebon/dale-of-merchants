@@ -14,55 +14,61 @@
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"></svg>
 </div>
 
-<div id="dale-market-wrap" class="whiteblock">
-    <!-- Display the name of this area? <h3>{MARKET}</h3> -->
-    <div style="display:flex; align-items: center; justify-content: space-evenly;">
-        <div id="market-deck" class="pile-container"></div>
-        <div id="market-board-background"><div id="market-board"></div></div>
-        <div id="market-discard" class="pile-container"></div>
-    </div>
+<div id="dale-page-deck-selection">
+    <div class="dale-deck-selection-container dale-wrap-technique"></div>
 </div>
 
-<div class="dale-horizontal-flex">
-    <div id="dale-myhand-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin">
-        <div class="dale-label"></div>
-        <div id="dale-myhand"></div>
-    </div> 
-    <div id="dale-mylimbo-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin dale-left-margin">
-        <div class="dale-label"></div>
-        <div id="dale-mylimbo"></div>
+<div id="dale-page-game">
+    <div id="dale-market-wrap" class="whiteblock">
+        <!-- Display the name of this area? <h3>{MARKET}</h3> -->
+        <div style="display:flex; align-items: center; justify-content: space-evenly;">
+            <div id="market-deck" class="pile-container"></div>
+            <div id="market-board-background"><div id="market-board"></div></div>
+            <div id="market-discard" class="pile-container"></div>
+        </div>
     </div>
-</div> 
 
-<!-- BEGIN stall -->
-<div class="whiteblock">
-    <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
     <div class="dale-horizontal-flex">
-        <div id="deck-{PLAYER_ID}" class="pile-container"></div>
-        <div id="discard-{PLAYER_ID}" class="pile-container"></div>
-        <div class="stall-wrap">
-            <h3 class="dale-component-name"> {STALL} </h3>
-            <div id="stall-{PLAYER_ID}" class="stall-container"></div>
-            <!-- <div class="stall-container">
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-                <div class="stack-container"></div>
-            </div> -->
+        <div id="dale-myhand-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin">
+            <div class="dale-label"></div>
+            <div id="dale-myhand"></div>
+        </div> 
+        <div id="dale-mylimbo-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin dale-left-margin">
+            <div class="dale-label"></div>
+            <div id="dale-mylimbo"></div>
         </div>
-        <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock margin-left-wrap">
-            <h3 class="dale-component-name"> {SCHEDULE} </h3>
-            <div id="schedule-{PLAYER_ID}"></div>
+    </div> 
+
+    <!-- BEGIN stall -->
+    <div class="whiteblock">
+        <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
+        <div class="dale-horizontal-flex">
+            <div id="deck-{PLAYER_ID}" class="pile-container"></div>
+            <div id="discard-{PLAYER_ID}" class="pile-container"></div>
+            <div class="stall-wrap">
+                <h3 class="dale-component-name"> {STALL} </h3>
+                <div id="stall-{PLAYER_ID}" class="stall-container"></div>
+                <!-- <div class="stall-container">
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                    <div class="stack-container"></div>
+                </div> -->
+            </div>
+            <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock margin-left-wrap">
+                <h3 class="dale-component-name"> {SCHEDULE} </h3>
+                <div id="schedule-{PLAYER_ID}"></div>
+            </div>
         </div>
+        <br>
+        
     </div>
-    <br>
-    
+    <!-- END stall -->
 </div>
-<!-- END stall -->
 
 <script type="text/javascript">
 

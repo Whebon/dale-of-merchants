@@ -1,5 +1,5 @@
 export class DaleIcons {
-    private static readonly ROWS = 5;
+    private static readonly ROWS = 6;
     private static readonly COLUMNS = 6;
     
     private static readonly ICON_WIDTH = 150;
@@ -77,5 +77,13 @@ export class DaleIcons {
 
     public static getDitchIcon(): HTMLElement {
         return this.getIcon(4, 1);
+    }
+
+    /////////////////////////////
+    ////////    ROW 5    ////////
+    /////////////////////////////
+
+    public static getNumberIcon(index: number): HTMLElement {
+        return this.getIcon(5, index);
     }
 }

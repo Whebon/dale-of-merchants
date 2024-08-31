@@ -213,6 +213,8 @@ declare global {
 		'limbo': {[card_id: number]: DbCard}
 		'market': {[card_id: number]: DbCard}
 		'effects': {[_index: number]: RawDbEffect}
+
+		'inDeckSelection': boolean
 	}
 
 	type ClientChoiceSubsetValidation<T extends Record<keyof T, unknown>, U extends Record<string, unknown>> = {
