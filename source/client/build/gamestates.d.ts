@@ -21,8 +21,8 @@ interface GameStates {
 	},
 	2: {
 		'name': 'deckSelection',
-		'description': 'Other players may vote for up to ${n_plus_one} animalfolk sets to play with',
-		'descriptionmyturn': '${you} may vote for up to ${n_plus_one} animalfolk sets to play with',
+		'description': 'Other players may vote for up to ${n_plus_1} animalfolk sets to play with',
+		'descriptionmyturn': '${you} may vote for up to ${n_plus_1} animalfolk sets to play with',
 		'args': 'argNumberOfPlayers',
 		'type': 'multipleactiveplayer',
 		'action': 'stDeckSelection',
