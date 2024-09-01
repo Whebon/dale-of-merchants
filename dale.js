@@ -2367,6 +2367,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose the order to <stronger>ditch</stronger> all cards from the market");
                     case 'client_prepaidGood':
                         return _("${card_name}: ${you} must choose a card from the market");
+                    case 'client_nuisance':
+                        return _("${card_name}: ${you} may choose up to 2 opponents");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -2680,6 +2682,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             _this.myHand = new DaleStock_1.DaleStock();
             _this.myLimbo = new DaleStock_1.DaleStock();
             _this.mainClientState = new MainClientState_1.MainClientState(_this);
+            _this.opponent_ids = [];
+            _this.max_opponents = 4;
             console.log('dale constructor');
             return _this;
         }
@@ -3105,10 +3109,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_loyalPartner':
-                    this.addActionButton("confirm-button", _("Ditch All"), "onLoyalPartner");
+                    this.addActionButton("confirm-button", _("Ditch all"), "onLoyalPartner");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_prepaidGood':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_nuisance':
+                    this.addActionButtonsOpponentSelection(2);
+                    this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -3298,6 +3307,23 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             return targets;
         };
+        Dale.prototype.format_string_recursive = function (log, args) {
+            var _a;
+            if (log && args && !args['processed']) {
+                args['processed'] = true;
+                if ('opponent_name' in args) {
+                    var opponent_name = args['opponent_name'];
+                    var opponent_color = "000000";
+                    for (var player_id in this.gamedatas.players) {
+                        if (((_a = this.gamedatas.players[player_id]) === null || _a === void 0 ? void 0 : _a.name) == opponent_name) {
+                            opponent_color = this.gamedatas.players[player_id].color;
+                        }
+                    }
+                    args['opponent_name'] = "<span class=\"playername\" style=\"color:#".concat(opponent_color, ";\">").concat(opponent_name, "</span>");
+                }
+            }
+            return _super.prototype.format_string_recursive.call(this, log, args);
+        };
         Dale.prototype.setMainTitle = function (text) {
             $('pagemaintitletext').innerHTML = text;
         };
@@ -3364,6 +3390,50 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.addActionButtonCancelClient = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
+        };
+        Dale.prototype.addActionButtonsOpponentSelection = function (maxSize) {
+            var _a;
+            this.opponent_ids = [];
+            this.max_opponents = maxSize !== null && maxSize !== void 0 ? maxSize : this.gamedatas.playerorder.length;
+            for (var _i = 0, _b = this.gamedatas.playerorder; _i < _b.length; _i++) {
+                var opponent_id = _b[_i];
+                if (opponent_id != this.player_id) {
+                    var name_1 = this.gamedatas.players[opponent_id].name;
+                    var color = this.gamedatas.players[opponent_id].color;
+                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
+                    this.addActionButton("opponent-selection-button-" + opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
+                    if (this.opponent_ids.length < this.max_opponents) {
+                        this.opponent_ids.push(opponent_id);
+                        (_a = $("opponent-selection-button-" + opponent_id)) === null || _a === void 0 ? void 0 : _a.classList.add("dale-bga-button-selected");
+                    }
+                }
+            }
+        };
+        Dale.prototype.onToggleOpponent = function (evt) {
+            var _a;
+            var target = evt.target;
+            if (target.parentElement.id.startsWith("opponent-selection-button-")) {
+                target = target.parentElement;
+            }
+            if (target.id.startsWith("opponent-selection-button-")) {
+                var match = target.id.match(/\d+/);
+                if (match) {
+                    var opponent_id = parseInt(match[0], 10);
+                    var index = this.opponent_ids.indexOf(opponent_id);
+                    if (index == -1) {
+                        if (this.opponent_ids.length >= this.max_opponents) {
+                            (_a = $("opponent-selection-button-" + this.opponent_ids.pop())) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-bga-button-selected");
+                        }
+                        this.opponent_ids.push(opponent_id);
+                        target.classList.add("dale-bga-button-selected");
+                    }
+                    else {
+                        this.opponent_ids.splice(index, 1);
+                        target.classList.remove("dale-bga-button-selected");
+                    }
+                    console.log(this.opponent_ids);
+                }
+            }
         };
         Dale.prototype.onSubmitPreference = function () {
             var animalfolk_ids = this.deckSelection.orderedSelection.get().reverse();
@@ -3707,6 +3777,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     fizzle = this.market.getCards().length == 0;
                     this.clientScheduleTechnique(fizzle ? 'client_fizzle' : 'client_prepaidGood', card.id);
                     break;
+                case DaleCard_8.DaleCard.CT_NUISANCE:
+                    this.clientScheduleTechnique('client_nuisance', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -3919,6 +3992,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             this.bgaPerformAction('actSpecialOffer', {
                 card_ids: this.arrayToNumberList(card_ids)
+            });
+        };
+        Dale.prototype.onNuisance = function () {
+            this.playTechniqueCard({
+                opponent_ids: this.opponent_ids
             });
         };
         Dale.prototype.setupNotifications = function () {

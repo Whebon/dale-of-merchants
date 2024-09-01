@@ -37,8 +37,8 @@ $machinestates = array(
 	),
 	2 => array(
 		'name' => 'deckSelection',
-		'description' => clienttranslate('Other players may vote for up to ${n_plus_1} animalfolk sets to play with'),
-		'descriptionmyturn' => clienttranslate('${you} may vote for up to ${n_plus_1} animalfolk sets to play with'),
+		'description' => clienttranslate('Other players may vote for up to ${n_plus_one} animalfolk sets to play with'),
+		'descriptionmyturn' => clienttranslate('${you} may vote for up to ${n_plus_one} animalfolk sets to play with'),
 		'args' => 'argNumberOfPlayers',
 		'type' => 'multipleactiveplayer',
 		'action' => 'stDeckSelection',

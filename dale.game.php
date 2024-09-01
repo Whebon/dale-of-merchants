@@ -2004,6 +2004,31 @@ class Dale extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_NUISANCE:
+                $opponent_ids = $args["opponent_ids"];
+                if (count($opponent_ids) > 2) {
+                    throw new BgaVisibleSystemException("Nuisance cannot have more than 2 targets");
+                }
+                foreach ($opponent_ids as $opponent_id) {
+                    if ($opponent_id == $player_id) {
+                        throw new BgaVisibleSystemException("Nuisance cannot target the active player");
+                    }
+                    $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                    if (count($cards) > 0) {
+                        $card_id = array_rand($cards);
+                        $card = $cards[$card_id];
+                        $this->cards->moveCardOnTop($card_id, DISCARD.$opponent_id);
+                        $this->notifyAllPlayers('discard', clienttranslate('Nuisance: ${player_name} lets ${opponent_name} discard their ${card_name}'), array(
+                            "player_id" => $opponent_id,
+                            "card" => $card,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "opponent_name" => $this->getPlayerNameById($opponent_id),
+                            "card_name" => $this->getCardName($card)
+                        ));
+                    }
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

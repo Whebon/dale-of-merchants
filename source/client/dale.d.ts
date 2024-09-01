@@ -240,6 +240,7 @@ declare global {
 		'client_giftVoucher': { market_card_id: number }
 		'client_loyalPartner': { card_ids: number[] }
 		'client_prepaidGood': { card_id: number }
+		'client_nuisance': { opponent_ids: number[] }
 	}
 
 	interface ClientPassiveChoice {

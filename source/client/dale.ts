@@ -115,7 +115,7 @@ class Dale extends Gamegui
 	/** Current client state */
 	mainClientState: MainClientState = new MainClientState(this);
 
-	/** Current client state */
+	/** Class responsible for managing the deck selection page */
 	deckSelection: DaleDeckSelection | undefined;
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
@@ -608,10 +608,15 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_loyalPartner':
-				this.addActionButton("confirm-button", _("Ditch All"), "onLoyalPartner");
+				this.addActionButton("confirm-button", _("Ditch all"), "onLoyalPartner");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_prepaidGood':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_nuisance':
+				this.addActionButtonsOpponentSelection(2);
+				this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -670,11 +675,10 @@ class Dale extends Gamegui
 	}
 
 	///////////////////////////////////////////////////
-	//// Utility methods
+	//// Chameleon functions
 	
 	/*
-		Here, you can defines some utility methods that you can use everywhere in your typescript
-		script.
+		Here I put all functions related to the chameleons
 	*/
 
 	/**
@@ -820,125 +824,35 @@ class Dale extends Gamegui
 		return targets;
 	}
 
-	//TODO: safely delete this
-	// /**
-	//  * If the card is an UNBOUND chameleon card, first set the client state to bind the chameleon, then call the `callback` with the bound `card`.
-	//  * 
-	//  * Otherwise, simply call the `callback` function with `card`.
-	//  * 
-	//  * @param card the card that potentially needs to be be bound. If null, immediately call the callback function without arguments
-	//  * @param added if true, this card is clicked or added to a selection. If false, this card is unselected
-	//  * @param from where is this card currently located?
-	//  * @param callback function is call if the card is bound. (non-chameleon cards are always 'bound')
-	//  * @param requiresPlayable (optional) default false. If true, when copying, the target must be a playable card
-	//  * @param isChain (optional) default false. If true, this chameleon just copied another chameleon and now searches for another target
-	//  */
-	// handleChameleonCard(card: DaleCard, added: boolean = true, from: DaleLocation, callback: (card?: DaleCard, added?: boolean) => void, requiresPlayable: boolean = false, isChain: boolean = false) {
-	// 	callback = callback.bind(this);
-	// 	if (!isChain && card.isBoundChameleon() && card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
-	// 		card.unbindChameleonLocal();
-	// 		callback(card, added);
-	// 		return;
-	// 	}
-	// 	if (!card.isChameleon()) {
-	// 		//card is not a chameleon card, immediately execute the callback function
-	// 		callback(card, added);
-	// 		return;
-	// 	}
+	///////////////////////////////////////////////////
+	//// Utility methods
+	
+	/*
+		Here, you can defines some utility methods that you can use everywhere in your typescript
+		script.
+	*/
 
-	// 	//set the chameleon client state information
-	// 	var targets: DaleCard[] = [];
-	// 	var chameleonStatename: keyof ClientGameState;
-	// 	var chameleonDescriptionmyturn: string;
-	// 	switch(card.effective_type_id) {
-	// 		case DaleCard.CT_FLEXIBLESHOPKEEPER:
-	// 			targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
-	// 			chameleonStatename = 'chameleon_flexibleShopkeeper'
-	// 			chameleonDescriptionmyturn = requiresPlayable ? 
-	// 				_("Flexible Shopkeeper: ${you} must copy a technique card from your rightmost stack") :
-	// 				_("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack")
-	// 			break;
-	// 		case DaleCard.CT_REFLECTION:
-	// 			for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
-	// 				if (+player_id != +this.player_id && pile.size > 0) {
-	// 					targets.push(pile.peek()!)
-	// 					break;
-	// 				}
-	// 			}
-	// 			chameleonStatename = 'chameleon_reflection'
-	// 			chameleonDescriptionmyturn = requiresPlayable ? 
-	// 				_("Reflection: ${you} must copy a playable card from the top of another player's discard pile") :
-	// 				_("Reflection: ${you} must copy a card from the top of another player's discard pile")
-	// 			break;
-	// 		case DaleCard.CT_GOODOLDTIMES:
-	// 			if (this.marketDiscard.size > 0) {
-	// 				targets.push(this.marketDiscard.peek()!);
-	// 			}
-	// 			if (!card.isPassiveUsed() && from == this.myHand) {
-	// 				if (!isChain && !this.myHand.isSelected(card.id)) {
-	// 					console.log("Deselected CT_GOODOLDTIMES");
-	// 					callback(card, added);
-	// 					return;
-	// 				}
-	// 				chameleonStatename = 'chameleon_goodoldtimes'
-	// 				chameleonDescriptionmyturn = requiresPlayable ? 
-	// 					_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card") :
-	// 					_("Good Old Times: ${you} may ditch the supply's top card or copy the bin's top card to play as a technique")
-	// 			}
-	// 			else {
-	// 				chameleonStatename = 'chameleon_goodoldtimes'
-	// 				chameleonDescriptionmyturn = requiresPlayable ? 
-	// 					_("Good Old Times: ${you} must copy the bin's top card") :
-	// 					_("Good Old Times: ${you} must copy the bin's top card to play as a technique")
-	// 			}
-	// 			break;
-	// 		case DaleCard.CT_TRENDSETTING:
-	// 			for (let card of this.market!.getCards()) {
-	// 				targets.push(card)
-	// 			}
-	// 			chameleonStatename = 'chameleon_trendsetting'
-	// 			chameleonDescriptionmyturn = requiresPlayable ? 
-	// 				_("Trendsetting: ${you} must copy a playable card in the market") : 
-	// 				_("Trendsetting: ${you} must copy a card in the market")
-	// 			break;
-	// 		case DaleCard.CT_SEEINGDOUBLES:
-	// 			const items = this.myHand.getAllItems()
-	// 			for (let item of items) {
-	// 				if (item.id != card.id) {
-	// 					targets.push(new DaleCard(item.id));
-	// 				}
-	// 			}
-	// 			chameleonStatename = 'chameleon_seeingdoubles'
-	// 			chameleonDescriptionmyturn = requiresPlayable ? 
-	// 				_("Seeing Doubles: ${you} must copy a playable card from your hand") : 
-	// 				_("Trendsetting: ${you} must copy another card in your hand")
-	// 			break;
-	// 		default:
-	// 			throw new Error(`Unknown chameleon card: '${card.name}'`)
-	// 	}
+	/**
+	 * Parse custom placeholders in strings
+	 */
+	override format_string_recursive(log: string, args: Record<string, any>): string {
+		if (log && args && !args['processed']) {
+			args['processed'] = true;
 
-	// 	//enter the chameleon client state
-	// 	console.log(`'${card.name}' has ${targets.length} target(s)`);
-	// 	if (targets.length == 0) {
-	// 		callback(card, added);
-	// 		return;
-	// 	}
-	// 	this.chameleonArgs = new ChameleonClientStateArgs(card, added, from, targets, callback, requiresPlayable, isChain);
-	// 	this.mainClientState.enterOnStack(chameleonStatename, {
-	// 		descriptionmyturn: chameleonDescriptionmyturn
-	// 	});
-	// 	if(targets.length == 1) {
-	// 		//auto-bind
-	// 		this.onConfirmChameleon(targets[0]!);
-	// 		return;
-	// 	}
-	// 	if (from instanceof Pile) {
-	// 		console.log("Add event listener to");
-	// 		console.log(this.chameleonArgs.line_origin);
-	// 		this.chameleonArgs.line_origin.addEventListener('click', () => { this.onCancelChameleon() })
-	// 		from.closePopin();
-	// 	}
-	// }
+			//parse opponent name
+			if ('opponent_name' in args) {
+				let opponent_name = args['opponent_name'];
+				let opponent_color = "000000";
+				for (let player_id in this.gamedatas.players) {
+					if (this.gamedatas.players[player_id]?.name == opponent_name) {
+						opponent_color = this.gamedatas.players[player_id]!.color;
+					}
+				}
+				args['opponent_name'] = `<span class="playername" style="color:#${opponent_color};">${opponent_name}</span>`;
+			}                       
+		}
+		return super.format_string_recursive(log, args)
+	}
 
 	/**
 	 * Update the state prompt message displayed
@@ -1085,6 +999,61 @@ class Dale extends Gamegui
 	// addActionButtonCancelChameleon() {
 	// 	this.addActionButton("cancel-chameleons-button", _("Cancel"), "onCancelChameleon", undefined, false, 'gray');
 	// }
+
+	///////////////////////////////////////////////////
+	//// Opponent selection utilities 
+
+	/*
+		Here, I put all methods related to selecting opponents
+	*/
+
+	/** Selected opponents */
+	opponent_ids: number[] = [];
+	max_opponents: number = 4;
+
+	addActionButtonsOpponentSelection(maxSize?: number) {
+		this.opponent_ids = [];
+		this.max_opponents = maxSize ?? this.gamedatas.playerorder.length;
+		for(let opponent_id of this.gamedatas.playerorder) {
+			if (opponent_id != this.player_id) {
+				const name = this.gamedatas.players[opponent_id]!.name;
+				const color = this.gamedatas.players[opponent_id]!.color;
+				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
+				this.addActionButton("opponent-selection-button-"+opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
+				if (this.opponent_ids.length < this.max_opponents) {
+					this.opponent_ids.push(opponent_id);
+					$("opponent-selection-button-"+opponent_id)?.classList.add("dale-bga-button-selected");
+				}
+			}
+		}
+	}
+
+	onToggleOpponent(evt: PointerEvent) {
+		let target = evt.target as HTMLElement;
+		if ((target.parentElement as HTMLElement).id.startsWith("opponent-selection-button-")) {
+			target = target.parentElement as HTMLElement;
+		}
+		if ((target as HTMLElement).id.startsWith("opponent-selection-button-")) {
+			const match = (target as HTMLElement).id.match(/\d+/);
+			if (match) {
+				const opponent_id = parseInt(match[0], 10);
+				const index = this.opponent_ids.indexOf(opponent_id);
+				if (index == -1) {
+					if (this.opponent_ids.length >= this.max_opponents) {
+						$("opponent-selection-button-"+this.opponent_ids.pop())?.classList.remove("dale-bga-button-selected");
+					}
+					this.opponent_ids.push(opponent_id);
+					target.classList.add("dale-bga-button-selected");
+				}
+				else {
+					this.opponent_ids.splice(index, 1);
+					target.classList.remove("dale-bga-button-selected");
+				}
+				console.log(this.opponent_ids);
+			}
+		}
+	}
+
 	
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -1512,6 +1481,9 @@ class Dale extends Gamegui
 				fizzle = this.market!.getCards().length == 0;
 				this.clientScheduleTechnique(fizzle ? 'client_fizzle' : 'client_prepaidGood', card.id);
 				break;
+			case DaleCard.CT_NUISANCE:
+				this.clientScheduleTechnique('client_nuisance', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -1776,6 +1748,12 @@ class Dale extends Gamegui
 		}
 		this.bgaPerformAction('actSpecialOffer', {
 			card_ids: this.arrayToNumberList(card_ids)
+		})
+	}
+
+	onNuisance() {
+		this.playTechniqueCard<'client_nuisance'>({
+			opponent_ids: this.opponent_ids
 		})
 	}
 

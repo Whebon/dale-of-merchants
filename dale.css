@@ -41,6 +41,10 @@
   white-space: nowrap;
 }
 
+.bgabutton.dale-bga-button-selected {
+  outline: 3px solid red;
+}
+
 .dale-action-label {
   position: absolute;
   left: 50%;
