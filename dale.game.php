@@ -1983,6 +1983,27 @@ class Dale extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSpecialOffer");
                 break;
+            case CT_WILYFELLOW:
+                $original_discard_cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
+                $original_deck_cards = $this->cards->getCardsInLocation(DECK.$player_id);
+                $this->cards->moveCards($this->toCardIds($original_discard_cards), DECK.$player_id);
+                $this->cards->moveCards($this->toCardIds($original_deck_cards), DISCARD.$player_id);
+                $this->cards->shuffle(DECK.$player_id);
+                $this->cards->shuffle(DISCARD.$player_id);
+                $discard_card_ids = array();
+                $discard_cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
+                foreach ($discard_cards as $discard_card) {
+                    $discard_card_ids[(int)$discard_card["location_arg"]] = $discard_card["id"];
+                }
+                ksort($discard_card_ids);
+                $this->notifyAllPlayers('wilyFellow', clienttranslate('Wily Fellow: ${player_name} swaps their discard pile and deck'), array (
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'cards' => $discard_cards,
+                    'card_ids' => $discard_card_ids
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

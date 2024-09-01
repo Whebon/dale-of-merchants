@@ -1814,6 +1814,7 @@ class Dale extends Gamegui
 			['discardMultiple', 500],
 			['placeOnDeckMultiple', 500],
 			['reshuffleDeck', 1500],
+			['wilyFellow', 500],
 			['ditchFromMarketDeck', 500],
 			['ditchFromMarketBoard', 500],
 			['addEffect', 1],
@@ -2216,6 +2217,104 @@ class Dale extends Gamegui
 		else {
 			this.playerDiscards[notif.args.player_id]!.shuffleToDrawPile(this.playerDecks[notif.args.player_id]!);
 		}
+	}
+
+	notif_wilyFellow(notif: NotifAs<'wilyFellow'>) {
+		const discard = this.playerDiscards[notif.args.player_id]!;
+		const deck = this.playerDecks[notif.args.player_id]!
+		let decksize = deck.size;
+		let discardsize = discard.size;
+		if (notif.args.card_ids.length != decksize) {
+			this.showMessage(_("Wily Fellow detected that the client and server have different deck sizes. Please refresh."), 'error');
+			return;
+		}
+		const newDiscardTop = decksize > 0 ? DaleCard.of(notif.args.cards[notif.args.card_ids[notif.args.card_ids.length-1]!]!) : undefined;
+		const newDeckTop = discard.peek(true);
+		//empty all piles
+		while (discard.size > 0) {
+			discard.pop();
+		}
+		while (deck.size > 0) {
+			deck.pop();
+		}
+		//fill the new piles
+		let numberOfAnimations = 0;
+		const dataSwap = () => {
+			if (numberOfAnimations > 0) {
+				numberOfAnimations -= 1;
+				return;
+			}
+			if (newDiscardTop) {
+				discard.pop();
+			}
+			if (newDeckTop) {
+				deck.pop();
+			}
+			for (let i = 0; i < discardsize; i++) {
+				deck.push(new DaleCard(0, 0));
+			}
+			for (let i = 0; i < decksize; i++) {
+				const card_id = notif.args.card_ids[i]!;
+				const card = DaleCard.of(notif.args.cards[card_id]!);
+				discard.push(card);
+			}
+		}
+		//animate swapping the top cards (and after the animation, do the dataSwap)
+		const duration = 400;
+		if (newDiscardTop) {
+			numberOfAnimations++;
+			discard.push(newDiscardTop, deck.placeholderHTML, dataSwap, duration);
+		}
+		if (newDeckTop) {
+			numberOfAnimations++;
+			deck.push(newDeckTop, discard.placeholderHTML, dataSwap, duration);
+		}
+		dataSwap();
+		//TODO: safely delete this
+		// //animated swap
+		// const duration = 400;
+		// if (newDiscardTop) {
+		// 	discard.push(currentDeckCard, deck.placeholderHTML, undefined, duration);
+		// }
+		// if (animToDeck) {
+		// 	const currentDiscardCard = ;
+		// 	deck.push(currentDiscardCard, discard.placeholderHTML, undefined, duration);
+		// }
+		// setTimeout(dataSwap, duration);
+		// discard.shuffleToDrawPile(deck, undefined, discardsize);
+		// const step = 1000/size;
+		// const anim = () => {
+		// 	discard.pop(deck.placeholderHTML, () => { 
+		// 		deck.push(new DaleCard(0, 0))
+		// 		if (discardsize > 0) {
+		// 			anim();
+		// 		}
+		// 		else {
+		// 			for (let i = 0; i < decksize - 1; i++) {
+		// 				const card_id = notif.args.card_ids[i]!;
+		// 				const card = DaleCard.of(notif.args.cards[card_id]!);
+		// 				discard.push(card);
+		// 				deck.pop();
+		// 			}
+		// 			const card_id = notif.args.card_ids[decksize-1]!;
+		// 			const card = DaleCard.of(notif.args.cards[card_id]!);
+		// 			discard.push(card, deck.placeholderHTML, undefined, step);
+		// 			deck.pop();
+		// 		}
+		// 	}, step/2, step);
+		// }
+		// anim();
+		// for (let i = 0; i < discardsize; i++) {
+		// 	console.log(deck.placeholderHTML);
+		// 	discard.pop(deck.placeholderHTML, () => { deck.push(new DaleCard(0, 0)) }, step/2, delay);
+		// 	delay += step;
+		// }
+		// for (let i = 0; i < decksize; i++) {
+		// 	const card_id = notif.args.card_ids[i]!;
+		// 	const card = DaleCard.of(notif.args.cards[card_id]!);
+		// 	discard.push(card, deck.placeholderHTML, () => { deck.pop() }, step/2, delay);
+		// 	delay += step;
+		// }
 	}
 
 	notif_ditchFromMarketDeck(notif: NotifAs<'ditchFromMarketDeck'>) {

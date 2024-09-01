@@ -158,13 +158,13 @@ class DaleDeck extends Deck {
     /**
      * Move cards to specific location
      */
-    function moveCards($cards, $location, $location_arg=0) {
-        foreach ($cards as $card) {
+    function moveCards($card_ids, $location, $location_arg=0) {
+        foreach ($card_ids as $card) {
             $this->effects->expireChameleonTarget($card); //is this really needed?
         }
-        parent::moveCards($cards, $location, $location_arg);
+        parent::moveCards($card_ids, $location, $location_arg);
         if ($this->isOuterLocation($location)) {
-            $this->effects->expireModificationsMultiple($cards);
+            $this->effects->expireModificationsMultiple($card_ids);
         }
     }
 

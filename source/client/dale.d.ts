@@ -61,6 +61,11 @@ declare global {
 			market: boolean
 			player_id: number
 		}
+		'wilyFellow': {
+			player_id: number 
+			cards: {[card_id: number]: DbCard}
+			card_ids: number[] //because ordering matters
+		}
 		'ditchFromMarketDeck': {
 			card: DbCard
 		}

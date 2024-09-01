@@ -264,8 +264,9 @@ export class Pile implements DaleLocation {
     * Pop all cards from the pile, destroying the entire pile in the process. Adds hidden cards to the provided `drawPile`.
     * @param drawPile pile to add a hidden card to for each card popped.
     * @param duration (optional) defines the total duration in millisecond of the slide.
+    * @param maxAmount (optional) if provided, stop after popping `maxAmount` cards
     */
-    public shuffleToDrawPile(drawPile: Pile, duration: number = 1000) {
+    public shuffleToDrawPile(drawPile: Pile, duration: number = 1000, maxAmount: number = Infinity) {
         if (this.cards.length == 0) {
             return;
         }
@@ -277,7 +278,8 @@ export class Pile implements DaleLocation {
         let thiz = this;
         let callback = function (node: any) {
             //pop next
-            if (thiz.cards.length > 0) {
+            maxAmount -= 1;
+            if (thiz.cards.length > 0 && maxAmount > 0) {
                 thiz.pop(drawPile, callback, durationPerPop);
             }
             //add a hidden card to the drawpile
@@ -298,7 +300,6 @@ export class Pile implements DaleLocation {
         else {
             this.pop(drawPile, callback, durationPerPop);
         }
-
     }
 
     /**

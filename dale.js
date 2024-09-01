@@ -1382,8 +1382,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.updateHTML();
             return card;
         };
-        Pile.prototype.shuffleToDrawPile = function (drawPile, duration) {
+        Pile.prototype.shuffleToDrawPile = function (drawPile, duration, maxAmount) {
             if (duration === void 0) { duration = 1000; }
+            if (maxAmount === void 0) { maxAmount = Infinity; }
             if (this.cards.length == 0) {
                 return;
             }
@@ -1394,7 +1395,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var durationPerPop = duration / n;
             var thiz = this;
             var callback = function (node) {
-                if (thiz.cards.length > 0) {
+                maxAmount -= 1;
+                if (thiz.cards.length > 0 && maxAmount > 0) {
                     thiz.pop(drawPile, callback, durationPerPop);
                 }
                 drawPile.pushHiddenCards(1);
@@ -3949,6 +3951,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['discardMultiple', 500],
                 ['placeOnDeckMultiple', 500],
                 ['reshuffleDeck', 1500],
+                ['wilyFellow', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
                 ['addEffect', 1],
@@ -4279,6 +4282,55 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else {
                 this.playerDiscards[notif.args.player_id].shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
             }
+        };
+        Dale.prototype.notif_wilyFellow = function (notif) {
+            var discard = this.playerDiscards[notif.args.player_id];
+            var deck = this.playerDecks[notif.args.player_id];
+            var decksize = deck.size;
+            var discardsize = discard.size;
+            if (notif.args.card_ids.length != decksize) {
+                this.showMessage(_("Wily Fellow detected that the client and server have different deck sizes. Please refresh."), 'error');
+                return;
+            }
+            var newDiscardTop = decksize > 0 ? DaleCard_8.DaleCard.of(notif.args.cards[notif.args.card_ids[notif.args.card_ids.length - 1]]) : undefined;
+            var newDeckTop = discard.peek(true);
+            while (discard.size > 0) {
+                discard.pop();
+            }
+            while (deck.size > 0) {
+                deck.pop();
+            }
+            var numberOfAnimations = 0;
+            var dataSwap = function () {
+                if (numberOfAnimations > 0) {
+                    numberOfAnimations -= 1;
+                    return;
+                }
+                if (newDiscardTop) {
+                    discard.pop();
+                }
+                if (newDeckTop) {
+                    deck.pop();
+                }
+                for (var i = 0; i < discardsize; i++) {
+                    deck.push(new DaleCard_8.DaleCard(0, 0));
+                }
+                for (var i = 0; i < decksize; i++) {
+                    var card_id = notif.args.card_ids[i];
+                    var card = DaleCard_8.DaleCard.of(notif.args.cards[card_id]);
+                    discard.push(card);
+                }
+            };
+            var duration = 400;
+            if (newDiscardTop) {
+                numberOfAnimations++;
+                discard.push(newDiscardTop, deck.placeholderHTML, dataSwap, duration);
+            }
+            if (newDeckTop) {
+                numberOfAnimations++;
+                deck.push(newDeckTop, discard.placeholderHTML, dataSwap, duration);
+            }
+            dataSwap();
         };
         Dale.prototype.notif_ditchFromMarketDeck = function (notif) {
             this.marketDeck.pop();
