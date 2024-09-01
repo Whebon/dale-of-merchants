@@ -336,6 +336,7 @@ class Dale extends DaleTableBasic
         $this->notifyAllPlayers('message', $msg, array (
             'player_id' => $this->getActivePlayerId(),
             'player_name' => $this->getActivePlayerName(),
+            'opponent_name' => $this->getPlayerNameById($deck_player_id),
             'nbr' => count($cards) + $nbr_unordered_cards,
         ));
     }
@@ -2027,6 +2028,21 @@ class Dale extends DaleTableBasic
                         ));
                     }
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_ROTTENFOOD:
+                $opponent_id = $args["opponent_id"];
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Rotten food cannot be used to place cards on top of your own deck");
+                }
+                $this->placeOnDeckMultiple(
+                    $opponent_id, 
+                    clienttranslate('Rotten food: ${player_name} places a card on top of ${opponent_name}\'s deck'),
+                    array($card_id), 
+                    array($card_id => $card)
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

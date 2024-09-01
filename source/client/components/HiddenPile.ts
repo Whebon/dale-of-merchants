@@ -1,7 +1,5 @@
 import { DaleCard } from "./DaleCard";
-import { SelectionIconType } from "./OrderedSelection";
 import { Pile } from "./Pile";
-import { DaleWrapClass } from "./types/DaleWrapClass";
 
 /**
  * A pile with only face-down cards

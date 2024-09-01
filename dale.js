@@ -2370,6 +2370,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card from the market");
                     case 'client_nuisance':
                         return _("${card_name}: ${you} may choose up to 2 opponents");
+                    case 'client_rottenFood':
+                        return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -2941,7 +2943,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'specialOffer':
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
-                case 'client_rottenfood':
+                case 'client_rottenFood':
+                    for (var _b = 0, _c = Object.entries(this.allDecks); _b < _c.length; _b++) {
+                        var _d = _c[_b], player_id = _d[0], deck = _d[1];
+                        if (+player_id != this.player_id) {
+                            deck.setSelectionMode('noneCantViewContent');
+                        }
+                    }
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -2950,8 +2958,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_trendsetting':
                 case 'chameleon_seeingdoubles':
                     if (stateName == 'chameleon_reflection') {
-                        for (var _b = 0, _c = Object.entries(this.playerDiscards); _b < _c.length; _b++) {
-                            var _d = _c[_b], player_id = _d[0], pile = _d[1];
+                        for (var _e = 0, _f = Object.entries(this.playerDiscards); _e < _f.length; _e++) {
+                            var _g = _f[_e], player_id = _g[0], pile = _g[1];
                             if (+player_id != +this.player_id) {
                                 pile.setSelectionMode('noneCantViewContent');
                             }
@@ -3036,14 +3044,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'specialOffer':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'client_rottenfood':
+                case 'client_rottenFood':
+                    for (var _i = 0, _g = Object.entries(this.allDecks); _i < _g.length; _i++) {
+                        var _h = _g[_i], player_id = _h[0], deck = _h[1];
+                        if (+player_id != this.player_id) {
+                            deck.setSelectionMode('none');
+                        }
+                    }
                     this.myHand.setSelectionMode('none');
                     (_c = this.targetingLine) === null || _c === void 0 ? void 0 : _c.remove();
                     break;
                 case 'chameleon_reflection':
                     (_d = this.targetingLine) === null || _d === void 0 ? void 0 : _d.remove();
-                    for (var _i = 0, _g = Object.entries(this.playerDiscards); _i < _g.length; _i++) {
-                        var _h = _g[_i], player_id = _h[0], pile = _h[1];
+                    for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
+                        var _l = _k[_j], player_id = _l[0], pile = _l[1];
                         if (+player_id != +this.player_id) {
                             pile.setSelectionMode('none');
                         }
@@ -3129,7 +3143,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_rottenfood':
+                case 'client_rottenFood':
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -3612,20 +3626,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
-                case 'client_rottenfood':
-                    var client_rottenfood_targets = [];
+                case 'client_rottenFood':
+                    var client_rottenFood_targets = [];
                     for (var _i = 0, _b = Object.entries(this.playerDecks); _i < _b.length; _i++) {
                         var _c = _b[_i], player_id = _c[0], deck = _c[1];
                         if (+player_id != this.player_id) {
                             var target = (_a = deck.topCardHTML) !== null && _a !== void 0 ? _a : deck.placeholderHTML;
                             target.dataset['target_id'] = player_id;
-                            client_rottenfood_targets.push(target);
+                            client_rottenFood_targets.push(target);
                         }
                     }
-                    var label = _("Place '") + card.name + _("' on an opponent's deck");
+                    var label = _("Place '") + card.name + _("' on another player\'s deck");
                     this.setMainTitle(label);
                     this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
-                    this.targetingLine = new TargetingLine_1.TargetingLine(card, client_rottenfood_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
+                    this.targetingLine = new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
                     break;
                 case null:
                     throw new Error("gamestate.name is null");
@@ -3812,7 +3826,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.clientScheduleTechnique('client_nuisance', card.id);
                     break;
                 case DaleCard_9.DaleCard.CT_ROTTENFOOD:
-                    this.clientScheduleTechnique('client_rottenfood', card.id);
+                    this.clientScheduleTechnique('client_rottenFood', card.id);
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -4035,9 +4049,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             });
         };
         Dale.prototype.onRottenFood = function (card_id, opponent_id) {
-            console.log(card_id);
-            console.log(opponent_id);
-            throw new Error("NOT IMPLEMENTED: rotten food");
+            this.playTechniqueCard({
+                card_id: card_id,
+                opponent_id: opponent_id
+            });
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
@@ -4309,19 +4324,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
         };
         Dale.prototype.notif_placeOnDeckMultiple = function (notif) {
-            var _a;
+            var _a, _b;
             console.log("placeOnDeckMultiple");
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (notif.args._private) {
-                for (var _i = 0, _b = notif.args._private.card_ids; _i < _b.length; _i++) {
-                    var id = _b[_i];
+                for (var _i = 0, _c = notif.args._private.card_ids; _i < _c.length; _i++) {
+                    var id = _c[_i];
                     var card = notif.args._private.cards[id];
                     var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
                     this.stockToPile(card, stock, deck);
                 }
             }
+            else if (notif.args.deck_player_id != notif.args.player_id) {
+                for (var i = 0; i < notif.args.nbr; i++) {
+                    this.allDecks[notif.args.deck_player_id].push(new DaleCard_9.DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
+                }
+            }
             else {
-                this.playerDecks[notif.args.player_id].pushHiddenCards(notif.args.nbr);
+                this.allDecks[(_b = notif.args.deck_player_id) !== null && _b !== void 0 ? _b : notif.args.player_id].pushHiddenCards(notif.args.nbr);
             }
             if (stock === this.myHand) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);

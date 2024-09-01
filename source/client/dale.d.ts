@@ -241,7 +241,7 @@ declare global {
 		'client_loyalPartner': { card_ids: number[] }
 		'client_prepaidGood': { card_id: number }
 		'client_nuisance': { opponent_ids: number[] }
-		'client_rottenfood': { card_id: number, opponent_id: number }
+		'client_rottenFood': { card_id: number, opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

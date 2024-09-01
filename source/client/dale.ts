@@ -409,7 +409,12 @@ class Dale extends Gamegui
 			case 'specialOffer':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
 				break;
-			case 'client_rottenfood':
+			case 'client_rottenFood':
+				for (const [player_id, deck] of Object.entries(this.allDecks)) {
+					if (+player_id != this.player_id) {
+						deck.setSelectionMode('noneCantViewContent');
+					}
+				}
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -523,7 +528,12 @@ class Dale extends Gamegui
 			case 'specialOffer':
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'client_rottenfood':
+			case 'client_rottenFood':
+				for (const [player_id, deck] of Object.entries(this.allDecks)) {
+					if (+player_id != this.player_id) {
+						deck.setSelectionMode('none');
+					}
+				}
 				this.myHand.setSelectionMode('none');
 				this.targetingLine?.remove();
 				break;
@@ -626,7 +636,7 @@ class Dale extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_rottenfood':
+			case 'client_rottenFood':
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1270,21 +1280,21 @@ class Dale extends Gamegui
 					card_id: card!.id
 				})
 				break;
-			case 'client_rottenfood':
-				const client_rottenfood_targets = [];
+			case 'client_rottenFood':
+				const client_rottenFood_targets = [];
 				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
 					if (+player_id != this.player_id) {
 						const target = deck.topCardHTML ?? deck.placeholderHTML
 						target.dataset['target_id'] = player_id;
-						client_rottenfood_targets.push(target);
+						client_rottenFood_targets.push(target);
 					}
 				}
-				const label = _("Place '") + card.name + _("' on an opponent's deck");
+				const label = _("Place '") + card.name + _("' on another player\'s deck");
 				this.setMainTitle(label);
 				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
 				this.targetingLine = new TargetingLine(
 					card,
-					client_rottenfood_targets,
+					client_rottenFood_targets,
 					"dale-line-source-technique",
 					"dale-line-target-technique",
 					"dale-line-technique",
@@ -1528,7 +1538,7 @@ class Dale extends Gamegui
 				this.clientScheduleTechnique('client_nuisance', card.id);
 				break;
 			case DaleCard.CT_ROTTENFOOD:
-				this.clientScheduleTechnique('client_rottenfood', card.id);
+				this.clientScheduleTechnique('client_rottenFood', card.id);
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -1805,9 +1815,10 @@ class Dale extends Gamegui
 	}
 
 	onRottenFood(card_id: number, opponent_id: number) {
-		console.log(card_id);
-		console.log(opponent_id);
-		throw new Error("NOT IMPLEMENTED: rotten food");
+		this.playTechniqueCard<'client_rottenFood'>({
+			card_id: card_id,
+			opponent_id: opponent_id
+		})
 	}
 
 	///////////////////////////////////////////////////
@@ -2151,13 +2162,19 @@ class Dale extends Gamegui
 			//you GIVE the cards
 			for (let id of notif.args._private.card_ids) {
 				const card = notif.args._private.cards[id]!;
-				const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
+				const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!;
 				this.stockToPile(card, stock, deck);
+			}
+		}
+		else if (notif.args.deck_player_id != notif.args.player_id)  {
+			//animate cards to deck
+			for (let i = 0; i < notif.args.nbr; i++) {
+				this.allDecks[notif.args.deck_player_id!]!.push(new DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
 			}
 		}
 		else {
 			//increase deck size
-			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
+			this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
 		//update the hand sizes
 		if (stock === this.myHand) {

@@ -104,6 +104,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card from the market");
             case 'client_nuisance':
                 return _("${card_name}: ${you} may choose up to 2 opponents");
+            case 'client_rottenFood':
+                return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
         }
         return "MISSING DESCRIPTION";
     }
