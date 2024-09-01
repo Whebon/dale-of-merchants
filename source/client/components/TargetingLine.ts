@@ -40,7 +40,7 @@ export class TargetingLine {
      * @param onTarget callback function when a target is clicked
      * @param pile (optional) if provided, create a dummy source representing a card inside a pile
     */
-    constructor(source: DaleCard, targets: DaleCard[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: DaleCard) => void, onTarget: (source: DaleCard, target: DaleCard) => void, pile?: Pile) {
+    constructor(source: DaleCard, targets: (DaleCard | HTMLElement)[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: number) => void, onTarget: (source_id: number, target_id: number) => void, pile?: Pile) {
         TargetingLine.targetingLines.push(this);
         this.svg = $("dale-svg-container")!.querySelector("svg")!;
         this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -51,7 +51,7 @@ export class TargetingLine {
         const thiz = this;
 
         //setup source
-        const finalSource = source;
+        const source_id = source.id;
         if (pile) {
             this.pile = pile;
             this.pile.closePopin();
@@ -64,7 +64,7 @@ export class TargetingLine {
         this.cardDiv.classList.add("dale-line-source", this.sourceClass);
         this.onSource = () => {
             thiz.remove();
-            onSource(finalSource);
+            onSource(source_id);
         }
         this.cardDiv.addEventListener("click", this.onSource);
 
@@ -72,15 +72,16 @@ export class TargetingLine {
         this.targetDivs = [];
         this.onTargets = [];
         for (let targetCard of targets) {
-            targetCard.div.classList.add("dale-line-target", this.targetClass);
-            this.targetDivs.push(targetCard.div);
-            const finalTarget = targetCard;
+            const card_div = targetCard instanceof DaleCard ? targetCard.div : targetCard;
+            card_div.classList.add("dale-line-target", this.targetClass);
+            this.targetDivs.push(card_div);
+            const target_id = targetCard instanceof DaleCard ? targetCard.id : +targetCard.dataset['target_id']!;
             const finalOnTarget = () => {
                 thiz.remove();
-                onTarget(finalSource, finalTarget);
+                onTarget(source_id, target_id);
             }
             this.onTargets.push(finalOnTarget);
-            targetCard.div.addEventListener("click", finalOnTarget);
+            card_div.addEventListener("click", finalOnTarget);
         }
 
         //setup line

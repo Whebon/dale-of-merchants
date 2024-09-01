@@ -407,10 +407,10 @@ export class Stall implements CardSlotManager, DaleLocation {
     /**
      * @returns `true` if the card is somewhere in this stall
      */
-    public contains(card: DaleCard) {
+    public contains(card_id: number) {
         for (let stack of this.slots) {
             for (let slot of stack) {
-                if (slot.card?.id == card.id) {
+                if (slot.card?.id == card_id) {
                     return true;
                 }
             }

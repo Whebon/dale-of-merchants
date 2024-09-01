@@ -384,8 +384,8 @@ class Dale extends Gamegui
 					"dale-line-source-technique",
 					"dale-line-target-technique",
 					"dale-line-technique",
-					(source: DaleCard) => this.onCancelClient(),
-					(source: DaleCard, target: DaleCard) => this.onAcorn(source, target)
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onAcorn(source_id, target_id)
 				)
 				break;
 			case 'client_giftVoucher':
@@ -396,8 +396,8 @@ class Dale extends Gamegui
 					"dale-line-source-technique",
 					"dale-line-target-technique",
 					"dale-line-technique",
-					(source: DaleCard) => this.onCancelClient(),
-					(source: DaleCard, target: DaleCard) => this.onGiftVoucher(source, target)
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onGiftVoucher(source_id, target_id)
 				)
 				break;
 			case 'client_loyalPartner':
@@ -408,6 +408,9 @@ class Dale extends Gamegui
 				break;
 			case 'specialOffer':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+				break;
+			case 'client_rottenfood':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
@@ -432,8 +435,8 @@ class Dale extends Gamegui
 					"dale-line-source-chameleon",
 					"dale-line-target-chameleon",
 					"dale-line-chameleon",
-					(source: DaleCard) => this.onCancelClient(),
-					(source: DaleCard, target: DaleCard) => this.onConfirmChameleon(target),
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onConfirmChameleon(target_id),
 					this.chameleonArgs!.pile
 				)
 				break;
@@ -519,6 +522,10 @@ class Dale extends Gamegui
 				break;
 			case 'specialOffer':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_rottenfood':
+				this.myHand.setSelectionMode('none');
+				this.targetingLine?.remove();
 				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
@@ -619,6 +626,9 @@ class Dale extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_rottenfood':
+				this.addActionButtonCancelClient();
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelClient();
 				break;
@@ -703,7 +713,7 @@ class Dale extends Gamegui
 		//set the chameleon client state name and args
 		let chameleonStatename: keyof ClientGameStates;
 		let args: ClientGameStates['chameleon_goodoldtimes'] = { mode: undefined };
-		let ditchAvailable = false;
+		let ditchAvailable = true;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				chameleonStatename = 'chameleon_flexibleShopkeeper'
@@ -743,7 +753,7 @@ class Dale extends Gamegui
 			const targets = this.chameleonArgs.getAllTargets();
 			console.log(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
 			console.log(`'${card.name}' has ${targets.size} total target(s)`);
-			console.log(Array.from(targets).map(target => target.div));
+			console.log(Array.from(targets).map(target => target instanceof HTMLElement ? target : target.div));
 			if (this.chameleonArgs.onlyContainsGoodOldTimes) {
 				if (ditchAvailable) {
 					args.mode = 'ditchOptional'
@@ -765,15 +775,18 @@ class Dale extends Gamegui
 		return false;
 	}
 
-	createChameleonTree(card: DaleCard, visited_ids?: number[]): ChameleonTree {
-		visited_ids = visited_ids ?? [];
-		visited_ids.push(card.id);
+	createChameleonTree(card: DaleCard | HTMLElement, visited_ids?: number[]): ChameleonTree {
 		const tree: ChameleonTree = {
 			card: card, 
 			children: []
 		};
+		if (card instanceof HTMLElement) {
+			return tree;
+		}
+		visited_ids = visited_ids ?? [];
+		visited_ids.push(card.id);
 		for (let target of this.getChameleonTargets(card, visited_ids.length == 1)) {
-			if (!visited_ids.includes(target.id)) {
+			if (target instanceof HTMLElement || !visited_ids.includes(target.id)) {
 				const child = this.createChameleonTree(target, visited_ids);
 				tree.children.push(child);
 			}
@@ -782,8 +795,13 @@ class Dale extends Gamegui
 		return tree;
 	}
 
-	getChameleonTargets(card: DaleCard, isRoot: boolean) {
-		let targets: DaleCard[] = [];
+	/**
+	 * @param card chameleon card
+	 * @param isRoot is this the first chameleon in the chain? (needed for good old times)
+	 * @returns All direct targets (`DaleCard`) and/or the top card of the market discard pile (`HTMLElement`)
+	 */
+	getChameleonTargets(card: DaleCard, isRoot: boolean): (DaleCard | HTMLElement)[] {
+		let targets: (DaleCard|HTMLElement)[] = [];
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
@@ -800,11 +818,14 @@ class Dale extends Gamegui
 					targets.push(this.marketDiscard.peek()!);
 				}
 				if ((this.marketDeck.size > 0 || this.marketDiscard.size > 0) && (!isRoot || !card.isPassiveUsed())) {
-					const cardBack = this.marketDeck.peek();
-					if (cardBack) {
-						cardBack.attachDiv(this.marketDeck.topCardHTML!);
-						targets.push(cardBack);
-					}
+					const target = this.marketDeck.topCardHTML ?? this.marketDeck.placeholderHTML;
+					target.dataset['target_id'] = '0';
+					targets.push(target);
+					// const cardBack = this.marketDeck.peek();
+					// if (cardBack) {
+					// 	cardBack.attachDiv(this.marketDeck.topCardHTML!);
+					// 	targets.push(cardBack);
+					// }
 				}
 				break;
 			case DaleCard.CT_TRENDSETTING:
@@ -1249,6 +1270,28 @@ class Dale extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'client_rottenfood':
+				const client_rottenfood_targets = [];
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					if (+player_id != this.player_id) {
+						const target = deck.topCardHTML ?? deck.placeholderHTML
+						target.dataset['target_id'] = player_id;
+						client_rottenfood_targets.push(target);
+					}
+				}
+				const label = _("Place '") + card.name + _("' on an opponent's deck");
+				this.setMainTitle(label);
+				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
+				this.targetingLine = new TargetingLine(
+					card,
+					client_rottenfood_targets,
+					"dale-line-source-technique",
+					"dale-line-target-technique",
+					"dale-line-technique",
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)
+				)
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -1392,12 +1435,12 @@ class Dale extends Gamegui
 	}
 	
 
-	onAcorn(source: DaleCard, target: DaleCard) {
+	onAcorn(source_id: number, target_id: number) {
 		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
-			if (player_stall.contains(target)) {
+			if (player_stall.contains(target_id)) {
 				this.playTechniqueCard<'client_acorn'>({
 					stall_player_id: +player_id,
-					stall_card_id: target.id
+					stall_card_id: target_id
 				})
 				//TODO: safely delete this
 				// this.bgaPerformAction('actPlayTechniqueCard', {
@@ -1414,10 +1457,10 @@ class Dale extends Gamegui
 		}
 	}
 
-	onGiftVoucher(source: DaleCard, target: DaleCard) {
-		if (this.market!.contains(target)) {
+	onGiftVoucher(source_id: number, target_id: number) {
+		if (this.market!.contains(target_id)) {
 			this.playTechniqueCard<'client_giftVoucher'>({
-				market_card_id: target.id
+				market_card_id: target_id
 			})
 			//TODO: safely delete this
 			// card_id: source.id, 
@@ -1484,6 +1527,9 @@ class Dale extends Gamegui
 			case DaleCard.CT_NUISANCE:
 				this.clientScheduleTechnique('client_nuisance', card.id);
 				break;
+			case DaleCard.CT_ROTTENFOOD:
+				this.clientScheduleTechnique('client_rottenfood', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -1512,7 +1558,7 @@ class Dale extends Gamegui
 					this.showMessage(_("This passive's ability was already used"), 'error');
 				}
 				else {
-					throw new Error("INTERNAL ERROR: the client should have been redirected to a chameleon state by 'verifyChameleon'");
+					this.showMessage(_("This passive's ability has no valid target"), 'error');
 				}
 				break;
 			case DaleCard.CT_MARKETDISCOVERY:
@@ -1627,8 +1673,9 @@ class Dale extends Gamegui
 	 * @param target target card to bind to
 	 * @returns 
 	 */
-	onConfirmChameleon(target: DaleCard) {
+	onConfirmChameleon(target_id: number) {
 		console.log("onConfirmChameleon");
+		const target = new DaleCard(target_id);
 		const args = this.chameleonArgs!;
 		console.log(args);
 		
@@ -1669,7 +1716,7 @@ class Dale extends Gamegui
 		const discardTopCard = this.marketDiscard.peek();
 		if (discardTopCard) {
 			TargetingLine.removeAll();
-			this.onConfirmChameleon(discardTopCard);
+			this.onConfirmChameleon(discardTopCard.id);
 		}
 		else {
 			this.onCancelClient();
@@ -1755,6 +1802,12 @@ class Dale extends Gamegui
 		this.playTechniqueCard<'client_nuisance'>({
 			opponent_ids: this.opponent_ids
 		})
+	}
+
+	onRottenFood(card_id: number, opponent_id: number) {
+		console.log(card_id);
+		console.log(opponent_id);
+		throw new Error("NOT IMPLEMENTED: rotten food");
 	}
 
 	///////////////////////////////////////////////////

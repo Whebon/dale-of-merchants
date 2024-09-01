@@ -1,7 +1,7 @@
 import { DaleCard } from '../DaleCard';
 
 export interface ChameleonTree {
-    card: DaleCard;
+    card: DaleCard | HTMLElement;
     children: ChameleonTree[];
 
     //TODO: safely delete this

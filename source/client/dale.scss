@@ -168,6 +168,7 @@
 
 .dale-placeholder {
 	background-image: url('img/placeholders.png');
+	transition: transform 0.3s ease, scale 0.3s ease;
 	background-size: 300% 200%;
 	border-radius: 10px;
 	position: absolute;

@@ -288,9 +288,9 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     /**
      * @returns `true` if the card is somewhere on the market board
      */
-    public contains(card: DaleCard) {
+    public contains(card_id: number) {
         for (let slot of this.slots) {
-            if (slot.card?.id == card.id) {
+            if (slot.card?.id == card_id) {
                 return true;
             }
         }

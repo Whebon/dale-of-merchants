@@ -20,8 +20,8 @@ export class ChameleonArgs {
      * @param pile (optional) if provided, the chameleon card is selected from a pile popin
      */
     constructor(tree: ChameleonTree, pile?: Pile) {
-        this.firstSource = tree.card;
-        this.currentSource = tree.card;
+        this.firstSource = tree.card as DaleCard;
+        this.currentSource = tree.card as DaleCard;
         this.chain = new ChameleonChain();
         this.tree = tree;
         this.pile = pile;
@@ -62,8 +62,8 @@ export class ChameleonArgs {
     getAllTargets(tree?: ChameleonTree) {
         //base case
         tree = tree ?? this.tree;
-        let validTargets = new Set<DaleCard>();
-        if (!tree.card.isChameleon()) {
+        let validTargets = new Set<DaleCard | HTMLElement>();
+        if (tree.card instanceof HTMLElement || !tree.card.isChameleon()) {
             validTargets.add(tree.card);
             return validTargets;
         }
@@ -71,7 +71,7 @@ export class ChameleonArgs {
         for (let i = 0; i < tree.children.length; i++) {
             const child = tree.children[i];
             const childValidTargets = this.getAllTargets(child);
-            if (childValidTargets.size > 0 || child?.card.effective_type_id == DaleCard.CT_GOODOLDTIMES) {
+            if (childValidTargets.size > 0 || child?.card instanceof HTMLElement || child?.card.effective_type_id == DaleCard.CT_GOODOLDTIMES) {
                 validTargets = validTargets.union(childValidTargets);
             } 
             else {
@@ -83,7 +83,8 @@ export class ChameleonArgs {
         if (tree === this.tree) {
             this._onlyContainsGoodOldTimes = true;
             for (let target of Array.from(validTargets)) {
-                if (!target.isCardBack() && target.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
+                // "target instanceof HTMLElement" means the target represents the ditch ability of good old times
+                if (!(target instanceof HTMLElement) && target.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
                     this._onlyContainsGoodOldTimes = false;
                     break;
                 }

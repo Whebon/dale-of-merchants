@@ -108,6 +108,7 @@ export class Pile implements DaleLocation {
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
         if (!this.isPopinOpen && this.previousTopCard != topCard) {
             this.topCardHTML?.remove();
+            this.topCardHTML = undefined;
             if (topCard !== undefined) {
                 const dataValue = this.player_id == this.page.player_id ? 'effective' : undefined;
                 this.topCardHTML = topCard.toDiv(this.placeholderHTML, dataValue);
