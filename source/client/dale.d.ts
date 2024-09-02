@@ -175,6 +175,24 @@ declare global {
 				card: DbCard
 			}
 		}
+		'playerHandToOpponentHand': {
+			opponent_id: number 
+			player_id: number
+			from_limbo?: boolean
+			to_limbo?: boolean
+			_private?: {
+				card: DbCard
+			}
+		}
+		'opponentHandToPlayerHand': {
+			opponent_id: number 
+			player_id: number
+			from_limbo?: boolean
+			to_limbo?: boolean
+			_private?: {
+				card: DbCard
+			}
+		}
 		'obtainNewJunkInHand': {
 			player_id: number
 			player_name: string
@@ -242,6 +260,7 @@ declare global {
 		'client_prepaidGood': { card_id: number }
 		'client_nuisance': { opponent_ids: number[] }
 		'client_rottenFood': { card_id: number, opponent_id: number }
+		'client_dirtyExchange': { opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

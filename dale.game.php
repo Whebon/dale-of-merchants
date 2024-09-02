@@ -41,7 +41,8 @@ class Dale extends DaleTableBasic
         $this->initGameStateLabels( array(
             "inDeckSelection" => 10,
             "resolvingCard" => 11,
-            "isPostCleanUpPhase" => 12
+            "isPostCleanUpPhase" => 12,
+            "opponent_id" => 13
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -91,6 +92,7 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("resolvingCard", -1);
         $this->setGameStateInitialValue("inDeckSelection", 1);
         $this->setGameStateInitialValue("isPostCleanUpPhase", 0);
+        $this->setGameStateInitialValue("opponent_id", -1);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -269,21 +271,31 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Send a notification to all players, but only player args["player_id"] receives args["_private"]
+     * Send a notification to all players, but only player args["player_id"] and args["opponent_id"] receive args["_private"]
      * @param string $type
      * @param string $message
      * @param array $args requires at least "player_id" and "_private" keys
+     * @param string $private_message (optional) bt default, send the public message - if provided, send a special private message
      */
-    function notifyAllPlayersWithPrivateArguments($type, $message, $args) {
+    function notifyAllPlayersWithPrivateArguments(string $type, string $message, array $args, string $private_message = null) {
+        $suffix = ""; //clienttranslate(" (private information)");
+
         //the active player receives the notification with the private arguments
         $private_player_id = $args["player_id"];
-        $this->notifyPlayer($private_player_id, $type, $message, $args);
+        $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+
+        //(optional) the involved opponent receives the notification with the private arguments
+        $private_opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : null;
+        if ($private_opponent_id) {
+            $private_opponent_id = $args["opponent_id"];
+            $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+        }
 
         //all the other players receive the notification without the private arguments
         unset($args["_private"]);
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $player_id => $player ) {
-            if ($player_id != $private_player_id) {
+            if ($player_id != $private_player_id && $player_id != $private_opponent_id) {
                 $this->notifyPlayer($player_id, $type, $message, $args);
             }
         }
@@ -2134,6 +2146,12 @@ class Dale extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_DIRTYEXCHANGE:
+                $opponent_id = $args["opponent_id"];
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trDirtyExchange");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2263,6 +2281,28 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actDirtyExchange($card_id) {
+        $this->checkAction("actDirtyExchange");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+
+        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $this->cards->moveCard($card_id, HAND.$opponent_id);
+        $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('Dirty Exchange: ${player_name} gives a card to ${opponent_name}'), array(
+            "player_id" => $player_id,
+            "opponent_id" => $opponent_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "opponent_name" => $this->getPlayerNameById($opponent_id),
+            "_private" => array(
+                "card" => $card,
+                "card_name" => $this->getCardName($card)
+            )
+        ), clienttranslate('Dirty Exchange: ${player_name} gives a ${card_name} to ${opponent_name}')
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
@@ -2375,12 +2415,19 @@ class Dale extends DaleTableBasic
         );
     }
 
-    function argStackIndex(){
+    function argStackIndex() {
         $player_id = $this->getActivePlayerId();
         $stack_index = $this->cards->getNextStackIndex($player_id);
         return array(
             'stack_index' => $stack_index,
             'stack_index_plus_1' => $stack_index + 1
+        );
+    }
+
+    function argOpponentName() {
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        return array(
+            'opponent_name' => $this->getPlayerNameById($opponent_id)
         );
     }
 
@@ -2523,6 +2570,33 @@ class Dale extends DaleTableBasic
             //special offer has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
+    }
+    
+    function stDirtyExchange() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        if (count($cards) == 0) {
+            //dirty exchange has no effect
+            $this->notifyAllPlayers('message', clienttranslate('Dirty Exchange: ${player_name} tried to take a card from ${opponent_name}, but their hand was empty'), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "opponent_name" => $this->getPlayerNameById($opponent_id)
+            ));
+            return;
+        }
+        $card_id = array_rand($cards);
+        $card = $cards[$card_id];
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Dirty Exchange: ${player_name} takes a card from ${opponent_name}'), array(
+            "player_id" => $player_id,
+            "opponent_id" => $opponent_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "opponent_name" => $this->getPlayerNameById($opponent_id),
+            "_private" => array(
+                "card" => $card,
+                "card_name" => $this->getCardName($card)
+            )
+        ), clienttranslate('Dirty Exchange: ${player_name} takes a ${card_name} from ${opponent_name}'));
     }
 
 

@@ -151,4 +151,15 @@ class action_dale extends APP_GameAction
 		$this->game->actSpecialOffer( $card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actDirtyExchange()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actDirtyExchange( $card_id );
+		self::ajaxResponse();
+	}
 }

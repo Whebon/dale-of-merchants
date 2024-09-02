@@ -23,6 +23,7 @@ if (false) {
 	$game->stCleanUpPhase();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
+	$game->stDirtyExchange();
 }
 
 $machinestates = array(
@@ -70,6 +71,7 @@ $machinestates = array(
 			'trGameEnd' => 99,
 			'trSpyglass' => 52,
 			'trSpecialOffer' => 53,
+			'trDirtyExchange' => 54,
 		),
 	),
 	36 => array(
@@ -128,6 +130,18 @@ $machinestates = array(
 		'possibleactions' => ['actSpecialOffer'],
 		'transitions' => array(
 			'trNextPlayer' => 41,
+		),
+	),
+	54 => array(
+		'name' => 'dirtyExchange',
+		'description' => clienttranslate('Dirty Exchange: ${actplayer} must choose a card to give to ${opponent_name}'),
+		'descriptionmyturn' => clienttranslate('Dirty Exchange: ${you} must choose a card to give to ${opponent_name}'),
+		'type' => 'activeplayer',
+		'action' => 'stDirtyExchange',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actDirtyExchange'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	99 => array(

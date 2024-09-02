@@ -423,6 +423,9 @@ class Dale extends Gamegui
 				}
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
 				break;
+			case 'dirtyExchange':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
+				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
@@ -546,6 +549,9 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode('none');
 				this.targetingLine?.remove();
 				break;
+			case 'dirtyExchange':
+				this.myHand.setSelectionMode('none');
+				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
@@ -652,6 +658,10 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_rottenFood':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_dirtyExchange':
+				this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1086,10 +1096,27 @@ class Dale extends Gamegui
 		Here, I put all methods related to selecting opponents
 	*/
 
+	/**
+	 * Add selection buttons to select a single opponent
+	 */
+	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void) {
+		for(let opponent_id of this.gamedatas.playerorder) {
+			if (opponent_id != this.player_id) {
+				const name = this.gamedatas.players[opponent_id]!.name;
+				const color = this.gamedatas.players[opponent_id]!.color;
+				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
+				this.addActionButton("opponent-selection-button-"+opponent_id, label, () => {onOpponentHandler(opponent_id)}, undefined, false, 'gray');
+			}
+		}
+	}
+
 	/** Selected opponents */
 	opponent_ids: number[] = [];
 	max_opponents: number = 4;
 
+	/**
+	 * Add selection button to select up to `maxSize` opponents
+	 */
 	addActionButtonsOpponentSelection(maxSize?: number) {
 		this.opponent_ids = [];
 		this.max_opponents = maxSize ?? this.gamedatas.playerorder.length;
@@ -1360,6 +1387,11 @@ class Dale extends Gamegui
 					(source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)
 				)
 				break;
+			case 'dirtyExchange':
+				this.bgaPerformAction('actDirtyExchange', {
+					card_id: card.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -1470,6 +1502,19 @@ class Dale extends Gamegui
 			args: JSON.stringify(args)
 		});
 		this.mainClientState.leave();
+	}
+
+	/**
+	 * Play a technique card that is already locally inside your schedule for an open-information choice. Then proceed to an hidden-information server choice state.
+	 * @param args result of the open-infomation choice to send to the server
+	 */
+	playTechniqueCardWithServerState<K extends keyof ClientTechniqueChoice>(args: ClientTechniqueChoice[K]) {
+		this.bgaPerformAction('actPlayTechniqueCard', {
+			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify(args)
+		});
+		this.mainClientState.leaveAndDontReturn();
 	}
 
 	/**
@@ -1601,6 +1646,9 @@ class Dale extends Gamegui
 				else {
 					this.clientScheduleTechnique('client_rottenFood', card.id);
 				}
+				break;
+			case DaleCard.CT_DIRTYEXCHANGE:
+				this.clientScheduleTechnique('client_dirtyExchange', card.id);
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -1896,6 +1944,12 @@ class Dale extends Gamegui
 		})
 	}
 
+	onDirtyExchange(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_dirtyExchange'>({
+			opponent_id: opponent_id
+		})
+	}
+
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
 
@@ -1924,6 +1978,8 @@ class Dale extends Gamegui
 			['draw', 500],
 			['drawMultiple', 500],
 			['limboToHand', 500],
+			['playerHandToOpponentHand', 500],
+			['opponentHandToPlayerHand', 500],
 			['obtainNewJunkInHand', 500],
 			['ditch', 500],
 			['ditchMultiple', 500],
@@ -2155,6 +2211,43 @@ class Dale extends Gamegui
 			}
 		}
 		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+	}
+	
+	notif_playerHandToOpponentHand(notif: NotifAs<'playerHandToOpponentHand'>) {
+		//Move a card from a `player_id`'s hand/limbo to an `opponent_id`'s hand/limbo
+		const temp1 = notif.args.player_id;
+		notif.args.player_id = notif.args.opponent_id;
+		notif.args.opponent_id = temp1;
+		const temp2 = notif.args.from_limbo;
+		notif.args.from_limbo = notif.args.to_limbo;
+		notif.args.to_limbo = temp2;
+		this.notif_opponentHandToPlayerHand(notif);
+	}
+
+	notif_opponentHandToPlayerHand(notif: NotifFrom<'opponentHandToPlayerHand'>) {
+		//Move a card from an `opponent_id`'s hand/limbo to a `player_id`'s hand/limbo
+		if (notif.args._private) {
+			if (this.player_id == notif.args.opponent_id) {
+				//opponent's view
+				const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+				const card = DaleCard.of(notif.args._private.card);
+				stock.removeFromStockById(card.id, 'overall_player_board_' + notif.args.player_id);
+			}
+			else if (this.player_id == notif.args.player_id) {
+				//player's view
+				const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+				const card = DaleCard.of(notif.args._private.card);
+				stock.addDaleCardToStock(card, 'overall_player_board_' + notif.args.opponent_id);
+			}
+			else {
+				throw new Error(`Accidentally received private arguments intended for ${notif.args.opponent_id} and ${notif.args.player_id}`)
+			}
+		}
+		else if (this.player_id == notif.args.opponent_id || this.player_id == notif.args.player_id) {
+			throw new Error("Expected private arguments for 'opponentHandToPlayerHand'");
+		}
+		this.playerHandSizes[notif.args.opponent_id]!.incValue(-1);
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 	

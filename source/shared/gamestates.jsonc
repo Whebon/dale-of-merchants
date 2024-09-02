@@ -100,7 +100,8 @@
 
 			//Hidden-information technique states
 			"trSpyglass": 52,
-			"trSpecialOffer": 53
+			"trSpecialOffer": 53,
+			"trDirtyExchange": 54
 		}
 	},
 
@@ -181,6 +182,21 @@
 			]
 		},
 		"transitions": { "trNextPlayer": 41 }
+	},
+
+	"54": {
+		"name": "dirtyExchange",
+		"description": "Dirty Exchange: ${actplayer} must choose a card to give to ${opponent_name}",
+		"descriptionmyturn": "Dirty Exchange: ${you} must choose a card to give to ${opponent_name}",
+		"type": "activeplayer",
+		"action": "stDirtyExchange",
+		"args": "argOpponentName",
+		"possibleactions": {
+			"actDirtyExchange": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
 	},
 
 

@@ -111,6 +111,19 @@ export class MainClientState {
     }
 
     /**
+     * Leave the client state
+     */
+    public leaveAndDontReturn() {
+        const previous = this._stack.pop();
+        if (previous instanceof PreviousState) {
+            this._name = previous.name;
+            if (previous.args) {
+                this._args = previous.args;
+            }
+        }
+    }
+
+    /**
      * Leave the client state and return to the previous client state
      */
     public leave() {

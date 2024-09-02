@@ -123,6 +123,7 @@ interface GameStates {
 			'trGameEnd': 99,
 			'trSpyglass': 52,
 			'trSpecialOffer': 53,
+			'trDirtyExchange': 54,
 		},
 	},
 	36: {
@@ -240,6 +241,24 @@ interface GameStates {
 		},
 		'transitions': {
 			'trNextPlayer': 41,
+		},
+	},
+	54: {
+		'name': 'dirtyExchange',
+		'description': 'Dirty Exchange: ${actplayer} must choose a card to give to ${opponent_name}',
+		'descriptionmyturn': 'Dirty Exchange: ${you} must choose a card to give to ${opponent_name}',
+		'type': 'activeplayer',
+		'action': 'stDirtyExchange',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actDirtyExchange': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	99: {

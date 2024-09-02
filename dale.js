@@ -2380,6 +2380,15 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             enumerable: false,
             configurable: true
         });
+        MainClientState.prototype.leaveAndDontReturn = function () {
+            var previous = this._stack.pop();
+            if (previous instanceof PreviousState) {
+                this._name = previous.name;
+                if (previous.args) {
+                    this._args = previous.args;
+                }
+            }
+        };
         MainClientState.prototype.leave = function () {
             var previous = this._stack.pop();
             if (previous instanceof ServerState) {
@@ -2957,6 +2966,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
                     break;
+                case 'dirtyExchange':
+                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                 case 'chameleon_reflection':
                 case 'chameleon_goodoldtimes':
@@ -3062,6 +3074,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('none');
                     (_c = this.targetingLine) === null || _c === void 0 ? void 0 : _c.remove();
                     break;
+                case 'dirtyExchange':
+                    this.myHand.setSelectionMode('none');
+                    break;
                 case 'chameleon_reflection':
                     (_d = this.targetingLine) === null || _d === void 0 ? void 0 : _d.remove();
                     for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
@@ -3158,6 +3173,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_rottenFood':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_dirtyExchange':
+                    this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -3464,6 +3483,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.addActionButtonCancelClient = function () {
             this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
         };
+        Dale.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
+            var _loop_5 = function (opponent_id) {
+                if (opponent_id != this_4.player_id) {
+                    var name_1 = this_4.gamedatas.players[opponent_id].name;
+                    var color = this_4.gamedatas.players[opponent_id].color;
+                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
+                    this_4.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
+                }
+            };
+            var this_4 = this;
+            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
+                var opponent_id = _a[_i];
+                _loop_5(opponent_id);
+            }
+        };
         Dale.prototype.addActionButtonsOpponentSelection = function (maxSize) {
             var _a;
             this.opponent_ids = [];
@@ -3471,9 +3505,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var _i = 0, _b = this.gamedatas.playerorder; _i < _b.length; _i++) {
                 var opponent_id = _b[_i];
                 if (opponent_id != this.player_id) {
-                    var name_1 = this.gamedatas.players[opponent_id].name;
+                    var name_2 = this.gamedatas.players[opponent_id].name;
                     var color = this.gamedatas.players[opponent_id].color;
-                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
+                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_2, "</span>");
                     this.addActionButton("opponent-selection-button-" + opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
                     if (this.opponent_ids.length < this.max_opponents) {
                         this.opponent_ids.push(opponent_id);
@@ -3696,6 +3730,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
                     this.targetingLine = new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
                     break;
+                case 'dirtyExchange':
+                    this.bgaPerformAction('actDirtyExchange', {
+                        card_id: card.id
+                    });
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -3790,6 +3829,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 args: JSON.stringify(args)
             });
             this.mainClientState.leave();
+        };
+        Dale.prototype.playTechniqueCardWithServerState = function (args) {
+            this.bgaPerformAction('actPlayTechniqueCard', {
+                card_id: this.mainClientState.args.technique_card_id,
+                chameleons_json: DaleCard_9.DaleCard.getLocalChameleonsJSON(),
+                args: JSON.stringify(args)
+            });
+            this.mainClientState.leaveAndDontReturn();
         };
         Dale.prototype.playTechniqueCard = function (args) {
             this.bgaPerformAction('actPlayTechniqueCard', {
@@ -3888,6 +3935,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else {
                         this.clientScheduleTechnique('client_rottenFood', card.id);
                     }
+                    break;
+                case DaleCard_9.DaleCard.CT_DIRTYEXCHANGE:
+                    this.clientScheduleTechnique('client_dirtyExchange', card.id);
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -4128,6 +4178,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 opponent_id: opponent_id
             });
         };
+        Dale.prototype.onDirtyExchange = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -4151,6 +4206,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['draw', 500],
                 ['drawMultiple', 500],
                 ['limboToHand', 500],
+                ['playerHandToOpponentHand', 500],
+                ['opponentHandToPlayerHand', 500],
                 ['obtainNewJunkInHand', 500],
                 ['ditch', 500],
                 ['ditchMultiple', 500],
@@ -4330,6 +4387,37 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("Card ".concat(card_id, " does not exist in myLimbo."));
                 }
             }
+            this.playerHandSizes[notif.args.player_id].incValue(1);
+        };
+        Dale.prototype.notif_playerHandToOpponentHand = function (notif) {
+            var temp1 = notif.args.player_id;
+            notif.args.player_id = notif.args.opponent_id;
+            notif.args.opponent_id = temp1;
+            var temp2 = notif.args.from_limbo;
+            notif.args.from_limbo = notif.args.to_limbo;
+            notif.args.to_limbo = temp2;
+            this.notif_opponentHandToPlayerHand(notif);
+        };
+        Dale.prototype.notif_opponentHandToPlayerHand = function (notif) {
+            if (notif.args._private) {
+                if (this.player_id == notif.args.opponent_id) {
+                    var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+                    var card = DaleCard_9.DaleCard.of(notif.args._private.card);
+                    stock.removeFromStockById(card.id, 'overall_player_board_' + notif.args.player_id);
+                }
+                else if (this.player_id == notif.args.player_id) {
+                    var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+                    var card = DaleCard_9.DaleCard.of(notif.args._private.card);
+                    stock.addDaleCardToStock(card, 'overall_player_board_' + notif.args.opponent_id);
+                }
+                else {
+                    throw new Error("Accidentally received private arguments intended for ".concat(notif.args.opponent_id, " and ").concat(notif.args.player_id));
+                }
+            }
+            else if (this.player_id == notif.args.opponent_id || this.player_id == notif.args.player_id) {
+                throw new Error("Expected private arguments for 'opponentHandToPlayerHand'");
+            }
+            this.playerHandSizes[notif.args.opponent_id].incValue(-1);
             this.playerHandSizes[notif.args.player_id].incValue(1);
         };
         Dale.prototype.notif_obtainNewJunkInHand = function (notif) {
