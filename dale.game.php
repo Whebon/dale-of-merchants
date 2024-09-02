@@ -2470,7 +2470,7 @@ class Dale extends DaleTableBasic
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
             foreach ($dbcards as $card_id => $card) {
                 $type_id = $this->getTypeId($card);
-                if (in_array($type_id, $usesPostCleanUp)) {
+                if (in_array($type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card)) {
                     //the hand contains a card that uses the post clean up phase
                     $this->setGameStateValue("isPostCleanUpPhase", 1);
                     $this->gamestate->nextState("trPostCleanUpPhase");
@@ -2480,7 +2480,8 @@ class Dale extends DaleTableBasic
                 $dbtargets = $this->cards->getCards($target_ids);
                 foreach ($dbtargets as $dbtarget) {
                     $target_type_id = $this->getTypeId($dbtarget);
-                    if (in_array($target_type_id, $usesPostCleanUp) || ($target_type_id == CT_COOKIES && count($dbtargets) >= 2)) {
+                    $optional_cookies = ($target_type_id == CT_COOKIES && count($dbtargets) >= 2);
+                    if ($optional_cookies || (in_array($target_type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card))) {
                         //the hand contains a chameleon card that can reach a card that uses the post clean up phase
                         $this->setGameStateValue("isPostCleanUpPhase", 1);
                         $this->gamestate->nextState("trPostCleanUpPhase");
