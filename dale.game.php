@@ -205,6 +205,22 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * Return the unique `opponent_id`. (only available in a 2-player game)
+     */
+    function getUniqueOpponentId() {
+        $player_id = $this->getActivePlayerId();
+        $players = $this->loadPlayersBasicInfos();
+        if (count($players) != 2) {
+            throw new BgaVisibleSystemException("getUniqueOpponentId is not defined for non-2-player games");
+        }
+        foreach ($players as $opponent_id => $opponent) {
+            if ($opponent_id != $player_id) {
+                return $opponent_id;
+            }
+        }
+    }
+
+    /**
      * @param string $AT_numberlist
      * @return array
      * @example example
@@ -2147,7 +2163,7 @@ class Dale extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DIRTYEXCHANGE:
-                $opponent_id = $args["opponent_id"];
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDirtyExchange");

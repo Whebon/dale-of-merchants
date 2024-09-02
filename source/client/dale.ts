@@ -148,6 +148,15 @@ class Dale extends Gamegui
 		//initialize the card types
 		DaleCard.init(this, gamedatas.cardTypes);
 
+		//set the unique opponent id
+		if (gamedatas.playerorder.length == 2) {
+			for (let player_id of gamedatas.playerorder) {
+				if (player_id != this.player_id) {
+					this.unique_opponent_id = player_id;
+				} 
+			}
+		}
+
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
@@ -654,7 +663,8 @@ class Dale extends Gamegui
 				break;
 			case 'client_nuisance':
 				this.addActionButtonsOpponentSelection(2);
-				this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
+				this.addActionButton("confirm-button", '', "onNuisance");
+				this.updateConfirmOpponentsButton();
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_rottenFood':
@@ -1096,6 +1106,9 @@ class Dale extends Gamegui
 		Here, I put all methods related to selecting opponents
 	*/
 
+	/** In a 2-player game, store the unique opponent here */
+	unique_opponent_id: number | undefined;
+
 	/**
 	 * Add selection buttons to select a single opponent
 	 */
@@ -1155,8 +1168,16 @@ class Dale extends Gamegui
 					this.opponent_ids.splice(index, 1);
 					target.classList.remove("dale-bga-button-selected");
 				}
+				this.updateConfirmOpponentsButton();
 				console.log(this.opponent_ids);
 			}
+		}
+	}
+
+	updateConfirmOpponentsButton() {
+		const confirm_button = $("confirm-button");
+		if (confirm_button) {
+			(confirm_button as HTMLElement).innerText = _("Confirm Selection ")+`(${this.opponent_ids.length})`;
 		}
 	}
 
@@ -1648,7 +1669,12 @@ class Dale extends Gamegui
 				}
 				break;
 			case DaleCard.CT_DIRTYEXCHANGE:
-				this.clientScheduleTechnique('client_dirtyExchange', card.id);
+				if (this.unique_opponent_id) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_dirtyExchange', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

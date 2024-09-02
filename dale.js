@@ -2749,6 +2749,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
             this.deckSelection = new DaleDeckSelection_1.DaleDeckSelection(this, $("dale-page-deck-selection"), $("dale-page-game"), gamedatas.inDeckSelection);
             DaleCard_9.DaleCard.init(this, gamedatas.cardTypes);
+            if (gamedatas.playerorder.length == 2) {
+                for (var _i = 0, _d = gamedatas.playerorder; _i < _d.length; _i++) {
+                    var player_id = _d[_i];
+                    if (player_id != this.player_id) {
+                        this.unique_opponent_id = player_id;
+                    }
+                }
+            }
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
                 var player_board_div = (_b = $('player_board_' + player_id)) === null || _b === void 0 ? void 0 : _b.querySelector(".player_score");
@@ -3169,7 +3177,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_nuisance':
                     this.addActionButtonsOpponentSelection(2);
-                    this.addActionButton("confirm-button", _("Confirm selection"), "onNuisance");
+                    this.addActionButton("confirm-button", '', "onNuisance");
+                    this.updateConfirmOpponentsButton();
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_rottenFood':
@@ -3538,8 +3547,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.opponent_ids.splice(index, 1);
                         target.classList.remove("dale-bga-button-selected");
                     }
+                    this.updateConfirmOpponentsButton();
                     console.log(this.opponent_ids);
                 }
+            }
+        };
+        Dale.prototype.updateConfirmOpponentsButton = function () {
+            var confirm_button = $("confirm-button");
+            if (confirm_button) {
+                confirm_button.innerText = _("Confirm Selection ") + "(".concat(this.opponent_ids.length, ")");
             }
         };
         Dale.prototype.onSubmitPreference = function () {
@@ -3937,7 +3953,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_DIRTYEXCHANGE:
-                    this.clientScheduleTechnique('client_dirtyExchange', card.id);
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_dirtyExchange', card.id);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
