@@ -116,6 +116,7 @@ export class MainClientState {
     public leave() {
         const previous = this._stack.pop();
         if (previous instanceof ServerState) {
+            this.setPassiveSelected(false);
             this._page.restoreServerGameState();
         }
         else if (previous instanceof PreviousState) {

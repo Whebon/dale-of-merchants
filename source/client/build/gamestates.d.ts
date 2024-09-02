@@ -205,6 +205,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trCleanUpPhase': 41,
+			'trPassiveAbility': 42,
 		},
 	},
 	52: {

@@ -1031,7 +1031,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
         };
         DaleStock.prototype.isClickSelectionMode = function () {
-            return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickRetainSelection');
+            return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickAbility' || this.selectionMode == 'clickRetainSelection');
         };
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
@@ -1069,6 +1069,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return true;
                 case 'clickTechnique':
                     return card.isPlayable();
+                case 'clickAbility':
+                    return card.isPlayable() && !card.isTechnique();
                 case 'clickRetainSelection':
                     return true;
                 case 'multiple':
@@ -2381,6 +2383,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         MainClientState.prototype.leave = function () {
             var previous = this._stack.pop();
             if (previous instanceof ServerState) {
+                this.setPassiveSelected(false);
                 this._page.restoreServerGameState();
             }
             else if (previous instanceof PreviousState) {
@@ -2851,6 +2854,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             }
             switch (stateName) {
+                case 'postCleanUpPhase':
+                    this.myHand.setSelectionMode('clickAbility', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+                    break;
                 case 'playerTurn':
                     this.mainClientState.enter();
                     break;
@@ -2984,6 +2990,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             }
             switch (stateName) {
+                case 'postCleanUpPhase':
+                    this.myHand.setSelectionMode('none');
+                    break;
                 case 'playerTurn':
                     break;
                 case 'client_purchase':
@@ -3088,6 +3097,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'postCleanUpPhase':
                     this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
+                    if (DaleCard_9.DaleCard.countChameleonsLocal() > 0) {
+                        this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
+                    }
                     break;
                 case 'playerTurn':
                     break;
@@ -3634,6 +3646,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("onSelectHandCard: " + card_id);
             var card = new DaleCard_9.DaleCard(card_id);
             switch (this.gamedatas.gamestate.name) {
+                case 'postCleanUpPhase':
+                    if (this.verifyChameleon(card)) {
+                        this.onClickPassive(card);
+                    }
+                    break;
                 case 'client_technique':
                     if (this.verifyChameleon(card)) {
                         if (card.isTechnique()) {
@@ -3877,7 +3894,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
         };
-        Dale.prototype.onClickPassive = function (card) {
+        Dale.prototype.onClickPassive = function (card, postCleanUp) {
+            if (postCleanUp === void 0) { postCleanUp = false; }
             var type_id = card.effective_type_id;
             if (type_id != DaleCard_9.DaleCard.CT_GOODOLDTIMES && type_id != DaleCard_9.DaleCard.CT_MARKETDISCOVERY) {
                 if (card.isChameleon()) {
@@ -3899,7 +3917,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_MARKETDISCOVERY:
-                    if (card.isPassiveUsed()) {
+                    if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
+                        if (card.isPassiveUsed()) {
+                            this.showMessage(_("This passive's ability was already used"), 'error');
+                        }
+                        else {
+                            this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
+                            this.onMarketDiscoveryDitch();
+                        }
+                    }
+                    else if (card.isPassiveUsed()) {
                         this.onMarketDiscoveryPurchase(card.id);
                     }
                     else {
@@ -4027,7 +4054,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onUnbindChameleons = function () {
             DaleCard_9.DaleCard.unbindAllChameleonsLocal();
-            this.mainClientState.enter();
+            this.restoreServerGameState();
         };
         Dale.prototype.onRequestBuildAction = function () {
             switch (this.gamedatas.gamestate.name) {

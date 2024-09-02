@@ -306,6 +306,9 @@ class Dale extends Gamegui
 
 		//turn on selection mode(s)
 		switch( stateName ){
+			case 'postCleanUpPhase':
+				this.myHand.setSelectionMode('clickAbility', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+				break;
 			case 'playerTurn':
 				this.mainClientState.enter();
 				break;
@@ -471,6 +474,9 @@ class Dale extends Gamegui
 		//turn off selection mode(s)
 		switch( stateName )
 		{
+			case 'postCleanUpPhase':
+				this.myHand.setSelectionMode('none');
+				break;
 			case 'playerTurn':
 				break;
 			case 'client_purchase':
@@ -584,6 +590,9 @@ class Dale extends Gamegui
 				break;
 			case 'postCleanUpPhase':
 				this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
+				if (DaleCard.countChameleonsLocal() > 0) {
+					this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
+				}
 				break;
 			case 'playerTurn':
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
@@ -1293,6 +1302,11 @@ class Dale extends Gamegui
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
+			case 'postCleanUpPhase':
+				if (this.verifyChameleon(card)) {
+					this.onClickPassive(card);
+				}
+				break;
 			case 'client_technique':
 				//play card action (technique or active passive)
 				if (this.verifyChameleon(card)) {
@@ -1303,7 +1317,6 @@ class Dale extends Gamegui
 						this.onClickPassive(card);
 					}
 				}
-				//this.handleChameleonCard(card, true, this.myHand, this.onPlayCard, true);
 				break;
 			case 'client_purchase':
 				if (this.verifyChameleon(card)) {
@@ -1599,7 +1612,7 @@ class Dale extends Gamegui
 	 * The user clicked on a card with a passive ability. Jump to the related choice state
 	 * @param card the card that wants to use its passive ability
 	 */
-	onClickPassive(card: DaleCard) {
+	onClickPassive(card: DaleCard, postCleanUp: boolean = false) {
 		const type_id = card.effective_type_id;
 		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.CT_MARKETDISCOVERY) {
 			if (card.isChameleon()) {
@@ -1621,7 +1634,16 @@ class Dale extends Gamegui
 				}
 				break;
 			case DaleCard.CT_MARKETDISCOVERY:
-				if (card.isPassiveUsed()) {
+				if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
+					if (card.isPassiveUsed()) {
+						this.showMessage(_("This passive's ability was already used"), 'error');
+					}
+					else {
+						this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
+						this.onMarketDiscoveryDitch();
+					}
+				}
+				else if (card.isPassiveUsed()) {
 					this.onMarketDiscoveryPurchase(card.id);
 				}
 				else {
@@ -1788,7 +1810,7 @@ class Dale extends Gamegui
 
 	onUnbindChameleons() {
 		DaleCard.unbindAllChameleonsLocal();
-		this.mainClientState.enter();
+		this.restoreServerGameState();
 	}
 
 	onRequestBuildAction() {
