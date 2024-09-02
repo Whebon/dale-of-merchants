@@ -287,14 +287,15 @@ class Dale extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 
-		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
-			console.log("SERVER STATE, remove all local chameleons");
-			DaleCard.unbindAllChameleonsLocal();
-		}
-
 		if (stateName == 'nextPlayer') {
 			console.log("nextPlayer, expire all effects that last until end of turn");
+			DaleCard.unbindAllChameleonsLocal()
 			this.mainClientState.cancelAll();
+		}
+
+		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
+			console.log("Revalidate all local chameleons");
+			this.validateChameleonsLocal();
 		}
 
 		if (!this.isCurrentPlayerActive()) {
@@ -808,11 +809,14 @@ class Dale extends Gamegui
 	/**
 	 * @param card chameleon card
 	 * @param isRoot is this the first chameleon in the chain? (needed for good old times)
+	 * @param type_id (optional) pretend the chameleon card has this type_id
 	 * @returns All direct targets (`DaleCard`) and/or the top card of the market discard pile (`HTMLElement`)
 	 */
-	getChameleonTargets(card: DaleCard, isRoot: boolean): (DaleCard | HTMLElement)[] {
+	getChameleonTargets(card: DaleCard, isRoot: boolean, type_id?: number): (DaleCard | HTMLElement)[] {
+		console.log(card);
+		console.log(card.effective_type_id);
 		let targets: (DaleCard|HTMLElement)[] = [];
-		switch(card.effective_type_id) {
+		switch(type_id ?? card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
 				break;
@@ -853,6 +857,36 @@ class Dale extends Gamegui
 				break;
 		}
 		return targets;
+	}
+
+	/**
+	 * Validate if all local chameleons are still targeting a valid target. Unbind any that lost its target.
+	 */
+	validateChameleonsLocal() {
+		for (const [chameleon_card_id, chain] of DaleCard.getLocalChameleonsEntries()) {
+			let isValid = false;
+			let isRoot = true;
+			let card_id = chameleon_card_id;
+			let type_id = new DaleCard(chameleon_card_id).original_type_id;
+			for (let i = 0; i < chain.length; i++) {
+				const target_id = chain.card_ids[i]!;
+				const valid_target_ids = this.getChameleonTargets(new DaleCard(card_id), isRoot, type_id);
+				isValid = false;
+				for (let valid_target of valid_target_ids) {
+					if (target_id == valid_target.id) {
+						isValid = true;
+						break;
+					}
+				}
+				card_id = chain.card_ids[i]!; //next chameleon card_id
+				type_id = chain.type_ids[i]!; //next chameleon type_id
+				isRoot = false;
+				if (!isValid) break;
+			}
+			if (!isValid) {
+				new DaleCard(chameleon_card_id).unbindChameleonLocal();
+			}
+		}
 	}
 
 	///////////////////////////////////////////////////
@@ -1625,7 +1659,11 @@ class Dale extends Gamegui
 	}
 	
 	onWinterIsComingSkip() {
-		if(this.checkAction('actWinterIsComingSkip')) {
+		if (this.myHand.orderedSelection.getSize() > 0) {
+			//help players to not accidentally skip winter is coming if they intend to cancel their selection instead of skipping
+			this.myHand.unselectAll();
+		}
+		else if(this.checkAction('actWinterIsComingSkip')) {
 			this.bgaPerformAction('actWinterIsComingSkip', {})
 		}
 	}

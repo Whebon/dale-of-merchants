@@ -332,52 +332,17 @@ export class DaleCard {
         return DaleCard.cardIdToChameleonChainLocal.size;
     }
 
-    //TODO: safely delete this
-    // /**
-    //  * Binds `card_id` -> `effective_type_id`. Overwrites existing local bindings
-    //  * @param card_id card id to bind
-    //  * @param effective_type_id type id the card should assume
-    //  */
-    // public static bindChameleonFromServer(card_id: number, effective_type_id: number) {
-    //     DaleCard.cardIdtoEffectiveTypeId.set(card_id, effective_type_id);
-    //     new DaleCard(card_id).updateChameleonOverlay(); //undefined, false
-    // }
-
-    //TODO: safely delete this
-    // /**
-    //  * Unbinds a commited `card_id` -> `effective_type_id`
-    //  * @param card_id card id to unbind
-    //  */
-    // public static unbindChameleonFromServer(card_id: number) {
-    //     DaleCard.cardIdtoEffectiveTypeId.delete(card_id);
-    //     new DaleCard(card_id).updateChameleonOverlay(); //undefined, false
-    // }
-    // /**
-    //  * Returns the locally stored chameleon mapping in a format that can be send to the server.
-    //  * @return ordered arrays that represents the local mapping: `card_ids` -> `type_ids`
-    //  * @example example {card_ids: "1;3;4;8", type_ids: "28;9;15;17"}
-    //  */
-    // public static getLocalChameleons(): {chameleon_card_ids: string, chameleon_type_ids: string} {
-    //     const card_ids = [] as number[];
-    //     const type_ids = [] as number[];
-    //     DaleCard.cardIdtoEffectiveTypeIdLocal.forEach((type_id: number, card_id: number) => {
-    //         card_ids.push(card_id);
-    //         type_ids.push(type_id);
-    //     });
-    //     return {
-    //         chameleon_card_ids: card_ids.join(";"),
-    //         chameleon_type_ids: type_ids.join(";")
-    //     };
-    // }
+    /**
+     * Returns the locally stored chameleon mapping as an entry array
+     */
+    public static getLocalChameleonsEntries(): [number, ChameleonChain][] {
+        return Array.from(this.cardIdToChameleonChainLocal.entries());
+    }
 
     /**
-     * Returns the locally stored chameleon mapping in a format that can be send to the server.
-     * @return ordered arrays that represents the local mapping: `card_ids` -> `chameleon_target_ids`
-     * @example example {card_ids: "1;3;4;8", type_ids: "28;9;15;17"}
+     * Returns the locally stored chameleon mapping in a format that can be send to the server (stringified json).
      */
     public static getLocalChameleonsJSON(): string {
-        console.log(this.cardIdToChameleonChain);
-        console.log(this.cardIdToChameleonChainLocal);
         const array = Array.from(this.cardIdToChameleonChainLocal.entries()).map(([card_id, target]) => ({
             card_id: card_id,
             chameleon_target_ids: target.card_ids,

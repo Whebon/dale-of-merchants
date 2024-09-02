@@ -432,9 +432,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             console.log(DaleCard.cardIdToChameleonChainLocal);
             return DaleCard.cardIdToChameleonChainLocal.size;
         };
+        DaleCard.getLocalChameleonsEntries = function () {
+            return Array.from(this.cardIdToChameleonChainLocal.entries());
+        };
         DaleCard.getLocalChameleonsJSON = function () {
-            console.log(this.cardIdToChameleonChain);
-            console.log(this.cardIdToChameleonChainLocal);
             var array = Array.from(this.cardIdToChameleonChainLocal.entries()).map(function (_a) {
                 var card_id = _a[0], target = _a[1];
                 return ({
@@ -2840,13 +2841,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onEnteringState = function (stateName, args) {
             var _this = this;
             console.log('Entering state: ' + stateName);
-            if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
-                console.log("SERVER STATE, remove all local chameleons");
-                DaleCard_9.DaleCard.unbindAllChameleonsLocal();
-            }
             if (stateName == 'nextPlayer') {
                 console.log("nextPlayer, expire all effects that last until end of turn");
+                DaleCard_9.DaleCard.unbindAllChameleonsLocal();
                 this.mainClientState.cancelAll();
+            }
+            if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
+                console.log("Revalidate all local chameleons");
+                this.validateChameleonsLocal();
             }
             if (!this.isCurrentPlayerActive()) {
                 return;
@@ -3292,10 +3294,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             visited_ids.pop();
             return tree;
         };
-        Dale.prototype.getChameleonTargets = function (card, isRoot) {
+        Dale.prototype.getChameleonTargets = function (card, isRoot, type_id) {
             var _a;
+            console.log(card);
+            console.log(card.effective_type_id);
             var targets = [];
-            switch (card.effective_type_id) {
+            switch (type_id !== null && type_id !== void 0 ? type_id : card.effective_type_id) {
                 case DaleCard_9.DaleCard.CT_FLEXIBLESHOPKEEPER:
                     targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
                     break;
@@ -3334,6 +3338,35 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
             return targets;
+        };
+        Dale.prototype.validateChameleonsLocal = function () {
+            for (var _i = 0, _a = DaleCard_9.DaleCard.getLocalChameleonsEntries(); _i < _a.length; _i++) {
+                var _b = _a[_i], chameleon_card_id = _b[0], chain = _b[1];
+                var isValid = false;
+                var isRoot = true;
+                var card_id = chameleon_card_id;
+                var type_id = new DaleCard_9.DaleCard(chameleon_card_id).original_type_id;
+                for (var i = 0; i < chain.length; i++) {
+                    var target_id = chain.card_ids[i];
+                    var valid_target_ids = this.getChameleonTargets(new DaleCard_9.DaleCard(card_id), isRoot, type_id);
+                    isValid = false;
+                    for (var _c = 0, valid_target_ids_1 = valid_target_ids; _c < valid_target_ids_1.length; _c++) {
+                        var valid_target = valid_target_ids_1[_c];
+                        if (target_id == valid_target.id) {
+                            isValid = true;
+                            break;
+                        }
+                    }
+                    card_id = chain.card_ids[i];
+                    type_id = chain.type_ids[i];
+                    isRoot = false;
+                    if (!isValid)
+                        break;
+                }
+                if (!isValid) {
+                    new DaleCard_9.DaleCard(chameleon_card_id).unbindChameleonLocal();
+                }
+            }
         };
         Dale.prototype.format_string_recursive = function (log, args) {
             var _a;
@@ -3905,7 +3938,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onWinterIsComingSkip = function () {
-            if (this.checkAction('actWinterIsComingSkip')) {
+            if (this.myHand.orderedSelection.getSize() > 0) {
+                this.myHand.unselectAll();
+            }
+            else if (this.checkAction('actWinterIsComingSkip')) {
                 this.bgaPerformAction('actWinterIsComingSkip', {});
             }
         };
