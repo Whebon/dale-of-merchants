@@ -1837,6 +1837,34 @@ class Dale extends DaleTableBasic
 
         //Fizzle
         if (array_key_exists("fizzle", $args)) {
+            switch($technique_type_id) {
+                case CT_ACORN:
+                    $players = $this->loadPlayersBasicInfos();
+                    $cards = array();
+                    foreach ($players as $other_player_id => $player) {
+                        if ($other_player_id != $player_id) {
+                            $cards = array_merge($cards, $this->cards->getCardsInLocation(STALL.$player_id));
+                        }
+                    }
+                    if (count($cards) >= 1) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_ACORN. Some players have cards in their stall");
+                    }
+                    break;
+                case CT_GIFTVOUCHER:
+                    $cards = $this->cards->getCardsInLocation(MARKET);
+                    if (count($cards) >= 1) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_GIFTVOUCHER. The market is nonempty.");
+                    }
+                    break;
+                default:
+                    $cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                    if (count($cards) >= 2) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has other cards in their hand.");
+                    }
+            }
             $this->scheduleCard($player_id, $technique_card);
             $this->fullyResolveCard($player_id, $technique_card);
             return;

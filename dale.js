@@ -3858,7 +3858,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.clientScheduleTechnique('client_nuisance', card.id);
                     break;
                 case DaleCard_9.DaleCard.CT_ROTTENFOOD:
-                    this.clientScheduleTechnique('client_rottenFood', card.id);
+                    fizzle = this.myHand.count() == 1;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_rottenFood', card.id);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

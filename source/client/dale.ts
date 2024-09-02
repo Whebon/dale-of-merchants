@@ -1545,7 +1545,6 @@ class Dale extends Gamegui
 				}
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
-					//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
 				}
 				else {
 					this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
@@ -1555,7 +1554,6 @@ class Dale extends Gamegui
 				fizzle = this.market!.getCards().length == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
-					//this.mainClientState.enterOnStack('client_fizzle', { technique_card_id: card.id });
 				}
 				else {
 					this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
@@ -1572,7 +1570,13 @@ class Dale extends Gamegui
 				this.clientScheduleTechnique('client_nuisance', card.id);
 				break;
 			case DaleCard.CT_ROTTENFOOD:
-				this.clientScheduleTechnique('client_rottenFood', card.id);
+				fizzle = this.myHand.count() == 1;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_rottenFood', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
