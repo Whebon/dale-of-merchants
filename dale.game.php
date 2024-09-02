@@ -40,7 +40,8 @@ class Dale extends DaleTableBasic
         
         $this->initGameStateLabels( array(
             "inDeckSelection" => 10,
-            "resolvingCard" => 11
+            "resolvingCard" => 11,
+            "isPostCleanUpPhase" => 12
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -89,6 +90,7 @@ class Dale extends DaleTableBasic
         // Init global values with their initial values
         $this->setGameStateInitialValue("resolvingCard", -1);
         $this->setGameStateInitialValue("inDeckSelection", 1);
+        $this->setGameStateInitialValue("isPostCleanUpPhase", 0);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -583,18 +585,47 @@ class Dale extends DaleTableBasic
 
     /**
      * Refills your hand to the maximum hand size.
+     * @return `true` if any cards were drawn
     */
     function refillHand() {
         $player_id = $this->getActivePlayerId();
         $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
         $maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
         $new_hand_cards = array();
-        while (count($hand_cards) < $maximum_hand_size) {
+        $hand_size_before = count($hand_cards);
+        while (true) {
             //draw cards from deck
             $nbr = $maximum_hand_size - count($hand_cards);
-            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
-            $new_hand_cards = array_merge($new_hand_cards, $cards);
-            $hand_cards = array_merge($hand_cards, $cards);
+            if ($nbr > 0) {
+                $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
+                $new_hand_cards = array_merge($new_hand_cards, $cards);
+                $hand_cards = array_merge($hand_cards, $cards);
+            }
+
+            //autobind chameleons to cookies
+            foreach ($hand_cards as $hand_card) {
+                $type_id = $this->getTypeId($hand_card);
+                if ($this->isChameleonTypeId($type_id)) {
+                    $target_ids = $this->getChameleonTargets($hand_card["id"], $type_id);
+                    $targets = $this->cards->getCards($target_ids);
+                    $onlyCookies = count($targets) > 0;
+                    foreach ($targets as $target) {
+                        if ($this->getTypeId($target) != CT_COOKIES) {
+                            $onlyCookies = false;
+                            break;
+                        }
+                    }
+                    if ($onlyCookies) {
+                        if ($this->getTypeId(current($targets)) == CT_COOKIES) {
+                            $this->effects->insertModification($hand_card["id"], $type_id, CT_COOKIES, current($target_ids));
+                            $this->notifyAllPlayers('message', clienttranslate('${player_name}\'s ${chameleon_card_name} automatically copies Cookies'), array(
+                                'chameleon_card_name' => $this->card_types[$type_id]['name'],
+                                'player_name' => $this->getActivePlayerName()
+                            ));
+                        }
+                    }
+                }
+            }
             
             //recompute the maximum hand size
             $new_maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
@@ -614,14 +645,16 @@ class Dale extends DaleTableBasic
         }
 
         //notify about the new cards from deck
-        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameById($player_id),
-            "nbr" => count($new_hand_cards),
-            "_private" => array(
-                "cards" => $new_hand_cards
-            )
-        ));
+        if (count($new_hand_cards) > 0) {
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "nbr" => count($new_hand_cards),
+                "_private" => array(
+                    "cards" => $new_hand_cards
+                )
+            ));
+        }
 
         //draw missing cards from junk reserve
         $nbr_junk_cards = $maximum_hand_size - count($hand_cards);
@@ -636,6 +669,9 @@ class Dale extends DaleTableBasic
                 "nbr" => $nbr_junk_cards,
             ));
         }
+
+        //return true if any cards were drawn
+        return ($hand_size_before < $maximum_hand_size);
     }
 
     /**
@@ -698,6 +734,19 @@ class Dale extends DaleTableBasic
                 "cards" => $new_cards
             ));
         }
+    }
+
+    /**
+     * @return bool indicating if the given `type_id` is one of the 5 chameleon type ids
+     */
+    function isChameleonTypeId(int $type_id) {
+        return (
+            $type_id == CT_FLEXIBLESHOPKEEPER ||
+            $type_id == CT_REFLECTION ||
+            $type_id == CT_GOODOLDTIMES ||
+            $type_id == CT_TRENDSETTING ||
+            $type_id == CT_SEEINGDOUBLES
+        );
     }
 
     /**
@@ -872,7 +921,7 @@ class Dale extends DaleTableBasic
                 $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
                 foreach ($valid_targets as $target) {
                     if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
-                        $targets = array_merge($targets, $this->getChameleonTargets($card_id, $this->getTypeId($target), $visited_chameleons));
+                        $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
                     }
                 }
                 break;
@@ -884,7 +933,7 @@ class Dale extends DaleTableBasic
                     if ($player_id != $active_player_id) {
                         $target = $this->cards->getCardOnTop(DISCARD.$player_id);
                         if ($target) {
-                            $targets = array_merge($targets, $this->getChameleonTargets($card_id, $this->getTypeId($target), $visited_chameleons));
+                            $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
                         }
                     }
                 }
@@ -893,14 +942,14 @@ class Dale extends DaleTableBasic
                 array_push($visited_chameleons, CT_GOODOLDTIMES);
                 $target = $this->cards->getCardOnTop(DISCARD.MARKET);
                 if ($target) {
-                    $targets = array_merge($targets, $this->getChameleonTargets($card_id, $this->getTypeId($target), $visited_chameleons));
+                    $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
                 }
                 break;
             case CT_TRENDSETTING:
                 array_push($visited_chameleons, CT_TRENDSETTING);
                 $valid_targets = $this->cards->getCardsInLocation(MARKET);
                 foreach ($valid_targets as $target) {
-                    $targets = array_merge($targets, $this->getChameleonTargets($card_id, $this->getTypeId($target), $visited_chameleons));
+                    $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
                 }
                 break;
             case CT_SEEINGDOUBLES:
@@ -909,7 +958,7 @@ class Dale extends DaleTableBasic
                 $valid_targets = $this->cards->getCardsInLocation(HAND.$active_player_id);
                 foreach ($valid_targets as $target) {
                     if ($target["id"] != $card_id) { //seeing doubles cannot bind to itself
-                        $targets = array_merge($targets, $this->getChameleonTargets($card_id, $this->getTypeId($target), $visited_chameleons));
+                        $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
                     }
                 }
                 break;
@@ -991,6 +1040,18 @@ class Dale extends DaleTableBasic
         }
         return false;
     }
+
+    //TODO: safely remove this
+    // /**
+    //  * Commit all local chameleons in the player's hand
+    //  */
+    // function addChameleonBindingsInHand($chameleons_json) {
+    //     $player_id = $this->getActivePlayerId();
+    //     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
+    //     $card_ids = $this->toCardIds($cards);
+    //     $raw_card_ids = implode(';', $card_ids);
+    //     $this->addChameleonBindings($chameleons_json, $raw_card_ids);
+    // }
 
     /**
      * Ensures that all used chameleon cards have a binding. Then commit those bindings.
@@ -2267,6 +2328,20 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
+    function actPostCleanUpPhase($chameleons_json) {
+        $chameleon_ids = array();
+        foreach ($chameleons_json as $local_chain) {
+            $target_type_ids = $local_chain["target_type_ids"];
+            if ($target_type_ids > 0) {
+                if ($target_type_ids[count($target_type_ids)-1] == CT_COOKIES) {
+                    $chameleon_ids[] = $local_chain["card_id"];
+                }
+            }
+        }
+        $this->addChameleonBindings($chameleons_json, implode(';', $chameleon_ids));
+        $this->gamestate->nextState("trCleanUpPhase");
+    }
+
     
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
@@ -2308,23 +2383,6 @@ class Dale extends DaleTableBasic
             'stack_index_plus_1' => $stack_index + 1
         );
     }
-
-    /*
-    
-    Example for game state "MyGameState":
-    
-    function argMyGameState()
-    {
-        // Get some values from the current game situation in database...
-    
-        // return values:
-        return array(
-            'variable1' => $value1,
-            'variable2' => $value2,
-            ...
-        );
-    }    
-    */
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
@@ -2397,16 +2455,43 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trStartGame");
     }
 
-    function stNextPlayer() {
-        //aka the "clean-up phase"
-
+    function stCleanUpPhase() {
         //1. fill your hand to the maximum hand size
-        $this->refillHand();
+        $hasDrawnCards = $this->refillHand();
 
         //2. fill empty market slots
         $this->refillMarket(true);
 
-        //expire all effects, except global effects with their corresponding card in a schedule
+        //3. check for post clean-up phase
+        $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
+        $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES);
+        if ($hasDrawnCards || !$isPostCleanUpPhase) {
+            $player_id = $this->getActivePlayerId();
+            $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
+            foreach ($dbcards as $card_id => $card) {
+                $type_id = $this->getTypeId($card);
+                if (in_array($type_id, $usesPostCleanUp)) {
+                    //the hand contains a card that uses the post clean up phase
+                    $this->setGameStateValue("isPostCleanUpPhase", 1);
+                    $this->gamestate->nextState("trPostCleanUpPhase");
+                    return;
+                }
+                $target_ids = $this->getChameleonTargets($card_id, $type_id);
+                $dbtargets = $this->cards->getCards($target_ids);
+                foreach ($dbtargets as $dbtarget) {
+                    $target_type_id = $this->getTypeId($dbtarget);
+                    if (in_array($target_type_id, $usesPostCleanUp) || ($target_type_id == CT_COOKIES && count($dbtargets) >= 2)) {
+                        //the hand contains a chameleon card that can reach a card that uses the post clean up phase
+                        $this->setGameStateValue("isPostCleanUpPhase", 1);
+                        $this->gamestate->nextState("trPostCleanUpPhase");
+                        return; 
+                    }
+                }
+            }
+        }
+        $this->setGameStateValue("isPostCleanUpPhase", 0);
+
+        //4. expire all effects, except global effects with their corresponding card in a schedule
         $schedule_card_ids = array();
         $players = $this->loadPlayersBasicInfos();
         foreach($players as $player_id => $player) {
@@ -2417,7 +2502,7 @@ class Dale extends DaleTableBasic
         }
         $this->effects->expireAllExcept($schedule_card_ids);
 
-        //activate the next player
+        //5. activate the next player
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
         $this->gamestate->nextState("trNextPlayer");

@@ -168,13 +168,43 @@ interface GameStates {
 		},
 	},
 	41: {
-		'name': 'nextPlayer',
+		'name': 'cleanUpPhase',
 		'description': '',
 		'type': 'game',
-		'action': 'stNextPlayer',
+		'action': 'stCleanUpPhase',
 		'updateGameProgression': true,
 		'transitions': {
 			'trNextPlayer': 30,
+			'trPostCleanUpPhase': 42,
+		},
+	},
+	42: {
+		'name': 'postCleanUpPhase',
+		'description': '${actplayer} must take an action',
+		'descriptionmyturn': '${you} may use passive abilities',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actUsePassiveAbility': [{
+				'name': 'chameleons_json',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}],
+			'actPostCleanUpPhase': [{
+				'name': 'chameleons_json',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trCleanUpPhase': 41,
 		},
 	},
 	52: {

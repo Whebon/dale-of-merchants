@@ -287,11 +287,10 @@ class Dale extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 
-		if (stateName == 'nextPlayer') {
-			console.log("nextPlayer, expire all effects that last until end of turn");
-			DaleCard.unbindAllChameleonsLocal()
-			this.mainClientState.cancelAll();
-		}
+		// if (stateName == 'cleanUpPhase') {
+		// 	console.log("cleanUpPhase, expire all effects that last until end of turn");
+		// 	this.mainClientState.cancelAll();
+		// }
 
 		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
 			console.log("Revalidate all local chameleons");
@@ -299,6 +298,9 @@ class Dale extends Gamegui
 		}
 
 		if (!this.isCurrentPlayerActive()) {
+			if (stateName == 'playerTurn') {
+				DaleCard.unbindAllChameleonsLocal();
+			}
 			return;
 		}
 
@@ -579,6 +581,9 @@ class Dale extends Gamegui
 			case 'deckSelection':
 				this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
 				this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
+				break;
+			case 'postCleanUpPhase':
+				this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
 				break;
 			case 'playerTurn':
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
@@ -1145,6 +1150,12 @@ class Dale extends Gamegui
 	onSubmitPreferenceAbstain() {
 		this.bgaPerformAction('actSubmitPreference', {
 			animalfolk_ids: '' 
+		})
+	}
+
+	onPostCleanUpPhase() {
+		this.bgaPerformAction('actPostCleanUpPhase', {
+			chameleons_json: DaleCard.getLocalChameleonsJSON()
 		})
 	}
 

@@ -2840,16 +2840,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onEnteringState = function (stateName, args) {
             var _this = this;
             console.log('Entering state: ' + stateName);
-            if (stateName == 'nextPlayer') {
-                console.log("nextPlayer, expire all effects that last until end of turn");
-                DaleCard_9.DaleCard.unbindAllChameleonsLocal();
-                this.mainClientState.cancelAll();
-            }
             if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
                 console.log("Revalidate all local chameleons");
                 this.validateChameleonsLocal();
             }
             if (!this.isCurrentPlayerActive()) {
+                if (stateName == 'playerTurn') {
+                    DaleCard_9.DaleCard.unbindAllChameleonsLocal();
+                }
                 return;
             }
             switch (stateName) {
@@ -3087,6 +3085,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'deckSelection':
                     this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
                     this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
+                    break;
+                case 'postCleanUpPhase':
+                    this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
                     break;
                 case 'playerTurn':
                     break;
@@ -3508,6 +3509,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onSubmitPreferenceAbstain = function () {
             this.bgaPerformAction('actSubmitPreference', {
                 animalfolk_ids: ''
+            });
+        };
+        Dale.prototype.onPostCleanUpPhase = function () {
+            this.bgaPerformAction('actPostCleanUpPhase', {
+                chameleons_json: DaleCard_9.DaleCard.getLocalChameleonsJSON()
             });
         };
         Dale.prototype.onStallCardClick = function (stall, card, stack_index, index) {

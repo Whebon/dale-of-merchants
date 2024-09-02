@@ -119,6 +119,17 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actPostCleanUpPhase()
+	{
+		self::setAjaxMode();
+
+		/** @var string $chameleons_json */
+		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
+
+		$this->game->actPostCleanUpPhase( $chameleons_json );
+		self::ajaxResponse();
+	}
+
 	public function actSpyglass()
 	{
 		self::setAjaxMode();

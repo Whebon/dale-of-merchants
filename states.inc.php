@@ -20,7 +20,7 @@ if (false) {
 	/** @var dale $game */
 	$game->stDeckSelection();
 	$game->stStartGame();
-	$game->stNextPlayer();
+	$game->stCleanUpPhase();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
 }
@@ -87,13 +87,24 @@ $machinestates = array(
 		),
 	),
 	41 => array(
-		'name' => 'nextPlayer',
+		'name' => 'cleanUpPhase',
 		'description' => '',
 		'type' => 'game',
-		'action' => 'stNextPlayer',
+		'action' => 'stCleanUpPhase',
 		'updateGameProgression' => true,
 		'transitions' => array(
 			'trNextPlayer' => 30,
+			'trPostCleanUpPhase' => 42,
+		),
+	),
+	42 => array(
+		'name' => 'postCleanUpPhase',
+		'description' => clienttranslate('${actplayer} must take an action'),
+		'descriptionmyturn' => clienttranslate('${you} may use passive abilities'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actUsePassiveAbility', 'actPostCleanUpPhase'],
+		'transitions' => array(
+			'trCleanUpPhase' => 41,
 		),
 	),
 	52 => array(
