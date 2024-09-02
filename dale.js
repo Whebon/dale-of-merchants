@@ -3252,18 +3252,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 console.log("'".concat(card.name, "' has ").concat(this.chameleonArgs.currentTargets.length, " direct target(s)"));
                 console.log("'".concat(card.name, "' has ").concat(targets.size, " total target(s)"));
                 console.log(Array.from(targets).map(function (target) { return target instanceof HTMLElement ? target : target.div; }));
-                if (this.chameleonArgs.onlyContainsGoodOldTimes) {
+                if (targets.size == 0) {
+                    this.chameleonArgs = undefined;
+                    return true;
+                }
+                else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
                     if (ditchAvailable) {
                         args.mode = 'ditchOptional';
                     }
-                    else {
+                    else if (card.effective_type_id != DaleCard_9.DaleCard.CT_GOODOLDTIMES) {
                         this.chameleonArgs = undefined;
                         return true;
                     }
-                }
-                else if (targets.size == 0) {
-                    this.chameleonArgs = undefined;
-                    return true;
                 }
                 this.mainClientState.enterOnStack(chameleonStatename, args);
             }
