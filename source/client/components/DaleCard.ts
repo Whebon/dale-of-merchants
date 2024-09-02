@@ -603,7 +603,7 @@ export class DaleCard {
      * @param parent_id (optional) - if specified, the div will be immediately be "detached" to the parent
      * @param dataValue (optional) - if specified, set the data-value attribute of the div to display modified values
      */
-    public toDiv(parent_id?: string | HTMLElement, dataValue?: 'effective' | 'market'): HTMLElement {
+    public toDiv(parent_id?: string | HTMLElement, dataValue?: 'effective' | 'market' | 'original'): HTMLElement {
         const div = document.createElement("div")
         div.classList.add("dale-card");
         div.id = "dale-card-"+this.id;

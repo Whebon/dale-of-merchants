@@ -1289,8 +1289,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 (_a = this.topCardHTML) === null || _a === void 0 ? void 0 : _a.remove();
                 this.topCardHTML = undefined;
                 if (topCard !== undefined) {
-                    var dataValue = this.player_id == this.page.player_id ? 'effective' : undefined;
-                    this.topCardHTML = topCard.toDiv(this.placeholderHTML, dataValue);
+                    this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'original');
                     this.topCardHTML.classList.add("dale-clickable");
                     dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
                 }
