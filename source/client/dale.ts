@@ -739,7 +739,7 @@ class Dale extends Gamegui
 				else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || this.chameleonArgs?.onlyContainsGoodOldTimes) {
 					args.mode = 'ditchOptional'
 				}
-				else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.includes(card)) && this.marketDiscard.size > 0) {
+				else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.length == 2) && this.marketDiscard.size > 0) {
 					args.mode = 'ditchOrCopy'
 				}
 				else {

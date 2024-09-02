@@ -3229,7 +3229,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || ((_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.onlyContainsGoodOldTimes)) {
                         args.mode = 'ditchOptional';
                     }
-                    else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.includes(card)) && this.marketDiscard.size > 0) {
+                    else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.length == 2) && this.marketDiscard.size > 0) {
                         args.mode = 'ditchOrCopy';
                     }
                     else {
