@@ -1081,7 +1081,7 @@ class Dale extends DaleTableBasic
             'card' => $dbcard
         ), $msg_args));
         //show the log after the animation finished (otherwise the result is spoiled)
-        $this->notifyAllPlayers('delay', $msg, array_merge( array(
+        $this->notifyAllPlayers('message', $msg, array_merge( array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'animalfolk_id' => $animalfolk_id,
@@ -1091,6 +1091,7 @@ class Dale extends DaleTableBasic
             'd6' => $d6,
             'card' => $dbcard
         ), $msg_args));
+        return $die_value;
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2423,7 +2424,7 @@ class Dale extends DaleTableBasic
                     ANIMALFOLK_OCELOTS,
                     $card
                 );
-                //$this->effects->insertModification($card_id, CT_BOLDHAGGLER, $value);
+                $this->effects->insertModification($card_id, CT_BOLDHAGGLER, $value);
                 break;
             default:
                 $name = $this->getCardName($card);

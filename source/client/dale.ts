@@ -759,17 +759,12 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_choicelessPassiveCard':
-				this.addActionButton("confirm-button", _("Play"), "onChoicelessPassiveCard");
-				this.addActionButtonCancelClient();
+				this.onChoicelessPassiveCard(); //immediately leave this state
 				break;
 			case 'client_marketDiscovery':
 				this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
 				this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
-				break;
-			case 'client_boldHaggler':
-				this.addActionButton("confirm-button", _("Roll"), "onChoicelessPassiveCard");
-				this.addActionButtonCancelClient(_("Skip"));
 				break;
 			case 'specialOffer':
 				this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
@@ -985,10 +980,7 @@ class Dale extends Gamegui
 	override format_string_recursive(log: string, args: Record<string, any>): string {
 		if (log && args && !args['processed']) {
 			args['processed'] = true;
-
-			console.log(log);
-			console.log(args);
-
+			
 			//parse opponent name
 			if ('opponent_name' in args) {
 				let opponent_name = args['opponent_name'];
@@ -1816,9 +1808,6 @@ class Dale extends Gamegui
 				else {
 					this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
 				}
-				break;
-			case DaleCard.CT_BOLDHAGGLER:
-				this.mainClientState.enterOnStack('client_boldHaggler', {passive_card_id: card.id});
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});

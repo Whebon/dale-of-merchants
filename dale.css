@@ -501,7 +501,7 @@
   left: 50%;
   z-index: 700;
   transform: translateX(-50%);
-  min-width: 250px;
+  min-width: 100%;
 }
 
 .dale-die {
@@ -527,7 +527,7 @@
   transform: translateZ(var(--die-half));
 }
 .dale-die .dale-die-side-2 {
-  transform: rotateX(-180deg) translateZ(var(--die-half));
+  transform: rotateX(-180deg) translateZ(var(--die-half)) scaleY(-1);
 }
 .dale-die .dale-die-side-3 {
   transform: rotateY(90deg) translateZ(var(--die-half));
@@ -653,51 +653,45 @@
 }
 
 .dale-die[side="1"] {
-  transform: rotateX(360deg) rotateY(360deg) rotateZ(0deg);
+  transform: rotateX(0deg) rotateY(0deg);
+}
+.dale-die[side="1"].dale-roll {
+  transform: rotateX(0deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 }
 
 .dale-die[side="2"] {
-  transform: rotateX(360deg) rotateY(540deg) rotateZ(0deg);
+  transform: rotateX(0deg) rotateY(180deg);
+}
+.dale-die[side="2"].dale-roll {
+  transform: rotateX(0deg) rotateY(180deg) rotateX(360deg) rotateY(360deg);
 }
 
 .dale-die[side="3"] {
-  transform: rotateX(360deg) rotateY(630deg) rotateZ(0deg);
+  transform: rotateX(0deg) rotateY(-90deg);
+}
+.dale-die[side="3"].dale-roll {
+  transform: rotateX(0deg) rotateY(-90deg) rotateX(360deg) rotateY(360deg);
 }
 
 .dale-die[side="4"] {
-  transform: rotateX(360deg) rotateY(450deg) rotateZ(0deg);
+  transform: rotateX(0deg) rotateY(90deg);
+}
+.dale-die[side="4"].dale-roll {
+  transform: rotateX(0deg) rotateY(90deg) rotateX(360deg) rotateY(360deg);
 }
 
 .dale-die[side="5"] {
-  transform: rotateX(630deg) rotateY(360deg) rotateZ(0deg);
+  transform: rotateX(-90deg) rotateY(0deg);
+}
+.dale-die[side="5"].dale-roll {
+  transform: rotateX(-90deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 }
 
 .dale-die[side="6"] {
-  transform: rotateX(450deg) rotateY(360deg) rotateZ(0deg);
+  transform: rotateX(90deg) rotateY(0deg);
 }
-
-.dale-die[side="1"].dale-roll {
-  transform: rotateX(0deg) rotateY(0deg) rotateZ(360deg);
-}
-
-.dale-die[side="2"].dale-roll {
-  transform: rotateX(0deg) rotateY(180deg) rotateZ(360deg);
-}
-
-.dale-die[side="3"].dale-roll {
-  transform: rotateX(0deg) rotateY(270deg) rotateZ(360deg);
-}
-
-.dale-die[side="4"].dale-roll {
-  transform: rotateX(0deg) rotateY(90deg) rotateZ(360deg);
-}
-
-.dale-die[side="5"].dale-roll {
-  transform: rotateX(270deg) rotateY(0deg) rotateZ(360deg);
-}
-
 .dale-die[side="6"].dale-roll {
-  transform: rotateX(90deg) rotateY(0deg) rotateZ(360deg);
+  transform: rotateX(90deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 }
 
 .dale-die-result {

@@ -275,8 +275,7 @@ declare global {
 
 	interface ClientPassiveChoice {
 		'client_choicelessPassiveCard': {},
-		'client_marketDiscovery': {},
-		'client_boldHaggler': {}
+		'client_marketDiscovery': {}
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice

@@ -127,6 +127,10 @@ class DaleEffects {
                 switch($row["type_id"]) {
                     case CT_FLASHYSHOW:
                         $value += 1;
+                        break;
+                    case CT_BOLDHAGGLER:
+                        $value += $row["arg"];
+                        break;
                 }
             }
         }

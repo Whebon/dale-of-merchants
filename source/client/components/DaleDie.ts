@@ -76,10 +76,11 @@ export class DaleDie {
         `;
         this.parent.appendChild(this.container);
         this.die = this.container.querySelector(".dale-die")!;
+        this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
 
-        //roll the die
-        this.die.setAttribute('side', String(d6+1));
+        //roll the die according to the given d6 roll
         setTimeout((() => {
+            this.die.setAttribute('side', String(d6+1));
             this.die.classList.toggle('dale-roll');
         }).bind(this), 1)
 
@@ -88,7 +89,7 @@ export class DaleDie {
         if (resultLabel) {
             resultLabel.classList.remove('dale-die-reveal');
             resultLabel.classList.add('dale-die-hide');
-            resultLabel.innerHTML = `You rolled ${name_displayed}.`;
+            resultLabel.innerHTML = `Rolled ${name_displayed}`;
             setTimeout(() => {
               resultLabel.classList.add('dale-die-reveal');
               resultLabel.classList.remove('dale-die-hide');
@@ -101,6 +102,24 @@ export class DaleDie {
             dojo.fadeOut({node: thiz.container, onEnd: function (node: HTMLElement) { dojo.destroy(node);}}).play();
         }), 1500)
     }
+
+    //TODO: safely remove this
+    // //roll the die
+    // this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
+    // this.die.setAttribute('spin360', String(this.getSpin360()));
+    // setTimeout((() => {
+    //     this.die.setAttribute('side', String(d6+1));
+    //     this.die.setAttribute('spin360', String(this.getSpin360()));
+    // }).bind(this), 1)
+    //TODO: safely remove this
+    // private getSpin360() {
+    //     let spin360 = 0;
+    //     while (spin360 == this.spin360) {
+    //         spin360 = Math.floor(Math.random() * 3) - 2;
+    //     }
+    //     this.spin360 = spin360;
+    //     return spin360;
+    // }
 
     public static getIconTpl(die_icon: number): string {
         var col, row;

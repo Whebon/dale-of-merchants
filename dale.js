@@ -387,6 +387,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                         switch (effect.type_id) {
                             case DaleCard.CT_FLASHYSHOW:
                                 value += 1;
+                                break;
+                            case DaleCard.CT_BOLDHAGGLER:
+                                value += effect.arg;
+                                break;
                         }
                     }
                 }
@@ -2354,8 +2358,6 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may use this card's ability");
                     case 'client_marketDiscovery':
                         return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
-                    case 'client_boldHaggler':
-                        return _("${card_name}: ${you} may roll ${ocelot} to increase this card's value");
                     case 'client_fizzle':
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
                     case 'client_choicelessTechniqueCard':
@@ -2746,15 +2748,16 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
             this.container.innerHTML = "\n            <div class=\"dale-die\" type=\"".concat(this.type, "\" side=\"1\">\n                <div class=\"dale-die-side dale-die-side-1\"></div>\n                <div class=\"dale-die-side dale-die-side-2\"></div>\n                <div class=\"dale-die-side dale-die-side-3\"></div>\n                <div class=\"dale-die-side dale-die-side-4\"></div>\n                <div class=\"dale-die-side dale-die-side-5\"></div>\n                <div class=\"dale-die-side dale-die-side-6\"></div>\n            </div>\n            <div class=\"dale-die-result\"></div>\n        ");
             this.parent.appendChild(this.container);
             this.die = this.container.querySelector(".dale-die");
-            this.die.setAttribute('side', String(d6 + 1));
+            this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
             setTimeout((function () {
+                _this.die.setAttribute('side', String(d6 + 1));
                 _this.die.classList.toggle('dale-roll');
             }).bind(this), 1);
             var resultLabel = (_a = this.die.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.dale-die-result');
             if (resultLabel) {
                 resultLabel.classList.remove('dale-die-reveal');
                 resultLabel.classList.add('dale-die-hide');
-                resultLabel.innerHTML = "You rolled ".concat(name_displayed, ".");
+                resultLabel.innerHTML = "Rolled ".concat(name_displayed);
                 setTimeout(function () {
                     resultLabel.classList.add('dale-die-reveal');
                     resultLabel.classList.remove('dale-die-hide');
@@ -3453,17 +3456,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_choicelessPassiveCard':
-                    this.addActionButton("confirm-button", _("Play"), "onChoicelessPassiveCard");
-                    this.addActionButtonCancelClient();
+                    this.onChoicelessPassiveCard();
                     break;
                 case 'client_marketDiscovery':
                     this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
                     this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
                     this.addActionButtonCancelClient();
-                    break;
-                case 'client_boldHaggler':
-                    this.addActionButton("confirm-button", _("Roll"), "onChoicelessPassiveCard");
-                    this.addActionButtonCancelClient(_("Skip"));
                     break;
                 case 'specialOffer':
                     this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
@@ -3640,8 +3638,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             if (log && args && !args['processed']) {
                 args['processed'] = true;
-                console.log(log);
-                console.log(args);
                 if ('opponent_name' in args) {
                     var opponent_name = args['opponent_name'];
                     var opponent_color = "000000";
@@ -4269,9 +4265,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else {
                         this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
                     }
-                    break;
-                case DaleCard_9.DaleCard.CT_BOLDHAGGLER:
-                    this.mainClientState.enterOnStack('client_boldHaggler', { passive_card_id: card.id });
                     break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });

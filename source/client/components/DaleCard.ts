@@ -253,6 +253,10 @@ export class DaleCard {
                 switch(effect.type_id) {
                     case DaleCard.CT_FLASHYSHOW:
                         value += 1;
+                        break;
+                    case DaleCard.CT_BOLDHAGGLER:
+                        value += effect.arg!;
+                        break;
                 }
             }
         }
