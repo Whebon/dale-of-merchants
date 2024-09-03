@@ -73,6 +73,14 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
+		'rollDie': {
+			player_id: number,
+			animalfolk_id: number,
+			card: DbCard,
+			die_value: number,
+			die_label: string,
+			d6: 0|1|2|3|4|5
+		}
 		'marketSlideRight': {
 			//no args
 		}
@@ -267,7 +275,8 @@ declare global {
 
 	interface ClientPassiveChoice {
 		'client_choicelessPassiveCard': {},
-		'client_marketDiscovery': {}
+		'client_marketDiscovery': {},
+		'client_boldHaggler': {}
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice

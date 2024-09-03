@@ -543,10 +543,184 @@
 	height: 50px;
 }
 
+.dale-log-span {
+    display: inline;
+    vertical-align: middle;
+	.dale-icon {
+		width: 30px;
+		height: 30px;
+		display: inline-block;
+		left: auto;
+		position: relative;
+		transform: translate(0, 0);
+	}
+}
 
-////////////////////////////////////////////////////
-//////       Awesome css by Sami Laakso       //////
-////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////
+//////       Awesome die css by Sami Laakso       //////
+////////////////////////////////////////////////////////
+
+:root {
+	--ocelot: rgb(227,6,19);
+	--polecat: rgb(215,64,119);
+	--hare: rgb(72,124,190);
+	--pangolin1: rgb(127,186,39);
+	--pangolin2: rgb(0,149,62);
+	--die-size: 60px;
+	--die-half: 30px;
+}
+
+.dale-die-container {
+	text-align: center;
+	padding: 10px;
+	position: absolute;
+    top: 19%;
+    left: 50%;
+    z-index: 700;
+    transform: translateX(-50%);
+	min-width: 250px;
+}
+
+.dale-die {
+	width: var(--die-size);
+	height: var(--die-size);
+	transform-style: preserve-3d;
+	transition: transform 1s ease-out;
+	cursor: pointer;
+	margin: auto;
+}
+
+.dale-die-side {
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	box-shadow: inset 0 0 5px 2px rgba(255,255,255,0.6);
+	background-image: url('img/dice.png');
+	background-size: 600% 500%;
+}
+
+.dale-die {
+	.dale-die-side-1 { transform: translateZ(var(--die-half)); }
+	.dale-die-side-2 { transform: rotateX(-180deg) translateZ(var(--die-half)); }
+	.dale-die-side-3 { transform: rotateY(90deg) translateZ(var(--die-half)); }
+	.dale-die-side-4 { transform: rotateY(-90deg) translateZ(var(--die-half)); }
+	.dale-die-side-5 { transform: rotateX(90deg) translateZ(var(--die-half)); }
+	.dale-die-side-6 { transform: rotateX(-90deg) translateZ(var(--die-half)); }
+}
+.dale-die[type="ocelot"] {
+	.dale-die-side-1 { background-position: 0% 0%; }
+	.dale-die-side-2 { background-position: -100% 0%; }
+	.dale-die-side-3 { background-position: -200% 0%; }
+	.dale-die-side-4 { background-position: -300% 0%; }
+	.dale-die-side-5 { background-position: -400% 0%; }
+	.dale-die-side-6 { background-position: -500% 0%; }
+	&~.dale-die-result { background-color: var(--ocelot); }
+}
+.dale-die[type="polecat"] {
+	.dale-die-side-1 { background-position: 0% -100%; }
+	.dale-die-side-2 { background-position: -100% -100%; }
+	.dale-die-side-3 { background-position: -200% -100%; }
+	.dale-die-side-4 { background-position: -300% -100%; }
+	.dale-die-side-5 { background-position: -400% -100%; }
+	.dale-die-side-6 { background-position: -500% -100%; }
+	&~.dale-die-result { background-color: var(--polecat); }
+}
+.dale-die[type="hare"] {
+	.dale-die-side-1 { background-position: 0% -200%; }
+	.dale-die-side-2 { background-position: -100% -200%; }
+	.dale-die-side-3 { background-position: -200% -200%; }
+	.dale-die-side-4 { background-position: -300% -200%; }
+	.dale-die-side-5 { background-position: -400% -200%; }
+	.dale-die-side-6 { background-position: -500% -200%; }
+	&~.dale-die-result { background-color: var(--hare); }
+}
+.dale-die[type="pangolin1"] {
+	.dale-die-side-1 { background-position: 0% -300%; }
+	.dale-die-side-2 { background-position: -100% -300%; }
+	.dale-die-side-3 { background-position: -200% -300%; }
+	.dale-die-side-4 { background-position: -300% -300%; }
+	.dale-die-side-5 { background-position: -400% -300%; }
+	.dale-die-side-6 { background-position: -500% -300%; }
+	&~.dale-die-result { background-color: var(--pangolin1); }
+}
+	.dale-die[type="pangolin2"] {
+	.dale-die-side-1 { background-position: 0% -400%; }
+	.dale-die-side-2 { background-position: -100% -400%; }
+	.dale-die-side-3 { background-position: -200% -400%; }
+	.dale-die-side-4 { background-position: -300% -400%; }
+	.dale-die-side-5 { background-position: -400% -400%; }
+	.dale-die-side-6 { background-position: -500% -400%; }
+	&~.dale-die-result { background-color: var(--pangolin2); }
+}
+
+.dale-die[side="1"] {
+	transform: rotateX(360deg) rotateY(360deg) rotateZ(0deg);
+}
+.dale-die[side="2"] {
+	transform: rotateX(360deg) rotateY(540deg) rotateZ(0deg);
+}
+.dale-die[side="3"] {
+	transform: rotateX(360deg) rotateY(630deg) rotateZ(0deg);
+}
+.dale-die[side="4"] {
+	transform: rotateX(360deg) rotateY(450deg) rotateZ(0deg);
+}
+.dale-die[side="5"] {
+	transform: rotateX(630deg) rotateY(360deg) rotateZ(0deg);
+}
+.dale-die[side="6"] {
+	transform: rotateX(450deg) rotateY(360deg) rotateZ(0deg);
+}
+
+.dale-die[side="1"].dale-roll {
+	transform: rotateX(0deg) rotateY(0deg) rotateZ(360deg);
+}
+.dale-die[side="2"].dale-roll {
+	transform: rotateX(0deg) rotateY(180deg) rotateZ(360deg);
+}
+.dale-die[side="3"].dale-roll {
+	transform: rotateX(0deg) rotateY(270deg) rotateZ(360deg);
+}
+.dale-die[side="4"].dale-roll {
+	transform: rotateX(0deg) rotateY(90deg) rotateZ(360deg);
+}
+.dale-die[side="5"].dale-roll {
+	transform: rotateX(270deg) rotateY(0deg) rotateZ(360deg);
+}
+.dale-die[side="6"].dale-roll {
+	transform: rotateX(90deg) rotateY(0deg) rotateZ(360deg);
+}
+
+.dale-die-result {
+	margin-top: 20px;
+	display: inline-block;
+	position: relative;
+		color: white;
+		font-weight: bold;
+		padding: 0.5rem 1rem;
+		border-radius: 0.25rem;
+		box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+	&.dale-die-hide { opacity: 0; }
+	&.dale-die-reveal { animation: fadeUp 0.3s forwards; }
+}
+
+@keyframes fadeUp {
+	0% {
+		opacity: 0;
+		bottom: -10px;
+	}
+
+	100% {
+		opacity: 1;
+		bottom: 0px;
+	}
+}
+
+////////////////////////////////////
+//////       Arc Stocks       //////
+////////////////////////////////////
 
 :root {
 	--dale-wrap-technique: rgb(40,125,184);

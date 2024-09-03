@@ -2354,6 +2354,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may use this card's ability");
                     case 'client_marketDiscovery':
                         return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
+                    case 'client_boldHaggler':
+                        return _("${card_name}: ${you} may roll ${ocelot} to increase this card's value");
                     case 'client_fizzle':
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
                     case 'client_choicelessTechniqueCard':
@@ -2679,11 +2681,186 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
             (_a = $("deck-" + animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-deck-selection-unavailable");
             this.orderedSelection.selectItem(animalfolk_id);
         };
+        DaleDeckSelection.ANIMALFOLK_NONE = 0;
+        DaleDeckSelection.ANIMALFOLK_MACAWS = 1;
+        DaleDeckSelection.ANIMALFOLK_PANDAS = 2;
+        DaleDeckSelection.ANIMALFOLK_RACCOONS = 3;
+        DaleDeckSelection.ANIMALFOLK_SQUIRRELS = 4;
+        DaleDeckSelection.ANIMALFOLK_OCELOTS = 5;
+        DaleDeckSelection.ANIMALFOLK_CHAMELEONS = 6;
+        DaleDeckSelection.ANIMALFOLK_PLATYPUSES = 7;
+        DaleDeckSelection.ANIMALFOLK_SLOTHS = 8;
+        DaleDeckSelection.ANIMALFOLK_CROCODILES = 9;
+        DaleDeckSelection.ANIMALFOLK_FOXES = 10;
+        DaleDeckSelection.ANIMALFOLK_POLECATS = 11;
+        DaleDeckSelection.ANIMALFOLK_OWLS = 12;
+        DaleDeckSelection.ANIMALFOLK_BEAVERS = 13;
+        DaleDeckSelection.ANIMALFOLK_DESERTMONITORS = 14;
+        DaleDeckSelection.ANIMALFOLK_LEMURS = 15;
+        DaleDeckSelection.ANIMALFOLK_MAGPIES = 16;
+        DaleDeckSelection.ANIMALFOLK_ECHIDNAS = 17;
+        DaleDeckSelection.ANIMALFOLK_HARES = 17;
+        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 18;
+        DaleDeckSelection.ANIMALFOLK_PENGUINS = 19;
+        DaleDeckSelection.ANIMALFOLK_TUATARAS = 20;
+        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 21;
+        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 22;
+        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 23;
+        DaleDeckSelection.ANIMALFOLK_GULLS = 24;
+        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 25;
+        DaleDeckSelection.ANIMALFOLK_BATS = 26;
         return DaleDeckSelection;
     }());
     exports.DaleDeckSelection = DaleDeckSelection;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_1) {
+define("components/DaleDie", ["require", "exports", "components/DaleDeckSelection"], function (require, exports, DaleDeckSelection_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleDie = void 0;
+    var DaleDie = (function () {
+        function DaleDie(animalfolk_id, d6, name_displayed, parentHTML) {
+            var _this = this;
+            var _a;
+            switch (animalfolk_id) {
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_OCELOTS:
+                    this.type = 'ocelot';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_POLECATS:
+                    this.type = 'polecat';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_HARES:
+                    this.type = 'hare';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_PANGOLINS:
+                    this.type = 'pangolin1';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_PANGOLINS + 3:
+                    this.type = 'pangolin2';
+                    break;
+                default:
+                    throw new Error("Animalfolk ".concat(animalfolk_id, " has no die"));
+            }
+            this.parent = parentHTML;
+            this.container = document.createElement('div');
+            this.container.classList.add("dale-die-container");
+            this.container.innerHTML = "\n            <div class=\"dale-die\" type=\"".concat(this.type, "\" side=\"1\">\n                <div class=\"dale-die-side dale-die-side-1\"></div>\n                <div class=\"dale-die-side dale-die-side-2\"></div>\n                <div class=\"dale-die-side dale-die-side-3\"></div>\n                <div class=\"dale-die-side dale-die-side-4\"></div>\n                <div class=\"dale-die-side dale-die-side-5\"></div>\n                <div class=\"dale-die-side dale-die-side-6\"></div>\n            </div>\n            <div class=\"dale-die-result\"></div>\n        ");
+            this.parent.appendChild(this.container);
+            this.die = this.container.querySelector(".dale-die");
+            this.die.setAttribute('side', String(d6 + 1));
+            setTimeout((function () {
+                _this.die.classList.toggle('dale-roll');
+            }).bind(this), 1);
+            var resultLabel = (_a = this.die.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.dale-die-result');
+            if (resultLabel) {
+                resultLabel.classList.remove('dale-die-reveal');
+                resultLabel.classList.add('dale-die-hide');
+                resultLabel.innerHTML = "You rolled ".concat(name_displayed, ".");
+                setTimeout(function () {
+                    resultLabel.classList.add('dale-die-reveal');
+                    resultLabel.classList.remove('dale-die-hide');
+                }, 1000);
+            }
+            var thiz = this;
+            setTimeout((function () {
+                dojo.fadeOut({ node: thiz.container, onEnd: function (node) { dojo.destroy(node); } }).play();
+            }), 1500);
+        }
+        DaleDie.getIconTpl = function (die_icon) {
+            var col, row;
+            switch (die_icon) {
+                case DaleDie.DIE_OCELOT_0:
+                    row = 0;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_OCELOT_1:
+                    row = 0;
+                    col = 1;
+                    break;
+                case DaleDie.DIE_OCELOT_2:
+                    row = 0;
+                    col = 3;
+                    break;
+                case DaleDie.DIE_OCELOT_3:
+                    row = 0;
+                    col = 5;
+                    break;
+                case DaleDie.DIE_POLECAT_1:
+                    row = 1;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_POLECAT_2:
+                    row = 1;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_POLECAT_3:
+                    row = 1;
+                    col = 4;
+                    break;
+                case DaleDie.DIE_STARS:
+                    row = 2;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_PLANET:
+                    row = 2;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_PLANET_REROLL:
+                    row = 2;
+                    col = 4;
+                    break;
+                case DaleDie.DIE_COMET:
+                    row = 2;
+                    col = 5;
+                    break;
+                case DaleDie.DIE_DISCARD:
+                    row = 3;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_DECK:
+                    row = 3;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_HAND:
+                    row = 3;
+                    col = 6;
+                    break;
+                case DaleDie.DIE_DISCARD2:
+                    row = 4;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_DECK2:
+                    row = 4;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_HAND2:
+                    row = 4;
+                    col = 6;
+                    break;
+            }
+            return "<i class=\"dale-die-side dale-icon\" style=\"background-position: -".concat(col, "00% -").concat(row, "00%;\"></i>");
+        };
+        DaleDie.DIE_OCELOT_0 = 1;
+        DaleDie.DIE_OCELOT_1 = 2;
+        DaleDie.DIE_OCELOT_2 = 3;
+        DaleDie.DIE_OCELOT_3 = 4;
+        DaleDie.DIE_POLECAT_1 = 5;
+        DaleDie.DIE_POLECAT_2 = 6;
+        DaleDie.DIE_POLECAT_3 = 7;
+        DaleDie.DIE_STARS = 8;
+        DaleDie.DIE_PLANET = 9;
+        DaleDie.DIE_PLANET_REROLL = 10;
+        DaleDie.DIE_COMET = 11;
+        DaleDie.DIE_DECK = 12;
+        DaleDie.DIE_DISCARD = 13;
+        DaleDie.DIE_HAND = 14;
+        DaleDie.DIE_DECK2 = 15;
+        DaleDie.DIE_DISCARD2 = 16;
+        DaleDie.DIE_HAND2 = 17;
+        return DaleDie;
+    }());
+    exports.DaleDie = DaleDie;
+});
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_2, DaleDie_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -2754,7 +2931,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var svgContainer = $("dale-svg-container");
             (_a = $("overall-content")) === null || _a === void 0 ? void 0 : _a.appendChild(svgContainer);
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
-            this.deckSelection = new DaleDeckSelection_1.DaleDeckSelection(this, $("dale-page-deck-selection"), $("dale-page-game"), gamedatas.inDeckSelection);
+            this.deckSelection = new DaleDeckSelection_2.DaleDeckSelection(this, $("dale-page-deck-selection"), $("dale-page-game"), gamedatas.inDeckSelection);
             DaleCard_9.DaleCard.init(this, gamedatas.cardTypes);
             if (gamedatas.playerorder.length == 2) {
                 for (var _i = 0, _d = gamedatas.playerorder; _i < _d.length; _i++) {
@@ -3284,6 +3461,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_boldHaggler':
+                    this.addActionButton("confirm-button", _("Roll"), "onChoicelessPassiveCard");
+                    this.addActionButtonCancelClient(_("Skip"));
+                    break;
                 case 'specialOffer':
                     this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
                     break;
@@ -3459,6 +3640,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var _a;
             if (log && args && !args['processed']) {
                 args['processed'] = true;
+                console.log(log);
+                console.log(args);
                 if ('opponent_name' in args) {
                     var opponent_name = args['opponent_name'];
                     var opponent_color = "000000";
@@ -3468,6 +3651,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     args['opponent_name'] = "<span class=\"playername\" style=\"color:#".concat(opponent_color, ";\">").concat(opponent_name, "</span>");
+                }
+                if ('die_icon' in args) {
+                    var iconTpl = DaleDie_1.DaleDie.getIconTpl(args['die_icon']);
+                    args['die_icon'] = "<span class=\"dale-log-span\">".concat(iconTpl, "</span>");
+                }
+                if (log.includes('${ocelot}')) {
+                    args['ocelot'] = 'OCELOT_DIE_ICON';
                 }
             }
             return _super.prototype.format_string_recursive.call(this, log, args);
@@ -3536,8 +3726,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             return array.join(";");
         };
-        Dale.prototype.addActionButtonCancelClient = function () {
-            this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
+        Dale.prototype.addActionButtonCancelClient = function (label) {
+            this.addActionButton("cancel-button", label !== null && label !== void 0 ? label : _("Cancel"), "onCancelClient", undefined, false, 'gray');
         };
         Dale.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
             var _loop_5 = function (opponent_id) {
@@ -4080,6 +4270,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_BOLDHAGGLER:
+                    this.mainClientState.enterOnStack('client_boldHaggler', { passive_card_id: card.id });
+                    break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
                     break;
@@ -4325,6 +4518,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['wilyFellow', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
+                ['rollDie', 1000],
                 ['addEffect', 1],
                 ['expireEffects', 1],
                 ['message', 1],
@@ -4752,6 +4946,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.marketDiscard.push(new DaleCard_9.DaleCard(id), slot_id, undefined, undefined, delay);
                 this.market.removeCard(pos);
                 delay += 75;
+            }
+        };
+        Dale.prototype.notif_rollDie = function (notif) {
+            var card = DaleCard_9.DaleCard.of(notif.args.card);
+            var parent = DaleCard_9.DaleCard.divs.get(card.id);
+            if (parent) {
+                new DaleDie_1.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
             }
         };
         Dale.prototype.notif_addEffect = function (notif) {

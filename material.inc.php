@@ -21,59 +21,113 @@
 
  //define all Card Types (CT)
 if (!defined('CT_CARDBACK')) {
-  define('CT_CARDBACK', 0);
-  define('CT_JUNK', 1);
-  define('CT_JUNK2', 2);
-  define('CT_JUNK3', 3);
-  define('CT_JUNK4', 4);
-  define('CT_JUNK5', 5);
-  define('CT_SWIFTBROKER', 6);
-  define('CT_COOKIES', 7);
-  define('CT_SHATTEREDRELIC', 8);
-  define('CT_SPYGLASS', 9);
-  define('CT_FLASHYSHOW', 10);
-  define('CT_FAVORITETOY', 11);
-  define('CT_LOYALPARTNER', 12);
-  define('CT_PREPAIDGOOD', 13);
-  define('CT_ESSENTIALPURCHASE', 14);
-  define('CT_MARKETDISCOVERY', 15);
-  define('CT_SPECIALOFFER', 16);
-  define('CT_STOCKCLEARANCE', 17);
-  define('CT_WILYFELLOW', 18);
-  define('CT_NUISANCE', 19);
-  define('CT_ROTTENFOOD', 20);
-  define('CT_DIRTYEXCHANGE', 21);
-  define('CT_SABOTAGE', 22);
-  define('CT_TREASUREHUNTER', 23);
-  define('CT_STASHINGVENDOR', 24);
-  define('CT_EMPTYCHEST', 25);
-  define('CT_NOSTALGICITEM', 26);
-  define('CT_ACORN', 27);
-  define('CT_ACCORDION', 28);
-  define('CT_WINTERISCOMING', 29);
-  define('CT_BOLDHAGGLER', 30);
-  define('CT_NEWSEASON', 31);
-  define('CT_WHIRLIGIG', 32);
-  define('CT_CHARM', 33);
-  define('CT_GAMBLE', 34);
-  define('CT_BLINDFOLD', 35);
-  define('CT_FLEXIBLESHOPKEEPER', 36);
-  define('CT_REFLECTION', 37);
-  define('CT_GOODOLDTIMES', 38);
-  define('CT_GIFTVOUCHER', 39);
-  define('CT_TRENDSETTING', 40);
-  define('CT_SEEINGDOUBLES', 41);
+    //DoM1
+    define('CT_CARDBACK', 0);
+    define('CT_JUNK', 1);
+    define('CT_JUNK2', 2);
+    define('CT_JUNK3', 3);
+    define('CT_JUNK4', 4);
+    define('CT_JUNK5', 5);
+    define('CT_SWIFTBROKER', 6);
+    define('CT_COOKIES', 7);
+    define('CT_SHATTEREDRELIC', 8);
+    define('CT_SPYGLASS', 9);
+    define('CT_FLASHYSHOW', 10);
+    define('CT_FAVORITETOY', 11);
+    define('CT_LOYALPARTNER', 12);
+    define('CT_PREPAIDGOOD', 13);
+    define('CT_ESSENTIALPURCHASE', 14);
+    define('CT_MARKETDISCOVERY', 15);
+    define('CT_SPECIALOFFER', 16);
+    define('CT_STOCKCLEARANCE', 17);
+    define('CT_WILYFELLOW', 18);
+    define('CT_NUISANCE', 19);
+    define('CT_ROTTENFOOD', 20);
+    define('CT_DIRTYEXCHANGE', 21);
+    define('CT_SABOTAGE', 22);
+    define('CT_TREASUREHUNTER', 23);
+    define('CT_STASHINGVENDOR', 24);
+    define('CT_EMPTYCHEST', 25);
+    define('CT_NOSTALGICITEM', 26);
+    define('CT_ACORN', 27);
+    define('CT_ACCORDION', 28);
+    define('CT_WINTERISCOMING', 29);
+    define('CT_BOLDHAGGLER', 30);
+    define('CT_NEWSEASON', 31);
+    define('CT_WHIRLIGIG', 32);
+    define('CT_CHARM', 33);
+    define('CT_GAMBLE', 34);
+    define('CT_BLINDFOLD', 35);
+    define('CT_FLEXIBLESHOPKEEPER', 36);
+    define('CT_REFLECTION', 37);
+    define('CT_GOODOLDTIMES', 38);
+    define('CT_GIFTVOUCHER', 39);
+    define('CT_TRENDSETTING', 40);
+    define('CT_SEEINGDOUBLES', 41);
 }
 
 //define all animalfolk
 if (!defined('ANIMALFOLK_MACAWS')) {
+    //Non-animalfolk
     define('ANIMALFOLK_NONE', 0);
+
+    //DoM1
     define('ANIMALFOLK_MACAWS', 1);
     define('ANIMALFOLK_PANDAS', 2);
     define('ANIMALFOLK_RACCOONS', 3);
     define('ANIMALFOLK_SQUIRRELS', 4);
     define('ANIMALFOLK_OCELOTS', 5);
     define('ANIMALFOLK_CHAMELEONS', 6);
+
+    //DoM2
+    define('ANIMALFOLK_PLATYPUSES', 7);
+    define('ANIMALFOLK_SLOTHS', 8);
+    define('ANIMALFOLK_CROCODILES', 9);
+    define('ANIMALFOLK_FOXES', 10);
+    define('ANIMALFOLK_POLECATS', 11);
+    define('ANIMALFOLK_OWLS', 12);
+
+    //Beavers
+    define('ANIMALFOLK_BEAVERS', 13);
+
+    //DoM3
+    define('ANIMALFOLK_DESERTMONITORS', 14);
+    define('ANIMALFOLK_LEMURS', 15);
+    define('ANIMALFOLK_MAGPIES', 16);
+    define('ANIMALFOLK_ECHIDNAS', 17);
+    define('ANIMALFOLK_HARES', 17);
+    define('ANIMALFOLK_TREEKANGAROOS', 18);
+
+    //DoMC
+    define('ANIMALFOLK_PENGUINS', 19);
+    define('ANIMALFOLK_TUATARAS', 20);
+    define('ANIMALFOLK_WOODTURTLES', 21);
+    define('ANIMALFOLK_TASMANIANDEVILS', 22);
+    define('ANIMALFOLK_PANGOLINS', 23);
+    define('ANIMALFOLK_GULLS', 24);
+    define('ANIMALFOLK_MONGOOSES', 25);
+    define('ANIMALFOLK_BATS', 26);
+}
+
+//define dice results
+if (!defined('DIE_STARS')) {
+    define('DIE_OCELOT_0', 1);
+    define('DIE_OCELOT_1', 2);
+    define('DIE_OCELOT_2', 3);
+    define('DIE_OCELOT_3', 4);
+    define('DIE_POLECAT_1', 5);
+    define('DIE_POLECAT_2', 6);
+    define('DIE_POLECAT_3', 7);
+    define('DIE_STARS', 8);
+    define('DIE_PLANET', 9);
+    define('DIE_PLANET_REROLL', 10);
+    define('DIE_COMET', 11);
+    define('DIE_DECK', 12);
+    define('DIE_DISCARD', 13);
+    define('DIE_HAND', 14);
+    define('DIE_DECK2', 15);
+    define('DIE_DISCARD2', 16);
+    define('DIE_HAND2', 17);
 }
 
 $this->card_types = array(

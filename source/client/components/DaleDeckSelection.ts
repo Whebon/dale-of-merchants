@@ -17,6 +17,46 @@ export class DaleDeckSelection {
 
     private tooltips: dijit.Tooltip[] = [];
 
+    //Non-animalfolk
+    static readonly ANIMALFOLK_NONE: number = 0;
+
+    //DoM1
+    static readonly ANIMALFOLK_MACAWS: number = 1;
+    static readonly ANIMALFOLK_PANDAS: number = 2;
+    static readonly ANIMALFOLK_RACCOONS: number = 3;
+    static readonly ANIMALFOLK_SQUIRRELS: number = 4;
+    static readonly ANIMALFOLK_OCELOTS: number = 5;
+    static readonly ANIMALFOLK_CHAMELEONS: number = 6;
+
+    //DoM2
+    static readonly ANIMALFOLK_PLATYPUSES: number = 7;
+    static readonly ANIMALFOLK_SLOTHS: number = 8;
+    static readonly ANIMALFOLK_CROCODILES: number = 9;
+    static readonly ANIMALFOLK_FOXES: number = 10;
+    static readonly ANIMALFOLK_POLECATS: number = 11;
+    static readonly ANIMALFOLK_OWLS: number = 12;
+
+    //Beavers
+    static readonly ANIMALFOLK_BEAVERS: number = 13;
+
+    //DoM3
+    static readonly ANIMALFOLK_DESERTMONITORS: number = 14;
+    static readonly ANIMALFOLK_LEMURS: number = 15;
+    static readonly ANIMALFOLK_MAGPIES: number = 16;
+    static readonly ANIMALFOLK_ECHIDNAS: number = 17;
+    static readonly ANIMALFOLK_HARES: number = 17;
+    static readonly ANIMALFOLK_TREEKANGAROOS: number = 18;
+
+    //DoMC
+    static readonly ANIMALFOLK_PENGUINS: number = 19;
+    static readonly ANIMALFOLK_TUATARAS: number = 20;
+    static readonly ANIMALFOLK_WOODTURTLES: number = 21;
+    static readonly ANIMALFOLK_TASMANIANDEVILS: number = 22;
+    static readonly ANIMALFOLK_PANGOLINS: number = 23;
+    static readonly ANIMALFOLK_GULLS: number = 24;
+    static readonly ANIMALFOLK_MONGOOSES: number = 25;
+    static readonly ANIMALFOLK_BATS: number = 26;
+
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;

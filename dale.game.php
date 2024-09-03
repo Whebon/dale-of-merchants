@@ -926,6 +926,174 @@ class Dale extends DaleTableBasic
     }
 
 //////////////////////////////////////////////////////////////////////////////
+//////////// Dice functions
+////////////  
+
+    /*
+        Here I place all function related to rolling dice
+    */
+
+    /**
+     * Roll the die of the given `animalfolk_id`
+     * @param string $msg log message to display
+     * @param int $animalfolk_id die type
+     * @param array $dbcard the card to land the die on (for the client)
+     * @param array $msg_args (optional) additional args
+     * @return int result of the die roll
+     */
+    function rollDie(string $msg, int $animalfolk_id, array $dbcard, array $msg_args = array()) {
+        $d6 = rand(0, 5);
+        $die_value = null;
+        $die_label = null;
+        $die_icon = null;
+        $player_id = $this->getActivePlayerId();
+        switch($animalfolk_id) {
+            case ANIMALFOLK_OCELOTS:
+                switch($d6) {
+                    case 0:
+                        $die_value = 0;
+                        $die_label = clienttranslate('value 0');
+                        $die_icon = DIE_OCELOT_0;
+                        break;
+                    case 1:
+                    case 2:
+                        $die_value = 1;
+                        $die_label = clienttranslate('value 1');
+                        $die_icon = DIE_OCELOT_1;
+                        break;
+                    case 3:
+                    case 4:
+                        $die_value = 2;
+                        $die_label = clienttranslate('value 2');
+                        $die_icon = DIE_OCELOT_2;
+                        break;
+                    case 5:
+                        $die_value = 3;
+                        $die_label = clienttranslate('value 3');
+                        $die_icon = DIE_OCELOT_3;
+                        break;
+                }
+                break;
+            case ANIMALFOLK_POLECATS:
+                switch($d6) {
+                    case 0:
+                    case 1:
+                        $die_value = 1;
+                        $die_label = clienttranslate('value 1');
+                        $die_icon = DIE_POLECAT_1;
+                        break;
+                    case 2:
+                    case 3:
+                        $die_value = 2;
+                        $die_label = clienttranslate('value 2');
+                        $die_icon = DIE_POLECAT_2;
+                        break;
+                    case 4:
+                    case 5:
+                        $die_value = 3;
+                        $die_label = clienttranslate('value 3');
+                        $die_icon = DIE_POLECAT_3;
+                        break;
+                }
+                break;
+            case ANIMALFOLK_HARES:
+                switch($d6) {
+                    case 0:
+                    case 1:
+                        $die_value = DIE_STARS;
+                        $die_label = clienttranslate('stars');
+                        $die_icon = DIE_STARS;
+                        break;
+                    case 2:
+                    case 3:
+                        $die_value = DIE_PLANET;
+                        $die_label = clienttranslate('planet');
+                        $die_icon = DIE_PLANET;
+                        break;
+                    case 4:
+                        $die_value = DIE_PLANET_REROLL;
+                        $die_label = clienttranslate('planet (reroll)');
+                        $die_icon = DIE_PLANET_REROLL;
+                        break;
+                    case 5:
+                        $die_value = DIE_COMET;
+                        $die_label = clienttranslate('comet');
+                        $die_icon = DIE_COMET;
+                        break;
+                }
+                break;
+            case ANIMALFOLK_PANGOLINS:
+                switch($d6) {
+                    case 0:
+                    case 1:
+                        $die_value = DIE_DECK;
+                        $die_label = clienttranslate('deck');
+                        $die_icon = DIE_DECK;
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        $die_value = DIE_DISCARD;
+                        $die_label = clienttranslate('discard');
+                        $die_icon = DIE_DISCARD;
+                        break;
+                    case 5:
+                        $die_value = DIE_HAND;
+                        $die_label = clienttranslate('hand');
+                        $die_icon = DIE_HAND;
+                        break;
+                }
+                break;
+            case ANIMALFOLK_PANGOLINS+1:
+                switch($d6) {
+                    case 0:
+                    case 1:
+                        $die_value = DIE_DECK2;
+                        $die_label = clienttranslate('deck');
+                        $die_icon = DIE_DECK2;
+                        break;
+                    case 2:
+                    case 3:
+                    case 4:
+                        $die_value = DIE_DISCARD2;
+                        $die_label = clienttranslate('discard');
+                        $die_icon = DIE_DISCARD2;
+                        break;
+                    case 5:
+                        $die_value = DIE_HAND2;
+                        $die_label = clienttranslate('hand');
+                        $die_icon = DIE_HAND2;
+                        break;
+                }
+                break;
+            default:
+                throw new BgaVisibleSystemException("No die exists for animalfolk $animalfolk_id");
+        }
+        //animate the roll
+        $this->notifyAllPlayers('rollDie', '', array_merge( array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'animalfolk_id' => $animalfolk_id,
+            'die_value' => $die_value,
+            'die_label' => $die_label,
+            'die_icon' => $die_icon,
+            'd6' => $d6,
+            'card' => $dbcard
+        ), $msg_args));
+        //show the log after the animation finished (otherwise the result is spoiled)
+        $this->notifyAllPlayers('delay', $msg, array_merge( array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'animalfolk_id' => $animalfolk_id,
+            'die_value' => $die_value,
+            'die_label' => $die_label,
+            'die_icon' => $die_icon,
+            'd6' => $d6,
+            'card' => $dbcard
+        ), $msg_args));
+    }
+
+//////////////////////////////////////////////////////////////////////////////
 //////////// Chameleon functions
 ////////////  
 
@@ -2248,6 +2416,14 @@ class Dale extends DaleTableBasic
             case CT_MARKETDISCOVERY:
                 $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to ditch a card from the market deck'));
                 $this->effects->insertModification($card_id, CT_MARKETDISCOVERY);
+                break;
+            case CT_BOLDHAGGLER:
+                $value = $this->rollDie(
+                    clienttranslate('Bold Haggler: ${player_name} rolls ${die_icon} (${die_label})'),
+                    ANIMALFOLK_OCELOTS,
+                    $card
+                );
+                //$this->effects->insertModification($card_id, CT_BOLDHAGGLER, $value);
                 break;
             default:
                 $name = $this->getCardName($card);

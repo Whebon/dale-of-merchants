@@ -35,6 +35,8 @@ import { ChameleonChain } from './components/types/ChameleonChain';
 import { ChameleonTree } from './components/types/ChameleonTree';
 import { DbEffect } from './components/types/DbEffect';
 import { DaleDeckSelection } from './components/DaleDeckSelection'
+import { DaleDie } from './components/DaleDie';
+import { DaleIcons } from './components/DaleIcons';
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -765,6 +767,10 @@ class Dale extends Gamegui
 				this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_boldHaggler':
+				this.addActionButton("confirm-button", _("Roll"), "onChoicelessPassiveCard");
+				this.addActionButtonCancelClient(_("Skip"));
+				break;
 			case 'specialOffer':
 				this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
 				break;
@@ -980,6 +986,9 @@ class Dale extends Gamegui
 		if (log && args && !args['processed']) {
 			args['processed'] = true;
 
+			console.log(log);
+			console.log(args);
+
 			//parse opponent name
 			if ('opponent_name' in args) {
 				let opponent_name = args['opponent_name'];
@@ -990,7 +999,19 @@ class Dale extends Gamegui
 					}
 				}
 				args['opponent_name'] = `<span class="playername" style="color:#${opponent_color};">${opponent_name}</span>`;
-			}                       
+			}
+
+			//parse die icon
+			if ('die_icon' in args) {
+				const iconTpl = DaleDie.getIconTpl(args['die_icon']);
+				args['die_icon'] = `<span class="dale-log-span">${iconTpl}</span>`;
+			}
+
+			//parse ocelot die
+			if (log.includes('${ocelot}')) {
+				args['ocelot'] = 'OCELOT_DIE_ICON';
+				//args['ocelot'] = `<span class="dale-log-span">${DaleIcons.getChameleonIcon().outerHTML}</span>`;
+			}
 		}
 		return super.format_string_recursive(log, args)
 	}
@@ -1128,9 +1149,10 @@ class Dale extends Gamegui
 
 	/**
 	 * Add a cancel button to return from the main client state
+	 * @param label (optional) default "Cancel". Label to display on the cancel button.
 	*/
-	addActionButtonCancelClient() {
-		this.addActionButton("cancel-button", _("Cancel"), "onCancelClient", undefined, false, 'gray');
+	addActionButtonCancelClient(label?: string) {
+		this.addActionButton("cancel-button", label ?? _("Cancel"), "onCancelClient", undefined, false, 'gray');
 	}
 
 	//TODO: safely remove this
@@ -1795,6 +1817,9 @@ class Dale extends Gamegui
 					this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
 				}
 				break;
+			case DaleCard.CT_BOLDHAGGLER:
+				this.mainClientState.enterOnStack('client_boldHaggler', {passive_card_id: card.id});
+				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;
@@ -2099,6 +2124,7 @@ class Dale extends Gamegui
 			['wilyFellow', 500],
 			['ditchFromMarketDeck', 500],
 			['ditchFromMarketBoard', 500],
+			['rollDie', 1000],
 			['addEffect', 1],
 			['expireEffects', 1],
 			['message', 1],
@@ -2655,6 +2681,14 @@ class Dale extends Gamegui
 			this.marketDiscard.push(new DaleCard(id), slot_id, undefined, undefined, delay);
 			this.market!.removeCard(pos);
 			delay += 75; //delay indicates that ordering matters
+		}
+	}
+
+	notif_rollDie(notif: NotifAs<'rollDie'>) {
+		const card = DaleCard.of(notif.args.card);
+		const parent = DaleCard.divs.get(card.id); //only show die rolls of visible cards
+		if (parent) {
+			new DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
 		}
 	}
 
