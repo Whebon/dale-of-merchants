@@ -425,7 +425,7 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
 				break;
 			case 'specialOffer':
-				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+				this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'client_rottenFood':
 				for (const [player_id, deck] of Object.entries(this.allDecks)) {

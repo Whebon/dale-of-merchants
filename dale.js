@@ -64,6 +64,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getDitchIcon = function () {
             return this.getIcon(4, 1);
         };
+        DaleIcons.getCheeseIcon = function () {
+            return this.getIcon(4, 2);
+        };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
         };
@@ -779,6 +782,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                     break;
                 case 'spyglass':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getSpyglassIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'cheese':
+                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getCheeseIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
                 case 'numbers':
                     icon = DaleIcons_2.DaleIcons.getNumberIcon(Math.min(index, 4));
@@ -3151,7 +3157,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
                     break;
                 case 'specialOffer':
-                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_rottenFood':
                     for (var _b = 0, _c = Object.entries(this.allDecks); _b < _c.length; _b++) {

@@ -79,6 +79,10 @@ export class DaleIcons {
         return this.getIcon(4, 1);
     }
 
+    public static getCheeseIcon(): HTMLElement {
+        return this.getIcon(4, 2);
+    }
+
     /////////////////////////////
     ////////    ROW 5    ////////
     /////////////////////////////
