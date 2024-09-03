@@ -952,24 +952,24 @@ class Dale extends DaleTableBasic
                 switch($d6) {
                     case 0:
                         $die_value = 0;
-                        $die_label = clienttranslate('value 0');
+                        $die_label = '0';
                         $die_icon = DIE_OCELOT_0;
                         break;
                     case 1:
                     case 2:
                         $die_value = 1;
-                        $die_label = clienttranslate('value 1');
+                        $die_label = '1';
                         $die_icon = DIE_OCELOT_1;
                         break;
                     case 3:
                     case 4:
                         $die_value = 2;
-                        $die_label = clienttranslate('value 2');
+                        $die_label = '2';
                         $die_icon = DIE_OCELOT_2;
                         break;
                     case 5:
                         $die_value = 3;
-                        $die_label = clienttranslate('value 3');
+                        $die_label = '3';
                         $die_icon = DIE_OCELOT_3;
                         break;
                 }
@@ -979,19 +979,19 @@ class Dale extends DaleTableBasic
                     case 0:
                     case 1:
                         $die_value = 1;
-                        $die_label = clienttranslate('value 1');
+                        $die_label = '1';
                         $die_icon = DIE_POLECAT_1;
                         break;
                     case 2:
                     case 3:
                         $die_value = 2;
-                        $die_label = clienttranslate('value 2');
+                        $die_label = '2';
                         $die_icon = DIE_POLECAT_2;
                         break;
                     case 4:
                     case 5:
                         $die_value = 3;
-                        $die_label = clienttranslate('value 3');
+                        $die_label = '3';
                         $die_icon = DIE_POLECAT_3;
                         break;
                 }
@@ -2419,7 +2419,7 @@ class Dale extends DaleTableBasic
                 break;
             case CT_BOLDHAGGLER:
                 $value = $this->rollDie(
-                    clienttranslate('Bold Haggler: ${player_name} rolls ${die_icon} (${die_label})'),
+                    clienttranslate('Bold Haggler: ${player_name} rolls ${die_icon} and adds ${die_label} to the card\'s value'),
                     ANIMALFOLK_OCELOTS,
                     $card
                 );
