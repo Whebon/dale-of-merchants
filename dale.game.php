@@ -1271,7 +1271,7 @@ class Dale extends DaleTableBasic
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $other_player_id => $player) {
-            if ($other_player_id != $player_id || $choiceless) {
+            if (($other_player_id != $player_id) || $choiceless) {
                 $this->notifyPlayer($other_player_id, 'scheduleTechnique', '${player_name} schedules their ${card_name}', array(
                     'player_id' => $player_id,
                     'player_name' => $this->getPlayerNameById($player_id),
@@ -1950,12 +1950,24 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_GIFTVOUCHER. The market is nonempty.");
                     }
                     break;
+                case CT_TREASUREHUNTER:
+                    $players = $this->loadPlayersBasicInfos();
+                    foreach ($players as $opponent_id => $opponent) {
+                        if ($player_id != $opponent_id) {
+                            $target = $this->cards->getCardOnTop(DISCARD.$player_id);
+                            if ($target) {
+                                throw new BgaVisibleSystemException("Unable to fizzle CT_TREASUREHUNTER. There exists a card to take.");
+                            }
+                        }
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
                         $name = $this->getCardName($technique_card);
                         throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has other cards in their hand.");
                     }
+                    break;
             }
             $this->scheduleCard($player_id, $technique_card);
             $this->fullyResolveCard($player_id, $technique_card);
@@ -2176,6 +2188,29 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSabotage");
+                break;
+            case CT_TREASUREHUNTER:
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCard($card_id);
+                $prefix = substr($card["location"], 0, 4);
+                $opponent_id = substr($card["location"], 4);
+                if ($prefix != DISCARD || $opponent_id == MARKET) {
+                    throw new BgaVisibleSystemException("CT_TREASUREHUNTER can only take cards from player discard piles");
+                }
+                $top_card = $this->cards->getCardOnTop(DISCARD.$opponent_id);
+                if ($card["id"] != $top_card["id"]) {
+                    throw new BgaVisibleSystemException("CT_TREASUREHUNTER can only take the top card of a discard pile (card $card_id is not on top)");
+                }
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('discardToHand', clienttranslate('Treasure Hunter: ${player_name} takes a ${card_name} from ${opponent_name}\'s discard pile'), array(
+                    "player_id" => $player_id,
+                    "discard_id" => $opponent_id,
+                    "opponent_name" => $this->getPlayerNameById($opponent_id),
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->getCardName($card),
+                    "card" => $card
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

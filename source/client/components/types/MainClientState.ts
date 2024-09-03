@@ -110,6 +110,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose an opponent to take a card from");
             case 'client_sabotage':
                 return _("${card_name}: ${you} must choose an opponent to sabotage");
+            case 'client_treasureHunter':
+                return _("${card_name}: ${you} must take a card from an opponent's discard pile");
         }
         return "MISSING DESCRIPTION";
     }

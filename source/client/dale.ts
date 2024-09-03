@@ -439,6 +439,30 @@ class Dale extends Gamegui
 			case 'sabotage':
 				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
+			case 'client_treasureHunter':
+				const client_treasureHunter_args = (this.mainClientState.args as ClientGameStates['client_treasureHunter']);
+				const targets: DaleCard[] = [];
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						pile.setSelectionMode('noneCantViewContent');
+						targets.push(pile.peek()!);
+					}
+				}
+				if (targets.length == 0) {
+					throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
+				}
+				setTimeout((() => {
+					this.targetingLine = new TargetingLine(
+						new DaleCard(client_treasureHunter_args.technique_card_id),
+						targets,
+						"dale-line-source-technique",
+						"dale-line-target-technique",
+						"dale-line-technique",
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onTreasureHunter(target_id)
+					)
+				}).bind(this), 500);
+				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
@@ -467,10 +491,6 @@ class Dale extends Gamegui
 					this.chameleonArgs!.pile
 				)
 				break;
-			//TODO: safely remove this
-			// case 'client_fizzle':
-			// 	new DaleCard((this.mainClientState.args as ClientGameStates['client_fizzle']).technique_card_id).div.classList.add("dale-fizzle");
-			// 	break;
 			case 'client_marketDiscovery':
 				this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
 				this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-purchase');
@@ -567,6 +587,14 @@ class Dale extends Gamegui
 				break;
 			case 'sabotage':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_treasureHunter':
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						pile.setSelectionMode('none');
+					}
+				}
+				this.targetingLine?.remove();
 				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
@@ -683,6 +711,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_sabotage':
 				this.addActionButtonsOpponent(this.onSabotage.bind(this));
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_treasureHunter':
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1702,6 +1733,20 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_sabotage', card.id);
 				}
 				break;
+			case DaleCard.CT_TREASUREHUNTER:
+				fizzle = true;
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						fizzle = false;
+					}
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_treasureHunter', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2005,6 +2050,12 @@ class Dale extends Gamegui
 	onSabotage(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_sabotage'>({
 			opponent_id: opponent_id
+		})
+	}
+
+	onTreasureHunter(card_id: number) {
+		this.playTechniqueCard<'client_treasureHunter'>({
+			card_id: card_id,
 		})
 	}
 

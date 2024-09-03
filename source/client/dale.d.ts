@@ -262,6 +262,7 @@ declare global {
 		'client_rottenFood': { card_id: number, opponent_id: number }
 		'client_dirtyExchange': { opponent_id: number }
 		'client_sabotage': { opponent_id: number }
+		'client_treasureHunter': { card_id: number }
 	}
 
 	interface ClientPassiveChoice {

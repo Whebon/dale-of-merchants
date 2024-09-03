@@ -2378,6 +2378,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an opponent to take a card from");
                     case 'client_sabotage':
                         return _("${card_name}: ${you} must choose an opponent to sabotage");
+                    case 'client_treasureHunter':
+                        return _("${card_name}: ${you} must take a card from an opponent's discard pile");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -2986,14 +2988,31 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'sabotage':
                     this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
+                case 'client_treasureHunter':
+                    var client_treasureHunter_args_1 = this.mainClientState.args;
+                    var targets_2 = [];
+                    for (var _e = 0, _f = Object.entries(this.playerDiscards); _e < _f.length; _e++) {
+                        var _g = _f[_e], player_id = _g[0], pile = _g[1];
+                        if (+player_id != +this.player_id && pile.size > 0) {
+                            pile.setSelectionMode('noneCantViewContent');
+                            targets_2.push(pile.peek());
+                        }
+                    }
+                    if (targets_2.length == 0) {
+                        throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
+                    }
+                    setTimeout((function () {
+                        _this.targetingLine = new TargetingLine_1.TargetingLine(new DaleCard_9.DaleCard(client_treasureHunter_args_1.technique_card_id), targets_2, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onTreasureHunter(target_id); });
+                    }).bind(this), 500);
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                 case 'chameleon_reflection':
                 case 'chameleon_goodoldtimes':
                 case 'chameleon_trendsetting':
                 case 'chameleon_seeingdoubles':
                     if (stateName == 'chameleon_reflection') {
-                        for (var _e = 0, _f = Object.entries(this.playerDiscards); _e < _f.length; _e++) {
-                            var _g = _f[_e], player_id = _g[0], pile = _g[1];
+                        for (var _h = 0, _j = Object.entries(this.playerDiscards); _h < _j.length; _h++) {
+                            var _k = _j[_h], player_id = _k[0], pile = _k[1];
                             if (+player_id != +this.player_id) {
                                 pile.setSelectionMode('noneCantViewContent');
                             }
@@ -3012,7 +3031,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
-            var _a, _b, _c, _d, _e, _f;
+            var _a, _b, _c, _d, _e, _f, _g;
             console.log('Leaving state: ' + stateName);
             if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
                 console.log("this.chameleonArgs => don't turn off selection modes");
@@ -3082,8 +3101,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'client_rottenFood':
-                    for (var _i = 0, _g = Object.entries(this.allDecks); _i < _g.length; _i++) {
-                        var _h = _g[_i], player_id = _h[0], deck = _h[1];
+                    for (var _i = 0, _h = Object.entries(this.allDecks); _i < _h.length; _i++) {
+                        var _j = _h[_i], player_id = _j[0], deck = _j[1];
                         if (+player_id != this.player_id) {
                             deck.setSelectionMode('none');
                         }
@@ -3097,24 +3116,33 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'sabotage':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'chameleon_reflection':
+                case 'client_treasureHunter':
+                    for (var _k = 0, _l = Object.entries(this.playerDiscards); _k < _l.length; _k++) {
+                        var _m = _l[_k], player_id = _m[0], pile = _m[1];
+                        if (+player_id != +this.player_id && pile.size > 0) {
+                            pile.setSelectionMode('none');
+                        }
+                    }
                     (_d = this.targetingLine) === null || _d === void 0 ? void 0 : _d.remove();
-                    for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
-                        var _l = _k[_j], player_id = _l[0], pile = _l[1];
+                    break;
+                case 'chameleon_reflection':
+                    (_e = this.targetingLine) === null || _e === void 0 ? void 0 : _e.remove();
+                    for (var _o = 0, _p = Object.entries(this.playerDiscards); _o < _p.length; _o++) {
+                        var _q = _p[_o], player_id = _q[0], pile = _q[1];
                         if (+player_id != +this.player_id) {
                             pile.setSelectionMode('none');
                         }
                     }
                     break;
                 case 'chameleon_goodoldtimes':
-                    (_e = this.targetingLine) === null || _e === void 0 ? void 0 : _e.remove();
+                    (_f = this.targetingLine) === null || _f === void 0 ? void 0 : _f.remove();
                     this.marketDeck.setSelectionMode('none');
                     this.marketDiscard.setSelectionMode('none');
                     break;
                 case 'chameleon_flexibleShopkeeper':
                 case 'chameleon_trendsetting':
                 case 'chameleon_seeingdoubles':
-                    (_f = this.targetingLine) === null || _f === void 0 ? void 0 : _f.remove();
+                    (_g = this.targetingLine) === null || _g === void 0 ? void 0 : _g.remove();
                     break;
                 case 'client_marketDiscovery':
                     this.marketDeck.setSelectionMode('none');
@@ -3202,6 +3230,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_sabotage':
                     this.addActionButtonsOpponent(this.onSabotage.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_treasureHunter':
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -3990,6 +4021,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_sabotage', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_TREASUREHUNTER:
+                    fizzle = true;
+                    for (var _i = 0, _a = Object.entries(this.playerDiscards); _i < _a.length; _i++) {
+                        var _b = _a[_i], player_id = _b[0], pile = _b[1];
+                        if (+player_id != +this.player_id && pile.size > 0) {
+                            fizzle = false;
+                        }
+                    }
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_treasureHunter', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -4237,6 +4283,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onSabotage = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
+            });
+        };
+        Dale.prototype.onTreasureHunter = function (card_id) {
+            this.playTechniqueCard({
+                card_id: card_id,
             });
         };
         Dale.prototype.setupNotifications = function () {
