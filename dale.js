@@ -2402,7 +2402,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                 this.enter('client_technique');
             }
         };
-        MainClientState.prototype.cancelAll = function () {
+        MainClientState.prototype.leaveAll = function () {
             this._stack = [];
             this.enter('client_technique');
         };
@@ -2867,6 +2867,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (!this.isCurrentPlayerActive()) {
                 if (stateName == 'playerTurn') {
                     DaleCard_9.DaleCard.unbindAllChameleonsLocal();
+                    this.mainClientState.leaveAll();
                 }
                 return;
             }

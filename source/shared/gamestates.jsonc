@@ -151,7 +151,7 @@
 				{"name": "chameleons_json", "type": "AT_json"}
 			]
 		},
-		"transitions": { "trCleanUpPhase": 41, "trPassiveAbility": 42 }
+		"transitions": { "trNextPlayer": 41, "trPassiveAbility": 42 }
 	},
 
 	//////////////// TECHNIQUES ////////////////

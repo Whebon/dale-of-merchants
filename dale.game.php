@@ -2395,7 +2395,7 @@ class Dale extends DaleTableBasic
             }
         }
         $this->addChameleonBindings($chameleons_json, implode(';', $chameleon_ids));
-        $this->gamestate->nextState("trCleanUpPhase");
+        $this->gamestate->nextState("trNextPlayer");
     }
 
     
@@ -2639,18 +2639,23 @@ class Dale extends DaleTableBasic
     	
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
+                case 'blindfold':
+                    throw new BgaVisibleSystemException("NotImplementedException: 'zombieTurn' for 'blindfold'");
+                    break;
+                case 'tasters':
+                    throw new BgaVisibleSystemException("NotImplementedException: 'zombieTurn' for 'tasters'");
+                    break;
                 default:
-                    $this->gamestate->nextState( "zombiePass" );
+                    //By default, zombies will jump to the "cleanUpPhase" (state 41) when given the chance.
+                    $this->gamestate->nextState("trNextPlayer"); 
                 	break;
             }
-
             return;
         }
 
         if ($state['type'] === "multipleactiveplayer") {
             // Make sure player is in a non blocking status for role turn
-            $this->gamestate->setPlayerNonMultiactive( $active_player, '' );
-            
+            $this->gamestate->setPlayerNonMultiactive($active_player, '');
             return;
         }
 

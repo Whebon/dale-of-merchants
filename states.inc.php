@@ -106,7 +106,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actUsePassiveAbility', 'actPostCleanUpPhase'],
 		'transitions' => array(
-			'trCleanUpPhase' => 41,
+			'trNextPlayer' => 41,
 			'trPassiveAbility' => 42,
 		),
 	),

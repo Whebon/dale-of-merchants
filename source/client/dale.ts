@@ -309,6 +309,7 @@ class Dale extends Gamegui
 		if (!this.isCurrentPlayerActive()) {
 			if (stateName == 'playerTurn') {
 				DaleCard.unbindAllChameleonsLocal();
+				this.mainClientState.leaveAll();
 			}
 			return;
 		}

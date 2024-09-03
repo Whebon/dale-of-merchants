@@ -141,9 +141,9 @@ export class MainClientState {
     }
 
     /**
-     * Cancel all client states and return to the default client state
+     * Leave all client states and return to the default client state
      */
-    public cancelAll() {
+    public leaveAll() {
         this._stack = [];
         this.enter('client_technique');
     }
