@@ -2374,6 +2374,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose up to 2 opponents");
                     case 'client_rottenFood':
                         return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
+                    case 'client_dirtyExchange':
+                        return _("${card_name}: ${you} must choose an opponent to take a card from");
+                    case 'client_sabotage':
+                        return _("${card_name}: ${you} must choose an opponent to sabotage");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -2404,6 +2408,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         };
         MainClientState.prototype.leaveAll = function () {
             this._stack = [];
+            this.setPassiveSelected(false);
             this.enter('client_technique');
         };
         MainClientState.prototype.enter = function (name, args) {
@@ -2978,6 +2983,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'dirtyExchange':
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
                     break;
+                case 'sabotage':
+                    this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                 case 'chameleon_reflection':
                 case 'chameleon_goodoldtimes':
@@ -3086,6 +3094,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'dirtyExchange':
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'sabotage':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
                 case 'chameleon_reflection':
                     (_d = this.targetingLine) === null || _d === void 0 ? void 0 : _d.remove();
                     for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
@@ -3187,6 +3198,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_dirtyExchange':
                     this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_sabotage':
+                    this.addActionButtonsOpponent(this.onSabotage.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -3758,7 +3773,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onSelectLimboCard = function (card_id) {
             console.log("onSelectLimboCard: " + card_id);
+            var card = new DaleCard_9.DaleCard(card_id);
             switch (this.gamedatas.gamestate.name) {
+                case 'sabotage':
+                    this.bgaPerformAction('actSabotage', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         Dale.prototype.onFundsSelectionChanged = function () {
@@ -3959,6 +3980,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     else {
                         this.clientScheduleTechnique('client_dirtyExchange', card.id);
+                    }
+                    break;
+                case DaleCard_9.DaleCard.CT_SABOTAGE:
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_sabotage', card.id);
                     }
                     break;
                 default:
@@ -4201,6 +4230,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             });
         };
         Dale.prototype.onDirtyExchange = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
+            });
+        };
+        Dale.prototype.onSabotage = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
             });

@@ -261,6 +261,7 @@ declare global {
 		'client_nuisance': { opponent_ids: number[] }
 		'client_rottenFood': { card_id: number, opponent_id: number }
 		'client_dirtyExchange': { opponent_id: number }
+		'client_sabotage': { opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

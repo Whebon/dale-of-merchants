@@ -394,6 +394,7 @@ class Dale extends DaleTableBasic
                 $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array(
                     "player_id" => $to_player_id,
                     "player_name" => $this->getPlayerNameById($to_player_id),
+                    "opponent_name" => $this->getPlayerNameById($from_player_id),
                     "nbr" => 1,
                     "_private" => array(
                         "card" => $card
@@ -412,6 +413,7 @@ class Dale extends DaleTableBasic
             $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array(
                 "player_id" => $to_player_id,
                 "player_name" => $this->getPlayerNameById($to_player_id),
+                "opponent_name" => $this->getPlayerNameById($from_player_id),
                 "nbr" => $actual_nbr,
                 "_private" => array(
                     "cards" => $cards
@@ -428,18 +430,19 @@ class Dale extends DaleTableBasic
      * @param string $msg notification message for all players
      * @param array $dbcard card that needs to be ditched
      * @param bool $from_limbo (optional) - default false. If `false`, ditch from hand. If `true`, ditch from limbo.
+     * @param array $msg_args (optional) - additional args to display in the `$msg`
      */
-    function ditch(string $msg, array $dbcard, bool $from_limbo = false) {
+    function ditch(string $msg, array $dbcard, bool $from_limbo = false, $msg_args = array()) {
         $player_id = $this->getActivePlayerId();
         $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
-        $this->notifyAllPlayers('ditch', $msg, array(
+        $this->notifyAllPlayers('ditch', $msg, array_merge(array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "card_name" => $this->getCardName($dbcard), //TODO: i18n for card names
             "card" => $dbcard,
             "from_limbo" => $from_limbo
-        ));
+        ), $msg_args));
     }
 
     /**
@@ -2168,6 +2171,12 @@ class Dale extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDirtyExchange");
                 break;
+            case CT_SABOTAGE:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trSabotage");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2316,6 +2325,36 @@ class Dale extends DaleTableBasic
         ), clienttranslate('Dirty Exchange: ${player_name} gives a ${card_name} to ${opponent_name}')
         );
 
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actSabotage($card_id) {
+        $this->checkAction("actSabotage");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+
+        $cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        foreach ($cards as $card) {
+            if ($card["id"] == $card_id) {
+                $this->ditch(clienttranslate('Sabotage: ${player_name} ditches ${opponent_name}\'s ${card_name}'), $card, true, array(
+                    "opponent_name" => $this->getPlayerNameById($opponent_id)
+                ));
+            }
+        }
+        foreach ($cards as $card) {
+            if ($card["id"] != $card_id) {
+                $this->cards->moveCardOnTop($card["id"], DISCARD.$opponent_id);
+                $this->notifyAllPlayers('discard', clienttranslate('Sabotage: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                    "player_id" => $player_id,
+                    "discard_id" => $opponent_id,
+                    "from_limbo" => true,
+                    "card" => $card,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "opponent_name" => $this->getPlayerNameById($opponent_id),
+                    "card_name" => $this->getCardName($card)
+                ));
+            }
+        }
         $this->fullyResolveCard($player_id);
     }
 
@@ -2613,6 +2652,15 @@ class Dale extends DaleTableBasic
                 "card_name" => $this->getCardName($card)
             )
         ), clienttranslate('Dirty Exchange: ${player_name} takes a ${card_name} from ${opponent_name}'));
+    }
+
+    function stSabotage() {
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $nbr = $this->draw(clienttranslate('Sabotage: ${player_name} draws 2 cards from ${opponent_name}\'s deck'), 2, true, $opponent_id);
+        if ($nbr == 0) {
+            //sabotage has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
+        }
     }
 
 

@@ -106,6 +106,10 @@ export class MainClientState {
                 return _("${card_name}: ${you} may choose up to 2 opponents");
             case 'client_rottenFood':
                 return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
+            case 'client_dirtyExchange':
+                return _("${card_name}: ${you} must choose an opponent to take a card from");
+            case 'client_sabotage':
+                return _("${card_name}: ${you} must choose an opponent to sabotage");
         }
         return "MISSING DESCRIPTION";
     }
@@ -145,6 +149,7 @@ export class MainClientState {
      */
     public leaveAll() {
         this._stack = [];
+        this.setPassiveSelected(false);
         this.enter('client_technique');
     }
 

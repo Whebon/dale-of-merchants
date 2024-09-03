@@ -24,6 +24,7 @@ if (false) {
 	$game->stSpyglass();
 	$game->stSpecialOffer();
 	$game->stDirtyExchange();
+	$game->stSabotage();
 }
 
 $machinestates = array(
@@ -72,6 +73,7 @@ $machinestates = array(
 			'trSpyglass' => 52,
 			'trSpecialOffer' => 53,
 			'trDirtyExchange' => 54,
+			'trSabotage' => 55,
 		),
 	),
 	36 => array(
@@ -140,6 +142,18 @@ $machinestates = array(
 		'action' => 'stDirtyExchange',
 		'args' => 'argOpponentName',
 		'possibleactions' => ['actDirtyExchange'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	55 => array(
+		'name' => 'sabotage',
+		'description' => clienttranslate('Sabotage: ${actplayer} must choose a card to ditch for ${opponent_name}'),
+		'descriptionmyturn' => clienttranslate('Sabotage: ${you} must choose a card to ditch for ${opponent_name}'),
+		'type' => 'activeplayer',
+		'action' => 'stSabotage',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actSabotage'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

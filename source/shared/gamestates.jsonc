@@ -101,7 +101,8 @@
 			//Hidden-information technique states
 			"trSpyglass": 52,
 			"trSpecialOffer": 53,
-			"trDirtyExchange": 54
+			"trDirtyExchange": 54,
+			"trSabotage": 55
 		}
 	},
 
@@ -193,6 +194,21 @@
 		"args": "argOpponentName",
 		"possibleactions": {
 			"actDirtyExchange": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"55": {
+		"name": "sabotage",
+		"description": "Sabotage: ${actplayer} must choose a card to ditch for ${opponent_name}",
+		"descriptionmyturn": "Sabotage: ${you} must choose a card to ditch for ${opponent_name}",
+		"type": "activeplayer",
+		"action": "stSabotage",
+		"args": "argOpponentName",
+		"possibleactions": {
+			"actSabotage": [
 				{"name": "card_id", "type": "AT_int"}
 			]
 		},

@@ -436,6 +436,9 @@ class Dale extends Gamegui
 			case 'dirtyExchange':
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
 				break;
+			case 'sabotage':
+				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
@@ -562,6 +565,9 @@ class Dale extends Gamegui
 			case 'dirtyExchange':
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'sabotage':
+				this.myLimbo.setSelectionMode('none');
+				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
@@ -673,6 +679,10 @@ class Dale extends Gamegui
 				break;
 			case 'client_dirtyExchange':
 				this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_sabotage':
+				this.addActionButtonsOpponent(this.onSabotage.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1421,7 +1431,14 @@ class Dale extends Gamegui
 
 	onSelectLimboCard(card_id: number) {
 		console.log("onSelectLimboCard: "+card_id);
+		const card = new DaleCard(card_id);
+
 		switch(this.gamedatas.gamestate.name) {
+			case 'sabotage':
+				this.bgaPerformAction('actSabotage', {
+					card_id: card.id
+				})
+				break;
 		}
 	}
 
@@ -1675,6 +1692,14 @@ class Dale extends Gamegui
 				}
 				else {
 					this.clientScheduleTechnique('client_dirtyExchange', card.id);
+				}
+				break;
+			case DaleCard.CT_SABOTAGE:
+				if (this.unique_opponent_id) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_sabotage', card.id);
 				}
 				break;
 			default:
@@ -1973,6 +1998,12 @@ class Dale extends Gamegui
 
 	onDirtyExchange(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_dirtyExchange'>({
+			opponent_id: opponent_id
+		})
+	}
+
+	onSabotage(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_sabotage'>({
 			opponent_id: opponent_id
 		})
 	}

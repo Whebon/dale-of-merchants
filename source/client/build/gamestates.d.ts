@@ -124,6 +124,7 @@ interface GameStates {
 			'trSpyglass': 52,
 			'trSpecialOffer': 53,
 			'trDirtyExchange': 54,
+			'trSabotage': 55,
 		},
 	},
 	36: {
@@ -252,6 +253,24 @@ interface GameStates {
 		'args': 'argOpponentName',
 		'possibleactions': {
 			'actDirtyExchange': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	55: {
+		'name': 'sabotage',
+		'description': 'Sabotage: ${actplayer} must choose a card to ditch for ${opponent_name}',
+		'descriptionmyturn': 'Sabotage: ${you} must choose a card to ditch for ${opponent_name}',
+		'type': 'activeplayer',
+		'action': 'stSabotage',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actSabotage': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
