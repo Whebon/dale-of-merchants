@@ -350,12 +350,15 @@ export class DaleCard {
     public isPassiveUsed() {
         console.log("isPassiveUsed");
         const type_id = this.effective_type_id;
+        
         if (!DaleCard.cardTypes[type_id]!.has_ability) {
             //N/A, this card doesn't have a usable passive, therefore it is considered "used"
             return true;
         }
+        let chameleonEffect = this.getChameleonDbEffect();
         for (let effect of DaleCard.effects) {
-            if (effect.card_id == this.id && effect.type_id == type_id && effect.chameleon_target_id == null) {
+            const is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
+            if ((effect.card_id == this.id || is_copied_effect) && effect.type_id == type_id && effect.chameleon_target_id == null) {
                 return true;
             }
         }
@@ -376,8 +379,10 @@ export class DaleCard {
      * */
     public get effective_value(): number {
         let value = this.original_value;
+        let chameleonEffect = this.getChameleonDbEffect();
         for (let effect of DaleCard.effects) {
-            if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
+            const is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
+            if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL || is_copied_effect) {
                 switch(effect.type_id) {
                     case DaleCard.CT_FLASHYSHOW:
                         value += 1;
@@ -394,6 +399,37 @@ export class DaleCard {
     ///////////////////////////////////////////////////////
     //////////        Chameleon functions        //////////
     ///////////////////////////////////////////////////////
+
+    /**
+     * Return the last chameleon copy effect that affects this card.
+     */
+    private getChameleonDbEffect(): DbEffect | null {
+        if (!this.isBoundChameleon()) {
+            return null;
+        }
+        if (DaleCard.cardIdToChameleonChainLocal.has(this.id)) {
+            //the binding is local, create a dummy effect infinitely far away from all other effects
+            const chain = DaleCard.cardIdToChameleonChainLocal.get(this.id)!;
+            return new DbEffect({
+                effect_id: Infinity,
+                effect_class: DaleCard.EC_MODIFICATION,
+                card_id: this.id,
+                type_id: this.original_type_id,
+                arg: chain.type_id,
+                chameleon_target_id: chain.card_id
+            });
+        }
+        let chameleon_effect = null;
+        for (let effect of DaleCard.effects) {
+            if (this.id == 74) {
+                console.log(effect);
+            }
+            if (effect.card_id == this.id && effect.chameleon_target_id != null) {
+                chameleon_effect = effect;
+            }
+        }
+        return chameleon_effect;
+    }
 
     /**
      * @returns true if this is a chameleon card

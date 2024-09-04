@@ -743,7 +743,7 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
     }());
     exports.DaleDie = DaleDie;
 });
-define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/ChameleonChain", "components/DaleDie"], function (require, exports, DaleIcons_2, Images_2, ChameleonChain_1, DaleDie_1) {
+define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/DbEffect", "components/types/ChameleonChain", "components/DaleDie"], function (require, exports, DaleIcons_2, Images_2, DbEffect_1, ChameleonChain_1, DaleDie_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = void 0;
@@ -842,9 +842,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (!DaleCard.cardTypes[type_id].has_ability) {
                 return true;
             }
+            var chameleonEffect = this.getChameleonDbEffect();
             for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                 var effect = _a[_i];
-                if (effect.card_id == this.id && effect.type_id == type_id && effect.chameleon_target_id == null) {
+                var is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
+                if ((effect.card_id == this.id || is_copied_effect) && effect.type_id == type_id && effect.chameleon_target_id == null) {
                     return true;
                 }
             }
@@ -861,9 +863,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         Object.defineProperty(DaleCard.prototype, "effective_value", {
             get: function () {
                 var value = this.original_value;
+                var chameleonEffect = this.getChameleonDbEffect();
                 for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                     var effect = _a[_i];
-                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
+                    var is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
+                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL || is_copied_effect) {
                         switch (effect.type_id) {
                             case DaleCard.CT_FLASHYSHOW:
                                 value += 1;
@@ -879,6 +883,33 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             enumerable: false,
             configurable: true
         });
+        DaleCard.prototype.getChameleonDbEffect = function () {
+            if (!this.isBoundChameleon()) {
+                return null;
+            }
+            if (DaleCard.cardIdToChameleonChainLocal.has(this.id)) {
+                var chain = DaleCard.cardIdToChameleonChainLocal.get(this.id);
+                return new DbEffect_1.DbEffect({
+                    effect_id: Infinity,
+                    effect_class: DaleCard.EC_MODIFICATION,
+                    card_id: this.id,
+                    type_id: this.original_type_id,
+                    arg: chain.type_id,
+                    chameleon_target_id: chain.card_id
+                });
+            }
+            var chameleon_effect = null;
+            for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                var effect = _a[_i];
+                if (this.id == 74) {
+                    console.log(effect);
+                }
+                if (effect.card_id == this.id && effect.chameleon_target_id != null) {
+                    chameleon_effect = effect;
+                }
+            }
+            return chameleon_effect;
+        };
         DaleCard.prototype.isChameleon = function () {
             var type_id = this.effective_type_id;
             return (type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
@@ -3019,7 +3050,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_2, DaleDie_2) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -3195,7 +3226,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("DbEffects:");
             for (var i in gamedatas.effects) {
                 var effect = gamedatas.effects[i];
-                DaleCard_9.DaleCard.addEffect(new DbEffect_1.DbEffect(effect));
+                DaleCard_9.DaleCard.addEffect(new DbEffect_2.DbEffect(effect));
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -5107,13 +5138,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_addEffect = function (notif) {
             console.log("notif_addEffect");
             console.log(notif.args.effect);
-            var effect = new DbEffect_1.DbEffect(notif.args.effect);
+            var effect = new DbEffect_2.DbEffect(notif.args.effect);
             console.log(effect);
             DaleCard_9.DaleCard.addEffect(effect);
         };
         Dale.prototype.notif_expireEffects = function (notif) {
             console.log("notif_expireEffects");
-            var effects = notif.args.effects.map(function (effect) { return new DbEffect_1.DbEffect(effect); });
+            var effects = notif.args.effects.map(function (effect) { return new DbEffect_2.DbEffect(effect); });
             console.log(effects);
             DaleCard_9.DaleCard.expireEffects(effects);
         };

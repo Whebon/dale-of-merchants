@@ -122,8 +122,10 @@ class DaleEffects {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
         $value = $this->game->card_types[$type_id]['value'];
+        $chameleonEffect = $this->getChameleonEffect($card_id);
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL) {
+            $is_copied_effect =  ($chameleonEffect != null) && ($row["card_id"] == $chameleonEffect["chameleon_target_id"]) && ($row["effect_id"] < $chameleonEffect["effect_id"]);
+            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL || $is_copied_effect) {
                 switch($row["type_id"]) {
                     case CT_FLASHYSHOW:
                         $value += 1;
@@ -152,7 +154,7 @@ class DaleEffects {
             $type_id == CT_SEEINGDOUBLES
         ) {
             foreach ($this->cache as $row) {
-                if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != null && $row["arg"] != "NULL") {
+                if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["chameleon_target_id"] != null && $row["chameleon_target_id"] != "NULL") {
                     $type_id = $row["arg"];
                 }
             }
@@ -166,8 +168,10 @@ class DaleEffects {
     function isPassiveUsed(array $dbcard) {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
+        $chameleonEffect = $this->getChameleonEffect($card_id);
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["chameleon_target_id"] == null) {
+            $is_copied_effect =  ($chameleonEffect != null) && ($row["card_id"] == $chameleonEffect["chameleon_target_id"]) && ($row["effect_id"] < $chameleonEffect["effect_id"]);
+            if (($row["card_id"] == $card_id || $is_copied_effect) && $row["type_id"] == $type_id && $row["chameleon_target_id"] == null) {
                 return true;
             }
         }
@@ -175,16 +179,31 @@ class DaleEffects {
     }
 
     /**
-     * Return the first non-null arg with given card id and type_id. If none was found, return null.
+     * Return the first non-null arg of the specified card_id and type_id. If none was found, return null.
      * @return int
      */
     function getArg(int $card_id, int $type_id) {
+        //WARNING: unused and incompatible with chameleon copying
         foreach ($this->cache as $row) {
             if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["arg"] != null && $row["arg"] != "NULL") {
                 return $row["arg"];
             }
         }
         return null;
+    }
+
+    /**
+     * Return the last chameleon copy effect that affects the specified card_id
+     * @return array
+     */
+    function getChameleonEffect(int $card_id) {
+        $effect = null;
+        foreach ($this->cache as $row) {
+            if ($row["card_id"] == $card_id && $row["chameleon_target_id"] != null && $row["chameleon_target_id"] != "NULL") {
+                $effect = $row;
+            }
+        }
+        return $effect;
     }
 
     /**
@@ -227,108 +246,6 @@ class DaleEffects {
         }
         $this->loadFromDb();
     }
-
-    //TODO: safely remove this
-    // /**
-    //  * @return array all `card_id`s of chameleon cards that target the given `chameleon_target_id`
-    //  */
-    // function getEffectsByChameleonTargetId(int $chameleon_target_id) {
-    //     $effects = [];
-    //     foreach ($this->cache as $row) {
-    //         if ($row["chameleon_target_id"] == $chameleon_target_id) {
-    //             $effects = $row;
-    //         }
-    //     }
-    //     return $effects;
-    // }
-
-    //TODO: safely remove this
-    // /**
-    //  * @return array all `card_id`s of chameleon cards that target the given `chameleon_target_id`
-    //  */
-    // function getChameleonIdsByTargetId(int $chameleon_target_id) {
-    //     $card_ids = [];
-    //     foreach ($this->cache as $row) {
-    //         if ($row["chameleon_target_id"] == $chameleon_target_id) {
-    //             $card_ids[] = $row["card_id"];
-    //         }
-    //     }
-    //     return $card_ids;
-    // }
-
-    //TODO: safely remove this
-    // /**
-    //  * @return array all `card_id`s of chameleon cards with an chameleon effect of type `chameleon_type_id`
-    //  */
-    // function getChameleonIdsByTypeId(int $chameleon_type_id) {
-    //     $card_ids = [];
-    //     foreach ($this->cache as $row) {
-    //         if ($row["type_id"] == $chameleon_type_id) {
-    //             $card_ids[] = $row["card_id"];
-    //         }
-    //     }
-    //     return $card_ids;
-    // }
-
-    //TODO: safely delete this
-    // /**
-    //  * Return true if a row with the given type_id exists
-    //  * @param int $type_id
-    //  * @param int $target (optional) the card must have target exactly this target
-    //  */
-    // function containsEffectOfTypeId(int $type_id, int $target = null) {
-    //     foreach ($this->cache as $row) {
-    //         if ($row["type_id"] == $type_id && ($target == null || $target == $row["target"])) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
-
-    //TODO: safely delete this
-    // /**
-    //  * Return the number of active effects of the given card type
-    //  */
-    // function countEffectsOfTypeId(int $type_id) {
-    //     $nbr = 0;
-    //     foreach ($this->cache as $row) {
-    //         if ($row["type_id"] == $type_id) {
-    //             $nbr++;
-    //         }
-    //     }
-    //     return $nbr;
-    // }
-
-    //TODO: safely delete this
-    // /**
-    //  * Return all the active effects of the given card type
-    //  * @param int $type_id
-    //  * @param int $target (optional) the card must have target exactly this target
-    //  */
-    // function getEffectsByTypeId(int $type_id, int $target = null) {
-    //     $effects = array();
-    //     foreach ($this->cache as $row) {
-    //         if ($row["type_id"] == $type_id && ($target == null || $target == $row["target"])) {
-    //             $effects[] = $row;
-    //         }
-    //     }
-    //     return $effects;
-    // }
-
-    //TODO: safely delete this
-    // /**
-    //  * Return all the targets of a given card type (includes invalid targets (-1)).
-    //  * @param int $type_id
-    //  */
-    // function getTargetsByTypeId(int $type_id) {
-    //     $targets = array();
-    //     foreach ($this->cache as $row) {
-    //         if ($row["type_id"] == $type_id) {
-    //             $targets[] = $row["target"];
-    //         }
-    //     }
-    //     return $targets;
-    // }
 
     /////////////////////////////////////////////////
     ///////     Expiry-related functions      ///////
