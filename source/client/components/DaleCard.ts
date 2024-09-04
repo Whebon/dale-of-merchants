@@ -5,6 +5,7 @@ import { CardType } from './types/CardType';
 import { DbCard } from './types/DbCard';
 import { DbEffect } from './types/DbEffect';
 import { ChameleonChain } from './types/ChameleonChain'
+import { DaleDie } from './DaleDie';
 
 /**
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
@@ -601,14 +602,14 @@ export class DaleCard {
         }
         let effective_value: string | number = this.effective_value;
         if (effective_value != cardType.value) {
-            effective_value =  `<span class=dale-original-value>${cardType.value}</span> ${effective_value}`;
+            effective_value =  `(<span class=dale-original-value>${cardType.value}</span>) ${effective_value}`;
         }
         return `<div class="dale-card-tooltip">
             <h3>${chameleonName}${cardType.name}</h3>
             <hr>
             ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="text">${cardType.text}${reminderText}</div>
+            <div class="text">${this.format_string(cardType.text)}${reminderText}</div>
             <br style="line-height: 10px" />
         </div>`
 	}
@@ -640,6 +641,69 @@ export class DaleCard {
         });
         this.removeTooltip();
         DaleCard.tooltips.set(this.id, tooltip);
+    }
+
+    /**
+     * Formats keywords in tooltip texts
+     */
+    private format_string(text: string): string {
+        if (text.includes('DIE_OCELOT')) {
+            text = text.replaceAll('DIE_OCELOT', `<span class="dale-log-span">
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
+            </span>`);
+        }
+        if (text.includes('DIE_POLECAT')) {
+            text = text.replaceAll('DIE_POLECAT', `<span class="dale-log-span">
+                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3)}
+            </span>`);
+        }
+        if (text.includes('DIE_HARE')) {
+            text = text.replaceAll('DIE_HARE', `<span class="dale-log-span">
+                ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_PLANET_REROLL)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_COMET)}
+            </span>`);
+        }
+        if (text.includes('DIE_PANGOLIN1')) {
+            text = text.replaceAll('DIE_PANGOLIN1', `<span class="dale-log-span">
+                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_HAND)}
+            </span>`);
+        }
+        if (text.includes('DIE_PANGOLIN2')) {
+            text = text.replaceAll('DIE_PANGOLIN2', `<span class="dale-log-span">
+                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_HAND2)}
+            </span>`);
+        }
+        if (text.includes('SOURCE')) {
+            text = text.replaceAll('SOURCE', `<span style="color: var(--pangolin1); font-weight: bold;">${_("source")}</span>`);
+        }
+        if (text.includes('DESTINATION')) {
+            text = text.replaceAll('DESTINATION', `<span style="color: var(--pangolin2); font-weight: bold;">${_("destination")}</span>`);
+        }
+        return text;
     }
 
     /**

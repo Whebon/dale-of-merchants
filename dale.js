@@ -266,7 +266,484 @@ define("components/types/ChameleonChain", ["require", "exports"], function (requ
     }());
     exports.ChameleonChain = ChameleonChain;
 });
-define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/ChameleonChain"], function (require, exports, DaleIcons_1, Images_1, ChameleonChain_1) {
+define("components/OrderedSelection", ["require", "exports", "components/DaleCard", "components/DaleIcons"], function (require, exports, DaleCard_1, DaleIcons_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.OrderedSelection = void 0;
+    var OrderedSelection = (function () {
+        function OrderedSelection() {
+            this.card_ids = [];
+            this.secondary_card_ids = [];
+            this.maxSize = Number.POSITIVE_INFINITY;
+            this.secondaryMaxSize = Number.POSITIVE_INFINITY;
+        }
+        OrderedSelection.prototype.onSelect = function (card_id, secondary) {
+            console.log("onSelect(card_id=".concat(card_id, ", secondary=").concat(secondary, ")"));
+        };
+        OrderedSelection.prototype.onUnselect = function (card_id, secondary) {
+            console.log("onUnselect(card_id=".concat(card_id, ", secondary=").concat(secondary, ")"));
+        };
+        OrderedSelection.prototype.getDiv = function (card_id) {
+            return DaleCard_1.DaleCard.divs.get(card_id);
+        };
+        OrderedSelection.prototype.addIcon = function (card_id, index, secondary) {
+            var iconType = secondary ? this.secondaryIconType : this.iconType;
+            var div = this.getDiv(card_id);
+            if (!div) {
+                console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
+                return;
+            }
+            div.classList.add("dale-selected");
+            var icon = undefined;
+            switch (iconType) {
+                case 'pileBlue':
+                    icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index, 5));
+                    break;
+                case 'pileYellow':
+                    icon = DaleIcons_1.DaleIcons.getYellowPileIcon(Math.min(index, 5));
+                    break;
+                case 'pileRed':
+                    icon = DaleIcons_1.DaleIcons.getRedPileIcon(Math.min(index, 5));
+                    break;
+                case 'ditch':
+                    icon = DaleIcons_1.DaleIcons.getDitchIcon();
+                    break;
+                case 'build':
+                    icon = DaleIcons_1.DaleIcons.getBuildIcon();
+                    break;
+                case 'spyglass':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getSpyglassIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'cheese':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getCheeseIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'numbers':
+                    icon = DaleIcons_1.DaleIcons.getNumberIcon(Math.min(index, 4));
+                    break;
+            }
+            if (icon) {
+                if (secondary) {
+                    icon.classList.add("dale-selection-icon-2");
+                }
+                else {
+                    icon.classList.add("dale-selection-icon-1");
+                }
+                div.appendChild(icon);
+            }
+        };
+        OrderedSelection.prototype.removeIcon = function (card_id, secondary) {
+            var div = this.getDiv(card_id);
+            if (!div) {
+                console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
+                return;
+            }
+            var primaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-1");
+            var secondaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-2");
+            if (secondary) {
+                secondaryIcon === null || secondaryIcon === void 0 ? void 0 : secondaryIcon.remove();
+                if (!primaryIcon) {
+                    div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
+                }
+            }
+            else {
+                primaryIcon === null || primaryIcon === void 0 ? void 0 : primaryIcon.remove();
+                if (!secondaryIcon) {
+                    div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
+                }
+            }
+        };
+        OrderedSelection.prototype.setMaxSize = function (max, secondary) {
+            console.log("setMaxSize: " + max);
+            if (max < 0) {
+                throw new Error("Maximum selection size must be non-negative");
+            }
+            if (secondary) {
+                this.secondaryMaxSize = max;
+            }
+            else {
+                this.maxSize = max;
+            }
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            while (card_ids.length > max) {
+                this.pop(secondary);
+            }
+        };
+        OrderedSelection.prototype.getMaxSize = function (secondary) {
+            if (secondary) {
+                return this.secondaryMaxSize;
+            }
+            return this.maxSize;
+        };
+        OrderedSelection.prototype.getSize = function (secondary) {
+            if (secondary) {
+                return this.secondary_card_ids.length;
+            }
+            return this.card_ids.length;
+        };
+        OrderedSelection.prototype.dequeue = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var card_id = card_ids[0];
+            if (card_id === undefined) {
+                return null;
+            }
+            this.unselectItem(card_id, secondary);
+            return card_id;
+        };
+        OrderedSelection.prototype.pop = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var card_id = card_ids[card_ids.length - 1];
+            if (card_id === undefined) {
+                return null;
+            }
+            this.unselectItem(card_id, secondary);
+            return card_id;
+        };
+        OrderedSelection.prototype.selectItem = function (card_id, secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var maxSize = secondary ? this.secondaryMaxSize : this.maxSize;
+            if (maxSize == 0) {
+                return;
+            }
+            while (card_ids.length >= maxSize) {
+                this.pop(secondary);
+            }
+            card_ids.push(card_id);
+            this.addIcon(card_id, card_ids.length - 1, secondary);
+            this.onSelect(card_id, secondary);
+        };
+        OrderedSelection.prototype.unselectItem = function (card_id, secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            var index = card_ids.indexOf(card_id);
+            if (index != -1) {
+                card_ids.splice(index, 1);
+                this.removeIcon(card_id, secondary);
+                this.onUnselect(card_id, secondary);
+            }
+        };
+        OrderedSelection.prototype.unselectAll = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            while (card_ids.length > 0) {
+                this.unselectItem(card_ids[card_ids.length - 1], secondary);
+            }
+        };
+        OrderedSelection.prototype.setIconType = function (iconType, secondaryIconType) {
+            this.iconType = iconType;
+            this.secondaryIconType = secondaryIconType;
+        };
+        OrderedSelection.prototype.updateIcons = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            if (this.iconType) {
+                for (var i = 0; i < card_ids.length; i++) {
+                    var card_id = card_ids[i];
+                    this.removeIcon(card_id, secondary);
+                    this.addIcon(card_id, i, secondary);
+                }
+            }
+        };
+        OrderedSelection.prototype.toggle = function (card_id, secondary) {
+            if (this.includes(card_id)) {
+                this.unselectItem(card_id, secondary);
+                this.updateIcons(secondary);
+                return false;
+            }
+            else {
+                this.selectItem(card_id, secondary);
+                return true;
+            }
+        };
+        OrderedSelection.prototype.includes = function (card_id, secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            return card_ids.includes(card_id);
+        };
+        OrderedSelection.prototype.get = function (secondary) {
+            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+            return card_ids.slice().reverse();
+        };
+        OrderedSelection.prototype.secondaryToPrimary = function () {
+            this.unselectAll();
+            this.iconType = this.secondaryIconType;
+            this.maxSize = this.secondaryMaxSize;
+            for (var _i = 0, _a = this.secondary_card_ids.slice(); _i < _a.length; _i++) {
+                var card_id = _a[_i];
+                this.unselectItem(card_id, true);
+                this.selectItem(card_id);
+            }
+        };
+        return OrderedSelection;
+    }());
+    exports.OrderedSelection = OrderedSelection;
+});
+define("components/DaleDeckSelection", ["require", "exports", "components/Images", "components/OrderedSelection"], function (require, exports, Images_1, OrderedSelection_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleDeckSelection = void 0;
+    var OrderedDeckSelection = (function (_super) {
+        __extends(OrderedDeckSelection, _super);
+        function OrderedDeckSelection() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        OrderedDeckSelection.prototype.getDiv = function (card_id) {
+            return document.querySelector("#deck-".concat(card_id));
+        };
+        return OrderedDeckSelection;
+    }(OrderedSelection_1.OrderedSelection));
+    var DaleDeckSelection = (function () {
+        function DaleDeckSelection(page, deckSelectionHTML, gameHTML, inDeckSelection) {
+            this.orderedSelection = new OrderedDeckSelection();
+            this.tooltips = [];
+            this.deckSelectionHTML = deckSelectionHTML;
+            this.gameHTML = gameHTML;
+            this.cardContainer = this.deckSelectionHTML.querySelector(".dale-deck-selection-container");
+            this.cardContainer.classList.add("dale-wrap-technique");
+            if (!inDeckSelection) {
+                this.deckSelectionHTML.classList.add("dale-hidden");
+                return;
+            }
+            this.gameHTML.classList.add("dale-hidden");
+            this.orderedSelection.setIconType('numbers');
+            this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1);
+            var _loop_1 = function (animalfolk_id) {
+                var card_div = document.createElement('div');
+                card_div.id = "deck-" + animalfolk_id;
+                card_div.classList.add("dale-card", "dale-relative", "dale-clickable", "dale-deck-selection");
+                this_1.cardContainer.appendChild(card_div);
+                Images_1.Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
+                var tooltip = new dijit.Tooltip({
+                    connectId: [card_div.id],
+                    label: this_1.getTooltipContent(animalfolk_id),
+                    showDelay: 400,
+                });
+                dojo.connect(card_div, "mouseleave", function () {
+                    tooltip.close();
+                });
+                this_1.tooltips.push(tooltip);
+                var unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
+                if (unavailable) {
+                    card_div.classList.add("dale-deck-selection-unavailable");
+                }
+                var thiz = this_1;
+                var card_id = animalfolk_id;
+                card_div.addEventListener('click', function () {
+                    if (unavailable) {
+                        page.showMessage(_("This animalfolk does not exist"), 'error');
+                        return;
+                    }
+                    if (page.isCurrentPlayerActive()) {
+                        thiz.orderedSelection.toggle(card_id);
+                    }
+                });
+            };
+            var this_1 = this;
+            for (var animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
+                _loop_1(animalfolk_id);
+            }
+        }
+        DaleDeckSelection.prototype.getTooltipContent = function (animalfolk_id) {
+            return "TODO: TOOLTIP";
+        };
+        DaleDeckSelection.prototype.remove = function () {
+            this.cardContainer.remove();
+            for (var _i = 0, _a = this.tooltips; _i < _a.length; _i++) {
+                var tooltip = _a[_i];
+                tooltip.destroy();
+            }
+            this.gameHTML.classList.remove("dale-hidden");
+        };
+        DaleDeckSelection.prototype.setResult = function (animalfolk_id) {
+            var _a;
+            if (this.cardContainer.classList.contains("dale-wrap-technique")) {
+                this.cardContainer.classList.remove("dale-wrap-technique");
+                this.cardContainer.classList.add("dale-wrap-purchase");
+                this.orderedSelection.unselectAll();
+                this.orderedSelection.setIconType(undefined);
+                this.cardContainer.querySelectorAll(".dale-deck-selection").forEach(function (card_div) {
+                    card_div.classList.add("dale-deck-selection-unavailable");
+                });
+            }
+            (_a = $("deck-" + animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-deck-selection-unavailable");
+            this.orderedSelection.selectItem(animalfolk_id);
+        };
+        DaleDeckSelection.ANIMALFOLK_NONE = 0;
+        DaleDeckSelection.ANIMALFOLK_MACAWS = 1;
+        DaleDeckSelection.ANIMALFOLK_PANDAS = 2;
+        DaleDeckSelection.ANIMALFOLK_RACCOONS = 3;
+        DaleDeckSelection.ANIMALFOLK_SQUIRRELS = 4;
+        DaleDeckSelection.ANIMALFOLK_OCELOTS = 5;
+        DaleDeckSelection.ANIMALFOLK_CHAMELEONS = 6;
+        DaleDeckSelection.ANIMALFOLK_PLATYPUSES = 7;
+        DaleDeckSelection.ANIMALFOLK_SLOTHS = 8;
+        DaleDeckSelection.ANIMALFOLK_CROCODILES = 9;
+        DaleDeckSelection.ANIMALFOLK_FOXES = 10;
+        DaleDeckSelection.ANIMALFOLK_POLECATS = 11;
+        DaleDeckSelection.ANIMALFOLK_OWLS = 12;
+        DaleDeckSelection.ANIMALFOLK_BEAVERS = 13;
+        DaleDeckSelection.ANIMALFOLK_DESERTMONITORS = 14;
+        DaleDeckSelection.ANIMALFOLK_LEMURS = 15;
+        DaleDeckSelection.ANIMALFOLK_MAGPIES = 16;
+        DaleDeckSelection.ANIMALFOLK_ECHIDNAS = 17;
+        DaleDeckSelection.ANIMALFOLK_HARES = 17;
+        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 18;
+        DaleDeckSelection.ANIMALFOLK_PENGUINS = 19;
+        DaleDeckSelection.ANIMALFOLK_TUATARAS = 20;
+        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 21;
+        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 22;
+        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 23;
+        DaleDeckSelection.ANIMALFOLK_GULLS = 24;
+        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 25;
+        DaleDeckSelection.ANIMALFOLK_BATS = 26;
+        return DaleDeckSelection;
+    }());
+    exports.DaleDeckSelection = DaleDeckSelection;
+});
+define("components/DaleDie", ["require", "exports", "components/DaleDeckSelection"], function (require, exports, DaleDeckSelection_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.DaleDie = void 0;
+    var DaleDie = (function () {
+        function DaleDie(animalfolk_id, d6, name_displayed, parentHTML) {
+            var _this = this;
+            var _a;
+            switch (animalfolk_id) {
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_OCELOTS:
+                    this.type = 'ocelot';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_POLECATS:
+                    this.type = 'polecat';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_HARES:
+                    this.type = 'hare';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_PANGOLINS:
+                    this.type = 'pangolin1';
+                    break;
+                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_PANGOLINS + 3:
+                    this.type = 'pangolin2';
+                    break;
+                default:
+                    throw new Error("Animalfolk ".concat(animalfolk_id, " has no die"));
+            }
+            this.parent = parentHTML;
+            this.container = document.createElement('div');
+            this.container.classList.add("dale-die-container");
+            this.container.innerHTML = "\n            <div class=\"dale-die\" type=\"".concat(this.type, "\" side=\"1\">\n                <div class=\"dale-die-side dale-die-side-1\"></div>\n                <div class=\"dale-die-side dale-die-side-2\"></div>\n                <div class=\"dale-die-side dale-die-side-3\"></div>\n                <div class=\"dale-die-side dale-die-side-4\"></div>\n                <div class=\"dale-die-side dale-die-side-5\"></div>\n                <div class=\"dale-die-side dale-die-side-6\"></div>\n            </div>\n            <div class=\"dale-die-result\"></div>\n        ");
+            this.parent.appendChild(this.container);
+            this.die = this.container.querySelector(".dale-die");
+            this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
+            setTimeout((function () {
+                _this.die.setAttribute('side', String(d6 + 1));
+                _this.die.classList.toggle('dale-roll');
+            }).bind(this), 1);
+            var resultLabel = (_a = this.die.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.dale-die-result');
+            if (resultLabel) {
+                resultLabel.classList.remove('dale-die-reveal');
+                resultLabel.classList.add('dale-die-hide');
+                resultLabel.innerHTML = "Rolled ".concat(name_displayed);
+                setTimeout(function () {
+                    resultLabel.classList.add('dale-die-reveal');
+                    resultLabel.classList.remove('dale-die-hide');
+                }, 1000);
+            }
+            var thiz = this;
+            setTimeout((function () {
+                dojo.fadeOut({ node: thiz.container, onEnd: function (node) { dojo.destroy(node); } }).play();
+            }), 1500);
+        }
+        DaleDie.getIconTpl = function (die_icon) {
+            var col, row;
+            switch (die_icon) {
+                case DaleDie.DIE_OCELOT_0:
+                    row = 0;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_OCELOT_1:
+                    row = 0;
+                    col = 1;
+                    break;
+                case DaleDie.DIE_OCELOT_2:
+                    row = 0;
+                    col = 3;
+                    break;
+                case DaleDie.DIE_OCELOT_3:
+                    row = 0;
+                    col = 5;
+                    break;
+                case DaleDie.DIE_POLECAT_1:
+                    row = 1;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_POLECAT_2:
+                    row = 1;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_POLECAT_3:
+                    row = 1;
+                    col = 4;
+                    break;
+                case DaleDie.DIE_STARS:
+                    row = 2;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_PLANET:
+                    row = 2;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_PLANET_REROLL:
+                    row = 2;
+                    col = 4;
+                    break;
+                case DaleDie.DIE_COMET:
+                    row = 2;
+                    col = 5;
+                    break;
+                case DaleDie.DIE_DISCARD:
+                    row = 3;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_DECK:
+                    row = 3;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_HAND:
+                    row = 3;
+                    col = 6;
+                    break;
+                case DaleDie.DIE_DISCARD2:
+                    row = 4;
+                    col = 0;
+                    break;
+                case DaleDie.DIE_DECK2:
+                    row = 4;
+                    col = 2;
+                    break;
+                case DaleDie.DIE_HAND2:
+                    row = 4;
+                    col = 6;
+                    break;
+            }
+            return "<i class=\"dale-die-side dale-icon\" style=\"background-position: -".concat(col, "00% -").concat(row, "00%;\"></i>");
+        };
+        DaleDie.DIE_OCELOT_0 = 1;
+        DaleDie.DIE_OCELOT_1 = 2;
+        DaleDie.DIE_OCELOT_2 = 3;
+        DaleDie.DIE_OCELOT_3 = 4;
+        DaleDie.DIE_POLECAT_1 = 5;
+        DaleDie.DIE_POLECAT_2 = 6;
+        DaleDie.DIE_POLECAT_3 = 7;
+        DaleDie.DIE_STARS = 8;
+        DaleDie.DIE_PLANET = 9;
+        DaleDie.DIE_PLANET_REROLL = 10;
+        DaleDie.DIE_COMET = 11;
+        DaleDie.DIE_DECK = 12;
+        DaleDie.DIE_DISCARD = 13;
+        DaleDie.DIE_HAND = 14;
+        DaleDie.DIE_DECK2 = 15;
+        DaleDie.DIE_DISCARD2 = 16;
+        DaleDie.DIE_HAND2 = 17;
+        return DaleDie;
+    }());
+    exports.DaleDie = DaleDie;
+});
+define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/ChameleonChain", "components/DaleDie"], function (require, exports, DaleIcons_2, Images_2, ChameleonChain_1, DaleDie_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = void 0;
@@ -326,7 +803,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.expireEffects = function (effects) {
             var includes_global_effect = false;
             var affected_card_ids = new Set();
-            var _loop_1 = function (effect) {
+            var _loop_2 = function (effect) {
                 var index = DaleCard.effects.findIndex(function (e) { return e.effect_id == effect.effect_id; });
                 if (index == -1) {
                     console.log("Known effects:");
@@ -352,7 +829,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             };
             for (var _i = 0, effects_1 = effects; _i < effects_1.length; _i++) {
                 var effect = effects_1[_i];
-                _loop_1(effect);
+                _loop_2(effect);
             }
             affected_card_ids = includes_global_effect ? Array.from(DaleCard.divs.keys()) : affected_card_ids;
             affected_card_ids.forEach(function (card_id) {
@@ -548,9 +1025,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             var effective_value = this.effective_value;
             if (effective_value != cardType.value) {
-                effective_value = "<span class=dale-original-value>".concat(cardType.value, "</span> ").concat(effective_value);
+                effective_value = "(<span class=dale-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }
-            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(cardType.text).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -574,6 +1051,30 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             this.removeTooltip();
             DaleCard.tooltips.set(this.id, tooltip);
         };
+        DaleCard.prototype.format_string = function (text) {
+            if (text.includes('DIE_OCELOT')) {
+                text = text.replaceAll('DIE_OCELOT', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_0), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n            </span>"));
+            }
+            if (text.includes('DIE_POLECAT')) {
+                text = text.replaceAll('DIE_POLECAT', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n            </span>"));
+            }
+            if (text.includes('DIE_HARE')) {
+                text = text.replaceAll('DIE_HARE', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET_REROLL), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_COMET), "\n            </span>"));
+            }
+            if (text.includes('DIE_PANGOLIN1')) {
+                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND), "\n            </span>"));
+            }
+            if (text.includes('DIE_PANGOLIN2')) {
+                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND2), "\n            </span>"));
+            }
+            if (text.includes('SOURCE')) {
+                text = text.replaceAll('SOURCE', "<span style=\"color: var(--pangolin1); font-weight: bold;\">".concat(_("source"), "</span>"));
+            }
+            if (text.includes('DESTINATION')) {
+                text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
+            }
+            return text;
+        };
         DaleCard.prototype.updateChameleonOverlay = function (temp_div, fade) {
             if (fade === void 0) { fade = true; }
             var div = temp_div !== null && temp_div !== void 0 ? temp_div : DaleCard.divs.get(this.id);
@@ -591,12 +1092,12 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 }
             }
             if (this.isBoundChameleon()) {
-                var chameleon_icon = DaleIcons_1.DaleIcons.getChameleonIcon();
+                var chameleon_icon = DaleIcons_2.DaleIcons.getChameleonIcon();
                 chameleon_icon.classList.add("dale-chameleon-icon");
                 var new_overlay = document.createElement("div");
                 new_overlay.classList.add("dale-card");
                 new_overlay.classList.add("dale-chameleon-overlay");
-                new_overlay.setAttribute('style', Images_1.Images.getCardStyle(this.effective_type_id));
+                new_overlay.setAttribute('style', Images_2.Images.getCardStyle(this.effective_type_id));
                 new_overlay.appendChild(chameleon_icon);
                 div.appendChild(new_overlay);
                 if (fade) {
@@ -642,7 +1143,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             var div = document.createElement("div");
             div.classList.add("dale-card");
             div.id = "dale-card-" + this.id;
-            Images_1.Images.setCardStyle(div, this.original_type_id);
+            Images_2.Images.setCardStyle(div, this.original_type_id);
             if (dataValue) {
                 div.dataset['value'] = dataValue;
             }
@@ -661,7 +1162,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.attachDiv = function (div) {
             div.classList.add("dale-card");
-            Images_1.Images.setCardStyle(div, this.original_type_id);
+            Images_2.Images.setCardStyle(div, this.original_type_id);
             DaleCard.divs.set(this.id, div);
             this.updateHTML();
         };
@@ -861,220 +1362,13 @@ define("components/types/DaleLocation", ["require", "exports"], function (requir
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/OrderedSelection", ["require", "exports", "components/DaleCard", "components/DaleIcons"], function (require, exports, DaleCard_1, DaleIcons_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.OrderedSelection = void 0;
-    var OrderedSelection = (function () {
-        function OrderedSelection() {
-            this.card_ids = [];
-            this.secondary_card_ids = [];
-            this.maxSize = Number.POSITIVE_INFINITY;
-            this.secondaryMaxSize = Number.POSITIVE_INFINITY;
-        }
-        OrderedSelection.prototype.onSelect = function (card_id, secondary) {
-            console.log("onSelect(card_id=".concat(card_id, ", secondary=").concat(secondary, ")"));
-        };
-        OrderedSelection.prototype.onUnselect = function (card_id, secondary) {
-            console.log("onUnselect(card_id=".concat(card_id, ", secondary=").concat(secondary, ")"));
-        };
-        OrderedSelection.prototype.getDiv = function (card_id) {
-            return DaleCard_1.DaleCard.divs.get(card_id);
-        };
-        OrderedSelection.prototype.addIcon = function (card_id, index, secondary) {
-            var iconType = secondary ? this.secondaryIconType : this.iconType;
-            var div = this.getDiv(card_id);
-            if (!div) {
-                console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
-                return;
-            }
-            div.classList.add("dale-selected");
-            var icon = undefined;
-            switch (iconType) {
-                case 'pileBlue':
-                    icon = DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index, 5));
-                    break;
-                case 'pileYellow':
-                    icon = DaleIcons_2.DaleIcons.getYellowPileIcon(Math.min(index, 5));
-                    break;
-                case 'pileRed':
-                    icon = DaleIcons_2.DaleIcons.getRedPileIcon(Math.min(index, 5));
-                    break;
-                case 'ditch':
-                    icon = DaleIcons_2.DaleIcons.getDitchIcon();
-                    break;
-                case 'build':
-                    icon = DaleIcons_2.DaleIcons.getBuildIcon();
-                    break;
-                case 'spyglass':
-                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getSpyglassIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
-                    break;
-                case 'cheese':
-                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getCheeseIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
-                    break;
-                case 'numbers':
-                    icon = DaleIcons_2.DaleIcons.getNumberIcon(Math.min(index, 4));
-                    break;
-            }
-            if (icon) {
-                if (secondary) {
-                    icon.classList.add("dale-selection-icon-2");
-                }
-                else {
-                    icon.classList.add("dale-selection-icon-1");
-                }
-                div.appendChild(icon);
-            }
-        };
-        OrderedSelection.prototype.removeIcon = function (card_id, secondary) {
-            var div = this.getDiv(card_id);
-            if (!div) {
-                console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
-                return;
-            }
-            var primaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-1");
-            var secondaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-2");
-            if (secondary) {
-                secondaryIcon === null || secondaryIcon === void 0 ? void 0 : secondaryIcon.remove();
-                if (!primaryIcon) {
-                    div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
-                }
-            }
-            else {
-                primaryIcon === null || primaryIcon === void 0 ? void 0 : primaryIcon.remove();
-                if (!secondaryIcon) {
-                    div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
-                }
-            }
-        };
-        OrderedSelection.prototype.setMaxSize = function (max, secondary) {
-            console.log("setMaxSize: " + max);
-            if (max < 0) {
-                throw new Error("Maximum selection size must be non-negative");
-            }
-            if (secondary) {
-                this.secondaryMaxSize = max;
-            }
-            else {
-                this.maxSize = max;
-            }
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            while (card_ids.length > max) {
-                this.pop(secondary);
-            }
-        };
-        OrderedSelection.prototype.getMaxSize = function (secondary) {
-            if (secondary) {
-                return this.secondaryMaxSize;
-            }
-            return this.maxSize;
-        };
-        OrderedSelection.prototype.getSize = function (secondary) {
-            if (secondary) {
-                return this.secondary_card_ids.length;
-            }
-            return this.card_ids.length;
-        };
-        OrderedSelection.prototype.dequeue = function (secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            var card_id = card_ids[0];
-            if (card_id === undefined) {
-                return null;
-            }
-            this.unselectItem(card_id, secondary);
-            return card_id;
-        };
-        OrderedSelection.prototype.pop = function (secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            var card_id = card_ids[card_ids.length - 1];
-            if (card_id === undefined) {
-                return null;
-            }
-            this.unselectItem(card_id, secondary);
-            return card_id;
-        };
-        OrderedSelection.prototype.selectItem = function (card_id, secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            var maxSize = secondary ? this.secondaryMaxSize : this.maxSize;
-            if (maxSize == 0) {
-                return;
-            }
-            while (card_ids.length >= maxSize) {
-                this.pop(secondary);
-            }
-            card_ids.push(card_id);
-            this.addIcon(card_id, card_ids.length - 1, secondary);
-            this.onSelect(card_id, secondary);
-        };
-        OrderedSelection.prototype.unselectItem = function (card_id, secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            var index = card_ids.indexOf(card_id);
-            if (index != -1) {
-                card_ids.splice(index, 1);
-                this.removeIcon(card_id, secondary);
-                this.onUnselect(card_id, secondary);
-            }
-        };
-        OrderedSelection.prototype.unselectAll = function (secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            while (card_ids.length > 0) {
-                this.unselectItem(card_ids[card_ids.length - 1], secondary);
-            }
-        };
-        OrderedSelection.prototype.setIconType = function (iconType, secondaryIconType) {
-            this.iconType = iconType;
-            this.secondaryIconType = secondaryIconType;
-        };
-        OrderedSelection.prototype.updateIcons = function (secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            if (this.iconType) {
-                for (var i = 0; i < card_ids.length; i++) {
-                    var card_id = card_ids[i];
-                    this.removeIcon(card_id, secondary);
-                    this.addIcon(card_id, i, secondary);
-                }
-            }
-        };
-        OrderedSelection.prototype.toggle = function (card_id, secondary) {
-            if (this.includes(card_id)) {
-                this.unselectItem(card_id, secondary);
-                this.updateIcons(secondary);
-                return false;
-            }
-            else {
-                this.selectItem(card_id, secondary);
-                return true;
-            }
-        };
-        OrderedSelection.prototype.includes = function (card_id, secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            return card_ids.includes(card_id);
-        };
-        OrderedSelection.prototype.get = function (secondary) {
-            var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            return card_ids.slice().reverse();
-        };
-        OrderedSelection.prototype.secondaryToPrimary = function () {
-            this.unselectAll();
-            this.iconType = this.secondaryIconType;
-            this.maxSize = this.secondaryMaxSize;
-            for (var _i = 0, _a = this.secondary_card_ids.slice(); _i < _a.length; _i++) {
-                var card_id = _a[_i];
-                this.unselectItem(card_id, true);
-                this.selectItem(card_id);
-            }
-        };
-        return OrderedSelection;
-    }());
-    exports.OrderedSelection = OrderedSelection;
-});
 define("components/types/DaleWrapClass", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DALE_WRAP_CLASSES = void 0;
     exports.DALE_WRAP_CLASSES = ['dale-wrap-technique', 'dale-wrap-purchase', 'dale-wrap-build', 'dale-wrap-discard', 'dale-wrap-default'];
 });
-define("components/DaleStock", ["require", "exports", "ebg/stock", "components/DaleCard", "components/Images", "components/OrderedSelection", "components/types/DaleWrapClass", "ebg/stock"], function (require, exports, Stock, DaleCard_2, Images_2, OrderedSelection_1, DaleWrapClass_1) {
+define("components/DaleStock", ["require", "exports", "ebg/stock", "components/DaleCard", "components/Images", "components/OrderedSelection", "components/types/DaleWrapClass", "ebg/stock"], function (require, exports, Stock, DaleCard_2, Images_3, OrderedSelection_2, DaleWrapClass_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleStock = void 0;
@@ -1087,7 +1381,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.actionLabelDefaultText = "<DefaultText>";
             _this.selectionMode = 'none';
             _this.duration = 500;
-            _this.orderedSelection = new OrderedSelection_1.OrderedSelection();
+            _this.orderedSelection = new OrderedSelection_2.OrderedSelection();
             _this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
             return _this;
         }
@@ -1098,13 +1392,13 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 var type_id = page.gamedatas.cardTypes[i].type_id;
                 this.addItemType(type_id, type_id);
             }
-            this.create(page, container, Images_2.Images.CARD_WIDTH, Images_2.Images.CARD_HEIGHT);
-            this.resizeItems(Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S, Images_2.Images.SHEET_WIDTH_S, Images_2.Images.SHEET_HEIGHT_S);
-            this.image_items_per_row = Images_2.Images.IMAGES_PER_ROW;
-            this.create(page, container, Images_2.Images.CARD_WIDTH_S, Images_2.Images.CARD_HEIGHT_S);
+            this.create(page, container, Images_3.Images.CARD_WIDTH, Images_3.Images.CARD_HEIGHT);
+            this.resizeItems(Images_3.Images.CARD_WIDTH_S, Images_3.Images.CARD_HEIGHT_S, Images_3.Images.SHEET_WIDTH_S, Images_3.Images.SHEET_HEIGHT_S);
+            this.image_items_per_row = Images_3.Images.IMAGES_PER_ROW;
+            this.create(page, container, Images_3.Images.CARD_WIDTH_S, Images_3.Images.CARD_HEIGHT_S);
             if (wrap) {
-                dojo.setStyle(wrap, 'min-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
-                dojo.setStyle(wrap, 'max-height', 2 * Images_2.Images.CARD_WIDTH_S + 'px');
+                dojo.setStyle(wrap, 'min-height', 2 * Images_3.Images.CARD_WIDTH_S + 'px');
+                dojo.setStyle(wrap, 'max-height', 2 * Images_3.Images.CARD_WIDTH_S + 'px');
                 this.wrap = wrap;
                 this.actionLabel = (_a = wrap.querySelector(".dale-label")) !== null && _a !== void 0 ? _a : undefined;
                 if (!this.actionLabel) {
@@ -1275,10 +1569,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 div = $(this.getItemDivId(String(item.id)));
                 div.dataset['arc'] = index + '/' + this.items.length;
                 if (this.control_name.includes("hand")) {
-                    dojo.setStyle(div, 'z-index', String(index + Images_2.Images.Z_INDEX_HAND_CARD));
+                    dojo.setStyle(div, 'z-index', String(index + Images_3.Images.Z_INDEX_HAND_CARD));
                 }
                 else {
-                    dojo.setStyle(div, 'z-index', String(index + Images_2.Images.Z_INDEX_LIMBO_CARD));
+                    dojo.setStyle(div, 'z-index', String(index + Images_3.Images.Z_INDEX_LIMBO_CARD));
                 }
             }
             if (this.item_margin < 0) {
@@ -1371,7 +1665,7 @@ define("components/types/ChameleonArgs", ["require", "exports", "components/Dale
     }());
     exports.ChameleonArgs = ChameleonArgs;
 });
-define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard", "components/OrderedSelection", "components/types/DaleWrapClass"], function (require, exports, Images_3, DaleCard_4, OrderedSelection_2, DaleWrapClass_2) {
+define("components/Pile", ["require", "exports", "components/Images", "components/DaleCard", "components/OrderedSelection", "components/types/DaleWrapClass"], function (require, exports, Images_4, DaleCard_4, OrderedSelection_3, DaleWrapClass_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Pile = void 0;
@@ -1387,16 +1681,16 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
             this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_3.Images.getCardStyle(), "\">\n                <div class=\"dale-card\"></div>\n                <div class=\"dale-pile-size\"></div>\n                <div class=\"dale-pile-size dale-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"pile\" style=\"").concat(Images_4.Images.getCardStyle(), "\">\n                <div class=\"dale-card\"></div>\n                <div class=\"dale-pile-size\"></div>\n                <div class=\"dale-pile-size dale-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
-            this.placeholderHTML = Images_3.Images.getPlaceholder();
+            this.placeholderHTML = Images_4.Images.getPlaceholder();
             var sizeElements = this.containerHTML.querySelectorAll('.dale-pile-size');
             this.sizeHTML = sizeElements[0];
             this.selectedSizeHTML = sizeElements[1];
             this.cards = [];
             this._slidingCards = [];
-            this.orderedSelection = new OrderedSelection_2.OrderedSelection();
+            this.orderedSelection = new OrderedSelection_3.OrderedSelection();
             (_a = this.containerHTML.querySelector(".pile")) === null || _a === void 0 ? void 0 : _a.prepend(this.placeholderHTML);
             this.updateHTML();
             dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
@@ -1435,7 +1729,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
         };
         Pile.prototype.setZIndex = function (slidingElement) {
-            var z_index = Images_3.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
+            var z_index = Images_4.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
             var style = slidingElement.getAttribute('style');
             slidingElement.setAttribute('style', style + "z-index: ".concat(z_index, ";"));
         };
@@ -1598,22 +1892,22 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.popin.setMaxWidth(1000);
             this.popin.setContent("<div id=\"".concat(popin_id, "-card-container\" class=\"popin-card-container ").concat(this.wrapClass, "\"></div>"));
             var container_id = popin_id + "-card-container";
-            var _loop_2 = function (card) {
+            var _loop_3 = function (card) {
                 var div = card.toDiv(container_id, 'effective');
                 div.classList.add("dale-relative");
-                if (this_1.selectionMode != 'none' && this_1.orderedSelection.getMaxSize() > 0) {
+                if (this_2.selectionMode != 'none' && this_2.orderedSelection.getMaxSize() > 0) {
                     div.classList.add("dale-clickable");
-                    var thiz_2 = this_1;
+                    var thiz_2 = this_2;
                     dojo.connect(div, 'onclick', function () {
                         thiz_2.onClickCard(card, div);
                     });
                 }
-                this_1.cardIdToPopinDiv.set(card.id, div);
+                this_2.cardIdToPopinDiv.set(card.id, div);
             };
-            var this_1 = this;
+            var this_2 = this;
             for (var _i = 0, _e = this.cards; _i < _e.length; _i++) {
                 var card = _e[_i];
-                _loop_2(card);
+                _loop_3(card);
             }
             dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
             this.isPopinOpen = true;
@@ -1886,7 +2180,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot", "components/OrderedSelection", "components/types/DaleWrapClass"], function (require, exports, Images_4, CardSlot_1, OrderedSelection_3, DaleWrapClass_3) {
+define("components/MarketBoard", ["require", "exports", "components/Images", "components/CardSlot", "components/OrderedSelection", "components/types/DaleWrapClass"], function (require, exports, Images_5, CardSlot_1, OrderedSelection_4, DaleWrapClass_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -1894,16 +2188,16 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
             this.page = page;
-            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_4.Images.MARKET_WIDTH_S - Images_4.Images.MARKET_PADDING_LEFT_S - Images_4.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_4.Images.MARKET_HEIGHT_S - Images_4.Images.MARKET_PADDING_TOP_S - Images_4.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_4.Images.MARKET_WIDTH_S, "px ").concat(Images_4.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_4.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_4.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_4.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_4.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            $("market-board-background").setAttribute("style", "\n            width: ".concat(Images_5.Images.MARKET_WIDTH_S - Images_5.Images.MARKET_PADDING_LEFT_S - Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_5.Images.MARKET_HEIGHT_S - Images_5.Images.MARKET_PADDING_TOP_S - Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_5.Images.MARKET_WIDTH_S, "px ").concat(Images_5.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_5.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_5.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
             this.container = $("market-board-background").querySelector("#market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var div = document.createElement("div");
-                div.setAttribute('style', "".concat(Images_4.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_4.Images.CARD_WIDTH_S + Images_4.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
+                div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_5.Images.CARD_WIDTH_S + Images_5.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
-            this.orderedSelection = new OrderedSelection_3.OrderedSelection();
+            this.orderedSelection = new OrderedSelection_4.OrderedSelection();
             this.selectionMode = 0;
         }
         Object.defineProperty(MarketBoard.prototype, "size", {
@@ -2092,7 +2386,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_5, CardSlot_2, DaleIcons_3) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_6, CardSlot_2, DaleIcons_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -2108,7 +2402,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             for (var i = 0; i < Stall.MAX_STACKS; i++) {
                 this.createNewStack();
             }
-            dojo.setStyle(this.container.parentElement, 'max-width', Images_5.Images.CARD_WIDTH_S * (1 + Images_5.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
+            dojo.setStyle(this.container.parentElement, 'max-width', Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
             addEventListener("resize", this.onResize.bind(this));
             this.onResize();
         }
@@ -2128,12 +2422,12 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (this.slots.length < Stall.MAX_STACKS) {
                 if (this.stackContainers.length > 0) {
                     var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_5.Images.CARD_WIDTH_S * (1 + Images_5.Images.STACK_MAX_MARGIN_X), "px;"));
+                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X), "px;"));
                 }
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("stack-container");
-                stackContainer.setAttribute('style', "min-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;"));
-                var placeholder = Images_5.Images.getPlaceholder();
+                stackContainer.setAttribute('style', "min-width: ".concat(Images_6.Images.CARD_WIDTH_S, "px;"));
+                var placeholder = Images_6.Images.getPlaceholder();
                 if (this.slots.length > 0) {
                     stackContainer.classList.add("dale-grayed-out");
                     placeholder.classList.add("dale-placeholder-partially-covered");
@@ -2165,12 +2459,12 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                     var stack = _b[_i];
                     maxHeight = Math.max(maxHeight, stack.length);
                 }
-                var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
+                var y_offset = Images_6.Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
                 console.log("Update height");
                 console.log(stackContainer.getAttribute('style'));
                 var prevStyleWithoutHeight = (_a = stackContainer.getAttribute('style')) === null || _a === void 0 ? void 0 : _a.replace(/height:.*px;/, '');
                 console.log(prevStyleWithoutHeight);
-                stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_5.Images.CARD_HEIGHT_S + y_offset, "px;"));
+                stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_6.Images.CARD_HEIGHT_S + y_offset, "px;"));
             }
         };
         Stall.prototype.createNewSlot = function (stack_index, card) {
@@ -2180,9 +2474,9 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var stackContainer = this.stackContainers[stack_index];
             var stack = this.slots[stack_index];
             var index = stack.length;
-            var y_offset = Images_5.Images.VERTICAL_STACK_OFFSET_S * index;
+            var y_offset = Images_6.Images.VERTICAL_STACK_OFFSET_S * index;
             var div = document.createElement("div");
-            div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
+            div.setAttribute('style', "".concat(Images_6.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
@@ -2396,7 +2690,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             return false;
         };
         Stall.prototype.onResize = function () {
-            if (this.container.getBoundingClientRect().width < (1 + Images_5.Images.STACK_MIN_MARGIN_X) * Images_5.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
+            if (this.container.getBoundingClientRect().width < (1 + Images_6.Images.STACK_MIN_MARGIN_X) * Images_6.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
                 for (var i = 1; i < this.slots.length; i++) {
                     var placeholder = this.stackContainers[i].querySelector(".dale-placeholder");
                     placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.add("dale-placeholder-partially-covered");
@@ -2602,7 +2896,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
     }());
     exports.MainClientState = MainClientState;
 });
-define("components/TargetingLine", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_8, Images_6) {
+define("components/TargetingLine", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_8, Images_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TargetingLine = void 0;
@@ -2634,29 +2928,29 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             this.cardDiv.addEventListener("click", this.onSource);
             this.targetDivs = [];
             this.onTargets = [];
-            var _loop_3 = function (targetCard) {
+            var _loop_4 = function (targetCard) {
                 var card_div = targetCard instanceof DaleCard_8.DaleCard ? targetCard.div : targetCard;
-                card_div.classList.add("dale-line-target", this_2.targetClass);
-                this_2.targetDivs.push(card_div);
+                card_div.classList.add("dale-line-target", this_3.targetClass);
+                this_3.targetDivs.push(card_div);
                 var target_id = targetCard instanceof DaleCard_8.DaleCard ? targetCard.id : +targetCard.dataset['target_id'];
                 var finalOnTarget = function () {
                     thiz.remove();
                     onTarget(source_id, target_id);
                 };
-                this_2.onTargets.push(finalOnTarget);
+                this_3.onTargets.push(finalOnTarget);
                 card_div.addEventListener("click", finalOnTarget);
             };
-            var this_2 = this;
+            var this_3 = this;
             for (var _i = 0, targets_1 = targets; _i < targets_1.length; _i++) {
                 var targetCard = targets_1[_i];
-                _loop_3(targetCard);
+                _loop_4(targetCard);
             }
             var readjustments = 0;
             this.updateLine = function (evt) {
                 var _a, _b;
                 var sourceRect = thiz.cardDiv.getBoundingClientRect();
-                var x1 = sourceRect.left + window.scrollX + Images_6.Images.CARD_WIDTH_S / 2;
-                var y1 = sourceRect.top + window.scrollY + Images_6.Images.CARD_HEIGHT_S / 2;
+                var x1 = sourceRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
+                var y1 = sourceRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
                 var currTarget = evt.target;
                 var x2 = evt.pageX;
                 var y2 = evt.pageY;
@@ -2673,8 +2967,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                         }
                         readjustments += 1;
                         var targetRect = currTarget.getBoundingClientRect();
-                        x2 = targetRect.left + window.scrollX + Images_6.Images.CARD_WIDTH_S / 2;
-                        y2 = targetRect.top + window.scrollY + Images_6.Images.CARD_HEIGHT_S / 2;
+                        x2 = targetRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
+                        y2 = targetRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
                         targetCard.classList.add("dale-line-source", thiz.sourceClass);
                         targetCard.classList.remove("dale-line-target", thiz.targetClass);
                         thiz.prevTarget = currTarget;
@@ -2725,277 +3019,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("components/DaleDeckSelection", ["require", "exports", "components/Images", "components/OrderedSelection"], function (require, exports, Images_7, OrderedSelection_4) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DaleDeckSelection = void 0;
-    var OrderedDeckSelection = (function (_super) {
-        __extends(OrderedDeckSelection, _super);
-        function OrderedDeckSelection() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        OrderedDeckSelection.prototype.getDiv = function (card_id) {
-            return document.querySelector("#deck-".concat(card_id));
-        };
-        return OrderedDeckSelection;
-    }(OrderedSelection_4.OrderedSelection));
-    var DaleDeckSelection = (function () {
-        function DaleDeckSelection(page, deckSelectionHTML, gameHTML, inDeckSelection) {
-            this.orderedSelection = new OrderedDeckSelection();
-            this.tooltips = [];
-            this.deckSelectionHTML = deckSelectionHTML;
-            this.gameHTML = gameHTML;
-            this.cardContainer = this.deckSelectionHTML.querySelector(".dale-deck-selection-container");
-            this.cardContainer.classList.add("dale-wrap-technique");
-            if (!inDeckSelection) {
-                this.deckSelectionHTML.classList.add("dale-hidden");
-                return;
-            }
-            this.gameHTML.classList.add("dale-hidden");
-            this.orderedSelection.setIconType('numbers');
-            this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1);
-            var _loop_4 = function (animalfolk_id) {
-                var card_div = document.createElement('div');
-                card_div.id = "deck-" + animalfolk_id;
-                card_div.classList.add("dale-card", "dale-relative", "dale-clickable", "dale-deck-selection");
-                this_3.cardContainer.appendChild(card_div);
-                Images_7.Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
-                var tooltip = new dijit.Tooltip({
-                    connectId: [card_div.id],
-                    label: this_3.getTooltipContent(animalfolk_id),
-                    showDelay: 400,
-                });
-                dojo.connect(card_div, "mouseleave", function () {
-                    tooltip.close();
-                });
-                this_3.tooltips.push(tooltip);
-                var unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
-                if (unavailable) {
-                    card_div.classList.add("dale-deck-selection-unavailable");
-                }
-                var thiz = this_3;
-                var card_id = animalfolk_id;
-                card_div.addEventListener('click', function () {
-                    if (unavailable) {
-                        page.showMessage(_("This animalfolk does not exist"), 'error');
-                        return;
-                    }
-                    if (page.isCurrentPlayerActive()) {
-                        thiz.orderedSelection.toggle(card_id);
-                    }
-                });
-            };
-            var this_3 = this;
-            for (var animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
-                _loop_4(animalfolk_id);
-            }
-        }
-        DaleDeckSelection.prototype.getTooltipContent = function (animalfolk_id) {
-            return "TODO: TOOLTIP";
-        };
-        DaleDeckSelection.prototype.remove = function () {
-            this.cardContainer.remove();
-            for (var _i = 0, _a = this.tooltips; _i < _a.length; _i++) {
-                var tooltip = _a[_i];
-                tooltip.destroy();
-            }
-            this.gameHTML.classList.remove("dale-hidden");
-        };
-        DaleDeckSelection.prototype.setResult = function (animalfolk_id) {
-            var _a;
-            if (this.cardContainer.classList.contains("dale-wrap-technique")) {
-                this.cardContainer.classList.remove("dale-wrap-technique");
-                this.cardContainer.classList.add("dale-wrap-purchase");
-                this.orderedSelection.unselectAll();
-                this.orderedSelection.setIconType(undefined);
-                this.cardContainer.querySelectorAll(".dale-deck-selection").forEach(function (card_div) {
-                    card_div.classList.add("dale-deck-selection-unavailable");
-                });
-            }
-            (_a = $("deck-" + animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-deck-selection-unavailable");
-            this.orderedSelection.selectItem(animalfolk_id);
-        };
-        DaleDeckSelection.ANIMALFOLK_NONE = 0;
-        DaleDeckSelection.ANIMALFOLK_MACAWS = 1;
-        DaleDeckSelection.ANIMALFOLK_PANDAS = 2;
-        DaleDeckSelection.ANIMALFOLK_RACCOONS = 3;
-        DaleDeckSelection.ANIMALFOLK_SQUIRRELS = 4;
-        DaleDeckSelection.ANIMALFOLK_OCELOTS = 5;
-        DaleDeckSelection.ANIMALFOLK_CHAMELEONS = 6;
-        DaleDeckSelection.ANIMALFOLK_PLATYPUSES = 7;
-        DaleDeckSelection.ANIMALFOLK_SLOTHS = 8;
-        DaleDeckSelection.ANIMALFOLK_CROCODILES = 9;
-        DaleDeckSelection.ANIMALFOLK_FOXES = 10;
-        DaleDeckSelection.ANIMALFOLK_POLECATS = 11;
-        DaleDeckSelection.ANIMALFOLK_OWLS = 12;
-        DaleDeckSelection.ANIMALFOLK_BEAVERS = 13;
-        DaleDeckSelection.ANIMALFOLK_DESERTMONITORS = 14;
-        DaleDeckSelection.ANIMALFOLK_LEMURS = 15;
-        DaleDeckSelection.ANIMALFOLK_MAGPIES = 16;
-        DaleDeckSelection.ANIMALFOLK_ECHIDNAS = 17;
-        DaleDeckSelection.ANIMALFOLK_HARES = 17;
-        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 18;
-        DaleDeckSelection.ANIMALFOLK_PENGUINS = 19;
-        DaleDeckSelection.ANIMALFOLK_TUATARAS = 20;
-        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 21;
-        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 22;
-        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 23;
-        DaleDeckSelection.ANIMALFOLK_GULLS = 24;
-        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 25;
-        DaleDeckSelection.ANIMALFOLK_BATS = 26;
-        return DaleDeckSelection;
-    }());
-    exports.DaleDeckSelection = DaleDeckSelection;
-});
-define("components/DaleDie", ["require", "exports", "components/DaleDeckSelection"], function (require, exports, DaleDeckSelection_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DaleDie = void 0;
-    var DaleDie = (function () {
-        function DaleDie(animalfolk_id, d6, name_displayed, parentHTML) {
-            var _this = this;
-            var _a;
-            switch (animalfolk_id) {
-                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_OCELOTS:
-                    this.type = 'ocelot';
-                    break;
-                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_POLECATS:
-                    this.type = 'polecat';
-                    break;
-                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_HARES:
-                    this.type = 'hare';
-                    break;
-                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_PANGOLINS:
-                    this.type = 'pangolin1';
-                    break;
-                case DaleDeckSelection_1.DaleDeckSelection.ANIMALFOLK_PANGOLINS + 3:
-                    this.type = 'pangolin2';
-                    break;
-                default:
-                    throw new Error("Animalfolk ".concat(animalfolk_id, " has no die"));
-            }
-            this.parent = parentHTML;
-            this.container = document.createElement('div');
-            this.container.classList.add("dale-die-container");
-            this.container.innerHTML = "\n            <div class=\"dale-die\" type=\"".concat(this.type, "\" side=\"1\">\n                <div class=\"dale-die-side dale-die-side-1\"></div>\n                <div class=\"dale-die-side dale-die-side-2\"></div>\n                <div class=\"dale-die-side dale-die-side-3\"></div>\n                <div class=\"dale-die-side dale-die-side-4\"></div>\n                <div class=\"dale-die-side dale-die-side-5\"></div>\n                <div class=\"dale-die-side dale-die-side-6\"></div>\n            </div>\n            <div class=\"dale-die-result\"></div>\n        ");
-            this.parent.appendChild(this.container);
-            this.die = this.container.querySelector(".dale-die");
-            this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
-            setTimeout((function () {
-                _this.die.setAttribute('side', String(d6 + 1));
-                _this.die.classList.toggle('dale-roll');
-            }).bind(this), 1);
-            var resultLabel = (_a = this.die.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.dale-die-result');
-            if (resultLabel) {
-                resultLabel.classList.remove('dale-die-reveal');
-                resultLabel.classList.add('dale-die-hide');
-                resultLabel.innerHTML = "Rolled ".concat(name_displayed);
-                setTimeout(function () {
-                    resultLabel.classList.add('dale-die-reveal');
-                    resultLabel.classList.remove('dale-die-hide');
-                }, 1000);
-            }
-            var thiz = this;
-            setTimeout((function () {
-                dojo.fadeOut({ node: thiz.container, onEnd: function (node) { dojo.destroy(node); } }).play();
-            }), 1500);
-        }
-        DaleDie.getIconTpl = function (die_icon) {
-            var col, row;
-            switch (die_icon) {
-                case DaleDie.DIE_OCELOT_0:
-                    row = 0;
-                    col = 0;
-                    break;
-                case DaleDie.DIE_OCELOT_1:
-                    row = 0;
-                    col = 1;
-                    break;
-                case DaleDie.DIE_OCELOT_2:
-                    row = 0;
-                    col = 3;
-                    break;
-                case DaleDie.DIE_OCELOT_3:
-                    row = 0;
-                    col = 5;
-                    break;
-                case DaleDie.DIE_POLECAT_1:
-                    row = 1;
-                    col = 0;
-                    break;
-                case DaleDie.DIE_POLECAT_2:
-                    row = 1;
-                    col = 2;
-                    break;
-                case DaleDie.DIE_POLECAT_3:
-                    row = 1;
-                    col = 4;
-                    break;
-                case DaleDie.DIE_STARS:
-                    row = 2;
-                    col = 0;
-                    break;
-                case DaleDie.DIE_PLANET:
-                    row = 2;
-                    col = 2;
-                    break;
-                case DaleDie.DIE_PLANET_REROLL:
-                    row = 2;
-                    col = 4;
-                    break;
-                case DaleDie.DIE_COMET:
-                    row = 2;
-                    col = 5;
-                    break;
-                case DaleDie.DIE_DISCARD:
-                    row = 3;
-                    col = 0;
-                    break;
-                case DaleDie.DIE_DECK:
-                    row = 3;
-                    col = 2;
-                    break;
-                case DaleDie.DIE_HAND:
-                    row = 3;
-                    col = 6;
-                    break;
-                case DaleDie.DIE_DISCARD2:
-                    row = 4;
-                    col = 0;
-                    break;
-                case DaleDie.DIE_DECK2:
-                    row = 4;
-                    col = 2;
-                    break;
-                case DaleDie.DIE_HAND2:
-                    row = 4;
-                    col = 6;
-                    break;
-            }
-            return "<i class=\"dale-die-side dale-icon\" style=\"background-position: -".concat(col, "00% -").concat(row, "00%;\"></i>");
-        };
-        DaleDie.DIE_OCELOT_0 = 1;
-        DaleDie.DIE_OCELOT_1 = 2;
-        DaleDie.DIE_OCELOT_2 = 3;
-        DaleDie.DIE_OCELOT_3 = 4;
-        DaleDie.DIE_POLECAT_1 = 5;
-        DaleDie.DIE_POLECAT_2 = 6;
-        DaleDie.DIE_POLECAT_3 = 7;
-        DaleDie.DIE_STARS = 8;
-        DaleDie.DIE_PLANET = 9;
-        DaleDie.DIE_PLANET_REROLL = 10;
-        DaleDie.DIE_COMET = 11;
-        DaleDie.DIE_DECK = 12;
-        DaleDie.DIE_DISCARD = 13;
-        DaleDie.DIE_HAND = 14;
-        DaleDie.DIE_DECK2 = 15;
-        DaleDie.DIE_DISCARD2 = 16;
-        DaleDie.DIE_HAND2 = 17;
-        return DaleDie;
-    }());
-    exports.DaleDie = DaleDie;
-});
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_2, DaleDie_1) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_2, DaleDie_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -3781,7 +3805,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     args['opponent_name'] = "<span class=\"playername\" style=\"color:#".concat(opponent_color, ";\">").concat(opponent_name, "</span>");
                 }
                 if ('die_icon' in args) {
-                    var iconTpl = DaleDie_1.DaleDie.getIconTpl(args['die_icon']);
+                    var iconTpl = DaleDie_2.DaleDie.getIconTpl(args['die_icon']);
                     args['die_icon'] = "<span class=\"dale-log-span\">".concat(iconTpl, "</span>");
                 }
                 if (log.includes('${ocelot}')) {
@@ -5077,7 +5101,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var card = DaleCard_9.DaleCard.of(notif.args.card);
             var parent = DaleCard_9.DaleCard.divs.get(card.id);
             if (parent) {
-                new DaleDie_1.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
+                new DaleDie_2.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
             }
         };
         Dale.prototype.notif_addEffect = function (notif) {
