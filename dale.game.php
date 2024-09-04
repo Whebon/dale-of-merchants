@@ -394,7 +394,7 @@ class Dale extends DaleTableBasic
                 $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array(
                     "player_id" => $to_player_id,
                     "player_name" => $this->getPlayerNameById($to_player_id),
-                    "opponent_name" => $this->getPlayerNameById($from_player_id),
+                    "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameById($from_player_id),
                     "nbr" => 1,
                     "_private" => array(
                         "card" => $card
@@ -413,7 +413,7 @@ class Dale extends DaleTableBasic
             $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array(
                 "player_id" => $to_player_id,
                 "player_name" => $this->getPlayerNameById($to_player_id),
-                "opponent_name" => $this->getPlayerNameById($from_player_id),
+                "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameById($from_player_id),
                 "nbr" => $actual_nbr,
                 "_private" => array(
                     "cards" => $cards
