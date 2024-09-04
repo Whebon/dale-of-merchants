@@ -112,6 +112,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose an opponent to sabotage");
             case 'client_treasureHunter':
                 return _("${card_name}: ${you} must take a card from an opponent's discard pile");
+            case 'client_newSeason':
+                return _("${card_name}: ${you} must <stronger>ditch</stronger> an animalfolk card from your discard pile");
         }
         return "MISSING DESCRIPTION";
     }

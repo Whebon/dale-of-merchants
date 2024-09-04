@@ -574,7 +574,11 @@ export class DaleCard {
         return this.original_value + pos;
     }
 
-    public get animalfolk(): string {
+    public get original_animalfolk_id() {
+        return DaleCard.cardTypes[this.effective_type_id]!.animalfolk_id;
+    }
+
+    public get animalfolk_displayed(): string {
         return DaleCard.cardTypes[this.effective_type_id]!.animalfolk_displayed
     }
 
@@ -600,6 +604,10 @@ export class DaleCard {
 
     public isEffectiveJunk(): boolean {
         return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
+    }
+
+    public isAnimalfolk(): boolean {
+        return (this.original_animalfolk_id != 0);
     }
 
     public isTechnique(): boolean {

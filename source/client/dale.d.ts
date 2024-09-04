@@ -66,6 +66,10 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
+		'ditchFromDiscard': {
+			player_id: number
+			card: DbCard
+		}
 		'ditchFromMarketDeck': {
 			card: DbCard
 		}
@@ -271,6 +275,7 @@ declare global {
 		'client_dirtyExchange': { opponent_id: number }
 		'client_sabotage': { opponent_id: number }
 		'client_treasureHunter': { card_id: number }
+		'client_newSeason': { card_id: number }
 	}
 
 	interface ClientPassiveChoice {

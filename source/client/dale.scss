@@ -447,14 +447,6 @@
 .popin-card-container {
 	display: flex;
 	flex-wrap: wrap;
-
-	//TODO: safely delete this
-	// .dale-selected {
-	// 	transform: scale(1.05); 
-	// 	outline: 3px solid var(--dale-wrap-build);
-	// 	background-color: var(--dale-wrap-build-a);
-	// 	background-blend-mode: overlay;
-	// }
 }
 
 .dale-hidden {

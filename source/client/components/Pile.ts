@@ -14,10 +14,11 @@ declare function $(text: string | Element): HTMLElement;
  * 'none':                  content popin can be viewed, but no cards can be selected
  * 'noneCantViewContent':   content popin can cannot be viewed, and no cards can be selected
  * 'single':                a single card can be selected from the popin
+ * 'singleAnimalfolk'       a single animalfolk card can be selected from the popin
  * 'multiple':              multiple cards (up to the selectionMax) can be selected from the popin
  * 'top':                   content popin can cannot be viewed, and only the top card of the pile can be selected.
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'multiple' | 'top';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'top';
 
 /**
  * A component to display a set of cards in a pile.
@@ -113,15 +114,6 @@ export class Pile implements DaleLocation {
                 this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'original');
                 this.topCardHTML.classList.add("dale-clickable");
                 dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
-                //TODO: safely remove this
-                // const div = topCard.toDiv(this.containerHTML);
-                // this.topCardHTML.replaceWith(div);
-                //TODO: safely remove this
-                // this.topCardHTML.innerHTML = ''; //delete previous badges
-                // this.topCardHTML.setAttribute('style', Images.getCardStyle(topCard.effective_type_id));
-                // if (topCard.isBoundChameleon()) {
-                //     this.topCardHTML.replaceChildren(DaleCard.createChameleonIcon());
-                // }
             }
             this.previousTopCard = topCard;
         }
@@ -337,6 +329,9 @@ export class Pile implements DaleLocation {
      * Open the pile popin
      */
     public openPopin() {
+        if (this.isPopinOpen) {
+            return;
+        }
         this.peek()?.detachDiv();
         const player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
         var title = "";
@@ -361,19 +356,13 @@ export class Pile implements DaleLocation {
         for (let card of this.cards) {
             const div = card.toDiv(container_id, 'effective');
             div.classList.add("dale-relative");
-            if(this.selectionMode != 'none' && this.orderedSelection.getMaxSize() > 0) {
+            if(this.isClickable(card)) {
                 div.classList.add("dale-clickable");
                 const thiz = this;
                 dojo.connect(div, 'onclick', function() {
                     thiz.onClickCard(card, div);
                 });
             }
-            // if(this.orderedSelection.includes(card.id)) {
-            //     div.classList.add("dale-selected");
-            // }
-            // if ((this.page as any).chameleonArgs?.card.id == card.id) {
-            //     div.classList.add("dale-chameleon-selected");
-            // }
             this.cardIdToPopinDiv.set(card.id, div);
         }
         dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
@@ -421,6 +410,8 @@ export class Pile implements DaleLocation {
             case 'none':
                 return;
             case 'single':
+            case 'singleAnimalfolk':
+                (this.page as any).onSelectPileCard(this, card.id);
                 this.popin.hide();
                 break;
             case 'multiple':
@@ -500,22 +491,43 @@ export class Pile implements DaleLocation {
                 }
                 break;
             case 'single':
+            case 'singleAnimalfolk':
                 this.containerHTML.classList.add("dale-blinking");
+                this.openPopin();
                 break;
             default:
                 this.containerHTML.classList.remove("dale-blinking");
                 this.orderedSelection.unselectAll();
+                this.closePopin();
                 break;
         }
         this.updateHTML();
     }
 
     /**
+	 * @returns `true` if card can be clicked in the current selection mode (popin only!)
+	 */
+	private isClickable(card: DaleCard): boolean {
+		switch (this.selectionMode) {
+            case 'single':
+                return true;
+            case 'singleAnimalfolk':
+                return card.isAnimalfolk();
+			case 'multiple':
+				return this.orderedSelection.getMaxSize() > 0;
+			default:
+                return false;
+		}
+	}
+
+    /**
      * Close the popin
      */
     public closePopin(){
-        this.popin.hide();
-        this.onClosePopin();
+        if (this.isPopinOpen) {
+            this.popin.hide();
+            this.onClosePopin();
+        }
     }
 
     /**

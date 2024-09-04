@@ -85,7 +85,7 @@ class DaleDeck extends Deck {
      * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
      * @param mixed $card_ids multiple card ids to get
      * @param string $location location to remove the card from
-     * @return
+     * @return array `dbcards`
      * @example example
      * Let a pair (A, 1) denote `(card_id, location_arg)`
      * 
@@ -97,7 +97,7 @@ class DaleDeck extends Deck {
      * 
      * Objects B and C are now expected to be moved away from the pile by another function
      */
-    function removeCardsFromPile(array $card_ids, string $location) {
+    function removeCardsFromPile(array $card_ids, string $location): array {
         $cards = array();
         foreach ($card_ids as $card_id) {
             $cards[] = $this->removeCardFromPile($card_id, $location);

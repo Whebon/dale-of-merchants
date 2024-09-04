@@ -465,6 +465,9 @@ class Dale extends Gamegui
 					)
 				}).bind(this), 500);
 				break;
+			case 'client_newSeason':
+				this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'dale-wrap-technique');
+				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
@@ -598,6 +601,9 @@ class Dale extends Gamegui
 				}
 				this.targetingLine?.remove();
 				break;
+			case 'client_newSeason':
+				this.myDiscard.setSelectionMode('none');
+				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
@@ -716,6 +722,9 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_treasureHunter':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_newSeason':
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1358,6 +1367,11 @@ class Dale extends Gamegui
 					this.onBuildSelectionChanged();
 				}
 				break;
+			case 'client_newSeason':
+				this.playTechniqueCard<'client_newSeason'>({
+					card_id: card!.id
+				})
+				break;
 		}
 	}
 
@@ -1761,6 +1775,20 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_treasureHunter', card.id);
 				}
 				break;
+			case DaleCard.CT_NEWSEASON:
+				fizzle = true
+				for (let card of this.myDiscard.getCards()) {
+					if (card.isAnimalfolk()) {
+						fizzle = false;
+					}
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_newSeason', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2111,6 +2139,7 @@ class Dale extends Gamegui
 			['placeOnDeckMultiple', 500],
 			['reshuffleDeck', 1500],
 			['wilyFellow', 500],
+			['ditchFromDiscard', 500],
 			['ditchFromMarketDeck', 500],
 			['ditchFromMarketBoard', 500],
 			['rollDie', 1000],
@@ -2246,8 +2275,6 @@ class Dale extends Gamegui
 					}
 					break;
 				case 'disc':
-					//WARNING: dbcard.location_arg does not correspond to absolute indices in a pile.
-					//[1, 3, 5, 6, 8] is a valid sequence of location_args, but location arg 5 is at pile index 2.
 					const discard = this.playerDiscards[notif.args.player_id]!;
 					const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed
 					stall.insertCard(card, notif.args.stack_index, undefined, discard.placeholderHTML)
@@ -2390,11 +2417,11 @@ class Dale extends Gamegui
 
 	notif_ditch(notif: NotifAs<'ditch'>) {
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-		if (DaleCard.of(notif.args.card).isJunk()) {
-			this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
+		if (DaleCard.of(notif.args.card).isAnimalfolk()) {
+			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard);
 		}
 		else {
-			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard);
+			this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
 		}
 		//update the hand sizes
 		if (stock === this.myHand) {
@@ -2407,11 +2434,11 @@ class Dale extends Gamegui
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		for (let id of notif.args.card_ids) {
 			const card = notif.args.cards[id]!;
-			if (DaleCard.of(card).isJunk()) {
-				this.playerStockRemove(card, stock, notif.args.player_id);
+			if (DaleCard.of(card).isAnimalfolk()) {
+				this.playerStockToPile(card, stock, notif.args.player_id, this.marketDiscard, delay);
 			}
 			else {
-				this.playerStockToPile(card, stock, notif.args.player_id, this.marketDiscard, delay);
+				this.playerStockRemove(card, stock, notif.args.player_id);
 			}
 			delay += 75; //delay indicates that ordering matters
 		}
@@ -2655,6 +2682,19 @@ class Dale extends Gamegui
 		// 	discard.push(card, deck.placeholderHTML, () => { deck.pop() }, step/2, delay);
 		// 	delay += step;
 		// }
+	}
+
+	notif_ditchFromDiscard(notif: NotifAs<'ditchFromDiscard'>) {
+		console.log("notif_ditchFromDiscard");
+		const playerDiscard = this.playerDiscards[notif.args.player_id]!;
+		const dbcard = notif.args.card;
+		const card = DaleCard.of(dbcard);
+		const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed
+		playerDiscard.removeAt(index);
+		if (card.isAnimalfolk()) {
+			this.marketDiscard.push(card, playerDiscard.placeholderHTML);
+		}
+		//TODO: animate ditching non-animalfolk cards
 	}
 
 	notif_ditchFromMarketDeck(notif: NotifAs<'ditchFromMarketDeck'>) {

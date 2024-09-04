@@ -439,7 +439,7 @@ class Dale extends DaleTableBasic
         $this->notifyAllPlayers('ditch', $msg, array_merge(array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
-            "card_name" => $this->getCardName($dbcard), //TODO: i18n for card names
+            "card_name" => $this->getCardName($dbcard),
             "card" => $dbcard,
             "from_limbo" => $from_limbo
         ), $msg_args));
@@ -474,6 +474,32 @@ class Dale extends DaleTableBasic
                 }
             }
         }
+    }
+
+    /**
+     * The active player ditches a card from their discard pile and notifies all players
+     * @param string $msg notification message
+     * @param int $card_id the id of a card in the discard pile to ditch
+     * @param array $msg_args
+     */
+    function ditchFromDiscard(string $msg, int $card_id, array $msg_args = array()) {
+        //1. remove the card from the discard pile
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->removeCardsFromPile(array($card_id), DISCARD.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("'ditchFromDiscard' could not find unique card_id $card_id");
+        }
+        $dbcard = $dbcards[0];
+
+        //2. ditch it
+        $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+        $this->cards->moveCardOnTop($dbcard["id"], $destination);
+        $this->notifyAllPlayers('ditchFromDiscard', $msg, array_merge(array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "card" => $dbcard
+        ), $msg_args));
     }
 
     /**
@@ -924,6 +950,16 @@ class Dale extends DaleTableBasic
         $type_id = intval($dbcard["type_arg"]);
         return ($type_id >= 1) && ($type_id <= 5);
     }
+
+        
+    /**
+     * Returns true iff the original card is an animalfolk card
+     * @param array $dbcard dbcard object
+    */
+    function isAnimalfolk(array $dbcard): int {
+        return $this->card_types[$dbcard["type_arg"]]['animalfolk_id'] != 0;
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Dice functions
@@ -2130,6 +2166,14 @@ class Dale extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_NEWSEASON:
+                    $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
+                    foreach ($cards as $card) {
+                        if ($this->isAnimalfolk($card)) {
+                            throw new BgaVisibleSystemException("Unable to fizzle CT_NEWSEASON. There exists an animalfolk in the discard pile.");
+                        }
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -2379,6 +2423,20 @@ class Dale extends DaleTableBasic
                     "card_name" => $this->getCardName($card),
                     "card" => $card
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_NEWSEASON:
+                $card_id = $args["card_id"];
+                $this->ditchFromDiscard(
+                    clienttranslate('New Season: ${player_name} ditches a ${card_name}'),
+                    $card_id
+                );
+                $this->draw(
+                    clienttranslate('New Season: ${player_name} draws a card from the supply'),
+                    1,
+                    false,
+                    MARKET
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
