@@ -95,9 +95,12 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("opponent_id", -1);
         
         // Init game statistics
-        // (note: statistics used in this file must be defined in your stats.inc.php file)
-        //$this->initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
-        //$this->initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
+        $this->initStat("player", "number_of_turns", 0);
+        $this->initStat("player", "actions_purchase", 0);
+        $this->initStat("player", "actions_technique", 0);
+        $this->initStat("player", "actions_build", 0);
+        $this->initStat("player", "actions_inventory", 0);
+        $this->initStat("player", "cards_remaining", 0);
 
         /************ End of the game initialization *****/
     }
@@ -2036,6 +2039,7 @@ class Dale extends DaleTableBasic
             $lowest_value = min($lowest_value, $value);
             $total_value += $value;
         }
+        $this->incStat(1, "actions_purchase", $player_id);
 
         //Get information about the market card
         //$market_card_id = $this->getGameStateValue("selectedCard");
@@ -2131,6 +2135,7 @@ class Dale extends DaleTableBasic
         if ($this->card_types[$technique_type_id]['playable'] == false) {
             throw new BgaUserException($this->_("That card is not playable!"));
         }
+        $this->incStat(1, "actions_technique", $player_id);
 
         //Fizzle
         if (array_key_exists("fizzle", $args)) {
@@ -2638,6 +2643,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $stack_cards = $this->cards->getCardsFromLocation($stack_card_ids, HAND.$player_id);
         $stack_index = $this->cards->getNextStackIndex($player_id);
+        $this->incStat(1, "actions_build", $player_id);
 
         //die(print_r($this->effects->cache));
         //die("type id ".$this->getTypeId($stack_cards[46]));
@@ -2674,6 +2680,7 @@ class Dale extends DaleTableBasic
         $this->checkAction("actInventoryAction");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
+        $this->incStat(1, "actions_inventory", $player_id);
 
         //verify that these cards are actually in the player's hand
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
@@ -2694,6 +2701,7 @@ class Dale extends DaleTableBasic
     }
 
     function actPostCleanUpPhase($chameleons_json) {
+        $this->checkAction("actPostCleanUpPhase");
         $chameleon_ids = array();
         foreach ($chameleons_json as $local_chain) {
             $target_type_ids = $local_chain["target_type_ids"];
@@ -2775,6 +2783,7 @@ class Dale extends DaleTableBasic
         $players = $this->loadPlayersBasicInfos();
         $animalfolk_ids = $this->deckSelection->getAnimalfolkIds();
         foreach ($animalfolk_ids as $animalfolk_id) {
+            $this->initStat("table", "deck_selection_".$animalfolk_id, true);
             $this->notifyAllPlayers('deckSelectionResult', clienttranslate('${animalfolk_displayed_name} have been selected'), array(
                 "animalfolk_displayed_name" => $this->getAnimalfolkDisplayedName($animalfolk_id),
                 "animalfolk_id" => $animalfolk_id
@@ -2823,7 +2832,9 @@ class Dale extends DaleTableBasic
         $this->refillMarket(true);
 
         //Activate the first player and start the game
-        $this->activeNextPlayer();
+        $next_player_id = $this->activeNextPlayer();
+        $this->giveExtraTime($next_player_id);
+        $this->incStat(1, "number_of_turns", $next_player_id);
         $this->gamestate->nextState("trStartGame");
     }
 
@@ -2878,7 +2889,19 @@ class Dale extends DaleTableBasic
         //5. activate the next player
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
+        $this->incStat(1, "number_of_turns", $next_player_id);
         $this->gamestate->nextState("trNextPlayer");
+    }
+
+    function stFinalStatistics() {
+        $players = $this->loadPlayersBasicInfos();
+        foreach($players as $player_id => $player) {
+            $nbr = $this->cards->countCardsInLocation(HAND.$player_id);
+            $nbr += $this->cards->countCardsInLocation(DISCARD.$player_id);
+            $nbr += $this->cards->countCardsInLocation(DECK.$player_id);
+            $this->setStat($nbr, "cards_remaining", $player_id);
+        }
+        $this->gamestate->nextState("trGameEnd");
     }
 
     function stSpyglass() {

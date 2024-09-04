@@ -120,7 +120,7 @@ interface GameStates {
 			'trWinterIsComing': 36,
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
-			'trGameEnd': 99,
+			'trGameEnd': 98,
 			'trSpyglass': 52,
 			'trSpecialOffer': 53,
 			'trDirtyExchange': 54,
@@ -166,7 +166,7 @@ interface GameStates {
 			'trPassiveAbility': 36,
 			'trWinterIsComing': 36,
 			'trNextPlayer': 41,
-			'trGameEnd': 99,
+			'trGameEnd': 98,
 		},
 	},
 	41: {
@@ -278,6 +278,15 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	98: {
+		'name': 'finalStatistics',
+		'description': '',
+		'type': 'game',
+		'action': 'stFinalStatistics',
+		'transitions': {
+			'trGameEnd': 99,
 		},
 	},
 	99: {

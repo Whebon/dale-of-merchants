@@ -9,15 +9,6 @@
 
 -- dbmodel.sql
 
--- This is the file where you are describing the database schema of your game
--- Basically, you just have to export from PhpMyAdmin your table structure and copy/paste
--- this export here.
--- Note that the database itself and the standard tables ("global", "stats", "gamelog" and "player") are
--- already created and must not be created here
-
--- Note: The database schema is created from this file when the game starts. If you modify this file,
---       you have to restart a game to see your changes in database.
-
 -- Create a standard "card" table to be used with the "Deck" tools
 
 CREATE TABLE IF NOT EXISTS `card` (

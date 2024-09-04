@@ -96,7 +96,7 @@
 			"trWinterIsComing": 36,
 			"trSamePlayer": 30,
 			"trNextPlayer": 41,
-			"trGameEnd": 99,
+			"trGameEnd": 98,
 
 			//Hidden-information technique states
 			"trSpyglass": 52,
@@ -125,7 +125,7 @@
 			],
 			"actWinterIsComingSkip": []
 		},
-		"transitions": { "trPassiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trGameEnd": 99 }
+		"transitions": { "trPassiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trGameEnd": 98 }
 	},
 
 	"41": {
@@ -217,6 +217,14 @@
 
 
 	//////////////// BGA Final State ////////////////
+
+	"98": {
+		"name": "finalStatistics",
+		"description": "",
+		"type": "game",
+		"action": "stFinalStatistics",
+		"transitions": { "trGameEnd": 99 }
+	},
 
 	// Final state.
 	// Please do not modify (and do not overload action/args methods}.

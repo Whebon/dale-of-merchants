@@ -5,3 +5,5 @@ It is recommended to name your files starting with a trigram of your game name.
 For example if you have a class to manage pathfinding in the game
 Tobago, it will be called TBGPathFinding.php (and the class inside be
 called TBGPathFinding) to avoid potential namespace collisions.
+
+I only store php modules in this directory. All starting with a "Dale" prefix.

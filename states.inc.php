@@ -25,6 +25,7 @@ if (false) {
 	$game->stSpecialOffer();
 	$game->stDirtyExchange();
 	$game->stSabotage();
+	$game->stFinalStatistics();
 }
 
 $machinestates = array(
@@ -69,7 +70,7 @@ $machinestates = array(
 			'trWinterIsComing' => 36,
 			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
-			'trGameEnd' => 99,
+			'trGameEnd' => 98,
 			'trSpyglass' => 52,
 			'trSpecialOffer' => 53,
 			'trDirtyExchange' => 54,
@@ -87,7 +88,7 @@ $machinestates = array(
 			'trPassiveAbility' => 36,
 			'trWinterIsComing' => 36,
 			'trNextPlayer' => 41,
-			'trGameEnd' => 99,
+			'trGameEnd' => 98,
 		),
 	),
 	41 => array(
@@ -156,6 +157,15 @@ $machinestates = array(
 		'possibleactions' => ['actSabotage'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	98 => array(
+		'name' => 'finalStatistics',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stFinalStatistics',
+		'transitions' => array(
+			'trGameEnd' => 99,
 		),
 	),
 	99 => array(
