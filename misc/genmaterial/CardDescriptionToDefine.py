@@ -10,7 +10,7 @@ df = pd.read_excel(file_path)
 output = ""
 for index, row in df.iterrows():
     type_id = row['type_id']
-    upper = row['name'].replace(' ', '').upper()
+    upper = row['name'].replace(' ', '').replace("'", '').upper()
     output += f"  define('CT_{upper}', {type_id});\n"
 
 # Print the output
