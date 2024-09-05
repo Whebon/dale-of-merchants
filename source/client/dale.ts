@@ -743,6 +743,10 @@ class Dale extends Gamegui
 				}
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_gamble':
+				this.addActionButtonsOpponent(this.onGamble.bind(this));
+				this.addActionButtonCancelClient();
+				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelClient();
 				break;
@@ -1118,7 +1122,6 @@ class Dale extends Gamegui
 		}
 		else {
 			//remove from top
-			console.log("GOT HERE!");
 			if(pile.pop().id != +card.id) {
 				throw new Error(`Card ${+card.id} was not found on top of the pile`);
 			}
@@ -1816,6 +1819,14 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_whirligig', card.id);
 				}
 				break;
+			case DaleCard.CT_GAMBLE:
+				if (this.unique_opponent_id) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_gamble', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2142,6 +2153,12 @@ class Dale extends Gamegui
 		this.playTechniqueCard<'client_whirligig'> ({
 			opponent_id: opponent_id,
 			card_ids: this.myHand.orderedSelection.get()
+		})
+	}
+
+	onGamble(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_gamble'>({
+			opponent_id: opponent_id
 		})
 	}
 

@@ -292,8 +292,8 @@ export class DaleStock extends Stock implements DaleLocation {
 		this.addToStockWithId(card.original_type_id, card.id, from);
 		this.setClickable(card.id);
 		const stockitem_div = $(this.control_name+'_item_'+card.id) as HTMLElement;
-		stockitem_div.dataset['value'] = 'effective';
 		card.attachDiv(stockitem_div);
+		card.updateLocation('stock');
 	}
 
 	/**

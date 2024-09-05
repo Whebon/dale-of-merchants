@@ -189,6 +189,9 @@ export class Stall implements CardSlotManager, DaleLocation {
         }
         console.log(`insertCard(stack_index=${stack_index}, index=${index})`);
         stack[index]!.insertCard(card, from);
+        setTimeout(() => {
+            stack[index]!.card?.updateLocation('stall');
+        }, 750);
     }
 
     /**

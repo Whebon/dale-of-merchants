@@ -8,6 +8,11 @@ import { ChameleonChain } from './types/ChameleonChain'
 import { DaleDie } from './DaleDie';
 
 /**
+ * HTML data attribute representing a card div's location
+ */
+type DataLocation = 'moving' | 'stock' | 'market' | 'stall';
+
+/**
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
  */
 export class DaleCard {
@@ -796,7 +801,7 @@ export class DaleCard {
 
     private updateEffectiveValue(card_div: HTMLElement) {
         let value = this.original_value;
-        if (DaleCard.page?.isCurrentPlayerActive() && card_div.dataset['value'] == 'effective') {
+        if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && DaleCard.page?.isCurrentPlayerActive())) {
             value = this.effective_value;
         }
         if (value == this.original_value) {
@@ -838,17 +843,28 @@ export class DaleCard {
 	}
 
     /**
+     * Update the data-location attribute of the attached div
+     */
+    public updateLocation(dataLocation?: DataLocation) {
+        const div = this.div;
+        if (div) {
+            this.div.dataset['location'] = dataLocation;
+            this.updateHTML(div, true);
+        }
+    }
+
+    /**
      * @returns a new div element representing this card.
      * @param parent_id (optional) - if specified, the div will be immediately be "detached" to the parent
-     * @param dataValue (optional) - if specified, set the data-value attribute of the div to display modified values
+     * @param dataLocation (optional) - if specified, set the data-location attribute of the div to display modified values
      */
-    public toDiv(parent_id?: string | HTMLElement, dataValue?: 'effective' | 'market' | 'original'): HTMLElement {
+    public toDiv(parent_id?: string | HTMLElement, dataLocation?: DataLocation): HTMLElement {
         const div = document.createElement("div")
         div.classList.add("dale-card");
         div.id = "dale-card-"+this.id;
         Images.setCardStyle(div, this.original_type_id);
-        if (dataValue) {
-            div.dataset['value'] = dataValue;
+        if (dataLocation) {
+            div.dataset['location'] = dataLocation;
         }
         if (parent_id) {
             $(parent_id)?.appendChild(div);

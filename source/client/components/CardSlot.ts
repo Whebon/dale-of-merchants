@@ -89,7 +89,7 @@ export class CardSlot {
     */
     public insertCard(card: DaleCard, from?: HTMLElement | string, callback?: (node: HTMLElement)=>void): void {
         this.removeCard();
-        const cardDiv = card.toDiv(this.id);
+        const cardDiv = card.toDiv(this.id, from ? 'moving' : undefined);
         this._container.appendChild(cardDiv);
         this._card = card;
         this.setClickable(this.clickable);

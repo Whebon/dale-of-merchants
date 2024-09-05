@@ -290,6 +290,7 @@ declare global {
 		'client_treasureHunter': { card_id: number }
 		'client_newSeason': { card_id: number }
 		'client_whirligig': { card_ids: number[], opponent_id: number }
+		'client_gamble': { opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

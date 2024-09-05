@@ -1150,7 +1150,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
             var _a, _b, _c;
             var value = this.original_value;
-            if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()) && card_div.dataset['value'] == 'effective') {
+            if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && ((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()))) {
                 value = this.effective_value;
             }
             if (value == this.original_value) {
@@ -1179,14 +1179,21 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 this.updateEffectiveValue(div);
             }
         };
-        DaleCard.prototype.toDiv = function (parent_id, dataValue) {
+        DaleCard.prototype.updateLocation = function (dataLocation) {
+            var div = this.div;
+            if (div) {
+                this.div.dataset['location'] = dataLocation;
+                this.updateHTML(div, true);
+            }
+        };
+        DaleCard.prototype.toDiv = function (parent_id, dataLocation) {
             var _a;
             var div = document.createElement("div");
             div.classList.add("dale-card");
             div.id = "dale-card-" + this.id;
             Images_2.Images.setCardStyle(div, this.original_type_id);
-            if (dataValue) {
-                div.dataset['value'] = dataValue;
+            if (dataLocation) {
+                div.dataset['location'] = dataLocation;
             }
             if (parent_id) {
                 (_a = $(parent_id)) === null || _a === void 0 ? void 0 : _a.appendChild(div);
@@ -1576,8 +1583,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             this.addToStockWithId(card.original_type_id, card.id, from);
             this.setClickable(card.id);
             var stockitem_div = $(this.control_name + '_item_' + card.id);
-            stockitem_div.dataset['value'] = 'effective';
             card.attachDiv(stockitem_div);
+            card.updateLocation('stock');
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
             var stock = this;
@@ -2173,7 +2180,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
         };
         CardSlot.prototype.insertCard = function (card, from, callback) {
             this.removeCard();
-            var cardDiv = card.toDiv(this.id);
+            var cardDiv = card.toDiv(this.id, from ? 'moving' : undefined);
             this._container.appendChild(cardDiv);
             this._card = card;
             this.setClickable(this.clickable);
@@ -2322,9 +2329,10 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             return pos;
         };
         MarketBoard.prototype.insertCard = function (card, pos, from) {
+            var _a;
             pos = this.getValidPos(pos);
             this.slots[pos].insertCard(card, from);
-            this.slots[pos].card_div.dataset['value'] = 'market';
+            (_a = this.slots[pos].card) === null || _a === void 0 ? void 0 : _a.updateLocation('market');
         };
         MarketBoard.prototype.removeCard = function (pos, to) {
             pos = this.getValidPos(pos);
@@ -2594,6 +2602,10 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             }
             console.log("insertCard(stack_index=".concat(stack_index, ", index=").concat(index, ")"));
             stack[index].insertCard(card, from);
+            setTimeout(function () {
+                var _a;
+                (_a = stack[index].card) === null || _a === void 0 ? void 0 : _a.updateLocation('stall');
+            }, 750);
         };
         Stall.prototype.getCardsInStack = function (stack_index) {
             var targets = [];
@@ -2903,6 +2915,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         else {
                             return _("${card_name}: ${you} must choose an opponent");
                         }
+                    case 'client_gamble':
+                        return _("${card_name}: ${you} must choose an opponent");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3689,6 +3703,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_gamble':
+                    this.addActionButtonsOpponent(this.onGamble.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelClient();
                     break;
@@ -3973,7 +3991,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
             }
             else {
-                console.log("GOT HERE!");
                 if (pile.pop().id != +card.id) {
                     throw new Error("Card ".concat(+card.id, " was not found on top of the pile"));
                 }
@@ -4527,6 +4544,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_whirligig', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_GAMBLE:
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_gamble', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -4795,6 +4820,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playTechniqueCard({
                 opponent_id: opponent_id,
                 card_ids: this.myHand.orderedSelection.get()
+            });
+        };
+        Dale.prototype.onGamble = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
             });
         };
         Dale.prototype.setupNotifications = function () {
