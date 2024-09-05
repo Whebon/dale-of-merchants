@@ -241,7 +241,7 @@ class Dale extends Gamegui
 		}
 		const onLimboItemDelete = () => {
 			const classList = thiz.myLimbo.wrap!.classList;
-			if (thiz.myLimbo.count() <= 1) {
+			if (thiz.myLimbo.count() <= 1 && thiz.myLimbo.hideOnEmpty) {
 				if (!classList.contains("dale-hidden")) {
 					classList.add("dale-hidden");
 					limboTransitionUpdateDisplay();
@@ -468,6 +468,9 @@ class Dale extends Gamegui
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'dale-wrap-technique');
 				break;
+			case 'client_whirligig':
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
+				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_reflection':
 			case 'chameleon_goodoldtimes':
@@ -604,6 +607,9 @@ class Dale extends Gamegui
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('none');
 				break;
+			case 'client_whirligig':
+				this.myHand.setSelectionMode('none');
+				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
@@ -725,6 +731,16 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_newSeason':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_whirligig':
+				if (this.unique_opponent_id) {
+					this.addActionButton("confirm-button", _("Discard all"), "onWhirligig"); //only confirm discard order
+				}
+				else {
+					this.addActionButtonsOpponentSelection(1);
+					this.addActionButton("confirm-button", _("Confirm"), "onWhirligig"); //confirm opponent and discard order
+				}
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -1229,7 +1245,7 @@ class Dale extends Gamegui
 					this.opponent_ids.push(opponent_id);
 					target.classList.add("dale-bga-button-selected");
 				}
-				else {
+				else if (this.max_opponents != 1) {
 					this.opponent_ids.splice(index, 1);
 					target.classList.remove("dale-bga-button-selected");
 				}
@@ -1240,9 +1256,11 @@ class Dale extends Gamegui
 	}
 
 	updateConfirmOpponentsButton() {
-		const confirm_button = $("confirm-button");
-		if (confirm_button) {
-			(confirm_button as HTMLElement).innerText = _("Confirm Selection ")+`(${this.opponent_ids.length})`;
+		if (this.max_opponents != 1) {
+			const confirm_button = $("confirm-button");
+			if (confirm_button) {
+				(confirm_button as HTMLElement).innerText = _("Confirm Selection ")+`(${this.opponent_ids.length})`;
+			}
 		}
 	}
 
@@ -1789,6 +1807,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_newSeason', card.id);
 				}
 				break;
+			case DaleCard.CT_WHIRLIGIG:
+				fizzle = this.myHand.count() == 1;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_whirligig', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2101,6 +2128,23 @@ class Dale extends Gamegui
 		})
 	}
 
+	onWhirligig() {
+		var opponent_id;
+		if (this.unique_opponent_id) {
+			opponent_id = this.unique_opponent_id;
+		}
+		else if (this.opponent_ids.length == 1) {
+			opponent_id = this.opponent_ids[0]!;
+		}
+		else {
+			throw new Error("'addActionButtonsOpponentSelection' did not work as expected");
+		}
+		this.playTechniqueCard<'client_whirligig'> ({
+			opponent_id: opponent_id,
+			card_ids: this.myHand.orderedSelection.get()
+		})
+	}
+
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
 
@@ -2135,10 +2179,12 @@ class Dale extends Gamegui
 			['ditch', 500],
 			['ditchMultiple', 500],
 			['discard', 500],
-			['discardMultiple', 500],
+			['discardMultiple', 750],
 			['placeOnDeckMultiple', 500],
 			['reshuffleDeck', 1500],
 			['wilyFellow', 500],
+			['whirligigShuffle', 1750],
+			['whirligigTakeBack', 500],
 			['ditchFromDiscard', 500],
 			['ditchFromMarketDeck', 500],
 			['ditchFromMarketBoard', 500],
@@ -2684,6 +2730,73 @@ class Dale extends Gamegui
 		// }
 	}
 
+	
+	notif_whirligigShuffle(notif: NotifAs<'whirligigShuffle'>) {
+		console.log("whirligigShuffle");
+		this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Whirligig"));
+		const nbr = notif.args.opponent_nbr + notif.args.player_nbr
+		const opponent_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
+		const opponent_nbr = notif.args.opponent_nbr;
+		for (let i = 1; i <= nbr; i++) {
+			if ((i%2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
+				if (this.player_id == notif.args.opponent_id) {
+					//from hand
+					notif.args.opponent_nbr -= 1;
+					const opponent_card_id = opponent_card_ids.pop()!;
+					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.myHand.control_name+"_item_"+opponent_card_id);
+					this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
+				}
+				else {
+					//from overall player board
+					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), "overall_player_board_"+notif.args.opponent_id);
+				}
+			}
+			else {
+				//from deck
+				notif.args.player_nbr -= 1;
+				this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.playerDecks[notif.args.player_id]!.placeholderHTML);
+				this.playerDecks[notif.args.player_id]!.pop();
+			}
+		}
+		setTimeout((() => {this.myLimbo.shuffleAnimation()}).bind(this), this.myLimbo.duration);
+		//update the hand sizes
+		this.playerHandSizes[notif.args.opponent_id]!.incValue(-opponent_nbr);
+	}
+
+	notif_whirligigTakeBack(notif: NotifAs<'whirligigTakeBack'>) {
+		console.log("notif_whirligigTakeBack");
+		const limbo_card_ids = this.myLimbo.getAllItems().map(item=>item.id).sort(() => Math.random() - 0.5);
+		if (notif.args._private) {
+			const cards = Object.values(notif.args._private.cards);
+			if (cards.length != notif.args.nbr) {
+				throw new Error(`whirligigTakeBack failed: expected ${notif.args.nbr} cards, got ${cards.length} cards`)
+			}
+			for (let card of cards) {
+				//to hand
+				const limbo_card_id = limbo_card_ids.pop()!;
+				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myLimbo.control_name+'_item_'+limbo_card_id);
+				this.myLimbo.removeFromStockByIdNoAnimation(limbo_card_id);
+			}
+		}
+		else {
+			this.myLimbo.hideOnEmpty = false; //ugly workaround: ensure the animation stays visible although limbo is empty
+			for (let i = 0; i < notif.args.nbr; i++) {
+				//to player board
+				const limbo_card_id = limbo_card_ids.pop()!;
+				this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_"+notif.args.player_id);
+			}
+		}
+		//ugly workaround: manually hide the limbo with a fake onItemDelete call
+		if (this.myLimbo.count() == 0) {
+			setTimeout((()=> {
+				this.myLimbo.hideOnEmpty = true;
+				(this.myLimbo as any).onItemDelete(); 
+			}).bind(this), this.myLimbo.duration)
+		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
+	}
+
 	notif_ditchFromDiscard(notif: NotifAs<'ditchFromDiscard'>) {
 		console.log("notif_ditchFromDiscard");
 		const playerDiscard = this.playerDiscards[notif.args.player_id]!;
@@ -2778,9 +2891,6 @@ class Dale extends Gamegui
 		}
 		else if (arg == 'debugDaleCard') {
 			console.log(new DaleCard(notif.args.card_id));
-		}
-		else if (arg == '') {
-			
 		}
 		else if (arg == '') {
 			

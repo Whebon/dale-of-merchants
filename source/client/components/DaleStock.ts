@@ -35,10 +35,9 @@ export class DaleStock extends Stock implements DaleLocation {
 	public static readonly MAX_HORIZONTAL_OVERLAP = 85;
 
 	private selectionMode: DaleStockSelectionMode = 'none';
-	
-	// public get selectionMode() {
-	// 	return (this as any).selectable;
-	// }
+
+	/** Only works with myLimbo */
+	public hideOnEmpty: boolean = true;
 
 	constructor(){
 		super();
@@ -330,6 +329,26 @@ export class DaleStock extends Stock implements DaleLocation {
         return false;
 	}
 
+	public _shuffle_animation: boolean = false
+
+	/**
+	 * Execute a small shuffle animation that takes `2*this.duration` ms
+	 */
+	public shuffleAnimation() {
+		this._shuffle_animation = true;
+		dojo.setStyle(this.container_div, 'transform', 'translateX(50%)');
+		dojo.setStyle(this.container_div, 'transition', `transform ${this.duration/1000}s ease-in-out, left ${this.duration/1000}s ease-in-out`);
+		this.updateDisplay();
+		setTimeout((() => {
+			this._shuffle_animation = false;
+			this.updateDisplay();
+			dojo.setStyle(this.container_div, 'transform', '');
+			setTimeout((() => {
+				dojo.setStyle(this.container_div, 'transition', '');
+			}).bind(this), this.duration);
+		}), this.duration);
+	}
+
 	override updateDisplay(from?: string | HTMLElement): void {
 		//Stock bullshit calculations, our goal is to force perLines == 1
 		// var item_visible_width = this.item_width;
@@ -347,6 +366,9 @@ export class DaleStock extends Stock implements DaleLocation {
 		const totalWidth = this.item_width * this.items.length + 5; //+5 adds a little bit of margin and prevents an unwanted linebreak by bga stock
 		this.item_margin = (containerWidth-totalWidth)/Math.max(1, this.items.length-1);
 		this.item_margin = Math.min(-3, this.item_margin);
+		if (this._shuffle_animation) {
+			this.item_margin = -this.item_width;
+		}
 
 		//arc
 		super.updateDisplay(from);
@@ -366,7 +388,7 @@ export class DaleStock extends Stock implements DaleLocation {
 
 		//Conpensate for the first item having margin
 		if (this.item_margin < 0) {
-			dojo.setStyle(this.container_div, 'left', `${this.item_margin/2}px`)
+			dojo.setStyle(this.container_div, 'left', `${this.item_margin/2}px`);
 		}
 	}
 }

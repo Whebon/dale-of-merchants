@@ -66,6 +66,19 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
+		'whirligigShuffle': {
+			player_id: number,
+			player_nbr: number,
+			opponent_id: number,
+			opponent_nbr: number
+		}
+		'whirligigTakeBack': {
+			player_id: number,
+			nbr: number,
+			_private: {
+				cards: {[card_id: number]: DbCard}
+			}
+		}
 		'ditchFromDiscard': {
 			player_id: number
 			card: DbCard
@@ -276,6 +289,7 @@ declare global {
 		'client_sabotage': { opponent_id: number }
 		'client_treasureHunter': { card_id: number }
 		'client_newSeason': { card_id: number }
+		'client_whirligig': { card_ids: number[], opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

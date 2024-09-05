@@ -68,8 +68,9 @@ export class MainClientState {
                         return _("Good Old Times: ${you} may ditch the supply's top card");
                     case 'ditchMandatory':
                         return _("Good Old Times: ${you} must ditch the supply's top card");
+                    default:
+                        throw new Error("Unexpected CT_GOODOLDTIMES mode");
                 }
-                break;
             case 'chameleon_trendsetting':
                 return _("Trendsetting: ${you} must copy a card in the market");
             case 'chameleon_seeingdoubles':
@@ -114,6 +115,12 @@ export class MainClientState {
                 return _("${card_name}: ${you} must take a card from an opponent's discard pile");
             case 'client_newSeason':
                 return _("${card_name}: ${you} must <stronger>ditch</stronger> an animalfolk card from your discard pile");
+            case 'client_whirligig':
+                if ((this._page as any).unique_opponent_id) {
+                    return _("${card_name}: ${you} may choose the order to discard your hand");
+                } else {
+                    return _("${card_name}: ${you} must choose an opponent"); //omitted, but true: you may also choose the order to discard your hand
+                }
         }
         return "MISSING DESCRIPTION";
     }

@@ -2444,6 +2444,66 @@ class Dale extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_WHIRLIGIG:
+                //get args
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $card_ids = $args["card_ids"];
+                //get the non-selected cards and selected cards
+                $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+                foreach ($selected_cards as $card_id => $card) {
+                    unset($non_selected_cards[$card_id]);
+                }
+                //discard all
+                $nbr = count($selected_cards) + count($non_selected_cards);
+                $this->discardMultiple(
+                    clienttranslate('Whirligig: ${player_name} discards their hand'),
+                    $player_id, 
+                    $card_ids, 
+                    $selected_cards, 
+                    $non_selected_cards
+                );
+                //place all whirligig cards in the opponent's hand
+                $player_cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$opponent_id);
+                $opponent_cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                $this->notifyAllPlayers('whirligigShuffle', 
+                    clienttranslate('Whirligig: shuffling ${player_nbr} cards from ${player_name}\'s deck with ${opponent_nbr} cards from ${opponent_name}\'s hand'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getActivePlayerName(),
+                    "player_nbr" => count($player_cards),
+                    "opponent_id" => $opponent_id,
+                    "opponent_name" => $this->getPlayerNameById($opponent_id),
+                    "opponent_nbr" => count($opponent_cards) - count($player_cards)
+                ));
+                //shuffle and proportionally redistribute the cards
+                $player_nbr = count($player_cards);
+                $player_cards = array();
+                $player_card_ids = (array) array_rand($opponent_cards, $player_nbr);
+                $this->cards->moveCards($player_card_ids, HAND.$player_id);
+                foreach ($player_card_ids as $card_id) {
+                    $player_cards[$card_id] = $opponent_cards[$card_id];
+                    unset($opponent_cards[$card_id]);
+                }
+                //notify: give cards to the player
+                $this->notifyAllPlayersWithPrivateArguments('whirligigTakeBack', clienttranslate('Whirligig: ${player_name} takes back ${nbr} cards'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "nbr" => count($player_cards),
+                    "_private" => array(
+                        "cards" => $player_cards
+                    )
+                ));
+                //notify: give cards to the opponent
+                $this->notifyAllPlayersWithPrivateArguments('whirligigTakeBack', clienttranslate('Whirligig: ${player_name} takes back ${nbr} cards'), array(
+                    "player_id" => $opponent_id,
+                    "player_name" => $this->getPlayerNameById($opponent_id),
+                    "nbr" => count($opponent_cards),
+                    "_private" => array(
+                        "cards" => $opponent_cards
+                    )
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
