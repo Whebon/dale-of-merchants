@@ -1646,14 +1646,6 @@ class Dale extends DaleTableBasic
         $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
         $winter_is_coming = $this->containsTypeId($cards, CT_WINTERISCOMING);
 
-        //Add the cards to the stack
-        $index = 0;
-        if ($cards_from_discard) {
-            $this->cards->moveCardsToStall($this->toCardIds($cards_from_discard), STALL.$player_id, $stack_index);
-            $index += count($cards_from_discard);
-        }
-        $this->cards->moveCardsToStall($this->toCardIds($cards_from_hand), STALL.$player_id, $stack_index, $index);
-
         //Notify players about the complete build
         if ($cards_from_discard) {
             $this->notifyAllPlayers('buildStack', clienttranslate('Nostalgic Item: ${player_name} includes ${nbr} card(s) from their discard pile in their stack.'), array(
@@ -1674,6 +1666,14 @@ class Dale extends DaleTableBasic
             "cards" => $cards_from_hand,
             "from" => HAND
         ));
+
+        //Add the cards to the stack (after the notification, so that the modified values are still shown during the animation)
+        $index = 0;
+        if ($cards_from_discard) {
+            $this->cards->moveCardsToStall($this->toCardIds($cards_from_discard), STALL.$player_id, $stack_index);
+            $index += count($cards_from_discard);
+        }
+        $this->cards->moveCardsToStall($this->toCardIds($cards_from_hand), STALL.$player_id, $stack_index, $index);
 
         //Check if the player has won
         $win = $this->updateScore($player_id, $stack_index + 1);
@@ -2502,6 +2502,58 @@ class Dale extends DaleTableBasic
                         "cards" => $opponent_cards
                     )
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_GAMBLE:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $nbr = $this->rollDie(
+                    clienttranslate('Gamble: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_OCELOTS,
+                    $technique_card,
+                );
+                $player_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                $opponent_cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                $nbr = min($nbr, count($player_cards), count($opponent_cards));
+
+                if ($nbr > 0) {
+                    //player -> opponent
+                    for ($i = 0; $i < $nbr; $i++) { 
+                        $player_card_id = array_rand($player_cards);
+                        $player_card = $player_cards[$player_card_id];
+                        unset($player_cards[$player_card_id]);
+                        $this->cards->moveCard($player_card_id, HAND.$opponent_id);
+                        $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('Gamble: ${player_name} takes a card from ${opponent_name}'), array(
+                            "player_id" => $player_id,
+                            "opponent_id" => $opponent_id,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "opponent_name" => $this->getPlayerNameById($opponent_id),
+                            "_private" => array(
+                                "card" => $player_card,
+                                "card_name" => $this->getCardName($player_card)
+                            )
+                        ), clienttranslate('Gamble: ${player_name} takes a ${card_name} from ${opponent_name}'));
+                    }
+                    //opponent -> player
+                    for ($i = 0; $i < $nbr; $i++) { 
+                        $opponent_card_id = array_rand($opponent_cards);
+                        $opponent_card = $opponent_cards[$opponent_card_id];
+                        unset($opponent_cards[$opponent_card_id]);
+                        $this->cards->moveCard($opponent_card_id, HAND.$player_id);
+                        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Gamble: ${opponent_name} takes a card from ${player_name}'), array(
+                            "player_id" => $player_id,
+                            "opponent_id" => $opponent_id,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "opponent_name" => $this->getPlayerNameById($opponent_id),
+                            "_private" => array(
+                                "card" => $opponent_card,
+                                "card_name" => $this->getCardName($opponent_card)
+                            )
+                        ), clienttranslate('Gamble: ${opponent_name} takes a ${card_name} from ${player_name}'));
+                    }
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Gamble: 0 cards were exchanged'), array());
+                }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
