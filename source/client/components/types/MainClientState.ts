@@ -123,6 +123,12 @@ export class MainClientState {
                 }
             case 'client_gamble':
                 return _("${card_name}: ${you} must choose an opponent");
+            case 'client_blindfold':
+                if ((this._page as any).unique_opponent_id) {
+                    return _("${card_name}: ${you} must choose a card");
+                } else {
+                    return _("${card_name}: ${you} must choose a card and an opponent");
+                }
         }
         return "MISSING DESCRIPTION";
     }

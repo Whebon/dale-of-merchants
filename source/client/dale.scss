@@ -787,7 +787,8 @@
 	--dale-wrap-build-a: rgb(192,61,120,0.15);
 	--dale-wrap-discard: rgb(232,62,51);
 	--dale-wrap-discard-a: rgb(232,62,51,0.15);
-	--dale-wrap-default: rgb(100,100,100, 0.5); //grayed out
+	--dale-wrap-default: rgb(100,100,100); 
+	--dale-wrap-default-g: rgb(100,100,100, 0.5); //grayed out
 	--dale-wrap-default-a: rgb(100,100,100,0.15);
 }
   
@@ -908,10 +909,10 @@ body {
 
 .dale-wrap-default { 
 	&.dale-arc-stock {
-		outline: 3px solid var(--dale-wrap-default); 
+		outline: 3px solid var(--dale-wrap-default-g); 
 	}
 	.dale-label { 
-		background-color: var(--dale-wrap-default); 
+		background-color: var(--dale-wrap-default-g); 
 	}
 	.dale-card.dale-selected {
 		outline: 3px solid var(--dale-wrap-default);

@@ -98,6 +98,12 @@ declare global {
 			die_label: string,
 			d6: 0|1|2|3|4|5
 		}
+		'selectBlindfold': {
+			player_id: number,
+			_private: {
+				card_id: number
+			}
+		}
 		'marketSlideRight': {
 			//no args
 		}
@@ -291,6 +297,7 @@ declare global {
 		'client_newSeason': { card_id: number }
 		'client_whirligig': { card_ids: number[], opponent_id: number }
 		'client_gamble': { opponent_id: number }
+		'client_blindfold': { card_id: number, opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

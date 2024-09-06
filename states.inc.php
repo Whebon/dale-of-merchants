@@ -20,11 +20,13 @@ if (false) {
 	/** @var dale $game */
 	$game->stDeckSelection();
 	$game->stStartGame();
+	$game->stChangeActivePlayer();
 	$game->stCleanUpPhase();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
 	$game->stDirtyExchange();
 	$game->stSabotage();
+	$game->stBlindfold();
 	$game->stFinalStatistics();
 }
 
@@ -59,6 +61,16 @@ $machinestates = array(
 			'trStartGame' => 30,
 		),
 	),
+	29 => array(
+		'name' => 'changeActivePlayer',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stChangeActivePlayer',
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trBlindfold' => 56,
+		),
+	),
 	30 => array(
 		'name' => 'playerTurn',
 		'description' => clienttranslate('${actplayer} must take an action'),
@@ -66,6 +78,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction'],
 		'transitions' => array(
+			'trChangeActivePlayer' => 29,
 			'trPassiveAbility' => 30,
 			'trWinterIsComing' => 36,
 			'trSamePlayer' => 30,
@@ -158,6 +171,18 @@ $machinestates = array(
 		'possibleactions' => ['actSabotage'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	56 => array(
+		'name' => 'blindfold',
+		'description' => clienttranslate('Blindfold: ${actplayer} must guess the value of ${opponent_name}\'s card'),
+		'descriptionmyturn' => clienttranslate('Blindfold: ${you} must guess the value of ${opponent_name}\'s card'),
+		'type' => 'activeplayer',
+		'action' => 'stBlindfold',
+		'args' => 'argOpponentNameAndPrivateCardId',
+		'possibleactions' => ['actBlindfold'],
+		'transitions' => array(
+			'trChangeActivePlayer' => 29,
 		),
 	),
 	98 => array(

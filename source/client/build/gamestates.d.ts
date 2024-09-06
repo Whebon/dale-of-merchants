@@ -46,6 +46,16 @@ interface GameStates {
 			'trStartGame': 30,
 		},
 	},
+	29: {
+		'name': 'changeActivePlayer',
+		'description': '',
+		'type': 'game',
+		'action': 'stChangeActivePlayer',
+		'transitions': {
+			'trSamePlayer': 30,
+			'trBlindfold': 56,
+		},
+	},
 	30: {
 		'name': 'playerTurn',
 		'description': '${actplayer} must take an action',
@@ -116,6 +126,7 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
+			'trChangeActivePlayer': 29,
 			'trPassiveAbility': 30,
 			'trWinterIsComing': 36,
 			'trSamePlayer': 30,
@@ -279,6 +290,24 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	56: {
+		'name': 'blindfold',
+		'description': 'Blindfold: ${actplayer} must guess the value of ${opponent_name}\\\'s card',
+		'descriptionmyturn': 'Blindfold: ${you} must guess the value of ${opponent_name}\\\'s card',
+		'type': 'activeplayer',
+		'action': 'stBlindfold',
+		'args': 'argOpponentNameAndPrivateCardId',
+		'possibleactions': {
+			'actBlindfold': [{
+				'name': 'value',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trChangeActivePlayer': 29,
 		},
 	},
 	98: {

@@ -173,4 +173,15 @@ class action_dale extends APP_GameAction
 		$this->game->actSabotage( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actBlindfold()
+	{
+		self::setAjaxMode();
+
+		/** @var int $value */
+		$value = self::getArg('value', AT_int, true);
+
+		$this->game->actBlindfold( $value );
+		self::ajaxResponse();
+	}
 }

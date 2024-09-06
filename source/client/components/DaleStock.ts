@@ -15,11 +15,12 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'clickRetainSelection': no selection possible, cards are clickable, the previous selection is maintained
  * 'clickTechnique':       no selection possible, PLAYABLE cards are clickable
  * 'clickAbility':		   no selection possible, PLAYABLE non-technique cards are clickable
+ * 'single':			   a single card can be selected	
  * 'multiple':             multiple cards can be selected
  * 'only_card_id47':       no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickRetainSelection' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickRetainSelection' | 'single' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -221,6 +222,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'none':
 				this.orderedSelection.setMaxSize(0)
 				break;
+			case 'single':
+				this.orderedSelection.setMaxSize(1);
+				break;
 			case 'multiple':
 				this.orderedSelection.setMaxSize(Infinity);
 				break;
@@ -247,6 +251,8 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickAbility':
 				return card.isPlayable() && !card.isTechnique();
 			case 'clickRetainSelection':
+				return true;
+			case 'single':
 				return true;
 			case 'multiple':
 				return true;

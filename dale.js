@@ -1530,6 +1530,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'none':
                     this.orderedSelection.setMaxSize(0);
                     break;
+                case 'single':
+                    this.orderedSelection.setMaxSize(1);
+                    break;
                 case 'multiple':
                     this.orderedSelection.setMaxSize(Infinity);
                     break;
@@ -1552,6 +1555,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickAbility':
                     return card.isPlayable() && !card.isTechnique();
                 case 'clickRetainSelection':
+                    return true;
+                case 'single':
                     return true;
                 case 'multiple':
                     return true;
@@ -2918,6 +2923,13 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         }
                     case 'client_gamble':
                         return _("${card_name}: ${you} must choose an opponent");
+                    case 'client_blindfold':
+                        if (this._page.unique_opponent_id) {
+                            return _("${card_name}: ${you} must choose a card");
+                        }
+                        else {
+                            return _("${card_name}: ${you} must choose a card and an opponent");
+                        }
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3319,9 +3331,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.validateChameleonsLocal();
             }
             if (!this.isCurrentPlayerActive()) {
-                if (stateName == 'playerTurn') {
-                    DaleCard_9.DaleCard.unbindAllChameleonsLocal();
-                    this.mainClientState.leaveAll();
+                switch (stateName) {
+                    case 'playerTurn':
+                        DaleCard_9.DaleCard.unbindAllChameleonsLocal();
+                        this.mainClientState.leaveAll();
+                        break;
+                    case 'blindfold':
+                        var blindfold_args = args.args;
+                        if (blindfold_args._private) {
+                            var card = new DaleCard_9.DaleCard(blindfold_args._private.card_id);
+                            this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default', _("Your opponent is guessing the value of ") + card.name);
+                            this.myHand.orderedSelection.setMaxSize(1);
+                            this.myHand.selectItem(blindfold_args._private.card_id);
+                        }
+                        break;
                 }
                 return;
             }
@@ -3458,6 +3481,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_whirligig':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
                     break;
+                case 'client_blindfold':
+                    if (this.unique_opponent_id) {
+                        this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card"));
+                    }
+                    else {
+                        this.myHand.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+                    }
+                    break;
                 case 'chameleon_flexibleShopkeeper':
                 case 'chameleon_reflection':
                 case 'chameleon_goodoldtimes':
@@ -3584,6 +3615,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_whirligig':
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'client_blindfold':
+                    this.myHand.setSelectionMode('noneRetainSelection');
+                    break;
                 case 'chameleon_reflection':
                     (_e = this.targetingLine) === null || _e === void 0 ? void 0 : _e.remove();
                     for (var _o = 0, _p = Object.entries(this.playerDiscards); _o < _p.length; _o++) {
@@ -3609,6 +3643,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
+            var _this = this;
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -3710,6 +3745,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_gamble':
                     this.addActionButtonsOpponent(this.onGamble.bind(this));
                     this.addActionButtonCancelClient();
+                    break;
+                case 'client_blindfold':
+                    if (!this.unique_opponent_id) {
+                        this.addActionButtonsOpponentSelection(1);
+                        this.addActionButton("confirm-button", _("Confirm"), "onBlindfold");
+                    }
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'blindfold':
+                    this.addActionButton("button-1", _("1"), (function () { return _this.onBlindfoldGuess(1); }).bind(this));
+                    this.addActionButton("button-2", _("2"), (function () { return _this.onBlindfoldGuess(2); }).bind(this));
+                    this.addActionButton("button-3", _("3"), (function () { return _this.onBlindfoldGuess(3); }).bind(this));
+                    this.addActionButton("button-4", _("4"), (function () { return _this.onBlindfoldGuess(4); }).bind(this));
+                    this.addActionButton("button-5", _("5"), (function () { return _this.onBlindfoldGuess(5); }).bind(this));
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelClient();
@@ -4286,6 +4335,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
+                case 'client_blindfold':
+                    if (this.unique_opponent_id) {
+                        this.onBlindfold(card.id);
+                    }
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -4565,6 +4619,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_gamble', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_BLINDFOLD:
+                    fizzle = this.myHand.count() == 1;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_blindfold', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -4840,6 +4903,32 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 opponent_id: opponent_id
             });
         };
+        Dale.prototype.onBlindfold = function (card_id) {
+            var opponent_id;
+            if (this.unique_opponent_id) {
+                opponent_id = this.unique_opponent_id;
+            }
+            else if (this.opponent_ids.length == 1) {
+                opponent_id = this.opponent_ids[0];
+            }
+            else {
+                throw new Error("'addActionButtonsOpponentSelection' did not work as expected");
+            }
+            card_id = (typeof card_id === 'number') ? card_id : this.myHand.orderedSelection.get()[0];
+            if (!card_id) {
+                this.showMessage(_("Please select a card from your hand"), 'error');
+                return;
+            }
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id,
+                card_id: card_id
+            });
+        };
+        Dale.prototype.onBlindfoldGuess = function (value) {
+            this.bgaPerformAction('actBlindfold', {
+                value: value
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -4879,6 +4968,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
                 ['rollDie', 1000],
+                ['selectBlindfold', 1],
                 ['addEffect', 1],
                 ['expireEffects', 1],
                 ['message', 1],
@@ -5391,6 +5481,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (parent) {
                 new DaleDie_2.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
             }
+        };
+        Dale.prototype.notif_selectBlindfold = function (notif) {
+            console.log("notif_selectBlindfold");
         };
         Dale.prototype.notif_addEffect = function (notif) {
             console.log("notif_addEffect");

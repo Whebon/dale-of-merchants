@@ -42,7 +42,10 @@ class Dale extends DaleTableBasic
             "inDeckSelection" => 10,
             "resolvingCard" => 11,
             "isPostCleanUpPhase" => 12,
-            "opponent_id" => 13
+            "opponent_id" => 13,
+            "card_id" => 14,
+            "changeActivePlayer_player_id" => 15,
+            "changeActivePlayer_state_id" => 16
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -93,6 +96,9 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("inDeckSelection", 1);
         $this->setGameStateInitialValue("isPostCleanUpPhase", 0);
         $this->setGameStateInitialValue("opponent_id", -1);
+        $this->setGameStateInitialValue("card_id", -1);
+        $this->setGameStateInitialValue("changeActivePlayer_player_id", -1);
+        $this->setGameStateInitialValue("changeActivePlayer_state_id", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -197,6 +203,19 @@ class Dale extends DaleTableBasic
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+    /**
+     * transition to the next state and make `$player_id` the active player
+     */
+    function nextStateChangeActivePlayer(string $transition, int $player_id) {
+        if (!array_key_exists($transition, $this->gamestate->states[29]['transitions'])) {
+            throw new BgaVisibleSystemException("'$transition' is not a valid transition in 'changeActivePlayer'");
+        }
+        $state_id = $this->gamestate->states[29]['transitions'][$transition];
+        $this->setGameStateValue("changeActivePlayer_player_id", $player_id);
+        $this->setGameStateValue("changeActivePlayer_state_id", $state_id);
+        $this->gamestate->nextState("trChangeActivePlayer");
+    }
 
     /**
      * Delay client notifications by 500ms multiple times
@@ -1561,7 +1580,12 @@ class Dale extends DaleTableBasic
 
         //decide if the player can go again
         if ($this->card_types[$type_id]["has_plus"]) {
-            $this->gamestate->nextState("trSamePlayer");
+            if ($this->getActivePlayerId() != $player_id) {
+                $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
+            }
+            else {
+                $this->gamestate->nextState("trSamePlayer");
+            }
         }
         else {
             $this->gamestate->nextState("trNextPlayer");
@@ -2634,6 +2658,15 @@ class Dale extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_BLINDFOLD:
+                $this->beginResolvingCard($technique_card_id);
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->setGameStateValue("opponent_id", $player_id); //player_id is the opponent_id from the opponent's perspective
+                $this->setGameStateValue("card_id", $card_id);
+                $this->nextStateChangeActivePlayer("trBlindfold", $opponent_id);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2823,6 +2856,41 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actBlindfold($value) {
+        $this->checkAction("actBlindfold");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$opponent_id);
+        $actual_value = $this->getValue($dbcard);
+        if ($value == $actual_value) {
+            //the guess was correct: discard the card
+            $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} correctly guessed value \'${value}\''), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "card_name" => $this->getCardName($dbcard),
+                "value" => $value
+            ));
+            $this->notifyAllPlayers('discard', clienttranslate('Blindfold: ${player_name} discards their ${card_name}'), array(
+                "player_id" => $opponent_id,
+                "player_name" => $this->getPlayerNameById($opponent_id),
+                "card" => $dbcard,
+                "card_name" => $this->getCardName($dbcard)
+            ));
+        }
+        else {
+            //the guess was correct: modify the card value
+            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} guessed value \'${value}\', but the actual value was \'${actual_value}\''), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "card_name" => $this->getCardName($dbcard),
+                "value" => $value,
+                "actual_value" => $actual_value
+            ));
+            throw new BgaVisibleSystemException("NOT IMPLEMENTED: guess is incorrect");
+        }
+        $this->fullyResolveCard($opponent_id);
+    }
+
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
@@ -2960,7 +3028,23 @@ class Dale extends DaleTableBasic
     function argOpponentName() {
         $opponent_id = $this->getGameStateValue("opponent_id");
         return array(
+            'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameById($opponent_id)
+        );
+    }
+
+    function argOpponentNameAndPrivateCardId() {
+        //only the opponent gets the card_id
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $card_id = $this->getGameStateValue("card_id");
+        return array(
+            'opponent_id' => $opponent_id,
+            'opponent_name' => $this->getPlayerNameById($opponent_id),
+            '_private' => array( 
+                $opponent_id => array(
+                    'card_id' => $card_id,
+                )
+            )
         );
     }
 
@@ -3093,6 +3177,14 @@ class Dale extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
+    function stChangeActivePlayer() {
+        $player_id = $this->getGameStateValue("changeActivePlayer_player_id");
+        $state_id = $this->getGameStateValue("changeActivePlayer_state_id");
+        $this->gamestate->changeActivePlayer($player_id);
+        $this->giveExtraTime($player_id);
+        $this->gamestate->jumpToState($state_id);
+    }
+
     function stFinalStatistics() {
         $players = $this->loadPlayersBasicInfos();
         foreach($players as $player_id => $player) {
@@ -3154,6 +3246,21 @@ class Dale extends DaleTableBasic
             //sabotage has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
+    }
+
+    function stBlindfold() {
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCard($card_id);
+        $this->notifyAllPlayersWithPrivateArguments('selectBlindfold', 
+            clienttranslate('Blindfold: ${player_name} secretly selected a card'), array(
+            "player_id" => $opponent_id,
+            "player_name" => $this->getPlayerNameById($opponent_id),
+            "_private" => array(
+                "card_id" => $card_id,
+                "card_name" =>$this->getCardName($dbcard)
+            )
+        ), clienttranslate('Blindfold: ${player_name} secretly selected ${card_name}'));
     }
 
 
