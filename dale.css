@@ -152,6 +152,7 @@
   outline: 3px solid #e4aa19;
   transform: translateY(5px);
   scale: 1.1;
+  z-index: 200;
 }
 #dale-market-wrap .dale-selected .dale-card.dale-line-target-chameleon {
   transform: translateY(0);
