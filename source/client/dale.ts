@@ -2351,6 +2351,13 @@ class Dale extends Gamegui
 					console.log("index = "+index);
 					discard.removeAt(index); 
 					break;
+				case 'deck':
+					const deck = this.marketDeck;
+					stall.insertCard(card, notif.args.stack_index, undefined, deck.placeholderHTML);
+					this.marketDeck.pop();
+					break;
+				default:
+					throw new Error(`Unable to build from '${notif.args.from}'`);
 			}
 
 		}

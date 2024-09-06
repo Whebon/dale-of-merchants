@@ -1630,12 +1630,14 @@ class Dale extends DaleTableBasic
      * @param int $stack_index the index of the stack to build
      * @param array $cards_from_hand cards to add to the stack from hand
      * @param array $cards_from_discard (optional) - cards to add to the stack from discard
+     * @param ?string $from (optional) - if provided, `$cards_from_hand` come from `from` instead of `HAND`
      * @return string game state transition to take after building. One of:
      * * trGameEnd
      * * trWinterIsComing
      * * trNextPlayer
+     * * trSamePlayer
      */
-    function build(int $stack_index, array $cards_from_hand, array $cards_from_discard = null) {
+    function build(int $stack_index, array $cards_from_hand, array $cards_from_discard = null, ?string $from = null) {
         //Get the current player
         $player_id = $this->getActivePlayerId();
 
@@ -1664,7 +1666,7 @@ class Dale extends DaleTableBasic
             "stack_index_plus_1" => $stack_index + 1, //+1, because stack indices are 0-indexed
             "stack_index" => $stack_index,
             "cards" => $cards_from_hand,
-            "from" => HAND
+            "from" => $from ? $from : HAND
         ));
 
         //Add the cards to the stack (after the notification, so that the modified values are still shown during the animation)
@@ -1687,6 +1689,20 @@ class Dale extends DaleTableBasic
                 "player_name" => $this->getPlayerNameById($player_id)
             ));
             return "trWinterIsComing";
+        }
+
+        //Charm (free build action)
+        $resolving_card_id = $this->getGameStateValue("resolvingCard");
+        if ($resolving_card_id != -1) {
+            $resolving_card = $this->cards->getCard($resolving_card_id);
+            $resolving_type_id = $this->getTypeId($resolving_card);
+            if ($resolving_type_id == CT_CHARM) {
+                $this->notifyAllPlayers('message', clienttranslate('Charm: ${player_name} builds a stack (free build action)'), array(
+                    "player_name" => $this->getPlayerNameById($player_id)
+                ));
+                $this->fullyResolveCard($player_id);
+                return "trSamePlayer";
+            }
         }
 
         //Next player
@@ -2503,6 +2519,33 @@ class Dale extends DaleTableBasic
                     )
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_CHARM:
+                $this->beginResolvingCard($technique_card_id);
+                $dbcards = $this->cards->pickCardsForLocation(1, DECK.MARKET, HAND.$player_id);
+                if (count($dbcards) != 1) {
+                    throw new BgaVisibleSystemException("Expected CT_CHARM to fizzle");
+                }
+                $dbcard = $dbcards[0];
+                try {
+                    //try to build
+                    $type_id = $this->getTypeId($dbcard);
+                    if ($this->isChameleonTypeId($type_id)) {
+                        throw new BgaVisibleSystemException("NotImplementedException: Charm + Chameleons (should prioritize winter is coming)");
+                    }
+                    $transition = $this->build($this->cards->getNextStackIndex($player_id), $dbcards, null, DECK);
+                    $this->gamestate->nextState($transition);
+                }
+                catch(BgaUserException $e) {
+                    //ditch the card instead
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
+                    $this->notifyAllPlayers('ditchFromMarketDeck', clienttranslate('Charm: ${player_name} ditches ${card_name}'), array (
+                        'player_name' => $this->getActivePlayerName(),
+                        'card_name' => $this->getCardName($dbcard),
+                        'card' => $dbcard
+                    ));
+                    $this->fullyResolveCard($player_id);
+                }
                 break;
             case CT_GAMBLE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();

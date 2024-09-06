@@ -4969,6 +4969,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         console.log("index = " + index);
                         discard.removeAt(index);
                         break;
+                    case 'deck':
+                        var deck = this.marketDeck;
+                        stall.insertCard(card, notif.args.stack_index, undefined, deck.placeholderHTML);
+                        this.marketDeck.pop();
+                        break;
+                    default:
+                        throw new Error("Unable to build from '".concat(notif.args.from, "'"));
                 }
             }
             (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.toValue(notif.args.stack_index_plus_1);
