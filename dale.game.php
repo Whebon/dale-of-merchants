@@ -3357,7 +3357,10 @@ class Dale extends DaleTableBasic
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
                 case 'blindfold':
-                    throw new BgaVisibleSystemException("NotImplementedException: 'zombieTurn' for 'blindfold'");
+                    $values = $this->getPossibleEffectiveValues();
+                    $key = array_rand($values);
+                    $value = $values[$key];
+                    $this->actBlindfold($value);
                     break;
                 case 'tasters':
                     throw new BgaVisibleSystemException("NotImplementedException: 'zombieTurn' for 'tasters'");
