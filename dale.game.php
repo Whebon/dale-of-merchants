@@ -1697,9 +1697,6 @@ class Dale extends DaleTableBasic
             $resolving_card = $this->cards->getCard($resolving_card_id);
             $resolving_type_id = $this->getTypeId($resolving_card);
             if ($resolving_type_id == CT_CHARM) {
-                $this->notifyAllPlayers('message', clienttranslate('Charm: ${player_name} builds a stack (free build action)'), array(
-                    "player_name" => $this->getPlayerNameById($player_id)
-                ));
                 $this->fullyResolveCard($player_id);
                 return "trSamePlayer";
             }
@@ -2529,22 +2526,53 @@ class Dale extends DaleTableBasic
                 break;
             case CT_CHARM:
                 $this->beginResolvingCard($technique_card_id);
+                $stack_index = $this->cards->getNextStackIndex($player_id);
                 $dbcards = $this->cards->pickCardsForLocation(1, DECK.MARKET, HAND.$player_id);
                 if (count($dbcards) != 1) {
                     throw new BgaVisibleSystemException("Expected CT_CHARM to fizzle");
                 }
                 $dbcard = $dbcards[0];
                 try {
-                    //try to build
+                    //auto-bind a chameleon to all possible targets
                     $type_id = $this->getTypeId($dbcard);
                     if ($this->isChameleonTypeId($type_id)) {
-                        throw new BgaVisibleSystemException("NotImplementedException: Charm + Chameleons (should prioritize winter is coming)");
+                        $target_ids = $this->getChameleonTargets($dbcard["id"], $type_id);
+                        $targets = $this->cards->getCards($target_ids);
+                        foreach ($targets as $target) {
+                            if ($this->getTypeId($target) == CT_WINTERISCOMING) {
+                                //prioritize binding to CT_WINTERISCOMING
+                                $targets = array($target['id'] => $target) + $targets; 
+                                break;
+                            }
+                        }
+                        $chameleon_failed = false;
+                        foreach ($targets as $target) {
+                            try {
+                                $this->enforceValidStack($stack_index, array($target));
+                                $target_type_id = $this->getTypeId($target);
+                                $this->effects->insertModification($dbcard["id"], $type_id, $target_type_id, $target["id"]);
+                                $this->notifyAllPlayers('message', clienttranslate('${player_name}\'s ${chameleon_card_name} automatically copies ${card_name}'), array(
+                                    'chameleon_card_name' => $this->card_types[$type_id]['name'],
+                                    'card_name' => $this->getCardName($dbcard),
+                                    'player_name' => $this->getActivePlayerName()
+                                ));
+                                $chameleon_failed = false;
+                                break;
+                            }
+                            catch(BgaUserException $e) {
+                                $chameleon_failed = true;
+                            }
+                        }
+                        if ($chameleon_failed) {
+                            throw new BgaUserException("Charm is unable to find a buildable target for the drawn chameleon card");
+                        }
                     }
-                    $transition = $this->build($this->cards->getNextStackIndex($player_id), $dbcards, null, DECK);
+                    //build with a regular card
+                    $transition = $this->build($stack_index, $dbcards, null, DECK);
                     $this->gamestate->nextState($transition);
                 }
                 catch(BgaUserException $e) {
-                    //ditch the card instead
+                    //building failed: ditch the card instead
                     $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
                     $this->notifyAllPlayers('ditchFromMarketDeck', clienttranslate('Charm: ${player_name} ditches ${card_name}'), array (
                         'player_name' => $this->getActivePlayerName(),
@@ -2835,6 +2863,16 @@ class Dale extends DaleTableBasic
         $this->notifyAllPlayers('message', clienttranslate('Winter is Coming: ${player_name} skips building an additional stack.'), array(
             "player_name" => $this->getActivePlayerName()
         ));
+        //Charm (free build action)
+        $resolving_card_id = $this->getGameStateValue("resolvingCard");
+        if ($resolving_card_id != -1) {
+            $resolving_card = $this->cards->getCard($resolving_card_id);
+            $resolving_type_id = $this->getTypeId($resolving_card);
+            if ($resolving_type_id == CT_CHARM) {
+                $this->fullyResolveCard($this->getActivePlayerId());
+                return "trSamePlayer";
+            }
+        }
         $this->gamestate->nextState("trNextPlayer");
     }
 

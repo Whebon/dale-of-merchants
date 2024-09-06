@@ -166,6 +166,7 @@ interface GameStates {
 			'trPassiveAbility': 36,
 			'trWinterIsComing': 36,
 			'trNextPlayer': 41,
+			'trSamePlayer': 30,
 			'trGameEnd': 98,
 		},
 	},
