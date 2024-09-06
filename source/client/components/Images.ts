@@ -65,7 +65,7 @@ export class Images {
                 //style += `z-index: ${card_type_id == 0 ? Images.Z_INDEX_CARDBACK : Images.Z_INDEX_CARDFRONT};`;
             }
             else {
-                console.error(`Card with type id ${card_type_id} does not exist!`);
+                throw new Error(`Card with type id ${card_type_id} does not exist!`);
             }
         }
         return style;
@@ -87,7 +87,7 @@ export class Images {
                 dojo.setStyle(div, 'background-position', `-${x}00% -${y}00%`);
             }
             else {
-                console.error(`Card with type id ${card_type_id} does not exist!`);
+                throw new Error(`Card with type id ${card_type_id} does not exist!`);
             }
         }
     }

@@ -100,7 +100,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                     style += "background-position:-".concat(x, "00% -").concat(y, "00%;");
                 }
                 else {
-                    console.error("Card with type id ".concat(card_type_id, " does not exist!"));
+                    throw new Error("Card with type id ".concat(card_type_id, " does not exist!"));
                 }
             }
             return style;
@@ -116,7 +116,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                     dojo.setStyle(div, 'background-position', "-".concat(x, "00% -").concat(y, "00%"));
                 }
                 else {
-                    console.error("Card with type id ".concat(card_type_id, " does not exist!"));
+                    throw new Error("Card with type id ".concat(card_type_id, " does not exist!"));
                 }
             }
         };
