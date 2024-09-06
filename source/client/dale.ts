@@ -637,7 +637,10 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_blindfold':
-				this.myHand.setSelectionMode('noneRetainSelection');
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'blindfoldDecideValue':
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'chameleon_reflection':
 				this.targetingLine?.remove();
@@ -1577,8 +1580,10 @@ class Dale extends Gamegui
 				})
 				break;
 			case 'client_blindfold':
-				if (this.unique_opponent_id) {
-					this.onBlindfold(card.id);
+				if (this.verifyChameleon(new DaleCard(card_id))) {
+					if (this.unique_opponent_id) {
+						this.onBlindfold(card.id);
+					}
 				}
 				break;
 			case null:
@@ -2290,7 +2295,6 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actBlindfoldDecideValue', {
 			value: value
 		});
-		this.myHand.unselectAll();
 	}
 
 	///////////////////////////////////////////////////

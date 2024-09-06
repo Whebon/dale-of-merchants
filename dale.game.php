@@ -2701,6 +2701,7 @@ class Dale extends DaleTableBasic
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->addChameleonBindings($chameleons_json, $card_id); //the opponent will be notified of this, but that's ok I guess (see issue #92)
                 $this->setGameStateValue("opponent_id", $player_id); //player_id is the opponent_id from the opponent's perspective
                 $this->setGameStateValue("card_id", $card_id);
                 $this->nextStateChangeActivePlayer("trBlindfold", $opponent_id);

@@ -3623,7 +3623,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_blindfold':
-                    this.myHand.setSelectionMode('noneRetainSelection');
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'blindfoldDecideValue':
+                    this.myHand.setSelectionMode('none');
                     break;
                 case 'chameleon_reflection':
                     (_e = this.targetingLine) === null || _e === void 0 ? void 0 : _e.remove();
@@ -4382,8 +4385,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     });
                     break;
                 case 'client_blindfold':
-                    if (this.unique_opponent_id) {
-                        this.onBlindfold(card.id);
+                    if (this.verifyChameleon(new DaleCard_9.DaleCard(card_id))) {
+                        if (this.unique_opponent_id) {
+                            this.onBlindfold(card.id);
+                        }
                     }
                     break;
                 case null:
@@ -4980,7 +4985,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.bgaPerformAction('actBlindfoldDecideValue', {
                 value: value
             });
-            this.myHand.unselectAll();
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
