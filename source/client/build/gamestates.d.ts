@@ -54,6 +54,7 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 30,
 			'trBlindfold': 56,
+			'trBlindfoldIncorrectGuess': 57,
 		},
 	},
 	30: {
@@ -308,6 +309,23 @@ interface GameStates {
 		},
 		'transitions': {
 			'trChangeActivePlayer': 29,
+		},
+	},
+	57: {
+		'name': 'blindfoldDecideValue',
+		'description': 'Blindfold: ${actplayer} must decide the value of ${card_name}',
+		'descriptionmyturn': 'Blindfold: ${you} must decide the value of ${card_name}',
+		'type': 'activeplayer',
+		'args': 'argBlindfoldDecideValue',
+		'possibleactions': {
+			'actBlindfoldDecideValue': [{
+				'name': 'value',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	98: {

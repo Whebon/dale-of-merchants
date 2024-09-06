@@ -184,4 +184,15 @@ class action_dale extends APP_GameAction
 		$this->game->actBlindfold( $value );
 		self::ajaxResponse();
 	}
+
+	public function actBlindfoldDecideValue()
+	{
+		self::setAjaxMode();
+
+		/** @var int $value */
+		$value = self::getArg('value', AT_int, true);
+
+		$this->game->actBlindfoldDecideValue( $value );
+		self::ajaxResponse();
+	}
 }

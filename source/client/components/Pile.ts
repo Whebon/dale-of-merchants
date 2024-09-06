@@ -354,7 +354,7 @@ export class Pile implements DaleLocation {
         this.popin.setContent(`<div id="${popin_id}-card-container" class="popin-card-container ${this.wrapClass}"></div>`);
         const container_id = popin_id+"-card-container";
         for (let card of this.cards) {
-            const div = card.toDiv(container_id, 'effective');
+            const div = card.toDiv(container_id, 'stock');
             div.classList.add("dale-relative");
             if(this.isClickable(card)) {
                 div.classList.add("dale-clickable");

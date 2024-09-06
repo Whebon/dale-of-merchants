@@ -878,6 +878,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                             case DaleCard.CT_BOLDHAGGLER:
                                 value += effect.arg;
                                 break;
+                            case DaleCard.CT_BLINDFOLD:
+                                value = effect.arg;
+                                break;
                         }
                     }
                 }
@@ -1972,7 +1975,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.popin.setContent("<div id=\"".concat(popin_id, "-card-container\" class=\"popin-card-container ").concat(this.wrapClass, "\"></div>"));
             var container_id = popin_id + "-card-container";
             var _loop_3 = function (card) {
-                var div = card.toDiv(container_id, 'effective');
+                var div = card.toDiv(container_id, 'stock');
                 div.classList.add("dale-relative");
                 if (this_2.isClickable(card)) {
                     div.classList.add("dale-clickable");
@@ -3648,7 +3651,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
             var _this = this;
-            var _a, _b;
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -3760,28 +3762,49 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'blindfold':
                     var blindfold_args = args;
-                    if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.possible_values) {
-                        var label = '';
-                        var base_value = 1;
-                        var _loop_5 = function (value) {
-                            if (base_value > 5) {
-                                label = "<span style='color:lightgreen'>".concat(value, "</span>");
-                            }
-                            else if (value == base_value) {
-                                label = String(value);
-                            }
-                            else {
-                                label = "".concat(base_value, " (<span style='color:lightgreen'>").concat(value, "</span>)");
-                            }
-                            this_4.addActionButton("button-" + value, label, (function () { return _this.onBlindfoldGuess(value); }).bind(this_4));
-                            base_value += 1;
-                        };
-                        var this_4 = this;
-                        for (var _i = 0, _c = (_b = blindfold_args._private) === null || _b === void 0 ? void 0 : _b.possible_values; _i < _c.length; _i++) {
-                            var value = _c[_i];
-                            _loop_5(value);
+                    var blindfold_label = '';
+                    var blindfold_baseValue = 1;
+                    var _loop_5 = function (value) {
+                        if (blindfold_baseValue > 5) {
+                            blindfold_label = "<span style='color:lightgreen'>".concat(value, "</span>");
                         }
+                        else if (value == blindfold_baseValue) {
+                            blindfold_label = String(value);
+                        }
+                        else {
+                            blindfold_label = "".concat(blindfold_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
+                        }
+                        this_4.addActionButton("button-" + value, blindfold_label, (function () { return _this.onBlindfoldGuess(value); }).bind(this_4));
+                        blindfold_baseValue += 1;
+                    };
+                    var this_4 = this;
+                    for (var _i = 0, _a = blindfold_args.possible_values; _i < _a.length; _i++) {
+                        var value = _a[_i];
+                        _loop_5(value);
                     }
+                    break;
+                case 'blindfoldDecideValue':
+                    var blindfoldDecideValue_args = args;
+                    var blindfoldDecideValue_label = '';
+                    var blindfoldDecideValue_baseValue = 1;
+                    var _loop_6 = function (value) {
+                        if (value == blindfoldDecideValue_baseValue) {
+                            blindfoldDecideValue_label = String(value);
+                        }
+                        else {
+                            blindfoldDecideValue_label = "".concat(blindfoldDecideValue_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
+                        }
+                        this_5.addActionButton("button-" + value, blindfoldDecideValue_label, (function () { return _this.onBlindfoldDecideValue(value); }).bind(this_5));
+                        blindfoldDecideValue_baseValue += 1;
+                    };
+                    var this_5 = this;
+                    for (var _b = 0, _c = blindfoldDecideValue_args.possible_values; _b < _c.length; _b++) {
+                        var value = _c[_b];
+                        _loop_6(value);
+                    }
+                    this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
+                    this.myHand.orderedSelection.setMaxSize(1);
+                    this.myHand.selectItem(blindfoldDecideValue_args.card_id);
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelClient();
@@ -4093,18 +4116,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.addActionButton("cancel-button", label !== null && label !== void 0 ? label : _("Cancel"), "onCancelClient", undefined, false, 'gray');
         };
         Dale.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
-            var _loop_6 = function (opponent_id) {
-                if (opponent_id != this_5.player_id) {
-                    var name_1 = this_5.gamedatas.players[opponent_id].name;
-                    var color = this_5.gamedatas.players[opponent_id].color;
+            var _loop_7 = function (opponent_id) {
+                if (opponent_id != this_6.player_id) {
+                    var name_1 = this_6.gamedatas.players[opponent_id].name;
+                    var color = this_6.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
-                    this_5.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
+                    this_6.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
                 }
             };
-            var this_5 = this;
+            var this_6 = this;
             for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
                 var opponent_id = _a[_i];
-                _loop_6(opponent_id);
+                _loop_7(opponent_id);
             }
         };
         Dale.prototype.addActionButtonsOpponentSelection = function (maxSize) {
@@ -4951,6 +4974,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.bgaPerformAction('actBlindfold', {
                 value: value
             });
+        };
+        Dale.prototype.onBlindfoldDecideValue = function (value) {
+            console.log("onBlindfoldDecideValue " + value);
+            this.bgaPerformAction('actBlindfoldDecideValue', {
+                value: value
+            });
+            this.myHand.unselectAll();
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;

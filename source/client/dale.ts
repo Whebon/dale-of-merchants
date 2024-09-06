@@ -784,24 +784,40 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'blindfold':
-				const blindfold_args = args as { _private?: { possible_values?: number[] } };
-				if (blindfold_args._private?.possible_values) {
-					let label = '';
-					let base_value = 1;
-					for (let value of blindfold_args._private?.possible_values) {
-						if (base_value > 5) {
-							label = `<span style='color:lightgreen'>${value}</span>`;
-						}
-						else if (value == base_value) {
-							label = String(value);
-						}
-						else {
-							label = `${base_value} (<span style='color:lightgreen'>${value}</span>)`;
-						}
-						this.addActionButton("button-"+value, label, (() => this.onBlindfoldGuess(value)).bind(this));
-						base_value += 1;
+				const blindfold_args = (args as { possible_values: number[] });
+				let blindfold_label = '';
+				let blindfold_baseValue = 1;
+				for (let value of blindfold_args.possible_values) {
+					if (blindfold_baseValue > 5) {
+						blindfold_label = `<span style='color:lightgreen'>${value}</span>`;
 					}
+					else if (value == blindfold_baseValue) {
+						blindfold_label = String(value);
+					}
+					else {
+						blindfold_label = `${blindfold_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
+					}
+					this.addActionButton("button-"+value, blindfold_label, (() => this.onBlindfoldGuess(value)).bind(this));
+					blindfold_baseValue += 1;
 				}
+				break;
+			case 'blindfoldDecideValue':
+				const blindfoldDecideValue_args = (args as { possible_values: number[], card_id: number });
+				let blindfoldDecideValue_label = '';
+				let blindfoldDecideValue_baseValue = 1;
+				for (let value of blindfoldDecideValue_args.possible_values) {
+					if (value == blindfoldDecideValue_baseValue) {
+						blindfoldDecideValue_label = String(value);
+					}
+					else {
+						blindfoldDecideValue_label = `${blindfoldDecideValue_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
+					}
+					this.addActionButton("button-"+value, blindfoldDecideValue_label, (() => this.onBlindfoldDecideValue(value)).bind(this));
+					blindfoldDecideValue_baseValue += 1;
+				}
+				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
+				this.myHand.orderedSelection.setMaxSize(1);
+				this.myHand.selectItem(blindfoldDecideValue_args.card_id);
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelClient();
@@ -2267,6 +2283,14 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actBlindfold', {
 			value: value
 		});
+	}
+
+	onBlindfoldDecideValue(value: number) {
+		console.log("onBlindfoldDecideValue "+value);
+		this.bgaPerformAction('actBlindfoldDecideValue', {
+			value: value
+		});
+		this.myHand.unselectAll();
 	}
 
 	///////////////////////////////////////////////////

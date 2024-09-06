@@ -956,15 +956,11 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * @return array array of all modified base values, appended with any possible effective values out of the base value range
+     * @return array array of all modified base values
      * @example example no effects: `[1, 2, 3, 4, 5]`
      * @example example flashy show: `[2, 3, 4, 5, 6]`
-     * @example example rare artefact 3 on a 5-valued card: `[1, 2, 3, 4, 5, 15]`
-     * @example example [rare artefact 3 on a 5-valued card] -> [flashy show]: `[2, 3, 4, 5, 6, 16]`
-     * @example example [flashy show] -> [rare artefact 3 on a 6-valued card]: `[2, 3, 4, 5, 6, 20]`
      */
-    function getPossibleEffectiveValues(): array {
-        //base values
+    function getBaseEffectiveValues() {
         $values = [];
         for ($i=0; $i < 5; $i++) { 
             $fakedbcard = array(
@@ -973,7 +969,19 @@ class Dale extends DaleTableBasic
             );
             $values[] = $this->effects->getValue($fakedbcard);
         }
-        //modified values
+        return $values;
+    }
+
+    /**
+     * @return array array of all modified base values, appended with any possible effective values out of the base value range
+     * @example example no effects: `[1, 2, 3, 4, 5]`
+     * @example example flashy show: `[2, 3, 4, 5, 6]`
+     * @example example rare artefact 3 on a 5-valued card: `[1, 2, 3, 4, 5, 15]`
+     * @example example [rare artefact 3 on a 5-valued card] -> [flashy show]: `[2, 3, 4, 5, 6, 16]`
+     * @example example [flashy show] -> [rare artefact 3 on a 6-valued card]: `[2, 3, 4, 5, 6, 20]`
+     */
+    function getPossibleEffectiveValues(): array {
+        $values = $this->getBaseEffectiveValues();
         $modified_card_ids = $this->effects->getModifiedCardIds();
         $modified_cards = $this->cards->getCards($modified_card_ids);
         foreach ($modified_cards as $modified_card) {
@@ -2896,7 +2904,7 @@ class Dale extends DaleTableBasic
         if ($value == $actual_value) {
             //the guess was correct: discard the card
             $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
-            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} correctly guessed value \'${value}\''), array(
+            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} correctly guessed ${value}'), array(
                 "player_name" => $this->getPlayerNameById($player_id),
                 "card_name" => $this->getCardName($dbcard),
                 "value" => $value
@@ -2907,18 +2915,36 @@ class Dale extends DaleTableBasic
                 "card" => $dbcard,
                 "card_name" => $this->getCardName($dbcard)
             ));
+            $this->fullyResolveCard($opponent_id);
         }
         else {
             //the guess was correct: modify the card value
-            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} guessed value \'${value}\', but the actual value was \'${actual_value}\''), array(
+            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} guessed ${value}, but the actual value was ${actual_value}'), array(
                 "player_name" => $this->getPlayerNameById($player_id),
                 "card_name" => $this->getCardName($dbcard),
                 "value" => $value,
                 "actual_value" => $actual_value
             ));
-            throw new BgaVisibleSystemException("NOT IMPLEMENTED: guess is incorrect");
+            $this->nextStateChangeActivePlayer("trBlindfoldIncorrectGuess", $opponent_id);
         }
-        $this->fullyResolveCard($opponent_id);
+    }
+
+    function actBlindfoldDecideValue($value) {
+        $this->checkAction("actBlindfoldDecideValue");
+        $values = $this->getBaseEffectiveValues();
+        if (!in_array($value, $values)) {
+            throw new BgaVisibleSystemException("actBlindfoldDecideValue: value $value is not a valid value");
+        }
+        $player_id = $this->getActivePlayerId();
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $this->effects->insertModification($card_id, CT_BLINDFOLD, $value);
+        $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} sets their ${card_name}\'s value to ${value}'), array(
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "value" => $value,
+        ));
+        $this->fullyResolveCard($player_id);
     }
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
@@ -3074,11 +3100,19 @@ class Dale extends DaleTableBasic
             '_private' => array( 
                 $opponent_id => array(
                     'card_id' => $card_id,
-                ),
-                $player_id => array(
-                    'possible_values' => $this->getPossibleEffectiveValues()
                 )
-            )
+            ),
+            'possible_values' => $this->getPossibleEffectiveValues()
+        );
+    }
+
+    function argBlindfoldDecideValue() {
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCard($card_id);
+        return array(
+            'card_id' => $card_id,
+            'card_name' => $this->getCardName($dbcard),
+            'possible_values' => $this->getBaseEffectiveValues()
         );
     }
 

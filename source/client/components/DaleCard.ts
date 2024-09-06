@@ -418,6 +418,9 @@ export class DaleCard {
                     case DaleCard.CT_BOLDHAGGLER:
                         value += effect.arg!;
                         break;
+                    case DaleCard.CT_BLINDFOLD:
+                        value = effect.arg!;
+                        break;
                 }
             }
         }

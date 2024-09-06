@@ -69,6 +69,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trBlindfold' => 56,
+			'trBlindfoldIncorrectGuess' => 57,
 		),
 	),
 	30 => array(
@@ -183,6 +184,17 @@ $machinestates = array(
 		'possibleactions' => ['actBlindfold'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
+		),
+	),
+	57 => array(
+		'name' => 'blindfoldDecideValue',
+		'description' => clienttranslate('Blindfold: ${actplayer} must decide the value of ${card_name}'),
+		'descriptionmyturn' => clienttranslate('Blindfold: ${you} must decide the value of ${card_name}'),
+		'type' => 'activeplayer',
+		'args' => 'argBlindfoldDecideValue',
+		'possibleactions' => ['actBlindfoldDecideValue'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	98 => array(
