@@ -3126,7 +3126,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -3209,12 +3209,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
+                var handsize_span = document.createElement('span');
+                var handsize_icon = DaleIcons_4.DaleIcons.getHandIcon();
                 var player_board_div = (_b = $('player_board_' + player_id)) === null || _b === void 0 ? void 0 : _b.querySelector(".player_score");
-                dojo.place(this.format_block('jstpl_hand_size', {
-                    player: player
-                }), player_board_div, 'first');
+                handsize_icon.id = 'dale-myhandsize-icon-' + player_id;
+                player_board_div.prepend(handsize_icon);
+                player_board_div.prepend(handsize_span);
+                handsize_span.innerText = '0';
                 this.playerHandSizes[player_id] = new ebg.counter();
-                this.playerHandSizes[player_id].create('handsize-' + player_id);
+                this.playerHandSizes[player_id].create(handsize_span);
                 this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]);
                 this.addTooltip('dale-myhandsize-icon-' + player_id, _("Number of cards in hand."), '');
                 this.addTooltip('icon_point_' + player_id, _("Number of stacks built."), '');

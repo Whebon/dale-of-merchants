@@ -111,6 +111,19 @@
   opacity: 50%;
 }
 
+.player_score .dale-icon {
+  position: static;
+  height: 23px;
+  width: 23px;
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 4px;
+  transform: translateY(5px);
+}
+.player_score .dale-icon before {
+  content: "\f005";
+}
+
 .dale-myhandsize-icon {
   background-image: url("img/handsize_icon.png");
   width: 16px;
@@ -475,8 +488,8 @@
   vertical-align: middle;
 }
 .dale-log-span .dale-icon {
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   display: inline-block;
   left: auto;
   position: relative;

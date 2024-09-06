@@ -164,12 +164,19 @@ class Dale extends Gamegui
 			let player = gamedatas.players[player_id];
 
 			//handsize per player
+			const handsize_span = document.createElement('span'); 
+			const handsize_icon = DaleIcons.getHandIcon();
 			const player_board_div = $('player_board_'+player_id)?.querySelector(".player_score")!;
-			dojo.place( this.format_block('jstpl_hand_size', {
-				player: player
-			} ), player_board_div, 'first');
+			handsize_icon.id = 'dale-myhandsize-icon-'+player_id;
+			player_board_div.prepend(handsize_icon);
+			player_board_div.prepend(handsize_span);
+			handsize_span.innerText = '0';
+			// dojo.place( this.format_block('jstpl_hand_size', {
+			// 	player: player,
+			// 	icon: 
+			// } ), player_board_div, 'first');
 			this.playerHandSizes[player_id] = new ebg.counter();
-			this.playerHandSizes[player_id].create('handsize-'+player_id);
+			this.playerHandSizes[player_id].create(handsize_span);
 			this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]!);
 			this.addTooltip('dale-myhandsize-icon-'+player_id, _("Number of cards in hand."), '');
 			this.addTooltip('icon_point_'+player_id, _("Number of stacks built."), '');

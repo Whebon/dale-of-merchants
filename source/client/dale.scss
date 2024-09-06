@@ -146,6 +146,21 @@
 	}
 }
 
+.player_score {
+	.dale-icon {
+		before {
+			content: "\f005";
+		}
+		position: static;
+		height: 23px;
+		width: 23px;
+		display: inline-block;
+		margin-left: 5px;
+		margin-right: 4px;
+		transform: translateY(5px);
+	}
+}
+
 .dale-myhandsize-icon {
 	before {
 		content: "\f005";
