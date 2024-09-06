@@ -38,19 +38,20 @@ class view_dale_dale extends game_view
   	{		
   	    // Get players & players number
         $players = $this->game->loadPlayersBasicInfos();
-        $players_nbr = count( $players );
         $template = $this->getGameName() . "_" . $this->getGameName();
 
         // Your stall and schedule
         global $g_user;
         $current_player = $g_user->get_id();
         $this->page->begin_block($template, "stall");
-        $this->page->insert_block("stall", array (
-            "PLAYER_ID" => $current_player,
-            "PLAYER_NAME_POSSESSIVE" => $this->_("Your"),
-            "PLAYER_COLOR" => $players[$current_player]['player_color'],
-            "SCHEDULE" => "Schedule"
-        ));
+        if (isset($players[$current_player])) {
+            $this->page->insert_block("stall", array (
+                "PLAYER_ID" => $current_player,
+                "PLAYER_NAME_POSSESSIVE" => $this->_("Your"),
+                "PLAYER_COLOR" => $players[$current_player]['player_color'],
+                "SCHEDULE" => "Schedule"
+            ));
+        }
 
         // Other players' stalls and schedules
         foreach ($players as $player) {
@@ -76,7 +77,6 @@ class view_dale_dale extends game_view
         $this->tpl['MARKET'] = $this->_("Market");
         $this->tpl['PLAY_AREA'] = $this->_("play area");
         $this->tpl['STALL'] = $this->_("Stall");
-        $this->tpl['CURRENT_PLAYER_COLOR'] = $players[$current_player]['player_color'];
 
         /*
         
