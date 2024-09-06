@@ -10,7 +10,7 @@ import { DaleDie } from './DaleDie';
 /**
  * HTML data attribute representing a card div's location
  */
-type DataLocation = 'moving' | 'stock' | 'market' | 'stall';
+type DataLocation = 'moving' | 'stock' | 'market' | 'stall' | 'pile';
 
 /**
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
@@ -211,6 +211,9 @@ export class DaleCard {
     public constructor(id: number | string, type_id?: number | string) {
         id = +id;
         this.id = id;
+        if (+id <= 0) {
+            return;
+        }
         if (type_id != undefined) {
             let prev_type_id = DaleCard.cardIdtoTypeId.get(id);
             if (prev_type_id == undefined) {
@@ -323,6 +326,26 @@ export class DaleCard {
             DaleCard.updateHTML(card_id);
         });
     }
+
+    //TODO: safely remove this
+    // /**
+    //  * Based on the known effects, return all possible effective values.
+    //  * If no effects are effective, this will be `[1, 2, 3, 4, 5]`
+    //  */
+    // public static getAllPossibleEffectiveValues(): number[] {
+    //     const effective_values = [];
+    //     for (let i = 0; i < 5; i++) {
+    //         effective_values.push(new DaleCard(0, DaleCard.CT_SWIFTBROKER+i).effective_value);
+    //     }
+    //     for (let effect of DaleCard.effects) {
+    //         if (effect.effect_class == DaleCard.EC_MODIFICATION) {
+    //             const value = new DaleCard(effect.card_id, effect.type_id)
+    //             modified_card_ids.add(effect.card_id);
+    //         }
+    //     }
+        
+    //     return effective_values;
+    // }
 
 
     //TODO: safely delete this

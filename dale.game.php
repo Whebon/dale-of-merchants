@@ -956,6 +956,36 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * @return array array of all modified base values, appended with any possible effective values out of the base value range
+     * @example example no effects: `[1, 2, 3, 4, 5]`
+     * @example example flashy show: `[2, 3, 4, 5, 6]`
+     * @example example rare artefact 3 on a 5-valued card: `[1, 2, 3, 4, 5, 15]`
+     * @example example [rare artefact 3 on a 5-valued card] -> [flashy show]: `[2, 3, 4, 5, 6, 16]`
+     * @example example [flashy show] -> [rare artefact 3 on a 6-valued card]: `[2, 3, 4, 5, 6, 20]`
+     */
+    function getPossibleEffectiveValues(): array {
+        //base values
+        $values = [];
+        for ($i=0; $i < 5; $i++) { 
+            $fakedbcard = array(
+                "id" => 0,
+                "type_arg" => CT_SWIFTBROKER + $i
+            );
+            $values[] = $this->effects->getValue($fakedbcard);
+        }
+        //modified values
+        $modified_card_ids = $this->effects->getModifiedCardIds();
+        $modified_cards = $this->cards->getCards($modified_card_ids);
+        foreach ($modified_cards as $modified_card) {
+            $modified_value = $this->effects->getValue($modified_card);
+            if (!in_array($modified_value, $values)) {
+                $values[] = $modified_value;
+            }
+        }
+        return $values;
+    }
+
+    /**
      * Returns the effective name of the card.
      * @param array $dbcard card to get the name of
     */
@@ -3033,8 +3063,9 @@ class Dale extends DaleTableBasic
         );
     }
 
-    function argOpponentNameAndPrivateCardId() {
+    function argBlindfold() {
         //only the opponent gets the card_id
+        $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $card_id = $this->getGameStateValue("card_id");
         return array(
@@ -3043,6 +3074,9 @@ class Dale extends DaleTableBasic
             '_private' => array( 
                 $opponent_id => array(
                     'card_id' => $card_id,
+                ),
+                $player_id => array(
+                    'possible_values' => $this->getPossibleEffectiveValues()
                 )
             )
         );

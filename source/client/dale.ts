@@ -322,8 +322,8 @@ class Dale extends Gamegui
 					this.mainClientState.leaveAll();
 					break;
 				case 'blindfold':
-					const blindfold_args = args.args as { _private?: { card_id: number } };
-					if (blindfold_args._private) {
+					const blindfold_args = args.args as { _private?: { card_id?: number } };
+					if (blindfold_args._private?.card_id) {
 						const card = new DaleCard(blindfold_args._private.card_id);
 						this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default', _("Your opponent is guessing the value of ")+card.name);
 						this.myHand.orderedSelection.setMaxSize(1);
@@ -784,11 +784,24 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'blindfold':
-				this.addActionButton("button-1", _("1"), (() => this.onBlindfoldGuess(1)).bind(this));
-				this.addActionButton("button-2", _("2"), (() => this.onBlindfoldGuess(2)).bind(this));	
-				this.addActionButton("button-3", _("3"), (() => this.onBlindfoldGuess(3)).bind(this));
-				this.addActionButton("button-4", _("4"), (() => this.onBlindfoldGuess(4)).bind(this));
-				this.addActionButton("button-5", _("5"), (() => this.onBlindfoldGuess(5)).bind(this));
+				const blindfold_args = args as { _private?: { possible_values?: number[] } };
+				if (blindfold_args._private?.possible_values) {
+					let label = '';
+					let base_value = 1;
+					for (let value of blindfold_args._private?.possible_values) {
+						if (base_value > 5) {
+							label = `<span style='color:lightgreen'>${value}</span>`;
+						}
+						else if (value == base_value) {
+							label = String(value);
+						}
+						else {
+							label = `${base_value} (<span style='color:lightgreen'>${value}</span>)`;
+						}
+						this.addActionButton("button-"+value, label, (() => this.onBlindfoldGuess(value)).bind(this));
+						base_value += 1;
+					}
+				}
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelClient();

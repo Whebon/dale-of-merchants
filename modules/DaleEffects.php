@@ -140,6 +140,22 @@ class DaleEffects {
     }
 
     /**
+     * @return array all card_ids with an active EC_MODIFICATION
+     */
+    function getModifiedCardIds() {
+        $card_ids = array();
+        foreach ($this->cache as $row) {
+            if ($row["effect_class"] == EC_MODIFICATION) {
+                $card_id = $row["card_id"];
+                if (!in_array($card_id, $card_ids)) {
+                    $card_ids[] = $card_id;
+                }
+            }
+        }
+        return $card_ids;
+    }
+
+    /**
      * Applies the chain of chameleon copying effects
      * @return int `effective_type_id` of the given card_id
      */

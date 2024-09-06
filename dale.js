@@ -751,6 +751,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         function DaleCard(id, type_id) {
             id = +id;
             this.id = id;
+            if (+id <= 0) {
+                return;
+            }
             if (type_id != undefined) {
                 var prev_type_id = DaleCard.cardIdtoTypeId.get(id);
                 if (prev_type_id == undefined) {
@@ -1794,7 +1797,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 (_a = this.topCardHTML) === null || _a === void 0 ? void 0 : _a.remove();
                 this.topCardHTML = undefined;
                 if (topCard !== undefined) {
-                    this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'original');
+                    this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'pile');
                     this.topCardHTML.classList.add("dale-clickable");
                     dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
                 }
@@ -3325,6 +3328,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onEnteringState = function (stateName, args) {
             var _this = this;
+            var _a;
             console.log('Entering state: ' + stateName);
             if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
                 console.log("Revalidate all local chameleons");
@@ -3338,7 +3342,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         break;
                     case 'blindfold':
                         var blindfold_args = args.args;
-                        if (blindfold_args._private) {
+                        if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.card_id) {
                             var card = new DaleCard_9.DaleCard(blindfold_args._private.card_id);
                             this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default', _("Your opponent is guessing the value of ") + card.name);
                             this.myHand.orderedSelection.setMaxSize(1);
@@ -3397,8 +3401,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
                     var junk_selected = 0;
-                    for (var _i = 0, _a = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _a.length; _i++) {
-                        var card_id = _a[_i];
+                    for (var _i = 0, _b = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _b.length; _i++) {
+                        var card_id = _b[_i];
                         this.myHand.selectItem(card_id, true);
                         if (junk_selected < 3 && new DaleCard_9.DaleCard(card_id).isJunk()) {
                             this.myHand.selectItem(card_id);
@@ -3444,8 +3448,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_rottenFood':
-                    for (var _b = 0, _c = Object.entries(this.allDecks); _b < _c.length; _b++) {
-                        var _d = _c[_b], player_id = _d[0], deck = _d[1];
+                    for (var _c = 0, _d = Object.entries(this.allDecks); _c < _d.length; _c++) {
+                        var _e = _d[_c], player_id = _e[0], deck = _e[1];
                         if (+player_id != this.player_id) {
                             deck.setSelectionMode('noneCantViewContent');
                         }
@@ -3461,8 +3465,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_treasureHunter':
                     var client_treasureHunter_args_1 = this.mainClientState.args;
                     var targets_2 = [];
-                    for (var _e = 0, _f = Object.entries(this.playerDiscards); _e < _f.length; _e++) {
-                        var _g = _f[_e], player_id = _g[0], pile = _g[1];
+                    for (var _f = 0, _g = Object.entries(this.playerDiscards); _f < _g.length; _f++) {
+                        var _h = _g[_f], player_id = _h[0], pile = _h[1];
                         if (+player_id != +this.player_id && pile.size > 0) {
                             pile.setSelectionMode('noneCantViewContent');
                             targets_2.push(pile.peek());
@@ -3495,8 +3499,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_trendsetting':
                 case 'chameleon_seeingdoubles':
                     if (stateName == 'chameleon_reflection') {
-                        for (var _h = 0, _j = Object.entries(this.playerDiscards); _h < _j.length; _h++) {
-                            var _k = _j[_h], player_id = _k[0], pile = _k[1];
+                        for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
+                            var _l = _k[_j], player_id = _l[0], pile = _l[1];
                             if (+player_id != +this.player_id) {
                                 pile.setSelectionMode('noneCantViewContent');
                             }
@@ -3644,6 +3648,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
             var _this = this;
+            var _a, _b;
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -3754,11 +3759,29 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'blindfold':
-                    this.addActionButton("button-1", _("1"), (function () { return _this.onBlindfoldGuess(1); }).bind(this));
-                    this.addActionButton("button-2", _("2"), (function () { return _this.onBlindfoldGuess(2); }).bind(this));
-                    this.addActionButton("button-3", _("3"), (function () { return _this.onBlindfoldGuess(3); }).bind(this));
-                    this.addActionButton("button-4", _("4"), (function () { return _this.onBlindfoldGuess(4); }).bind(this));
-                    this.addActionButton("button-5", _("5"), (function () { return _this.onBlindfoldGuess(5); }).bind(this));
+                    var blindfold_args = args;
+                    if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.possible_values) {
+                        var label = '';
+                        var base_value = 1;
+                        var _loop_5 = function (value) {
+                            if (base_value > 5) {
+                                label = "<span style='color:lightgreen'>".concat(value, "</span>");
+                            }
+                            else if (value == base_value) {
+                                label = String(value);
+                            }
+                            else {
+                                label = "".concat(base_value, " (<span style='color:lightgreen'>").concat(value, "</span>)");
+                            }
+                            this_4.addActionButton("button-" + value, label, (function () { return _this.onBlindfoldGuess(value); }).bind(this_4));
+                            base_value += 1;
+                        };
+                        var this_4 = this;
+                        for (var _i = 0, _c = (_b = blindfold_args._private) === null || _b === void 0 ? void 0 : _b.possible_values; _i < _c.length; _i++) {
+                            var value = _c[_i];
+                            _loop_5(value);
+                        }
+                    }
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelClient();
@@ -4070,18 +4093,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.addActionButton("cancel-button", label !== null && label !== void 0 ? label : _("Cancel"), "onCancelClient", undefined, false, 'gray');
         };
         Dale.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
-            var _loop_5 = function (opponent_id) {
-                if (opponent_id != this_4.player_id) {
-                    var name_1 = this_4.gamedatas.players[opponent_id].name;
-                    var color = this_4.gamedatas.players[opponent_id].color;
+            var _loop_6 = function (opponent_id) {
+                if (opponent_id != this_5.player_id) {
+                    var name_1 = this_5.gamedatas.players[opponent_id].name;
+                    var color = this_5.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
-                    this_4.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
+                    this_5.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
                 }
             };
-            var this_4 = this;
+            var this_5 = this;
             for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
                 var opponent_id = _a[_i];
-                _loop_5(opponent_id);
+                _loop_6(opponent_id);
             }
         };
         Dale.prototype.addActionButtonsOpponentSelection = function (maxSize) {

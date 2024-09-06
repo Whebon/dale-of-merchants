@@ -111,7 +111,7 @@ export class Pile implements DaleLocation {
             this.topCardHTML?.remove();
             this.topCardHTML = undefined;
             if (topCard !== undefined) {
-                this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'original');
+                this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'pile');
                 this.topCardHTML.classList.add("dale-clickable");
                 dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
             }

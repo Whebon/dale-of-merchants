@@ -298,7 +298,7 @@ interface GameStates {
 		'descriptionmyturn': 'Blindfold: ${you} must guess the value of ${opponent_name}\\\'s card',
 		'type': 'activeplayer',
 		'action': 'stBlindfold',
-		'args': 'argOpponentNameAndPrivateCardId',
+		'args': 'argBlindfold',
 		'possibleactions': {
 			'actBlindfold': [{
 				'name': 'value',
