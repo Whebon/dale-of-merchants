@@ -2195,6 +2195,13 @@ class Dale extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_CHARM:
+                    $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
+                    $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
+                    if ($nbr > 0) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_CHARM. The market deck/discard contain card(s).");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
