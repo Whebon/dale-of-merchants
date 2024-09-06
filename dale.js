@@ -2140,6 +2140,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
             this.pos = pos;
             this.selected = false;
             this._container = container;
+            this._container.classList.add("dale-slot");
             this._card = undefined;
             if (card) {
                 this.insertCard(card);

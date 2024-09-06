@@ -264,6 +264,12 @@
 	box-shadow: 0px 0px 16px var(--dale-wrap-technique) !important;
 }
 
+.dale-slot {
+	.dale-card {
+		z-index: 199;
+	}
+}
+
 .dale-card {
 	background-image: url("img/cards.jpg");
 	background-size: cover;
