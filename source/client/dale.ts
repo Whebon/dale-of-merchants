@@ -2919,9 +2919,9 @@ class Dale extends Gamegui
 			const opponent_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
 			for (let i = 1; i <= nbr; i++) {
 				if ((i%2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
+					notif.args.opponent_nbr -= 1;
 					if (this.player_id == notif.args.opponent_id) {
 						//from hand
-						notif.args.opponent_nbr -= 1;
 						const opponent_card_id = opponent_card_ids.pop()!;
 						this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.myHand.control_name+"_item_"+opponent_card_id);
 						this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
@@ -2937,6 +2937,12 @@ class Dale extends Gamegui
 					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.playerDecks[notif.args.player_id]!.placeholderHTML);
 					this.playerDecks[notif.args.player_id]!.pop();
 				}
+			}
+			if (notif.args.opponent_nbr != 0 || notif.args.player_nbr != 0) {
+				console.warn(`'whirligigShuffle' failed:
+					notif.args.opponent_nbr == ${notif.args.opponent_nbr}
+					notif.args.player_nbr == ${notif.args.player_nbr}
+				`)
 			}
 			setTimeout((() => {this.myLimbo.shuffleAnimation()}).bind(this), this.myLimbo.duration);
 		}

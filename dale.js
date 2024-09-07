@@ -5484,8 +5484,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var opponent_card_ids = this.myHand.getAllItems().map(function (item) { return item.id; }).reverse();
                 for (var i = 1; i <= nbr; i++) {
                     if ((i % 2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
+                        notif.args.opponent_nbr -= 1;
                         if (this.player_id == notif.args.opponent_id) {
-                            notif.args.opponent_nbr -= 1;
                             var opponent_card_id = opponent_card_ids.pop();
                             this.myLimbo.addDaleCardToStock(new DaleCard_9.DaleCard(-i, 0), this.myHand.control_name + "_item_" + opponent_card_id);
                             this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
@@ -5499,6 +5499,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.myLimbo.addDaleCardToStock(new DaleCard_9.DaleCard(-i, 0), this.playerDecks[notif.args.player_id].placeholderHTML);
                         this.playerDecks[notif.args.player_id].pop();
                     }
+                }
+                if (notif.args.opponent_nbr != 0 || notif.args.player_nbr != 0) {
+                    console.warn("'whirligigShuffle' failed:\n\t\t\t\t\tnotif.args.opponent_nbr == ".concat(notif.args.opponent_nbr, "\n\t\t\t\t\tnotif.args.player_nbr == ").concat(notif.args.player_nbr, "\n\t\t\t\t"));
                 }
                 setTimeout((function () { _this.myLimbo.shuffleAnimation(); }).bind(this), this.myLimbo.duration);
             }
