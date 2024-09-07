@@ -322,21 +322,16 @@ class Dale extends DaleTableBasic
         $private_player_id = $args["player_id"];
         $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
 
-        //(optional) the involved opponent receives the notification with the private arguments
+        //(optional) the involved opponent also receives the notification with the private arguments
         $private_opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : null;
         if ($private_opponent_id) {
             $private_opponent_id = $args["opponent_id"];
             $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
         }
 
-        //all the other players receive the notification without the private arguments
+        //all players receive the notification without the private arguments. (the player and opponent will ignore this on the client-side)
         unset($args["_private"]);
-        $players = $this->loadPlayersBasicInfos();
-        foreach ( $players as $player_id => $player ) {
-            if ($player_id != $private_player_id && $player_id != $private_opponent_id) {
-                $this->notifyPlayer($player_id, $type, $message, $args);
-            }
-        }
+        $this->notifyAllPlayers($type, $message, $args);
     }
 
     /**
@@ -1533,26 +1528,25 @@ class Dale extends DaleTableBasic
      * @param bool $choiceless (optional) default false. If true, add a synchronization delay to scheduling
      */
     function scheduleCard(string $player_id, array $dbcard, bool $choiceless = false){
+        //for replays, notify ALL players about the scheduled card, even the active player, who already locally scheduled the card
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
-        $players = $this->loadPlayersBasicInfos();
-        foreach ($players as $other_player_id => $player) {
-            if (($other_player_id != $player_id) || $choiceless) {
-                $this->notifyPlayer($other_player_id, 'scheduleTechnique', '${player_name} schedules their ${card_name}', array(
-                    'player_id' => $player_id,
-                    'player_name' => $this->getPlayerNameById($player_id),
-                    'card_name' => $this->getCardName($dbcard),
-                    'card' => $dbcard,
-                ));
-            }
-            else {
-                //for replays: notify about the scheduled card, but without a synchronization delay
-                $this->notifyPlayer($other_player_id, 'instant_scheduleTechnique', '${player_name} schedules their ${card_name}', array(
-                    'player_id' => $player_id,
-                    'player_name' => $this->getPlayerNameById($player_id),
-                    'card_name' => $this->getCardName($dbcard),
-                    'card' => $dbcard,
-                ));
-            }
+        $this->notifyAllPlayers('scheduleTechnique', '${player_name} schedules their ${card_name}', array(
+            'player_id' => $player_id,
+            'player_name' => $this->getPlayerNameById($player_id),
+            'card_name' => $this->getCardName($dbcard),
+            'card' => $dbcard,
+        ));
+        //all clients that did not locally schedule the card will get a synchronization delay
+        if ($choiceless) {
+            $this->notifyAllPlayers('scheduleTechniqueDelay', '', array(
+                'player_id' => $player_id,
+                '_private' => true //in case of a choiceless card, the active player also needs a delay
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('scheduleTechniqueDelay', '', array(
+                'player_id' => $player_id
+            ));
         }
     }
 

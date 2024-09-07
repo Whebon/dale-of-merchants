@@ -37,6 +37,7 @@ import { DbEffect } from './components/types/DbEffect';
 import { DaleDeckSelection } from './components/DaleDeckSelection'
 import { DaleDie } from './components/DaleDie';
 import { DaleIcons } from './components/DaleIcons';
+import { PrivateNotification } from './components/types/PrivateNotification'
 
 /** The root for all of your game code. */
 class Dale extends Gamegui
@@ -305,10 +306,9 @@ class Dale extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 
-		// if (stateName == 'cleanUpPhase') {
-		// 	console.log("cleanUpPhase, expire all effects that last until end of turn");
-		// 	this.mainClientState.cancelAll();
-		// }
+		if (this.isSpectator) {
+			return;
+		}
 
 		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
 			console.log("Revalidate all local chameleons");
@@ -535,6 +535,10 @@ class Dale extends Gamegui
 	override onLeavingState(stateName: GameStateName): void
 	{
 		console.log( 'Leaving state: '+stateName );
+
+		if (this.isSpectator) {
+			return;
+		}
 		
 		if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
 			console.log("this.chameleonArgs => don't turn off selection modes");
@@ -2305,52 +2309,62 @@ class Dale extends Gamegui
 	{
 		console.log( 'notifications subscriptions setup42' );
 		
-		const notifs: [keyof NotifTypes, number][] = [
-			['deckSelectionResult', 500],
-			['delay', 500],
-			['startGame', 500],
-			['instant_scheduleTechnique', 1],
-			['scheduleTechnique', 500],
-			['resolveTechnique', 500],
-			['cancelTechnique', 500],
-			['buildStack', 500],
-			['fillEmptyMarketSlots', 1],
-			['marketSlideRight', 500],
-			['marketToHand', 500],
-			['swapHandStall', 1],
-			['swapHandMarket', 1],
-			['marketDiscardToHand', 500],
-			['discardToHand', 500],
-			['discardToHandMultiple', 500],
-			['draw', 500],
-			['drawMultiple', 500],
-			['limboToHand', 500],
-			['playerHandToOpponentHand', 500],
-			['opponentHandToPlayerHand', 500],
-			['obtainNewJunkInHand', 500],
-			['ditch', 500],
-			['ditchMultiple', 500],
-			['discard', 500],
-			['discardMultiple', 750],
-			['placeOnDeckMultiple', 500],
-			['reshuffleDeck', 1500],
-			['wilyFellow', 500],
-			['whirligigShuffle', 1750],
-			['whirligigTakeBack', 500],
-			['ditchFromDiscard', 500],
-			['ditchFromMarketDeck', 500],
-			['ditchFromMarketBoard', 500],
-			['rollDie', 1000],
-			['selectBlindfold', 1],
-			['addEffect', 1],
-			['expireEffects', 1],
-			['message', 1],
-			['debugClient', 1],
+		//[notif_type, duration, has_private_arguments]
+		const notifs: ([keyof NotifTypes, number, boolean?])[] = [
+			['deckSelectionResult', 		500],
+			['delay', 						500],
+			['startGame', 					500],
+			['scheduleTechnique', 			1],
+			['scheduleTechniqueDelay', 		500, true],
+			['resolveTechnique', 			500],
+			['cancelTechnique', 			500],
+			['buildStack', 					500],
+			['fillEmptyMarketSlots', 		1],
+			['marketSlideRight', 			500],
+			['marketToHand', 				500],
+			['swapHandStall', 				1],
+			['swapHandMarket', 				1],
+			['marketDiscardToHand', 		500],
+			['discardToHand', 				500],
+			['discardToHandMultiple', 		500],
+			['draw', 						500, true],
+			['drawMultiple', 				500, true],
+			['limboToHand', 				500],
+			['playerHandToOpponentHand', 	500, true],
+			['opponentHandToPlayerHand', 	500, true],
+			['obtainNewJunkInHand', 		500],
+			['ditch', 						500],
+			['ditchMultiple', 				500],
+			['discard', 					500],
+			['discardMultiple', 			750],
+			['placeOnDeckMultiple', 		500, true],
+			['reshuffleDeck', 				1500],
+			['wilyFellow', 					500],
+			['whirligigShuffle', 			1750],
+			['whirligigTakeBack', 			500, true],
+			['ditchFromDiscard', 			500],
+			['ditchFromMarketDeck', 		500],
+			['ditchFromMarketBoard', 		500],
+			['rollDie', 					1000],
+			['selectBlindfold', 			1, true],
+			['addEffect', 					1],
+			['expireEffects', 				1],
+			['message', 					1],
+			['debugClient', 				1],
 		];
 
 		notifs.forEach((notif) => {
 			dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
 			this.notifqueue.setSynchronous(notif[0], notif[1]);
+			if (notif[2]) {
+				const player_id = this.player_id;
+				this.notifqueue.setIgnoreNotificationCheck(notif[0], (notif) => {
+					const args = notif.args as PrivateNotification;
+					const isPublic = args._private === undefined;
+					const alreadyReceivedPrivate = (player_id == args.player_id || player_id == args.opponent_id)
+					return isPublic && alreadyReceivedPrivate;
+				});
+			}
 		});
 		
 		console.log( 'notifications subscriptions setup done' );
@@ -2393,10 +2407,6 @@ class Dale extends Gamegui
 		}
 	}
 
-	notif_instant_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
-		this.notif_scheduleTechnique(notif); //same as scheduleTechnique, but without a delay
-	}
-
 	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
 		//hand to schedule
 		if (notif.args.player_id == this.player_id) {
@@ -2418,6 +2428,10 @@ class Dale extends Gamegui
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+	}
+
+	notif_scheduleTechniqueDelay(notif: NotifAs<'scheduleTechniqueDelay'>) {
+		console.log("notif_scheduleTechniqueDelay");
 	}
 
 	notif_cancelTechnique(notif: NotifAs<'cancelTechnique'>) {
@@ -2893,65 +2907,69 @@ class Dale extends Gamegui
 	
 	notif_whirligigShuffle(notif: NotifAs<'whirligigShuffle'>) {
 		console.log("whirligigShuffle");
-		this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Whirligig"));
-		const nbr = notif.args.opponent_nbr + notif.args.player_nbr
-		const opponent_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
 		const opponent_nbr = notif.args.opponent_nbr;
-		for (let i = 1; i <= nbr; i++) {
-			if ((i%2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
-				if (this.player_id == notif.args.opponent_id) {
-					//from hand
-					notif.args.opponent_nbr -= 1;
-					const opponent_card_id = opponent_card_ids.pop()!;
-					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.myHand.control_name+"_item_"+opponent_card_id);
-					this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
+		if (!this.isSpectator) {
+			this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Whirligig"));
+			const nbr = notif.args.opponent_nbr + notif.args.player_nbr
+			const opponent_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
+			for (let i = 1; i <= nbr; i++) {
+				if ((i%2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
+					if (this.player_id == notif.args.opponent_id) {
+						//from hand
+						notif.args.opponent_nbr -= 1;
+						const opponent_card_id = opponent_card_ids.pop()!;
+						this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.myHand.control_name+"_item_"+opponent_card_id);
+						this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
+					}
+					else {
+						//from overall player board
+						this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), "overall_player_board_"+notif.args.opponent_id);
+					}
 				}
 				else {
-					//from overall player board
-					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), "overall_player_board_"+notif.args.opponent_id);
+					//from deck
+					notif.args.player_nbr -= 1;
+					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.playerDecks[notif.args.player_id]!.placeholderHTML);
+					this.playerDecks[notif.args.player_id]!.pop();
 				}
 			}
-			else {
-				//from deck
-				notif.args.player_nbr -= 1;
-				this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.playerDecks[notif.args.player_id]!.placeholderHTML);
-				this.playerDecks[notif.args.player_id]!.pop();
-			}
+			setTimeout((() => {this.myLimbo.shuffleAnimation()}).bind(this), this.myLimbo.duration);
 		}
-		setTimeout((() => {this.myLimbo.shuffleAnimation()}).bind(this), this.myLimbo.duration);
 		//update the hand sizes
 		this.playerHandSizes[notif.args.opponent_id]!.incValue(-opponent_nbr);
 	}
 
 	notif_whirligigTakeBack(notif: NotifAs<'whirligigTakeBack'>) {
 		console.log("notif_whirligigTakeBack");
-		const limbo_card_ids = this.myLimbo.getAllItems().map(item=>item.id).sort(() => Math.random() - 0.5);
-		if (notif.args._private) {
-			const cards = Object.values(notif.args._private.cards);
-			if (cards.length != notif.args.nbr) {
-				throw new Error(`whirligigTakeBack failed: expected ${notif.args.nbr} cards, got ${cards.length} cards`)
+		if (!this.isSpectator) {
+			const limbo_card_ids = this.myLimbo.getAllItems().map(item=>item.id).sort(() => Math.random() - 0.5);
+			if (notif.args._private) {
+				const cards = Object.values(notif.args._private.cards);
+				if (cards.length != notif.args.nbr) {
+					throw new Error(`whirligigTakeBack failed: expected ${notif.args.nbr} cards, got ${cards.length} cards`)
+				}
+				for (let card of cards) {
+					//to hand
+					const limbo_card_id = limbo_card_ids.pop()!;
+					this.myHand.addDaleCardToStock(DaleCard.of(card), this.myLimbo.control_name+'_item_'+limbo_card_id);
+					this.myLimbo.removeFromStockByIdNoAnimation(limbo_card_id);
+				}
 			}
-			for (let card of cards) {
-				//to hand
-				const limbo_card_id = limbo_card_ids.pop()!;
-				this.myHand.addDaleCardToStock(DaleCard.of(card), this.myLimbo.control_name+'_item_'+limbo_card_id);
-				this.myLimbo.removeFromStockByIdNoAnimation(limbo_card_id);
+			else {
+				this.myLimbo.hideOnEmpty = false; //ugly workaround: ensure the animation stays visible although limbo is empty
+				for (let i = 0; i < notif.args.nbr; i++) {
+					//to player board
+					const limbo_card_id = limbo_card_ids.pop()!;
+					this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_"+notif.args.player_id);
+				}
 			}
-		}
-		else {
-			this.myLimbo.hideOnEmpty = false; //ugly workaround: ensure the animation stays visible although limbo is empty
-			for (let i = 0; i < notif.args.nbr; i++) {
-				//to player board
-				const limbo_card_id = limbo_card_ids.pop()!;
-				this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_"+notif.args.player_id);
+			//ugly workaround: manually hide the limbo with a fake onItemDelete call
+			if (this.myLimbo.count() == 0) {
+				setTimeout((()=> {
+					this.myLimbo.hideOnEmpty = true;
+					(this.myLimbo as any).onItemDelete(); 
+				}).bind(this), this.myLimbo.duration)
 			}
-		}
-		//ugly workaround: manually hide the limbo with a fake onItemDelete call
-		if (this.myLimbo.count() == 0) {
-			setTimeout((()=> {
-				this.myLimbo.hideOnEmpty = true;
-				(this.myLimbo as any).onItemDelete(); 
-			}).bind(this), this.myLimbo.duration)
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
@@ -3072,4 +3090,6 @@ class Dale extends Gamegui
 
 // The global 'bgagame.dale' class is instantiated when the page is loaded. The following code sets this variable to your game class.
 dojo.setObject( "bgagame.dale", Dale );
+
+export { PrivateNotification };
 // Same as: (window.bgagame ??= {}).dale = Dale;

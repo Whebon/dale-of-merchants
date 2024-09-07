@@ -28,10 +28,13 @@ declare global {
 			animalfolk_id: number
 		},
 		'startGame': {},
-		'instant_scheduleTechnique': {},
 		'scheduleTechnique': {
 			player_id: number
 			card: DbCard
+		},
+		'scheduleTechniqueDelay': {
+			player_id: number
+			_private: true | undefined
 		},
 		'cancelTechnique': {
 			player_id: number
