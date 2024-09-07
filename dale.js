@@ -980,7 +980,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             get: function () {
                 var _type_id = DaleCard.cardIdtoTypeId.get(this.id);
                 if (_type_id == undefined) {
-                    console.warn("id ".concat(this.id, " does not have a corresponding type_id"));
+                    if (this.id > 0) {
+                        console.warn("id ".concat(this.id, " does not have a corresponding type_id"));
+                    }
                     return 0;
                 }
                 return _type_id;
@@ -1176,6 +1178,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.updateHTML = function (temp_div, fade) {
             if (fade === void 0) { fade = false; }
+            if (this.id <= 0) {
+                return;
+            }
             var div = temp_div !== null && temp_div !== void 0 ? temp_div : DaleCard.divs.get(this.id);
             this.updateChameleonOverlay(div, fade);
             if (!temp_div && div) {

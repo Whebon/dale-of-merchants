@@ -583,10 +583,12 @@ export class DaleCard {
     public get original_type_id(): number {
         let _type_id = DaleCard.cardIdtoTypeId.get(this.id);
         if (_type_id == undefined) {
-            console.warn(`id ${this.id} does not have a corresponding type_id`)
-            return 0
+            if (this.id > 0) {
+                console.warn(`id ${this.id} does not have a corresponding type_id`);
+            }
+            return 0;
         }
-        return _type_id
+        return _type_id;
     }
 
     /** 
@@ -858,6 +860,9 @@ export class DaleCard {
      * @param fade (optional) should the chameleon overlay be faded in?
 	 */
 	private updateHTML(temp_div?: HTMLElement, fade: boolean = false) {
+        if (this.id <= 0) {
+            return;
+        }
         const div = temp_div ?? DaleCard.divs.get(this.id);
         this.updateChameleonOverlay(div, fade);
         if (!temp_div && div) {
