@@ -72,6 +72,7 @@ export class Stall implements CardSlotManager, DaleLocation {
             stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;`); //stack containers have a min width (to stay left aligned)
 
             const placeholder = Images.getPlaceholder();
+            placeholder.classList.add("dale-placeholder-stall");
             if (this.slots.length > 0) {
                 stackContainer.classList.add("dale-grayed-out");
                 placeholder.classList.add("dale-placeholder-partially-covered");

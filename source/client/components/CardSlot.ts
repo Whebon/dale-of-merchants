@@ -19,7 +19,7 @@ export class CardSlot {
     public parent: CardSlotManager;
     public pos: number;
     public selected: boolean;
-    protected _container: HTMLElement;
+    public container: HTMLElement;
     protected _card: DaleCard | undefined;
 
     private clickable: boolean = false;
@@ -36,13 +36,13 @@ export class CardSlot {
         this.parent = parent;
         this.pos = pos;
         this.selected = false;
-        this._container = container;
-        this._container.classList.add("dale-slot");
+        this.container = container;
+        this.container.classList.add("dale-slot");
         this._card = undefined;
         if (card) {
             this.insertCard(card);
         }
-        if (this._container.onclick != null) {
+        if (this.container.onclick != null) {
             console.warn("CardSlot is given a container that already has an onclick handler. This handler will may be overwritten.");
         }
     }
@@ -52,10 +52,10 @@ export class CardSlot {
     * @returns HTML id of the slot's container.
     */
     public get id(): string {
-        if (this._container.id == ""){
-            this._container.id = "card-slot-id-"+CardSlot.UNIQUE_ID++;
+        if (this.container.id == ""){
+            this.container.id = "card-slot-id-"+CardSlot.UNIQUE_ID++;
         }
-        return this._container.id;
+        return this.container.id;
     }
 
     /**
@@ -72,7 +72,7 @@ export class CardSlot {
         if (!this.hasCard()) {
             throw new Error("An empty slot has no card")
         }
-        return this._container.firstChild as HTMLElement;
+        return this.container.firstChild as HTMLElement;
     }
 
     /**
@@ -91,12 +91,12 @@ export class CardSlot {
     public insertCard(card: DaleCard, from?: HTMLElement | string, callback?: (node: HTMLElement)=>void): void {
         this.removeCard();
         const cardDiv = card.toDiv(this.id, from ? 'moving' : undefined);
-        this._container.appendChild(cardDiv);
+        this.container.appendChild(cardDiv);
         this._card = card;
         this.setClickable(this.clickable);
         if (from) {
             this.parent.page.placeOnObject(cardDiv, from);
-            const animSlide = this.parent.page.slideToObject(cardDiv, this._container);
+            const animSlide = this.parent.page.slideToObject(cardDiv, this.container);
             const onEnd = (node:HTMLElement) => {
                 dojo.setStyle(node, 'left', '0px');
                 dojo.setStyle(node, 'top', '0px');
@@ -118,10 +118,10 @@ export class CardSlot {
     public removeCard(to?: HTMLElement | string): DaleCard | undefined {
         if (this.hasCard()) {
             let removedCard = this._card;
-            this._container.replaceChildren();
+            this.container.replaceChildren();
             this._card = undefined;
             if (removedCard && to) {
-                this.parent.page.slideTemporaryObject(removedCard.toDiv(), this._container, this._container, to);
+                this.parent.page.slideTemporaryObject(removedCard.toDiv(), this.container, this.container, to);
             }
             return removedCard;
         }
@@ -138,14 +138,14 @@ export class CardSlot {
             allCardSlots.splice(index, 1);
         }
         this.removeCard();
-        this._container.remove();
+        this.container.remove();
     }
 
     /**
      * Select this item
      */
     selectItem(): void {
-        this._container.classList.add("dale-selected");
+        this.container.classList.add("dale-selected");
         this.selected = true;
     }
 
@@ -153,7 +153,7 @@ export class CardSlot {
      * Unselect this item
      */
     unselectItem(): void {
-        this._container.classList.remove("dale-selected");
+        this.container.classList.remove("dale-selected");
         this.selected = false;
     }
 
@@ -193,7 +193,7 @@ export class CardSlot {
             throw new Error(`'swapWithStock' called with a card that is not in '${stock.control_name}' (card_id = ${new_card.id})`);
         }
         const div = $(stock.control_name + "_item_" + new_card.id) as HTMLElement;
-        stock.addDaleCardToStock(this._card!, this._container); 
+        stock.addDaleCardToStock(this._card!, this.container); 
         this.insertCard(new_card, div); //remove + add for a slot
         stock.removeFromStockByIdNoAnimation(new_card.id);
     }

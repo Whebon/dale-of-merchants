@@ -6,6 +6,7 @@ import { CardSlot, CardSlotManager } from './CardSlot';
 import { DaleLocation } from './types/DaleLocation';
 import { OrderedSelection, SelectionIconType } from './OrderedSelection';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
+import { DaleIcons } from './DaleIcons';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -49,14 +50,20 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
                 stackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S}px;margin-left: ${pos == 4 ? 0 : Images.MARKET_ITEM_MARGIN_S}px;`); 
             }
             const slotDiv = Images.getPlaceholder();
-            stackContainer.appendChild(slotDiv)
+            slotDiv.classList.add("dale-placeholder-market");
+            stackContainer.appendChild(slotDiv);
+            stackContainer.appendChild(DaleIcons.getNumberIcon(pos));
             this.container.appendChild(stackContainer);
-            this.slots.push(new CardSlot(this, 4-pos, slotDiv));
+            this.slots.unshift(new CardSlot(this, pos, slotDiv));
         }
 
         //by default, market slots cannot be clicked
         this.orderedSelection = new OrderedSelection();
         this.selectionMode = 0;
+
+        //copied from Stall.ts
+        addEventListener("resize", this.onResize.bind(this));
+        this.onResize();
     }
 
     /**
@@ -117,6 +124,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      */
     insertCard(card: DaleCard, pos?: number, from?: HTMLElement | string): void {
         pos = this.getValidPos(pos);
+        console.log("INSERT CARD IN POS "+pos);
         this.slots[pos]!.insertCard(card, from);
         this.slots[pos]!.card?.updateLocation('market');
     }
@@ -302,5 +310,33 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
             }
         }
         return false;
+    }
+
+    /**
+     * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
+     */
+    private onResize() {
+        const totalWidth = this.container.getBoundingClientRect().width;
+        if (totalWidth < (1+Images.STACK_MIN_MARGIN_X) * Images.CARD_WIDTH_S * this.MAX_SIZE) {
+            //stacks overlap
+            for (let i = 1; i < this.slots.length; i++) {
+                this.slots[i]?.container.classList.add("dale-placeholder-partially-covered");
+            }
+        }
+        else {
+            //stacks are fully visible
+            for (let i = 1; i < this.slots.length; i++) {
+                this.slots[i]?.container.classList.remove("dale-placeholder-partially-covered");
+            }
+        }
+        //center the cost modification icons
+        const overlap = Math.max(0, Images.CARD_WIDTH_S - totalWidth/this.MAX_SIZE);
+        const left = Math.round((Images.CARD_WIDTH_S-overlap)/2)+'px';
+        for (let pos = 1; pos < this.MAX_SIZE; pos++) {
+            const icon = this.slots[pos]?.container.parentElement?.querySelector(".dale-icon");
+            if (icon) {
+                dojo.setStyle(icon, 'left', left);
+            }
+        }
     }
 }

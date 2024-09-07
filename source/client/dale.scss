@@ -206,6 +206,13 @@
 			}
 		}
 	}
+
+	//cost modification icon
+	.dale-icon {
+		top: -20px;
+		width: 40px;
+		height: 40px;
+	}
 }
 
 .dale-passive-selected {
@@ -363,7 +370,14 @@
 			}
 		}
 
-		.dale-placeholder {
+		.dale-placeholder-market {
+			background-position-x: -200%;
+			&.dale-placeholder-partially-covered {
+				background-position-x: -300%;
+			}
+		}
+
+		.dale-placeholder-stall {
 			background-position-x: 0%;
 			&.dale-placeholder-partially-covered {
 				background-position-x: -100%;

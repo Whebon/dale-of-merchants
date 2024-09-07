@@ -162,6 +162,11 @@
 #dale-market-wrap .dale-selected .dale-card.dale-line-target-chameleon {
   transform: translateY(0);
 }
+#dale-market-wrap .dale-icon {
+  top: -20px;
+  width: 40px;
+  height: 40px;
+}
 
 .dale-passive-selected {
   cursor: pointer;
@@ -308,30 +313,36 @@
 .dale-stall-container .dale-stack-container.dale-grayed-out .dale-stack-index {
   color: #707070;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder {
+.dale-stall-container .dale-stack-container .dale-placeholder-market {
+  background-position-x: -200%;
+}
+.dale-stall-container .dale-stack-container .dale-placeholder-market.dale-placeholder-partially-covered {
+  background-position-x: -300%;
+}
+.dale-stall-container .dale-stack-container .dale-placeholder-stall {
   background-position-x: 0%;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-placeholder-partially-covered {
   background-position-x: -100%;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   left: 78%;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
   display: none;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-clickable:hover {
   background-color: var(--dale-wrap-build-a);
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-icon {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   top: 40%;
   left: 56%;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-text {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-clickable:hover .dale-text {
   display: block;
   color: var(--dale-wrap-build);
   position: absolute;
@@ -342,7 +353,7 @@
   font-weight: bold;
   text-align: center;
 }
-.dale-stall-container .dale-stack-container .dale-placeholder.dale-selected {
+.dale-stall-container .dale-stack-container .dale-placeholder-stall.dale-selected {
   background-color: var(--dale-wrap-build-a);
 }
 .dale-stall-container .dale-stack-container .dale-stack-index {
