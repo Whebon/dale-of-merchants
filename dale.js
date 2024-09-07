@@ -153,7 +153,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.Z_INDEX_SELECTED_CARD = 200;
         Images.Z_INDEX_SLIDING_CARD = 300;
         Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD = 350;
-        Images.S_SCALE = 0.28;
+        Images.S_SCALE = 0.27;
         Images.CARD_WIDTH_S = Math.round(Images.S_SCALE * Images.CARD_WIDTH);
         Images.CARD_HEIGHT_S = Math.round(Images.S_SCALE * Images.CARD_HEIGHT);
         Images.SHEET_WIDTH_S = Images.CARD_WIDTH_S * Images.IMAGES_PER_ROW;
@@ -2300,7 +2300,13 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var div = document.createElement("div");
-                div.setAttribute('style', "".concat(Images_5.Images.getCardStyle(), ";\n                position: absolute;\n                left: ").concat(pos * (Images_5.Images.CARD_WIDTH_S + Images_5.Images.MARKET_ITEM_MARGIN_S), "px\n            "));
+                div.classList.add("dale-stack-container");
+                if (pos == 0) {
+                    div.setAttribute('style', "\n                    margin-left: ".concat(Images_5.Images.MARKET_ITEM_MARGIN_S, "px;\n                    min-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;\n                    height: ").concat(Images_5.Images.CARD_HEIGHT_S, "px;\n                "));
+                }
+                else {
+                    div.setAttribute('style', "\n                    margin-left: ".concat(pos == 4 ? 0 : Images_5.Images.MARKET_ITEM_MARGIN_S, "px;\n                    max-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;\n                    height: ").concat(Images_5.Images.CARD_HEIGHT_S, "px;\n                "));
+                }
                 this.container.appendChild(div);
                 this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
             }
@@ -3076,41 +3082,53 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 var targetCard = targets_1[_i];
                 _loop_4(targetCard);
             }
-            var readjustments = 0;
             this.updateLine = function (evt) {
                 var _a, _b;
                 var sourceRect = thiz.cardDiv.getBoundingClientRect();
+                var currTarget = evt.target;
+                if (currTarget == thiz.prevTargetSnap) {
+                    return;
+                }
+                (_a = thiz.prevTargetHover) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-line-source", thiz.sourceClass);
+                (_b = thiz.prevTargetHover) === null || _b === void 0 ? void 0 : _b.classList.add("dale-line-target", thiz.targetClass);
+                thiz.prevTargetHover = undefined;
+                thiz.prevTargetSnap = undefined;
                 var x1 = sourceRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
                 var y1 = sourceRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
-                var currTarget = evt.target;
                 var x2 = evt.pageX;
                 var y2 = evt.pageY;
-                if (currTarget != thiz.prevTarget) {
-                    readjustments = 0;
-                    (_a = thiz.prevTarget) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-line-source", thiz.sourceClass);
-                    (_b = thiz.prevTarget) === null || _b === void 0 ? void 0 : _b.classList.add("dale-line-target", thiz.targetClass);
-                }
+                var _loop_5 = function (targetCard) {
+                    if (currTarget == targetCard) {
+                        var snapToTarget = function () {
+                            var _a;
+                            if (currTarget == ((_a = TargetingLine.previousMouseEvent) === null || _a === void 0 ? void 0 : _a.target)) {
+                                var targetRect = currTarget.getBoundingClientRect();
+                                targetCard.classList.add("dale-line-source", thiz.sourceClass);
+                                targetCard.classList.remove("dale-line-target", thiz.targetClass);
+                                x2 = targetRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
+                                y2 = targetRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
+                                thiz.line.setAttribute("x2", String(x2));
+                                thiz.line.setAttribute("y2", String(y2));
+                            }
+                            thiz.prevTargetSnap = currTarget;
+                        };
+                        if (targetCard.dataset['location'] == 'stall') {
+                            setTimeout(snapToTarget, 300);
+                        }
+                        else {
+                            snapToTarget();
+                        }
+                        thiz.prevTargetHover = currTarget;
+                    }
+                };
                 for (var _i = 0, _c = thiz.targetDivs; _i < _c.length; _i++) {
                     var targetCard = _c[_i];
-                    if (currTarget == targetCard) {
-                        if (currTarget == thiz.prevTarget && readjustments >= 3) {
-                            break;
-                        }
-                        readjustments += 1;
-                        var targetRect = currTarget.getBoundingClientRect();
-                        x2 = targetRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
-                        y2 = targetRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
-                        targetCard.classList.add("dale-line-source", thiz.sourceClass);
-                        targetCard.classList.remove("dale-line-target", thiz.targetClass);
-                        thiz.prevTarget = currTarget;
-                    }
+                    _loop_5(targetCard);
                 }
                 thiz.line.setAttribute("x1", String(x1));
                 thiz.line.setAttribute("y1", String(y1));
-                if (readjustments < 3) {
-                    thiz.line.setAttribute("x2", String(x2));
-                    thiz.line.setAttribute("y2", String(y2));
-                }
+                thiz.line.setAttribute("x2", String(x2));
+                thiz.line.setAttribute("y2", String(y2));
                 if (!document.body.contains(thiz.cardDiv)) {
                     thiz.onSource();
                 }
@@ -3785,7 +3803,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var blindfold_args = args;
                     var blindfold_label = '';
                     var blindfold_baseValue = 1;
-                    var _loop_5 = function (value) {
+                    var _loop_6 = function (value) {
                         if (blindfold_baseValue > 5) {
                             blindfold_label = "<span style='color:lightgreen'>".concat(value, "</span>");
                         }
@@ -3801,14 +3819,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var this_4 = this;
                     for (var _i = 0, _a = blindfold_args.possible_values; _i < _a.length; _i++) {
                         var value = _a[_i];
-                        _loop_5(value);
+                        _loop_6(value);
                     }
                     break;
                 case 'blindfoldDecideValue':
                     var blindfoldDecideValue_args = args;
                     var blindfoldDecideValue_label = '';
                     var blindfoldDecideValue_baseValue = 1;
-                    var _loop_6 = function (value) {
+                    var _loop_7 = function (value) {
                         if (value == blindfoldDecideValue_baseValue) {
                             blindfoldDecideValue_label = String(value);
                         }
@@ -3821,7 +3839,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var this_5 = this;
                     for (var _b = 0, _c = blindfoldDecideValue_args.possible_values; _b < _c.length; _b++) {
                         var value = _c[_b];
-                        _loop_6(value);
+                        _loop_7(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
                     this.myHand.orderedSelection.setMaxSize(1);
@@ -4137,7 +4155,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.addActionButton("cancel-button", label !== null && label !== void 0 ? label : _("Cancel"), "onCancelClient", undefined, false, 'gray');
         };
         Dale.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
-            var _loop_7 = function (opponent_id) {
+            var _loop_8 = function (opponent_id) {
                 if (opponent_id != this_6.player_id) {
                     var name_1 = this_6.gamedatas.players[opponent_id].name;
                     var color = this_6.gamedatas.players[opponent_id].color;
@@ -4148,7 +4166,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var this_6 = this;
             for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
                 var opponent_id = _a[_i];
-                _loop_7(opponent_id);
+                _loop_8(opponent_id);
             }
         };
         Dale.prototype.addActionButtonsOpponentSelection = function (maxSize) {

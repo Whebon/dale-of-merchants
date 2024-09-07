@@ -39,10 +39,27 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         this.slots = []
         for (let pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
             let div = document.createElement("div");
-            div.setAttribute('style', `${Images.getCardStyle()};
-                position: absolute;
-                left: ${pos*(Images.CARD_WIDTH_S + Images.MARKET_ITEM_MARGIN_S)}px
-            `);
+            // div.setAttribute('style', `${Images.getCardStyle()};
+            //     position: absolute;
+            //     left: ${pos*(Images.CARD_WIDTH_S + Images.MARKET_ITEM_MARGIN_S)}px
+            // `);
+            div.classList.add("dale-stack-container");
+            if (pos == 0) {
+                //rightmost container has a min width
+                div.setAttribute('style', `
+                    margin-left: ${Images.MARKET_ITEM_MARGIN_S}px;
+                    min-width: ${Images.CARD_WIDTH_S}px;
+                    height: ${Images.CARD_HEIGHT_S}px;
+                `); 
+            }
+            else {
+                //other containers have a max width
+                div.setAttribute('style', `
+                    margin-left: ${pos == 4 ? 0 : Images.MARKET_ITEM_MARGIN_S}px;
+                    max-width: ${Images.CARD_WIDTH_S}px;
+                    height: ${Images.CARD_HEIGHT_S}px;
+                `); 
+            }
             this.container.appendChild(div);
             this.slots.push(new CardSlot(this, 4-pos, div));
         }

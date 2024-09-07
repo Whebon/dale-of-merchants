@@ -27,7 +27,7 @@ export class Images {
     static readonly Z_INDEX_SLIDING_CARD = 300;
     static readonly Z_INDEX_DECK_ABOVE_SLIDING_CARD = 350;
 
-    static readonly S_SCALE = 0.28;
+    static readonly S_SCALE = 0.27;
 
     static readonly CARD_WIDTH_S =  Math.round(Images.S_SCALE * Images.CARD_WIDTH);
     static readonly CARD_HEIGHT_S =  Math.round(Images.S_SCALE * Images.CARD_HEIGHT);

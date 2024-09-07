@@ -50,6 +50,11 @@
 	white-space: nowrap;
 }
 
+.dale-play-area-title {
+	text-align: left;
+	white-space: nowrap;
+}
+
 .bgabutton.dale-bga-button-selected {
 	outline: 3px solid red;
 }
@@ -298,10 +303,6 @@
     // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
 }
 
-#dale-market-board {
-	position: relative;
-}
-
 .dale-horizontal-flex {
 	display: flex; 
 	justify-content: space-evenly;
@@ -327,86 +328,88 @@
 	margin-right: 10px;
 	padding-top: 0px;
 	flex: 1 1;
+}
 
-	.dale-stall-container {
-		width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
-		display: flex;
-		flex: 1 1;
-		justify-content: left; //stack containers are left aligned
+.dale-stall-container {
+	width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
+	display: flex;
+	flex: 1 1;
+	justify-content: left; //stack containers are left aligned
 
-		.dale-stack-container {
-			flex: 1 1; /* Allow items to grow and shrink */
-			// background-color: red;
-			// border: 2px solid black;
-			margin-left: 5px;
-			min-width: 0; /* Ensure items can shrink below their content width */
-			position: relative;
+	.dale-stack-container {
+		flex: 1 1; /* Allow items to grow and shrink */
+		// background-color: red;
+		// border: 2px solid black;
+		margin-left: 5px;
+		min-width: 0; /* Ensure items can shrink below their content width */
+		position: relative;
 
-			.dale-card:hover {
-				//add a delay to the z-index to (issue #47)
-				transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
-				transition-delay: 0.05s;
+		.dale-card:hover {
+			//add a delay to the z-index to (issue #47)
+			transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
+			&.dale-line-source {
+				transition: transform 0.3s ease 0s, scale 0.3s ease 0s; //...except when targeted with a targeting line
 			}
+		}
 
-			&.dale-grayed-out {
-				pointer-events: none;
-				opacity: 0.5;
-				.dale-placeholder { 
-					background-position-y: -100%;
-				}
-				.dale-stack-index {
-					color:#707070; //same as in placeholders.png
-				}
+		&.dale-grayed-out {
+			pointer-events: none;
+			opacity: 0.5;
+			.dale-placeholder { 
+				background-position-y: -100%;
 			}
+			.dale-stack-index {
+				color:#707070; //same as in placeholders.png
+			}
+		}
 
-			.dale-placeholder {
-				background-position-x: 0%;
-				&.dale-placeholder-partially-covered {
-					background-position-x: -100%;
-					&.dale-clickable:hover {
-						.dale-icon {
-							width: 50px;
-							height: 50px;
-							left: 78%;
-						}
-
-						.dale-text {
-							display: none;
-						}
-					}
-				}
+		.dale-placeholder {
+			background-position-x: 0%;
+			&.dale-placeholder-partially-covered {
+				background-position-x: -100%;
 				&.dale-clickable:hover {
-					background-color: var(--dale-wrap-build-a);
 					.dale-icon {
 						width: 50px;
 						height: 50px;
-						top: 40%;
-						left: 56%;
+						left: 78%;
 					}
-					.dale-text {
-						display: block;
-						color: var(--dale-wrap-build);
-						position: absolute;
-						top: 65%;
-						left: 50%;
-						transform: translate(-50%, -50%);
-						width: 60%;
-						font-weight: bold;
-						text-align: center;
-					}
-				}
-				&.dale-selected {
-					background-color: var(--dale-wrap-build-a);
-				}
-			}
 
-			.dale-stack-index {
-				position: absolute;
-				color: var(--dale-wrap-build);
-				font-weight: bold;
-				left: 82%;
-				top: 5%;
+					.dale-text {
+						display: none;
+					}
+				}
 			}
+			&.dale-clickable:hover {
+				background-color: var(--dale-wrap-build-a);
+				.dale-icon {
+					width: 50px;
+					height: 50px;
+					top: 40%;
+					left: 56%;
+				}
+				.dale-text {
+					display: block;
+					color: var(--dale-wrap-build);
+					position: absolute;
+					top: 65%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+					width: 60%;
+					font-weight: bold;
+					text-align: center;
+				}
+			}
+			&.dale-selected {
+				background-color: var(--dale-wrap-build-a);
+			}
+		}
+
+		.dale-stack-index {
+			position: absolute;
+			color: var(--dale-wrap-build);
+			font-weight: bold;
+			left: 82%;
+			top: 5%;
 		}
 	}
 }

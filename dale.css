@@ -41,6 +41,11 @@
   white-space: nowrap;
 }
 
+.dale-play-area-title {
+  text-align: left;
+  white-space: nowrap;
+}
+
 .bgabutton.dale-bga-button-selected {
   outline: 3px solid red;
 }
@@ -248,10 +253,6 @@
   position: relative;
 }
 
-#dale-market-board {
-  position: relative;
-}
-
 .dale-horizontal-flex {
   display: flex;
   justify-content: space-evenly;
@@ -278,56 +279,59 @@
   padding-top: 0px;
   flex: 1 1;
 }
-.dale-stall-wrap .dale-stall-container {
+
+.dale-stall-container {
   width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
   display: flex;
   flex: 1 1;
   justify-content: left;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container {
+.dale-stall-container .dale-stack-container {
   flex: 1 1; /* Allow items to grow and shrink */
   margin-left: 5px;
   min-width: 0; /* Ensure items can shrink below their content width */
   position: relative;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-card:hover {
+.dale-stall-container .dale-stack-container .dale-card:hover {
   transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
-  transition-delay: 0.05s;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container.dale-grayed-out {
+.dale-stall-container .dale-stack-container .dale-card:hover.dale-line-source {
+  transition: transform 0.3s ease 0s, scale 0.3s ease 0s;
+}
+.dale-stall-container .dale-stack-container.dale-grayed-out {
   pointer-events: none;
   opacity: 0.5;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container.dale-grayed-out .dale-placeholder {
+.dale-stall-container .dale-stack-container.dale-grayed-out .dale-placeholder {
   background-position-y: -100%;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container.dale-grayed-out .dale-stack-index {
+.dale-stall-container .dale-stack-container.dale-grayed-out .dale-stack-index {
   color: #707070;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder {
+.dale-stall-container .dale-stack-container .dale-placeholder {
   background-position-x: 0%;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered {
   background-position-x: -100%;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   left: 78%;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
   display: none;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover {
   background-color: var(--dale-wrap-build-a);
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-icon {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   top: 40%;
   left: 56%;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-text {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-text {
   display: block;
   color: var(--dale-wrap-build);
   position: absolute;
@@ -338,10 +342,10 @@
   font-weight: bold;
   text-align: center;
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-selected {
+.dale-stall-container .dale-stack-container .dale-placeholder.dale-selected {
   background-color: var(--dale-wrap-build-a);
 }
-.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-stack-index {
+.dale-stall-container .dale-stack-container .dale-stack-index {
   position: absolute;
   color: var(--dale-wrap-build);
   font-weight: bold;

@@ -21,7 +21,8 @@ export class TargetingLine {
 
     private cardDiv: HTMLElement;
     private targetDivs: HTMLElement[];
-    private prevTarget: HTMLElement | undefined;
+    private prevTargetHover: HTMLElement | undefined;
+    private prevTargetSnap: HTMLElement | undefined;
     
     private pile: Pile | undefined;
 
@@ -85,40 +86,48 @@ export class TargetingLine {
         }
 
         //setup line
-        let readjustments = 0;
         this.updateLine = function(this: Window, evt: MouseEvent) {
             const sourceRect = thiz.cardDiv.getBoundingClientRect();
+            const currTarget = evt.target as HTMLElement;
+            if (currTarget == thiz.prevTargetSnap) {
+                return;
+            }
+            thiz.prevTargetHover?.classList.remove("dale-line-source", thiz.sourceClass);
+            thiz.prevTargetHover?.classList.add("dale-line-target", thiz.targetClass);
+            thiz.prevTargetHover = undefined;
+            thiz.prevTargetSnap = undefined;
             const x1 = sourceRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
             const y1 = sourceRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
-            const currTarget = evt.target as HTMLElement;
             let x2 = evt.pageX;
             let y2 = evt.pageY;
-            if (currTarget != thiz.prevTarget) {
-                readjustments = 0;
-                thiz.prevTarget?.classList.remove("dale-line-source", thiz.sourceClass);
-                thiz.prevTarget?.classList.add("dale-line-target", thiz.targetClass);
-            }
             for (let targetCard of thiz.targetDivs) {
                 if (currTarget == targetCard) {
                     //snap to new target
-                    if (currTarget == thiz.prevTarget && readjustments >= 3) {
-                        break;
+                    const snapToTarget = function() {
+                        if (currTarget == TargetingLine.previousMouseEvent?.target) {
+                            const targetRect = currTarget.getBoundingClientRect();
+                            targetCard.classList.add("dale-line-source", thiz.sourceClass);
+                            targetCard.classList.remove("dale-line-target", thiz.targetClass);
+                            x2 = targetRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
+                            y2 = targetRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
+                            thiz.line.setAttribute("x2", String(x2));
+                            thiz.line.setAttribute("y2", String(y2));
+                        }
+                        thiz.prevTargetSnap = currTarget;
                     }
-                    readjustments += 1; //this is needed because a target in the stall slightly readjusts after the delayed hover
-                    const targetRect = currTarget.getBoundingClientRect();
-                    x2 = targetRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
-                    y2 = targetRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
-                    targetCard.classList.add("dale-line-source", thiz.sourceClass);
-                    targetCard.classList.remove("dale-line-target", thiz.targetClass);
-                    thiz.prevTarget = currTarget;
+                    if (targetCard.dataset['location'] == 'stall') {
+                        setTimeout(snapToTarget, 300);
+                    }
+                    else {
+                        snapToTarget();
+                    }
+                    thiz.prevTargetHover = currTarget;
                 }
             }
             thiz.line.setAttribute("x1", String(x1));
             thiz.line.setAttribute("y1", String(y1));
-            if (readjustments < 3) {
-                thiz.line.setAttribute("x2", String(x2));
-                thiz.line.setAttribute("y2", String(y2));
-            }
+            thiz.line.setAttribute("x2", String(x2));
+            thiz.line.setAttribute("y2", String(y2));
             //the source is gone, cancel the effect
             if (!document.body.contains(thiz.cardDiv)) {
                 thiz.onSource(); 
