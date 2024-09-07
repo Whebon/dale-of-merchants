@@ -2204,14 +2204,16 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
             if (from) {
                 this.parent.page.placeOnObject(cardDiv, from);
                 var animSlide = this.parent.page.slideToObject(cardDiv, this._container);
-                if (callback) {
-                    var animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: callback });
-                    var anim = dojo.fx.chain([animSlide, animCallback]);
-                    anim.play();
-                }
-                else {
-                    animSlide.play();
-                }
+                callback = function (node) {
+                    dojo.setStyle(node, 'left', '0px');
+                    dojo.setStyle(node, 'top', '0px');
+                    if (callback) {
+                        callback(node);
+                    }
+                };
+                var animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: callback });
+                var anim = dojo.fx.chain([animSlide, animCallback]);
+                anim.play();
             }
         };
         CardSlot.prototype.removeCard = function (to) {

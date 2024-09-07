@@ -97,14 +97,16 @@ export class CardSlot {
         if (from) {
             this.parent.page.placeOnObject(cardDiv, from);
             const animSlide = this.parent.page.slideToObject(cardDiv, this._container);
-            if (callback) {
-                const animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: callback });
-                const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
-                anim.play();
+            callback = (node:HTMLElement) => {
+                dojo.setStyle(node, 'left', '0px');
+                dojo.setStyle(node, 'top', '0px');
+                if (callback) {
+                    callback(node);
+                }
             }
-            else {
-                animSlide.play();
-            }
+            const animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: callback });
+            const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
+            anim.play();
         }
     }
 
