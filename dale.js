@@ -2204,14 +2204,14 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
             if (from) {
                 this.parent.page.placeOnObject(cardDiv, from);
                 var animSlide = this.parent.page.slideToObject(cardDiv, this._container);
-                callback = function (node) {
+                var onEnd = function (node) {
                     dojo.setStyle(node, 'left', '0px');
                     dojo.setStyle(node, 'top', '0px');
                     if (callback) {
                         callback(node);
                     }
                 };
-                var animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: callback });
+                var animCallback = dojo.animateProperty({ node: cardDiv, duration: 0, onEnd: onEnd });
                 var anim = dojo.fx.chain([animSlide, animCallback]);
                 anim.play();
             }
@@ -2301,16 +2301,18 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
             this.container = $("dale-market-board-background").querySelector("#dale-market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
-                var div = document.createElement("div");
-                div.classList.add("dale-stack-container");
+                var stackContainer = document.createElement("div");
+                stackContainer.classList.add("dale-stack-container");
                 if (pos == 0) {
-                    div.setAttribute('style', "\n                    margin-left: ".concat(Images_5.Images.MARKET_ITEM_MARGIN_S, "px;\n                    min-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;\n                    height: ").concat(Images_5.Images.CARD_HEIGHT_S, "px;\n                "));
+                    stackContainer.setAttribute('style', "min-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;margin-left: ").concat(Images_5.Images.MARKET_ITEM_MARGIN_S, "px;"));
                 }
                 else {
-                    div.setAttribute('style', "\n                    margin-left: ".concat(pos == 4 ? 0 : Images_5.Images.MARKET_ITEM_MARGIN_S, "px;\n                    max-width: ").concat(Images_5.Images.CARD_WIDTH_S, "px;\n                    height: ").concat(Images_5.Images.CARD_HEIGHT_S, "px;\n                "));
+                    stackContainer.setAttribute('style', "max-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;margin-left: ").concat(pos == 4 ? 0 : Images_5.Images.MARKET_ITEM_MARGIN_S, "px;"));
                 }
-                this.container.appendChild(div);
-                this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, div));
+                var slotDiv = Images_5.Images.getPlaceholder();
+                stackContainer.appendChild(slotDiv);
+                this.container.appendChild(stackContainer);
+                this.slots.push(new CardSlot_1.CardSlot(this, 4 - pos, slotDiv));
             }
             this.orderedSelection = new OrderedSelection_4.OrderedSelection();
             this.selectionMode = 0;
