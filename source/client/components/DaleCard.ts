@@ -686,7 +686,7 @@ export class DaleCard {
             <hr>
             ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="dale-text">${this.format_string(cardType.text)}${reminderText}</div>
+            <div class="dale-card-tooltip-text">${this.format_string(cardType.text)}${reminderText}</div>
             <br style="line-height: 10px" />
         </div>`
 	}

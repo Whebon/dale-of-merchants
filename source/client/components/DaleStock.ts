@@ -305,6 +305,18 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	/**
+	 * Remove an item of the specific type from the stock. Only use `addToStock` and `removeFromStock` OR `addToStockWithId` and `removeFromStockById` for a given stock, not both.
+	 * @param itemId The unique id of the item to be removed from the stock. This id must be unique within the stock and is used to identify the item when removing it from the stock.
+	 * @param to The element to animate the item to. When the `to` parameter is specified, the item will be animated from the stock to the location of the to element. The location moved to is always an absolute position at the top left of the to div. This is optional and can be used to animate the item to a specific location on the page. Either way, the item is destroyed after the animation is complete.
+	 * @param noupdate Default is false. If set to "true" it will prevent the Stock display from changing. This is useful when multiple (but not all) items are removed at the same time, to avoid ghost items appearing briefly. If you pass noupdate you have to call updateDisplay() after all items are removed.
+	 * @returns {void}
+	 */
+	override removeFromStockById(itemId: number, to?: string | HTMLElement, noupdate?: boolean): void {
+		super.removeFromStockById(itemId, to, noupdate);
+		new DaleCard(itemId).detachDiv();
+	}
+
+	/**
 	 * Modified version of a Stock's "removeFromStockById" without any animations. (see https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/stock.js)
 	 * @param stock Stock to remove a card id from
 	 * @param id card id to be removed

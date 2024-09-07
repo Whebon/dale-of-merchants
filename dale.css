@@ -421,7 +421,7 @@
   text-decoration: line-through;
   color: gray;
 }
-.dale-card-tooltip .dale-text {
+.dale-card-tooltip .dale-card-tooltip-text {
   max-width: 300px;
 }
 

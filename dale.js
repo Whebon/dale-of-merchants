@@ -1076,7 +1076,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (effective_value != cardType.value) {
                 effective_value = "(<span class=dale-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }
-            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"dale-text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"dale-card-tooltip-text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -1603,6 +1603,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             var stockitem_div = $(this.control_name + '_item_' + card.id);
             card.attachDiv(stockitem_div);
             card.updateLocation('stock');
+        };
+        DaleStock.prototype.removeFromStockById = function (itemId, to, noupdate) {
+            _super.prototype.removeFromStockById.call(this, itemId, to, noupdate);
+            new DaleCard_2.DaleCard(itemId).detachDiv();
         };
         DaleStock.prototype.removeFromStockByIdNoAnimation = function (id) {
             var stock = this;
