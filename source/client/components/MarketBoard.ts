@@ -52,7 +52,9 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
             const slotDiv = Images.getPlaceholder();
             slotDiv.classList.add("dale-placeholder-market");
             stackContainer.appendChild(slotDiv);
-            stackContainer.appendChild(DaleIcons.getNumberIcon(pos));
+            if (pos > 0) {
+                stackContainer.appendChild(DaleIcons.getNumberIcon(pos-1));
+            }
             this.container.appendChild(stackContainer);
             this.slots.unshift(new CardSlot(this, pos, slotDiv));
         }
@@ -62,7 +64,8 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         this.selectionMode = 0;
 
         //copied from Stall.ts
-        addEventListener("resize", this.onResize.bind(this));
+        const thiz = this
+        addEventListener("resize", () => setTimeout(() => thiz.onResize(), 1));
         this.onResize();
     }
 

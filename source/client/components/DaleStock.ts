@@ -46,6 +46,8 @@ export class DaleStock extends Stock implements DaleLocation {
 		this.orderedSelection = new OrderedSelection();
 		this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 		//this.jstpl_stock_item = '<div id="${id}" class="stockitem ${extra_classes}" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
+		addEventListener("resize", this.onResize.bind(this));
+        this.onResize();
 	}
 	
 	/**
@@ -397,4 +399,11 @@ export class DaleStock extends Stock implements DaleLocation {
 			dojo.setStyle(this.container_div, 'left', `${this.item_margin/2}px`);
 		}
 	}
+
+	/**
+	 * Call a delayed updateDisplay
+	 */
+	private onResize() {
+		setTimeout((()=>this.updateDisplay()).bind(this), 1);
+    }
 }

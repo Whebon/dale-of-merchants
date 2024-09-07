@@ -146,7 +146,7 @@
 .dale-placeholder {
   background-image: url("img/placeholders.png");
   transition: transform 0.3s ease, scale 0.3s ease;
-  background-size: 300% 200%;
+  background-size: 500% 200%;
   border-radius: 10px;
   position: absolute;
 }
@@ -166,6 +166,7 @@
   top: -20px;
   width: 40px;
   height: 40px;
+  z-index: 0;
 }
 
 .dale-passive-selected {
@@ -314,10 +315,10 @@
   color: #707070;
 }
 .dale-stall-container .dale-stack-container .dale-placeholder-market {
-  background-position-x: -200%;
+  background-position-x: -300%;
 }
 .dale-stall-container .dale-stack-container .dale-placeholder-market.dale-placeholder-partially-covered {
-  background-position-x: -300%;
+  background-position-x: -400%;
 }
 .dale-stall-container .dale-stack-container .dale-placeholder-stall {
   background-position-x: 0%;

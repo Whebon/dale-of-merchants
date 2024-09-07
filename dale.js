@@ -1444,6 +1444,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.duration = 500;
             _this.orderedSelection = new OrderedSelection_2.OrderedSelection();
             _this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
+            addEventListener("resize", _this.onResize.bind(_this));
+            _this.onResize();
             return _this;
         }
         DaleStock.prototype.init = function (page, container, wrap, defaultText, onItemCreate, onItemDelete) {
@@ -1662,6 +1664,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             if (this.item_margin < 0) {
                 dojo.setStyle(this.container_div, 'left', "".concat(this.item_margin / 2, "px"));
             }
+        };
+        DaleStock.prototype.onResize = function () {
+            var _this = this;
+            setTimeout((function () { return _this.updateDisplay(); }).bind(this), 1);
         };
         DaleStock.MAX_HORIZONTAL_OVERLAP = 85;
         return DaleStock;
@@ -2312,13 +2318,16 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                 var slotDiv = Images_5.Images.getPlaceholder();
                 slotDiv.classList.add("dale-placeholder-market");
                 stackContainer.appendChild(slotDiv);
-                stackContainer.appendChild(DaleIcons_3.DaleIcons.getNumberIcon(pos));
+                if (pos > 0) {
+                    stackContainer.appendChild(DaleIcons_3.DaleIcons.getNumberIcon(pos - 1));
+                }
                 this.container.appendChild(stackContainer);
                 this.slots.unshift(new CardSlot_1.CardSlot(this, pos, slotDiv));
             }
             this.orderedSelection = new OrderedSelection_4.OrderedSelection();
             this.selectionMode = 0;
-            addEventListener("resize", this.onResize.bind(this));
+            var thiz = this;
+            addEventListener("resize", function () { return setTimeout(function () { return thiz.onResize(); }, 1); });
             this.onResize();
         }
         Object.defineProperty(MarketBoard.prototype, "size", {
