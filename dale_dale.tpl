@@ -47,14 +47,18 @@
         <div class="dale-horizontal-flex">
             <div id="deck-{PLAYER_ID}" class="dale-pile-container"></div>
             <div id="discard-{PLAYER_ID}" class="dale-pile-container"></div>
-            <div class="dale-stall-wrap">
+            <div id="dale-stall-wrap-landscape-{PLAYER_ID}" class="dale-stall-wrap">
                 <h3 class="dale-component-name"> {STALL} </h3>
-                <div id="stall-{PLAYER_ID}" class="dale-stall-container"></div>
+                <div id="dale-stall-{PLAYER_ID}" class="dale-stall-container"></div>
             </div>
             <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock margin-left-wrap">
                 <h3 class="dale-component-name"> {SCHEDULE} </h3>
                 <div id="schedule-{PLAYER_ID}"></div>
             </div>
+        </div>
+        <div id="dale-stall-wrap-portrait-{PLAYER_ID}" class="dale-stall-wrap">
+            <h3 class="dale-component-name"> {STALL} </h3>
+            <!-- on narrow screens, the stall will automatically be moved here -->
         </div>
         <br>
         

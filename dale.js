@@ -2552,7 +2552,11 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         function Stall(page, player_id) {
             this.page = page;
             this.player_id = player_id;
-            this.container = $("stall-" + player_id);
+            this.wrapPortrait = $("dale-stall-wrap-portrait-" + player_id);
+            this.wrapLandscape = $("dale-stall-wrap-landscape-" + player_id);
+            console.log(this.wrapPortrait);
+            console.log(this.wrapLandscape);
+            this.container = $("dale-stall-" + player_id);
             this.stackContainers = [];
             this.selectionMode = 'none';
             this.slots = [];
@@ -2561,6 +2565,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 this.createNewStack();
             }
             dojo.setStyle(this.container.parentElement, 'max-width', Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
+            this.updateHeight();
             addEventListener("resize", this.onResize.bind(this));
             this.onResize();
         }
@@ -2613,7 +2618,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var _a;
             var stackContainer = this.stackContainers[0];
             if (stackContainer) {
-                var maxHeight = 0;
+                var maxHeight = 1;
                 for (var _i = 0, _b = this.slots; _i < _b.length; _i++) {
                     var stack = _b[_i];
                     maxHeight = Math.max(maxHeight, stack.length);
@@ -2853,6 +2858,17 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             return false;
         };
         Stall.prototype.onResize = function () {
+            console.log(window.innerWidth);
+            if (window.innerWidth < 1250) {
+                this.wrapPortrait.appendChild(this.container);
+                this.wrapPortrait.classList.remove("dale-hidden");
+                this.wrapLandscape.classList.add("dale-hidden");
+            }
+            else {
+                this.wrapLandscape.appendChild(this.container);
+                this.wrapLandscape.classList.remove("dale-hidden");
+                this.wrapPortrait.classList.add("dale-hidden");
+            }
             if (this.container.getBoundingClientRect().width < (1 + Images_6.Images.STACK_MIN_MARGIN_X) * Images_6.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
                 for (var i = 1; i < this.slots.length; i++) {
                     var placeholder = this.stackContainers[i].querySelector(".dale-placeholder");

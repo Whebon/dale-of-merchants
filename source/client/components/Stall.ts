@@ -26,6 +26,8 @@ export class Stall implements CardSlotManager, DaleLocation {
 
     public page: Gamegui;
     private player_id: number;
+    private wrapPortrait: HTMLElement;
+    private wrapLandscape: HTMLElement;
     private container: HTMLElement;
     private stackContainers: HTMLElement[];
     private selectionMode: StallSelectionMode;
@@ -35,7 +37,11 @@ export class Stall implements CardSlotManager, DaleLocation {
     constructor(page: Gamegui, player_id: number) {
         this.page = page;
         this.player_id = player_id;
-        this.container = $("stall-"+player_id);
+        this.wrapPortrait = $("dale-stall-wrap-portrait-"+player_id);
+        this.wrapLandscape = $("dale-stall-wrap-landscape-"+player_id);
+        console.log(this.wrapPortrait);
+        console.log(this.wrapLandscape);
+        this.container = $("dale-stall-"+player_id);
         this.stackContainers = [];
         this.selectionMode = 'none';
         this.slots = [];
@@ -44,6 +50,7 @@ export class Stall implements CardSlotManager, DaleLocation {
             this.createNewStack();
         }
         dojo.setStyle(this.container.parentElement!, 'max-width', Images.CARD_WIDTH_S*(1+Images.STACK_MAX_MARGIN_X)*Stall.MAX_STACKS+'px');
+        this.updateHeight();
         
         addEventListener("resize", this.onResize.bind(this));
         this.onResize();
@@ -104,7 +111,7 @@ export class Stall implements CardSlotManager, DaleLocation {
     private updateHeight() {
         const stackContainer = this.stackContainers[0];
         if (stackContainer) {
-            let maxHeight = 0;
+            let maxHeight = 1;
             for (let stack of this.slots) {
                 maxHeight = Math.max(maxHeight, stack.length);
             }
@@ -426,6 +433,19 @@ export class Stall implements CardSlotManager, DaleLocation {
      * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
      */
     private onResize() {
+        //set portrait or landscape mode
+        console.log(window.innerWidth);
+        if (window.innerWidth < 1250) {
+            this.wrapPortrait.appendChild(this.container);
+            this.wrapPortrait.classList.remove("dale-hidden");
+            this.wrapLandscape.classList.add("dale-hidden");
+        }
+        else {
+            this.wrapLandscape.appendChild(this.container);
+            this.wrapLandscape.classList.remove("dale-hidden");
+            this.wrapPortrait.classList.add("dale-hidden");
+        }
+        //set placeholder graphics
         if (this.container.getBoundingClientRect().width < (1+Images.STACK_MIN_MARGIN_X) * Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
             //stacks overlap
             for (let i = 1; i < this.slots.length; i++) {
