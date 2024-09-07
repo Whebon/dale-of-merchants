@@ -68,7 +68,7 @@ export class Stall implements CardSlotManager, DaleLocation {
                 prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S*(1+Images.STACK_MAX_MARGIN_X)}px;`); //the last stack containers has a max width (to stay in bounds)
             }
             const stackContainer = document.createElement("div");
-            stackContainer.classList.add("stack-container");
+            stackContainer.classList.add("dale-stack-container");
             stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;`); //stack containers have a min width (to stay left aligned)
 
             const placeholder = Images.getPlaceholder();

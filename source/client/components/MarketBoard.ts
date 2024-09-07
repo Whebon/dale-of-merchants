@@ -24,7 +24,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     constructor(page: Gamegui) {
         //set the background for the market board
         this.page = page;
-        $("market-board-background").setAttribute("style", `
+        $("dale-market-board-background").setAttribute("style", `
             width: ${Images.MARKET_WIDTH_S - Images.MARKET_PADDING_LEFT_S - Images.MARKET_PADDING_RIGHT_S}px;
             height: ${Images.MARKET_HEIGHT_S - Images.MARKET_PADDING_TOP_S - Images.MARKET_PADDING_BOTTOM_S}px;
 			background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
@@ -33,7 +33,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
             padding-bottom: ${Images.MARKET_PADDING_BOTTOM_S}px;
 			padding-right: ${Images.MARKET_PADDING_RIGHT_S}px;
 		`);
-        this.container = $("market-board-background").querySelector("#market-board")!;
+        this.container = $("dale-market-board-background").querySelector("#dale-market-board")!;
 
         //card containers
         this.slots = []

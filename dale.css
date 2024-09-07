@@ -242,13 +242,13 @@
   background-image: url("img/cards_selection.jpg");
 }
 
-#market-board-background {
+#dale-market-board-background {
   background-image: url(img/shop_day.jpg);
   background-repeat: no-repeat;
   position: relative;
 }
 
-#market-board {
+#dale-market-board {
   position: relative;
 }
 
@@ -267,11 +267,7 @@
   margin-left: 10px;
 }
 
-#schedule {
-  flex: 0 1;
-}
-
-.stall-wrap {
+.dale-stall-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -282,56 +278,56 @@
   padding-top: 0px;
   flex: 1 1;
 }
-.stall-wrap .stall-container {
+.dale-stall-wrap .dale-stall-container {
   width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
   display: flex;
   flex: 1 1;
   justify-content: left;
 }
-.stall-wrap .stall-container .stack-container {
+.dale-stall-wrap .dale-stall-container .dale-stack-container {
   flex: 1 1; /* Allow items to grow and shrink */
   margin-left: 5px;
   min-width: 0; /* Ensure items can shrink below their content width */
   position: relative;
 }
-.stall-wrap .stall-container .stack-container .dale-card:hover {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-card:hover {
   transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
   transition-delay: 0.05s;
 }
-.stall-wrap .stall-container .stack-container.dale-grayed-out {
+.dale-stall-wrap .dale-stall-container .dale-stack-container.dale-grayed-out {
   pointer-events: none;
   opacity: 0.5;
 }
-.stall-wrap .stall-container .stack-container.dale-grayed-out .dale-placeholder {
+.dale-stall-wrap .dale-stall-container .dale-stack-container.dale-grayed-out .dale-placeholder {
   background-position-y: -100%;
 }
-.stall-wrap .stall-container .stack-container.dale-grayed-out .dale-stack-index {
+.dale-stall-wrap .dale-stall-container .dale-stack-container.dale-grayed-out .dale-stack-index {
   color: #707070;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder {
   background-position-x: 0%;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-placeholder-partially-covered {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered {
   background-position-x: -100%;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   left: 78%;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-placeholder-partially-covered.dale-clickable:hover .dale-text {
   display: none;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover {
   background-color: var(--dale-wrap-build-a);
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover .dale-icon {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-icon {
   width: 50px;
   height: 50px;
   top: 40%;
   left: 56%;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-clickable:hover .dale-text {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-clickable:hover .dale-text {
   display: block;
   color: var(--dale-wrap-build);
   position: absolute;
@@ -342,10 +338,10 @@
   font-weight: bold;
   text-align: center;
 }
-.stall-wrap .stall-container .stack-container .dale-placeholder.dale-selected {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-placeholder.dale-selected {
   background-color: var(--dale-wrap-build-a);
 }
-.stall-wrap .stall-container .stack-container .dale-stack-index {
+.dale-stall-wrap .dale-stall-container .dale-stack-container .dale-stack-index {
   position: absolute;
   color: var(--dale-wrap-build);
   font-weight: bold;
@@ -353,7 +349,7 @@
   top: 5%;
 }
 
-.pile-container {
+.dale-pile-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -364,7 +360,7 @@
   padding-top: 0px;
   width: max-content;
 }
-.pile-container .dale-pile-size {
+.dale-pile-container .dale-pile-size {
   pointer-events: none;
   z-index: 500;
   position: absolute;
@@ -379,13 +375,13 @@
   padding: 2px 7px;
   white-space: nowrap;
 }
-.pile-container .dale-pile-size.dale-pile-selected-size {
+.dale-pile-container .dale-pile-size.dale-pile-selected-size {
   color: var(--dale-wrap-build);
 }
-.pile-container .pile {
+.dale-pile-container .dale-pile {
   position: relative;
 }
-.pile-container .dale-placeholder {
+.dale-pile-container .dale-placeholder {
   background-position-x: -200%;
 }
 
@@ -398,18 +394,10 @@
   display: none;
 }
 
-.card-row-container {
-  display: flex;
-}
-
-.card-row-slot {
-  margin-left: 5px;
-}
-
 .dale-card-tooltip {
   pointer-events: none;
 }
-.dale-card-tooltip .chameleon-name {
+.dale-card-tooltip .dale-chameleon-name {
   text-decoration: line-through;
   color: #1d7a2a;
 }
@@ -417,7 +405,7 @@
   text-decoration: line-through;
   color: gray;
 }
-.dale-card-tooltip .text {
+.dale-card-tooltip .dale-text {
   max-width: 300px;
 }
 

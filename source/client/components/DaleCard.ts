@@ -669,7 +669,7 @@ export class DaleCard {
                 type_ids.push(chain.type_ids[i]!);
             }
             for(let type_id of type_ids) {
-                chameleonName += `<span class=chameleon-name>${DaleCard.cardTypes[type_id]!.name}</span><br>`;
+                chameleonName += `<span class=dale-chameleon-name>${DaleCard.cardTypes[type_id]!.name}</span><br>`;
             }
         }
         if (this.isChameleon()) {
@@ -684,7 +684,7 @@ export class DaleCard {
             <hr>
             ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="text">${this.format_string(cardType.text)}${reminderText}</div>
+            <div class="dale-text">${this.format_string(cardType.text)}${reminderText}</div>
             <br style="line-height: 10px" />
         </div>`
 	}

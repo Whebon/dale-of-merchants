@@ -60,7 +60,7 @@ export class Pile implements DaleLocation {
         this.player_id = player_id;
         $(pile_container_id).innerHTML = `
             ${pile_name ? `<h3 class="dale-component-name">${pile_name}</h3>` : ""}
-            <div class="pile" style="${Images.getCardStyle()}">
+            <div class="dale-pile" style="${Images.getCardStyle()}">
                 <div class="dale-card"></div>
                 <div class="dale-pile-size"></div>
                 <div class="dale-pile-size dale-pile-selected-size" style="top: 16%;"></div>
@@ -76,7 +76,7 @@ export class Pile implements DaleLocation {
         this.cards = [];
         this._slidingCards = [];
         this.orderedSelection = new OrderedSelection();
-        this.containerHTML.querySelector(".pile")?.prepend(this.placeholderHTML);
+        this.containerHTML.querySelector(".dale-pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
         dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
         dojo.connect(this.orderedSelection, 'onUnselect', this, 'onUnselectPileCard');

@@ -290,7 +290,7 @@
 	}
 }
 
-#market-board-background {
+#dale-market-board-background {
     background-image: url(img/shop_day.jpg);
 	background-repeat: no-repeat;
 	position: relative;
@@ -298,7 +298,7 @@
     // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
 }
 
-#market-board {
+#dale-market-board {
 	position: relative;
 }
 
@@ -317,11 +317,7 @@
 	margin-left: 10px;
 }
 
-#schedule {
-	flex: 0 1;
-}
-
-.stall-wrap {
+.dale-stall-wrap {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -332,13 +328,13 @@
 	padding-top: 0px;
 	flex: 1 1;
 
-	.stall-container {
+	.dale-stall-container {
 		width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
 		display: flex;
 		flex: 1 1;
 		justify-content: left; //stack containers are left aligned
 
-		.stack-container {
+		.dale-stack-container {
 			flex: 1 1; /* Allow items to grow and shrink */
 			// background-color: red;
 			// border: 2px solid black;
@@ -413,15 +409,9 @@
 			}
 		}
 	}
-	
-	// .dale-clickable:hover {
-	// 	//growing animation glitches in stacks (maybe try z-index?)
-	// 	cursor: pointer;
-	// 	left: 4px;
-	// }
 }
 
-.pile-container {
+.dale-pile-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -451,7 +441,7 @@
 		}
 	}
 
-	.pile {
+	.dale-pile {
 		position: relative;
 	}
 
@@ -469,17 +459,9 @@
 	display: none;
 }
 
-.card-row-container {
-	display: flex;
-}
-
-.card-row-slot {
-	margin-left: 5px;
-}
-
 .dale-card-tooltip {
 	pointer-events: none;
-	.chameleon-name {
+	.dale-chameleon-name {
 		text-decoration: line-through;
 		color: #1d7a2a;
 	}
@@ -487,7 +469,7 @@
 		text-decoration: line-through;
 		color: gray;
 	}
-	.text {
+	.dale-text {
 		max-width: 300px;
 	}
 }

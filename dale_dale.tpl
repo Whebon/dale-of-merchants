@@ -22,9 +22,9 @@
     <div id="dale-market-wrap" class="whiteblock">
         <!-- Display the name of this area? <h3>{MARKET}</h3> -->
         <div style="display:flex; align-items: center; justify-content: space-evenly;">
-            <div id="market-deck" class="pile-container"></div>
-            <div id="market-board-background"><div id="market-board"></div></div>
-            <div id="market-discard" class="pile-container"></div>
+            <div id="market-deck" class="dale-pile-container"></div>
+            <div id="dale-market-board-background"><div id="dale-market-board"></div></div>
+            <div id="market-discard" class="dale-pile-container"></div>
         </div>
     </div>
 
@@ -43,20 +43,20 @@
     <div class="whiteblock">
         <h3><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
         <div class="dale-horizontal-flex">
-            <div id="deck-{PLAYER_ID}" class="pile-container"></div>
-            <div id="discard-{PLAYER_ID}" class="pile-container"></div>
-            <div class="stall-wrap">
+            <div id="deck-{PLAYER_ID}" class="dale-pile-container"></div>
+            <div id="discard-{PLAYER_ID}" class="dale-pile-container"></div>
+            <div class="dale-stall-wrap">
                 <h3 class="dale-component-name"> {STALL} </h3>
-                <div id="stall-{PLAYER_ID}" class="stall-container"></div>
-                <!-- <div class="stall-container">
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
-                    <div class="stack-container"></div>
+                <div id="stall-{PLAYER_ID}" class="dale-stall-container"></div>
+                <!-- <div class="dale-stall-container">
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
+                    <div class="dale-stack-container"></div>
                 </div> -->
             </div>
             <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock margin-left-wrap">
