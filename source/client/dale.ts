@@ -135,6 +135,11 @@ class Dale extends Gamegui
 		console.log(this.gamedatas)
 		console.log("------------------------")
 
+		//hide the "dale-hand-limbo-flex" for spectators
+		if (this.isSpectator) {
+			$("dale-hand-limbo-flex")?.classList.add("dale-hidden");
+		}
+
 		//positioning the svg container
 		const svgContainer = $("dale-svg-container") as HTMLElement;
 		$("overall-content")?.appendChild(svgContainer);
@@ -2934,6 +2939,12 @@ class Dale extends Gamegui
 				}
 			}
 			setTimeout((() => {this.myLimbo.shuffleAnimation()}).bind(this), this.myLimbo.duration);
+		}
+		else {
+			//update deck size for spectators
+			for (let i = 0; i < notif.args.player_nbr; i++) {
+				this.playerDecks[notif.args.player_id]!.pop();
+			}
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.opponent_id]!.incValue(-opponent_nbr);

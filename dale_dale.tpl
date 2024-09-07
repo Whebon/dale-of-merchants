@@ -28,7 +28,7 @@
         </div>
     </div>
 
-    <div class="dale-horizontal-flex">
+    <div id="dale-hand-limbo-flex" class="dale-horizontal-flex">
         <div id="dale-myhand-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin">
             <div class="dale-label"></div>
             <div id="dale-myhand"></div>

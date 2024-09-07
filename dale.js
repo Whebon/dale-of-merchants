@@ -3217,19 +3217,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             configurable: true
         });
         Dale.prototype.setup = function (gamedatas) {
-            var _a, _b, _c;
+            var _a, _b, _c, _d;
             console.log("Starting game setup");
             console.log("------ GAME DATAS ------ !");
             console.log(this.gamedatas);
             console.log("------------------------");
+            if (this.isSpectator) {
+                (_a = $("dale-hand-limbo-flex")) === null || _a === void 0 ? void 0 : _a.classList.add("dale-hidden");
+            }
             var svgContainer = $("dale-svg-container");
-            (_a = $("overall-content")) === null || _a === void 0 ? void 0 : _a.appendChild(svgContainer);
+            (_b = $("overall-content")) === null || _b === void 0 ? void 0 : _b.appendChild(svgContainer);
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
             this.deckSelection = new DaleDeckSelection_2.DaleDeckSelection(this, $("dale-page-deck-selection"), $("dale-page-game"), gamedatas.inDeckSelection);
             DaleCard_9.DaleCard.init(this, gamedatas.cardTypes);
             if (gamedatas.playerorder.length == 2) {
-                for (var _i = 0, _d = gamedatas.playerorder; _i < _d.length; _i++) {
-                    var player_id = _d[_i];
+                for (var _i = 0, _e = gamedatas.playerorder; _i < _e.length; _i++) {
+                    var player_id = _e[_i];
                     if (player_id != this.player_id) {
                         this.unique_opponent_id = player_id;
                     }
@@ -3239,7 +3242,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var player = gamedatas.players[player_id];
                 var handsize_span = document.createElement('span');
                 var handsize_icon = DaleIcons_4.DaleIcons.getHandIcon();
-                var player_board_div = (_b = $('player_board_' + player_id)) === null || _b === void 0 ? void 0 : _b.querySelector(".player_score");
+                var player_board_div = (_c = $('player_board_' + player_id)) === null || _c === void 0 ? void 0 : _c.querySelector(".player_score");
                 handsize_icon.id = 'dale-myhandsize-icon-' + player_id;
                 player_board_div.prepend(handsize_icon);
                 player_board_div.prepend(handsize_span);
@@ -3249,7 +3252,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]);
                 this.addTooltip('dale-myhandsize-icon-' + player_id, _("Number of cards in hand."), '');
                 this.addTooltip('icon_point_' + player_id, _("Number of stacks built."), '');
-                (_c = player_board_div.querySelector(".player_score_value")) === null || _c === void 0 ? void 0 : _c.insertAdjacentText('afterend', "/8");
+                (_d = player_board_div.querySelector(".player_score_value")) === null || _d === void 0 ? void 0 : _d.insertAdjacentText('afterend', "/8");
                 this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, 'deck-' + player_id, 'Deck', +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
                 this.allDecks[player_id] = this.playerDecks[player_id];
@@ -5498,6 +5501,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                 }
                 setTimeout((function () { _this.myLimbo.shuffleAnimation(); }).bind(this), this.myLimbo.duration);
+            }
+            else {
+                for (var i = 0; i < notif.args.player_nbr; i++) {
+                    this.playerDecks[notif.args.player_id].pop();
+                }
             }
             this.playerHandSizes[notif.args.opponent_id].incValue(-opponent_nbr);
         };
