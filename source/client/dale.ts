@@ -279,7 +279,7 @@ class Dale extends Gamegui
 		for (let player_id in gamedatas.schedules) {
 			const container = $('schedule-'+player_id)!
 			const wrap = $('schedule-wrap-'+player_id)!
-			dojo.setStyle(wrap, 'width', `${1.5*Images.CARD_WIDTH_S}px`);
+			dojo.setStyle(wrap, 'min-width', `${1.5*Images.CARD_WIDTH_S}px`);
 			this.playerSchedules[player_id] = new DaleStock();
 			this.playerSchedules[player_id].init(this, container);
 			this.playerSchedules[player_id].setSelectionMode('none');

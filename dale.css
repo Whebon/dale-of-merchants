@@ -283,7 +283,7 @@
   margin-left: 10px;
   margin-right: 10px;
   padding-top: 0px;
-  flex: 1 1;
+  flex: 10 1;
 }
 
 .dale-stall-container {
@@ -885,6 +885,13 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+.dale-schedule {
+  margin-left: 5px;
+  margin-right: 5px;
+  max-width: 100%;
+  flex-grow: 1;
 }
 
 .dale-flat-stock .dale-card {

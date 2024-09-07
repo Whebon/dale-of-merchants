@@ -434,7 +434,6 @@ export class Stall implements CardSlotManager, DaleLocation {
      */
     private onResize() {
         //set portrait or landscape mode
-        console.log(window.innerWidth);
         if (window.innerWidth < 1250) {
             this.wrapPortrait.appendChild(this.container);
             this.wrapPortrait.classList.remove("dale-hidden");

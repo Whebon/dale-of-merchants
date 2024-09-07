@@ -2858,7 +2858,6 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             return false;
         };
         Stall.prototype.onResize = function () {
-            console.log(window.innerWidth);
             if (window.innerWidth < 1250) {
                 this.wrapPortrait.appendChild(this.container);
                 this.wrapPortrait.classList.remove("dale-hidden");
@@ -3402,7 +3401,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var player_id in gamedatas.schedules) {
                 var container = $('schedule-' + player_id);
                 var wrap = $('schedule-wrap-' + player_id);
-                dojo.setStyle(wrap, 'width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container);
                 this.playerSchedules[player_id].setSelectionMode('none');

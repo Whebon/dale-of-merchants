@@ -51,7 +51,7 @@
                 <h3 class="dale-component-name"> {STALL} </h3>
                 <div id="dale-stall-{PLAYER_ID}" class="dale-stall-container"></div>
             </div>
-            <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock margin-left-wrap">
+            <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock dale-schedule">
                 <h3 class="dale-component-name"> {SCHEDULE} </h3>
                 <div id="schedule-{PLAYER_ID}"></div>
             </div>
