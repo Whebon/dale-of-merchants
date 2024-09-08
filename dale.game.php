@@ -567,7 +567,7 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * The active player throws away a card from the market deck and notifies all players
+     * The active player ditches a card from the market deck and notifies all players
      * @param string $msg notification message
      */
     function ditchFromMarketDeck(string $msg) {
@@ -583,7 +583,7 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * The active player throws away multiple cards from the market board
+     * The active player ditches multiple cards from the market board
      * @param string $msg notification message for all players
      * @param array $card_ids cards_ids to be thrown away in that order
      * @param array $cards array with exactly the same keys as $card_ids
@@ -2307,7 +2307,7 @@ class Dale extends DaleTableBasic
                     }
                     $card_id = $args["card_id"];
                     $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->ditch(clienttranslate('Shattered Relic: ${player_name} throws away a ${card_name}'), $card);
+                    $this->ditch(clienttranslate('Shattered Relic: ${player_name} ditches a ${card_name}'), $card);
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to ditch'), array(
@@ -2381,7 +2381,7 @@ class Dale extends DaleTableBasic
                 }
                 //1. ditch all cards from the market board
                 $this->ditchFromMarketBoard(
-                    clienttranslate('Loyal Partner: ${player_name} throws away all cards from the market'),
+                    clienttranslate('Loyal Partner: ${player_name} ditches all cards from the market'),
                     $card_ids, 
                     $selected_cards, 
                     $non_selected_cards
