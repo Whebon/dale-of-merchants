@@ -5155,6 +5155,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             for (var player_id in this.gamedatas.players) {
                 this.playerDecks[+player_id].pushHiddenCards(10);
             }
+            this.market.onResize();
         };
         Dale.prototype.notif_scheduleTechnique = function (notif) {
             if (notif.args.player_id == this.player_id) {

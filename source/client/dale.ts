@@ -2410,6 +2410,7 @@ class Dale extends Gamegui
 		for (let player_id in this.gamedatas.players) {
 			this.playerDecks[+player_id]!.pushHiddenCards(10);
 		}
+		this.market!.onResize();
 	}
 
 	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {

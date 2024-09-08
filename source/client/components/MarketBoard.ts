@@ -318,7 +318,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     /**
      * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
      */
-    private onResize() {
+    public onResize() {
         const totalWidth = this.container.getBoundingClientRect().width;
         if (totalWidth < (1+Images.STACK_MIN_MARGIN_X) * Images.CARD_WIDTH_S * this.MAX_SIZE) {
             //stacks overlap
