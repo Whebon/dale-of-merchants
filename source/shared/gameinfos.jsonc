@@ -22,7 +22,7 @@
 	"bgg_id": 176165,
 
 	// Players
-	"players": [1, 2, 3, 4], //TODO: remove 1, this is for debugging
+	"players": [2, 3, 4],
 	"player_colors": ["ff0000", "008000", "0000ff", "ffa500", "773300"],
 	"favorite_colors_support": false,
 	"suggest_player_number": null,
