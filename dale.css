@@ -168,6 +168,9 @@
   height: 40px;
   z-index: 0;
 }
+#dale-market-wrap .dale-pile-container {
+  padding-bottom: 11px;
+}
 
 .dale-passive-selected {
   cursor: pointer;
