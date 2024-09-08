@@ -3232,7 +3232,7 @@ define("components/types/PrivateNotification", ["require", "exports"], function 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "ebg/counter", "ebg/stock", "ebg/counter"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_5) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {

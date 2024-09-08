@@ -16,7 +16,6 @@ import Counter = require('ebg/counter');
 //needed for BGA
 import "ebg/counter";
 import "ebg/stock"; 
-import "ebg/counter"; 
 
 import { DaleStock } from './components/DaleStock'
 import { Pile } from './components/Pile';
@@ -27,11 +26,9 @@ import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
 import { ChameleonArgs } from './components/types/ChameleonArgs';
 import { CardSlot } from './components/CardSlot';
-import { DaleLocation } from './components/types/DaleLocation';
 import { MainClientState } from './components/types/MainClientState'
 import { Images } from './components/Images';
 import { TargetingLine } from './components/TargetingLine'
-import { ChameleonChain } from './components/types/ChameleonChain';
 import { ChameleonTree } from './components/types/ChameleonTree';
 import { DbEffect } from './components/types/DbEffect';
 import { DaleDeckSelection } from './components/DaleDeckSelection'
