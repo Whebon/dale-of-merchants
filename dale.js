@@ -70,7 +70,10 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
         };
-        DaleIcons.ROWS = 6;
+        DaleIcons.getCostModificationIcon = function (index) {
+            return this.getIcon(6, index);
+        };
+        DaleIcons.ROWS = 7;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
         DaleIcons.ICON_HEIGHT = 150;
@@ -2307,7 +2310,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
             this.page = page;
-            $("dale-market-board-background").setAttribute("style", "\n            width: ".concat(Images_5.Images.MARKET_WIDTH_S - Images_5.Images.MARKET_PADDING_LEFT_S - Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_5.Images.MARKET_HEIGHT_S - Images_5.Images.MARKET_PADDING_TOP_S - Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tbackground-size: ").concat(Images_5.Images.MARKET_WIDTH_S, "px ").concat(Images_5.Images.MARKET_HEIGHT_S, "px;\n\t\t\tpadding-top: ").concat(Images_5.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_5.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            $("dale-market-board-background").setAttribute("style", "\n            width: ".concat(Images_5.Images.MARKET_WIDTH_S - Images_5.Images.MARKET_PADDING_LEFT_S - Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_5.Images.MARKET_HEIGHT_S - Images_5.Images.MARKET_PADDING_TOP_S - Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-top: ").concat(Images_5.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_5.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
             this.container = $("dale-market-board-background").querySelector("#dale-market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
@@ -2323,7 +2326,7 @@ define("components/MarketBoard", ["require", "exports", "components/Images", "co
                 slotDiv.classList.add("dale-placeholder-market");
                 stackContainer.appendChild(slotDiv);
                 if (pos > 0) {
-                    stackContainer.appendChild(DaleIcons_3.DaleIcons.getNumberIcon(pos - 1));
+                    stackContainer.appendChild(DaleIcons_3.DaleIcons.getCostModificationIcon(pos - 1));
                 }
                 this.container.appendChild(stackContainer);
                 this.slots.unshift(new CardSlot_1.CardSlot(this, pos, slotDiv));

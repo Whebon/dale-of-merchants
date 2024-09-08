@@ -24,11 +24,11 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
 
     constructor(page: Gamegui) {
         //set the background for the market board
+        //background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
         this.page = page;
         $("dale-market-board-background").setAttribute("style", `
             width: ${Images.MARKET_WIDTH_S - Images.MARKET_PADDING_LEFT_S - Images.MARKET_PADDING_RIGHT_S}px;
             height: ${Images.MARKET_HEIGHT_S - Images.MARKET_PADDING_TOP_S - Images.MARKET_PADDING_BOTTOM_S}px;
-			background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
 			padding-top: ${Images.MARKET_PADDING_TOP_S}px;
 			padding-left: ${Images.MARKET_PADDING_LEFT_S}px;
             padding-bottom: ${Images.MARKET_PADDING_BOTTOM_S}px;
@@ -53,7 +53,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
             slotDiv.classList.add("dale-placeholder-market");
             stackContainer.appendChild(slotDiv);
             if (pos > 0) {
-                stackContainer.appendChild(DaleIcons.getNumberIcon(pos-1));
+                stackContainer.appendChild(DaleIcons.getCostModificationIcon(pos-1));
             }
             this.container.appendChild(stackContainer);
             this.slots.unshift(new CardSlot(this, pos, slotDiv));

@@ -307,8 +307,9 @@
     background-image: url(img/shop_day.jpg);
 	background-repeat: no-repeat;
 	position: relative;
-	//min-width: 3000px; //large enough to always fit the full the background image (2717px) + a little bit of margin for right item_margin of the right card
-    // background-size: contain; /* Ensures the background image fits within the div, maintaining its aspect ratio */
+	background-position: center;
+	background-size: cover;
+	border-radius: 5px;
 }
 
 .dale-horizontal-flex {
