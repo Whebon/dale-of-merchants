@@ -2093,7 +2093,7 @@ class Dale extends DaleTableBasic
         $this->gamestate->setPlayerNonMultiactive($player_id, "trStartGame");
     }
 
-    function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $essential_purchase_ids) {
+    function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $args) {
         $this->addChameleonBindings($chameleons_json, $funds_card_ids);
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
@@ -2138,7 +2138,7 @@ class Dale extends DaleTableBasic
 
         //Apply essential purchase
         if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
-            $essential_purchase_ids = $this->numberListToArray($essential_purchase_ids);
+            $essential_purchase_ids = $args["essential_purchase_ids"];
             if (!$this->isSubset($essential_purchase_ids, $funds_card_ids)) {
                 throw new BgaVisibleSystemException("CT_ESSENTIALPURCHASE: Selected junk cards must be a subset of the selected fund cards");
             }
@@ -2153,9 +2153,6 @@ class Dale extends DaleTableBasic
                 clienttranslate('Essential Purchase: ${player_name} ditches ${nbr} junk card(s)'), 
                 $essential_purchase_cards
             );
-        }
-        else if (!empty($essential_purchase_ids)) {
-            throw new BgaVisibleSystemException("essential_purchase_ids were provided, but the purchased card is not of type CT_ESSENTIALPURCHASE");
         }
 
         //Discard the funds
@@ -2709,10 +2706,10 @@ class Dale extends DaleTableBasic
             case CT_TIRELESSTINKERER:
                 $dbcard = $this->cards->getCardOnTop(DISCARD.$player_id);
                 if ($dbcard == null) {
-                    throw new BgaVisibleSystemException("TirelessThinkerer should have been fizzled");
+                    throw new BgaVisibleSystemException("TirelessTinkerer should have been fizzled");
                 }
                 $this->cards->moveCardOnTop($dbcard["id"], DECK.$player_id);
-                $this->notifyAllPlayers('discardToDeck', clienttranslate('Tireless Thinkerer: ${player_name} places their ${card_name} on top of their deck'), array(
+                $this->notifyAllPlayers('discardToDeck', clienttranslate('Tireless Tinkerer: ${player_name} places their ${card_name} on top of their deck'), array(
                     "player_id" => $player_id,
                     "player_name" => $this->getPlayerNameById($player_id),
                     "card_name" => $this->getCardName($dbcard),

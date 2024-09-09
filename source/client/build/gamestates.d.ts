@@ -76,8 +76,8 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}, {
-				'name': 'essential_purchase_ids',
-				'type': 'AT_numberlist',
+				'name': 'args',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}],
 			'actPlayTechniqueCard': [{

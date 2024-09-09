@@ -3083,6 +3083,20 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         MainClientState.prototype.isStackEmpty = function () {
             return this._stack.length == 0;
         };
+        MainClientState.prototype.stackIncludes = function (name) {
+            if (this.name == name || this._page.gamedatas.gamestate.name == name) {
+                return true;
+            }
+            for (var _i = 0, _a = this._stack; _i < _a.length; _i++) {
+                var state = _a[_i];
+                if (state instanceof PreviousState) {
+                    if (state.name == name) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
         MainClientState.prototype.setPassiveSelected = function (enable) {
             if ('passive_card_id' in this._args) {
                 var div = new DaleCard_7.DaleCard(this._args.passive_card_id).div;
@@ -4341,7 +4355,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                             pos: pos,
                             market_discovery_card_id: undefined,
                             card_name: card.name,
-                            cost: card.getCost(pos)
+                            cost: card.getCost(pos),
+                            optionalArgs: {}
                         });
                     }
                     break;
@@ -4353,7 +4368,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                             pos: pos,
                             market_discovery_card_id: undefined,
                             card_name: card.name,
-                            cost: card.getCost(pos)
+                            cost: card.getCost(pos),
+                            optionalArgs: {}
                         });
                     }
                     break;
@@ -4524,22 +4540,19 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onFundsSelectionChanged = function () {
         };
         Dale.prototype.onPurchase = function () {
-            var args;
-            var funds_card_ids;
-            var essential_purchase_ids;
+            var args = this.mainClientState.args;
             switch (this.gamedatas.gamestate.name) {
                 case 'client_purchase':
-                    args = this.mainClientState.args;
-                    funds_card_ids = this.myHand.orderedSelection.get();
-                    essential_purchase_ids = [];
+                    args.funds_card_ids = this.myHand.orderedSelection.get();
                     break;
                 case 'client_essentialPurchase':
-                    args = this.mainClientState.args;
-                    funds_card_ids = args.funds_card_ids;
-                    essential_purchase_ids = this.myHand.orderedSelection.get();
+                    args.optionalArgs.essential_purchase_ids = this.myHand.orderedSelection.get();
                     break;
                 default:
                     throw new Error("You cannot purchase a card from gamestate '".concat(this.gamedatas.gamestate, "'"));
+            }
+            if (args.funds_card_ids === undefined) {
+                throw new Error("onPurchase: funds_card_ids is undefined, but it was expected to be defined in '${this.gamedatas.gamestate}'");
             }
             var card_id;
             if (args.market_discovery_card_id === undefined) {
@@ -4553,17 +4566,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
                 card_id = card.id;
             }
-            if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && new DaleCard_9.DaleCard(card_id).effective_type_id == DaleCard_9.DaleCard.CT_ESSENTIALPURCHASE) {
-                this.mainClientState.enterOnStack('client_essentialPurchase', __assign({ funds_card_ids: funds_card_ids }, args));
+            if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard_9.DaleCard(card_id).effective_type_id == DaleCard_9.DaleCard.CT_ESSENTIALPURCHASE) {
+                this.mainClientState.enterOnStack('client_essentialPurchase', args);
             }
             else {
                 this.bgaPerformAction('actPurchase', {
-                    funds_card_ids: this.arrayToNumberList(funds_card_ids),
+                    funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
                     market_card_id: card_id,
-                    essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
-                    chameleons_json: DaleCard_9.DaleCard.getLocalChameleonsJSON()
+                    chameleons_json: DaleCard_9.DaleCard.getLocalChameleonsJSON(),
+                    args: JSON.stringify(args.optionalArgs)
                 });
-                if (this.gamedatas.gamestate.name == 'client_essentialPurchase') {
+                if (this.gamedatas.gamestate.name != 'client_purchase') {
                     this.mainClientState.leave();
                 }
             }
@@ -4585,7 +4598,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     pos: -1,
                     market_discovery_card_id: market_discovery_card_id,
                     card_name: card.name,
-                    cost: card.getCost(0)
+                    cost: card.getCost(0),
+                    optionalArgs: {}
                 });
             }
         };
@@ -4805,7 +4819,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
-                    break;
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

@@ -1417,7 +1417,8 @@ class Dale extends Gamegui
 						pos: pos,
 						market_discovery_card_id: undefined,
 						card_name: card.name,
-						cost: card.getCost(pos)
+						cost: card.getCost(pos),
+						optionalArgs: {}
 					});
 				}
 				break;
@@ -1429,7 +1430,8 @@ class Dale extends Gamegui
 						pos: pos,
 						market_discovery_card_id: undefined,
 						card_name: card.name,
-						cost: card.getCost(pos)
+						cost: card.getCost(pos),
+						optionalArgs: {}
 					});
 				}
 				break;
@@ -1623,23 +1625,22 @@ class Dale extends Gamegui
 	}
 
 	onPurchase() {
-		var args;
-		var funds_card_ids: number[];
-		var essential_purchase_ids: number[];
+		//const args = {...(this.mainClientState.args as ClientGameStates['client_purchase'])};
+		const args = this.mainClientState.args as ClientGameStates['client_purchase'];
 		switch (this.gamedatas.gamestate.name) {
 			case 'client_purchase':
-				args = (this.mainClientState.args as ClientGameStates['client_purchase'])
-				funds_card_ids = this.myHand.orderedSelection.get();
-				essential_purchase_ids = [];
+				args.funds_card_ids = this.myHand.orderedSelection.get();
 				break;
 			case 'client_essentialPurchase':
-				args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase'])
-				funds_card_ids = args.funds_card_ids;
-				essential_purchase_ids = this.myHand.orderedSelection.get()
+				args.optionalArgs.essential_purchase_ids = this.myHand.orderedSelection.get();
 				break;
 			default:
 				throw new Error(`You cannot purchase a card from gamestate '${this.gamedatas.gamestate}'`)
 		}
+		if (args.funds_card_ids === undefined) {
+			throw new Error("onPurchase: funds_card_ids is undefined, but it was expected to be defined in '${this.gamedatas.gamestate}'")
+		}
+
 		var card_id;
 		if (args.market_discovery_card_id === undefined) {
 			card_id = this.market!.getCardId(args.pos);
@@ -1652,20 +1653,17 @@ class Dale extends Gamegui
 			}
 			card_id = card.id;
 		}
-		if (this.gamedatas.gamestate.name != 'client_essentialPurchase' && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
-			this.mainClientState.enterOnStack('client_essentialPurchase', {
-				funds_card_ids: funds_card_ids,
-				...args
-			});
+		if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
+			this.mainClientState.enterOnStack('client_essentialPurchase', args);
 		}
 		else {
 			this.bgaPerformAction('actPurchase', {
-				funds_card_ids: this.arrayToNumberList(funds_card_ids),
+				funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
 				market_card_id: card_id,
-				essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
-				chameleons_json: DaleCard.getLocalChameleonsJSON()
+				chameleons_json: DaleCard.getLocalChameleonsJSON(),
+				args: JSON.stringify(args.optionalArgs)
 			})
-			if (this.gamedatas.gamestate.name == 'client_essentialPurchase') {
+			if (this.gamedatas.gamestate.name != 'client_purchase') {
 				this.mainClientState.leave(); //see issue #97.2 and #97.3
 			}
 		}
@@ -1689,7 +1687,8 @@ class Dale extends Gamegui
 				pos: -1,
 				market_discovery_card_id: market_discovery_card_id,
 				card_name: card.name,
-				cost: card.getCost(0)
+				cost: card.getCost(0),
+				optionalArgs: {}
 			});
 		}
 	}
@@ -1952,7 +1951,6 @@ class Dale extends Gamegui
 				else {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
-				break;
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

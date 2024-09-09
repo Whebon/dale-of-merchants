@@ -329,11 +329,20 @@ declare global {
 		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }
 		'chameleon_trendsetting': {}
 		'chameleon_seeingdoubles': {}
-		'client_purchase' : { pos: number, market_discovery_card_id: number | undefined, cost: number, card_name: string }
+		'client_purchase' : { 
+			pos: number, 
+			market_discovery_card_id: number | undefined, 
+			cost: number, 
+			card_name: string,
+			funds_card_ids?: number[],
+			optionalArgs: {
+				essential_purchase_ids?: number[]
+			}
+		}
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
-		'client_essentialPurchase': { funds_card_ids: number[] } & ClientGameStates['client_purchase']
+		'client_essentialPurchase': ClientGameStates['client_purchase']
 	}
 
 	//

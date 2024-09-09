@@ -229,6 +229,20 @@ export class MainClientState {
         return this._stack.length == 0;
     }
 
+    public stackIncludes<K extends keyof ClientGameStates>(name: K): boolean {
+        if (this.name == name || this._page.gamedatas.gamestate.name == name) {
+            return true;
+        }
+        for (let state of this._stack) {
+            if (state instanceof PreviousState) {
+                if (state.name == name) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * (de)select the current passive card
      */
