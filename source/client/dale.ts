@@ -1657,6 +1657,9 @@ class Dale extends Gamegui
 				essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
 				chameleons_json: DaleCard.getLocalChameleonsJSON()
 			})
+			if (this.gamedatas.gamestate.name == 'client_essentialPurchase') {
+				this.mainClientState.leave(); //see issue #97.2 and #97.3
+			}
 		}
 	}
 

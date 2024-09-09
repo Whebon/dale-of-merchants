@@ -3165,6 +3165,9 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                     if (currTarget == targetCard) {
                         var snapToTarget = function () {
                             var _a;
+                            if (!TargetingLine.targetingLines.includes(thiz)) {
+                                return;
+                            }
                             if (currTarget == ((_a = TargetingLine.previousMouseEvent) === null || _a === void 0 ? void 0 : _a.target)) {
                                 var targetRect = currTarget.getBoundingClientRect();
                                 targetCard.classList.add("dale-line-source", thiz.sourceClass);
@@ -4548,6 +4551,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     essential_purchase_ids: this.arrayToNumberList(essential_purchase_ids),
                     chameleons_json: DaleCard_9.DaleCard.getLocalChameleonsJSON()
                 });
+                if (this.gamedatas.gamestate.name == 'client_essentialPurchase') {
+                    this.mainClientState.leave();
+                }
             }
         };
         Dale.prototype.onMarketDiscoveryDitch = function () {

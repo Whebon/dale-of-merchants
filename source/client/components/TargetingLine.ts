@@ -104,6 +104,9 @@ export class TargetingLine {
                 if (currTarget == targetCard) {
                     //snap to new target
                     const snapToTarget = function() {
+                        if (!TargetingLine.targetingLines.includes(thiz)) {
+                            return; //the targeting line was removed within the 300ms interval
+                        }
                         if (currTarget == TargetingLine.previousMouseEvent?.target) {
                             const targetRect = currTarget.getBoundingClientRect();
                             targetCard.classList.add("dale-line-source", thiz.sourceClass);
