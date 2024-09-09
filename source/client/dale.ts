@@ -1944,6 +1944,16 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_blindfold', card.id);
 				}
 				break;
+			case DaleCard.CT_TIRELESSTINKERER:
+				fizzle = this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2358,6 +2368,8 @@ class Dale extends Gamegui
 			['ditchFromDiscard', 			500],
 			['ditchFromMarketDeck', 		500],
 			['ditchFromMarketBoard', 		500],
+			['discardToDeck', 				500],
+			['deckToDiscard', 				500],
 			['rollDie', 					1000],
 			['selectBlindfold', 			1, true],
 			['addEffect', 					1],
@@ -3028,6 +3040,20 @@ class Dale extends Gamegui
 			this.market!.removeCard(pos);
 			delay += 75; //delay indicates that ordering matters
 		}
+	}
+
+	notif_discardToDeck(notif: NotifAs<'discardToDeck'>) {
+		const discard = this.playerDiscards[notif.args.player_id]!;
+		const deck = this.playerDecks[notif.args.opponent_id ?? notif.args.player_id]!;
+		discard.pop(deck.placeholderHTML, () => deck.pushHiddenCards(1));
+	}
+
+	notif_deckToDiscard(notif: NotifAs<'deckToDiscard'>) {
+		const discard = this.playerDiscards[notif.args.player_id]!;
+		const deck = this.playerDecks[notif.args.opponent_id ?? notif.args.player_id]!;
+		const card = DaleCard.of(notif.args.card);
+		deck.pop();
+		discard.push(card, deck.placeholderHTML);
 	}
 
 	notif_rollDie(notif: NotifAs<'rollDie'>) {

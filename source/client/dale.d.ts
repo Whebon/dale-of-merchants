@@ -93,6 +93,16 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
+		'discardToDeck': {
+			card: DbCard
+			player_id: number,
+			opponent_id?: number, //by default the same as the player_id
+		}
+		'deckToDiscard': {
+			card: DbCard
+			player_id: number,
+			opponent_id?: number, //by default the same as the player_id
+		}
 		'rollDie': {
 			player_id: number,
 			animalfolk_id: number,

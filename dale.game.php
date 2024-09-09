@@ -2252,7 +2252,13 @@ class Dale extends DaleTableBasic
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
                     $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
                     if ($nbr > 0) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_CHARM. The market deck/discard contain card(s).");
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_CHARM. The market deck/discard contains card(s).");
+                    }
+                    break;
+                case CT_TIRELESSTINKERER:
+                    $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
+                    if ($nbr > 0) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_TIRELESSTINKERER. The player's discard pile contains card(s).");
                     }
                     break;
                 default:
@@ -2699,6 +2705,20 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $player_id); //player_id is the opponent_id from the opponent's perspective
                 $this->setGameStateValue("card_id", $card_id);
                 $this->nextStateChangeActivePlayer("trBlindfold", $opponent_id);
+                break;
+            case CT_TIRELESSTINKERER:
+                $dbcard = $this->cards->getCardOnTop(DISCARD.$player_id);
+                if ($dbcard == null) {
+                    throw new BgaVisibleSystemException("TirelessThinkerer should have been fizzled");
+                }
+                $this->cards->moveCardOnTop($dbcard["id"], DECK.$player_id);
+                $this->notifyAllPlayers('discardToDeck', clienttranslate('Tireless Thinkerer: ${player_name} places their ${card_name} on top of their deck'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->getCardName($dbcard),
+                    "card" => $dbcard
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

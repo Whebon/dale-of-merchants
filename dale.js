@@ -4797,6 +4797,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_blindfold', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_TIRELESSTINKERER:
+                    fizzle = this.myDiscard.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -5142,6 +5152,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['ditchFromDiscard', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
+                ['discardToDeck', 500],
+                ['deckToDiscard', 500],
                 ['rollDie', 1000],
                 ['selectBlindfold', 1, true],
                 ['addEffect', 1],
@@ -5671,6 +5683,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.market.removeCard(pos);
                 delay += 75;
             }
+        };
+        Dale.prototype.notif_discardToDeck = function (notif) {
+            var _a;
+            var discard = this.playerDiscards[notif.args.player_id];
+            var deck = this.playerDecks[(_a = notif.args.opponent_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
+            discard.pop(deck.placeholderHTML, function () { return deck.pushHiddenCards(1); });
+        };
+        Dale.prototype.notif_deckToDiscard = function (notif) {
+            var _a;
+            var discard = this.playerDiscards[notif.args.player_id];
+            var deck = this.playerDecks[(_a = notif.args.opponent_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
+            var card = DaleCard_9.DaleCard.of(notif.args.card);
+            deck.pop();
+            discard.push(card, deck.placeholderHTML);
         };
         Dale.prototype.notif_rollDie = function (notif) {
             var card = DaleCard_9.DaleCard.of(notif.args.card);
