@@ -965,6 +965,14 @@ class Dale extends Gamegui
 					return true;
 				}
 			}
+			else if (targets.size == 1) {
+				//chameleon auto-bind on a single target
+				const target = targets.values().next().value;
+				if (target instanceof DaleCard) {
+					this.onConfirmChameleon(target.id);
+					return false;
+				}
+			}
 			this.mainClientState.enterOnStack(chameleonStatename, args);
 		}
 		else {

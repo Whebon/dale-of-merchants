@@ -4030,6 +4030,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         return true;
                     }
                 }
+                else if (targets.size == 1) {
+                    var target = targets.values().next().value;
+                    if (target instanceof DaleCard_9.DaleCard) {
+                        this.onConfirmChameleon(target.id);
+                        return false;
+                    }
+                }
                 this.mainClientState.enterOnStack(chameleonStatename, args);
             }
             else {
