@@ -65,7 +65,7 @@ export class Images {
                 //style += `z-index: ${card_type_id == 0 ? Images.Z_INDEX_CARDBACK : Images.Z_INDEX_CARDFRONT};`;
             }
             else {
-                throw new Error(`Card with type id ${card_type_id} does not exist!`);
+                throw new Error(`Card with type id ${card_type_id} does not exist! (use setCardStyle instead)`);
             }
         }
         return style;
@@ -81,10 +81,15 @@ export class Images {
         dojo.setStyle(div, 'height', `${Images.CARD_HEIGHT_S}px`);
         dojo.setStyle(div, 'background-size', `${Images.IMAGES_PER_ROW}00% ${Images.IMAGES_PER_COLUMN}00%`);
         if (card_type_id !== undefined) {
-            if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
+            const image_index = card_type_id % (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
+            const sheet_index = (card_type_id - image_index) / (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
+            if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 3) {
                 let x = card_type_id % Images.IMAGES_PER_ROW;
                 let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                 dojo.setStyle(div, 'background-position', `-${x}00% -${y}00%`);
+                if (sheet_index > 0) {  //0 is the default sheet
+                    div.classList.add('dale-card-sheet-'+sheet_index);
+                }
             }
             else {
                 throw new Error(`Card with type id ${card_type_id} does not exist!`);

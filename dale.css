@@ -255,6 +255,15 @@
 .dale-card.dale-deck-selection {
   background-image: url("img/cards_selection.jpg");
 }
+.dale-card.dale-card-sheet-1 {
+  background-image: url("img/cards_1.jpg");
+}
+.dale-card.dale-card-sheet-2 {
+  background-image: url("img/cards_2.jpg");
+}
+.dale-card.dale-card-sheet-3 {
+  background-image: url("img/cards_3.jpg");
+}
 
 #dale-market-board-background {
   background-image: url(img/shop_day.jpg);

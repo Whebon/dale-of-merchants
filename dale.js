@@ -103,7 +103,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                     style += "background-position:-".concat(x, "00% -").concat(y, "00%;");
                 }
                 else {
-                    throw new Error("Card with type id ".concat(card_type_id, " does not exist!"));
+                    throw new Error("Card with type id ".concat(card_type_id, " does not exist! (use setCardStyle instead)"));
                 }
             }
             return style;
@@ -113,10 +113,15 @@ define("components/Images", ["require", "exports"], function (require, exports) 
             dojo.setStyle(div, 'height', "".concat(Images.CARD_HEIGHT_S, "px"));
             dojo.setStyle(div, 'background-size', "".concat(Images.IMAGES_PER_ROW, "00% ").concat(Images.IMAGES_PER_COLUMN, "00%"));
             if (card_type_id !== undefined) {
-                if (card_type_id >= 0 && card_type_id < Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN) {
+                var image_index = card_type_id % (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
+                var sheet_index = (card_type_id - image_index) / (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
+                if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 3) {
                     var x = card_type_id % Images.IMAGES_PER_ROW;
                     var y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                     dojo.setStyle(div, 'background-position', "-".concat(x, "00% -").concat(y, "00%"));
+                    if (sheet_index > 0) {
+                        div.classList.add('dale-card-sheet-' + sheet_index);
+                    }
                 }
                 else {
                     throw new Error("Card with type id ".concat(card_type_id, " does not exist!"));
