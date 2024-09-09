@@ -13,11 +13,11 @@ if (!defined('EC_GLOBAL')) {
  * This class is responsible for managing card effects that last until end of turn.
  */
 class DaleEffects {
-    public DaleTableBasic $game;
+    public Dale $game;
     public array $cache;
     public int $last_effect_id;
 
-    function __construct(DaleTableBasic $game) {
+    function __construct(Dale $game) {
         $this->game = $game;
         $this->loadFromDb();
     }
@@ -244,10 +244,17 @@ class DaleEffects {
 
         //for each found chameleon effect, expire all modifications made to that chameleon card during and after the copying the invalid target
         foreach ($chameleon_effects as $chameleon_effect) {
-            //for the clients
+            //skip chameleons in schedules
             $expired_effects = [];
             $effect_id = $chameleon_effect["effect_id"];
             $chameleon_card_id = $chameleon_effect["card_id"];
+            $dbcard = $this->game->cards->getCard($chameleon_effect["card_id"]);
+            $prefix = substr($dbcard["location"], 0, 4);
+            if ($prefix == SCHEDULE) {
+                continue; 
+            }
+
+            //for the clients
             foreach ($this->cache as $row) {
                 if ($row["effect_id"] >= $effect_id && $row["card_id"] == $chameleon_card_id && $row["effect_class"] == EC_MODIFICATION) {
                     $expired_effects[] = $row;
