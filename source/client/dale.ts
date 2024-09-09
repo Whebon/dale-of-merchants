@@ -386,7 +386,7 @@ class Dale extends Gamegui
 				}
 				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
 				let junk_selected = 0;
-				for (let card_id of client_essentialPurchase_args.funds_card_ids.slice().reverse()) {
+				for (let card_id of client_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 					if (junk_selected < 3 && new DaleCard(card_id).isJunk()) {
 						this.myHand.selectItem(card_id);
