@@ -339,7 +339,7 @@ class Dale extends Gamegui
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'postCleanUpPhase':
-				this.myHand.setSelectionMode('clickAbility', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
 				break;
 			case 'playerTurn':
 				this.mainClientState.enter();

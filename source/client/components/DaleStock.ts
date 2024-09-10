@@ -9,18 +9,19 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
 /**
  * Selection modes for the dale stock
- * 'none':                 no selection possible
- * 'noneRetainSelection':  no selection possible, the previous selection is maintained
- * 'click':                no selection possible, cards are clickable
- * 'clickRetainSelection': no selection possible, cards are clickable, the previous selection is maintained
- * 'clickTechnique':       no selection possible, PLAYABLE cards are clickable
- * 'clickAbility':		   no selection possible, PLAYABLE non-technique cards are clickable
- * 'single':			   a single card can be selected	
- * 'multiple':             multiple cards can be selected
- * 'only_card_id47':       no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
- * 'essentialPurchase':    up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
+ * 'none':                 		no selection possible
+ * 'noneRetainSelection':  		no selection possible, the previous selection is maintained
+ * 'click':                		no selection possible, cards are clickable
+ * 'clickRetainSelection': 		no selection possible, cards are clickable, the previous selection is maintained
+ * 'clickTechnique':       		no selection possible, PLAYABLE cards are clickable
+ * 'clickAbility':		   		no selection possible, PLAYABLE non-technique cards are clickable
+ * 'clickAbilityPostCleanup':   no selection possible, only specific 'post clean-up' abilities are clickable
+ * 'single':			   		a single card can be selected	
+ * 'multiple':             		multiple cards can be selected
+ * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
+ * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickRetainSelection' | 'single' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'single' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -197,7 +198,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @return `true` if the selectionMode doesn't use the orderedSelection, but only responds to a click on a card
 	 */
 	private isClickSelectionMode() {
-		return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickAbility' || this.selectionMode == 'clickRetainSelection');
+		return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickAbility' || this.selectionMode == 'clickAbilityPostCleanup' || this.selectionMode == 'clickRetainSelection');
 	}
 
 	/**
@@ -252,6 +253,12 @@ export class DaleStock extends Stock implements DaleLocation {
 				return card.isPlayable();
 			case 'clickAbility':
 				return card.isPlayable() && !card.isTechnique();
+			case 'clickAbilityPostCleanup':
+				const clickAbilityPostCleanup_abilities = [
+					DaleCard.CT_GOODOLDTIMES,
+					DaleCard.CT_MARKETDISCOVERY
+				]
+				return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
 			case 'clickRetainSelection':
 				return true;
 			case 'single':

@@ -220,7 +220,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trNextPlayer': 41,
-			'trPassiveAbility': 42,
+			'trPassiveAbility': 41,
 		},
 	},
 	52: {

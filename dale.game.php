@@ -3047,6 +3047,7 @@ class Dale extends DaleTableBasic
                 }
             }
         }
+        $this->setGameStateValue("isPostCleanUpPhase", 1); //don't go into post clean-up phase again
         $this->addChameleonBindings($chameleons_json, implode(';', $chameleon_ids));
         $this->gamestate->nextState("trNextPlayer");
     }
@@ -3219,7 +3220,6 @@ class Dale extends DaleTableBasic
                 $type_id = $this->getTypeId($card);
                 if (in_array($type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card)) {
                     //the hand contains a card that uses the post clean up phase
-                    $this->setGameStateValue("isPostCleanUpPhase", 1);
                     $this->gamestate->nextState("trPostCleanUpPhase");
                     return;
                 }
@@ -3230,7 +3230,6 @@ class Dale extends DaleTableBasic
                     $optional_cookies = ($target_type_id == CT_COOKIES && count($dbtargets) >= 2);
                     if ($optional_cookies || (in_array($target_type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card))) {
                         //the hand contains a chameleon card that can reach a card that uses the post clean up phase
-                        $this->setGameStateValue("isPostCleanUpPhase", 1);
                         $this->gamestate->nextState("trPostCleanUpPhase");
                         return; 
                     }

@@ -167,7 +167,7 @@
 				{"name": "chameleons_json", "type": "AT_json"}
 			]
 		},
-		"transitions": { "trNextPlayer": 41, "trPassiveAbility": 42 }
+		"transitions": { "trNextPlayer": 41, "trPassiveAbility": 41 }
 	},
 
 	//////////////// TECHNIQUES ////////////////

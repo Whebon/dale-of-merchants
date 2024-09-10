@@ -1532,7 +1532,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
         };
         DaleStock.prototype.isClickSelectionMode = function () {
-            return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickAbility' || this.selectionMode == 'clickRetainSelection');
+            return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickAbility' || this.selectionMode == 'clickAbilityPostCleanup' || this.selectionMode == 'clickRetainSelection');
         };
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
@@ -1575,6 +1575,12 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.isPlayable();
                 case 'clickAbility':
                     return card.isPlayable() && !card.isTechnique();
+                case 'clickAbilityPostCleanup':
+                    var clickAbilityPostCleanup_abilities = [
+                        DaleCard_2.DaleCard.CT_GOODOLDTIMES,
+                        DaleCard_2.DaleCard.CT_MARKETDISCOVERY
+                    ];
+                    return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
                 case 'clickRetainSelection':
                     return true;
                 case 'single':
@@ -3476,7 +3482,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             switch (stateName) {
                 case 'postCleanUpPhase':
-                    this.myHand.setSelectionMode('clickAbility', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+                    this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
                     break;
                 case 'playerTurn':
                     this.mainClientState.enter();
