@@ -393,7 +393,7 @@ class Dale extends Gamegui
 				this.setPurchaseSelectionModes(client_glue_args);
 				this.myHand.unselectAll();
 				this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
-				for (let card_id of client_glue_args.funds_card_ids!) {
+				for (let card_id of client_glue_args.funds_card_ids!.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 					if (new DaleCard(card_id).effective_type_id == DaleCard.CT_GLUE) {
 						this.myHand.selectItem(card_id);

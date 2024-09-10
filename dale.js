@@ -3627,7 +3627,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.setPurchaseSelectionModes(client_glue_args);
                     this.myHand.unselectAll();
                     this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
-                    for (var _c = 0, _d = client_glue_args.funds_card_ids; _c < _d.length; _c++) {
+                    for (var _c = 0, _d = client_glue_args.funds_card_ids.slice().reverse(); _c < _d.length; _c++) {
                         var card_id = _d[_c];
                         this.myHand.selectItem(card_id, true);
                         if (new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_GLUE) {
