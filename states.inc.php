@@ -89,6 +89,7 @@ $machinestates = array(
 			'trSpecialOffer' => 53,
 			'trDirtyExchange' => 54,
 			'trSabotage' => 55,
+			'trMagnet' => 58,
 		),
 	),
 	36 => array(
@@ -193,6 +194,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argBlindfoldDecideValue',
 		'possibleactions' => ['actBlindfoldDecideValue'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	58 => array(
+		'name' => 'magnet',
+		'description' => clienttranslate('Magnet: ${actplayer} must search their deck for a card'),
+		'descriptionmyturn' => clienttranslate('Magnet: ${you} must search your deck for a card'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContent',
+		'possibleactions' => ['actMagnet'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

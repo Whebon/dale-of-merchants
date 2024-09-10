@@ -2055,7 +2055,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 case 'single':
                 case 'singleAnimalfolk':
                     this.page.onSelectPileCard(this, card.id);
-                    this.popin.hide();
+                    this.closePopin();
                     break;
                 case 'multiple':
                     this.orderedSelection.toggle(card.id);
@@ -2163,7 +2163,28 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
             _super.prototype.push.call(this, new DaleCard_5.DaleCard(0, 0), from, onEnd, duration, delay);
         };
         HiddenPile.prototype.openPopin = function () {
-            this.page.showMessage(_("This deck contains ") + this.size + _(" cards"), 'info');
+            if (this.cards[0] === undefined || this.cards[0].id == 0) {
+                this.page.showMessage(_("This deck contains ") + this.size + _(" cards"), 'info');
+            }
+            else {
+                _super.prototype.openPopin.call(this);
+            }
+        };
+        HiddenPile.prototype.peek = function (exclude_sliding_cards) {
+            if (exclude_sliding_cards === void 0) { exclude_sliding_cards = false; }
+            return _super.prototype.peek.call(this, exclude_sliding_cards) ? new DaleCard_5.DaleCard(0, 0) : undefined;
+        };
+        HiddenPile.prototype.setContent = function (cards) {
+            if (this.cards.length != cards.length) {
+                throw Error("Client expected a deck of size ".concat(this.cards.length, ", but got size ").concat(cards.length, " from the server"));
+            }
+            this.cards = cards;
+            this.updateHTML();
+        };
+        HiddenPile.prototype.hideContent = function () {
+            var size = this.cards.length;
+            this.cards = [];
+            this.pushHiddenCards(size);
         };
         return HiddenPile;
     }(Pile_1.Pile));
@@ -3710,6 +3731,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     var client_safetyPrecaution_args = this.mainClientState.args;
                     new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); });
                     break;
+                case 'magnet':
+                    var magnet_args = args.args;
+                    this.myDeck.setContent(magnet_args._private.cards.map(DaleCard_10.DaleCard.of));
+                    this.myDeck.setSelectionMode('single');
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -3859,6 +3885,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_safetyPrecaution':
                     TargetingLine_1.TargetingLine.remove();
+                    break;
+                case 'magnet':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
                     break;
             }
         };
@@ -4511,7 +4541,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.onSelectMarketPileCard(pile, card);
             }
             else {
-                this.onOtherDiscardPileSelectionChanged(pile, card);
+                this.onOtherPileSelectionChanged(pile, card);
             }
         };
         Dale.prototype.onSelectMyDiscardPileCard = function (pile, card) {
@@ -4544,9 +4574,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
             }
         };
-        Dale.prototype.onOtherDiscardPileSelectionChanged = function (pile, card) {
-            console.log("onOtherDiscardPileSelectionChanged");
+        Dale.prototype.onOtherPileSelectionChanged = function (pile, card) {
+            console.log("onOtherPileSelectionChanged");
             switch (this.gamedatas.gamestate.name) {
+                case 'magnet':
+                    this.bgaPerformAction('actMagnet', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         Dale.prototype.onUnselectHandCard = function (card_id) {
@@ -4945,6 +4980,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     else {
                         this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
+                    }
+                    break;
+                case DaleCard_10.DaleCard.CT_MAGNET:
+                    fizzle = this.myDeck.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
                 default:

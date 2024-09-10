@@ -26,7 +26,7 @@ type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfo
  */
 export class Pile implements DaleLocation {
     protected page: Gamegui;
-    private cards: DaleCard[];
+    protected cards: DaleCard[];
     private containerHTML: HTMLElement;
     private sizeHTML: HTMLElement;
     private selectedSizeHTML: HTMLElement;
@@ -97,7 +97,7 @@ export class Pile implements DaleLocation {
     /**
      * Attach the current topCard to the topCardHTML
      */
-    private updateHTML() {
+    protected updateHTML() {
         let topCard = this.peek(true);
         if (this.selectionMode == 'multiple' && this.orderedSelection.getMaxSize() > 0) {
             this.selectedSizeHTML.classList.remove("dale-hidden");
@@ -413,7 +413,7 @@ export class Pile implements DaleLocation {
             case 'single':
             case 'singleAnimalfolk':
                 (this.page as any).onSelectPileCard(this, card.id);
-                this.popin.hide();
+                this.closePopin();
                 break;
             case 'multiple':
                 this.orderedSelection.toggle(card.id);

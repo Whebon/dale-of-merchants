@@ -137,6 +137,7 @@ interface GameStates {
 			'trSpecialOffer': 53,
 			'trDirtyExchange': 54,
 			'trSabotage': 55,
+			'trMagnet': 58,
 		},
 	},
 	36: {
@@ -320,6 +321,23 @@ interface GameStates {
 		'possibleactions': {
 			'actBlindfoldDecideValue': [{
 				'name': 'value',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	58: {
+		'name': 'magnet',
+		'description': 'Magnet: ${actplayer} must search their deck for a card',
+		'descriptionmyturn': 'Magnet: ${you} must search your deck for a card',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContent',
+		'possibleactions': {
+			'actMagnet': [{
+				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],

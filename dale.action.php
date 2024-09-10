@@ -195,4 +195,15 @@ class action_dale extends APP_GameAction
 		$this->game->actBlindfoldDecideValue( $value );
 		self::ajaxResponse();
 	}
+
+	public function actMagnet()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actMagnet( $card_id );
+		self::ajaxResponse();
+	}
 }

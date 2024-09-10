@@ -58,7 +58,7 @@ class Dale extends Gamegui
 	playerHandSizes: Record<number, Counter> = {};
 
 	/** A hidden draw pile for each player */
-	playerDecks: Record<number, Pile> = {};
+	playerDecks: Record<number, HiddenPile> = {};
 
 	/** An open discard pile for each player */
 	playerDiscards: Record<number, Pile> = {};
@@ -78,7 +78,7 @@ class Dale extends Gamegui
 	}
 
 	/** Current player's draw pile (this client's draw pil) */
-	get myDeck(): Pile {
+	get myDeck(): HiddenPile {
 		return this.playerDecks[this.player_id]!;
 	}
 
@@ -317,6 +317,7 @@ class Dale extends Gamegui
 			this.validateChameleonsLocal();
 		}
 
+		//IMPORTANT: the following switch-case is for NON-active players
 		if (!this.isCurrentPlayerActive()) {
 			switch( stateName ){
 				case 'playerTurn':
@@ -549,6 +550,11 @@ class Dale extends Gamegui
 					(source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)
 				)
 				break;
+			case 'magnet':
+				const magnet_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(magnet_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('single');
+				break;
 		}
 	}
 
@@ -703,6 +709,10 @@ class Dale extends Gamegui
 				break;
 			case 'client_safetyPrecaution':
 				TargetingLine.remove();
+				break;
+			case 'magnet':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
 				break;
 		}
 	}
@@ -1518,7 +1528,7 @@ class Dale extends Gamegui
 			this.onSelectMarketPileCard(pile, card);
 		}
 		else {
-			this.onOtherDiscardPileSelectionChanged(pile, card);
+			this.onOtherPileSelectionChanged(pile, card);
 		}
 	}
 
@@ -1554,10 +1564,14 @@ class Dale extends Gamegui
 		}
 	}
 
-	onOtherDiscardPileSelectionChanged(pile: Pile, card: DaleCard) {
-		console.log("onOtherDiscardPileSelectionChanged");
+	onOtherPileSelectionChanged(pile: Pile, card: DaleCard) {
+		console.log("onOtherPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
-
+			case 'magnet':
+				this.bgaPerformAction('actMagnet', {
+					card_id: card.id
+				})
+				break
 		}
 	}
 
@@ -2002,6 +2016,15 @@ class Dale extends Gamegui
 				}
 				else {
 					this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
+				}
+				break;
+			case DaleCard.CT_MAGNET:
+				fizzle = this.myDeck.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
 			default:

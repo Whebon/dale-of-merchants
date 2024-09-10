@@ -443,6 +443,37 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * Draw a specific card from your deck and place it into your hand. Then, shuffle the deck
+     * @param string $msg notification message for all players
+     * @param int $card_id the card to draw from the specified player's draw pile
+     * @param bool $to_limbo (optional) default false. If true, the cards are placed in limbo. If false, the cards are placed in hand.
+     * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
+     * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
+     */
+    function drawCardId(string $msg, int $card_id, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null) {
+        if ($from_player_id == null) {
+            $from_player_id = $this->getActivePlayerId();
+        }
+        if ($to_player_id == null) {
+            $to_player_id = $this->getActivePlayerId();
+        }
+        $card = $this->cards->getCardFromLocation($card_id, DECK.$from_player_id);
+        $this->cards->moveCard($card_id, HAND.$to_player_id);
+        $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array(
+            "player_id" => $to_player_id,
+            "player_name" => $this->getPlayerNameById($to_player_id),
+            "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameById($from_player_id),
+            "nbr" => 1,
+            "_private" => array(
+                "card" => $card
+            ),
+            "deck_player_id" => $from_player_id,
+            "to_limbo" => $to_limbo
+        ));
+        $this->cards->shuffle(DECK.$from_player_id);
+    }
+
+    /**
      * Ditch a single specified card from the hand of the active player
      * @param string $msg notification message for all players
      * @param array $dbcard card that needs to be ditched
@@ -2286,6 +2317,12 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_SAFETYPRECAUTION. You have cards in your stall");
                     }
                     break;
+                case CT_MAGNET:
+                    $cards = $this->cards->getCardsInLocation(DECK.$player_id);
+                    if (count($cards) >= 1) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_MAGNET. There exists a card in the deck.");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -2760,6 +2797,10 @@ class Dale extends DaleTableBasic
                 ));
                 $this->gamestate->nextState("trSamePlayer");
                 break;
+            case CT_MAGNET:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trMagnet");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3002,6 +3043,13 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actMagnet($card_id) {
+        $this->checkAction("actMagnet");
+        $player_id = $this->getActivePlayerId();
+        $this->drawCardId(clienttranslate('Magnet: ${player_name} draws a card from their deck'), $card_id);
+        $this->fullyResolveCard($player_id);
+    }
+
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
@@ -3170,6 +3218,24 @@ class Dale extends DaleTableBasic
             'card_name' => $this->getCardName($dbcard),
             'possible_values' => $this->getBaseEffectiveValues()
         );
+    }
+
+    function argMyDeckContent() {
+        $_private = array();
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg');
+        $_private[$player_id] = array('cards' => array_values($dbcards));
+        return array('_private' => $_private);
+    }
+
+    function argDeckContent() {
+        $_private = array();
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $player_id => $player) {
+            $dbcards = array_values($this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg'));
+            $_private[$player_id] = array('cards' => array_values($dbcards));
+        }
+        return array('_private' => $_private);
     }
 
 //////////////////////////////////////////////////////////////////////////////
