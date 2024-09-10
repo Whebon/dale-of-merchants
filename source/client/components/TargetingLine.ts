@@ -164,7 +164,26 @@ export class TargetingLine {
             TargetingLine.targetingLines.splice(index, 1);
         }
     }
+
+    /**
+     * Remove the last created `TargetingLine`
+     */
+    public static remove() {
+        if (TargetingLine.targetingLines.length > 0) {
+            TargetingLine.targetingLines[TargetingLine.targetingLines.length-1]!.remove();
+        }
+    }
+
+    /**
+     * @returns `true` if any `TargetingLine` exists
+     */
+    public static exists(): boolean {
+        return TargetingLine.targetingLines.length > 0;
+    }
     
+    /**
+     * Remove all `TargetingLine`s
+     */
     public static removeAll() {
         for (let line of TargetingLine.targetingLines.slice()) {
             line.remove();

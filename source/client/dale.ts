@@ -419,7 +419,7 @@ class Dale extends Gamegui
 					}
 				}
 				const client_acorn_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
-				this.targetingLine = new TargetingLine(
+				new TargetingLine(
 					new DaleCard(client_acorn_args.technique_card_id),
 					client_acorn_targets,
 					"dale-line-source-technique",
@@ -431,7 +431,7 @@ class Dale extends Gamegui
 				break;
 			case 'client_giftVoucher':
 				const client_giftVoucher_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
-				this.targetingLine = new TargetingLine(
+				new TargetingLine(
 					new DaleCard(client_giftVoucher_args.technique_card_id),
 					this.market!.getCards(),
 					"dale-line-source-technique",
@@ -477,7 +477,7 @@ class Dale extends Gamegui
 					throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
 				}
 				setTimeout((() => {
-					this.targetingLine = new TargetingLine(
+					new TargetingLine(
 						new DaleCard(client_treasureHunter_args.technique_card_id),
 						targets,
 						"dale-line-source-technique",
@@ -519,7 +519,7 @@ class Dale extends Gamegui
 					this.marketDiscard.setSelectionMode('noneCantViewContent');
 				}
 				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
-				this.targetingLine = new TargetingLine(
+				new TargetingLine(
 					this.chameleonArgs!.firstSource,
 					this.chameleonArgs!.currentTargets,
 					"dale-line-source-chameleon",
@@ -610,10 +610,10 @@ class Dale extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'client_acorn':
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				break;
 			case 'client_giftVoucher':
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				break;
 			case 'client_loyalPartner':
 				this.market!.setSelectionMode(0);
@@ -631,7 +631,7 @@ class Dale extends Gamegui
 					}
 				}
 				this.myHand.setSelectionMode('none');
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				break;
 			case 'dirtyExchange':
 				this.myHand.setSelectionMode('none');
@@ -645,7 +645,7 @@ class Dale extends Gamegui
 						pile.setSelectionMode('none');
 					}
 				}
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				break;
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('none');
@@ -660,7 +660,7 @@ class Dale extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'chameleon_reflection':
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
 					if (+player_id != +this.player_id) {
 						pile.setSelectionMode('none');
@@ -668,14 +668,14 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'chameleon_goodoldtimes':
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
 				break;
 			case 'chameleon_flexibleShopkeeper':
 			case 'chameleon_trendsetting':
 			case 'chameleon_seeingdoubles':
-				this.targetingLine?.remove();
+				TargetingLine.remove();
 				break;
 			//TODO: safely remove this
 			// case 'client_fizzle':
@@ -688,8 +688,7 @@ class Dale extends Gamegui
 			case 'client_calculations':
 				const client_calculations_to_client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
 				this.market!.setSelectionMode(0);
-				this.targetingLine?.remove();
-				this.targetingLine = undefined;
+				TargetingLine.remove();
 				if (client_calculations_to_client_purchase_args.optionalArgs?.calculations_card_ids === undefined) {
 					this.market!.restoreArrangement();
 				}
@@ -1420,7 +1419,6 @@ class Dale extends Gamegui
 	onMarketCardClick(card: DaleCard, pos: number) {
 		pos = this.market!.getValidPos(pos);
 		console.log("onMarketCardClick");
-		console.log(this.gamedatas.gamestate.name);
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
@@ -1458,7 +1456,7 @@ class Dale extends Gamegui
 				});
 				break;
 			case 'client_calculations':
-				if (!this.targetingLine) {
+				if (!TargetingLine.exists()) {
 					const calculations_args = this.mainClientState.args as ClientGameStates['client_calculations'];
 					const calculations_targets: DaleCard[] = [];
 					for (let target_id of calculations_args.card_ids) {
@@ -1466,15 +1464,14 @@ class Dale extends Gamegui
 							calculations_targets.push(new DaleCard(target_id));
 						}
 					}
-					this.targetingLine = new TargetingLine(
+					new TargetingLine(
 						card,
 						calculations_targets,
 						'dale-line-source-technique',
 						'dale-line-target-technique',
 						'dale-line-technique',
 						(source_id: number) => {
-							this.targetingLine?.remove();
-							this.targetingLine = undefined;
+							TargetingLine.remove();
 						},
 						(source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)
 					);
@@ -1620,7 +1617,7 @@ class Dale extends Gamegui
 				const label = _("Place '") + card.name + _("' on another player\'s deck");
 				this.setMainTitle(label);
 				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
-				this.targetingLine = new TargetingLine(
+				new TargetingLine(
 					card,
 					client_rottenFood_targets,
 					"dale-line-source-technique",
@@ -2107,7 +2104,6 @@ class Dale extends Gamegui
 	onCancelClient() {
 		console.log("onCancelClient");
 		TargetingLine.removeAll();
-		this.targetingLine = undefined;
 		if (this.chameleonArgs) {
 			//undo the chameleon state
 			this.chameleonArgs.firstSource.unbindChameleonLocal();
@@ -2383,8 +2379,7 @@ class Dale extends Gamegui
 		args.card_ids[index_target] = temp;
 		this.market!.rearrange(args.card_ids);
 		this.onCalculationsUpdateActionButton(source_id);
-		this.targetingLine?.remove();
-		this.targetingLine = undefined;
+		TargetingLine.remove();
 	}
 
 	onCalculationsUpdateActionButton(card_id: number | null) {
@@ -2406,9 +2401,8 @@ class Dale extends Gamegui
 	}
 	
 	onCalculationsCancel() {
-		if (this.targetingLine) {
-			this.targetingLine?.remove();
-			this.targetingLine = undefined;
+		if (TargetingLine.exists()) {
+			TargetingLine.remove();
 		}
 		else {
 			this.market!.restoreArrangement();
@@ -3225,8 +3219,8 @@ class Dale extends Gamegui
 		else if (arg == 'debugDaleCard') {
 			console.log(new DaleCard(notif.args.card_id));
 		}
-		else if (arg == 'targetingLine') {
-			console.log(this.targetingLine);
+		else if (arg == '') {
+
 		}
 		else if (arg == '') {
 			
