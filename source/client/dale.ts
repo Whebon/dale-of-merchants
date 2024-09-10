@@ -1780,8 +1780,6 @@ class Dale extends Gamegui
 			this.mainClientState.enterOnStack('client_essentialPurchase', args);
 		}
 		else {
-			console.log("AAAAAAAAAAAAAAAAAAAAAA");
-			console.log(args);
 			this.bgaPerformAction('actPurchase', {
 				funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
 				market_card_id: card_id,

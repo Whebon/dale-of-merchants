@@ -2218,12 +2218,15 @@ class Dale extends DaleTableBasic
             $funds_card_ids = array_values(array_diff($funds_card_ids, $glue_card_ids));
             foreach ($glue_card_ids as $glue_card_id) {
                 unset($funds_cards[$glue_card_id]);
+                $this->notifyAllPlayers('message', clienttranslate('${player_name} pays with a Glue card and keeps it in their hand'), array(
+                    'player_name' => $this->getActivePlayerName()
+                ));
             }
         }
 
         //Discard the funds
         $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array (
+        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_ids' => $funds_card_ids,

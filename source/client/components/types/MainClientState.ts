@@ -176,7 +176,9 @@ export class MainClientState {
      * Leave all client states and return to the default client state
      */
     public leaveAll() {
-        this._stack = [];
+        while (this._stack.length > 0) {
+            this.leave(); //see issue #97.2 and #97.3
+        }
         this.setPassiveSelected(false);
         this.enter('client_technique');
     }

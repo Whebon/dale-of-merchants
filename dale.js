@@ -3134,7 +3134,9 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             }
         };
         MainClientState.prototype.leaveAll = function () {
-            this._stack = [];
+            while (this._stack.length > 0) {
+                this.leave();
+            }
             this.setPassiveSelected(false);
             this.enter('client_technique');
         };
@@ -4785,8 +4787,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.mainClientState.enterOnStack('client_essentialPurchase', args);
             }
             else {
-                console.log("AAAAAAAAAAAAAAAAAAAAAA");
-                console.log(args);
                 this.bgaPerformAction('actPurchase', {
                     funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
                     market_card_id: card_id,
