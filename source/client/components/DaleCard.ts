@@ -812,7 +812,8 @@ export class DaleCard {
             const new_overlay = document.createElement("div");
             new_overlay.classList.add("dale-card");
             new_overlay.classList.add("dale-chameleon-overlay");
-            new_overlay.setAttribute('style', Images.getCardStyle(this.effective_type_id));
+            Images.setCardStyle(new_overlay, this.effective_type_id);
+            //new_overlay.setAttribute('style', Images.getCardStyle(this.effective_type_id));
             new_overlay.appendChild(chameleon_icon);
             //new_overlay.dataset['typeid'] = String(this.effective_type_id);
             div.appendChild(new_overlay);

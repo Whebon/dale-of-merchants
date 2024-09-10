@@ -1154,7 +1154,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 var new_overlay = document.createElement("div");
                 new_overlay.classList.add("dale-card");
                 new_overlay.classList.add("dale-chameleon-overlay");
-                new_overlay.setAttribute('style', Images_2.Images.getCardStyle(this.effective_type_id));
+                Images_2.Images.setCardStyle(new_overlay, this.effective_type_id);
                 new_overlay.appendChild(chameleon_icon);
                 div.appendChild(new_overlay);
                 if (fade) {
