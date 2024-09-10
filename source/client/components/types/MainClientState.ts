@@ -41,7 +41,7 @@ export class MainClientState {
 
     private get _descriptionmyturn() {
         switch(this._name) {
-            //Main Client States
+            //Main client states
             case 'client_technique':
                 return _("${you} must play a technique, purchase, build, or");
             case 'client_purchase':
@@ -50,10 +50,14 @@ export class MainClientState {
                 return _("${you} must select cards to build in stack ${stack_index_plus_1}");
             case 'client_inventory':
                 return _("${you} must select any number of cards to discard");
-            case 'client_essentialPurchase':
-                return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
             
-            //Chameleon States
+            //Optional purchase states
+            case 'client_essentialPurchase':
+                return _("Essential Purchase: ${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+            case 'client_glue':
+                return _("Glue: ${you} may keep Glue in your hand");
+            
+            //Chameleon states
             case 'chameleon_flexibleShopkeeper':
                 return _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack");
             case 'chameleon_reflection':
@@ -76,23 +80,23 @@ export class MainClientState {
             case 'chameleon_seeingdoubles':
                 return _("Seeing Doubles: ${you} must copy another card in your hand");
             
-            //Generic Passive States
+            //Generic passive states
             case 'client_choicelessPassiveCard':
                 return _("${card_name}: ${you} may use this card's ability");
             
-            //Specific Passive States
+            //Specific passive states
             case 'client_marketDiscovery':
                 return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
             case 'client_calculations':
                 return _("${card_name}: ${you} may rearrange any cards in the market");
             
-            //Generic Technique States
+            //Generic technique states
             case 'client_fizzle':
                 return _("${card_name}: Are you sure you want to play this technique without any effects?");
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
 
-            //Specific Technique States
+            //Specific technique states
             case 'client_swiftBroker':
                 return _("${card_name}: ${you} may choose the order to discard your hand");
             case 'client_shatteredRelic':

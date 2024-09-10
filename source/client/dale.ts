@@ -346,22 +346,9 @@ class Dale extends Gamegui
 				this.mainClientState.enter();
 				break;
 			case 'client_purchase':
-				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase'])
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
-				if (client_purchase_args.market_discovery_card_id === undefined) {
-					this.market!.setSelected(client_purchase_args.pos, true);
-				}
-				else {
-					if (this.myHand.orderedSelection.getSize() == 0) {
-						this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
-					}
-					this.marketDiscard.selectTopCard();
-					this.marketDiscard.setSelectionMode("top");
-				}
-				if (client_purchase_args.calculations_card_id !== undefined) {
-					this.myHand.selectItem(client_purchase_args.calculations_card_id);
-				}
+				this.setPurchaseSelectionModes(this.mainClientState.args as ClientGameStates['client_purchase']);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
@@ -381,20 +368,35 @@ class Dale extends Gamegui
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_essentialPurchase':
-				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);
-				if (client_essentialPurchase_args.market_discovery_card_id) {
-					throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase")
-				}
-				else {
-					this.market!.setSelected(client_essentialPurchase_args.pos, true);
-				}
+				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);	
+				this.setPurchaseSelectionModes(client_essentialPurchase_args);
+				this.myHand.unselectAll();
 				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
 				let junk_selected = 0;
+				let client_essentialPurchase_skip = true;
 				for (let card_id of client_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 					if (junk_selected < 3 && new DaleCard(card_id).isJunk()) {
 						this.myHand.selectItem(card_id);
 						junk_selected++;
+					}
+					if (new DaleCard(card_id).isEffectiveJunk()) {
+						client_essentialPurchase_skip = false;
+					}
+				}
+				if (client_essentialPurchase_skip) {
+					this.onPurchase();
+				}
+				break;
+			case 'client_glue':	
+				const client_glue_args = (this.mainClientState.args as ClientGameStates['client_glue']);
+				this.setPurchaseSelectionModes(client_glue_args);
+				this.myHand.unselectAll();
+				this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
+				for (let card_id of client_glue_args.funds_card_ids!) {
+					this.myHand.selectItem(card_id, true);
+					if (new DaleCard(card_id).effective_type_id == DaleCard.CT_GLUE) {
+						this.myHand.selectItem(card_id);
 					}
 				}
 				break;
@@ -614,7 +616,10 @@ class Dale extends Gamegui
 			case 'client_essentialPurchase':	
 				this.market!.setSelectionMode(0);
 				this.myHand.orderedSelection.secondaryToPrimary();
-				//this.myHand.setSelectionMode('none'); //purchase state will be restored
+				break;
+			case 'client_glue':
+				this.market!.setSelectionMode(0);
+				this.myHand.orderedSelection.secondaryToPrimary();
 				break;
 			case 'winterIsComing':
 				this.myHand.setSelectionMode('none');
@@ -937,6 +942,11 @@ class Dale extends Gamegui
 			case 'dangerousTest':
 				this.addActionButton("confirm-button", _("Discard selected"), "onDangerousTest");
 				break;
+			case 'client_glue':
+				this.addActionButton("keep-button", _("Keep"), "onPurchase");
+				this.addActionButton("discard-button", _("Discard"), "onGlueDiscard");
+				this.addActionButtonCancelClient();
+				break;
 		}
 	}
 
@@ -1149,6 +1159,25 @@ class Dale extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
+
+	/**
+	 * Set standard selection modes for purchase-based client states
+	 */
+	public setPurchaseSelectionModes(client_purchase_args: ClientGameStates['client_purchase']) {
+		if (client_purchase_args.market_discovery_card_id === undefined) {
+			this.market!.setSelected(client_purchase_args.pos, true);
+		}
+		else {
+			if (this.myHand.orderedSelection.getSize() == 0) {
+				this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
+			}
+			this.marketDiscard.selectTopCard();
+			this.marketDiscard.setSelectionMode("top");
+		}
+		if (client_purchase_args.calculations_card_id !== undefined && this.myHand.orderedSelection.getSize() == 0) {
+			this.myHand.selectItem(client_purchase_args.calculations_card_id);
+		}
+	}
 
 	/**
 	 * Parse custom placeholders in strings
@@ -1598,6 +1627,14 @@ class Dale extends Gamegui
 			case 'winterIsComing':
 				this.onBuildSelectionChanged();
 				break;
+			case 'client_glue':
+				if (this.myHand.orderedSelection.getSize() == 0) {
+					const client_glue_button = $("keep-button");
+					if (client_glue_button) {
+						dojo.setStyle(client_glue_button, 'display', 'none');
+					}
+				}
+				break;
 		}
 	}
 
@@ -1676,6 +1713,12 @@ class Dale extends Gamegui
 					}
 				}
 				break;
+			case 'client_glue':
+				const client_glue_button = $("keep-button");
+				if (client_glue_button) {
+					dojo.setStyle(client_glue_button, 'display', '');
+				}
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -1708,6 +1751,9 @@ class Dale extends Gamegui
 			case 'client_essentialPurchase':
 				args.optionalArgs.essential_purchase_ids = this.myHand.orderedSelection.get();
 				break;
+			case 'client_glue':
+				args.optionalArgs.glue_card_ids = this.myHand.orderedSelection.get();
+				break;
 			default:
 				throw new Error(`You cannot purchase a card from gamestate '${this.gamedatas.gamestate}'`)
 		}
@@ -1727,17 +1773,22 @@ class Dale extends Gamegui
 			}
 			card_id = card.id;
 		}
-		if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
+		if (!this.mainClientState.stackIncludes('client_glue') && DaleCard.containsTypeId(args.funds_card_ids, DaleCard.CT_GLUE)) {
+			this.mainClientState.enterOnStack('client_glue', args);
+		}
+		else if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
 			this.mainClientState.enterOnStack('client_essentialPurchase', args);
 		}
 		else {
+			console.log("AAAAAAAAAAAAAAAAAAAAAA");
+			console.log(args);
 			this.bgaPerformAction('actPurchase', {
 				funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
 				market_card_id: card_id,
 				chameleons_json: DaleCard.getLocalChameleonsJSON(),
 				args: JSON.stringify(args.optionalArgs)
 			})
-			if (this.gamedatas.gamestate.name != 'client_purchase') {
+			while (this.gamedatas.gamestate.name != 'client_purchase') {
 				this.mainClientState.leave(); //see issue #97.2 and #97.3
 			}
 		}
@@ -2465,6 +2516,13 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actDangerousTest', {
 			card_ids: this.arrayToNumberList(card_ids)
 		})
+	}
+
+	onGlueDiscard() {
+		for (let card_id of this.myHand.orderedSelection.get()) {
+			this.myHand.unselectItem(card_id);
+		}
+		this.onPurchase();
 	}
 
 

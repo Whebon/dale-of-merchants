@@ -21,8 +21,9 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'multiple3':					multiple cards can be selected, but no more than 3
  * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
+ * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'single' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'single' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -238,6 +239,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'essentialPurchase':
 				this.orderedSelection.setMaxSize(3);
 				break;
+			case 'glue':
+				this.orderedSelection.setMaxSize(Infinity);
+				break;
 		}
 	}
 
@@ -273,6 +277,8 @@ export class DaleStock extends Stock implements DaleLocation {
 				return true;
 			case 'essentialPurchase':
 				return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
+			case 'glue':
+				return card.effective_type_id == DaleCard.CT_GLUE;
 			default:
 				const match = this.selectionMode.match(/^only_card_id(\d+)$/);
 				if (match) {

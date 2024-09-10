@@ -344,6 +344,7 @@ declare global {
 			optionalArgs: {
 				essential_purchase_ids?: number[]
 				calculations_card_ids?: number[]
+				glue_card_ids?: number[]
 			}
 		}
 		'client_technique': {}
@@ -351,6 +352,7 @@ declare global {
 		'client_inventory': {}
 		'client_essentialPurchase': ClientGameStates['client_purchase']
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
+		'client_glue': ClientGameStates['client_purchase']
 	}
 
 	//

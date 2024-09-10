@@ -328,6 +328,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 case 'numbers':
                     icon = DaleIcons_1.DaleIcons.getNumberIcon(Math.min(index, 4));
                     break;
+                case 'hand':
+                    icon = DaleIcons_1.DaleIcons.getHandIcon();
+                    break;
             }
             if (icon) {
                 if (secondary) {
@@ -1563,6 +1566,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'essentialPurchase':
                     this.orderedSelection.setMaxSize(3);
                     break;
+                case 'glue':
+                    this.orderedSelection.setMaxSize(Infinity);
+                    break;
             }
         };
         DaleStock.prototype.isClickable = function (card_id) {
@@ -1594,6 +1600,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return true;
                 case 'essentialPurchase':
                     return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
+                case 'glue':
+                    return card.effective_type_id == DaleCard_2.DaleCard.CT_GLUE;
                 default:
                     var match = this.selectionMode.match(/^only_card_id(\d+)$/);
                     if (match) {
@@ -3020,7 +3028,9 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_inventory':
                         return _("${you} must select any number of cards to discard");
                     case 'client_essentialPurchase':
-                        return _("${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+                        return _("Essential Purchase: ${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+                    case 'client_glue':
+                        return _("Glue: ${you} may keep Glue in your hand");
                     case 'chameleon_flexibleShopkeeper':
                         return _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack");
                     case 'chameleon_reflection':
@@ -3569,22 +3579,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.mainClientState.enter();
                     break;
                 case 'client_purchase':
-                    var client_purchase_args = this.mainClientState.args;
                     this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
                     this.market.setSelectionMode(1, undefined, "dale-wrap-purchase");
-                    if (client_purchase_args.market_discovery_card_id === undefined) {
-                        this.market.setSelected(client_purchase_args.pos, true);
-                    }
-                    else {
-                        if (this.myHand.orderedSelection.getSize() == 0) {
-                            this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
-                        }
-                        this.marketDiscard.selectTopCard();
-                        this.marketDiscard.setSelectionMode("top");
-                    }
-                    if (client_purchase_args.calculations_card_id !== undefined) {
-                        this.myHand.selectItem(client_purchase_args.calculations_card_id);
-                    }
+                    this.setPurchaseSelectionModes(this.mainClientState.args);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_technique':
@@ -3605,20 +3602,36 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_essentialPurchase':
                     var client_essentialPurchase_args = this.mainClientState.args;
-                    if (client_essentialPurchase_args.market_discovery_card_id) {
-                        throw new Error("NOT IMPLEMENTED: interaction market discovery + essential purchase");
-                    }
-                    else {
-                        this.market.setSelected(client_essentialPurchase_args.pos, true);
-                    }
+                    this.setPurchaseSelectionModes(client_essentialPurchase_args);
+                    this.myHand.unselectAll();
                     this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
                     var junk_selected = 0;
+                    var client_essentialPurchase_skip = true;
                     for (var _i = 0, _b = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _b.length; _i++) {
                         var card_id = _b[_i];
                         this.myHand.selectItem(card_id, true);
                         if (junk_selected < 3 && new DaleCard_10.DaleCard(card_id).isJunk()) {
                             this.myHand.selectItem(card_id);
                             junk_selected++;
+                        }
+                        if (new DaleCard_10.DaleCard(card_id).isEffectiveJunk()) {
+                            client_essentialPurchase_skip = false;
+                        }
+                    }
+                    if (client_essentialPurchase_skip) {
+                        this.onPurchase();
+                    }
+                    break;
+                case 'client_glue':
+                    var client_glue_args = this.mainClientState.args;
+                    this.setPurchaseSelectionModes(client_glue_args);
+                    this.myHand.unselectAll();
+                    this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
+                    for (var _c = 0, _d = client_glue_args.funds_card_ids; _c < _d.length; _c++) {
+                        var card_id = _d[_c];
+                        this.myHand.selectItem(card_id, true);
+                        if (new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_GLUE) {
+                            this.myHand.selectItem(card_id);
                         }
                     }
                     break;
@@ -3660,8 +3673,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_rottenFood':
-                    for (var _c = 0, _d = Object.entries(this.allDecks); _c < _d.length; _c++) {
-                        var _e = _d[_c], player_id = _e[0], deck = _e[1];
+                    for (var _e = 0, _f = Object.entries(this.allDecks); _e < _f.length; _e++) {
+                        var _g = _f[_e], player_id = _g[0], deck = _g[1];
                         if (+player_id != this.player_id) {
                             deck.setSelectionMode('noneCantViewContent');
                         }
@@ -3677,8 +3690,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_treasureHunter':
                     var client_treasureHunter_args_1 = this.mainClientState.args;
                     var targets_2 = [];
-                    for (var _f = 0, _g = Object.entries(this.playerDiscards); _f < _g.length; _f++) {
-                        var _h = _g[_f], player_id = _h[0], pile = _h[1];
+                    for (var _h = 0, _j = Object.entries(this.playerDiscards); _h < _j.length; _h++) {
+                        var _k = _j[_h], player_id = _k[0], pile = _k[1];
                         if (+player_id != +this.player_id && pile.size > 0) {
                             pile.setSelectionMode('noneCantViewContent');
                             targets_2.push(pile.peek());
@@ -3711,8 +3724,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_trendsetting':
                 case 'chameleon_seeingdoubles':
                     if (stateName == 'chameleon_reflection') {
-                        for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
-                            var _l = _k[_j], player_id = _l[0], pile = _l[1];
+                        for (var _l = 0, _m = Object.entries(this.playerDiscards); _l < _m.length; _l++) {
+                            var _o = _m[_l], player_id = _o[0], pile = _o[1];
                             if (+player_id != +this.player_id) {
                                 pile.setSelectionMode('noneCantViewContent');
                             }
@@ -3791,6 +3804,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myStall.setLeftPlaceholderClickable(false);
                     break;
                 case 'client_essentialPurchase':
+                    this.market.setSelectionMode(0);
+                    this.myHand.orderedSelection.secondaryToPrimary();
+                    break;
+                case 'client_glue':
                     this.market.setSelectionMode(0);
                     this.myHand.orderedSelection.secondaryToPrimary();
                     break;
@@ -4122,6 +4139,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'dangerousTest':
                     this.addActionButton("confirm-button", _("Discard selected"), "onDangerousTest");
                     break;
+                case 'client_glue':
+                    this.addActionButton("keep-button", _("Keep"), "onPurchase");
+                    this.addActionButton("discard-button", _("Discard"), "onGlueDiscard");
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         Dale.prototype.verifyChameleon = function (card, pile) {
@@ -4295,6 +4317,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 if (!isValid) {
                     new DaleCard_10.DaleCard(chameleon_card_id).unbindChameleonLocal();
                 }
+            }
+        };
+        Dale.prototype.setPurchaseSelectionModes = function (client_purchase_args) {
+            if (client_purchase_args.market_discovery_card_id === undefined) {
+                this.market.setSelected(client_purchase_args.pos, true);
+            }
+            else {
+                if (this.myHand.orderedSelection.getSize() == 0) {
+                    this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
+                }
+                this.marketDiscard.selectTopCard();
+                this.marketDiscard.setSelectionMode("top");
+            }
+            if (client_purchase_args.calculations_card_id !== undefined && this.myHand.orderedSelection.getSize() == 0) {
+                this.myHand.selectItem(client_purchase_args.calculations_card_id);
             }
         };
         Dale.prototype.format_string_recursive = function (log, args) {
@@ -4610,6 +4647,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'winterIsComing':
                     this.onBuildSelectionChanged();
                     break;
+                case 'client_glue':
+                    if (this.myHand.orderedSelection.getSize() == 0) {
+                        var client_glue_button = $("keep-button");
+                        if (client_glue_button) {
+                            dojo.setStyle(client_glue_button, 'display', 'none');
+                        }
+                    }
+                    break;
             }
         };
         Dale.prototype.onSelectHandCard = function (card_id) {
@@ -4680,6 +4725,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     break;
+                case 'client_glue':
+                    var client_glue_button = $("keep-button");
+                    if (client_glue_button) {
+                        dojo.setStyle(client_glue_button, 'display', '');
+                    }
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -4706,6 +4757,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_essentialPurchase':
                     args.optionalArgs.essential_purchase_ids = this.myHand.orderedSelection.get();
                     break;
+                case 'client_glue':
+                    args.optionalArgs.glue_card_ids = this.myHand.orderedSelection.get();
+                    break;
                 default:
                     throw new Error("You cannot purchase a card from gamestate '".concat(this.gamedatas.gamestate, "'"));
             }
@@ -4724,17 +4778,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
                 card_id = card.id;
             }
-            if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_ESSENTIALPURCHASE) {
+            if (!this.mainClientState.stackIncludes('client_glue') && DaleCard_10.DaleCard.containsTypeId(args.funds_card_ids, DaleCard_10.DaleCard.CT_GLUE)) {
+                this.mainClientState.enterOnStack('client_glue', args);
+            }
+            else if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_ESSENTIALPURCHASE) {
                 this.mainClientState.enterOnStack('client_essentialPurchase', args);
             }
             else {
+                console.log("AAAAAAAAAAAAAAAAAAAAAA");
+                console.log(args);
                 this.bgaPerformAction('actPurchase', {
                     funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
                     market_card_id: card_id,
                     chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                     args: JSON.stringify(args.optionalArgs)
                 });
-                if (this.gamedatas.gamestate.name != 'client_purchase') {
+                while (this.gamedatas.gamestate.name != 'client_purchase') {
                     this.mainClientState.leave();
                 }
             }
@@ -5385,6 +5444,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.bgaPerformAction('actDangerousTest', {
                 card_ids: this.arrayToNumberList(card_ids)
             });
+        };
+        Dale.prototype.onGlueDiscard = function () {
+            for (var _i = 0, _a = this.myHand.orderedSelection.get(); _i < _a.length; _i++) {
+                var card_id = _a[_i];
+                this.myHand.unselectItem(card_id);
+            }
+            this.onPurchase();
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;

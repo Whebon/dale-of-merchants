@@ -2209,6 +2209,18 @@ class Dale extends DaleTableBasic
             );
         }
 
+        //Apply CT_GLUE
+        if (isset($args["glue_card_ids"])) {
+            $glue_card_ids = $args["glue_card_ids"];
+            if (!$this->isSubset($glue_card_ids, $funds_card_ids)) {
+                throw new BgaVisibleSystemException("CT_GLUE: Selected glue cards must be a subset of the selected fund cards");
+            }
+            $funds_card_ids = array_values(array_diff($funds_card_ids, $glue_card_ids));
+            foreach ($glue_card_ids as $glue_card_id) {
+                unset($funds_cards[$glue_card_id]);
+            }
+        }
+
         //Discard the funds
         $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
         $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array (
