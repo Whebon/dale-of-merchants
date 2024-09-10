@@ -138,6 +138,7 @@ interface GameStates {
 			'trDirtyExchange': 54,
 			'trSabotage': 55,
 			'trMagnet': 58,
+			'trDangerousTest': 59,
 		},
 	},
 	36: {
@@ -340,6 +341,23 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	59: {
+		'name': 'dangerousTest',
+		'description': 'Dangerous Test: ${actplayer} must discard 3 cards',
+		'descriptionmyturn': 'Dangerous Test: ${you} must discard 3 cards',
+		'type': 'activeplayer',
+		'action': 'stDangerousTest',
+		'possibleactions': {
+			'actDangerousTest': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

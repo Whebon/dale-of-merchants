@@ -118,7 +118,8 @@
 			"trSpecialOffer": 53,
 			"trDirtyExchange": 54,
 			"trSabotage": 55,
-			"trMagnet": 58
+			"trMagnet": 58,
+			"trDangerousTest": 59
 		}
 	},
 
@@ -269,6 +270,20 @@
 		"possibleactions": {
 			"actMagnet": [
 				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"59": {
+		"name": "dangerousTest",
+		"description": "Dangerous Test: ${actplayer} must discard 3 cards",
+		"descriptionmyturn": "Dangerous Test: ${you} must discard 3 cards",
+		"type": "activeplayer",
+		"action": "stDangerousTest",
+		"possibleactions": {
+			"actDangerousTest": [
+				{"name": "card_ids", "type": "AT_numberlist"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

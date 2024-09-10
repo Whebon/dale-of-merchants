@@ -2801,6 +2801,10 @@ class Dale extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trMagnet");
                 break;
+            case CT_DANGEROUSTEST:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trDangerousTest");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3047,6 +3051,23 @@ class Dale extends DaleTableBasic
         $this->checkAction("actMagnet");
         $player_id = $this->getActivePlayerId();
         $this->drawCardId(clienttranslate('Magnet: ${player_name} draws a card from their deck'), $card_id);
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actDangerousTest($card_ids) {
+        $this->checkAction("actDangerousTest");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+        if (count($card_ids) != 3) {
+            throw new BgaUserException($this->_("You must select exactly 3 cards to discard"));
+        }
+        $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        $this->discardMultiple(
+            clienttranslate('Dangerous Test: ${player_name} discards 3 cards'),
+            $player_id, 
+            $card_ids, 
+            $cards
+        );
         $this->fullyResolveCard($player_id);
     }
 
@@ -3449,6 +3470,14 @@ class Dale extends DaleTableBasic
                 "card_name" =>$this->getCardName($dbcard)
             )
         ), clienttranslate('Blindfold: ${player_name} secretly selected ${card_name}'));
+    }
+
+    function stDangerousTest() {
+        $nbr = $this->draw(clienttranslate('Dangerous Test: ${player_name} draws 3 card'), 3, false);
+        if ($nbr == 0) {
+            //dangerous test has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
+        }
     }
 
 

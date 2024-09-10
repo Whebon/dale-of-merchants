@@ -1557,6 +1557,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'multiple':
                     this.orderedSelection.setMaxSize(Infinity);
                     break;
+                case 'multiple3':
+                    this.orderedSelection.setMaxSize(3);
+                    break;
                 case 'essentialPurchase':
                     this.orderedSelection.setMaxSize(3);
                     break;
@@ -1586,6 +1589,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'single':
                     return true;
                 case 'multiple':
+                    return true;
+                case 'multiple3':
                     return true;
                 case 'essentialPurchase':
                     return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
@@ -3736,6 +3741,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDeck.setContent(magnet_args._private.cards.map(DaleCard_10.DaleCard.of));
                     this.myDeck.setSelectionMode('single');
                     break;
+                case 'dangerousTest':
+                    this.myHand.setSelectionMode('multiple3', 'pileBlue', 'dale-wrap-technique', _("Choose 3 cards to discard"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -3889,6 +3897,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'magnet':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'dangerousTest':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -4107,6 +4118,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_safetyPrecaution':
                     this.addActionButtonCancelClient();
+                    break;
+                case 'dangerousTest':
+                    this.addActionButton("confirm-button", _("Discard selected"), "onDangerousTest");
                     break;
             }
         };
@@ -4341,7 +4355,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.pileToStock = function (card, pile, stock, location_arg) {
-            stock.addDaleCardToStock(DaleCard_10.DaleCard.of(card), pile.placeholderHTML);
             if (location_arg !== undefined) {
                 if (pile.removeAt(location_arg).id != +card.id) {
                     throw new Error("Card ".concat(+card.id, " was not found at index ").concat(location_arg, " in the pile of size ").concat(pile.size));
@@ -4352,10 +4365,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("Card ".concat(+card.id, " was not found on top of the pile"));
                 }
             }
+            stock.addDaleCardToStock(DaleCard_10.DaleCard.of(card), pile.placeholderHTML);
         };
         Dale.prototype.pileToPlayerStock = function (card, pile, stock, player_id, location_arg) {
             if (+player_id == this.player_id) {
-                console.log("TO MY HAND!");
                 this.pileToStock(card, pile, stock);
             }
             else {
@@ -5363,6 +5376,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.onCancelClient();
             }
         };
+        Dale.prototype.onDangerousTest = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            if (card_ids.length != 3) {
+                this.showMessage(_("Please select exactly 3 cards to discard"), 'error');
+                return;
+            }
+            this.bgaPerformAction('actDangerousTest', {
+                card_ids: this.arrayToNumberList(card_ids)
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -6015,7 +6038,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             else if (arg == 'debugDaleCard') {
                 console.log(new DaleCard_10.DaleCard(notif.args.card_id));
             }
-            else if (arg == '') {
+            else if (arg == 'divs') {
+                console.log(Array.from(DaleCard_10.DaleCard.divs.entries()).sort(function (a, b) { return a[0] - b[0]; }));
             }
             else if (arg == '') {
             }

@@ -206,4 +206,15 @@ class action_dale extends APP_GameAction
 		$this->game->actMagnet( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actDangerousTest()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actDangerousTest( $card_ids );
+		self::ajaxResponse();
+	}
 }

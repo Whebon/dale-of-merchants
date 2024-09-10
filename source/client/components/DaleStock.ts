@@ -18,10 +18,11 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'clickAbilityPostCleanup':   no selection possible, only specific 'post clean-up' abilities are clickable
  * 'single':			   		a single card can be selected	
  * 'multiple':             		multiple cards can be selected
+ * 'multiple3':					multiple cards can be selected, but no more than 3
  * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'single' | 'multiple' |  `only_card_id${number}` | 'essentialPurchase'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'single' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -231,6 +232,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'multiple':
 				this.orderedSelection.setMaxSize(Infinity);
 				break;
+			case 'multiple3':
+				this.orderedSelection.setMaxSize(3);
+				break;
 			case 'essentialPurchase':
 				this.orderedSelection.setMaxSize(3);
 				break;
@@ -264,6 +268,8 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'single':
 				return true;
 			case 'multiple':
+				return true;
+			case 'multiple3':
 				return true;
 			case 'essentialPurchase':
 				return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);

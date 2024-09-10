@@ -555,6 +555,9 @@ class Dale extends Gamegui
 				this.myDeck.setContent(magnet_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('single');
 				break;
+			case 'dangerousTest':
+				this.myHand.setSelectionMode('multiple3', 'pileBlue', 'dale-wrap-technique', _("Choose 3 cards to discard"));
+				break;
 		}
 	}
 
@@ -713,6 +716,9 @@ class Dale extends Gamegui
 			case 'magnet':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				break;
+			case 'dangerousTest':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 	}
@@ -927,6 +933,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_safetyPrecaution':
 				this.addActionButtonCancelClient();
+				break;
+			case 'dangerousTest':
+				this.addActionButton("confirm-button", _("Discard selected"), "onDangerousTest");
 				break;
 		}
 	}
@@ -1251,7 +1260,6 @@ class Dale extends Gamegui
 	 * @param location_arg (optional) the card needs to be retrieved from a specific location of the pile
 	*/
 	pileToStock(card: DbCard, pile: Pile, stock: DaleStock, location_arg?: number) {
-		stock.addDaleCardToStock(DaleCard.of(card), pile.placeholderHTML);
 		if (location_arg !== undefined) {
 			//remove from index
 			if (pile.removeAt(location_arg).id != +card.id) {
@@ -1264,6 +1272,8 @@ class Dale extends Gamegui
 				throw new Error(`Card ${+card.id} was not found on top of the pile`);
 			}
 		}
+		//add dale card to stock after popping to ensure the new div is not detached
+		stock.addDaleCardToStock(DaleCard.of(card), pile.placeholderHTML);
 	}
 
 	/**
@@ -1276,7 +1286,6 @@ class Dale extends Gamegui
 	*/
 	pileToPlayerStock(card: DbCard, pile: Pile, stock: DaleStock, player_id: number, location_arg?: number) {
 		if (+player_id == this.player_id) {
-			console.log("TO MY HAND!");
 			this.pileToStock(card, pile, stock);
 		}
 		else {
@@ -2447,6 +2456,17 @@ class Dale extends Gamegui
 		}
 	}
 
+	onDangerousTest() {
+		const card_ids = this.myHand.orderedSelection.get();
+		if (card_ids.length != 3) {
+			this.showMessage(_("Please select exactly 3 cards to discard"), 'error');
+			return;
+		}
+		this.bgaPerformAction('actDangerousTest', {
+			card_ids: this.arrayToNumberList(card_ids)
+		})
+	}
+
 
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
@@ -3256,8 +3276,8 @@ class Dale extends Gamegui
 		else if (arg == 'debugDaleCard') {
 			console.log(new DaleCard(notif.args.card_id));
 		}
-		else if (arg == '') {
-
+		else if (arg == 'divs') {
+			console.log(Array.from(DaleCard.divs.entries()).sort((a, b) => a[0] - b[0]));
 		}
 		else if (arg == '') {
 			

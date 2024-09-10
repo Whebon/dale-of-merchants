@@ -27,6 +27,7 @@ if (false) {
 	$game->stDirtyExchange();
 	$game->stSabotage();
 	$game->stBlindfold();
+	$game->stDangerousTest();
 	$game->stFinalStatistics();
 }
 
@@ -90,6 +91,7 @@ $machinestates = array(
 			'trDirtyExchange' => 54,
 			'trSabotage' => 55,
 			'trMagnet' => 58,
+			'trDangerousTest' => 59,
 		),
 	),
 	36 => array(
@@ -205,6 +207,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actMagnet'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	59 => array(
+		'name' => 'dangerousTest',
+		'description' => clienttranslate('Dangerous Test: ${actplayer} must discard 3 cards'),
+		'descriptionmyturn' => clienttranslate('Dangerous Test: ${you} must discard 3 cards'),
+		'type' => 'activeplayer',
+		'action' => 'stDangerousTest',
+		'possibleactions' => ['actDangerousTest'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
