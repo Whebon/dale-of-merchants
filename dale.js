@@ -339,7 +339,7 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 else {
                     icon.classList.add("dale-selection-icon-1");
                 }
-                div.appendChild(icon);
+                div.prepend(icon);
             }
         };
         OrderedSelection.prototype.removeIcon = function (card_id, secondary) {
@@ -1601,7 +1601,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'essentialPurchase':
                     return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
                 case 'glue':
-                    return card.effective_type_id == DaleCard_2.DaleCard.CT_GLUE;
+                    return card.effective_type_id == DaleCard_2.DaleCard.CT_GLUE && this.orderedSelection.get(true).includes(card.id);
                 default:
                     var match = this.selectionMode.match(/^only_card_id(\d+)$/);
                     if (match) {

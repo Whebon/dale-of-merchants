@@ -118,26 +118,6 @@ export class DaleStock extends Stock implements DaleLocation {
 					this.orderedSelection.toggle(item_id);
 				}
 			}
-			//TODO: safely delete this
-			// else if (this.isSelected(item_id)) {
-			// 	//unselect
-			// 	this.unselectItem(item_id);
-			// 	this.orderedSelection.updateIcons();
-			// }
-			// else {
-			// 	//select
-			// 	if (this.selectionMode === 1) {
-			// 		this.unselectAll();
-			// 		this.orderedSelection.updateIcons();
-			// 	}
-			// 	else if (this.selectionMode == 'essentialPurchase') {
-			// 		while (this.orderedSelection.getSize() >= 2) {
-			// 			this.orderedSelection.dequeue();
-			// 		}
-			// 	}
-			// 	this.selectItem(item_id);
-			// }
-			// this.onOrderedSelectionChanged(item_id);  
 		}
 	}
 
@@ -278,7 +258,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'essentialPurchase':
 				return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
 			case 'glue':
-				return card.effective_type_id == DaleCard.CT_GLUE;
+				return card.effective_type_id == DaleCard.CT_GLUE && this.orderedSelection.get(true).includes(card.id);
 			default:
 				const match = this.selectionMode.match(/^only_card_id(\d+)$/);
 				if (match) {

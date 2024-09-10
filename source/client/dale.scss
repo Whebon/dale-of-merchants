@@ -135,11 +135,17 @@
 		top: 80%;
 		width: 50px;
 		height: 50px;
+		&~.dale-selection-icon-2 {
+			display: none;
+		}
 	}
 	&.dale-selection-icon-2 {
 		top: 80%;
 		width: 50px;
 		height: 50px;
+		&~.dale-selection-icon-1 {
+			display: none;
+		}
 	}
 	&.dale-chameleon-icon {
 		pointer-events: none;

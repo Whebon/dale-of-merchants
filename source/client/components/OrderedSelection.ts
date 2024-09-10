@@ -99,7 +99,7 @@ export class OrderedSelection {
             else {
                 icon.classList.add("dale-selection-icon-1");
             }
-            div.appendChild(icon);
+            div.prepend(icon); //only the first icon is visible
         }
 	}
 
