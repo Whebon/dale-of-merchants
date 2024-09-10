@@ -315,6 +315,62 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         return false;
     }
 
+    public saved_arrangement: undefined | number[];
+
+    /**
+     * Save the current arrangement of cards
+     * @returns copy of the arrangement
+     */
+    public saveArrangement(): number[] {
+        const card_ids = [];
+        for (let card of this.getCards()) {
+            card_ids.push(card.id);
+        }
+        this.saved_arrangement = card_ids;
+        return card_ids.slice();
+    }
+
+    /**
+     * Restore the saved arrangement
+     */
+    public restoreArrangement() {
+        if (this.saved_arrangement) {
+            this.rearrange(this.saved_arrangement);
+            this.saved_arrangement = undefined;
+        }
+    }
+
+    /**
+     * Rearrange the cards using the provided ordering
+     */
+    public rearrange(card_ids: number[]) {
+        if (this.getCards().length != card_ids.length) {
+            throw new Error("market.rearrange failed: the number of cards must remain the same after rearranging");
+        }
+        let arrangementChanged = false;
+        const froms = new Map<number, HTMLElement>();
+        for (let pos = 0; pos < this.MAX_SIZE; pos++) {
+            const slot = this.slots[pos]!
+            const old_card = slot.card;
+            if (old_card) {
+                if (!card_ids.includes(old_card.id)) {
+                    throw new Error(`market.rearrange failed: card ${old_card.id} does not exist in the new arrangement`);
+                }
+                if (card_ids[pos] != old_card.id) {
+                    arrangementChanged = true;
+                }
+                froms.set(old_card.id, slot.container);
+            }
+        }
+        if (arrangementChanged) {
+            for (let pos = 0; pos < this.MAX_SIZE; pos++) {
+                const slot = this.slots[pos]!;
+                const new_card = new DaleCard(card_ids[pos]!);
+                slot.insertCard(new_card, froms.get(new_card.id));
+            }
+        }
+    }
+
     /**
      * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
      */

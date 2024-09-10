@@ -2110,6 +2110,29 @@ class Dale extends DaleTableBasic
         }
         $this->incStat(1, "actions_purchase", $player_id);
 
+        //Apply CT_CALCULATIONS
+        if (isset($args["calculations_card_ids"])) {
+            if (!$this->containsTypeId($funds_cards, CT_CALCULATIONS)) {
+                throw new BgaUserException("To rearrange the market, 'Calculations' must be included in the funds");
+            }
+            $calculations_card_ids = $args["calculations_card_ids"];
+            $market_card_ids = $this->toCardIds($this->cards->getCardsInLocation(MARKET));
+            if (!$this->isSubset($calculations_card_ids, $market_card_ids) || !$this->isSubset($calculations_card_ids, $market_card_ids)) {
+                throw new BgaVisibleSystemException("The provided CT_CALCULATIONS arrangement is invalid");
+            }
+            $pos = 0;
+            foreach ($calculations_card_ids as $calculations_card_id) {
+                $this->cards->moveCard($calculations_card_id, MARKET, $pos);
+                $pos += 1;
+            }
+            $this->notifyAllPlayers('rearrangeMarket', clienttranslate('Calculations: ${player_name} rearranged the market'), array (
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $calculations_card_ids,
+            ));
+    
+        }
+
         //Get information about the market card
         //$market_card_id = $this->getGameStateValue("selectedCard");
         $market_card = $this->cards->getCard($market_card_id);
@@ -2136,7 +2159,7 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("Overpaying is not allowed")." ($total_value)");
         }
 
-        //Apply essential purchase
+        //Apply CT_ESSENTIALPURCHASE
         if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
             $essential_purchase_ids = $args["essential_purchase_ids"];
             if (!$this->isSubset($essential_purchase_ids, $funds_card_ids)) {

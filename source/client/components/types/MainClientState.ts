@@ -83,6 +83,8 @@ export class MainClientState {
             //Specific Passive States
             case 'client_marketDiscovery':
                 return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
+            case 'client_calculations':
+                return _("${card_name}: ${you} may rearrange any cards in the market");
             
             //Generic Technique States
             case 'client_fizzle':

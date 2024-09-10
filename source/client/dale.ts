@@ -358,6 +358,9 @@ class Dale extends Gamegui
 					this.marketDiscard.selectTopCard();
 					this.marketDiscard.setSelectionMode("top");
 				}
+				if (client_purchase_args.calculations_card_id !== undefined) {
+					this.myHand.selectItem(client_purchase_args.calculations_card_id);
+				}
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
@@ -530,6 +533,10 @@ class Dale extends Gamegui
 			case 'client_marketDiscovery':
 				this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
 				this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-purchase');
+				break;
+			case 'client_calculations':
+				this.market!.setSelectionMode(1, undefined, 'dale-wrap-technique');
+				break;
 		}
 	}
 
@@ -556,12 +563,16 @@ class Dale extends Gamegui
 			case 'playerTurn':
 				break;
 			case 'client_purchase':
+				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
 				this.market!.unselectAll();
 				this.market!.setSelectionMode(0);
 				this.marketDiscard.unselectTopCard();
 				this.marketDiscard.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
+				if (client_purchase_args.optionalArgs?.calculations_card_ids === undefined) {
+					this.market!.restoreArrangement();
+				}
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
@@ -673,6 +684,16 @@ class Dale extends Gamegui
 			case 'client_marketDiscovery':
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
+				break;
+			case 'client_calculations':
+				const client_calculations_to_client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
+				this.market!.setSelectionMode(0);
+				this.targetingLine?.remove();
+				this.targetingLine = undefined;
+				if (client_calculations_to_client_purchase_args.optionalArgs?.calculations_card_ids === undefined) {
+					this.market!.restoreArrangement();
+				}
+				break;
 		}
 	}
 
@@ -873,11 +894,16 @@ class Dale extends Gamegui
 				break;
 			case 'client_marketDiscovery':
 				this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
-				this.addActionButton("buy-button", _("Purchase"), "onMarketDiscoveryPurchase");
+				this.addActionButton("purchase-button", _("Purchase"), "onMarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'specialOffer':
 				this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
+				break;
+			case 'client_calculations':
+				this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
+				this.addActionButton("cancel-button", _("Cancel"), "onCalculationsCancel", undefined, false, 'gray');
+				this.onCalculationsUpdateActionButton(null);
 				break;
 		}
 	}
@@ -1264,14 +1290,6 @@ class Dale extends Gamegui
 		this.addActionButton("cancel-button", label ?? _("Cancel"), "onCancelClient", undefined, false, 'gray');
 	}
 
-	//TODO: safely remove this
-	// /**
-	//  * Add a button to cancel any locally assigned chameleon targets. Also restores back to the server game state.
-	// */
-	// addActionButtonCancelChameleon() {
-	// 	this.addActionButton("cancel-chameleons-button", _("Cancel"), "onCancelChameleon", undefined, false, 'gray');
-	// }
-
 	///////////////////////////////////////////////////
 	//// Opponent selection utilities 
 
@@ -1413,13 +1431,11 @@ class Dale extends Gamegui
 				}
 				else if (this.checkLock()) {
 					//user clicked on a different card, enter a new client state
-					this.mainClientState.enter('client_purchase', {
-						pos: pos,
-						market_discovery_card_id: undefined,
-						card_name: card.name,
-						cost: card.getCost(pos),
-						optionalArgs: {}
-					});
+					client_purchase_args.pos = pos;
+					client_purchase_args.market_discovery_card_id = undefined;
+					client_purchase_args.card_name = card.name;
+					client_purchase_args.cost = card.getCost(pos);
+					this.mainClientState.enter('client_purchase', client_purchase_args);
 				}
 				break;
 			case 'client_technique':
@@ -1429,6 +1445,7 @@ class Dale extends Gamegui
 					this.mainClientState.enter('client_purchase', {
 						pos: pos,
 						market_discovery_card_id: undefined,
+						calculations_card_id: undefined,
 						card_name: card.name,
 						cost: card.getCost(pos),
 						optionalArgs: {}
@@ -1439,6 +1456,29 @@ class Dale extends Gamegui
 				this.playTechniqueCard<'client_prepaidGood'>({
 					card_id: card.id
 				});
+				break;
+			case 'client_calculations':
+				if (!this.targetingLine) {
+					const calculations_args = this.mainClientState.args as ClientGameStates['client_calculations'];
+					const calculations_targets: DaleCard[] = [];
+					for (let target_id of calculations_args.card_ids) {
+						if (target_id != card.id) {
+							calculations_targets.push(new DaleCard(target_id));
+						}
+					}
+					this.targetingLine = new TargetingLine(
+						card,
+						calculations_targets,
+						'dale-line-source-technique',
+						'dale-line-target-technique',
+						'dale-line-technique',
+						(source_id: number) => {
+							this.targetingLine?.remove();
+							this.targetingLine = undefined;
+						},
+						(source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)
+					);
+				}
 				break;
 		}
 	}
@@ -1686,6 +1726,7 @@ class Dale extends Gamegui
 			this.mainClientState.enter('client_purchase', {
 				pos: -1,
 				market_discovery_card_id: market_discovery_card_id,
+				calculations_card_id: undefined,
 				card_name: card.name,
 				cost: card.getCost(0),
 				optionalArgs: {}
@@ -2000,6 +2041,14 @@ class Dale extends Gamegui
 					this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
 				}
 				break;
+			case DaleCard.CT_CALCULATIONS:
+				const client_calculations_card_ids = this.market!.saveArrangement();
+				this.mainClientState.enterOnStack('client_calculations', {
+					passive_card_id: card.id, 
+					card_ids: client_calculations_card_ids, 
+					card_id_last: client_calculations_card_ids[0]!
+				});
+				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;
@@ -2058,6 +2107,7 @@ class Dale extends Gamegui
 	onCancelClient() {
 		console.log("onCancelClient");
 		TargetingLine.removeAll();
+		this.targetingLine = undefined;
 		if (this.chameleonArgs) {
 			//undo the chameleon state
 			this.chameleonArgs.firstSource.unbindChameleonLocal();
@@ -2083,25 +2133,6 @@ class Dale extends Gamegui
 		}
 		this.mainClientState.leave();
 	}
-
-	//TODO: safely remove this
-	// /**
-	//  * To be called from within a chameleon client state. Cancels finding a target for the chameleon bind
-	//  * @param unselect (optional) default true. If true, automatically deselect the chameleon card
-	//  */
-	// onCancelChameleon(unselect: boolean = true) {
-	// 	console.log("onCancelChameleon");
-	// 	console.log(this.chameleonArgs!);
-	// 	//return from the chameleon client state
-	// 	const args = this.chameleonArgs!
-	// 	if (unselect) {
-	// 		args.from.unselectItem(args.card.id);
-	// 	}
-	// 	args.card.unbindChameleonLocal();
-	// 	this.restoreServerGameState();
-	// 	this.chameleonArgs?.remove();
-	// 	this.chameleonArgs = undefined;
-	// }
 
 	/**
 	 * To be called from within a chameleon client state. Confirms the user selection for the chameleon card and restores the server state.
@@ -2322,6 +2353,70 @@ class Dale extends Gamegui
 		});
 	}
 
+	onCalculations() {
+		if (this.checkLock()) {
+			const args = this.mainClientState.args as ClientGameStates['client_calculations'];
+			const card = new DaleCard(args.card_id_last);
+			const pos = args.card_ids.indexOf(args.card_id_last);
+			this.mainClientState.enter('client_purchase', {
+				pos: pos,
+				market_discovery_card_id: undefined,
+				calculations_card_id: args.passive_card_id,
+				card_name: card.name,
+				cost: card.getCost(pos),
+				optionalArgs: {
+					calculations_card_ids: args.card_ids,
+				}
+			});
+		}
+	}
+
+	onCalculationsSwap(source_id: number, target_id: number) {
+		const args = this.mainClientState.args as ClientGameStates['client_calculations'];
+		const index_source = args.card_ids.indexOf(source_id);
+		const index_target = args.card_ids.indexOf(target_id);
+		if (index_source == -1 || index_target == -1) {
+			throw new Error(`onCalculationsSwap failed to swap ${source_id} and ${target_id}`);
+		}
+		const temp = args.card_ids[index_source]!;
+		args.card_ids[index_source] = args.card_ids[index_target]!;
+		args.card_ids[index_target] = temp;
+		this.market!.rearrange(args.card_ids);
+		this.onCalculationsUpdateActionButton(source_id);
+		this.targetingLine?.remove();
+		this.targetingLine = undefined;
+	}
+
+	onCalculationsUpdateActionButton(card_id: number | null) {
+		const button = $("calculations-button");
+		if (card_id === null) {
+			if (button) {
+				dojo.setStyle(button, 'display', 'none');
+			}
+		}
+		else {
+			const args = this.mainClientState.args as ClientGameStates['client_calculations'];
+			const card = new DaleCard(card_id);
+			args.card_id_last = card_id;
+			if (button) {
+				button.innerHTML = _("Purchase ")+card.name;
+				dojo.setStyle(button, 'display', '');
+			}
+		}
+	}
+	
+	onCalculationsCancel() {
+		if (this.targetingLine) {
+			this.targetingLine?.remove();
+			this.targetingLine = undefined;
+		}
+		else {
+			this.market!.restoreArrangement();
+			this.onCancelClient();
+		}
+	}
+
+
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
 
@@ -2340,6 +2435,7 @@ class Dale extends Gamegui
 			['resolveTechnique', 			500],
 			['cancelTechnique', 			500],
 			['buildStack', 					500],
+			['rearrangeMarket', 			500],
 			['fillEmptyMarketSlots', 		1],
 			['marketSlideRight', 			500],
 			['marketToHand', 				500],
@@ -2534,6 +2630,10 @@ class Dale extends Gamegui
 			const nbr = Object.keys(notif.args.cards).length;
 			this.playerHandSizes[notif.args.player_id]!.incValue(-nbr);
 		}
+	}
+
+	notif_rearrangeMarket(notif: NotifAs<'rearrangeMarket'>) {
+		this.market!.rearrange(notif.args.card_ids);
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
@@ -3125,8 +3225,8 @@ class Dale extends Gamegui
 		else if (arg == 'debugDaleCard') {
 			console.log(new DaleCard(notif.args.card_id));
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'targetingLine') {
+			console.log(this.targetingLine);
 		}
 		else if (arg == '') {
 			

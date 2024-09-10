@@ -251,6 +251,9 @@ declare global {
             cards: {[card_id: number]: DbCard}
 			from: DbLocationPrefix
 		}
+		'rearrangeMarket': {
+			card_ids: number[]
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
@@ -315,7 +318,8 @@ declare global {
 
 	interface ClientPassiveChoice {
 		'client_choicelessPassiveCard': {},
-		'client_marketDiscovery': {}
+		'client_marketDiscovery': {},
+		'client_calculations': {} //choice sent as purchase args
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
@@ -332,17 +336,20 @@ declare global {
 		'client_purchase' : { 
 			pos: number, 
 			market_discovery_card_id: number | undefined, 
+			calculations_card_id: number | undefined, 
 			cost: number, 
 			card_name: string,
 			funds_card_ids?: number[],
 			optionalArgs: {
 				essential_purchase_ids?: number[]
+				calculations_card_ids?: number[]
 			}
 		}
 		'client_technique': {}
 		'client_build': { stack_index_plus_1: number }
 		'client_inventory': {}
 		'client_essentialPurchase': ClientGameStates['client_purchase']
+		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
 	}
 
 	//
