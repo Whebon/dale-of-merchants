@@ -3484,9 +3484,12 @@ class Dale extends DaleTableBasic
                 case 'tasters':
                     throw new BgaVisibleSystemException("NotImplementedException: 'zombieTurn' for 'tasters'");
                     break;
+                case 'postCleanUpPhase':
+                    $this->actPostCleanUpPhase(array());
+                    break;
                 default:
                     //By default, zombies will jump to the "cleanUpPhase" (state 41) when given the chance.
-                    $this->gamestate->nextState("trNextPlayer"); 
+                    $this->gamestate->jumpToState(41);
                 	break;
             }
             return;
