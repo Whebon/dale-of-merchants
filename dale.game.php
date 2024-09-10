@@ -2234,11 +2234,10 @@ class Dale extends DaleTableBasic
                     $cards = array();
                     foreach ($players as $other_player_id => $player) {
                         if ($other_player_id != $player_id) {
-                            $cards = array_merge($cards, $this->cards->getCardsInLocation(STALL.$player_id));
+                            $cards = array_merge($cards, $this->cards->getCardsInLocation(STALL.$other_player_id));
                         }
                     }
                     if (count($cards) >= 1) {
-                        $name = $this->getCardName($technique_card);
                         throw new BgaVisibleSystemException("Unable to fizzle CT_ACORN. Some players have cards in their stall");
                     }
                     break;
@@ -2281,6 +2280,12 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_TIRELESSTINKERER. The player's discard pile contains card(s).");
                     }
                     break;
+                case CT_SAFETYPRECAUTION:
+                    $cards = $this->cards->getCardsInLocation(STALL.$player_id);
+                    if (count($cards) >= 1) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_SAFETYPRECAUTION. You have cards in your stall");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -2295,7 +2300,7 @@ class Dale extends DaleTableBasic
         }
 
         //Schedule Technique
-        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER) {
+        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION) {
             $this->scheduleCard($player_id, $technique_card, array_key_exists("choiceless", $args));
         }
 
@@ -2739,6 +2744,21 @@ class Dale extends DaleTableBasic
                     "card" => $dbcard
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SAFETYPRECAUTION:
+                $card_id = $args["card_id"];
+                $stall_card = $this->cards->getCardFromLocation($card_id, STALL.$player_id);
+                $this->cards->moveCard($technique_card_id, STALL.$player_id, $stall_card["location_arg"]);
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Safety Precaution: ${player_name} swaps with a ${card_name}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "card_name" => $this->getCardName($stall_card),
+                    "player_id" => $player_id,
+                    "card" => $technique_card,
+                    "stall_player_id" => $player_id,
+                    "stall_card_id" => $card_id
+                ));
+                $this->gamestate->nextState("trSamePlayer");
                 break;
             default:
                 $name = $this->getCardName($technique_card);

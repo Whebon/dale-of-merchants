@@ -131,6 +131,8 @@ export class MainClientState {
                 } else {
                     return _("${card_name}: ${you} must choose a card and an opponent");
                 }
+            case 'client_safetyPrecaution':
+                return _("${card_name}: ${you} must select a card from your stall to swap with");
         }
         return "MISSING DESCRIPTION";
     }

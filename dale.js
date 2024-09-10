@@ -3066,6 +3066,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         else {
                             return _("${card_name}: ${you} must choose a card and an opponent");
                         }
+                    case 'client_safetyPrecaution':
+                        return _("${card_name}: ${you} must select a card from your stall to swap with");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3704,6 +3706,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_calculations':
                     this.market.setSelectionMode(1, undefined, 'dale-wrap-technique');
                     break;
+                case 'client_safetyPrecaution':
+                    var client_safetyPrecaution_args = this.mainClientState.args;
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); });
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -3850,6 +3856,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     if (((_b = client_calculations_to_client_purchase_args.optionalArgs) === null || _b === void 0 ? void 0 : _b.calculations_card_ids) === undefined) {
                         this.market.restoreArrangement();
                     }
+                    break;
+                case 'client_safetyPrecaution':
+                    TargetingLine_1.TargetingLine.remove();
                     break;
             }
         };
@@ -4065,6 +4074,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
                     this.addActionButton("cancel-button", _("Cancel"), "onCalculationsCancel", undefined, false, 'gray');
                     this.onCalculationsUpdateActionButton(null);
+                    break;
+                case 'client_safetyPrecaution':
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -4771,6 +4783,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 });
             }
         };
+        Dale.prototype.onSafetyPrecaution = function (source_id, target_id) {
+            if (this.myStall.contains(target_id)) {
+                this.playTechniqueCard({
+                    card_id: target_id
+                });
+            }
+        };
         Dale.prototype.onClickTechnique = function (card) {
             var fizzle = true;
             switch (card.effective_type_id) {
@@ -4919,6 +4938,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_SAFETYPRECAUTION:
+                    fizzle = this.myStall.getNumberOfStacks() == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -5039,7 +5067,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 var card_id = this.mainClientState.args.technique_card_id;
                 var card = new DaleCard_10.DaleCard(card_id);
                 var type_id = card.effective_type_id;
-                if ((type_id != DaleCard_10.DaleCard.CT_ACORN && type_id != DaleCard_10.DaleCard.CT_GIFTVOUCHER) || this.mainClientState.name == 'client_fizzle') {
+                if ((type_id != DaleCard_10.DaleCard.CT_ACORN && type_id != DaleCard_10.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_10.DaleCard.CT_SAFETYPRECAUTION) || this.mainClientState.name == 'client_fizzle') {
                     this.myHand.addDaleCardToStock(card, this.mySchedule.control_name + '_item_' + card_id);
                     this.mySchedule.removeFromStockByIdNoAnimation(card_id);
                     this.myHandSize.incValue(1);

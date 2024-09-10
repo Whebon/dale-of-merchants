@@ -430,7 +430,7 @@ class Dale extends Gamegui
 				)
 				break;
 			case 'client_giftVoucher':
-				const client_giftVoucher_args = (this.mainClientState.args as ClientGameStates['client_acorn']);
+				const client_giftVoucher_args = (this.mainClientState.args as ClientGameStates['client_giftVoucher']);
 				new TargetingLine(
 					new DaleCard(client_giftVoucher_args.technique_card_id),
 					this.market!.getCards(),
@@ -536,6 +536,18 @@ class Dale extends Gamegui
 				break;
 			case 'client_calculations':
 				this.market!.setSelectionMode(1, undefined, 'dale-wrap-technique');
+				break;
+			case 'client_safetyPrecaution':
+				const client_safetyPrecaution_args = (this.mainClientState.args as ClientGameStates['client_safetyPrecaution']);
+				new TargetingLine(
+					new DaleCard(client_safetyPrecaution_args.technique_card_id),
+					this.myStall.getCardsInStall(),
+					"dale-line-source-technique",
+					"dale-line-target-technique",
+					"dale-line-technique",
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)
+				)
 				break;
 		}
 	}
@@ -677,10 +689,6 @@ class Dale extends Gamegui
 			case 'chameleon_seeingdoubles':
 				TargetingLine.remove();
 				break;
-			//TODO: safely remove this
-			// case 'client_fizzle':
-			// 	document.querySelector(".dale-fizzle")?.classList.remove("dale-fizzle");
-			// 	break;
 			case 'client_marketDiscovery':
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
@@ -692,6 +700,9 @@ class Dale extends Gamegui
 				if (client_calculations_to_client_purchase_args.optionalArgs?.calculations_card_ids === undefined) {
 					this.market!.restoreArrangement();
 				}
+				break;
+			case 'client_safetyPrecaution':
+				TargetingLine.remove();
 				break;
 		}
 	}
@@ -903,6 +914,9 @@ class Dale extends Gamegui
 				this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
 				this.addActionButton("cancel-button", _("Cancel"), "onCalculationsCancel", undefined, false, 'gray');
 				this.onCalculationsUpdateActionButton(null);
+				break;
+			case 'client_safetyPrecaution':
+				this.addActionButtonCancelClient();
 				break;
 		}
 	}
@@ -1810,16 +1824,6 @@ class Dale extends Gamegui
 					stall_player_id: +player_id,
 					stall_card_id: target_id
 				})
-				//TODO: safely delete this
-				// this.bgaPerformAction('actPlayTechniqueCard', {
-				// 	card_id: source.id, 
-				// 	chameleons_json: DaleCard.getLocalChameleonsJSON(),
-				// 	args: JSON.stringify({
-				// 		stall_player_id: +player_id,
-				// 		stall_card_id: target.id
-				// 	})
-				// });
-				// this.mainClientState.leave();
 				break;
 			}
 		}
@@ -1830,13 +1834,14 @@ class Dale extends Gamegui
 			this.playTechniqueCard<'client_giftVoucher'>({
 				market_card_id: target_id
 			})
-			//TODO: safely delete this
-			// card_id: source.id, 
-			// chameleons_json: DaleCard.getLocalChameleonsJSON(),
-			// args: JSON.stringify({
-			// 	market_card_id: target.id
-			// })
-			//this.mainClientState.leave();
+		}
+	}
+
+	onSafetyPrecaution(source_id: number, target_id: number) {
+		if (this.myStall.contains(target_id)) {
+			this.playTechniqueCard<'client_safetyPrecaution'>({
+				card_id: target_id
+			})
 		}
 	}
 
@@ -1990,6 +1995,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
+			case DaleCard.CT_SAFETYPRECAUTION:
+				fizzle = this.myStall.getNumberOfStacks() == 0
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2121,7 +2135,7 @@ class Dale extends Gamegui
 			const card_id = this.mainClientState.args.technique_card_id
 			const card = new DaleCard(card_id);
 			const type_id = card.effective_type_id;
-			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER) || this.mainClientState.name == 'client_fizzle') {
+			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER && type_id != DaleCard.CT_SAFETYPRECAUTION) || this.mainClientState.name == 'client_fizzle') {
 				this.myHand.addDaleCardToStock(card, this.mySchedule.control_name+'_item_'+card_id)
 				this.mySchedule.removeFromStockByIdNoAnimation(card_id);
 				this.myHandSize.incValue(1);

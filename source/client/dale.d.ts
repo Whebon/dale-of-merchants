@@ -314,6 +314,7 @@ declare global {
 		'client_whirligig': { card_ids: number[], opponent_id: number }
 		'client_gamble': { opponent_id: number }
 		'client_blindfold': { card_id: number, opponent_id: number }
+		'client_safetyPrecaution': { card_id: number }
 	}
 
 	interface ClientPassiveChoice {
