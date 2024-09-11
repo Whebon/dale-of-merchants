@@ -151,6 +151,8 @@ export class MainClientState {
                 }
             case 'client_houseCleaningDitch':
                 return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
+            case 'client_siesta':
+                return _("${card_name}: ${you} may take a card from your discard pile");
         }
         return "MISSING DESCRIPTION";
     }

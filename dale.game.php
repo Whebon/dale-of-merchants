@@ -2857,6 +2857,9 @@ class Dale extends DaleTableBasic
                 ));
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_SIESTA:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2878,6 +2881,13 @@ class Dale extends DaleTableBasic
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
                         throw new BgaVisibleSystemException("Unable to fizzle CT_SHOPPINGJOURNEY. The market is nonempty.");
+                    }
+                    break;
+                case CT_SIESTA:
+                    $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
+                    if (count($cards) >= 1) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_SIESTA. Your discard pile is nonempty.");
                     }
                     break;
                 default:
@@ -2921,6 +2931,25 @@ class Dale extends DaleTableBasic
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('House Cleaning: ${player_name} does not ditch a card'), array(
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SIESTA:
+                if (isset($args["card_id"])) {
+                    $card_id = $args["card_id"];
+                    $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+                    $this->cards->moveCard($card_id, HAND.$player_id);
+                    $this->notifyAllPlayers('discardToHand', clienttranslate('Siesta: ${player_name} takes their ${card_name} from their discard pile'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "card_name" => $this->getCardName($dbcard),
+                        "card" => $dbcard
+                    ));
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Siesta: ${player_name} does not take a card from their discard pile'), array(
                         'player_name' => $this->getActivePlayerName()
                     ));
                 }

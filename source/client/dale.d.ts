@@ -300,6 +300,7 @@ declare global {
 		'client_choicelessTriggerTechniqueCard': { choiceless: true }
 		'client_shoppingJourney': { card_id: number }
 		'client_houseCleaningDitch': { card_id?: number }
+		'client_siesta': { card_id?: number }
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */

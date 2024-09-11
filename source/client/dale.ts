@@ -583,6 +583,9 @@ class Dale extends Gamegui
 			case 'client_houseCleaningDitch':
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
+			case 'client_siesta':
+				this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -760,6 +763,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_houseCleaningDitch':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_siesta':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1000,6 +1006,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_houseCleaningDitch':
 				this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
+				break;
+			case 'client_siesta':
+				this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, 'gray');
 				break;
 		}
 		//(~actionbuttons)
@@ -1643,6 +1652,11 @@ class Dale extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'client_siesta':
+				this.resolveTechniqueCard<'client_siesta'>({
+					card_id: card!.id
+				})
+				break;
 		}
 	}
 
@@ -1824,6 +1838,10 @@ class Dale extends Gamegui
 			case DaleCard.CT_HOUSECLEANING:
 				fizzle = this.myHand.count() == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
+				break;
+			case DaleCard.CT_SIESTA:
+				fizzle = this.myDiscard.size == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -2691,6 +2709,10 @@ class Dale extends Gamegui
 		this.resolveTechniqueCard<'client_houseCleaningDitch'>({});
 	}
 
+	onSiestaSkip() {
+		this.resolveTechniqueCard<'client_siesta'>({});
+	}
+
 
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
@@ -3132,7 +3154,7 @@ class Dale extends Gamegui
 		console.log("notif_discardToHand");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
-		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
+		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}

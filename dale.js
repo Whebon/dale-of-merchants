@@ -3185,6 +3185,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         }
                     case 'client_houseCleaningDitch':
                         return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
+                    case 'client_siesta':
+                        return _("${card_name}: ${you} may take a card from your discard pile");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3865,6 +3867,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_houseCleaningDitch':
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
+                case 'client_siesta':
+                    this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4037,6 +4042,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_houseCleaningDitch':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_siesta':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -4278,6 +4286,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_houseCleaningDitch':
                     this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
+                    break;
+                case 'client_siesta':
+                    this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, 'gray');
                     break;
             }
         };
@@ -4747,6 +4758,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
+                case 'client_siesta':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         Dale.prototype.onSelectMarketPileCard = function (pile, card) {
@@ -4911,6 +4927,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case DaleCard_10.DaleCard.CT_HOUSECLEANING:
                     fizzle = this.myHand.count() == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_SIESTA:
+                    fizzle = this.myDiscard.size == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -5680,6 +5700,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onHouseCleaningSkip = function () {
             this.resolveTechniqueCard({});
         };
+        Dale.prototype.onSiestaSkip = function () {
+            this.resolveTechniqueCard({});
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -6045,7 +6068,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("notif_discardToHand");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
-            this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id);
+            this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
             this.playerHandSizes[notif.args.player_id].incValue(1);
         };
         Dale.prototype.notif_discardToHandMultiple = function (notif) {
