@@ -1595,6 +1595,31 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     break;
             }
         };
+        DaleStock.prototype.getUniqueClickableCardId = function () {
+            var unique_id = undefined;
+            for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (this.isClickable(item.id)) {
+                    if (unique_id === undefined) {
+                        unique_id = item.id;
+                    }
+                    else {
+                        return undefined;
+                    }
+                }
+            }
+            return unique_id;
+        };
+        DaleStock.prototype.getAllClickableCardIds = function () {
+            var card_ids = [];
+            for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (this.isClickable(item.id)) {
+                    card_ids.push(item.id);
+                }
+            }
+            return card_ids;
+        };
         DaleStock.prototype.isClickable = function (card_id) {
             var card = new DaleCard_2.DaleCard(card_id);
             switch (this.selectionMode) {
@@ -3089,8 +3114,12 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may rearrange any cards in the market");
                     case 'client_fizzle':
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
+                    case 'client_triggerFizzle':
+                        return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
                     case 'client_choicelessTechniqueCard':
                         return _("${card_name}: ${you} may play this card as a technique");
+                    case 'client_choicelessTriggerTechniqueCard':
+                        return _("${card_name}: ${you} must resolve this technique");
                     case 'client_swiftBroker':
                         return _("${card_name}: ${you} may choose the order to discard your hand");
                     case 'client_shatteredRelic':
@@ -3133,6 +3162,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         }
                     case 'client_safetyPrecaution':
                         return _("${card_name}: ${you} must select a card from your stall to swap with");
+                    case 'client_shoppingJourney':
+                        return _("${card_name}: ${you} must choose a card from the market");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3610,6 +3641,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             switch (stateName) {
                 case 'turnStart':
                     this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'dale-wrap-technique');
+                    var turnStart_unique_card_id_1 = this.mySchedule.getUniqueClickableCardId();
+                    if (turnStart_unique_card_id_1) {
+                        setTimeout((function () { return _this.onTurnStartTriggerTechnique(turnStart_unique_card_id_1); }).bind(this), 1);
+                    }
                     break;
                 case 'postCleanUpPhase':
                     this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
@@ -3796,6 +3831,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'dangerousTest':
                     this.myHand.setSelectionMode('multiple3', 'pileBlue', 'dale-wrap-technique', _("Choose 3 cards to discard"));
                     break;
+                case 'client_shoppingJourney':
+                    this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -3959,6 +3997,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'dangerousTest':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_shoppingJourney':
+                    this.market.setSelectionMode(0);
                     break;
             }
         };
@@ -4160,6 +4201,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_fizzle':
                     this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_triggerFizzle':
+                    this.addActionButton("fizzle-button", _("Confirm"), "onTriggerFizzle");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_choicelessPassiveCard':
@@ -4613,6 +4658,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }, function (source_id, target_id) { return _this.onCalculationsSwap(source_id, target_id); });
                     }
                     break;
+                case 'client_shoppingJourney':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         Dale.prototype.onScheduleSelectionChanged = function () {
@@ -4794,12 +4844,23 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onSelectScheduleCard = function (card_id) {
             console.log("onSelectScheduleCard: " + card_id);
             var card = new DaleCard_10.DaleCard(card_id);
-            if (this.gamedatas.gamestate.name == 'turnStart') {
-                switch (card_id) {
-                    default:
-                        this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
-                        break;
-                }
+            switch (this.gamedatas.gamestate.name) {
+                case 'turnStart':
+                    this.onTurnStartTriggerTechnique(card_id);
+                    break;
+            }
+        };
+        Dale.prototype.onTurnStartTriggerTechnique = function (card_id) {
+            var card = new DaleCard_10.DaleCard(card_id);
+            var fizzle = true;
+            switch (card.effective_type_id) {
+                case DaleCard_10.DaleCard.CT_SHOPPINGJOURNEY:
+                    fizzle = this.market.getCards().length == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
+                    break;
+                default:
+                    this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+                    break;
             }
         };
         Dale.prototype.onFundsSelectionChanged = function () {
@@ -4880,6 +4941,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 fizzle: true
             });
         };
+        Dale.prototype.onTriggerFizzle = function () {
+            this.resolveTechniqueCard({
+                fizzle: true
+            });
+        };
         Dale.prototype.onChoicelessTriggerTechniqueCard = function () {
             this.resolveTechniqueCard({
                 choiceless: true
@@ -4932,24 +4998,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.resolveTechniqueCardWithServerState = function (args) {
             var card_id = this.mainClientState.args.technique_card_id;
-            this.mainClientState.leaveAndDontReturn();
             this.bgaPerformAction('actFullyResolveTechniqueCard', {
                 card_id: card_id,
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
             });
+            this.mainClientState.leaveAndDontReturn();
         };
         Dale.prototype.resolveTechniqueCard = function (args) {
             var card_id = this.mainClientState.args.technique_card_id;
-            this.mainClientState.leave();
             this.bgaPerformAction('actFullyResolveTechniqueCard', {
                 card_id: card_id,
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
             });
+            this.mainClientState.leave();
         };
         Dale.prototype.clientTriggerTechnique = function (stateName, technique_card_id) {
-            if (this.checkLock()) {
+            if (this.checkLock(true)) {
                 if ($(this.mySchedule.control_name + '_item_' + technique_card_id)) {
                     this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
                 }

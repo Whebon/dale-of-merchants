@@ -1647,7 +1647,7 @@ class Dale extends DaleTableBasic
         if ($this->card_types[$type_id]["trigger"] != null) {
             $this->gamestate->nextState("trSamePlayer");
         }
-        if ($this->card_types[$type_id]["has_plus"]) {
+        else if ($this->card_types[$type_id]["has_plus"]) {
             if ($this->getActivePlayerId() != $player_id) {
                 $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
             }
@@ -2248,7 +2248,6 @@ class Dale extends DaleTableBasic
         $this->cards->moveCard($market_card_id, HAND.$player_id);
         if ($from_bin) {
             $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${card_name}'), array (
-                'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -2257,7 +2256,6 @@ class Dale extends DaleTableBasic
         }
         else {
             $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${card_name}'), array (
-                'i18n' => array('card_name'),
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -2282,9 +2280,16 @@ class Dale extends DaleTableBasic
         }
         $this->incStat(1, "actions_technique", $player_id);
 
-        //Fizzle
+        //Fizzle (~fizzle)
         if (array_key_exists("fizzle", $args)) {
             switch($technique_type_id) {
+                case CT_PREPAIDGOOD:
+                    $cards = $this->cards->getCardsInLocation(MARKET);
+                    if (count($cards) >= 1) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_PREPAIDGOOD. The market is nonempty.");
+                    }
+                    break;
                 case CT_ACORN:
                     $players = $this->loadPlayersBasicInfos();
                     $cards = array();
@@ -2490,7 +2495,6 @@ class Dale extends DaleTableBasic
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
                 $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
-                    'i18n' => array('card_name'),
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -2833,6 +2837,9 @@ class Dale extends DaleTableBasic
             case CT_STEADYACHIEVER:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_SHOPPINGJOURNEY:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2842,14 +2849,28 @@ class Dale extends DaleTableBasic
     function actFullyResolveTechniqueCard($chameleons_json, $technique_card_id, $args) {
         $this->addChameleonBindings($chameleons_json, $technique_card_id);
         $this->checkAction("actFullyResolveTechniqueCard");
-        $this->_actFullyResolveTechniqueCard($technique_card_id, $args);
-    }
-
-    function _actFullyResolveTechniqueCard($technique_card_id, $args) {
-        //"_actFullyResolveTechniqueCard" can also be called programatically, which needs to bypass the "checkAction"
         $player_id = $this->getActivePlayerId();
         $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
         $technique_type_id = $this->getTypeId($technique_card);
+
+        //Trigger Fizzle (~triggerfizzle)
+        if (array_key_exists("fizzle", $args)) {
+            switch($technique_type_id) {
+                case CT_SHOPPINGJOURNEY:
+                    $cards = $this->cards->getCardsInLocation(MARKET);
+                    if (count($cards) >= 1) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_SHOPPINGJOURNEY. The market is nonempty.");
+                    }
+                    break;
+                default:
+                    $name = $this->getCardName($technique_card);
+                    throw new BgaVisibleSystemException("Unable to triggerFizzle '$name'");
+                    break;
+            }
+            $this->fullyResolveCard($player_id, $technique_card);
+            return;
+        }
 
         //Resolve Technique from Schedule (~technique) (~resolvefromschedule) (~trigger)
         switch($technique_type_id) {
@@ -2857,6 +2878,24 @@ class Dale extends DaleTableBasic
                 $this->draw(clienttranslate('Steady Achiever: ${player_name} draws a card'));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_SHOPPINGJOURNEY:
+                //Get the card from the market
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, MARKET);
+                //Place the card into the player's hand
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} placed a ${card_name} into their hand'), array (
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_name' => $this->getCardName($card),
+                    'market_card_id' => $card_id,
+                    'pos' => $card["location_arg"],
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            default:
+                $name = $this->getCardName($technique_card);
+                throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");
         }
     }
     
@@ -3225,20 +3264,6 @@ class Dale extends DaleTableBasic
         game state.
     */
 
-    //TODO: safely delete this
-    // function argSelectedCardInMarket(){
-    //     $card_id = $this->getGameStateValue("selectedCard");
-    //     $card = $this->cards->getCard($card_id);
-    //     $type_id = $card['type_arg'];
-    //     return array(
-    //         'i18n' => array('card_name'),
-    //         'card_name' => $this->card_types[$type_id]['name'],
-    //         'card_id' => $card['type_arg'],
-    //         'cost' => $this->getCost($card),
-    //         'pos' => $card['location_arg']
-    //     );
-    // }
-
     function argNumberOfPlayers() {
         $n = $this->getPlayersNumber();
         return array(
@@ -3392,20 +3417,9 @@ class Dale extends DaleTableBasic
                 $triggeredCards[] = $dbcard;
             }
         }
-        if (count($triggeredCards) >= 2) {
-            return;
+        if (count($triggeredCards) == 0) {
+            $this->gamestate->nextState("trSkipTurnStart");
         }
-        else if (count($triggeredCards) == 1) {
-            try {
-                $this->_actFullyResolveTechniqueCard(current($triggeredCards)["id"], array());
-            }
-            catch (feException $e) {
-                throw $e;
-                //choiceful technique
-            }
-            return;
-        }
-        $this->gamestate->nextState("trSkipTurnStart");
     }
 
     function stCleanUpPhase() {

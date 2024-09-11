@@ -296,7 +296,9 @@ declare global {
 	};
 
 	interface ClientTriggerTechniqueChoice {
+		'client_triggerFizzle': { fizzle: boolean }
 		'client_choicelessTriggerTechniqueCard': { choiceless: true }
+		'client_shoppingJourney': { card_id: number }
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */

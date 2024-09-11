@@ -343,6 +343,11 @@ class Dale extends Gamegui
 		switch( stateName ){
 			case 'turnStart':
 				this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'dale-wrap-technique');
+				const turnStart_unique_card_id = this.mySchedule.getUniqueClickableCardId();
+				if (turnStart_unique_card_id) {
+					setTimeout((()=>this.onTurnStartTriggerTechnique(turnStart_unique_card_id)).bind(this), 1);
+					//this.onTurnStartTriggerTechnique(turnStart_unique_card_id);
+				}
 				break;
 			case 'postCleanUpPhase':
 				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
@@ -565,6 +570,9 @@ class Dale extends Gamegui
 			case 'dangerousTest':
 				this.myHand.setSelectionMode('multiple3', 'pileBlue', 'dale-wrap-technique', _("Choose 3 cards to discard"));
 				break;
+			case 'client_shoppingJourney':
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
+				break;
 		}
 	}
 
@@ -732,6 +740,9 @@ class Dale extends Gamegui
 				break;
 			case 'dangerousTest':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_shoppingJourney':
+				this.market!.setSelectionMode(0);
 				break;
 		}
 	}
@@ -923,12 +934,17 @@ class Dale extends Gamegui
 				break;
 			case 'client_choicelessTriggerTechniqueCard':
 				this.onChoicelessTriggerTechniqueCard(); //immediately leave this state
+				//this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTriggerTechniqueCard");
 				break;
 			case 'client_choicelessTechniqueCard':
 				this.onChoicelessTechniqueCard(); //immediately leave this state
 				break;
 			case 'client_fizzle':
 				this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_triggerFizzle':
+				this.addActionButton("fizzle-button", _("Confirm"), "onTriggerFizzle");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_choicelessPassiveCard':
@@ -1550,6 +1566,11 @@ class Dale extends Gamegui
 					);
 				}
 				break;
+			case 'client_shoppingJourney':
+				this.resolveTechniqueCard<'client_shoppingJourney'>({
+					card_id: card.id
+				});
+				break;
 		}
 	}
 	
@@ -1752,12 +1773,24 @@ class Dale extends Gamegui
 		console.log("onSelectScheduleCard: "+card_id);
 		const card = new DaleCard(card_id);
 
-		if (this.gamedatas.gamestate.name == 'turnStart') {
-			switch(card_id) {
-				default:
-					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
-					break;
-			}
+		switch(this.gamedatas.gamestate.name) {
+			case 'turnStart':
+				this.onTurnStartTriggerTechnique(card_id);
+				break;
+		}
+	}
+
+	onTurnStartTriggerTechnique(card_id: number) {
+		const card = new DaleCard(card_id);
+		let fizzle = true;
+		switch(card.effective_type_id) {
+			case DaleCard.CT_SHOPPINGJOURNEY:
+				fizzle = this.market!.getCards().length == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
+				break;
+			default:
+				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+				break;
 		}
 	}
 
@@ -1847,6 +1880,12 @@ class Dale extends Gamegui
 		})
 	}
 
+	onTriggerFizzle() {
+		this.resolveTechniqueCard<'client_triggerFizzle'>({
+			fizzle: true
+		})
+	}
+
 	onChoicelessTriggerTechniqueCard() {
 		this.resolveTechniqueCard<'client_choicelessTriggerTechniqueCard'>({
 			choiceless: true
@@ -1924,12 +1963,12 @@ class Dale extends Gamegui
 	 */
 	resolveTechniqueCardWithServerState<K extends keyof ClientTriggerTechniqueChoice>(args: ClientTriggerTechniqueChoice[K]) {
 		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
-		this.mainClientState.leaveAndDontReturn();
 		this.bgaPerformAction('actFullyResolveTechniqueCard', {
 			card_id: card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
+		this.mainClientState.leaveAndDontReturn();
 	}
 	
 	/**
@@ -1938,19 +1977,19 @@ class Dale extends Gamegui
 	 */
 	resolveTechniqueCard<K extends keyof ClientTriggerTechniqueChoice>(args: ClientTriggerTechniqueChoice[K]) {
 		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
-		this.mainClientState.leave();
 		this.bgaPerformAction('actFullyResolveTechniqueCard', {
 			card_id: card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
+		this.mainClientState.leave();
 	}
 
 	/**
 	 * Trigger and resolve an already scheduled technique
 	 */
 	clientTriggerTechnique<K extends keyof ClientTriggerTechniqueChoice>(stateName: K, technique_card_id: number) {
-		if (this.checkLock()) {
+		if (this.checkLock(true)) {
 			if ($(this.mySchedule.control_name+'_item_' + technique_card_id)) {
 				this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
 			}

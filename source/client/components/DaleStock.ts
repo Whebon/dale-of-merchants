@@ -236,6 +236,37 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	/**
+	 * @returns if only a single card is clickable, return that card. Otherwise, return `undefined`
+	 */
+	public getUniqueClickableCardId(): number | undefined {
+		let unique_id = undefined;
+		for (let item of this.items) {
+			if (this.isClickable(item.id)) {
+				if (unique_id === undefined) {
+					unique_id = item.id;
+				}
+				else {
+					return undefined;
+				}
+			} 
+		}
+		return unique_id;
+	}
+
+	/**
+	 * @returns all `card_ids` can be clicked in the current selection mode
+	 */
+	public getAllClickableCardIds(): number[] {
+		const card_ids = [];
+		for (let item of this.items) {
+			if (this.isClickable(item.id)) {
+				card_ids.push(item.id);
+			} 
+		}
+		return card_ids;
+	}
+
+	/**
 	 * @returns `true` if the card id can be clicked in the current selection mode
 	 */
 	private isClickable(card_id: number): boolean {

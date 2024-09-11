@@ -93,8 +93,12 @@ export class MainClientState {
             //Generic technique states
             case 'client_fizzle':
                 return _("${card_name}: Are you sure you want to play this technique without any effects?");
+            case 'client_triggerFizzle':
+                return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
+            case 'client_choicelessTriggerTechniqueCard':
+                return _("${card_name}: ${you} must resolve this technique");
 
             //Specific technique states
             case 'client_swiftBroker':
@@ -137,6 +141,8 @@ export class MainClientState {
                 }
             case 'client_safetyPrecaution':
                 return _("${card_name}: ${you} must select a card from your stall to swap with");
+            case 'client_shoppingJourney':
+                return _("${card_name}: ${you} must choose a card from the market");
         }
         return "MISSING DESCRIPTION";
     }
