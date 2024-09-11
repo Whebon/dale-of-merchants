@@ -2860,6 +2860,10 @@ class Dale extends DaleTableBasic
             case CT_SIESTA:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_LUNCHBREAK:
+                $this->draw(clienttranslate('Lunch Break: ${player_name} draws a card'));
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2953,6 +2957,10 @@ class Dale extends DaleTableBasic
                         'player_name' => $this->getActivePlayerName()
                     ));
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_LUNCHBREAK:
+                $this->draw(clienttranslate('Lunch Break: ${player_name} draws a card'));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
