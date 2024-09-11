@@ -4204,8 +4204,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_triggerFizzle':
-                    this.addActionButton("fizzle-button", _("Confirm"), "onTriggerFizzle");
-                    this.addActionButtonCancelClient();
+                    this.onTriggerFizzle();
                     break;
                 case 'client_choicelessPassiveCard':
                     this.onChoicelessPassiveCard();

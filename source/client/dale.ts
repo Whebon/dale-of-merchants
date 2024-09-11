@@ -944,8 +944,8 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_triggerFizzle':
-				this.addActionButton("fizzle-button", _("Confirm"), "onTriggerFizzle");
-				this.addActionButtonCancelClient();
+				this.onTriggerFizzle(); //immediately leave this state
+				//this.addActionButton("fizzle-button", _("Confirm"), "onTriggerFizzle");
 				break;
 			case 'client_choicelessPassiveCard':
 				this.onChoicelessPassiveCard(); //immediately leave this state
