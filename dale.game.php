@@ -919,30 +919,19 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * Returns the effective trigger of a card
+     */
+    function getTrigger(array $dbcard): string | null {
+        $type_id = $this->getTypeId($dbcard);
+        return $this->card_types[$type_id]['trigger'];
+    }
+
+    /**
      * Returns the effective card type of a dbcard. "effective" suggests the chameleons might have modified the type_id.
      * @param array $dbcard dbcard object
     */
     function getTypeId(array $dbcard): string {
         return $this->effects->getTypeId($dbcard);
-        // $type_id = $dbcard['type_arg'];
-        // $is_bindable = $type_id == CT_FLEXIBLESHOPKEEPER || 
-        //                 $type_id == CT_REFLECTION ||  
-        //                 $type_id == CT_GOODOLDTIMES || 
-        //                 $type_id == CT_TRENDSETTING || 
-        //                 $type_id == CT_SEEINGDOUBLES;
-        // if ($is_bindable) {
-        //     $target = $this->effects->getTarget($dbcard["id"], $type_id);
-        //     if ($target == CT_GOODOLDTIMES) {
-        //         $good_old_times_target = $this->effects->getTarget($dbcard["id"], CT_GOODOLDTIMES);
-        //         if ($good_old_times_target != null && $good_old_times_target != -1) {
-        //             $target = $good_old_times_target;
-        //         }
-        //     }
-        //     if ($target != null && $target != -1) {
-        //         return $target;
-        //     }
-        // }
-        // return $type_id;
     }
 
     /**
@@ -976,9 +965,6 @@ class Dale extends DaleTableBasic
     */
     function getValue(array $dbcard): int {
         return $this->effects->getValue($dbcard);
-        // $type_id = $this->getTypeId($dbcard);
-        // $flashy_show = $this->effects->countEffectsOfTypeId(CT_FLASHYSHOW);
-        // return $this->card_types[$type_id]['value'] + $flashy_show;
     }
 
     /**
@@ -1594,23 +1580,39 @@ class Dale extends DaleTableBasic
         $this->setGameStateValue("resolvingCard", $card_id);
     }
 
-    //TODO: safely delete this
-    // /**
-    //  * Begin resolving a scheduled card by storing it in "resolvingCard" and notifying all players. Makes 2 db calls.
-    //  * IMPORTANT: the caller is responsible for assuring that the card is currently in the schedule. Typically called after a "scheduleCard".
-    //  * @param array $dbcard card to be scheduled
-    // */
-    // function beginToResolveCard(string $player_id, array $dbcard) {
-    //     $previous = $this->getGameStateValue("resolvingCard");
-    //     if ($previous != -1) {
-    //         throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
-    //     }
-    //     $this->notifyAllPlayers('message', clienttranslate('${player_name} begins to resolve their ${card_name}'), array(
-    //         'player_name' => $this->getPlayerNameById($player_id),
-    //         'card_name' => $this->getCardName($dbcard),
-    //     ));
-    //     $this->setGameStateValue("resolvingCard", $dbcard["id"]);
-    // }
+    /**
+     * Release the "resolvingCard" and transition to the next state based on the card's (+) symbol. The card will fully resolve later based on its 'trigger'
+     * @param mixed $player_id id of the owner of the scheduled card
+     * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
+     */
+    function resolveImmediateEffects(mixed $player_id, array $technique_card = null) {
+        //get the resolving card
+        if ($technique_card != null) {
+            $technique_card_id = $technique_card["id"];
+        }
+        else {
+            $technique_card_id = $this->getGameStateValue("resolvingCard");
+            $technique_card = $this->cards->getCard($technique_card_id);
+            if ($technique_card_id == -1) {
+                throw new Error("Trying to 'resolveImmediateEffects' without 'beginResolvingCard'");
+            }
+            $this->setGameStateValue("resolvingCard", -1);
+        }
+        $type_id = $this->getTypeId($technique_card);
+
+        //decide if the player can go again
+        if ($this->card_types[$type_id]["has_plus"]) {
+            if ($this->getActivePlayerId() != $player_id) {
+                $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
+            }
+            else {
+                $this->gamestate->nextState("trSamePlayer");
+            }
+        }
+        else {
+            $this->gamestate->nextState("trNextPlayer");
+        }
+    }
 
     /**
      * Discard the resolving card, notify all players and transition to the next state. 
@@ -1642,6 +1644,9 @@ class Dale extends DaleTableBasic
         ));
 
         //decide if the player can go again
+        if ($this->card_types[$type_id]["trigger"] != null) {
+            $this->gamestate->nextState("trSamePlayer");
+        }
         if ($this->card_types[$type_id]["has_plus"]) {
             if ($this->getActivePlayerId() != $player_id) {
                 $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
@@ -2097,6 +2102,11 @@ class Dale extends DaleTableBasic
         die(print_r($this->loadPlayersBasicInfos()));
     }
 
+    function debugActivePlayer() {
+        $player_id = $this->getActivePlayerId();
+        die("player_name = ".$this->getPlayerNameById($player_id));
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
 //////////// 
@@ -2356,7 +2366,7 @@ class Dale extends DaleTableBasic
             $this->scheduleCard($player_id, $technique_card, array_key_exists("choiceless", $args));
         }
 
-        //Resolve Technique
+        //Resolve Technique from Hand (~technique) (~resolvefromhand)
         switch($technique_type_id) {
             case CT_SWIFTBROKER:
                 $card_ids = $args["card_ids"];
@@ -2820,9 +2830,33 @@ class Dale extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDangerousTest");
                 break;
+            case CT_STEADYACHIEVER:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
+        }
+    }
+
+    function actFullyResolveTechniqueCard($chameleons_json, $technique_card_id, $args) {
+        $this->addChameleonBindings($chameleons_json, $technique_card_id);
+        $this->checkAction("actFullyResolveTechniqueCard");
+        $this->_actFullyResolveTechniqueCard($technique_card_id, $args);
+    }
+
+    function _actFullyResolveTechniqueCard($technique_card_id, $args) {
+        //"_actFullyResolveTechniqueCard" can also be called programatically, which needs to bypass the "checkAction"
+        $player_id = $this->getActivePlayerId();
+        $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
+        $technique_type_id = $this->getTypeId($technique_card);
+
+        //Resolve Technique from Schedule (~technique) (~resolvefromschedule) (~trigger)
+        switch($technique_type_id) {
+            case CT_STEADYACHIEVER:
+                $this->draw(clienttranslate('Steady Achiever: ${player_name} draws a card'));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
         }
     }
     
@@ -2842,6 +2876,7 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
 
+        //Execute Passive Ability (~passiveability) (~ability)
         switch($type_id) {
             case CT_GOODOLDTIMES:
                 $dbcard = $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
@@ -3346,6 +3381,31 @@ class Dale extends DaleTableBasic
         $this->giveExtraTime($next_player_id);
         $this->incStat(1, "number_of_turns", $next_player_id);
         $this->gamestate->nextState("trStartGame");
+    }
+
+    function stTurnStart() {
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+        $triggeredCards = array();
+        foreach ($dbcards as $dbcard) {
+            if ($this->getTrigger($dbcard) == TRIGGER_ONTURNSTART) {
+                $triggeredCards[] = $dbcard;
+            }
+        }
+        if (count($triggeredCards) >= 2) {
+            return;
+        }
+        else if (count($triggeredCards) == 1) {
+            try {
+                $this->_actFullyResolveTechniqueCard(current($triggeredCards)["id"], array());
+            }
+            catch (feException $e) {
+                throw $e;
+                //choiceful technique
+            }
+            return;
+        }
+        $this->gamestate->nextState("trSkipTurnStart");
     }
 
     function stCleanUpPhase() {

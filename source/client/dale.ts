@@ -274,11 +274,11 @@ class Dale extends Gamegui
 
 		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
-			const container = $('schedule-'+player_id)!
-			const wrap = $('schedule-wrap-'+player_id)!
-			dojo.setStyle(wrap, 'min-width', `${1.5*Images.CARD_WIDTH_S}px`);
+			const container = $('dale-schedule-'+player_id)!
+			const wrap = $('dale-schedule-wrap-'+player_id)!
+			dojo.setStyle(wrap, 'min-width', `${1.75*Images.CARD_WIDTH_S}px`);
 			this.playerSchedules[player_id] = new DaleStock();
-			this.playerSchedules[player_id].init(this, container);
+			this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
 			this.playerSchedules[player_id].setSelectionMode('none');
 			this.playerSchedules[player_id].centerItems = true;
 			for (let card_id in gamedatas.schedules[player_id]) {
@@ -286,6 +286,8 @@ class Dale extends Gamegui
 				this.playerSchedules[player_id]!.addDaleCardToStock(DaleCard.of(card));
 			}
 		}
+		dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
+		dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
 
 		//display any effects on the client-side
 		console.log("DbEffects:");
@@ -339,6 +341,9 @@ class Dale extends Gamegui
 
 		//turn on selection mode(s)
 		switch( stateName ){
+			case 'turnStart':
+				this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'dale-wrap-technique');
+				break;
 			case 'postCleanUpPhase':
 				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
 				break;
@@ -580,6 +585,9 @@ class Dale extends Gamegui
 		//turn off selection mode(s)
 		switch( stateName )
 		{
+			case 'turnStart':
+				this.mySchedule.setSelectionMode('none');
+				break;
 			case 'postCleanUpPhase':
 				this.myHand.setSelectionMode('none');
 				break;
@@ -912,6 +920,9 @@ class Dale extends Gamegui
 				break;
 			case 'chameleon_seeingdoubles':
 				this.addActionButtonCancelClient();
+				break;
+			case 'client_choicelessTriggerTechniqueCard':
+				this.onChoicelessTriggerTechniqueCard(); //immediately leave this state
 				break;
 			case 'client_choicelessTechniqueCard':
 				this.onChoicelessTechniqueCard(); //immediately leave this state
@@ -1737,6 +1748,19 @@ class Dale extends Gamegui
 		}
 	}
 
+	onSelectScheduleCard(card_id: number) {
+		console.log("onSelectScheduleCard: "+card_id);
+		const card = new DaleCard(card_id);
+
+		if (this.gamedatas.gamestate.name == 'turnStart') {
+			switch(card_id) {
+				default:
+					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+					break;
+			}
+		}
+	}
+
 	onFundsSelectionChanged() {
 		//TODO: pandas
 	}
@@ -1823,6 +1847,12 @@ class Dale extends Gamegui
 		})
 	}
 
+	onChoicelessTriggerTechniqueCard() {
+		this.resolveTechniqueCard<'client_choicelessTriggerTechniqueCard'>({
+			choiceless: true
+		})
+	}
+
 	onChoicelessTechniqueCard() {
 		this.playTechniqueCard<'client_choicelessTechniqueCard'>({
 			choiceless: true
@@ -1887,7 +1917,48 @@ class Dale extends Gamegui
 			this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
 		}
 	}
+
+	/**
+	 * Resolve a trigger technique card that is already locally inside your schedule for an open-information choice. Then proceed to an hidden-information server choice state.
+	 * @param args result of the open-infomation choice to send to the server
+	 */
+	resolveTechniqueCardWithServerState<K extends keyof ClientTriggerTechniqueChoice>(args: ClientTriggerTechniqueChoice[K]) {
+		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
+		this.mainClientState.leaveAndDontReturn();
+		this.bgaPerformAction('actFullyResolveTechniqueCard', {
+			card_id: card_id,
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify(args)
+		});
+	}
 	
+	/**
+	 * Resolve a trigger technique card that is already locally inside your schedule for an open-information choice
+	 * @param args result of the open-infomation choice to send to the server
+	 */
+	resolveTechniqueCard<K extends keyof ClientTriggerTechniqueChoice>(args: ClientTriggerTechniqueChoice[K]) {
+		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
+		this.mainClientState.leave();
+		this.bgaPerformAction('actFullyResolveTechniqueCard', {
+			card_id: card_id,
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify(args)
+		});
+	}
+
+	/**
+	 * Trigger and resolve an already scheduled technique
+	 */
+	clientTriggerTechnique<K extends keyof ClientTriggerTechniqueChoice>(stateName: K, technique_card_id: number) {
+		if (this.checkLock()) {
+			if ($(this.mySchedule.control_name+'_item_' + technique_card_id)) {
+				this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+			}
+			else {
+				throw new Error(`Cannot trigger and resolve the technique card. Card ${technique_card_id} does not exist in my schedule`);
+			}
+		}
+	}
 
 	onAcorn(source_id: number, target_id: number) {
 		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {

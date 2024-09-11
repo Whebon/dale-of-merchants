@@ -51,9 +51,10 @@
                 <h3 class="dale-component-name"> {STALL} </h3>
                 <div id="dale-stall-{PLAYER_ID}" class="dale-stall-container"></div>
             </div>
-            <div id="schedule-wrap-{PLAYER_ID}" class="dale-flat-stock dale-schedule">
+            <div id="dale-schedule-wrap-{PLAYER_ID}" class="dale-flat-stock dale-schedule">
+                <div class="dale-hidden dale-label"></div> <!-- not used, but exists so this component can be a proper DaleStock -->
                 <h3 class="dale-component-name"> {SCHEDULE} </h3>
-                <div id="schedule-{PLAYER_ID}"></div>
+                <div id="dale-schedule-{PLAYER_ID}"></div>
             </div>
         </div>
         <div id="dale-stall-wrap-portrait-{PLAYER_ID}" class="dale-stall-wrap">

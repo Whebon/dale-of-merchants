@@ -85,6 +85,21 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actFullyResolveTechniqueCard()
+	{
+		self::setAjaxMode();
+
+		/** @var string $chameleons_json */
+		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var string $args */
+		$args = self::getArg('args', AT_json, true);
+
+		$this->game->actFullyResolveTechniqueCard( $chameleons_json, $card_id, $args );
+		self::ajaxResponse();
+	}
+
 	public function actWinterIsComingSkip()
 	{
 		self::setAjaxMode();

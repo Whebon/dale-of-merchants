@@ -52,7 +52,8 @@ export class Stall implements CardSlotManager, DaleLocation {
         dojo.setStyle(this.container.parentElement!, 'max-width', Images.CARD_WIDTH_S*(1+Images.STACK_MAX_MARGIN_X)*Stall.MAX_STACKS+'px');
         this.updateHeight();
         
-        addEventListener("resize", this.onResize.bind(this));
+        const thiz = this
+        addEventListener("resize", () => setTimeout(() => thiz.onResize(), 1));
         this.onResize();
     }
 

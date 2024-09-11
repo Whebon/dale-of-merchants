@@ -294,6 +294,10 @@ declare global {
 	type ClientChoiceSubsetValidation<T extends Record<keyof T, unknown>, U extends Record<string, unknown>> = {
 		[K in keyof T]: K extends keyof U ? T[K] : never;
 	};
+
+	interface ClientTriggerTechniqueChoice {
+		'client_choicelessTriggerTechniqueCard': { choiceless: true }
+	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
 	interface ClientTechniqueChoice {
@@ -324,11 +328,12 @@ declare global {
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
+	type TriggerTechniqueClientStates = { [K in keyof ClientTriggerTechniqueChoice]: { technique_card_id: number } }
 	type TechniqueClientStates = { [K in keyof ClientTechniqueChoice]: { technique_card_id: number } }
 	type PassiveClientStates = { [K in keyof ClientPassiveChoice]: { passive_card_id: number } }
 
 	/** @gameSpecific Add game specific client game states */
-	interface ClientGameStates extends TechniqueClientStates, PassiveClientStates {
+	interface ClientGameStates extends TriggerTechniqueClientStates, TechniqueClientStates, PassiveClientStates {
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
 		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }

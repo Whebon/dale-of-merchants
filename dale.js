@@ -180,6 +180,10 @@ define("components/Images", ["require", "exports"], function (require, exports) 
     }());
     exports.Images = Images;
 });
+define("components/types/DaleTrigger", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/types/CardType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1011,9 +1015,23 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.getCost = function (pos) {
             return this.original_value + pos;
         };
-        Object.defineProperty(DaleCard.prototype, "original_animalfolk_id", {
+        Object.defineProperty(DaleCard.prototype, "trigger", {
+            get: function () {
+                return DaleCard.cardTypes[this.effective_type_id].trigger;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "effective_animalfolk_id", {
             get: function () {
                 return DaleCard.cardTypes[this.effective_type_id].animalfolk_id;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleCard.prototype, "original_animalfolk_id", {
+            get: function () {
+                return DaleCard.cardTypes[this.original_type_id].animalfolk_id;
             },
             enumerable: false,
             configurable: true
@@ -1535,7 +1553,13 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
         };
         DaleStock.prototype.isClickSelectionMode = function () {
-            return (this.selectionMode == 'click' || this.selectionMode == 'clickTechnique' || this.selectionMode == 'clickAbility' || this.selectionMode == 'clickAbilityPostCleanup' || this.selectionMode == 'clickRetainSelection');
+            return (this.selectionMode == 'click' ||
+                this.selectionMode == 'clickTechnique' ||
+                this.selectionMode == 'clickAbility' ||
+                this.selectionMode == 'clickAbilityPostCleanup' ||
+                this.selectionMode == 'clickRetainSelection' ||
+                this.selectionMode == 'clickOnTurnStart' ||
+                this.selectionMode == 'clickOnFinish');
         };
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
@@ -1592,6 +1616,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
                 case 'clickRetainSelection':
                     return true;
+                case 'clickOnTurnStart':
+                    return card.trigger == 'onTurnStart';
+                case 'clickOnFinish':
+                    return card.trigger == 'onFinish';
                 case 'single':
                     return true;
                 case 'multiple':
@@ -2657,7 +2685,8 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             }
             dojo.setStyle(this.container.parentElement, 'max-width', Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
             this.updateHeight();
-            addEventListener("resize", this.onResize.bind(this));
+            var thiz = this;
+            addEventListener("resize", function () { return setTimeout(function () { return thiz.onResize(); }, 1); });
             this.onResize();
         }
         Object.defineProperty(Stall.prototype, "leftMostPlaceholder", {
@@ -3112,6 +3141,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         });
         MainClientState.prototype.leaveAndDontReturn = function () {
             var previous = this._stack.pop();
+            this._name = 'client_technique';
+            this._args = {};
             if (previous instanceof PreviousState) {
                 this._name = previous.name;
                 if (previous.args) {
@@ -3121,9 +3152,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         };
         MainClientState.prototype.leave = function () {
             var previous = this._stack.pop();
+            this._name = 'client_technique';
+            this._args = {};
             if (previous instanceof ServerState) {
                 this.setPassiveSelected(false);
-                this._args = {};
                 this._page.restoreServerGameState();
             }
             else if (previous instanceof PreviousState) {
@@ -3524,11 +3556,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
             dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             for (var player_id in gamedatas.schedules) {
-                var container = $('schedule-' + player_id);
-                var wrap = $('schedule-wrap-' + player_id);
-                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
+                var container = $('dale-schedule-' + player_id);
+                var wrap = $('dale-schedule-wrap-' + player_id);
+                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_8.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
-                this.playerSchedules[player_id].init(this, container);
+                this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
                 this.playerSchedules[player_id].setSelectionMode('none');
                 this.playerSchedules[player_id].centerItems = true;
                 for (var card_id in gamedatas.schedules[player_id]) {
@@ -3536,6 +3568,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.playerSchedules[player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(card));
                 }
             }
+            dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
+            dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
             console.log("DbEffects:");
             for (var i in gamedatas.effects) {
                 var effect = gamedatas.effects[i];
@@ -3574,6 +3608,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             }
             switch (stateName) {
+                case 'turnStart':
+                    this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'dale-wrap-technique');
+                    break;
                 case 'postCleanUpPhase':
                     this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
                     break;
@@ -3772,6 +3809,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 return;
             }
             switch (stateName) {
+                case 'turnStart':
+                    this.mySchedule.setSelectionMode('none');
+                    break;
                 case 'postCleanUpPhase':
                     this.myHand.setSelectionMode('none');
                     break;
@@ -4111,6 +4151,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'chameleon_seeingdoubles':
                     this.addActionButtonCancelClient();
+                    break;
+                case 'client_choicelessTriggerTechniqueCard':
+                    this.onChoicelessTriggerTechniqueCard();
                     break;
                 case 'client_choicelessTechniqueCard':
                     this.onChoicelessTechniqueCard();
@@ -4748,6 +4791,17 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
             }
         };
+        Dale.prototype.onSelectScheduleCard = function (card_id) {
+            console.log("onSelectScheduleCard: " + card_id);
+            var card = new DaleCard_10.DaleCard(card_id);
+            if (this.gamedatas.gamestate.name == 'turnStart') {
+                switch (card_id) {
+                    default:
+                        this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+                        break;
+                }
+            }
+        };
         Dale.prototype.onFundsSelectionChanged = function () {
         };
         Dale.prototype.onPurchase = function () {
@@ -4826,6 +4880,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 fizzle: true
             });
         };
+        Dale.prototype.onChoicelessTriggerTechniqueCard = function () {
+            this.resolveTechniqueCard({
+                choiceless: true
+            });
+        };
         Dale.prototype.onChoicelessTechniqueCard = function () {
             this.playTechniqueCard({
                 choiceless: true
@@ -4869,6 +4928,34 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 }
                 this.myHandSize.incValue(-1);
                 this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+            }
+        };
+        Dale.prototype.resolveTechniqueCardWithServerState = function (args) {
+            var card_id = this.mainClientState.args.technique_card_id;
+            this.mainClientState.leaveAndDontReturn();
+            this.bgaPerformAction('actFullyResolveTechniqueCard', {
+                card_id: card_id,
+                chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
+                args: JSON.stringify(args)
+            });
+        };
+        Dale.prototype.resolveTechniqueCard = function (args) {
+            var card_id = this.mainClientState.args.technique_card_id;
+            this.mainClientState.leave();
+            this.bgaPerformAction('actFullyResolveTechniqueCard', {
+                card_id: card_id,
+                chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
+                args: JSON.stringify(args)
+            });
+        };
+        Dale.prototype.clientTriggerTechnique = function (stateName, technique_card_id) {
+            if (this.checkLock()) {
+                if ($(this.mySchedule.control_name + '_item_' + technique_card_id)) {
+                    this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+                }
+                else {
+                    throw new Error("Cannot trigger and resolve the technique card. Card ".concat(technique_card_id, " does not exist in my schedule"));
+                }
             }
         };
         Dale.prototype.onAcorn = function (source_id, target_id) {

@@ -43,7 +43,7 @@ interface GameStates {
 		'type': 'game',
 		'action': 'stStartGame',
 		'transitions': {
-			'trStartGame': 30,
+			'trStartGame': 31,
 		},
 	},
 	29: {
@@ -106,6 +106,19 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
+			'actFullyResolveTechniqueCard': [{
+				'name': 'chameleons_json',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}],
 			'actWinterIsComingSkip': [],
 			'actBuild': [{
 				'name': 'chameleons_json',
@@ -139,6 +152,32 @@ interface GameStates {
 			'trSabotage': 55,
 			'trMagnet': 58,
 			'trDangerousTest': 59,
+		},
+	},
+	31: {
+		'name': 'turnStart',
+		'description': '${actplayer} must take an action',
+		'descriptionmyturn': '${you} must resolve scheduled techniques',
+		'type': 'activeplayer',
+		'action': 'stTurnStart',
+		'possibleactions': {
+			'actFullyResolveTechniqueCard': [{
+				'name': 'chameleons_json',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 31,
+			'trSkipTurnStart': 30,
 		},
 	},
 	36: {
@@ -191,7 +230,7 @@ interface GameStates {
 		'action': 'stCleanUpPhase',
 		'updateGameProgression': true,
 		'transitions': {
-			'trNextPlayer': 30,
+			'trNextPlayer': 31,
 			'trPostCleanUpPhase': 42,
 		},
 	},

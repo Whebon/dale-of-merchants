@@ -58,6 +58,7 @@ for index, row in df.iterrows():
         'has_plus': has_plus(row),
         'has_ability': has_ability(row),
         'playable': playable(row),
+        'trigger': string_literal("" if row['trigger'] == "onClient" else row['trigger']),
         'value': row['value'],
         'nbr': row['nbr'],
         'animalfolk_displayed': '""' if animalfolk == "null" else f"clienttranslate({animalfolk})",

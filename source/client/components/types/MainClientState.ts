@@ -146,6 +146,8 @@ export class MainClientState {
      */
     public leaveAndDontReturn() {
         const previous = this._stack.pop();
+        this._name = 'client_technique';
+        this._args = {};
         if (previous instanceof PreviousState) {
             this._name = previous.name;
             if (previous.args) {
@@ -159,9 +161,10 @@ export class MainClientState {
      */
     public leave() {
         const previous = this._stack.pop();
+        this._name = 'client_technique';
+        this._args = {};
         if (previous instanceof ServerState) {
             this.setPassiveSelected(false);
-            this._args = {};
             this._page.restoreServerGameState();
         }
         else if (previous instanceof PreviousState) {

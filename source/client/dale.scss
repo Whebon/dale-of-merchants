@@ -958,6 +958,10 @@ body {
 .dale-flat-stock {
 	.dale-card {
 		z-index: 100;
+		&:hover:not(.dale-line-source):not(.dale-line-target) {
+			scale: 1.1;
+			z-index: 200 !important;
+		}
 	}
 }
 

@@ -46,7 +46,7 @@
 		"description": "",
 		"type": "game",
 		"action": "stStartGame",
-		"transitions": { "trStartGame": 30 }
+		"transitions": { "trStartGame": 31 }
 	},
 
 	//////////////// Change active player (https://forum.boardgamearena.com/viewtopic.php?p=10016) ////////////////
@@ -90,6 +90,11 @@
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
+			"actFullyResolveTechniqueCard": [
+				{"name": "chameleons_json", "type": "AT_json"},
+				{"name": "card_id", "type": "AT_int"},
+				{"name": "args", "type": "AT_json"}
+			],
 
 			//Build Actions
 			"actWinterIsComingSkip": [],
@@ -123,6 +128,25 @@
 		}
 	},
 
+	"31": {
+		"name": "turnStart",
+		"description": "${actplayer} must take an action",
+		"descriptionmyturn": "${you} must resolve scheduled techniques",
+		"type": "activeplayer",
+		"action": "stTurnStart",
+		"possibleactions": {
+			"actFullyResolveTechniqueCard": [
+				{"name": "chameleons_json", "type": "AT_json"},
+				{"name": "card_id", "type": "AT_int"},
+				{"name": "args", "type": "AT_json"}
+			]
+		},
+		"transitions": {
+			"trSamePlayer": 31,
+			"trSkipTurnStart": 30
+		}
+	},
+
 	"36": {
 		"name": "winterIsComing",
 		"description": "Winter is Coming: ${actplayer} may select cards to build in stack ${stack_index_plus_1}",
@@ -151,7 +175,7 @@
 		"type": "game",
 		"action": "stCleanUpPhase",
 		"updateGameProgression": true,
-		"transitions": { "trNextPlayer": 30, "trPostCleanUpPhase": 42 }
+		"transitions": { "trNextPlayer": 31, "trPostCleanUpPhase": 42 }
 	},
 
 	"42": {

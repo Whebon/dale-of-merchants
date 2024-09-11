@@ -21,6 +21,7 @@ if (false) {
 	$game->stDeckSelection();
 	$game->stStartGame();
 	$game->stChangeActivePlayer();
+	$game->stTurnStart();
 	$game->stCleanUpPhase();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
@@ -59,7 +60,7 @@ $machinestates = array(
 		'type' => 'game',
 		'action' => 'stStartGame',
 		'transitions' => array(
-			'trStartGame' => 30,
+			'trStartGame' => 31,
 		),
 	),
 	29 => array(
@@ -78,7 +79,7 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take an action'),
 		'descriptionmyturn' => clienttranslate('${you} must take an action'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction'],
+		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actFullyResolveTechniqueCard', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
 			'trPassiveAbility' => 30,
@@ -92,6 +93,18 @@ $machinestates = array(
 			'trSabotage' => 55,
 			'trMagnet' => 58,
 			'trDangerousTest' => 59,
+		),
+	),
+	31 => array(
+		'name' => 'turnStart',
+		'description' => clienttranslate('${actplayer} must take an action'),
+		'descriptionmyturn' => clienttranslate('${you} must resolve scheduled techniques'),
+		'type' => 'activeplayer',
+		'action' => 'stTurnStart',
+		'possibleactions' => ['actFullyResolveTechniqueCard'],
+		'transitions' => array(
+			'trSamePlayer' => 31,
+			'trSkipTurnStart' => 30,
 		),
 	),
 	36 => array(
@@ -116,7 +129,7 @@ $machinestates = array(
 		'action' => 'stCleanUpPhase',
 		'updateGameProgression' => true,
 		'transitions' => array(
-			'trNextPlayer' => 30,
+			'trNextPlayer' => 31,
 			'trPostCleanUpPhase' => 42,
 		),
 	),

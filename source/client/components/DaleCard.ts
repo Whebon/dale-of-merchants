@@ -4,6 +4,7 @@ import { Images } from './Images';
 import { CardType } from './types/CardType';
 import { DbCard } from './types/DbCard';
 import { DbEffect } from './types/DbEffect';
+import { DaleTrigger } from './types/DaleTrigger';
 import { ChameleonChain } from './types/ChameleonChain'
 import { DaleDie } from './DaleDie';
 
@@ -579,7 +580,7 @@ export class DaleCard {
     /** 
      * Uniquely defines the original appearance of a card. 
      * Cards with the same type_id are indistinguishable up to their ids.
-     * */
+     */
     public get original_type_id(): number {
         let _type_id = DaleCard.cardIdtoTypeId.get(this.id);
         if (_type_id == undefined) {
@@ -592,8 +593,8 @@ export class DaleCard {
     }
 
     /** 
-     * Returns the original value of this card (after applying effects)
-     * */
+     * Returns the original value of this card (uses the effective type, but ignores value modifications)
+     */
     public get original_value(): number {
         return DaleCard.cardTypes[this.effective_type_id]!.value
     }
@@ -607,8 +608,16 @@ export class DaleCard {
         return this.original_value + pos;
     }
 
-    public get original_animalfolk_id() {
+    public get trigger(): DaleTrigger {
+        return DaleCard.cardTypes[this.effective_type_id]!.trigger;
+    }
+
+    public get effective_animalfolk_id() {
         return DaleCard.cardTypes[this.effective_type_id]!.animalfolk_id;
+    }
+
+    public get original_animalfolk_id() {
+        return DaleCard.cardTypes[this.original_type_id]!.animalfolk_id;
     }
 
     public get animalfolk_displayed(): string {
