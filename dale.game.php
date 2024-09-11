@@ -2420,7 +2420,7 @@ class Dale extends DaleTableBasic
                 $this->gamestate->nextState("trSpyglass");
                 break;
             case CT_FLASHYSHOW:
-                $this->effects->insertGlobal($technique_card_id, CT_FLASHYSHOW);
+                $this->effects->insertGlobal(0, CT_FLASHYSHOW);
                 $this->notifyAllPlayers('message', clienttranslate('Flashy Show: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
@@ -2864,6 +2864,9 @@ class Dale extends DaleTableBasic
                 $this->draw(clienttranslate('Lunch Break: ${player_name} draws a card'));
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_IRONING:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2961,6 +2964,13 @@ class Dale extends DaleTableBasic
                 break;
             case CT_LUNCHBREAK:
                 $this->draw(clienttranslate('Lunch Break: ${player_name} draws a card'));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_IRONING:
+                $this->effects->insertGlobal(0, CT_FLASHYSHOW); //CT_IRONING == CT_FLASHYSHOW
+                $this->notifyAllPlayers('message', clienttranslate('Ironing: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

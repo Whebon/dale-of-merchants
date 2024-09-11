@@ -80,7 +80,7 @@ class DaleEffects {
 
     /**
      * Insert a card modification effect into the db
-     * @param int $card_id the card that caused the global effect
+     * @param int $card_id the card that caused the global effect (use `0` to ensure the effect expires at the end of the turn)
      * @param int $type_id the effective type of the effect (CT).
      * @param int $arg (optional) default null. additional information about the effect.
      * @return array newly added effect
