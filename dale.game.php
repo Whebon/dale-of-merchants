@@ -2840,6 +2840,23 @@ class Dale extends DaleTableBasic
             case CT_SHOPPINGJOURNEY:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_HOUSECLEANING:
+                $card_ids = $args["card_ids"];
+                $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$player_id);
+                foreach ($dbcards as $dbcard) {
+                    if (!$this->isJunk($dbcard)) {
+                        throw new BgaVisibleSystemException("CT_HOUSECLEANING cannot be used to take non-junk cards");
+                    }
+                }
+                $this->cards->moveCards($card_ids, HAND.$player_id);
+                $this->notifyAllPlayers('discardToHandMultiple', clienttranslate('House Cleaning: ${player_name} takes ${nbr} junk cards from their discard pile'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "nbr" => count($dbcards),
+                    "cards" => $dbcards
+                ));
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2864,8 +2881,11 @@ class Dale extends DaleTableBasic
                     }
                     break;
                 default:
-                    $name = $this->getCardName($technique_card);
-                    throw new BgaVisibleSystemException("Unable to triggerFizzle '$name'");
+                    $cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                    if (count($cards) >= 1) {
+                        $name = $this->getCardName($technique_card);
+                        throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has cards in their hand.");
+                    }
                     break;
             }
             $this->fullyResolveCard($player_id, $technique_card);
@@ -2884,7 +2904,7 @@ class Dale extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} placed a ${card_name} into their hand'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} placed a ${card_name} into their hand'), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -2893,9 +2913,23 @@ class Dale extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_HOUSECLEANING:
+                if (isset($args["card_id"])) {
+                    $card_id = $args["card_id"];
+                    $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                    $this->ditch(clienttranslate('House Cleaning: ${player_name} ditches a ${card_name}'), $dbcard);
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('House Cleaning: ${player_name} does not ditch a card'), array(
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
-                $name = $this->getCardName($technique_card);
-                throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");
+                //resolve without any effects
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
         }
     }
     

@@ -16,9 +16,10 @@ declare function $(text: string | Element): HTMLElement;
  * 'single':                a single card can be selected from the popin
  * 'singleAnimalfolk'       a single animalfolk card can be selected from the popin
  * 'multiple':              multiple cards (up to the selectionMax) can be selected from the popin
+ * 'multipleJunk':                 up to 3 junk cards can be selected from the popin
  * 'top':                   content popin can cannot be viewed, and only the top card of the pile can be selected.
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'top';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'top';
 
 /**
  * A component to display a set of cards in a pile.
@@ -99,7 +100,13 @@ export class Pile implements DaleLocation {
      */
     protected updateHTML() {
         let topCard = this.peek(true);
-        if (this.selectionMode == 'multiple' && this.orderedSelection.getMaxSize() > 0) {
+        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk') && this.orderedSelection.getMaxSize() > 0) {
+            if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+                this.containerHTML.classList.add("dale-blinking");
+            }
+            else {
+                this.containerHTML.classList.remove("dale-blinking");
+            }
             this.selectedSizeHTML.classList.remove("dale-hidden");
             this.selectedSizeHTML.innerHTML = `(x ${this.orderedSelection.getSize()})`;
         }
@@ -142,7 +149,9 @@ export class Pile implements DaleLocation {
         else if (index == this.cards.length - 1) {
             return this.pop();
         }
-        return this.cards.splice(index, 1)[0]!;
+        const card = this.cards.splice(index, 1)[0]!;
+        this.updateHTML();
+        return card;
     }
     
     /**
@@ -416,6 +425,7 @@ export class Pile implements DaleLocation {
                 this.closePopin();
                 break;
             case 'multiple':
+            case 'multipleJunk':
                 this.orderedSelection.toggle(card.id);
                 this.updateHTML();
                 break;
@@ -484,6 +494,7 @@ export class Pile implements DaleLocation {
             case 'noneCantViewContent':
                 return; //don't update html!
             case 'multiple':
+            case 'multipleJunk':
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("dale-blinking");
                 }
@@ -516,6 +527,8 @@ export class Pile implements DaleLocation {
                 return card.isAnimalfolk();
 			case 'multiple':
 				return this.orderedSelection.getMaxSize() > 0;
+            case 'multipleJunk':
+                return card.isJunk();
 			default:
                 return false;
 		}

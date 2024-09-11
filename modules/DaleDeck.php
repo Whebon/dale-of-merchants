@@ -98,9 +98,9 @@ class DaleDeck extends Deck {
      * Objects B and C are now expected to be moved away from the pile by another function
      */
     function removeCardsFromPile(array $card_ids, string $location): array {
-        $cards = array();
+        $cards = $this->getCardsFromLocation($card_ids, $location);
         foreach ($card_ids as $card_id) {
-            $cards[] = $this->removeCardFromPile($card_id, $location);
+            $this->removeCardFromPile($card_id, $location);
         }
         return $cards;
     }

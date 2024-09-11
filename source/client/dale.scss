@@ -469,9 +469,6 @@
 		border-radius: 5px;
 		padding: 2px 7px;
 		white-space: nowrap;
-		&.dale-pile-selected-size {
-			color: var(--dale-wrap-build)
-		}
 	}
 
 	.dale-pile {
@@ -852,6 +849,9 @@ body {
 	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
 	}
+	.dale-pile-selected-size {
+		color: var(--dale-wrap-technique);
+	}
 }
 
 .dale-wrap-purchase { 
@@ -872,6 +872,9 @@ body {
 	}
 	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
+	}
+	.dale-pile-selected-size {
+		color: var(--dale-wrap-purchase);
 	}
 }
 
@@ -894,6 +897,9 @@ body {
 	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
 	}
+	.dale-pile-selected-size {
+		color: var(--dale-wrap-build);
+	}
 }
 
 .dale-wrap-discard { 
@@ -915,6 +921,9 @@ body {
 	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
 	}
+	.dale-pile-selected-size {
+		color: var(--dale-wrap-discard);
+	}
 }
 
 .dale-wrap-default { 
@@ -935,6 +944,9 @@ body {
 	}
 	.dale-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--dale-wrap-default);
+	}
+	.dale-pile-selected-size {
+		color: var(--dale-wrap-default);
 	}
 }
 

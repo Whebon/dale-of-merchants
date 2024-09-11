@@ -299,6 +299,7 @@ declare global {
 		'client_triggerFizzle': { fizzle: boolean }
 		'client_choicelessTriggerTechniqueCard': { choiceless: true }
 		'client_shoppingJourney': { card_id: number }
+		'client_houseCleaningDitch': { card_id?: number }
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
@@ -321,6 +322,7 @@ declare global {
 		'client_gamble': { opponent_id: number }
 		'client_blindfold': { card_id: number, opponent_id: number }
 		'client_safetyPrecaution': { card_id: number }
+		'client_houseCleaning': {card_ids: number[] }
 	}
 
 	interface ClientPassiveChoice {
@@ -360,6 +362,7 @@ declare global {
 		'client_essentialPurchase': ClientGameStates['client_purchase']
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
 		'client_glue': ClientGameStates['client_purchase']
+		'client_houseCleaning': { technique_card_id: number, nbr_junk: number }
 	}
 
 	//

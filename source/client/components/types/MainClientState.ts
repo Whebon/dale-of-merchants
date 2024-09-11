@@ -143,6 +143,14 @@ export class MainClientState {
                 return _("${card_name}: ${you} must select a card from your stall to swap with");
             case 'client_shoppingJourney':
                 return _("${card_name}: ${you} must choose a card from the market");
+            case 'client_houseCleaning':
+                if((this._args as ClientGameStates['client_houseCleaning']).nbr_junk == 0) {
+                    return _("${card_name}: ${you} may schedule this technique without immediate effects");
+                } else {
+                    return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
+                }
+            case 'client_houseCleaningDitch':
+                return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
         }
         return "MISSING DESCRIPTION";
     }

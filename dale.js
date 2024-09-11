@@ -1883,7 +1883,13 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.updateHTML = function () {
             var _a;
             var topCard = this.peek(true);
-            if (this.selectionMode == 'multiple' && this.orderedSelection.getMaxSize() > 0) {
+            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk') && this.orderedSelection.getMaxSize() > 0) {
+                if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+                    this.containerHTML.classList.add("dale-blinking");
+                }
+                else {
+                    this.containerHTML.classList.remove("dale-blinking");
+                }
                 this.selectedSizeHTML.classList.remove("dale-hidden");
                 this.selectedSizeHTML.innerHTML = "(x ".concat(this.orderedSelection.getSize(), ")");
             }
@@ -1917,7 +1923,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             else if (index == this.cards.length - 1) {
                 return this.pop();
             }
-            return this.cards.splice(index, 1)[0];
+            var card = this.cards.splice(index, 1)[0];
+            this.updateHTML();
+            return card;
         };
         Pile.prototype.insert = function (card, index) {
             if (index > this.cards.length) {
@@ -2124,6 +2132,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     this.closePopin();
                     break;
                 case 'multiple':
+                case 'multipleJunk':
                     this.orderedSelection.toggle(card.id);
                     this.updateHTML();
                     break;
@@ -2165,6 +2174,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 case 'noneCantViewContent':
                     return;
                 case 'multiple':
+                case 'multipleJunk':
                     if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                         this.containerHTML.classList.add("dale-blinking");
                     }
@@ -2193,6 +2203,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return card.isAnimalfolk();
                 case 'multiple':
                     return this.orderedSelection.getMaxSize() > 0;
+                case 'multipleJunk':
+                    return card.isJunk();
                 default:
                     return false;
             }
@@ -3164,6 +3176,15 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must select a card from your stall to swap with");
                     case 'client_shoppingJourney':
                         return _("${card_name}: ${you} must choose a card from the market");
+                    case 'client_houseCleaning':
+                        if (this._args.nbr_junk == 0) {
+                            return _("${card_name}: ${you} may schedule this technique without immediate effects");
+                        }
+                        else {
+                            return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
+                        }
+                    case 'client_houseCleaningDitch':
+                        return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3834,6 +3855,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_shoppingJourney':
                     this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
                     break;
+                case 'client_houseCleaning':
+                    var client_houseCleaning_args = this.mainClientState.args;
+                    this.myDiscard.setSelectionMode('multipleJunk', 'hand', "dale-wrap-technique", client_houseCleaning_args.nbr_junk);
+                    if (client_houseCleaning_args.nbr_junk > 0) {
+                        this.myDiscard.openPopin();
+                    }
+                    break;
+                case 'client_houseCleaningDitch':
+                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4000,6 +4031,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_shoppingJourney':
                     this.market.setSelectionMode(0);
+                    break;
+                case 'client_houseCleaning':
+                    this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'client_houseCleaningDitch':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -4232,6 +4269,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("keep-button", _("Keep"), "onPurchase");
                     this.addActionButton("discard-button", _("Discard"), "onGlueDiscard");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'client_houseCleaning':
+                    var client_houseCleaning_args = this.mainClientState.args;
+                    var client_houseCleaning_label = (client_houseCleaning_args.nbr_junk == 0) ? _("Confirm") : _("Confirm selected");
+                    this.addActionButton("confirm-button", client_houseCleaning_label, "onHouseCleaning");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_houseCleaningDitch':
+                    this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
                     break;
             }
         };
@@ -4482,7 +4528,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.pileToStock = function (card, pile, stock, location_arg) {
             if (location_arg !== undefined) {
-                if (pile.removeAt(location_arg).id != +card.id) {
+                if (pile.removeAt(location_arg - 1).id != +card.id) {
                     throw new Error("Card ".concat(+card.id, " was not found at index ").concat(location_arg, " in the pile of size ").concat(pile.size));
                 }
             }
@@ -4495,7 +4541,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.pileToPlayerStock = function (card, pile, stock, player_id, location_arg) {
             if (+player_id == this.player_id) {
-                this.pileToStock(card, pile, stock);
+                this.pileToStock(card, pile, stock, location_arg);
             }
             else {
                 pile.pop('overall_player_board_' + player_id);
@@ -4825,6 +4871,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         dojo.setStyle(client_glue_button, 'display', '');
                     }
                     break;
+                case 'client_houseCleaningDitch':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -4856,6 +4907,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case DaleCard_10.DaleCard.CT_SHOPPINGJOURNEY:
                     fizzle = this.market.getCards().length == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_HOUSECLEANING:
+                    fizzle = this.myHand.count() == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -4982,7 +5037,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             });
             this.mainClientState.leave();
         };
-        Dale.prototype.clientScheduleTechnique = function (stateName, technique_card_id) {
+        Dale.prototype.clientScheduleTechnique = function (stateName, technique_card_id, args) {
+            if (args === void 0) { args = {}; }
             if (this.checkLock()) {
                 if ($(this.myHand.control_name + '_item_' + technique_card_id)) {
                     this.mySchedule.addDaleCardToStock(new DaleCard_10.DaleCard(technique_card_id), this.myHand.control_name + '_item_' + technique_card_id);
@@ -4992,7 +5048,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     throw new Error("Cannot schedule the technique card. Card ".concat(technique_card_id, " does not exist in my hand"));
                 }
                 this.myHandSize.incValue(-1);
-                this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+                this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id }, args));
             }
         };
         Dale.prototype.resolveTechniqueCardWithServerState = function (args) {
@@ -5215,6 +5271,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_HOUSECLEANING:
+                    var houseCleaningJunk = 0;
+                    for (var _e = 0, _f = this.myDiscard.getCards(); _e < _f.length; _e++) {
+                        var card_3 = _f[_e];
+                        if (card_3.isJunk() && houseCleaningJunk < 3) {
+                            houseCleaningJunk++;
+                        }
+                    }
+                    this.clientScheduleTechnique('client_houseCleaning', card.id, {
+                        nbr_junk: houseCleaningJunk
+                    });
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -5278,16 +5346,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var count_nostalgic_items = 0;
             for (var _i = 0, card_ids_4 = card_ids; _i < card_ids_4.length; _i++) {
                 var card_id = card_ids_4[_i];
-                var card_3 = new DaleCard_10.DaleCard(card_id);
-                if (card_3.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
+                var card_4 = new DaleCard_10.DaleCard(card_id);
+                if (card_4.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
                 }
             }
             if (count_nostalgic_items > 0) {
                 for (var _a = 0, _b = this.myDiscard.orderedSelection.get(); _a < _b.length; _a++) {
                     var card_id = _b[_a];
-                    var card_4 = new DaleCard_10.DaleCard(card_id);
-                    if (card_4.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
+                    var card_5 = new DaleCard_10.DaleCard(card_id);
+                    if (card_5.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
                         count_nostalgic_items++;
                     }
                 }
@@ -5603,6 +5671,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myHand.unselectItem(card_id);
             }
             this.onPurchase();
+        };
+        Dale.prototype.onHouseCleaning = function () {
+            this.playTechniqueCard({
+                card_ids: this.myDiscard.orderedSelection.get()
+            });
+        };
+        Dale.prototype.onHouseCleaningSkip = function () {
+            this.resolveTechniqueCard({});
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
@@ -5977,8 +6053,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("notif_discardToHandMultiple");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
+            var dbcards_desc = [];
             for (var i in notif.args.cards) {
-                var card = notif.args.cards[i];
+                dbcards_desc.push(notif.args.cards[i]);
+            }
+            dbcards_desc.sort(function (dbcard1, dbcard2) { return (+dbcard2.location_arg) - (+dbcard1.location_arg); });
+            for (var _i = 0, dbcards_desc_1 = dbcards_desc; _i < dbcards_desc_1.length; _i++) {
+                var card = dbcards_desc_1[_i];
                 this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
             }
             this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);

@@ -573,7 +573,18 @@ class Dale extends Gamegui
 			case 'client_shoppingJourney':
 				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
 				break;
+			case 'client_houseCleaning':
+				const client_houseCleaning_args = (this.mainClientState.args as ClientGameStates['client_houseCleaning']);
+				this.myDiscard.setSelectionMode('multipleJunk', 'hand', "dale-wrap-technique", client_houseCleaning_args.nbr_junk);
+				if (client_houseCleaning_args.nbr_junk > 0) {
+					this.myDiscard.openPopin();
+				}
+				break;
+			case 'client_houseCleaningDitch':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				break;
 		}
+		//(~enteringstate)
 	}
 
 	/** @gameSpecific See {@link Gamegui.onLeavingState} for more information. */
@@ -744,7 +755,14 @@ class Dale extends Gamegui
 			case 'client_shoppingJourney':
 				this.market!.setSelectionMode(0);
 				break;
+			case 'client_houseCleaning':
+				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_houseCleaningDitch':
+				this.myHand.setSelectionMode('none');
+				break;
 		}
+		//(~leavingstate)
 	}
 
 	/** @gameSpecific See {@link Gamegui.onUpdateActionButtons} for more information. */
@@ -974,7 +992,17 @@ class Dale extends Gamegui
 				this.addActionButton("discard-button", _("Discard"), "onGlueDiscard");
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_houseCleaning':
+				const client_houseCleaning_args = (this.mainClientState.args as ClientGameStates['client_houseCleaning']);
+				const client_houseCleaning_label = (client_houseCleaning_args.nbr_junk == 0) ? _("Confirm") : _("Confirm selected");
+				this.addActionButton("confirm-button", client_houseCleaning_label, "onHouseCleaning");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_houseCleaningDitch':
+				this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
+				break;
 		}
+		//(~actionbuttons)
 	}
 
 	///////////////////////////////////////////////////
@@ -1318,7 +1346,7 @@ class Dale extends Gamegui
 	pileToStock(card: DbCard, pile: Pile, stock: DaleStock, location_arg?: number) {
 		if (location_arg !== undefined) {
 			//remove from index
-			if (pile.removeAt(location_arg).id != +card.id) {
+			if (pile.removeAt(location_arg-1).id != +card.id) {
 				throw new Error(`Card ${+card.id} was not found at index ${location_arg} in the pile of size ${pile.size}`);
 			}
 		}
@@ -1342,7 +1370,7 @@ class Dale extends Gamegui
 	*/
 	pileToPlayerStock(card: DbCard, pile: Pile, stock: DaleStock, player_id: number, location_arg?: number) {
 		if (+player_id == this.player_id) {
-			this.pileToStock(card, pile, stock);
+			this.pileToStock(card, pile, stock, location_arg);
 		}
 		else {
 			pile.pop('overall_player_board_'+player_id);
@@ -1751,6 +1779,11 @@ class Dale extends Gamegui
 					dojo.setStyle(client_glue_button, 'display', '');
 				}
 				break;
+			case 'client_houseCleaningDitch':
+				this.resolveTechniqueCard<'client_houseCleaningDitch'>({
+					card_id: card!.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -1787,6 +1820,10 @@ class Dale extends Gamegui
 			case DaleCard.CT_SHOPPINGJOURNEY:
 				fizzle = this.market!.getCards().length == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
+				break;
+			case DaleCard.CT_HOUSECLEANING:
+				fizzle = this.myHand.count() == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -1943,7 +1980,7 @@ class Dale extends Gamegui
 	/**
 	 * Locally schedule a technique, then open the related client technique choice state
 	 */
-	clientScheduleTechnique<K extends keyof ClientTechniqueChoice>(stateName: K, technique_card_id: number) {
+	clientScheduleTechnique<K extends keyof ClientTechniqueChoice>(stateName: K, technique_card_id: number, args: any = {}) {
 		if (this.checkLock()) {
 			if ($(this.myHand.control_name+'_item_' + technique_card_id)) {
 				this.mySchedule.addDaleCardToStock(new DaleCard(technique_card_id), this.myHand.control_name+'_item_'+technique_card_id)
@@ -1953,7 +1990,7 @@ class Dale extends Gamegui
 				throw new Error(`Cannot schedule the technique card. Card ${technique_card_id} does not exist in my hand`);
 			}
 			this.myHandSize.incValue(-1);
-			this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+			this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id, ...args });
 		}
 	}
 
@@ -2194,6 +2231,17 @@ class Dale extends Gamegui
 				else {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
+				break;
+			case DaleCard.CT_HOUSECLEANING:
+				let houseCleaningJunk = 0;
+				for (let card of this.myDiscard.getCards()) {
+					if (card.isJunk() && houseCleaningJunk < 3) {
+						houseCleaningJunk++;
+					}
+				}
+				this.clientScheduleTechnique('client_houseCleaning', card.id, {
+					nbr_junk: houseCleaningJunk
+				});
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -2631,6 +2679,16 @@ class Dale extends Gamegui
 			this.myHand.unselectItem(card_id);
 		}
 		this.onPurchase();
+	}
+
+	onHouseCleaning() {
+		this.playTechniqueCard<'client_houseCleaning'>({
+			card_ids: this.myDiscard.orderedSelection.get()
+		})
+	}
+
+	onHouseCleaningSkip() {
+		this.resolveTechniqueCard<'client_houseCleaningDitch'>({});
 	}
 
 
@@ -3083,8 +3141,12 @@ class Dale extends Gamegui
 		console.log("notif_discardToHandMultiple");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
+		let dbcards_desc = []; //we remove from top to bottom: [(BottomCard, 1), (TopCard, 2)] -> [(BottomCard, 1)] -> []
 		for (let i in notif.args.cards) {
-			const card = notif.args.cards[i]!;
+			dbcards_desc.push(notif.args.cards[i]!);
+		}
+		dbcards_desc.sort((dbcard1, dbcard2) => (+dbcard2.location_arg) - (+dbcard1.location_arg));
+		for (let card of dbcards_desc) {
 			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
 		}
 		//update the hand sizes

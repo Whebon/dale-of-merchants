@@ -408,9 +408,6 @@
   padding: 2px 7px;
   white-space: nowrap;
 }
-.dale-pile-container .dale-pile-size.dale-pile-selected-size {
-  color: var(--dale-wrap-build);
-}
 .dale-pile-container .dale-pile {
   position: relative;
 }
@@ -817,6 +814,9 @@ body {
 .dale-wrap-technique .dale-clickable:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
 }
+.dale-wrap-technique .dale-pile-selected-size {
+  color: var(--dale-wrap-technique);
+}
 
 .dale-wrap-purchase.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-purchase);
@@ -835,6 +835,9 @@ body {
 }
 .dale-wrap-purchase .dale-clickable:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
+}
+.dale-wrap-purchase .dale-pile-selected-size {
+  color: var(--dale-wrap-purchase);
 }
 
 .dale-wrap-build.dale-arc-stock {
@@ -855,6 +858,9 @@ body {
 .dale-wrap-build .dale-clickable:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
 }
+.dale-wrap-build .dale-pile-selected-size {
+  color: var(--dale-wrap-build);
+}
 
 .dale-wrap-discard.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-discard);
@@ -874,6 +880,9 @@ body {
 .dale-wrap-discard .dale-clickable:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
 }
+.dale-wrap-discard .dale-pile-selected-size {
+  color: var(--dale-wrap-discard);
+}
 
 .dale-wrap-default.dale-arc-stock {
   outline: 3px solid var(--dale-wrap-default-g);
@@ -892,6 +901,9 @@ body {
 }
 .dale-wrap-default .dale-clickable:hover {
   box-shadow: 0px 0px 8px 2px var(--dale-wrap-default);
+}
+.dale-wrap-default .dale-pile-selected-size {
+  color: var(--dale-wrap-default);
 }
 
 .dale-card.dale-selected:before {
