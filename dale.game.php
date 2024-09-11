@@ -2867,6 +2867,27 @@ class Dale extends DaleTableBasic
             case CT_IRONING:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_LITTLEVILLAIN:
+                $players = $this->loadPlayersBasicInfos();
+                $this->notifyAllPlayers('message', clienttranslate('Little Villain: all players except ${player_name} discard two cards from their deck'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                foreach ($players as $opponent_id => $opponent) {
+                    if ($opponent_id != $player_id) {
+                        for ($i=0; $i < 2; $i++) { //one by one
+                            $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'temp');
+                            if ($dbcard) {
+                                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                                $this->notifyAllPlayers('deckToDiscard', '', array(
+                                    "player_id" => $opponent_id,
+                                    "card" => $dbcard
+                                ));
+                            }
+                        }
+                    }
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
