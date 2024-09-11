@@ -904,6 +904,27 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(DaleCard.prototype, "effective_cost", {
+            get: function () {
+                var _a;
+                var cost = this.original_value;
+                for (var _i = 0, _b = DaleCard.effects; _i < _b.length; _i++) {
+                    var effect = _b[_i];
+                    if (effect.effect_class == DaleCard.EC_GLOBAL) {
+                        switch (effect.type_id) {
+                            case DaleCard.CT_SCARYGUNFIGHT:
+                                if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id) != effect.arg) {
+                                    cost += 2;
+                                }
+                                break;
+                        }
+                    }
+                }
+                return cost;
+            },
+            enumerable: false,
+            configurable: true
+        });
         DaleCard.prototype.getChameleonDbEffect = function () {
             if (!this.isBoundChameleon()) {
                 return null;
@@ -1013,7 +1034,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             configurable: true
         });
         DaleCard.prototype.getCost = function (pos) {
-            return this.original_value + pos;
+            return this.effective_cost + pos;
         };
         Object.defineProperty(DaleCard.prototype, "trigger", {
             get: function () {
@@ -1187,7 +1208,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
             var _a, _b, _c;
             var value = this.original_value;
-            if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && ((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()))) {
+            if (card_div.dataset['location'] == 'market') {
+                value = this.effective_cost;
+            }
+            else if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && ((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()))) {
                 value = this.effective_value;
             }
             if (value == this.original_value) {
@@ -2505,7 +2529,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                     if (pos != emptyPos) {
                         console.log("".concat(pos, " slides to ").concat(emptyPos));
                         var card = this.slots[pos].removeCard();
-                        this.slots[emptyPos].insertCard(card);
+                        this.insertCard(card, emptyPos);
                         var target = this.slots[emptyPos].card_div;
                         var source = this.slots[pos].id;
                         var destination = this.slots[emptyPos].id;
@@ -4393,8 +4417,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.getChameleonTargets = function (card, isRoot, type_id) {
             var _a;
-            console.log(card);
-            console.log(card.effective_type_id);
             var targets = [];
             switch (type_id !== null && type_id !== void 0 ? type_id : card.effective_type_id) {
                 case DaleCard_10.DaleCard.CT_FLEXIBLESHOPKEEPER:
@@ -5005,7 +5027,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     market_discovery_card_id: market_discovery_card_id,
                     calculations_card_id: undefined,
                     card_name: card.name,
-                    cost: card.getCost(0),
+                    cost: card.original_value,
                     optionalArgs: {}
                 });
             }
@@ -6308,7 +6330,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.notif_addEffect = function (notif) {
             console.log("notif_addEffect");
-            console.log(notif.args.effect);
             var effect = new DbEffect_2.DbEffect(notif.args.effect);
             console.log(effect);
             DaleCard_10.DaleCard.addEffect(effect);

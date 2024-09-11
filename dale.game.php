@@ -939,11 +939,12 @@ class Dale extends DaleTableBasic
      * @param array $dbcard card to calculate the cost of
     */
     function getCost(array $dbcard) {
-        //TODO: scary gunfight
         $type_id = $this->getTypeId($dbcard);
         $base_cost = $this->card_types[$type_id]['value'];
-        $additional_cost = $dbcard['location'] == MARKET ? $dbcard['location_arg'] : 0;
-        return $base_cost + $additional_cost;
+        if ($dbcard['location'] != MARKET) {
+            return $base_cost;
+        }
+        return $base_cost + $dbcard['location_arg'] + $this->effects->getAdditionalCost();
     }
 
     /**
@@ -1632,14 +1633,17 @@ class Dale extends DaleTableBasic
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
+
+        //get card information about the card before chameleon effects expire
         $type_id = $this->getTypeId($technique_card);
+        $card_name = $this->getCardName($technique_card);
 
         //move the card from the schedule to the discard pile
         $this->cards->moveCardOnTop($technique_card_id, DISCARD.$player_id);
         $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
-            'card_name' => $this->getCardName($technique_card),
+            'card_name' => $card_name,
             'card' => $technique_card
         ));
 
@@ -2888,6 +2892,13 @@ class Dale extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_SCARYGUNFIGHT:
+                $this->effects->insertGlobal($technique_card_id, CT_SCARYGUNFIGHT, $player_id);
+                $this->notifyAllPlayers('message', clienttranslate('Scary Gunfight: ${player_name} increases the cost of cards in the market by 2'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -2994,10 +3005,13 @@ class Dale extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            default:
-                //resolve without any effects
+            case CT_SCARYGUNFIGHT:
+                $this->effects->expireGlobal($technique_card_id, CT_SCARYGUNFIGHT);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            default:
+                $name = $this->getCardName($technique_card);
+                throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");
         }
     }
     

@@ -116,6 +116,26 @@ class DaleEffects {
     //////////////////////////////////////
 
     /**
+     * Applies all card modifications to calculate the additional cost card in the market (CT_SCARYGUNFIGHT only)
+     */
+    function getAdditionalCost() {
+        $additional_cost = 0;
+        $player_id = $this->game->getActivePlayerId();
+        foreach ($this->cache as $row) {
+            if ($row["effect_class"] == EC_GLOBAL) {
+                switch($row["type_id"]) {
+                    case CT_SCARYGUNFIGHT:
+                        if ($row["arg"] != $player_id) {
+                            $additional_cost += 2;
+                        } 
+                        break;
+                }
+            }
+        }
+        return $additional_cost;
+    }
+
+    /**
      * Applies all card modifications to calculate the value of the card
      */
     function getValue(array $dbcard) {
@@ -346,6 +366,27 @@ class DaleEffects {
         else {
             $sql = "DELETE FROM effect";
         }
+        $this->game->DbQuery($sql);
+        $this->loadFromDb();
+    }
+
+    /**
+     * Expire a specific global effect
+     */
+    function expireGlobal(int $card_id, int $type_id) {
+        //for the clients
+        $expired_effects = [];
+        foreach ($this->cache as $row) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["effect_class"] == EC_GLOBAL) {
+                $expired_effects[] = $row;
+            }
+        }
+        if (count($expired_effects) == 0) {
+            return;
+        }
+        $this->notifyExpireEffects($expired_effects);
+        //for the db
+        $sql = "DELETE FROM effect WHERE card_id = $card_id AND type_id = $type_id AND effect_class = ".EC_GLOBAL;
         $this->game->DbQuery($sql);
         $this->loadFromDb();
     }

@@ -428,6 +428,25 @@ export class DaleCard {
         return value;
     }
 
+    /** 
+     * Returns the effective cost of this (market) card (after applying effects)
+     * */
+    public get effective_cost(): number {
+        let cost = this.original_value;
+        for (let effect of DaleCard.effects) {
+            if (effect.effect_class == DaleCard.EC_GLOBAL) {
+                switch(effect.type_id) {
+                    case DaleCard.CT_SCARYGUNFIGHT:
+                        if (DaleCard.page?.player_id != effect.arg) {
+                            cost += 2;
+                        }
+                        break;
+                }
+            }
+        }
+        return cost;
+    }
+
     ///////////////////////////////////////////////////////
     //////////        Chameleon functions        //////////
     ///////////////////////////////////////////////////////
@@ -604,8 +623,7 @@ export class DaleCard {
      * @param pos
      */
     public getCost(pos: number) {
-        //TODO: scary gunfight
-        return this.original_value + pos;
+        return this.effective_cost + pos;
     }
 
     public get trigger(): DaleTrigger {
@@ -839,7 +857,10 @@ export class DaleCard {
 
     private updateEffectiveValue(card_div: HTMLElement) {
         let value = this.original_value;
-        if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && DaleCard.page?.isCurrentPlayerActive())) {
+        if (card_div.dataset['location'] == 'market') {
+            value = this.effective_cost;
+        }
+        else if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && DaleCard.page?.isCurrentPlayerActive())) {
             value = this.effective_value;
         }
         if (value == this.original_value) {

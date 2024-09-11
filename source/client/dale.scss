@@ -79,6 +79,12 @@
 	display: none; //by default, text is hidden
 }
 
+.dale-card[data-location="market"] {
+	.dale-effective-value {
+		color: lightcoral;
+	}
+}
+
 .dale-effective-value {
 	height: 20px;
     width: 20px;

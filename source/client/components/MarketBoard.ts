@@ -157,7 +157,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
                     console.log(`${pos} slides to ${emptyPos}`)
                     //move the data
                     let card = this.slots[pos]!.removeCard()!
-                    this.slots[emptyPos]!.insertCard(card)
+                    this.insertCard(card, emptyPos)
                     //animate
                     let target = this.slots[emptyPos]!.card_div
                     let source = this.slots[pos]!.id

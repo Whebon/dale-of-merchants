@@ -1140,8 +1140,6 @@ class Dale extends Gamegui
 	 * @returns All direct targets (`DaleCard`) and/or the top card of the market discard pile (`HTMLElement`)
 	 */
 	getChameleonTargets(card: DaleCard, isRoot: boolean, type_id?: number): (DaleCard | HTMLElement)[] {
-		console.log(card);
-		console.log(card.effective_type_id);
 		let targets: (DaleCard|HTMLElement)[] = [];
 		switch(type_id ?? card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
@@ -1923,7 +1921,7 @@ class Dale extends Gamegui
 				market_discovery_card_id: market_discovery_card_id,
 				calculations_card_id: undefined,
 				card_name: card.name,
-				cost: card.getCost(0),
+				cost: card.original_value,
 				optionalArgs: {}
 			});
 		}
@@ -3470,7 +3468,6 @@ class Dale extends Gamegui
 
 	notif_addEffect(notif: NotifAs<'addEffect'>) {
 		console.log("notif_addEffect");
-		console.log(notif.args.effect);
 		const effect = new DbEffect(notif.args.effect);
 		console.log(effect);
 		DaleCard.addEffect(effect);
