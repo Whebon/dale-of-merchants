@@ -49,7 +49,8 @@ class Dale extends DaleTableBasic
             "player_id_1" => 17,
             "player_id_2" => 18,
             "player_id_3" => 19,
-            "player_id_4" => 20
+            "player_id_4" => 20,
+            "hand_size_before" => 21
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -107,6 +108,7 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("player_id_2", -1);
         $this->setGameStateInitialValue("player_id_3", -1);
         $this->setGameStateInitialValue("player_id_4", -1);
+        $this->setGameStateInitialValue("hand_size_before", 0);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -736,17 +738,35 @@ class Dale extends DaleTableBasic
 
     /**
      * Refills your hand to the maximum hand size.
+     * @param bool $isPostCleanUpPhase indicates if this function is called an additional time (after postCleanUpPhase)
      * @return `true` if any cards were drawn
     */
-    function refillHand() {
+    function refillHand($isPostCleanUpPhase) {
+        //get information about the hand
         $player_id = $this->getActivePlayerId();
         $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
         $maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
         $new_hand_cards = array();
         $hand_size_before = count($hand_cards);
+
+        //get hand_size_before for CT_LOSTSHIPMENTS
+        $lostShipmentsActive = $this->effects->countGlobalEffectsExcludeArg(CT_LOSTSHIPMENTS, $player_id);
+        if ($lostShipmentsActive) {
+            if ($isPostCleanUpPhase) {
+                $hand_size_before = $this->getGameStateValue("hand_size_before");
+            }
+            else {
+                $this->setGameStateValue("hand_size_before", $hand_size_before);
+            }
+        }
+
+        //draw cards
         while (true) {
             //draw cards from deck
             $nbr = $maximum_hand_size - count($hand_cards);
+            if ($lostShipmentsActive) {
+                $nbr = min(1 + $hand_size_before - count($hand_cards), $nbr);
+            }
             if ($nbr > 0) {
                 $cards = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, HAND.$player_id);
                 $new_hand_cards = array_merge($new_hand_cards, $cards);
@@ -784,9 +804,19 @@ class Dale extends DaleTableBasic
                 break;
             }
             $maximum_hand_size = $new_maximum_hand_size;
+
+            //exit the loop for CT_LOSTSHIPMENTS
+            if ($lostShipmentsActive) {
+                if ($nbr > 1 || count($hand_cards) - $hand_size_before > 1) {
+                    throw new BgaVisibleSystemException("Lost Shipments: the player drew more than 1 card");
+                }
+                if ($nbr == 1) {
+                    break;
+                }
+            }
         }
 
-        //notify players about cookies
+        //notify players about CT_COOKIES
         $number_of_cookies = $this->countTypeId($hand_cards, CT_COOKIES);
         if ($number_of_cookies > 0) {
             $this->notifyAllPlayers('message', clienttranslate('Cookies: ${player_name} increases their hand size by ${nbr}'), array(
@@ -797,7 +827,7 @@ class Dale extends DaleTableBasic
 
         //notify about the new cards from deck
         if (count($new_hand_cards) > 0) {
-            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} cards to refill their hand'), array(
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} card(s) to refill their hand'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameById($player_id),
                 "nbr" => count($new_hand_cards),
@@ -805,6 +835,18 @@ class Dale extends DaleTableBasic
                     "cards" => $new_hand_cards
                 )
             ));
+        }
+        
+        //notify players about CT_LOSTSHIPMENTS (and reduce the maximum hand size to prevent drawing junk from the reserve)
+        if ($lostShipmentsActive) {
+            if ($maximum_hand_size > $hand_size_before + 1) {
+                $maximum_hand_size = $hand_size_before + 1;
+                if ($nbr == 1) {
+                    $this->notifyAllPlayers('message', clienttranslate('Lost Shipments: ${player_name} cannot draw more than 1 card'), array(
+                        "player_name" => $this->getPlayerNameById($player_id),
+                    ));
+                }
+            }
         }
 
         //draw missing cards from junk reserve
@@ -3711,16 +3753,16 @@ class Dale extends DaleTableBasic
 
     function stCleanUpPhase() {
         //1. fill your hand to the maximum hand size
-        $hasDrawnCards = $this->refillHand();
+        $player_id = $this->getActivePlayerId();
+        $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
+        $hasDrawnCards = $this->refillHand($isPostCleanUpPhase);
 
         //2. fill empty market slots
         $this->refillMarket(true);
 
         //3. check for post clean-up phase
-        $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
         $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES);
         if ($hasDrawnCards || !$isPostCleanUpPhase) {
-            $player_id = $this->getActivePlayerId();
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
             foreach ($dbcards as $card_id => $card) {
                 $type_id = $this->getTypeId($card);
