@@ -2699,9 +2699,8 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             }
             if (arrangementChanged) {
                 for (var pos = 0; pos < this.MAX_SIZE; pos++) {
-                    var slot = this.slots[pos];
                     var new_card = new DaleCard_6.DaleCard(card_ids[pos]);
-                    slot.insertCard(new_card, froms.get(new_card.id));
+                    this.insertCard(new_card, pos, froms.get(new_card.id));
                 }
             }
         };
@@ -4440,6 +4439,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
                     if (ditchAvailable) {
                         args.mode = 'ditchOptional';
+                        this.mainClientState.enterOnStack(chameleonStatename, args);
+                        return false;
                     }
                     else if (card.effective_type_id != DaleCard_10.DaleCard.CT_GOODOLDTIMES) {
                         this.chameleonArgs = undefined;

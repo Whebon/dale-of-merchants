@@ -585,7 +585,7 @@ class Dale extends DaleTableBasic
         if (count($dbcards) != 1) {
             throw new BgaVisibleSystemException("'ditchFromDiscard' could not find unique card_id $card_id");
         }
-        $dbcard = $dbcards[0];
+        $dbcard = current($dbcards);
 
         //2. ditch it
         $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;

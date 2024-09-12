@@ -364,9 +364,10 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         }
         if (arrangementChanged) {
             for (let pos = 0; pos < this.MAX_SIZE; pos++) {
-                const slot = this.slots[pos]!;
                 const new_card = new DaleCard(card_ids[pos]!);
-                slot.insertCard(new_card, froms.get(new_card.id));
+                this.insertCard(new_card, pos, froms.get(new_card.id));
+                //const slot = this.slots[pos]!;
+                //slot.insertCard(new_card, froms.get(new_card.id)); <-- doesn't update data-location
             }
         }
     }

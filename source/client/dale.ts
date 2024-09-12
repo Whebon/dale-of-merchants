@@ -1153,6 +1153,8 @@ class Dale extends Gamegui
 			else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
 				if (ditchAvailable) {
 					args.mode = 'ditchOptional'
+					this.mainClientState.enterOnStack(chameleonStatename, args);
+					return false;
 				}
 				else if (card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
 					this.chameleonArgs = undefined;
