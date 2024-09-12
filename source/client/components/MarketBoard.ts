@@ -284,7 +284,8 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     public swapWithStock(card_id: number, stock: DaleStock, new_card: DaleCard) {
         for (let slot of this.slots) {
             if (slot.card?.id == card_id) {
-                slot.swapWithStock(stock, new_card)
+                slot.swapWithStock(stock, new_card);
+                new_card.updateLocation('market');
             }
         }
     }

@@ -2641,6 +2641,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                 var slot = _b[_i];
                 if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                     slot.swapWithStock(stock, new_card);
+                    new_card.updateLocation('market');
                 }
             }
         };
@@ -3015,6 +3016,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                     var slot = stack_6[_c];
                     if (((_a = slot.card) === null || _a === void 0 ? void 0 : _a.id) == card_id) {
                         slot.swapWithStock(stock, new_card);
+                        new_card.updateLocation('stall');
                     }
                 }
             }

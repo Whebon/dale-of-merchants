@@ -395,6 +395,7 @@ export class Stall implements CardSlotManager, DaleLocation {
             for (let slot of stack) {
                 if (slot.card?.id == card_id) {
                     slot.swapWithStock(stock, new_card);
+                    new_card.updateLocation('stall');
                 }
             }
         }
