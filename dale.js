@@ -4382,13 +4382,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                 }
                 else if (targets.size == 1) {
-                    var target = targets.values().next().value;
+                    this.mainClientState.enterOnStack('chameleon_autobind');
+                    var target = this.chameleonArgs.currentTargets[0];
                     if (target instanceof DaleCard_10.DaleCard) {
                         this.onConfirmChameleon(target.id);
-                        return false;
                     }
                 }
-                this.mainClientState.enterOnStack(chameleonStatename, args);
+                else {
+                    this.mainClientState.enterOnStack(chameleonStatename, args);
+                }
+            }
+            else if (this.mainClientState.name == 'chameleon_autobind') {
+                var target = this.chameleonArgs.currentTargets[0];
+                if (target instanceof DaleCard_10.DaleCard) {
+                    this.onConfirmChameleon(target.id);
+                }
             }
             else {
                 this.mainClientState.enter(chameleonStatename, args);

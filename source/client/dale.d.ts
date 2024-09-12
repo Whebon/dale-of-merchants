@@ -339,6 +339,7 @@ declare global {
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameStates extends TriggerTechniqueClientStates, TechniqueClientStates, PassiveClientStates {
+		'chameleon_autobind': {}
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
 		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }

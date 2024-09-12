@@ -1098,14 +1098,23 @@ class Dale extends Gamegui
 				}
 			}
 			else if (targets.size == 1) {
-				//chameleon auto-bind on a single target
-				const target = targets.values().next().value;
+				this.mainClientState.enterOnStack('chameleon_autobind');
+				//auto-bind to the first target in the chain
+				const target = this.chameleonArgs.currentTargets[0];
 				if (target instanceof DaleCard) {
 					this.onConfirmChameleon(target.id);
-					return false;
 				}
 			}
-			this.mainClientState.enterOnStack(chameleonStatename, args);
+			else {
+				this.mainClientState.enterOnStack(chameleonStatename, args);
+			}
+		}
+		else if (this.mainClientState.name == 'chameleon_autobind') {
+			//auto-bind to the next target in the chain
+			const target = this.chameleonArgs.currentTargets[0];
+			if (target instanceof DaleCard) {
+				this.onConfirmChameleon(target.id);
+			}
 		}
 		else {
 			this.mainClientState.enter(chameleonStatename, args);
@@ -2401,7 +2410,7 @@ class Dale extends Gamegui
 
 	/**
 	 * To be called from within a chameleon client state. Confirms the user selection for the chameleon card and restores the server state.
-	 * @param target target card to bind to
+	 * @param target_id target card to bind to
 	 * @returns 
 	 */
 	onConfirmChameleon(target_id: number) {
