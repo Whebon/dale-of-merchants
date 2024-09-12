@@ -30,6 +30,7 @@ if (false) {
 	$game->stBlindfold();
 	$game->stDangerousTest();
 	$game->stNightShift();
+	$game->stRuthlessCompetition();
 	$game->stFinalStatistics();
 }
 
@@ -95,6 +96,7 @@ $machinestates = array(
 			'trMagnet' => 58,
 			'trDangerousTest' => 59,
 			'trNightShift' => 60,
+			'trRuthlessCompetition' => 61,
 		),
 	),
 	31 => array(
@@ -245,6 +247,18 @@ $machinestates = array(
 		'action' => 'stNightShift',
 		'args' => 'argPlayerIds',
 		'possibleactions' => ['actNightShift'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	61 => array(
+		'name' => 'ruthlessCompetition',
+		'description' => clienttranslate('Ruthless Competition: ${actplayer} must place a card on top of ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Ruthless Competition: ${you} must place a card on top of ${opponent_name}\'s deck'),
+		'type' => 'activeplayer',
+		'action' => 'stRuthlessCompetition',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actRuthlessCompetition'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

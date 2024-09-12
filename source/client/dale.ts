@@ -592,6 +592,41 @@ class Dale extends Gamegui
 				}
 				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
 				break;
+			case 'client_ruthlessCompetition':
+				const client_ruthlessCompetition_args = (this.mainClientState.args as ClientGameStates['client_ruthlessCompetition']);
+				const client_ruthlessCompetition_targets: HTMLElement[] = [];
+				for (let player_id of this.gamedatas.playerorder) {
+					if ((player_id != this.player_id) && this.playerDiscards[player_id]!.size + this.playerDecks[player_id]!.size > 0) {
+						const deck = this.playerDecks[player_id]!;
+						deck.setSelectionMode('noneCantViewContent');
+						const client_ruthlessCompetition_target = deck.topCardHTML ?? deck.placeholderHTML;
+						client_ruthlessCompetition_targets.push(client_ruthlessCompetition_target);
+						client_ruthlessCompetition_target.dataset['target_id'] = String(player_id);
+					}
+				}
+				if (client_ruthlessCompetition_targets.length == 0) {
+					throw new Error("No valid targets ('client_fizzle' should have been entered instead of 'client_ruthlessCompetition')");
+				}
+				else if (client_ruthlessCompetition_targets.length == 1) {
+					this.onRuthlessCompetition(+client_ruthlessCompetition_targets[0]!.dataset['target_id']!);
+				}
+				else {
+					setTimeout((() => {
+						new TargetingLine(
+							new DaleCard(client_ruthlessCompetition_args.technique_card_id),
+							client_ruthlessCompetition_targets,
+							"dale-line-source-technique",
+							"dale-line-target-technique",
+							"dale-line-technique",
+							(source_id: number) => this.onCancelClient(),
+							(source_id: number, target_id: number) => this.onRuthlessCompetition(target_id)
+						)
+					}).bind(this), 500);
+				}
+				break;
+			case 'ruthlessCompetition':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -779,6 +814,17 @@ class Dale extends Gamegui
 				}
 				this.myLimbo.setSelectionMode('none');
 				TargetingLine.remove();
+				break;
+			case 'client_ruthlessCompetition':
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					if (+player_id != +this.player_id && deck.size > 0) {
+						deck.setSelectionMode('none');
+					}
+				}
+				TargetingLine.remove();
+				break;
+			case 'ruthlessCompetition':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1022,6 +1068,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_siesta':
 				this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, 'gray');
+				break;
+			case 'client_ruthlessCompetition':
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -1818,6 +1867,11 @@ class Dale extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'ruthlessCompetition':
+				this.bgaPerformAction('actRuthlessCompetition', {
+					card_id: card.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -2317,6 +2371,19 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
+			case DaleCard.CT_RUTHLESSCOMPETITION:
+				for (let player_id of this.gamedatas.playerorder) {
+					if ((player_id != this.player_id) && this.playerDiscards[player_id]!.size + this.playerDecks[player_id]!.size > 0) {
+						fizzle = false;
+					}
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_ruthlessCompetition', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2808,6 +2875,12 @@ class Dale extends Gamegui
 		TargetingLine.remove();
 		const label = _("Choose another card to place back");
 		this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
+	}
+
+	onRuthlessCompetition(opponent_id: number) {
+		this.playTechniqueCard<'client_ruthlessCompetition'>({
+			opponent_id: opponent_id
+		})
 	}
 
 

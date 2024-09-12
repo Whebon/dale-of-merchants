@@ -245,4 +245,15 @@ class action_dale extends APP_GameAction
 		$this->game->actNightShift( $card_ids, $player_ids );
 		self::ajaxResponse();
 	}
+
+	public function actRuthlessCompetition()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actRuthlessCompetition( $card_id );
+		self::ajaxResponse();
+	}
 }

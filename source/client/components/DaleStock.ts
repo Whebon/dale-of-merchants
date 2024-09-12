@@ -376,6 +376,10 @@ export class DaleStock extends Stock implements DaleLocation {
 			let item = stock.items[i];
 			if(item.id == id){
 				let item = stock.items[i];
+
+				//detach the specific div associated with this card
+				const specific_div = $(this.control_name+"_item_"+item.id) as HTMLElement;
+				new DaleCard(item.id).detachDiv(specific_div);
 		
 				// Item deletion hook (allow user to perform some additional item delete operation)
 				if(stock.onItemDelete){   

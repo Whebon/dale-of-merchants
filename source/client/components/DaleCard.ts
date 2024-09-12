@@ -940,10 +940,13 @@ export class DaleCard {
 
     /**
      * Remove the known div association of this card. Should be called of the div no longer exists.
+     * @param specific_div (optional) if provided, only remove the div association if it matches this specific_div
      */
-    public detachDiv() {
-        this.removeTooltip();
-        DaleCard.divs.delete(this.id);
+    public detachDiv(specific_div?: HTMLElement) {
+        if (specific_div === undefined || specific_div == DaleCard.divs.get(this.id)) {
+            this.removeTooltip();
+            DaleCard.divs.delete(this.id);
+        }
     }
 
     /**

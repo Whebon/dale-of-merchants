@@ -2406,9 +2406,18 @@ class Dale extends DaleTableBasic
                 case CT_NIGHTSHIFT:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
-                    foreach ($players as $player_id => $player) {
-                        if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id])) {
+                    foreach ($players as $other_player_id => $player) {
+                        if (isset($counts[DECK.$other_player_id]) || isset($counts[DISCARD.$other_player_id])) {
                             throw new BgaVisibleSystemException("Unable to fizzle CT_NIGHTSHIFT. There exist cards to draw.");
+                        }
+                    }
+                    break;
+                case CT_RUTHLESSCOMPETITION:
+                    $players = $this->loadPlayersBasicInfos();
+                    $counts = $this->cards->countCardsInLocations();
+                    foreach ($players as $opponent_id => $opponent) {
+                        if ($opponent_id != $player_id && (isset($counts[DECK.$opponent_id]) || isset($counts[DISCARD.$opponent_id]))) {
+                            throw new BgaVisibleSystemException("Unable to fizzle CT_RUTHLESSCOMPETITION. There exists a non-empty opponent deck/discard");
                         }
                     }
                     break;
@@ -2967,6 +2976,15 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trNightShift");
                 break;
+            case CT_RUTHLESSCOMPETITION:
+                $opponent_id = $args["opponent_id"];
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Ruthless Competition must be used on ANOTHER player");
+                }
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trRuthlessCompetition");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3378,6 +3396,21 @@ class Dale extends DaleTableBasic
             $this->fullyResolveCard($player_id);
         }
     }
+
+    function actRuthlessCompetition($card_id) {
+        $this->checkAction("actRuthlessCompetition");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $this->placeOnDeckMultiple(
+            $opponent_id, 
+            clienttranslate('Ruthless Competition: ${player_name} places a card on top of ${opponent_name}\'s deck'),
+            array($card_id), 
+            array($card_id => $card)
+        );
+        $this->fullyResolveCard($player_id);
+    }
+
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
@@ -3806,6 +3839,19 @@ class Dale extends DaleTableBasic
                 clienttranslate('Night Shift: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
             );
         }
+    }
+
+    function stRuthlessCompetition() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $this->draw(
+            clienttranslate('Ruthless Competition: ${player_name} draws a card from ${opponent_name}\'s deck'),
+            1,
+            false,
+            $opponent_id,
+            $player_id,
+            clienttranslate('Ruthless Competition: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+        );
     }
 
 

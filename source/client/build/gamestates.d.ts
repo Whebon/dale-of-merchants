@@ -153,6 +153,7 @@ interface GameStates {
 			'trMagnet': 58,
 			'trDangerousTest': 59,
 			'trNightShift': 60,
+			'trRuthlessCompetition': 61,
 		},
 	},
 	31: {
@@ -420,6 +421,24 @@ interface GameStates {
 				'name': 'player_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	61: {
+		'name': 'ruthlessCompetition',
+		'description': 'Ruthless Competition: ${actplayer} must place a card on top of ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Ruthless Competition: ${you} must place a card on top of ${opponent_name}\\\'s deck',
+		'type': 'activeplayer',
+		'action': 'stRuthlessCompetition',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actRuthlessCompetition': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

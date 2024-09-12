@@ -324,6 +324,7 @@ declare global {
 		'client_blindfold': { card_id: number, opponent_id: number }
 		'client_safetyPrecaution': { card_id: number }
 		'client_houseCleaning': {card_ids: number[] }
+		'client_ruthlessCompetition': { opponent_id: number }
 	}
 
 	interface ClientPassiveChoice {

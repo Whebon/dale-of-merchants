@@ -153,6 +153,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
             case 'client_siesta':
                 return _("${card_name}: ${you} may take a card from your discard pile");
+            case 'client_ruthlessCompetition':
+                return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
         }
         return "MISSING DESCRIPTION";
     }

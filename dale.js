@@ -1268,9 +1268,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return div;
         };
-        DaleCard.prototype.detachDiv = function () {
-            this.removeTooltip();
-            DaleCard.divs.delete(this.id);
+        DaleCard.prototype.detachDiv = function (specific_div) {
+            if (specific_div === undefined || specific_div == DaleCard.divs.get(this.id)) {
+                this.removeTooltip();
+                DaleCard.divs.delete(this.id);
+            }
         };
         DaleCard.prototype.attachDiv = function (div) {
             div.classList.add("dale-card");
@@ -1719,6 +1721,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 var item = stock.items[i];
                 if (item.id == id) {
                     var item_1 = stock.items[i];
+                    var specific_div = $(this.control_name + "_item_" + item_1.id);
+                    new DaleCard_2.DaleCard(item_1.id).detachDiv(specific_div);
                     if (stock.onItemDelete) {
                         stock.onItemDelete(stock.getItemDivId(item_1.id), item_1.type, item_1.id);
                     }
@@ -3214,6 +3218,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
                     case 'client_siesta':
                         return _("${card_name}: ${you} may take a card from your discard pile");
+                    case 'client_ruthlessCompetition':
+                        return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3659,7 +3665,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onEnteringState = function (stateName, args) {
             var _this = this;
-            var _a;
+            var _a, _b;
             console.log('Entering state: ' + stateName);
             if (this.isSpectator) {
                 return;
@@ -3729,8 +3735,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
                     var junk_selected = 0;
                     var client_essentialPurchase_skip = true;
-                    for (var _i = 0, _b = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _b.length; _i++) {
-                        var card_id = _b[_i];
+                    for (var _i = 0, _c = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _c.length; _i++) {
+                        var card_id = _c[_i];
                         this.myHand.selectItem(card_id, true);
                         if (junk_selected < 3 && new DaleCard_10.DaleCard(card_id).isJunk()) {
                             this.myHand.selectItem(card_id);
@@ -3749,8 +3755,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.setPurchaseSelectionModes(client_glue_args);
                     this.myHand.unselectAll();
                     this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
-                    for (var _c = 0, _d = client_glue_args.funds_card_ids.slice().reverse(); _c < _d.length; _c++) {
-                        var card_id = _d[_c];
+                    for (var _d = 0, _e = client_glue_args.funds_card_ids.slice().reverse(); _d < _e.length; _d++) {
+                        var card_id = _e[_d];
                         this.myHand.selectItem(card_id, true);
                         if (new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_GLUE) {
                             this.myHand.selectItem(card_id);
@@ -3795,8 +3801,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_rottenFood':
-                    for (var _e = 0, _f = Object.entries(this.allDecks); _e < _f.length; _e++) {
-                        var _g = _f[_e], player_id = _g[0], deck = _g[1];
+                    for (var _f = 0, _g = Object.entries(this.allDecks); _f < _g.length; _f++) {
+                        var _h = _g[_f], player_id = _h[0], deck = _h[1];
                         if (+player_id != this.player_id) {
                             deck.setSelectionMode('noneCantViewContent');
                         }
@@ -3812,8 +3818,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_treasureHunter':
                     var client_treasureHunter_args_1 = this.mainClientState.args;
                     var targets_2 = [];
-                    for (var _h = 0, _j = Object.entries(this.playerDiscards); _h < _j.length; _h++) {
-                        var _k = _j[_h], player_id = _k[0], pile = _k[1];
+                    for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
+                        var _l = _k[_j], player_id = _l[0], pile = _l[1];
                         if (+player_id != +this.player_id && pile.size > 0) {
                             pile.setSelectionMode('noneCantViewContent');
                             targets_2.push(pile.peek());
@@ -3846,8 +3852,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'chameleon_trendsetting':
                 case 'chameleon_seeingdoubles':
                     if (stateName == 'chameleon_reflection') {
-                        for (var _l = 0, _m = Object.entries(this.playerDiscards); _l < _m.length; _l++) {
-                            var _o = _m[_l], player_id = _o[0], pile = _o[1];
+                        for (var _m = 0, _o = Object.entries(this.playerDiscards); _m < _o.length; _m++) {
+                            var _p = _o[_m], player_id = _p[0], pile = _p[1];
                             if (+player_id != +this.player_id) {
                                 pile.setSelectionMode('noneCantViewContent');
                             }
@@ -3896,11 +3902,39 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
                     break;
                 case 'nightShift':
-                    for (var _p = 0, _q = Object.values(this.playerDecks); _p < _q.length; _p++) {
-                        var deck = _q[_p];
+                    for (var _q = 0, _r = Object.values(this.playerDecks); _q < _r.length; _q++) {
+                        var deck = _r[_q];
                         deck.setSelectionMode('noneCantViewContent');
                     }
                     this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+                    break;
+                case 'client_ruthlessCompetition':
+                    var client_ruthlessCompetition_args_1 = this.mainClientState.args;
+                    var client_ruthlessCompetition_targets_1 = [];
+                    for (var _s = 0, _t = this.gamedatas.playerorder; _s < _t.length; _s++) {
+                        var player_id = _t[_s];
+                        if ((player_id != this.player_id) && this.playerDiscards[player_id].size + this.playerDecks[player_id].size > 0) {
+                            var deck = this.playerDecks[player_id];
+                            deck.setSelectionMode('noneCantViewContent');
+                            var client_ruthlessCompetition_target = (_b = deck.topCardHTML) !== null && _b !== void 0 ? _b : deck.placeholderHTML;
+                            client_ruthlessCompetition_targets_1.push(client_ruthlessCompetition_target);
+                            client_ruthlessCompetition_target.dataset['target_id'] = String(player_id);
+                        }
+                    }
+                    if (client_ruthlessCompetition_targets_1.length == 0) {
+                        throw new Error("No valid targets ('client_fizzle' should have been entered instead of 'client_ruthlessCompetition')");
+                    }
+                    else if (client_ruthlessCompetition_targets_1.length == 1) {
+                        this.onRuthlessCompetition(+client_ruthlessCompetition_targets_1[0].dataset['target_id']);
+                    }
+                    else {
+                        setTimeout((function () {
+                            new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_ruthlessCompetition_args_1.technique_card_id), client_ruthlessCompetition_targets_1, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRuthlessCompetition(target_id); });
+                        }).bind(this), 500);
+                    }
+                    break;
+                case 'ruthlessCompetition':
+                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
                     break;
             }
         };
@@ -4085,6 +4119,18 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     this.myLimbo.setSelectionMode('none');
                     TargetingLine_1.TargetingLine.remove();
+                    break;
+                case 'client_ruthlessCompetition':
+                    for (var _o = 0, _p = Object.entries(this.playerDecks); _o < _p.length; _o++) {
+                        var _q = _p[_o], player_id = _q[0], deck = _q[1];
+                        if (+player_id != +this.player_id && deck.size > 0) {
+                            deck.setSelectionMode('none');
+                        }
+                    }
+                    TargetingLine_1.TargetingLine.remove();
+                    break;
+                case 'ruthlessCompetition':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -4329,6 +4375,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_siesta':
                     this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, 'gray');
+                    break;
+                case 'client_ruthlessCompetition':
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -4938,6 +4987,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
+                case 'ruthlessCompetition':
+                    this.bgaPerformAction('actRuthlessCompetition', {
+                        card_id: card.id
+                    });
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -5381,6 +5435,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_RUTHLESSCOMPETITION:
+                    for (var _j = 0, _k = this.gamedatas.playerorder; _j < _k.length; _j++) {
+                        var player_id = _k[_j];
+                        if ((player_id != this.player_id) && this.playerDiscards[player_id].size + this.playerDecks[player_id].size > 0) {
+                            fizzle = false;
+                        }
+                    }
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_ruthlessCompetition', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -5820,6 +5888,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             TargetingLine_1.TargetingLine.remove();
             var label = _("Choose another card to place back");
             this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
+        };
+        Dale.prototype.onRuthlessCompetition = function (opponent_id) {
+            this.playTechniqueCard({
+                opponent_id: opponent_id
+            });
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
