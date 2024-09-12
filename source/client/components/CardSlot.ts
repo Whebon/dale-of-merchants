@@ -1,6 +1,7 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from './DaleCard';
 import { DaleStock } from './DaleStock';
+import { Images } from './Images';
 
 /**
  * Responsible for managing a collection of CardSlots
@@ -121,7 +122,9 @@ export class CardSlot {
             this.container.replaceChildren();
             this._card = undefined;
             if (removedCard && to) {
-                this.parent.page.slideTemporaryObject(removedCard.toDiv(), this.container, this.container, to);
+                const temp_div = removedCard.toDiv();
+                dojo.setStyle(temp_div, 'z-index', String(Images.Z_INDEX_SLIDING_CARD));
+                this.parent.page.slideTemporaryObject(temp_div, this.container, this.container, to);
             }
             return removedCard;
         }

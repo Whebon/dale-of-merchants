@@ -2292,7 +2292,7 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
     }(Pile_1.Pile));
     exports.HiddenPile = HiddenPile;
 });
-define("components/CardSlot", ["require", "exports"], function (require, exports) {
+define("components/CardSlot", ["require", "exports", "components/Images"], function (require, exports, Images_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CardSlot = void 0;
@@ -2370,7 +2370,9 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
                 this.container.replaceChildren();
                 this._card = undefined;
                 if (removedCard && to) {
-                    this.parent.page.slideTemporaryObject(removedCard.toDiv(), this.container, this.container, to);
+                    var temp_div = removedCard.toDiv();
+                    dojo.setStyle(temp_div, 'z-index', String(Images_5.Images.Z_INDEX_SLIDING_CARD));
+                    this.parent.page.slideTemporaryObject(temp_div, this.container, this.container, to);
                 }
                 return removedCard;
             }
@@ -2437,7 +2439,7 @@ define("components/CardSlot", ["require", "exports"], function (require, exports
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/OrderedSelection", "components/types/DaleWrapClass", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_5, CardSlot_1, OrderedSelection_4, DaleWrapClass_3, DaleIcons_3) {
+define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/OrderedSelection", "components/types/DaleWrapClass", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_6, CardSlot_1, OrderedSelection_4, DaleWrapClass_3, DaleIcons_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -2445,19 +2447,19 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
             this.page = page;
-            $("dale-market-board-background").setAttribute("style", "\n            width: ".concat(Images_5.Images.MARKET_WIDTH_S - Images_5.Images.MARKET_PADDING_LEFT_S - Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_5.Images.MARKET_HEIGHT_S - Images_5.Images.MARKET_PADDING_TOP_S - Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-top: ").concat(Images_5.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_5.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            $("dale-market-board-background").setAttribute("style", "\n            width: ".concat(Images_6.Images.MARKET_WIDTH_S - Images_6.Images.MARKET_PADDING_LEFT_S - Images_6.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_6.Images.MARKET_HEIGHT_S - Images_6.Images.MARKET_PADDING_TOP_S - Images_6.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-top: ").concat(Images_6.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_6.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_6.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_6.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
             this.container = $("dale-market-board-background").querySelector("#dale-market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("dale-stack-container");
                 if (pos == 0) {
-                    stackContainer.setAttribute('style', "min-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;margin-left: ").concat(Images_5.Images.MARKET_ITEM_MARGIN_S, "px;"));
+                    stackContainer.setAttribute('style', "min-width: ".concat(Images_6.Images.CARD_WIDTH_S, "px;margin-left: ").concat(Images_6.Images.MARKET_ITEM_MARGIN_S, "px;"));
                 }
                 else {
-                    stackContainer.setAttribute('style', "max-width: ".concat(Images_5.Images.CARD_WIDTH_S, "px;margin-left: ").concat(pos == 4 ? 0 : Images_5.Images.MARKET_ITEM_MARGIN_S, "px;"));
+                    stackContainer.setAttribute('style', "max-width: ".concat(Images_6.Images.CARD_WIDTH_S, "px;margin-left: ").concat(pos == 4 ? 0 : Images_6.Images.MARKET_ITEM_MARGIN_S, "px;"));
                 }
-                var slotDiv = Images_5.Images.getPlaceholder();
+                var slotDiv = Images_6.Images.getPlaceholder();
                 slotDiv.classList.add("dale-placeholder-market");
                 stackContainer.appendChild(slotDiv);
                 if (pos > 0) {
@@ -2701,7 +2703,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
         MarketBoard.prototype.onResize = function () {
             var _a, _b, _c, _d;
             var totalWidth = this.container.getBoundingClientRect().width;
-            if (totalWidth < (1 + Images_5.Images.STACK_MIN_MARGIN_X) * Images_5.Images.CARD_WIDTH_S * this.MAX_SIZE) {
+            if (totalWidth < (1 + Images_6.Images.STACK_MIN_MARGIN_X) * Images_6.Images.CARD_WIDTH_S * this.MAX_SIZE) {
                 for (var i = 1; i < this.slots.length; i++) {
                     (_a = this.slots[i]) === null || _a === void 0 ? void 0 : _a.container.classList.add("dale-placeholder-partially-covered");
                 }
@@ -2711,8 +2713,8 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                     (_b = this.slots[i]) === null || _b === void 0 ? void 0 : _b.container.classList.remove("dale-placeholder-partially-covered");
                 }
             }
-            var overlap = Math.max(0, Images_5.Images.CARD_WIDTH_S - totalWidth / this.MAX_SIZE);
-            var left = Math.round((Images_5.Images.CARD_WIDTH_S - overlap) / 2) + 'px';
+            var overlap = Math.max(0, Images_6.Images.CARD_WIDTH_S - totalWidth / this.MAX_SIZE);
+            var left = Math.round((Images_6.Images.CARD_WIDTH_S - overlap) / 2) + 'px';
             for (var pos = 1; pos < this.MAX_SIZE; pos++) {
                 var icon = (_d = (_c = this.slots[pos]) === null || _c === void 0 ? void 0 : _c.container.parentElement) === null || _d === void 0 ? void 0 : _d.querySelector(".dale-icon");
                 if (icon) {
@@ -2724,7 +2726,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_7, Images_6, CardSlot_2, DaleIcons_4) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_7, Images_7, CardSlot_2, DaleIcons_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -2744,7 +2746,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             for (var i = 0; i < Stall.MAX_STACKS; i++) {
                 this.createNewStack();
             }
-            dojo.setStyle(this.container.parentElement, 'max-width', Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
+            dojo.setStyle(this.container.parentElement, 'max-width', Images_7.Images.CARD_WIDTH_S * (1 + Images_7.Images.STACK_MAX_MARGIN_X) * Stall.MAX_STACKS + 'px');
             this.updateHeight();
             var thiz = this;
             addEventListener("resize", function () { return setTimeout(function () { return thiz.onResize(); }, 1); });
@@ -2766,12 +2768,12 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             if (this.slots.length < Stall.MAX_STACKS) {
                 if (this.stackContainers.length > 0) {
                     var prevStackContainer = this.stackContainers[this.stackContainers.length - 1];
-                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_6.Images.CARD_WIDTH_S * (1 + Images_6.Images.STACK_MAX_MARGIN_X), "px;"));
+                    prevStackContainer.setAttribute('style', "max-width: ".concat(Images_7.Images.CARD_WIDTH_S * (1 + Images_7.Images.STACK_MAX_MARGIN_X), "px;"));
                 }
                 var stackContainer = document.createElement("div");
                 stackContainer.classList.add("dale-stack-container");
-                stackContainer.setAttribute('style', "min-width: ".concat(Images_6.Images.CARD_WIDTH_S, "px;"));
-                var placeholder = Images_6.Images.getPlaceholder();
+                stackContainer.setAttribute('style', "min-width: ".concat(Images_7.Images.CARD_WIDTH_S, "px;"));
+                var placeholder = Images_7.Images.getPlaceholder();
                 placeholder.classList.add("dale-placeholder-stall");
                 if (this.slots.length > 0) {
                     stackContainer.classList.add("dale-grayed-out");
@@ -2804,12 +2806,12 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                     var stack = _b[_i];
                     maxHeight = Math.max(maxHeight, stack.length);
                 }
-                var y_offset = Images_6.Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
+                var y_offset = Images_7.Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
                 console.log("Update height");
                 console.log(stackContainer.getAttribute('style'));
                 var prevStyleWithoutHeight = (_a = stackContainer.getAttribute('style')) === null || _a === void 0 ? void 0 : _a.replace(/height:.*px;/, '');
                 console.log(prevStyleWithoutHeight);
-                stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_6.Images.CARD_HEIGHT_S + y_offset, "px;"));
+                stackContainer.setAttribute('style', prevStyleWithoutHeight + "height: ".concat(Images_7.Images.CARD_HEIGHT_S + y_offset, "px;"));
             }
         };
         Stall.prototype.createNewSlot = function (stack_index, card) {
@@ -2819,9 +2821,9 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var stackContainer = this.stackContainers[stack_index];
             var stack = this.slots[stack_index];
             var index = stack.length;
-            var y_offset = Images_6.Images.VERTICAL_STACK_OFFSET_S * index;
+            var y_offset = Images_7.Images.VERTICAL_STACK_OFFSET_S * index;
             var div = document.createElement("div");
-            div.setAttribute('style', "".concat(Images_6.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
+            div.setAttribute('style', "".concat(Images_7.Images.getCardStyle(), ";\n            position: absolute;\n            top: ").concat(y_offset, "px\n        "));
             stackContainer.appendChild(div);
             var pos = this.getPos(stack_index, index);
             stack.push(new CardSlot_2.CardSlot(this, pos, div, card));
@@ -3049,7 +3051,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 this.wrapLandscape.classList.remove("dale-hidden");
                 this.wrapPortrait.classList.add("dale-hidden");
             }
-            if (this.container.getBoundingClientRect().width < (1 + Images_6.Images.STACK_MIN_MARGIN_X) * Images_6.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
+            if (this.container.getBoundingClientRect().width < (1 + Images_7.Images.STACK_MIN_MARGIN_X) * Images_7.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
                 for (var i = 1; i < this.slots.length; i++) {
                     var placeholder = this.stackContainers[i].querySelector(".dale-placeholder");
                     placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.add("dale-placeholder-partially-covered");
@@ -3315,7 +3317,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
     }());
     exports.MainClientState = MainClientState;
 });
-define("components/TargetingLine", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_9, Images_7) {
+define("components/TargetingLine", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_9, Images_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TargetingLine = void 0;
@@ -3375,8 +3377,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 (_b = thiz.prevTargetHover) === null || _b === void 0 ? void 0 : _b.classList.add("dale-line-target", thiz.targetClass);
                 thiz.prevTargetHover = undefined;
                 thiz.prevTargetSnap = undefined;
-                var x1 = sourceRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
-                var y1 = sourceRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
+                var x1 = sourceRect.left + window.scrollX + Images_8.Images.CARD_WIDTH_S / 2;
+                var y1 = sourceRect.top + window.scrollY + Images_8.Images.CARD_HEIGHT_S / 2;
                 var x2 = evt.pageX;
                 var y2 = evt.pageY;
                 var _loop_5 = function (targetCard) {
@@ -3390,8 +3392,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                                 var targetRect = currTarget.getBoundingClientRect();
                                 targetCard.classList.add("dale-line-source", thiz.sourceClass);
                                 targetCard.classList.remove("dale-line-target", thiz.targetClass);
-                                x2 = targetRect.left + window.scrollX + Images_7.Images.CARD_WIDTH_S / 2;
-                                y2 = targetRect.top + window.scrollY + Images_7.Images.CARD_HEIGHT_S / 2;
+                                x2 = targetRect.left + window.scrollX + Images_8.Images.CARD_WIDTH_S / 2;
+                                y2 = targetRect.top + window.scrollY + Images_8.Images.CARD_HEIGHT_S / 2;
                                 thiz.line.setAttribute("x2", String(x2));
                                 thiz.line.setAttribute("y2", String(y2));
                             }
@@ -3465,7 +3467,7 @@ define("components/types/PrivateNotification", ["require", "exports"], function 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_5) {
+define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_9, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Dale = (function (_super) {
@@ -3628,13 +3630,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card));
             }
             this.myLimbo.setSelectionMode('none');
-            dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_8.Images.CARD_WIDTH_S + 'px');
+            dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_9.Images.CARD_WIDTH_S + 'px');
             dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
             dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             for (var player_id in gamedatas.schedules) {
                 var container = $('dale-schedule-' + player_id);
                 var wrap = $('dale-schedule-wrap-' + player_id);
-                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_8.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_9.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
                 this.playerSchedules[player_id].setSelectionMode('none');
