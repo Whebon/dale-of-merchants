@@ -2304,6 +2304,19 @@ class Dale extends Gamegui
 					nbr_junk: houseCleaningJunk
 				});
 				break;
+			case DaleCard.CT_NIGHTSHIFT:
+				for (let player_id of this.gamedatas.playerorder) {
+					if (this.playerDiscards[player_id]!.size + this.playerDecks[player_id]!.size > 0) {
+						fizzle = false;
+					}
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;

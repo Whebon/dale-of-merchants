@@ -18,7 +18,7 @@ export class HiddenPile extends Pile {
      */
     override openPopin() {
         if (this.cards[0] === undefined || this.cards[0].id == 0) {
-            this.page.showMessage(_("This deck contains ")+this.size+_(" cards"), 'info');
+            this.page.showMessage(_("This deck contains ")+this.size+_(" card(s)"), 'info');
         }
         else {
             super.openPopin();

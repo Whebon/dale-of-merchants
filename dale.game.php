@@ -2403,6 +2403,15 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_MAGNET. There exists a card in the deck.");
                     }
                     break;
+                case CT_NIGHTSHIFT:
+                    $players = $this->loadPlayersBasicInfos();
+                    $counts = $this->cards->countCardsInLocations();
+                    foreach ($players as $player_id => $player) {
+                        if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id])) {
+                            throw new BgaVisibleSystemException("Unable to fizzle CT_NIGHTSHIFT. There exist cards to draw.");
+                        }
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {

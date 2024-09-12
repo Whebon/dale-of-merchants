@@ -2267,7 +2267,7 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
         };
         HiddenPile.prototype.openPopin = function () {
             if (this.cards[0] === undefined || this.cards[0].id == 0) {
-                this.page.showMessage(_("This deck contains ") + this.size + _(" cards"), 'info');
+                this.page.showMessage(_("This deck contains ") + this.size + _(" card(s)"), 'info');
             }
             else {
                 _super.prototype.openPopin.call(this);
@@ -5366,6 +5366,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.clientScheduleTechnique('client_houseCleaning', card.id, {
                         nbr_junk: houseCleaningJunk
                     });
+                    break;
+                case DaleCard_10.DaleCard.CT_NIGHTSHIFT:
+                    for (var _g = 0, _h = this.gamedatas.playerorder; _g < _h.length; _g++) {
+                        var player_id = _h[_g];
+                        if (this.playerDiscards[player_id].size + this.playerDecks[player_id].size > 0) {
+                            fizzle = false;
+                        }
+                    }
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
