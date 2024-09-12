@@ -45,7 +45,11 @@ class Dale extends DaleTableBasic
             "opponent_id" => 13,
             "card_id" => 14,
             "changeActivePlayer_player_id" => 15,
-            "changeActivePlayer_state_id" => 16
+            "changeActivePlayer_state_id" => 16,
+            "player_id_1" => 17,
+            "player_id_2" => 18,
+            "player_id_3" => 19,
+            "player_id_4" => 20
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -99,6 +103,10 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("card_id", -1);
         $this->setGameStateInitialValue("changeActivePlayer_player_id", -1);
         $this->setGameStateInitialValue("changeActivePlayer_state_id", -1);
+        $this->setGameStateInitialValue("player_id_1", -1);
+        $this->setGameStateInitialValue("player_id_2", -1);
+        $this->setGameStateInitialValue("player_id_3", -1);
+        $this->setGameStateInitialValue("player_id_4", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -203,6 +211,42 @@ class Dale extends DaleTableBasic
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+    /**
+     * set the `"player_id_1"`, `"player_id_2"`, `"player_id_3"` and `"player_id_4"` game state labels
+     */
+    function setGameStateValuePlayerIds($player_ids) {
+        if (count($player_ids) > 4) {
+            throw new BgaVisibleSystemException("Only a maximum of 4 player ids can be stored");
+        }
+        $index = 1;
+        foreach ($player_ids as $player_id) {
+            $this->setGameStateValue("player_id_".$index, $player_id);
+            $index += 1;
+        }
+        while ($index <= 4) {
+            $this->setGameStateValue("player_id_".$index, -1);
+            $index += 1;
+        }
+    }
+
+    /**
+     * get the $player_ids set via `setGameStateValuePlayerIds`
+     * @return array `$player_ids`
+     */
+    function getGameStateValuePlayerIds() {
+        $player_ids = [];
+        $index = 1;
+        while ($index <= 4) {
+            $player_id = $this->getGameStateValue("player_id_".$index);
+            if ($player_id == -1) {
+                break;
+            }
+            $player_ids[] = intval($player_id);
+            $index += 1;
+        }
+        return $player_ids;
+    }
 
     /**
      * transition to the next state and make `$player_id` the active player
@@ -313,7 +357,7 @@ class Dale extends DaleTableBasic
      * @param string $type
      * @param string $message
      * @param array $args requires at least "player_id" and "_private" keys
-     * @param string $private_message (optional) bt default, send the public message - if provided, send a special private message
+     * @param string $private_message (optional) by default, send the public message - if provided, send a special private message
      */
     function notifyAllPlayersWithPrivateArguments(string $type, string $message, array $args, string $private_message = null) {
         $suffix = ""; //clienttranslate(" (private information)");
@@ -395,9 +439,10 @@ class Dale extends DaleTableBasic
      * @param bool $to_limbo (optional) default false. If true, the cards are placed in limbo. If false, the cards are placed in hand.
      * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
      * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
+     * @param string $private_message (optional) by default, send the public message - if provided, send a special private message
      * @return int how much cards were actually drawn (`<= $nbr`)
      */
-    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null) {
+    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, string $private_message = null) {
         if ($from_player_id == null) {
             $from_player_id = $this->getActivePlayerId();
         }
@@ -414,11 +459,12 @@ class Dale extends DaleTableBasic
                     "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameById($from_player_id),
                     "nbr" => 1,
                     "_private" => array(
-                        "card" => $card
+                        "card" => $card,
+                        "card_name" => $this->getCardName($card)
                     ),
                     "deck_player_id" => $from_player_id,
                     "to_limbo" => $to_limbo
-                ));
+                ), $private_message);
                 return 1;
             }
             return 0;
@@ -437,7 +483,7 @@ class Dale extends DaleTableBasic
                 ),
                 "deck_player_id" => $from_player_id,
                 "to_limbo" => $to_limbo
-            ));
+            ), $private_message);
             return $actual_nbr;
         }
     }
@@ -2899,6 +2945,19 @@ class Dale extends DaleTableBasic
                 ));
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_NIGHTSHIFT:
+                $this->beginResolvingCard($technique_card_id);
+                $players = $this->loadPlayersBasicInfos();
+                $counts = $this->cards->countCardsInLocations();
+                $player_ids = [];
+                foreach ($players as $player_id => $player) {
+                    if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id])) {
+                        $player_ids[] = $player_id;
+                    }
+                }
+                $this->setGameStateValuePlayerIds($player_ids);
+                $this->gamestate->nextState("trNightShift");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3276,6 +3335,41 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actNightShift($card_ids, $player_ids) {
+        $this->checkAction("actNightShift");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_ids = $this->numberListToArray($player_ids);
+        if (count($card_ids) != count($player_ids)) {
+            throw new BgaVisibleSystemException("Night Shift: count(card_ids) != count(player_ids)");
+        }
+        $remaining_player_ids = $this->getGameStateValuePlayerIds($player_ids);
+        for ($i = 0; $i < count($card_ids); $i++) {
+            //get the player that will receive the card
+            $other_player_id = $player_ids[$i];
+            if (!in_array($other_player_id, $remaining_player_ids)) {
+                throw new BgaVisibleSystemException("Night Shift: provided player_id is not authorized to receive a card");
+            }
+            //get the card and place it on the deck
+            $card_id = $card_ids[$i];
+            $card = $this->cards->getCardFromLocation($card_id, LIMBO.$player_id);
+            $this->placeOnDeckMultiple(
+                $other_player_id, 
+                clienttranslate('Night Shift: ${player_name} places a card on top of ${opponent_name}\'s deck'),
+                array($card_id), 
+                array($card_id => $card),
+                null,
+                true
+            );
+        }
+        //update the remaining player_ids
+        $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
+        $this->setGameStateValuePlayerIds($remaining_player_ids);
+        if (count($remaining_player_ids) == 0) {
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
@@ -3448,6 +3542,12 @@ class Dale extends DaleTableBasic
             $_private[$player_id] = array('cards' => array_values($dbcards));
         }
         return array('_private' => $_private);
+    }
+
+    function argPlayerIds() {
+        return array(
+            'player_ids' => $this->getGameStateValuePlayerIds()
+        );
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3682,6 +3782,20 @@ class Dale extends DaleTableBasic
         if ($nbr == 0) {
             //dangerous test has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
+        }
+    }
+
+    function stNightShift() {
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $player_id => $player) {
+            $this->draw(
+                clienttranslate('Night Shift: ${player_name} draws a card from ${opponent_name}\'s deck'),
+                1,
+                true,
+                $player_id,
+                $this->getActivePlayerId(),
+                clienttranslate('Night Shift: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+            );
         }
     }
 

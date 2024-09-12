@@ -1530,6 +1530,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 this.onItemCreate = onItemCreate;
             if (onItemDelete)
                 this.onItemDelete = onItemDelete;
+            setTimeout(this.updateDisplay.bind(this), 1000);
         };
         DaleStock.prototype.onClick = function (card_id) {
             console.log("onClickOnCard(".concat(card_id, ")"));
@@ -3894,6 +3895,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_siesta':
                     this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
                     break;
+                case 'nightShift':
+                    for (var _p = 0, _q = Object.values(this.playerDecks); _p < _q.length; _p++) {
+                        var deck = _q[_p];
+                        deck.setSelectionMode('noneCantViewContent');
+                    }
+                    this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4069,6 +4077,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_siesta':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'nightShift':
+                    for (var _l = 0, _m = Object.values(this.playerDecks); _l < _m.length; _l++) {
+                        var deck = _m[_l];
+                        deck.setSelectionMode('none');
+                    }
+                    this.myLimbo.setSelectionMode('none');
+                    TargetingLine_1.TargetingLine.remove();
                     break;
             }
         };
@@ -4927,6 +4943,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
         };
         Dale.prototype.onSelectLimboCard = function (card_id) {
+            var _this = this;
+            var _a;
             console.log("onSelectLimboCard: " + card_id);
             var card = new DaleCard_10.DaleCard(card_id);
             switch (this.gamedatas.gamestate.name) {
@@ -4934,6 +4952,22 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.bgaPerformAction('actSabotage', {
                         card_id: card.id
                     });
+                    break;
+                case 'nightShift':
+                    if (!TargetingLine_1.TargetingLine.exists()) {
+                        var nightShift_args = this.gamedatas.gamestate.args;
+                        var nightShift_targets = [];
+                        for (var _i = 0, _b = nightShift_args.player_ids; _i < _b.length; _i++) {
+                            var player_id = _b[_i];
+                            var deck = this.playerDecks[player_id];
+                            var target = (_a = deck.topCardHTML) !== null && _a !== void 0 ? _a : deck.placeholderHTML;
+                            target.dataset['target_id'] = String(player_id);
+                            nightShift_targets.push(target);
+                        }
+                        var label = _("Place '") + card.name + _("' on a deck");
+                        this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', label);
+                        new TargetingLine_1.TargetingLine(card, nightShift_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
+                    }
                     break;
             }
         };
@@ -5732,6 +5766,46 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onSiestaSkip = function () {
             this.resolveTechniqueCard({});
+        };
+        Dale.prototype.onNightShift = function (card_id, player_id) {
+            var args = this.gamedatas.gamestate.args;
+            var items = this.myLimbo.getAllItems();
+            var card_ids = [card_id];
+            var player_ids = [player_id];
+            if (items.length == 2) {
+                if (args.player_ids.length != 2) {
+                    throw new Error("Night Shift: unable to give ".concat(items.length, " cards to ").concat(args.player_ids.length, " players"));
+                }
+                for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
+                    var item = items_2[_i];
+                    if (item.id != card_id) {
+                        card_ids.push(item.id);
+                    }
+                }
+                for (var _a = 0, _b = args.player_ids; _a < _b.length; _a++) {
+                    var arg_player_id = _b[_a];
+                    if (arg_player_id != player_id) {
+                        player_ids.push(arg_player_id);
+                    }
+                }
+            }
+            this.bgaPerformAction('actNightShift', {
+                card_ids: this.arrayToNumberList(card_ids),
+                player_ids: this.arrayToNumberList(player_ids)
+            });
+            var index = args.player_ids.indexOf(player_id);
+            if (index == -1) {
+                throw new Error("Night Shift: player ".concat(player_id, " is not authorized to receive a card"));
+            }
+            else {
+                args.player_ids.splice(index, 1);
+            }
+            this.onNightShiftNext();
+        };
+        Dale.prototype.onNightShiftNext = function () {
+            TargetingLine_1.TargetingLine.remove();
+            var label = _("Choose another card to place back");
+            this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;

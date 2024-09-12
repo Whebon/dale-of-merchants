@@ -29,6 +29,7 @@ if (false) {
 	$game->stSabotage();
 	$game->stBlindfold();
 	$game->stDangerousTest();
+	$game->stNightShift();
 	$game->stFinalStatistics();
 }
 
@@ -93,6 +94,7 @@ $machinestates = array(
 			'trSabotage' => 55,
 			'trMagnet' => 58,
 			'trDangerousTest' => 59,
+			'trNightShift' => 60,
 		),
 	),
 	31 => array(
@@ -231,6 +233,18 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stDangerousTest',
 		'possibleactions' => ['actDangerousTest'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	60 => array(
+		'name' => 'nightShift',
+		'description' => clienttranslate('Night Shift: ${actplayer} must place a card on top of each player\'s deck'),
+		'descriptionmyturn' => clienttranslate('Night Shift: ${you} must place a card on top of each player\'s deck'),
+		'type' => 'activeplayer',
+		'action' => 'stNightShift',
+		'args' => 'argPlayerIds',
+		'possibleactions' => ['actNightShift'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

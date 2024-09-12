@@ -586,6 +586,12 @@ class Dale extends Gamegui
 			case 'client_siesta':
 				this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
 				break;
+			case 'nightShift':
+				for (const deck of Object.values(this.playerDecks)) {
+					deck.setSelectionMode('noneCantViewContent');
+				}
+				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -766,6 +772,13 @@ class Dale extends Gamegui
 				break;
 			case 'client_siesta':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'nightShift':
+				for (const deck of Object.values(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
+				this.myLimbo.setSelectionMode('none');
+				TargetingLine.remove();
 				break;
 		}
 		//(~leavingstate)
@@ -1820,6 +1833,29 @@ class Dale extends Gamegui
 					card_id: card.id
 				})
 				break;
+			case 'nightShift':
+				if (!TargetingLine.exists()) {
+					const nightShift_args = (this.gamedatas.gamestate.args as { player_ids: number[] });
+					const nightShift_targets = [];
+					for (let player_id of nightShift_args.player_ids) {
+						const deck = this.playerDecks[player_id]!;
+						const target = deck.topCardHTML ?? deck.placeholderHTML
+						target.dataset['target_id'] = String(player_id);
+						nightShift_targets.push(target);
+					}
+					const label = _("Place '") + card.name + _("' on a deck");
+					this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', label);
+					new TargetingLine(
+						card,
+						nightShift_targets,
+						"dale-line-source-technique",
+						"dale-line-target-technique",
+						"dale-line-technique",
+						(source_id: number) => this.onNightShiftNext(),
+						(source_id: number, target_id: number) => this.onNightShift(source_id, target_id)
+					)
+				}
+				break;
 		}
 	}
 
@@ -2718,6 +2754,47 @@ class Dale extends Gamegui
 
 	onSiestaSkip() {
 		this.resolveTechniqueCard<'client_siesta'>({});
+	}
+
+	onNightShift(card_id: number, player_id: number) {
+		const args = this.gamedatas.gamestate.args as { player_ids: number[] };
+		const items = this.myLimbo.getAllItems();
+		const card_ids = [card_id];
+		const player_ids = [player_id];
+		if (items.length == 2) {
+			//automatically give the last card
+			if (args.player_ids.length != 2) {
+				throw new Error(`Night Shift: unable to give ${items.length} cards to ${args.player_ids.length} players`)
+			}
+			for (let item of items) {
+				if (item.id != card_id) {
+					card_ids.push(item.id);
+				}
+			}
+			for (let arg_player_id of args.player_ids) {
+				if (arg_player_id != player_id) {
+					player_ids.push(arg_player_id);
+				}
+			}
+		}
+		this.bgaPerformAction('actNightShift', {
+			card_ids: this.arrayToNumberList(card_ids),
+			player_ids: this.arrayToNumberList(player_ids)
+		});
+		const index = args.player_ids.indexOf(player_id);
+		if (index == -1) {
+			throw new Error(`Night Shift: player ${player_id} is not authorized to receive a card`);
+		}
+		else {
+			args.player_ids.splice(index, 1);
+		}
+		this.onNightShiftNext();
+	}
+
+	onNightShiftNext() {
+		TargetingLine.remove();
+		const label = _("Choose another card to place back");
+		this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
 	}
 
 

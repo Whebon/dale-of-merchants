@@ -152,6 +152,7 @@ interface GameStates {
 			'trSabotage': 55,
 			'trMagnet': 58,
 			'trDangerousTest': 59,
+			'trNightShift': 60,
 		},
 	},
 	31: {
@@ -395,6 +396,28 @@ interface GameStates {
 		'possibleactions': {
 			'actDangerousTest': [{
 				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	60: {
+		'name': 'nightShift',
+		'description': 'Night Shift: ${actplayer} must place a card on top of each player\\\'s deck',
+		'descriptionmyturn': 'Night Shift: ${you} must place a card on top of each player\\\'s deck',
+		'type': 'activeplayer',
+		'action': 'stNightShift',
+		'args': 'argPlayerIds',
+		'possibleactions': {
+			'actNightShift': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'player_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],

@@ -96,6 +96,9 @@ export class DaleStock extends Stock implements DaleLocation {
 		//configure callback functions
 		if (onItemCreate) this.onItemCreate = onItemCreate;
 		if (onItemDelete) this.onItemDelete = onItemDelete;
+
+		//this is needed for when the player refreshes in a limbo state
+		setTimeout(this.updateDisplay.bind(this), 1000); 
 	}
 
 	/**

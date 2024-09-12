@@ -232,4 +232,17 @@ class action_dale extends APP_GameAction
 		$this->game->actDangerousTest( $card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actNightShift()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+		/** @var string $player_ids */
+		$player_ids = self::getArg('player_ids', AT_numberlist, true);
+
+		$this->game->actNightShift( $card_ids, $player_ids );
+		self::ajaxResponse();
+	}
 }
