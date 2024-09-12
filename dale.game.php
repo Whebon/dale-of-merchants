@@ -1758,12 +1758,19 @@ class Dale extends DaleTableBasic
         }
 
         //Enforce the stack value is correct
+        $player_id = $this->getActivePlayerId();
+        $nbr_nastyThreat = $this->effects->countGlobalEffectsExcludeArg(CT_NASTYTHREAT, $player_id);
         $nbr_accordion = $this->countTypeId($cards, CT_ACCORDION);
         $total_value = $this->getValueSum($cards);
-        $min_value = $stack_index + 1 - $nbr_accordion;
-        $max_value = $stack_index + 1 + $nbr_accordion;
+        $base_value = $stack_index + 1 + $nbr_nastyThreat;
+        $min_value = $base_value - $nbr_accordion;
+        $max_value = $base_value + $nbr_accordion;
         if ($total_value < $min_value || $total_value > $max_value) {
-            throw new BgaUserException($this->_("Stack value is incorrect")." ($total_value)");
+            $message = $this->_("Stack value is incorrect")." ($total_value / $base_value)";
+            if ($nbr_nastyThreat) {
+                $message .= ". ".$this->_("The stack requires +").$nbr_nastyThreat.$this->_(" value due to Nasty Threat(s)");
+            }
+            throw new BgaUserException($message);
         }
     }
 
@@ -2985,6 +2992,20 @@ class Dale extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trRuthlessCompetition");
                 break;
+            case CT_NASTYTHREAT:
+                $this->effects->insertGlobal($technique_card_id, CT_NASTYTHREAT, $player_id);
+                $this->notifyAllPlayers('message', clienttranslate('Nasty Threat: Stacks ${player_name}\'s opponents build require +1 value'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_LOSTSHIPMENTS:
+                $this->effects->insertGlobal($technique_card_id, CT_LOSTSHIPMENTS, $player_id);
+                $this->notifyAllPlayers('message', clienttranslate('Lost Shipments: ${player_name}\'s opponents can draw at most 1 card while filling their hands'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3093,6 +3114,14 @@ class Dale extends DaleTableBasic
                 break;
             case CT_SCARYGUNFIGHT:
                 $this->effects->expireGlobal($technique_card_id, CT_SCARYGUNFIGHT);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_NASTYTHREAT:
+                $this->effects->expireGlobal($technique_card_id, CT_NASTYTHREAT);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_LOSTSHIPMENTS:
+                $this->effects->expireGlobal($technique_card_id, CT_LOSTSHIPMENTS);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

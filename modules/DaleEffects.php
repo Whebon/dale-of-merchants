@@ -116,6 +116,35 @@ class DaleEffects {
     //////////////////////////////////////
 
     /**
+     * Returns the amount of EC_GLOBAL effects of the given type id
+     * @param int $type_id the type of effect
+     */
+    function countGlobalEffects(int $type_id) {
+        $count = 0;
+        foreach ($this->cache as $row) {
+            if ($row["effect_class"] == EC_GLOBAL && $row["type_id"] == $type_id) {
+                $count += 1;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * Returns the amount of EC_GLOBAL effects of the given type id that do not have the specific arg
+     * @param int $type_id the type of effect
+     * @param int $exclude_arg exclude this specific arg
+     */
+    function countGlobalEffectsExcludeArg(int $type_id, int $exclude_arg) {
+        $count = 0;
+        foreach ($this->cache as $row) {
+            if ($row["effect_class"] == EC_GLOBAL && $row["type_id"] == $type_id && $row["arg"] != $exclude_arg) {
+                $count += 1;
+            }
+        }
+        return $count;
+    }
+
+    /**
      * Applies all card modifications to calculate the additional cost card in the market (CT_SCARYGUNFIGHT only)
      */
     function getAdditionalCost() {
