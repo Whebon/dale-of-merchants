@@ -3230,10 +3230,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
         };
         MainClientState.prototype.leave = function () {
             var previous = this._stack.pop();
+            this.setPassiveSelected(false);
             this._name = 'client_technique';
             this._args = {};
             if (previous instanceof ServerState) {
-                this.setPassiveSelected(false);
                 this._page.restoreServerGameState();
             }
             else if (previous instanceof PreviousState) {
@@ -3247,14 +3247,12 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             while (this._stack.length > 0) {
                 this.leave();
             }
-            this.setPassiveSelected(false);
             this.enter('client_technique');
         };
         MainClientState.prototype.enter = function (name, args) {
             if (name) {
                 this._name = name;
             }
-            this.setPassiveSelected(false);
             if (args) {
                 if ('technique_card_id' in args) {
                     args = __assign({ card_name: new DaleCard_8.DaleCard(args.technique_card_id).name }, args);

@@ -177,10 +177,10 @@ export class MainClientState {
      */
     public leave() {
         const previous = this._stack.pop();
+        this.setPassiveSelected(false);
         this._name = 'client_technique';
         this._args = {};
         if (previous instanceof ServerState) {
-            this.setPassiveSelected(false);
             this._page.restoreServerGameState();
         }
         else if (previous instanceof PreviousState) {
@@ -198,7 +198,6 @@ export class MainClientState {
         while (this._stack.length > 0) {
             this.leave(); //see issue #97.2 and #97.3
         }
-        this.setPassiveSelected(false);
         this.enter('client_technique');
     }
 
@@ -211,7 +210,6 @@ export class MainClientState {
         if (name) {
             this._name = name;
         }
-        this.setPassiveSelected(false);
         if (args) {
             if ('technique_card_id' in args) {
                 args = {
