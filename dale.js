@@ -4160,7 +4160,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
             var _this = this;
-            var _a;
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -4288,8 +4287,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         blindfold_baseValue += 1;
                     };
                     var this_4 = this;
-                    for (var _i = 0, _b = blindfold_args.possible_values; _i < _b.length; _i++) {
-                        var value = _b[_i];
+                    for (var _i = 0, _a = blindfold_args.possible_values; _i < _a.length; _i++) {
+                        var value = _a[_i];
                         _loop_6(value);
                     }
                     break;
@@ -4308,8 +4307,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         blindfoldDecideValue_baseValue += 1;
                     };
                     var this_5 = this;
-                    for (var _c = 0, _d = blindfoldDecideValue_args.possible_values; _c < _d.length; _c++) {
-                        var value = _d[_c];
+                    for (var _b = 0, _c = blindfoldDecideValue_args.possible_values; _b < _c.length; _b++) {
+                        var value = _c[_b];
                         _loop_7(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
@@ -4416,30 +4415,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     break;
                 case 'client_raffle':
-                    if (this.unique_opponent_id) {
-                        this.onRaffle(true);
-                        return;
-                    }
-                    var raffle_prev_opponent_id = -1;
-                    var raffle_next_opponent_id = -1;
-                    for (var i = 0; i < this.gamedatas.playerorder.length; i++) {
-                        if (this.player_id == this.gamedatas.playerorder[i]) {
-                            var raffle_i_prev = (i - 1 + this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
-                            var raffle_i_next = (i + 1 + this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
-                            raffle_prev_opponent_id = this.gamedatas.playerorder[raffle_i_prev];
-                            raffle_next_opponent_id = this.gamedatas.playerorder[raffle_i_next];
-                            break;
-                        }
-                    }
-                    this.addActionButtonsOpponent((function (opponent_id) {
-                        _this.onRaffle(opponent_id == raffle_prev_opponent_id);
-                    }).bind(this));
-                    for (var i = 0; i < this.gamedatas.playerorder.length; i++) {
-                        var raffle_opponent_id = this.gamedatas.playerorder[i];
-                        if (raffle_opponent_id != raffle_prev_opponent_id && raffle_opponent_id != raffle_next_opponent_id) {
-                            (_a = $("opponent-selection-button-" + raffle_opponent_id)) === null || _a === void 0 ? void 0 : _a.remove();
-                        }
-                    }
+                    this.addActionButtonsOpponentLeftRight(this.onRaffle.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'charity':
@@ -4447,6 +4423,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
                     this.max_opponents = 1;
                     this.addActionButton("confirm-button", _("Confirm"), "onCharity");
+                    break;
+                case 'client_tasters':
+                    this.addActionButtonsOpponentLeftRight(this.onTasters.bind(this));
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -4734,6 +4714,30 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.addActionButtonCancelClient = function (label) {
             this.addActionButton("cancel-button", label !== null && label !== void 0 ? label : _("Cancel"), "onCancelClient", undefined, false, 'gray');
+        };
+        Dale.prototype.addActionButtonsOpponentLeftRight = function (onDirectionHandler) {
+            var _a;
+            if (this.unique_opponent_id) {
+                throw new Error("addActionButtonsOpponentLeftRight should not be called in a 2-player game");
+            }
+            var raffle_prev_opponent_id = -1;
+            var raffle_next_opponent_id = -1;
+            for (var i = 0; i < this.gamedatas.playerorder.length; i++) {
+                if (this.player_id == this.gamedatas.playerorder[i]) {
+                    var raffle_i_prev = (i - 1 + this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+                    var raffle_i_next = (i + 1 + this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+                    raffle_prev_opponent_id = this.gamedatas.playerorder[raffle_i_prev];
+                    raffle_next_opponent_id = this.gamedatas.playerorder[raffle_i_next];
+                    break;
+                }
+            }
+            this.addActionButtonsOpponent(function (opponent_id) { return onDirectionHandler(opponent_id == raffle_prev_opponent_id); });
+            for (var i = 0; i < this.gamedatas.playerorder.length; i++) {
+                var raffle_opponent_id = this.gamedatas.playerorder[i];
+                if (raffle_opponent_id != raffle_prev_opponent_id && raffle_opponent_id != raffle_next_opponent_id) {
+                    (_a = $("opponent-selection-button-" + raffle_opponent_id)) === null || _a === void 0 ? void 0 : _a.remove();
+                }
+            }
         };
         Dale.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
             var _loop_8 = function (opponent_id) {
@@ -5528,7 +5532,20 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_RAFFLE:
-                    this.clientScheduleTechnique('client_raffle', card.id);
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_raffle', card.id);
+                    }
+                    break;
+                case DaleCard_10.DaleCard.CT_TASTERS:
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_tasters', card.id);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -6036,6 +6053,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.removeActionButtons();
                 this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
             }
+        };
+        Dale.prototype.onTasters = function (reverse_direction) {
+            console.log("onTasters", reverse_direction ? "right" : "left");
+            this.playTechniqueCard({
+                reverse_direction: reverse_direction
+            });
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;

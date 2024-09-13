@@ -1106,31 +1106,7 @@ class Dale extends Gamegui
 				}
 				break;
 			case 'client_raffle':
-				if (this.unique_opponent_id) {
-					this.onRaffle(true);
-					return;
-				}
-				var raffle_prev_opponent_id = -1;
-				var raffle_next_opponent_id = -1;
-				for (let i = 0; i < this.gamedatas.playerorder.length; i++) {
-					if (this.player_id == this.gamedatas.playerorder[i]!) {
-						const raffle_i_prev = (i-1+this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
-						const raffle_i_next = (i+1+this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
-						raffle_prev_opponent_id = this.gamedatas.playerorder[raffle_i_prev]!;
-						raffle_next_opponent_id = this.gamedatas.playerorder[raffle_i_next]!;
-						break;
-					}
-				}
-				this.addActionButtonsOpponent(((opponent_id: number) => {
-					this.onRaffle(opponent_id == raffle_prev_opponent_id);
-				}).bind(this));
-				for (let i = 0; i < this.gamedatas.playerorder.length; i++) {
-					//remove buttons for non-adjacent players
-					const raffle_opponent_id = this.gamedatas.playerorder[i]!;
-					if (raffle_opponent_id != raffle_prev_opponent_id && raffle_opponent_id != raffle_next_opponent_id) {
-						$("opponent-selection-button-"+raffle_opponent_id)?.remove();
-					}
-				}
+				this.addActionButtonsOpponentLeftRight(this.onRaffle.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'charity':
@@ -1138,6 +1114,10 @@ class Dale extends Gamegui
 				this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
 				this.max_opponents = 1; //ensure that no opponent is selected by default
 				this.addActionButton("confirm-button", _("Confirm"), "onCharity"); //confirm the opponent and the card
+				break;
+			case 'client_tasters':
+				this.addActionButtonsOpponentLeftRight(this.onTasters.bind(this));
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -1559,6 +1539,35 @@ class Dale extends Gamegui
 	/*
 		Here, I put all methods related to selecting opponents
 	*/
+
+	/**
+	 * Add opponent buttons for adjacent opponents.
+	 */
+	addActionButtonsOpponentLeftRight(onDirectionHandler: (reverse_direction: boolean) => void) {
+		if (this.unique_opponent_id) {
+			throw new Error("addActionButtonsOpponentLeftRight should not be called in a 2-player game");
+		}
+		var raffle_prev_opponent_id = -1;
+		var raffle_next_opponent_id = -1;
+		for (let i = 0; i < this.gamedatas.playerorder.length; i++) {
+			if (this.player_id == this.gamedatas.playerorder[i]!) {
+				const raffle_i_prev = (i-1+this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+				const raffle_i_next = (i+1+this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+				raffle_prev_opponent_id = this.gamedatas.playerorder[raffle_i_prev]!;
+				raffle_next_opponent_id = this.gamedatas.playerorder[raffle_i_next]!;
+				break;
+			}
+		}
+		this.addActionButtonsOpponent((opponent_id: number) => onDirectionHandler(opponent_id == raffle_prev_opponent_id));
+		for (let i = 0; i < this.gamedatas.playerorder.length; i++) {
+			//remove buttons for non-adjacent players
+			const raffle_opponent_id = this.gamedatas.playerorder[i]!;
+			if (raffle_opponent_id != raffle_prev_opponent_id && raffle_opponent_id != raffle_next_opponent_id) {
+				$("opponent-selection-button-"+raffle_opponent_id)?.remove();
+			}
+		}
+	}
+	
 
 	/** In a 2-player game, store the unique opponent here */
 	unique_opponent_id: number | undefined;
@@ -2462,7 +2471,20 @@ class Dale extends Gamegui
 				}
 				break;
 			case DaleCard.CT_RAFFLE:
-				this.clientScheduleTechnique('client_raffle', card.id);
+				if (this.unique_opponent_id) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_raffle', card.id);
+				}
+				break;
+			case DaleCard.CT_TASTERS:
+				if (this.unique_opponent_id) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_tasters', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -3029,6 +3051,13 @@ class Dale extends Gamegui
 			this.removeActionButtons();
 			this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
 		}
+	}
+
+	onTasters(reverse_direction: boolean) {
+		console.log("onTasters", reverse_direction ? "right" : "left");
+		this.playTechniqueCard<'client_tasters'>({
+			reverse_direction: reverse_direction
+		})
 	}
 
 

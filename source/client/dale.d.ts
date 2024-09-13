@@ -348,7 +348,8 @@ declare global {
 		'client_safetyPrecaution': { card_id: number }
 		'client_houseCleaning': {card_ids: number[] }
 		'client_ruthlessCompetition': { opponent_id: number }
-		'client_raffle': { reverse_direction: boolean }
+		'client_raffle': { reverse_direction: boolean },
+		'client_tasters': { reverse_direction: boolean }
 	}
 
 	interface ClientPassiveChoice {

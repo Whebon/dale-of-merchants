@@ -3094,7 +3094,7 @@ class Dale extends DaleTableBasic
                 $this->gamestate->nextState("trCheer");
                 break;
             case CT_RAFFLE:
-                $reverse_direction = $args["reverse_direction"];
+                $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
                 $take_id_to_card = array();
                 $next = $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
                 $take_id = $player_id;
@@ -3113,10 +3113,6 @@ class Dale extends DaleTableBasic
                     if ($take_id == $player_id) {
                         break;
                     }
-                }
-                //add a small delay in a 2-player game (the card is stil being scheduled, the choice is automatic)
-                if ($this->getPlayersNumber() == 2) {
-                    $this->delay500ms();
                 }
                 //move the cards
                 foreach ($take_id_to_card as $take_id => $card) {
