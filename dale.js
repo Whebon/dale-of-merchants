@@ -1494,7 +1494,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.actionLabel = undefined;
             _this.actionLabelDefaultText = "<DefaultText>";
             _this.selectionMode = 'none';
-            _this.hideOnEmpty = true;
+            _this._hideOnEmpty = true;
             _this._shuffle_animation = false;
             _this.duration = 500;
             _this.orderedSelection = new OrderedSelection_2.OrderedSelection();
@@ -1503,6 +1503,27 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.onResize();
             return _this;
         }
+        Object.defineProperty(DaleStock.prototype, "hideOnEmpty", {
+            get: function () {
+                return this._hideOnEmpty;
+            },
+            set: function (state) {
+                var _this = this;
+                if (state == true) {
+                    if (this.count() == 0) {
+                        setTimeout((function () {
+                            _this._hideOnEmpty = true;
+                            _this.onItemDelete();
+                        }).bind(this), this.duration);
+                    }
+                }
+                else {
+                    this._hideOnEmpty = false;
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         DaleStock.prototype.init = function (page, container, wrap, defaultText, onItemCreate, onItemDelete) {
             var _a;
             page.allDaleStocks.push(this);
@@ -3160,6 +3181,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
                     case 'client_triggerFizzle':
                         return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
+                    case 'client_selectOpponentTechnique':
+                        return _("${card_name}: ${you} must choose an opponent");
                     case 'client_choicelessTechniqueCard':
                         return _("${card_name}: ${you} may play this card as a technique");
                     case 'client_choicelessTriggerTechniqueCard':
@@ -3182,8 +3205,6 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
                     case 'client_dirtyExchange':
                         return _("${card_name}: ${you} must choose an opponent to take a card from");
-                    case 'client_sabotage':
-                        return _("${card_name}: ${you} must choose an opponent to sabotage");
                     case 'client_treasureHunter':
                         return _("${card_name}: ${you} must take a card from an opponent's discard pile");
                     case 'client_newSeason':
@@ -3937,6 +3958,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'ruthlessCompetition':
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
                     break;
+                case 'cunningNeighbour':
+                    this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Opponent's hand"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4133,6 +4157,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'ruthlessCompetition':
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'cunningNeighbour':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -4215,7 +4242,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_sabotage':
+                case 'client_selectOpponentTechnique':
                     this.addActionButtonsOpponent(this.onSabotage.bind(this));
                     this.addActionButtonCancelClient();
                     break;
@@ -4379,6 +4406,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_ruthlessCompetition':
                     this.addActionButtonCancelClient();
+                    break;
+                case 'cunningNeighbour':
+                    this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
+                    this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
                     break;
             }
         };
@@ -5313,11 +5344,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_SABOTAGE:
+                case DaleCard_10.DaleCard.CT_CUNNINGNEIGHBOUR:
                     if (this.unique_opponent_id) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_sabotage', card.id);
+                        this.clientScheduleTechnique('client_selectOpponentTechnique', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_TREASUREHUNTER:
@@ -5897,6 +5929,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 opponent_id: opponent_id
             });
         };
+        Dale.prototype.onCunningNeighbourDeck = function () {
+            this.bgaPerformAction('actCunningNeighbour', {
+                place_on_deck: true
+            });
+        };
+        Dale.prototype.onCunningNeighbourDiscard = function () {
+            this.bgaPerformAction('actCunningNeighbour', {
+                place_on_deck: false
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -5933,6 +5975,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['wilyFellow', 500],
                 ['whirligigShuffle', 1750],
                 ['whirligigTakeBack', 500, true],
+                ['cunningNeighbourWatch', 500],
+                ['cunningNeighbourReturn', 500],
                 ['ditchFromDiscard', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
@@ -6018,7 +6062,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var schedule = this.playerSchedules[notif.args.player_id];
             var card = DaleCard_10.DaleCard.of(notif.args.card);
             var from = schedule.control_name + '_item_' + card.id;
-            this.playerDiscards[notif.args.player_id].push(card, from, null, schedule.duration);
+            switch (notif.args.to) {
+                case 'disc':
+                    this.playerDiscards[notif.args.player_id].push(card, from, null, schedule.duration);
+                    break;
+                case 'deck':
+                    this.playerDecks[notif.args.player_id].push(card, from, null, schedule.duration);
+                    break;
+                default:
+                    throw new Error("Unable to resolve the technique to '".concat(notif.args.to, "'"));
+            }
             schedule.removeFromStockByIdNoAnimation(card.id);
         };
         Dale.prototype.notif_buildStack = function (notif) {
@@ -6418,7 +6471,6 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playerHandSizes[notif.args.opponent_id].incValue(-opponent_nbr);
         };
         Dale.prototype.notif_whirligigTakeBack = function (notif) {
-            var _this = this;
             console.log("notif_whirligigTakeBack");
             if (!this.isSpectator) {
                 var limbo_card_ids = this.myLimbo.getAllItems().map(function (item) { return item.id; }).sort(function () { return Math.random() - 0.5; });
@@ -6441,14 +6493,35 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_" + notif.args.player_id);
                     }
                 }
-                if (this.myLimbo.count() == 0) {
-                    setTimeout((function () {
-                        _this.myLimbo.hideOnEmpty = true;
-                        _this.myLimbo.onItemDelete();
-                    }).bind(this), this.myLimbo.duration);
-                }
+                this.myLimbo.hideOnEmpty = true;
             }
             this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
+        };
+        Dale.prototype.notif_cunningNeighbourWatch = function (notif) {
+            var _a;
+            if (notif.args.player_id == this.player_id) {
+                for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
+                    var card = notif.args._private.cards[i];
+                    this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + notif.args.opponent_id);
+                }
+            }
+            else if (notif.args.opponent_id == this.player_id) {
+                this.myHand.removeAllTo("overall_player_board_" + notif.args.player_id);
+            }
+        };
+        Dale.prototype.notif_cunningNeighbourReturn = function (notif) {
+            var _a;
+            if (notif.args.player_id == this.player_id) {
+                this.myLimbo.hideOnEmpty = false;
+                this.myLimbo.removeAllTo("overall_player_board_" + notif.args.opponent_id);
+                this.myLimbo.hideOnEmpty = true;
+            }
+            else if (notif.args.opponent_id == this.player_id) {
+                for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
+                    var card = notif.args._private.cards[i];
+                    this.myHand.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + notif.args.player_id);
+                }
+            }
         };
         Dale.prototype.notif_ditchFromDiscard = function (notif) {
             console.log("notif_ditchFromDiscard");

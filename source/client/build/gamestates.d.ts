@@ -154,6 +154,7 @@ interface GameStates {
 			'trDangerousTest': 59,
 			'trNightShift': 60,
 			'trRuthlessCompetition': 61,
+			'trCunningNeighbour': 62,
 		},
 	},
 	31: {
@@ -439,6 +440,24 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	62: {
+		'name': 'cunningNeighbour',
+		'description': 'Cunning Neighbour: ${actplayer} is looking at ${opponent_name}\\\'s hand',
+		'descriptionmyturn': 'Cunning Neighbour: ${you} are looking at ${opponent_name}\\\'s hand. Choose where to place Cunning Neighbour',
+		'type': 'activeplayer',
+		'action': 'stCunningNeighbour',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actCunningNeighbour': [{
+				'name': 'place_on_deck',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
 			}],
 		},
 		'transitions': {

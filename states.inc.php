@@ -31,6 +31,7 @@ if (false) {
 	$game->stDangerousTest();
 	$game->stNightShift();
 	$game->stRuthlessCompetition();
+	$game->stCunningNeighbour();
 	$game->stFinalStatistics();
 }
 
@@ -97,6 +98,7 @@ $machinestates = array(
 			'trDangerousTest' => 59,
 			'trNightShift' => 60,
 			'trRuthlessCompetition' => 61,
+			'trCunningNeighbour' => 62,
 		),
 	),
 	31 => array(
@@ -259,6 +261,18 @@ $machinestates = array(
 		'action' => 'stRuthlessCompetition',
 		'args' => 'argOpponentName',
 		'possibleactions' => ['actRuthlessCompetition'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	62 => array(
+		'name' => 'cunningNeighbour',
+		'description' => clienttranslate('Cunning Neighbour: ${actplayer} is looking at ${opponent_name}\'s hand'),
+		'descriptionmyturn' => clienttranslate('Cunning Neighbour: ${you} are looking at ${opponent_name}\'s hand. Choose where to place Cunning Neighbour'),
+		'type' => 'activeplayer',
+		'action' => 'stCunningNeighbour',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actCunningNeighbour'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

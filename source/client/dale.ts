@@ -627,6 +627,9 @@ class Dale extends Gamegui
 			case 'ruthlessCompetition':
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
 				break;
+			case 'cunningNeighbour':
+				this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Opponent's hand"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -826,6 +829,9 @@ class Dale extends Gamegui
 			case 'ruthlessCompetition':
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'cunningNeighbour':
+				this.myLimbo.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -915,7 +921,7 @@ class Dale extends Gamegui
 				this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_sabotage':
+			case 'client_selectOpponentTechnique':
 				this.addActionButtonsOpponent(this.onSabotage.bind(this));
 				this.addActionButtonCancelClient();
 				break;
@@ -1071,6 +1077,10 @@ class Dale extends Gamegui
 				break;
 			case 'client_ruthlessCompetition':
 				this.addActionButtonCancelClient();
+				break;
+			case 'cunningNeighbour':
+				this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
+				this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
 				break;
 		}
 		//(~actionbuttons)
@@ -2252,11 +2262,12 @@ class Dale extends Gamegui
 				}
 				break;
 			case DaleCard.CT_SABOTAGE:
+			case DaleCard.CT_CUNNINGNEIGHBOUR:
 				if (this.unique_opponent_id) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_sabotage', card.id);
+					this.clientScheduleTechnique('client_selectOpponentTechnique', card.id);
 				}
 				break;
 			case DaleCard.CT_TREASUREHUNTER:
@@ -2676,7 +2687,7 @@ class Dale extends Gamegui
 	}
 
 	onSabotage(opponent_id: number) {
-		this.playTechniqueCardWithServerState<'client_sabotage'>({
+		this.playTechniqueCardWithServerState<'client_selectOpponentTechnique'>({
 			opponent_id: opponent_id
 		})
 	}
@@ -2885,6 +2896,19 @@ class Dale extends Gamegui
 		})
 	}
 
+	onCunningNeighbourDeck() {
+		this.bgaPerformAction('actCunningNeighbour', {
+			place_on_deck: true
+		})
+	}
+
+	onCunningNeighbourDiscard() {
+		this.bgaPerformAction('actCunningNeighbour', {
+			place_on_deck: false
+		})
+	}
+
+
 
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
@@ -2928,6 +2952,8 @@ class Dale extends Gamegui
 			['wilyFellow', 					500],
 			['whirligigShuffle', 			1750],
 			['whirligigTakeBack', 			500, true],
+			['cunningNeighbourWatch', 		500],
+			['cunningNeighbourReturn', 		500],
 			['ditchFromDiscard', 			500],
 			['ditchFromMarketDeck', 		500],
 			['ditchFromMarketBoard', 		500],
@@ -3046,12 +3072,21 @@ class Dale extends Gamegui
 	}
 
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
-		//schedule to discard
+		//schedule to discard/deck
 		console.log(this.playerSchedules);
 		const schedule = this.playerSchedules[notif.args.player_id]!;
 		const card = DaleCard.of(notif.args.card);
 		const from = schedule.control_name+'_item_'+card.id;
-		this.playerDiscards[notif.args.player_id]!.push(card, from, null, schedule.duration);
+		switch(notif.args.to) {
+			case 'disc':
+				this.playerDiscards[notif.args.player_id]!.push(card, from, null, schedule.duration);
+				break;
+			case 'deck':
+				this.playerDecks[notif.args.player_id]!.push(card, from, null, schedule.duration);
+				break;
+			default:
+				throw new Error(`Unable to resolve the technique to '${notif.args.to}'`)
+		}
 		schedule.removeFromStockByIdNoAnimation(card.id);
 	}
 
@@ -3565,23 +3600,43 @@ class Dale extends Gamegui
 				}
 			}
 			else {
-				this.myLimbo.hideOnEmpty = false; //ugly workaround: ensure the animation stays visible although limbo is empty
+				this.myLimbo.hideOnEmpty = false;
 				for (let i = 0; i < notif.args.nbr; i++) {
 					//to player board
 					const limbo_card_id = limbo_card_ids.pop()!;
 					this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_"+notif.args.player_id);
 				}
 			}
-			//ugly workaround: manually hide the limbo with a fake onItemDelete call
-			if (this.myLimbo.count() == 0) {
-				setTimeout((()=> {
-					this.myLimbo.hideOnEmpty = true;
-					(this.myLimbo as any).onItemDelete(); 
-				}).bind(this), this.myLimbo.duration)
-			}
+			this.myLimbo.hideOnEmpty = true;
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
+	}
+
+	notif_cunningNeighbourWatch(notif: NotifAs<'cunningNeighbourWatch'>) {
+		if (notif.args.player_id == this.player_id) {
+			for (let i in notif.args._private?.cards) {
+				let card = notif.args._private.cards[i]!;
+				this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+notif.args.opponent_id);
+			}
+		}
+		else if (notif.args.opponent_id == this.player_id) {
+			this.myHand.removeAllTo("overall_player_board_"+notif.args.player_id);
+		}
+	}
+
+	notif_cunningNeighbourReturn(notif: NotifAs<'cunningNeighbourReturn'>) {
+		if (notif.args.player_id == this.player_id) {
+			this.myLimbo.hideOnEmpty = false;
+			this.myLimbo.removeAllTo("overall_player_board_"+notif.args.opponent_id);
+			this.myLimbo.hideOnEmpty = true;
+		}
+		else if (notif.args.opponent_id == this.player_id) {
+			for (let i in notif.args._private?.cards) {
+				let card = notif.args._private.cards[i]!;
+				this.myHand.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+notif.args.player_id);
+			}
+		}
 	}
 
 	notif_ditchFromDiscard(notif: NotifAs<'ditchFromDiscard'>) {

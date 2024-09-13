@@ -43,6 +43,7 @@ declare global {
 		'resolveTechnique': {
 			player_id: number
 			card: DbCard
+			to: DbLocationPrefix
 		}
 		'addEffect': {
 			effect: RawDbEffect;
@@ -78,6 +79,20 @@ declare global {
 		'whirligigTakeBack': {
 			player_id: number,
 			nbr: number,
+			_private: {
+				cards: {[card_id: number]: DbCard}
+			}
+		}
+		'cunningNeighbourWatch': {
+			player_id: number,
+			opponent_id: number,
+			_private: {
+				cards: {[card_id: number]: DbCard}
+			}
+		}
+		'cunningNeighbourReturn': {
+			player_id: number,
+			opponent_id: number,
 			_private: {
 				cards: {[card_id: number]: DbCard}
 			}
@@ -307,6 +322,7 @@ declare global {
 	interface ClientTechniqueChoice {
 		'client_fizzle': { fizzle: boolean }
 		'client_choicelessTechniqueCard': { choiceless: true }
+		'client_selectOpponentTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }
 		'client_acorn': { stall_player_id: number, stall_card_id: number }
@@ -316,7 +332,6 @@ declare global {
 		'client_nuisance': { opponent_ids: number[] }
 		'client_rottenFood': { card_id: number, opponent_id: number }
 		'client_dirtyExchange': { opponent_id: number }
-		'client_sabotage': { opponent_id: number }
 		'client_treasureHunter': { card_id: number }
 		'client_newSeason': { card_id: number }
 		'client_whirligig': { card_ids: number[], opponent_id: number }

@@ -95,6 +95,8 @@ export class MainClientState {
                 return _("${card_name}: Are you sure you want to play this technique without any effects?");
             case 'client_triggerFizzle':
                 return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
+            case 'client_selectOpponentTechnique':
+                return _("${card_name}: ${you} must choose an opponent"); //e.g. sabotage and cunning neighbour
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
             case 'client_choicelessTriggerTechniqueCard':
@@ -119,8 +121,6 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
             case 'client_dirtyExchange':
                 return _("${card_name}: ${you} must choose an opponent to take a card from");
-            case 'client_sabotage':
-                return _("${card_name}: ${you} must choose an opponent to sabotage");
             case 'client_treasureHunter':
                 return _("${card_name}: ${you} must take a card from an opponent's discard pile");
             case 'client_newSeason':

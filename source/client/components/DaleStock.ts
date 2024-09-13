@@ -43,8 +43,25 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	private selectionMode: DaleStockSelectionMode = 'none';
 
-	/** Only works with myLimbo */
-	public hideOnEmpty: boolean = true;
+	/** hideOnEmpty (Only works with myLimbo) */
+	private _hideOnEmpty: boolean = true;
+	public get hideOnEmpty(): boolean {
+		return this._hideOnEmpty;
+	}
+	public set hideOnEmpty(state: boolean) {
+		if (state == true) {
+			if (this.count() == 0) {
+				setTimeout((()=> {
+					//ugly workaround: manually hide the limbo with a fake onItemDelete call
+					this._hideOnEmpty = true;
+					(this as any).onItemDelete();
+				}).bind(this), this.duration)
+			}
+		}
+		else {
+			this._hideOnEmpty = false;
+		}
+	}
 
 	constructor(){
 		super();

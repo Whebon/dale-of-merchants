@@ -1707,8 +1707,9 @@ class Dale extends DaleTableBasic
      * Discard the resolving card, notify all players and transition to the next state. 
      * @param mixed $player_id id of the owner of the scheduled card
      * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
+     * @param bool $resolve_to_deck (optional) default false. If true, resolve to deck instead of to the discard pile
      */
-    function fullyResolveCard(mixed $player_id, array $technique_card = null) {
+    function fullyResolveCard(mixed $player_id, array $technique_card = null, bool $resolve_to_deck = false) {
         //get the resolving card
         if ($technique_card != null) {
             $technique_card_id = $technique_card["id"];
@@ -1727,12 +1728,14 @@ class Dale extends DaleTableBasic
         $card_name = $this->getCardName($technique_card);
 
         //move the card from the schedule to the discard pile
-        $this->cards->moveCardOnTop($technique_card_id, DISCARD.$player_id);
+        $location_prefix = $resolve_to_deck ? DECK : DISCARD;
+        $this->cards->moveCardOnTop($technique_card_id, $location_prefix.$player_id);
         $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $card_name,
-            'card' => $technique_card
+            'card' => $technique_card,
+            'to' => $location_prefix
         ));
 
         //decide if the player can go again
@@ -2379,7 +2382,7 @@ class Dale extends DaleTableBasic
         }
         $this->incStat(1, "actions_technique", $player_id);
 
-        //Fizzle (~fizzle)
+        //Fizzle
         if (array_key_exists("fizzle", $args)) {
             switch($technique_type_id) {
                 case CT_PREPAIDGOOD:
@@ -2477,7 +2480,7 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has other cards in their hand.");
                     }
                     break;
-            }
+            } //(~fizzle technique)
             $this->scheduleCard($player_id, $technique_card);
             $this->fullyResolveCard($player_id, $technique_card);
             return;
@@ -2488,7 +2491,7 @@ class Dale extends DaleTableBasic
             $this->scheduleCard($player_id, $technique_card, array_key_exists("choiceless", $args));
         }
 
-        //Resolve Technique from Hand (~technique) (~resolvefromhand)
+        //Resolve Technique from Hand
         switch($technique_type_id) {
             case CT_SWIFTBROKER:
                 $card_ids = $args["card_ids"];
@@ -3048,10 +3051,16 @@ class Dale extends DaleTableBasic
                 ));
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_CUNNINGNEIGHBOUR:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trCunningNeighbour");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
-        }
+        } //(~technique)
     }
 
     function actFullyResolveTechniqueCard($chameleons_json, $technique_card_id, $args) {
@@ -3061,7 +3070,7 @@ class Dale extends DaleTableBasic
         $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
         $technique_type_id = $this->getTypeId($technique_card);
 
-        //Trigger Fizzle (~triggerfizzle)
+        //Trigger Fizzle
         if (array_key_exists("fizzle", $args)) {
             switch($technique_type_id) {
                 case CT_SHOPPINGJOURNEY:
@@ -3085,12 +3094,12 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has cards in their hand.");
                     }
                     break;
-            }
+            } //(~fizzle trigger)
             $this->fullyResolveCard($player_id, $technique_card);
             return;
         }
 
-        //Resolve Technique from Schedule (~technique) (~resolvefromschedule) (~trigger)
+        //Resolve Technique from Schedule
         switch($technique_type_id) {
             case CT_STEADYACHIEVER:
                 $this->draw(clienttranslate('Steady Achiever: ${player_name} draws a card'));
@@ -3169,7 +3178,7 @@ class Dale extends DaleTableBasic
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");
-        }
+        } //(~resolve)
     }
     
     function actUsePassiveAbility($chameleons_json, $card_id, $args) {
@@ -3188,7 +3197,7 @@ class Dale extends DaleTableBasic
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
 
-        //Execute Passive Ability (~passiveability) (~ability)
+        //Execute Passive Ability
         switch($type_id) {
             case CT_GOODOLDTIMES:
                 $dbcard = $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
@@ -3215,7 +3224,7 @@ class Dale extends DaleTableBasic
             default:
                 $name = $this->getCardName($card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
-        }
+        } //(~passiveability)
 
         $this->gamestate->nextState("trPassiveAbility");
     }
@@ -3482,6 +3491,24 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actCunningNeighbour($place_on_deck) {
+        $this->checkAction("actCunningNeighbour");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourReturn', '', array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "opponent_id" => $opponent_id,
+            "opponent_name" => $this->getPlayerNameById($opponent_id),
+            "_private" => array(
+                "cards" => $cards
+            )
+        ));
+        $this->fullyResolveCard($player_id, null, $place_on_deck);
+    }
+
+    //(~acts)
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
@@ -3923,6 +3950,21 @@ class Dale extends DaleTableBasic
             $player_id,
             clienttranslate('Ruthless Competition: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
         );
+    }
+
+    function stCunningNeighbour() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourWatch', clienttranslate('Cunning Neighbour: ${player_name} looks at ${opponent_name}\'s hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "opponent_id" => $opponent_id,
+            "opponent_name" => $this->getPlayerNameById($opponent_id),
+            "_private" => array(
+                "cards" => $cards
+            )
+        ));
     }
 
 

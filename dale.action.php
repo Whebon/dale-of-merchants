@@ -256,4 +256,15 @@ class action_dale extends APP_GameAction
 		$this->game->actRuthlessCompetition( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actCunningNeighbour()
+	{
+		self::setAjaxMode();
+
+		/** @var bool $place_on_deck */
+		$place_on_deck = self::getArg('place_on_deck', AT_bool, true);
+
+		$this->game->actCunningNeighbour( $place_on_deck );
+		self::ajaxResponse();
+	}
 }
