@@ -3495,7 +3495,8 @@ class Dale extends DaleTableBasic
         $this->checkAction("actCunningNeighbour");
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        $cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $this->cards->moveCards($this->toCardIds($cards), HAND.$opponent_id);
         $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourReturn', '', array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
@@ -3956,6 +3957,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        $this->cards->moveCards($this->toCardIds($cards), LIMBO.$player_id);
         $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourWatch', clienttranslate('Cunning Neighbour: ${player_name} looks at ${opponent_name}\'s hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
