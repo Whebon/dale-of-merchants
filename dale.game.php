@@ -3084,6 +3084,56 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValue("active_player_id", $player_id);
                 $this->gamestate->nextState("trCheer");
                 break;
+            case CT_RAFFLE:
+                $reverse_direction = $args["reverse_direction"];
+                $take_id_to_card = array();
+                $next = $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
+                $take_id = $player_id;
+                //pick cards simultaneously
+                while (true) {
+                    $cards = $this->cards->getCardsInLocation(HAND.$next[$take_id]);
+                    if (count($cards) == 0) {
+                        $take_id_to_card[$take_id] = null;
+                    }
+                    else {
+                        $card_id = array_rand($cards);
+                        $card = $cards[$card_id];
+                        $take_id_to_card[$take_id] = $card;
+                    }
+                    $take_id = $next[$take_id];
+                    if ($take_id == $player_id) {
+                        break;
+                    }
+                }
+                //add a small delay in a 2-player game (the card is stil being scheduled, the choice is automatic)
+                if ($this->getPlayersNumber() == 2) {
+                    $this->delay500ms();
+                }
+                //move the cards
+                foreach ($take_id_to_card as $take_id => $card) {
+                    if ($card === null) {
+                        $this->notifyAllPlayers('message', clienttranslate('Raffle: ${player_name} tries to take a card from ${opponent_name}, but their hand is empty'), array(
+                            "player_name" => $this->getPlayerNameById($take_id),
+                            "opponent_name" => $this->getPlayerNameById($next[$take_id])
+                        ));
+                    }
+                    else {
+                        $this->cards->moveCard($card["id"], HAND.$take_id);
+                        $this->notifyAllPlayersWithPrivateArguments('instant_opponentHandToPlayerHand', clienttranslate('Raffle: ${player_name} takes a card from ${opponent_name}'), array(
+                            "player_id" => $take_id,
+                            "opponent_id" => $next[$take_id],
+                            "player_name" => $this->getPlayerNameById($take_id),
+                            "opponent_name" => $this->getPlayerNameById($next[$take_id]),
+                            "_private" => array(
+                                "card" => $card,
+                                "card_name" => $this->getCardName($card)
+                            )
+                        ), clienttranslate('Raffle: ${player_name} takes a ${card_name} from ${opponent_name}'));
+                    }
+                }
+                $this->delay500ms(); //add a delay to compensate for 'instant_' notifications
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3913,10 +3963,11 @@ class Dale extends DaleTableBasic
         $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
         if (count($cards) == 0) {
             //dirty exchange has no effect
-            $this->notifyAllPlayers('message', clienttranslate('Dirty Exchange: ${player_name} tried to take a card from ${opponent_name}, but their hand was empty'), array(
+            $this->notifyAllPlayers('message', clienttranslate('Dirty Exchange: ${player_name} tries to take a card from ${opponent_name}, but their hand is empty'), array(
                 "player_name" => $this->getPlayerNameById($player_id),
                 "opponent_name" => $this->getPlayerNameById($opponent_id)
             ));
+            $this->fullyResolveCard($player_id);
             return;
         }
         $card_id = array_rand($cards);

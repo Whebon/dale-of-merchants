@@ -926,7 +926,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_selectOpponentTechnique':
-				this.addActionButtonsOpponent(this.onSabotage.bind(this));
+				this.addActionButtonsOpponent(this.onSelectOpponentTechnique.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_treasureHunter':
@@ -1088,11 +1088,39 @@ class Dale extends Gamegui
 				break;
 			case 'cheer':
 				//this needs to be in onUpdateActionButton (see https://studio.boardgamearena.com/doc/Game_interface_logic:_yourgamename.js)
-				if (this.myDeck.size > 0) {
+				if (!this.isSpectator && this.myDeck.size > 0) {
 					const cheer_args = args as { _private: { cards: DbCard[] } };
 					this.myDeck.setContent(cheer_args._private.cards.map(DaleCard.of));
 					this.myDeck.setSelectionMode('single');
 				}
+				break;
+			case 'client_raffle':
+				if (this.unique_opponent_id) {
+					this.onRaffle(true);
+					return;
+				}
+				var raffle_prev_opponent_id = -1;
+				var raffle_next_opponent_id = -1;
+				for (let i = 0; i < this.gamedatas.playerorder.length; i++) {
+					if (this.player_id == this.gamedatas.playerorder[i]!) {
+						const raffle_i_prev = (i-1+this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+						const raffle_i_next = (i+1+this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+						raffle_prev_opponent_id = this.gamedatas.playerorder[raffle_i_prev]!;
+						raffle_next_opponent_id = this.gamedatas.playerorder[raffle_i_next]!;
+						break;
+					}
+				}
+				this.addActionButtonsOpponent(((opponent_id: number) => {
+					this.onRaffle(opponent_id == raffle_prev_opponent_id);
+				}).bind(this));
+				for (let i = 0; i < this.gamedatas.playerorder.length; i++) {
+					//remove buttons for non-adjacent players
+					const raffle_opponent_id = this.gamedatas.playerorder[i]!;
+					if (raffle_opponent_id != raffle_prev_opponent_id && raffle_opponent_id != raffle_next_opponent_id) {
+						$("opponent-selection-button-"+raffle_opponent_id)?.remove();
+					}
+				}
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2415,6 +2443,9 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_ruthlessCompetition', card.id);
 				}
 				break;
+			case DaleCard.CT_RAFFLE:
+				this.clientScheduleTechnique('client_raffle', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -2704,7 +2735,7 @@ class Dale extends Gamegui
 		})
 	}
 
-	onSabotage(opponent_id: number) {
+	onSelectOpponentTechnique(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_selectOpponentTechnique'>({
 			opponent_id: opponent_id
 		})
@@ -2926,6 +2957,13 @@ class Dale extends Gamegui
 		})
 	}
 
+	onRaffle(reverse_direction: boolean) {
+		console.log("onRaffle", reverse_direction ? "right" : "left");
+		this.playTechniqueCard<'client_raffle'>({
+			reverse_direction: reverse_direction
+		})
+	}
+
 
 
 	///////////////////////////////////////////////////
@@ -2938,51 +2976,53 @@ class Dale extends Gamegui
 		
 		//[notif_type, duration, has_private_arguments]
 		const notifs: ([keyof NotifTypes, number, boolean?])[] = [
-			['deckSelectionResult', 		500],
-			['delay', 						500],
-			['startGame', 					500],
-			['scheduleTechnique', 			1],
-			['scheduleTechniqueDelay', 		500, true],
-			['resolveTechnique', 			500],
-			['cancelTechnique', 			500],
-			['buildStack', 					500],
-			['rearrangeMarket', 			500],
-			['fillEmptyMarketSlots', 		1],
-			['marketSlideRight', 			500],
-			['marketToHand', 				500],
-			['swapHandStall', 				1],
-			['swapHandMarket', 				1],
-			['marketDiscardToHand', 		500],
-			['discardToHand', 				500],
-			['discardToHandMultiple', 		500],
-			['draw', 						500, true],
-			['drawMultiple', 				500, true],
-			['limboToHand', 				500],
-			['playerHandToOpponentHand', 	500, true],
-			['opponentHandToPlayerHand', 	500, true],
-			['obtainNewJunkInHand', 		500],
-			['ditch', 						500],
-			['ditchMultiple', 				500],
-			['discard', 					500],
-			['discardMultiple', 			750],
-			['placeOnDeckMultiple', 		500, true],
-			['reshuffleDeck', 				1500],
-			['wilyFellow', 					500],
-			['whirligigShuffle', 			1750],
-			['whirligigTakeBack', 			500, true],
-			['cunningNeighbourWatch', 		500],
-			['cunningNeighbourReturn', 		500],
-			['ditchFromDiscard', 			500],
-			['ditchFromMarketDeck', 		500],
-			['ditchFromMarketBoard', 		500],
-			['discardToDeck', 				500],
-			['deckToDiscard', 				500],
-			['rollDie', 					1000],
-			['selectBlindfold', 			1, true],
-			['addEffect', 					1],
-			['expireEffects', 				1],
-			['message', 					1],
-			['debugClient', 				1],
+			['deckSelectionResult', 			500],
+			['delay', 							500],
+			['startGame', 						500],
+			['scheduleTechnique', 				1],
+			['scheduleTechniqueDelay', 			500, true],
+			['resolveTechnique', 				500],
+			['cancelTechnique', 				500],
+			['buildStack', 						500],
+			['rearrangeMarket', 				500],
+			['fillEmptyMarketSlots', 			1],
+			['marketSlideRight', 				500],
+			['marketToHand', 					500],
+			['swapHandStall', 					1],
+			['swapHandMarket', 					1],
+			['marketDiscardToHand', 			500],
+			['discardToHand', 					500],
+			['discardToHandMultiple', 			500],
+			['draw', 							500, true],
+			['drawMultiple', 					500, true],
+			['limboToHand', 					500],
+			['instant_playerHandToOpponentHand',1, true],
+			['instant_opponentHandToPlayerHand',1, true],
+			['playerHandToOpponentHand', 		500, true],
+			['opponentHandToPlayerHand', 		500, true],
+			['obtainNewJunkInHand', 			500],
+			['ditch', 							500],
+			['ditchMultiple', 					500],
+			['discard', 						500],
+			['discardMultiple', 				750],
+			['placeOnDeckMultiple', 			500, true],
+			['reshuffleDeck', 					1500],
+			['wilyFellow', 						500],
+			['whirligigShuffle', 				1750],
+			['whirligigTakeBack', 				500, true],
+			['cunningNeighbourWatch', 			500],
+			['cunningNeighbourReturn', 			500],
+			['ditchFromDiscard', 				500],
+			['ditchFromMarketDeck', 			500],
+			['ditchFromMarketBoard', 			500],
+			['discardToDeck', 					500],
+			['deckToDiscard', 					500],
+			['rollDie', 						1000],
+			['selectBlindfold', 				1, true],
+			['addEffect', 						1],
+			['expireEffects', 					1],
+			['message', 						1],
+			['debugClient', 					1],
 		];
 
 		notifs.forEach((notif) => {
@@ -3230,6 +3270,10 @@ class Dale extends Gamegui
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
+
+	notif_instant_playerHandToOpponentHand(notif: NotifAs<'playerHandToOpponentHand'>) {
+		this.notif_playerHandToOpponentHand(notif);
+	}
 	
 	notif_playerHandToOpponentHand(notif: NotifAs<'playerHandToOpponentHand'>) {
 		//Move a card from a `player_id`'s hand/limbo to an `opponent_id`'s hand/limbo
@@ -3239,6 +3283,10 @@ class Dale extends Gamegui
 		const temp2 = notif.args.from_limbo;
 		notif.args.from_limbo = notif.args.to_limbo;
 		notif.args.to_limbo = temp2;
+		this.notif_opponentHandToPlayerHand(notif);
+	}
+
+	notif_instant_opponentHandToPlayerHand(notif: NotifAs<'opponentHandToPlayerHand'>) {
 		this.notif_opponentHandToPlayerHand(notif);
 	}
 

@@ -234,6 +234,7 @@ declare global {
 				card: DbCard
 			}
 		}
+		'instant_playerHandToOpponentHand': {}
 		'playerHandToOpponentHand': {
 			opponent_id: number 
 			player_id: number
@@ -243,6 +244,7 @@ declare global {
 				card: DbCard
 			}
 		}
+		'instant_opponentHandToPlayerHand': {}
 		'opponentHandToPlayerHand': {
 			opponent_id: number 
 			player_id: number
@@ -340,6 +342,7 @@ declare global {
 		'client_safetyPrecaution': { card_id: number }
 		'client_houseCleaning': {card_ids: number[] }
 		'client_ruthlessCompetition': { opponent_id: number }
+		'client_raffle': { reverse_direction: boolean }
 	}
 
 	interface ClientPassiveChoice {

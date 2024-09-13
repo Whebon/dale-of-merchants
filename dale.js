@@ -3243,6 +3243,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may take a card from your discard pile");
                     case 'client_ruthlessCompetition':
                         return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
+                    case 'client_raffle':
+                        return _("${card_name}: ${you} take a card from");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4169,6 +4171,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
             var _this = this;
+            var _a;
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -4248,7 +4251,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_selectOpponentTechnique':
-                    this.addActionButtonsOpponent(this.onSabotage.bind(this));
+                    this.addActionButtonsOpponent(this.onSelectOpponentTechnique.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_treasureHunter':
@@ -4296,8 +4299,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         blindfold_baseValue += 1;
                     };
                     var this_4 = this;
-                    for (var _i = 0, _a = blindfold_args.possible_values; _i < _a.length; _i++) {
-                        var value = _a[_i];
+                    for (var _i = 0, _b = blindfold_args.possible_values; _i < _b.length; _i++) {
+                        var value = _b[_i];
                         _loop_6(value);
                     }
                     break;
@@ -4316,8 +4319,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         blindfoldDecideValue_baseValue += 1;
                     };
                     var this_5 = this;
-                    for (var _b = 0, _c = blindfoldDecideValue_args.possible_values; _b < _c.length; _b++) {
-                        var value = _c[_b];
+                    for (var _c = 0, _d = blindfoldDecideValue_args.possible_values; _c < _d.length; _c++) {
+                        var value = _d[_c];
                         _loop_7(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
@@ -4417,11 +4420,38 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
                     break;
                 case 'cheer':
-                    if (this.myDeck.size > 0) {
+                    if (!this.isSpectator && this.myDeck.size > 0) {
                         var cheer_args = args;
                         this.myDeck.setContent(cheer_args._private.cards.map(DaleCard_10.DaleCard.of));
                         this.myDeck.setSelectionMode('single');
                     }
+                    break;
+                case 'client_raffle':
+                    if (this.unique_opponent_id) {
+                        this.onRaffle(true);
+                        return;
+                    }
+                    var raffle_prev_opponent_id = -1;
+                    var raffle_next_opponent_id = -1;
+                    for (var i = 0; i < this.gamedatas.playerorder.length; i++) {
+                        if (this.player_id == this.gamedatas.playerorder[i]) {
+                            var raffle_i_prev = (i - 1 + this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+                            var raffle_i_next = (i + 1 + this.gamedatas.playerorder.length) % this.gamedatas.playerorder.length;
+                            raffle_prev_opponent_id = this.gamedatas.playerorder[raffle_i_prev];
+                            raffle_next_opponent_id = this.gamedatas.playerorder[raffle_i_next];
+                            break;
+                        }
+                    }
+                    this.addActionButtonsOpponent((function (opponent_id) {
+                        _this.onRaffle(opponent_id == raffle_prev_opponent_id);
+                    }).bind(this));
+                    for (var i = 0; i < this.gamedatas.playerorder.length; i++) {
+                        var raffle_opponent_id = this.gamedatas.playerorder[i];
+                        if (raffle_opponent_id != raffle_prev_opponent_id && raffle_opponent_id != raffle_next_opponent_id) {
+                            (_a = $("opponent-selection-button-" + raffle_opponent_id)) === null || _a === void 0 ? void 0 : _a.remove();
+                        }
+                    }
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -5502,6 +5532,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_ruthlessCompetition', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_RAFFLE:
+                    this.clientScheduleTechnique('client_raffle', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -5754,7 +5787,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 opponent_id: opponent_id
             });
         };
-        Dale.prototype.onSabotage = function (opponent_id) {
+        Dale.prototype.onSelectOpponentTechnique = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
             });
@@ -5957,6 +5990,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 place_on_deck: false
             });
         };
+        Dale.prototype.onRaffle = function (reverse_direction) {
+            console.log("onRaffle", reverse_direction ? "right" : "left");
+            this.playTechniqueCard({
+                reverse_direction: reverse_direction
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -5981,6 +6020,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['draw', 500, true],
                 ['drawMultiple', 500, true],
                 ['limboToHand', 500],
+                ['instant_playerHandToOpponentHand', 1, true],
+                ['instant_opponentHandToPlayerHand', 1, true],
                 ['playerHandToOpponentHand', 500, true],
                 ['opponentHandToPlayerHand', 500, true],
                 ['obtainNewJunkInHand', 500],
@@ -6202,6 +6243,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             }
             this.playerHandSizes[notif.args.player_id].incValue(1);
         };
+        Dale.prototype.notif_instant_playerHandToOpponentHand = function (notif) {
+            this.notif_playerHandToOpponentHand(notif);
+        };
         Dale.prototype.notif_playerHandToOpponentHand = function (notif) {
             var temp1 = notif.args.player_id;
             notif.args.player_id = notif.args.opponent_id;
@@ -6209,6 +6253,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var temp2 = notif.args.from_limbo;
             notif.args.from_limbo = notif.args.to_limbo;
             notif.args.to_limbo = temp2;
+            this.notif_opponentHandToPlayerHand(notif);
+        };
+        Dale.prototype.notif_instant_opponentHandToPlayerHand = function (notif) {
             this.notif_opponentHandToPlayerHand(notif);
         };
         Dale.prototype.notif_opponentHandToPlayerHand = function (notif) {
