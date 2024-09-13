@@ -278,4 +278,17 @@ class action_dale extends APP_GameAction
 		$this->game->actCheer( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actCharity()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+		/** @var string $player_ids */
+		$player_ids = self::getArg('player_ids', AT_numberlist, true);
+
+		$this->game->actCharity( $card_ids, $player_ids );
+		self::ajaxResponse();
+	}
 }

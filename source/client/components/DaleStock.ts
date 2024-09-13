@@ -50,13 +50,11 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 	public set hideOnEmpty(state: boolean) {
 		if (state == true) {
-			if (this.count() == 0) {
-				setTimeout((()=> {
-					//ugly workaround: manually hide the limbo with a fake onItemDelete call
-					this._hideOnEmpty = true;
-					(this as any).onItemDelete();
-				}).bind(this), this.duration)
-			}
+			setTimeout((()=> {
+				//ugly workaround: manually hide the limbo with a fake onItemDelete call
+				this._hideOnEmpty = true;
+				(this as any).onItemDelete();
+			}).bind(this), this.duration);
 		}
 		else {
 			this._hideOnEmpty = false;

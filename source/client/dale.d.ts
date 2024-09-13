@@ -228,6 +228,12 @@ declare global {
 			deck_player_id?: number | 'mark'
 			to_limbo?: boolean
 		}
+		'handToLimbo': {
+			player_id: number 
+			_private?: {
+				card: DbCard
+			}
+		}
 		'limboToHand': {
 			player_id: number 
 			_private?: {

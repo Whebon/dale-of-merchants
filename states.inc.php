@@ -34,6 +34,7 @@ if (false) {
 	$game->stRuthlessCompetition();
 	$game->stCunningNeighbour();
 	$game->stCheer();
+	$game->stCharity();
 	$game->stFinalStatistics();
 }
 
@@ -103,6 +104,7 @@ $machinestates = array(
 			'trRuthlessCompetition' => 61,
 			'trCunningNeighbour' => 62,
 			'trCheer' => 63,
+			'trCharity' => 64,
 		),
 	),
 	31 => array(
@@ -301,6 +303,18 @@ $machinestates = array(
 		'possibleactions' => ['actCheer'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
+		),
+	),
+	64 => array(
+		'name' => 'charity',
+		'description' => clienttranslate('Charity: ${actplayer} must give back all drawn cards'),
+		'descriptionmyturn' => clienttranslate('Charity: ${you} must choose a card and an opponent'),
+		'type' => 'activeplayer',
+		'action' => 'stCharity',
+		'args' => 'argPlayerIds',
+		'possibleactions' => ['actCharity'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	98 => array(

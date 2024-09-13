@@ -157,6 +157,7 @@ interface GameStates {
 			'trRuthlessCompetition': 61,
 			'trCunningNeighbour': 62,
 			'trCheer': 63,
+			'trCharity': 64,
 		},
 	},
 	31: {
@@ -492,6 +493,28 @@ interface GameStates {
 		},
 		'transitions': {
 			'trChangeActivePlayer': 29,
+		},
+	},
+	64: {
+		'name': 'charity',
+		'description': 'Charity: ${actplayer} must give back all drawn cards',
+		'descriptionmyturn': 'Charity: ${you} must choose a card and an opponent',
+		'type': 'activeplayer',
+		'action': 'stCharity',
+		'args': 'argPlayerIds',
+		'possibleactions': {
+			'actCharity': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'player_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	98: {

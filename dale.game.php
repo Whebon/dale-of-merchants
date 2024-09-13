@@ -2495,6 +2495,15 @@ class Dale extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_CHARITY:
+                    $players = $this->loadPlayersBasicInfos();
+                    $counts = $this->cards->countCardsInLocations();
+                    foreach ($players as $other_player_id => $player) {
+                        if (isset($counts[HAND.$other_player_id])) {
+                            throw new BgaVisibleSystemException("Unable to fizzle CT_CHARITY. There exists at least 1 card in player hands.");
+                        }
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -3134,6 +3143,19 @@ class Dale extends DaleTableBasic
                 $this->delay500ms(); //add a delay to compensate for 'instant_' notifications
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_CHARITY:
+                $this->beginResolvingCard($technique_card_id);
+                $players = $this->loadPlayersBasicInfos();
+                $counts = $this->cards->countCardsInLocations();
+                $player_ids = [];
+                foreach ($players as $player_id => $player) {
+                    if (isset($counts[HAND.$player_id])) {
+                        $player_ids[] = $player_id;
+                    }
+                }
+                $this->setGameStateValuePlayerIds($player_ids);
+                $this->gamestate->nextState("trCharity");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3597,6 +3619,58 @@ class Dale extends DaleTableBasic
             $player_id
         );
         $this->nextStateChangeActivePlayerFromMultiActive("trFullyResolve", $player_id);
+    }
+    
+    function actCharity($card_ids, $player_ids) {
+        $this->checkAction("actCharity");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_ids = $this->numberListToArray($player_ids);
+        if (count($card_ids) != count($player_ids)) {
+            throw new BgaVisibleSystemException("Charity: count(card_ids) != count(player_ids)");
+        }
+        $remaining_player_ids = $this->getGameStateValuePlayerIds($player_ids);
+        for ($i = 0; $i < count($card_ids); $i++) {
+            //get the player that will receive the card
+            $other_player_id = $player_ids[$i];
+            if (!in_array($other_player_id, $remaining_player_ids)) {
+                throw new BgaVisibleSystemException("Charity: provided player_id is not authorized to receive a card");
+            }
+            //give the card
+            $card_id = $card_ids[$i];
+            $card = $this->cards->getCardFromLocation($card_id, LIMBO.$player_id);
+            $this->cards->moveCard($card_id, HAND.$other_player_id);
+            if ($other_player_id == $player_id) {
+                $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Charity: ${player_name} gives a card to themselves'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "_private" => array(
+                        "card" => $card,
+                        "card_name" => $this->getCardName($card)
+                    )
+                ), clienttranslate('Charity: ${player_name} gives a ${card_name} to themselves'));
+            }
+            else {
+                $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('Charity: ${player_name} gives a card to ${opponent_name}'), array(
+                    "player_id" => $player_id,
+                    "opponent_id" => $other_player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "opponent_name" => $this->getPlayerNameById($other_player_id),
+                    "_private" => array(
+                        "card" => $card,
+                        "card_name" => $this->getCardName($card)
+                    ),
+                    "from_limbo" => true
+                ), clienttranslate('Charity: ${player_name} gives a ${card_name} to ${opponent_name}')
+                );
+            }
+        }
+        //update the remaining player_ids
+        $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
+        $this->setGameStateValuePlayerIds($remaining_player_ids);
+        if (count($remaining_player_ids) == 0) {
+            $this->fullyResolveCard($player_id);
+        }
     }
 
     //(~acts)
@@ -4076,6 +4150,43 @@ class Dale extends DaleTableBasic
     function stFullyResolve() {
         $active_player_id = $this->getActivePlayerId();
         $this->fullyResolveCard($active_player_id);
+    }
+
+    function stCharity() {
+        $player_id = $this->getActivePlayerId();
+        $player_ids = $this->getGameStateValuePlayerIds();
+        foreach ($player_ids as $other_player_id) {
+            $cards = $this->cards->getCardsInLocation(HAND.$other_player_id);
+            if (count($cards) == 0) {
+                throw new BgaVisibleSystemException("Charity: expected all players from 'getGameStateValuePlayerIds' to have non-empty hands");
+            }
+            $card_id = array_rand($cards);
+            $card = $cards[$card_id];
+            $this->cards->moveCard($card_id, LIMBO.$player_id);
+            if ($player_id == $other_player_id) {
+                $this->notifyAllPlayersWithPrivateArguments('handToLimbo', clienttranslate('Charity: ${player_name} takes a card from themselves'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "_private" => array(
+                        "card" => $card,
+                        "card_name" => $this->getCardName($card)
+                    )
+                ), clienttranslate('Charity: ${player_name} takes a ${card_name} from themselves'));
+            }
+            else {
+                $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Charity: ${player_name} takes a card from ${opponent_name}'), array(
+                    "player_id" => $player_id,
+                    "opponent_id" => $other_player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "opponent_name" => $this->getPlayerNameById($other_player_id),
+                    "_private" => array(
+                        "card" => $card,
+                        "card_name" => $this->getCardName($card)
+                    ),
+                    "to_limbo" => true
+                ), clienttranslate('Charity: ${player_name} takes a ${card_name} from ${opponent_name}'));
+            }
+        }
     }
 
     //(~st)

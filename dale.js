@@ -1510,12 +1510,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             set: function (state) {
                 var _this = this;
                 if (state == true) {
-                    if (this.count() == 0) {
-                        setTimeout((function () {
-                            _this._hideOnEmpty = true;
-                            _this.onItemDelete();
-                        }).bind(this), this.duration);
-                    }
+                    setTimeout((function () {
+                        _this._hideOnEmpty = true;
+                        _this.onItemDelete();
+                    }).bind(this), this.duration);
                 }
                 else {
                     this._hideOnEmpty = false;
@@ -3193,9 +3191,9 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_shatteredRelic':
                         return _("${card_name}: ${you} must <stronger>ditch</stronger> a card from your hand");
                     case 'client_acorn':
-                        return _("${card_name}: ${you} must select a card from an opponent's stall to swap with");
+                        return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
                     case 'client_giftVoucher':
-                        return _("${card_name}: ${you} must select a card from the market to swap with");
+                        return _("${card_name}: ${you} must choose a card from the market to swap with");
                     case 'client_loyalPartner':
                         return _("${card_name}: ${you} may choose the order to <stronger>ditch</stronger> all cards from the market");
                     case 'client_prepaidGood':
@@ -3227,7 +3225,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                             return _("${card_name}: ${you} must choose a card and an opponent");
                         }
                     case 'client_safetyPrecaution':
-                        return _("${card_name}: ${you} must select a card from your stall to swap with");
+                        return _("${card_name}: ${you} must choose a card from your stall to swap with");
                     case 'client_shoppingJourney':
                         return _("${card_name}: ${you} must choose a card from the market");
                     case 'client_houseCleaning':
@@ -3964,6 +3962,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'cunningNeighbour':
                     this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Opponent's hand"));
                     break;
+                case 'charity':
+                    this.myLimbo.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4166,6 +4167,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'cheer':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'client_blindfold':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'charity':
+                    this.myLimbo.setSelectionMode('none');
                     break;
             }
         };
@@ -4452,6 +4459,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         }
                     }
                     this.addActionButtonCancelClient();
+                    break;
+                case 'charity':
+                    var charity_args = args;
+                    this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
+                    this.max_opponents = 1;
+                    this.addActionButton("confirm-button", _("Confirm"), "onCharity");
                     break;
             }
         };
@@ -4755,13 +4768,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 _loop_8(opponent_id);
             }
         };
-        Dale.prototype.addActionButtonsOpponentSelection = function (maxSize) {
+        Dale.prototype.addActionButtonsOpponentSelection = function (maxSize, player_ids) {
             var _a;
             this.opponent_ids = [];
             this.max_opponents = maxSize !== null && maxSize !== void 0 ? maxSize : this.gamedatas.playerorder.length;
             for (var _i = 0, _b = this.gamedatas.playerorder; _i < _b.length; _i++) {
                 var opponent_id = _b[_i];
-                if (opponent_id != this.player_id) {
+                if ((opponent_id != this.player_id && player_ids === null) || (player_ids === null || player_ids === void 0 ? void 0 : player_ids.includes(+opponent_id))) {
                     var name_2 = this.gamedatas.players[opponent_id].name;
                     var color = this.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_2, "</span>");
@@ -5976,7 +5989,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
         };
         Dale.prototype.onRuthlessCompetition = function (opponent_id) {
-            this.playTechniqueCard({
+            this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
             });
         };
@@ -5995,6 +6008,52 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.playTechniqueCard({
                 reverse_direction: reverse_direction
             });
+        };
+        Dale.prototype.onCharity = function () {
+            var card_id = this.myLimbo.orderedSelection.get()[0];
+            if (!card_id) {
+                this.showMessage(_("Please choose a card to give"), 'error');
+                return;
+            }
+            var player_id = this.opponent_ids[0];
+            if (player_id === undefined) {
+                this.showMessage(_("Please choose the player that will receive ") + "'".concat(new DaleCard_10.DaleCard(card_id).name, "'"), 'error');
+                return;
+            }
+            var args = this.gamedatas.gamestate.args;
+            var items = this.myLimbo.getAllItems();
+            var card_ids = [card_id];
+            var player_ids = [player_id];
+            if (items.length == 2) {
+                if (args.player_ids.length != 2) {
+                    throw new Error("Charity: unable to give ".concat(items.length, " cards to ").concat(args.player_ids.length, " players"));
+                }
+                for (var _i = 0, items_3 = items; _i < items_3.length; _i++) {
+                    var item = items_3[_i];
+                    if (item.id != card_id) {
+                        card_ids.push(item.id);
+                    }
+                }
+                for (var _a = 0, _b = args.player_ids; _a < _b.length; _a++) {
+                    var arg_player_id = _b[_a];
+                    if (arg_player_id != player_id) {
+                        player_ids.push(arg_player_id);
+                    }
+                }
+            }
+            this.bgaPerformAction('actCharity', {
+                card_ids: this.arrayToNumberList(card_ids),
+                player_ids: this.arrayToNumberList(player_ids)
+            });
+            var index = args.player_ids.indexOf(player_id);
+            if (index == -1) {
+                throw new Error("Charity: player ".concat(player_id, " is not authorized to receive a card"));
+            }
+            else {
+                args.player_ids.splice(index, 1);
+                this.removeActionButtons();
+                this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
+            }
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
@@ -6019,7 +6078,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['discardToHandMultiple', 500],
                 ['draw', 500, true],
                 ['drawMultiple', 500, true],
-                ['limboToHand', 500],
+                ['handToLimbo', 500, true],
+                ['limboToHand', 500, true],
                 ['instant_playerHandToOpponentHand', 1, true],
                 ['instant_opponentHandToPlayerHand', 1, true],
                 ['playerHandToOpponentHand', 500, true],
@@ -6228,6 +6288,21 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.market.swapWithOverallPlayerBoard(notif.args.market_card_id, this.player_id, DaleCard_10.DaleCard.of(notif.args.card));
             }
         };
+        Dale.prototype.notif_handToLimbo = function (notif) {
+            console.log("notif_handToLimbo");
+            if (notif.args._private) {
+                var card_id = +notif.args._private.card.id;
+                if ($(this.myHand.control_name + '_item_' + card_id)) {
+                    console.log(notif.args);
+                    this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args._private.card), this.myHand.control_name + '_item_' + card_id);
+                    this.myHand.removeFromStockByIdNoAnimation(+card_id);
+                }
+                else {
+                    throw new Error("Card ".concat(card_id, " does not exist in myHand."));
+                }
+            }
+            this.playerHandSizes[notif.args.player_id].incValue(-1);
+        };
         Dale.prototype.notif_limboToHand = function (notif) {
             console.log("notif_limboToHand");
             if (notif.args._private) {
@@ -6250,15 +6325,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var temp1 = notif.args.player_id;
             notif.args.player_id = notif.args.opponent_id;
             notif.args.opponent_id = temp1;
-            var temp2 = notif.args.from_limbo;
-            notif.args.from_limbo = notif.args.to_limbo;
-            notif.args.to_limbo = temp2;
             this.notif_opponentHandToPlayerHand(notif);
         };
         Dale.prototype.notif_instant_opponentHandToPlayerHand = function (notif) {
             this.notif_opponentHandToPlayerHand(notif);
         };
         Dale.prototype.notif_opponentHandToPlayerHand = function (notif) {
+            console.log("opponentHandToPlayerHand");
+            console.log(notif);
             if (notif.args._private) {
                 if (this.player_id == notif.args.opponent_id) {
                     var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;

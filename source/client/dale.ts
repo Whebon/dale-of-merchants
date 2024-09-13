@@ -630,6 +630,9 @@ class Dale extends Gamegui
 			case 'cunningNeighbour':
 				this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Opponent's hand"));
 				break;
+			case 'charity':
+				this.myLimbo.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -835,6 +838,12 @@ class Dale extends Gamegui
 			case 'cheer':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				break;
+			case 'client_blindfold':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'charity':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1121,6 +1130,12 @@ class Dale extends Gamegui
 					}
 				}
 				this.addActionButtonCancelClient();
+				break;
+			case 'charity':
+				const charity_args = args as { player_ids: number[] };
+				this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
+				this.max_opponents = 1; //ensure that no opponent is selected by default
+				this.addActionButton("confirm-button", _("Confirm"), "onCharity"); //confirm the opponent and the card
 				break;
 		}
 		//(~actionbuttons)
@@ -1566,12 +1581,13 @@ class Dale extends Gamegui
 
 	/**
 	 * Add selection button to select up to `maxSize` opponents
+	 * @param player_ids (optional) if provided, make a button for exactly these players (even the current_player)
 	 */
-	addActionButtonsOpponentSelection(maxSize?: number) {
+	addActionButtonsOpponentSelection(maxSize?: number, player_ids?: number[]) {
 		this.opponent_ids = [];
 		this.max_opponents = maxSize ?? this.gamedatas.playerorder.length;
 		for(let opponent_id of this.gamedatas.playerorder) {
-			if (opponent_id != this.player_id) {
+			if ((opponent_id != this.player_id && player_ids === null) || player_ids?.includes(+opponent_id)) {
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
 				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
@@ -2940,7 +2956,7 @@ class Dale extends Gamegui
 	}
 
 	onRuthlessCompetition(opponent_id: number) {
-		this.playTechniqueCard<'client_ruthlessCompetition'>({
+		this.playTechniqueCardWithServerState<'client_ruthlessCompetition'>({
 			opponent_id: opponent_id
 		})
 	}
@@ -2962,6 +2978,55 @@ class Dale extends Gamegui
 		this.playTechniqueCard<'client_raffle'>({
 			reverse_direction: reverse_direction
 		})
+	}
+
+	onCharity() {
+		//get the selected card and opponent
+		const card_id = this.myLimbo.orderedSelection.get()[0];
+		if (!card_id) {
+			this.showMessage(_("Please choose a card to give"), 'error');
+			return;
+		}
+		const player_id = this.opponent_ids[0];
+		if (player_id === undefined) {
+			this.showMessage(_("Please choose the player that will receive ")+`'${new DaleCard(card_id).name}'`, 'error');
+			return;
+		}
+
+		//automatically give the last card
+		const args = this.gamedatas.gamestate.args as { player_ids: number[] };
+		const items = this.myLimbo.getAllItems();
+		const card_ids = [card_id];
+		const player_ids = [player_id];
+		if (items.length == 2) {
+			//automatically give the last card
+			if (args.player_ids.length != 2) {
+				throw new Error(`Charity: unable to give ${items.length} cards to ${args.player_ids.length} players`)
+			}
+			for (let item of items) {
+				if (item.id != card_id) {
+					card_ids.push(item.id);
+				}
+			}
+			for (let arg_player_id of args.player_ids) {
+				if (arg_player_id != player_id) {
+					player_ids.push(arg_player_id);
+				}
+			}
+		}
+		this.bgaPerformAction('actCharity', {
+			card_ids: this.arrayToNumberList(card_ids),
+			player_ids: this.arrayToNumberList(player_ids)
+		});
+		const index = args.player_ids.indexOf(player_id);
+		if (index == -1) {
+			throw new Error(`Charity: player ${player_id} is not authorized to receive a card`);
+		}
+		else {
+			args.player_ids.splice(index, 1);
+			this.removeActionButtons();
+			this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
+		}
 	}
 
 
@@ -2995,7 +3060,8 @@ class Dale extends Gamegui
 			['discardToHandMultiple', 			500],
 			['draw', 							500, true],
 			['drawMultiple', 					500, true],
-			['limboToHand', 					500],
+			['handToLimbo', 					500, true],
+			['limboToHand', 					500, true],
 			['instant_playerHandToOpponentHand',1, true],
 			['instant_opponentHandToPlayerHand',1, true],
 			['playerHandToOpponentHand', 		500, true],
@@ -3254,6 +3320,23 @@ class Dale extends Gamegui
 		}
 	}
 
+	notif_handToLimbo(notif: NotifAs<'handToLimbo'>) {
+		console.log("notif_handToLimbo");
+		if (notif.args._private) {
+			const card_id = +notif.args._private.card.id;
+			if ($(this.myHand.control_name+'_item_' + card_id)) {
+				console.log(notif.args);
+				this.myLimbo.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.myHand.control_name+'_item_' + card_id)
+				this.myHand.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				throw new Error(`Card ${card_id} does not exist in myHand.`);
+			}
+		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+	}
+
 	notif_limboToHand(notif: NotifAs<'limboToHand'>) {
 		console.log("notif_limboToHand");
 		if (notif.args._private) {
@@ -3280,9 +3363,6 @@ class Dale extends Gamegui
 		const temp1 = notif.args.player_id;
 		notif.args.player_id = notif.args.opponent_id;
 		notif.args.opponent_id = temp1;
-		const temp2 = notif.args.from_limbo;
-		notif.args.from_limbo = notif.args.to_limbo;
-		notif.args.to_limbo = temp2;
 		this.notif_opponentHandToPlayerHand(notif);
 	}
 
@@ -3291,6 +3371,8 @@ class Dale extends Gamegui
 	}
 
 	notif_opponentHandToPlayerHand(notif: NotifFrom<'opponentHandToPlayerHand'>) {
+		console.log("opponentHandToPlayerHand");
+		console.log(notif);
 		//Move a card from an `opponent_id`'s hand/limbo to a `player_id`'s hand/limbo
 		if (notif.args._private) {
 			if (this.player_id == notif.args.opponent_id) {

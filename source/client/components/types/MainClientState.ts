@@ -108,9 +108,9 @@ export class MainClientState {
             case 'client_shatteredRelic':
                 return _("${card_name}: ${you} must <stronger>ditch</stronger> a card from your hand");
             case 'client_acorn':
-                return _("${card_name}: ${you} must select a card from an opponent's stall to swap with");
+                return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
             case 'client_giftVoucher':
-                return _("${card_name}: ${you} must select a card from the market to swap with");
+                return _("${card_name}: ${you} must choose a card from the market to swap with");
             case 'client_loyalPartner':
                 return _("${card_name}: ${you} may choose the order to <stronger>ditch</stronger> all cards from the market");
             case 'client_prepaidGood':
@@ -140,7 +140,7 @@ export class MainClientState {
                     return _("${card_name}: ${you} must choose a card and an opponent");
                 }
             case 'client_safetyPrecaution':
-                return _("${card_name}: ${you} must select a card from your stall to swap with");
+                return _("${card_name}: ${you} must choose a card from your stall to swap with");
             case 'client_shoppingJourney':
                 return _("${card_name}: ${you} must choose a card from the market");
             case 'client_houseCleaning':
