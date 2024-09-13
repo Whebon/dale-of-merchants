@@ -1494,7 +1494,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.actionLabel = undefined;
             _this.actionLabelDefaultText = "<DefaultText>";
             _this.selectionMode = 'none';
-            _this._hideOnEmpty = true;
             _this._shuffle_animation = false;
             _this.duration = 500;
             _this.orderedSelection = new OrderedSelection_2.OrderedSelection();
@@ -1503,25 +1502,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.onResize();
             return _this;
         }
-        Object.defineProperty(DaleStock.prototype, "hideOnEmpty", {
-            get: function () {
-                return this._hideOnEmpty;
-            },
-            set: function (state) {
-                var _this = this;
-                if (state == true) {
-                    setTimeout((function () {
-                        _this._hideOnEmpty = true;
-                        _this.onItemDelete();
-                    }).bind(this), this.duration);
-                }
-                else {
-                    this._hideOnEmpty = false;
-                }
-            },
-            enumerable: false,
-            configurable: true
-        });
         DaleStock.prototype.init = function (page, container, wrap, defaultText, onItemCreate, onItemDelete) {
             var _a;
             page.allDaleStocks.push(this);
@@ -3645,11 +3625,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             };
             var onLimboItemDelete = function () {
                 var classList = thiz.myLimbo.wrap.classList;
-                if (thiz.myLimbo.count() <= 1 && thiz.myLimbo.hideOnEmpty) {
-                    if (!classList.contains("dale-hidden")) {
-                        classList.add("dale-hidden");
-                        limboTransitionUpdateDisplay();
-                    }
+                if (thiz.myLimbo.count() <= 1) {
+                    setTimeout(function () {
+                        if (!classList.contains("dale-hidden")) {
+                            classList.add("dale-hidden");
+                            limboTransitionUpdateDisplay();
+                        }
+                    }, thiz.myLimbo.duration);
                 }
             };
             this.myLimbo.init(this, $('dale-mylimbo'), $('dale-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
@@ -4774,7 +4756,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.max_opponents = maxSize !== null && maxSize !== void 0 ? maxSize : this.gamedatas.playerorder.length;
             for (var _i = 0, _b = this.gamedatas.playerorder; _i < _b.length; _i++) {
                 var opponent_id = _b[_i];
-                if ((opponent_id != this.player_id && player_ids === null) || (player_ids === null || player_ids === void 0 ? void 0 : player_ids.includes(+opponent_id))) {
+                if ((opponent_id != this.player_id && player_ids === undefined) || (player_ids === null || player_ids === void 0 ? void 0 : player_ids.includes(+opponent_id))) {
                     var name_2 = this.gamedatas.players[opponent_id].name;
                     var color = this.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_2, "</span>");
@@ -6626,13 +6608,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                 }
                 else {
-                    this.myLimbo.hideOnEmpty = false;
                     for (var i = 0; i < notif.args.nbr; i++) {
                         var limbo_card_id = limbo_card_ids.pop();
                         this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_" + notif.args.player_id);
                     }
                 }
-                this.myLimbo.hideOnEmpty = true;
             }
             this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
         };
@@ -6651,9 +6631,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.notif_cunningNeighbourReturn = function (notif) {
             var _a;
             if (notif.args.player_id == this.player_id) {
-                this.myLimbo.hideOnEmpty = false;
                 this.myLimbo.removeAllTo("overall_player_board_" + notif.args.opponent_id);
-                this.myLimbo.hideOnEmpty = true;
             }
             else if (notif.args.opponent_id == this.player_id) {
                 for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {

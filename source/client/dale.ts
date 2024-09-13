@@ -251,11 +251,13 @@ class Dale extends Gamegui
 		}
 		const onLimboItemDelete = () => {
 			const classList = thiz.myLimbo.wrap!.classList;
-			if (thiz.myLimbo.count() <= 1 && thiz.myLimbo.hideOnEmpty) {
-				if (!classList.contains("dale-hidden")) {
-					classList.add("dale-hidden");
-					limboTransitionUpdateDisplay();
-				}
+			if (thiz.myLimbo.count() <= 1) {
+				setTimeout(() => {
+					if (!classList.contains("dale-hidden")) {
+						classList.add("dale-hidden");
+						limboTransitionUpdateDisplay();
+					}
+				}, thiz.myLimbo.duration);
 			}
 		}
 
@@ -1587,7 +1589,7 @@ class Dale extends Gamegui
 		this.opponent_ids = [];
 		this.max_opponents = maxSize ?? this.gamedatas.playerorder.length;
 		for(let opponent_id of this.gamedatas.playerorder) {
-			if ((opponent_id != this.player_id && player_ids === null) || player_ids?.includes(+opponent_id)) {
+			if ((opponent_id != this.player_id && player_ids === undefined) || player_ids?.includes(+opponent_id)) {
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
 				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
@@ -3748,14 +3750,12 @@ class Dale extends Gamegui
 				}
 			}
 			else {
-				this.myLimbo.hideOnEmpty = false;
 				for (let i = 0; i < notif.args.nbr; i++) {
 					//to player board
 					const limbo_card_id = limbo_card_ids.pop()!;
 					this.myLimbo.removeFromStockById(limbo_card_id, "overall_player_board_"+notif.args.player_id);
 				}
 			}
-			this.myLimbo.hideOnEmpty = true;
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
@@ -3775,9 +3775,7 @@ class Dale extends Gamegui
 
 	notif_cunningNeighbourReturn(notif: NotifAs<'cunningNeighbourReturn'>) {
 		if (notif.args.player_id == this.player_id) {
-			this.myLimbo.hideOnEmpty = false;
 			this.myLimbo.removeAllTo("overall_player_board_"+notif.args.opponent_id);
-			this.myLimbo.hideOnEmpty = true;
 		}
 		else if (notif.args.opponent_id == this.player_id) {
 			for (let i in notif.args._private?.cards) {
