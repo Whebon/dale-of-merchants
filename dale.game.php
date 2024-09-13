@@ -50,7 +50,8 @@ class Dale extends DaleTableBasic
             "player_id_2" => 18,
             "player_id_3" => 19,
             "player_id_4" => 20,
-            "hand_size_before" => 21
+            "hand_size_before" => 21,
+            "active_player_id" => 22
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -109,6 +110,7 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("player_id_3", -1);
         $this->setGameStateInitialValue("player_id_4", -1);
         $this->setGameStateInitialValue("hand_size_before", 0);
+        $this->setGameStateInitialValue("active_player_id", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -248,6 +250,26 @@ class Dale extends DaleTableBasic
             $index += 1;
         }
         return $player_ids;
+    }
+
+    /**
+     * transition to the next state if all players are deactive, and make the player stored in `"changeActivePlayer_player_id"` the active player.
+     * IMPORTANT: `"changeActivePlayer_player_id"` should have been set before entering the multipleactiveplayer state 
+     */
+    function nextStateChangeActivePlayerFromMultiActive(string $transition, int $player_id) {
+        if (!array_key_exists($transition, $this->gamestate->states[29]['transitions'])) {
+            throw new BgaVisibleSystemException("'$transition' is not a valid transition in 'changeActivePlayer'");
+        }
+        $state_id = $this->gamestate->states[29]['transitions'][$transition];
+        //moving `active_player_id` => `changeActivePlayer_player_id` is redundant and performance-wise inefficient
+        //however, from an architectural POV it is better to let "changeActivePlayer_player_id" be a protected single-purpose game state label
+        $active_player_id = $this->getGameStateValue("active_player_id");
+        if ($active_player_id == -1) {
+            throw new BgaVisibleSystemException("Attempted to call 'nextStateChangeActivePlayerFromMultiActive' without setting 'active_player_id'");
+        }
+        $this->setGameStateValue("changeActivePlayer_player_id", $active_player_id);
+        $this->setGameStateValue("changeActivePlayer_state_id", $state_id);
+        $this->gamestate->setPlayerNonMultiactive($player_id, "trChangeActivePlayer");
     }
 
     /**
@@ -1743,11 +1765,11 @@ class Dale extends DaleTableBasic
             $this->gamestate->nextState("trSamePlayer");
         }
         else if ($this->card_types[$type_id]["has_plus"]) {
-            if ($this->getActivePlayerId() != $player_id) {
-                $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
+            if ($this->getActivePlayerId() == $player_id || $this->gamestate->state()["type"] == "game") {
+                $this->gamestate->nextState("trSamePlayer");
             }
             else {
-                $this->gamestate->nextState("trSamePlayer");
+                $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
             }
         }
         else {
@@ -3057,6 +3079,11 @@ class Dale extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCunningNeighbour");
                 break;
+            case CT_CHEER:
+                $this->beginResolvingCard($technique_card_id);
+                $this->setGameStateValue("active_player_id", $player_id);
+                $this->gamestate->nextState("trCheer");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3507,6 +3534,19 @@ class Dale extends DaleTableBasic
             )
         ));
         $this->fullyResolveCard($player_id, null, $place_on_deck);
+    }
+    
+    function actCheer($card_id) {
+        $this->checkAction("actCheer");
+        $player_id = $this->getCurrentPlayerId();
+        $this->drawCardId(
+            clienttranslate('Cheer: ${player_name} draws a card from their deck'), 
+            $card_id,
+            false,
+            $player_id,
+            $player_id
+        );
+        $this->nextStateChangeActivePlayerFromMultiActive("trFullyResolve", $player_id);
     }
 
     //(~acts)
@@ -3968,6 +4008,26 @@ class Dale extends DaleTableBasic
             )
         ));
     }
+
+    function stCheer() {
+        $this->gamestate->setAllPlayersMultiactive();
+        $players = $this->loadPlayersBasicInfos();
+        foreach ( $players as $player_id => $player ) {
+            if ($this->cards->countCardsInLocation(DECK.$player_id) == 0) {
+                $this->notifyAllPlayers('message', clienttranslate('Cheer: ${player_name} cannot search a card, their deck is empty'), array(
+                    "player_name" => $this->getPlayerNameById($player_id)
+                ));
+                $this->nextStateChangeActivePlayerFromMultiActive("trFullyResolve", $player_id);
+            }
+        }
+    }
+
+    function stFullyResolve() {
+        $active_player_id = $this->getActivePlayerId();
+        $this->fullyResolveCard($active_player_id);
+    }
+
+    //(~st)
 
 
 //////////////////////////////////////////////////////////////////////////////

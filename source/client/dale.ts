@@ -832,6 +832,10 @@ class Dale extends Gamegui
 			case 'cunningNeighbour':
 				this.myLimbo.setSelectionMode('none');
 				break;
+			case 'cheer':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -1081,6 +1085,14 @@ class Dale extends Gamegui
 			case 'cunningNeighbour':
 				this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
 				this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
+				break;
+			case 'cheer':
+				//this needs to be in onUpdateActionButton (see https://studio.boardgamearena.com/doc/Game_interface_logic:_yourgamename.js)
+				if (this.myDeck.size > 0) {
+					const cheer_args = args as { _private: { cards: DbCard[] } };
+					this.myDeck.setContent(cheer_args._private.cards.map(DaleCard.of));
+					this.myDeck.setSelectionMode('single');
+				}
 				break;
 		}
 		//(~actionbuttons)
@@ -1764,6 +1776,12 @@ class Dale extends Gamegui
 				this.bgaPerformAction('actMagnet', {
 					card_id: card.id
 				})
+				break
+			case 'cheer':
+				this.bgaPerformAction('actCheer', {
+					card_id: card.id
+				})
+				this.myDeck.setSelectionMode('none');
 				break
 		}
 	}

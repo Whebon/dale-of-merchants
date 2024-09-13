@@ -55,6 +55,7 @@ interface GameStates {
 			'trSamePlayer': 30,
 			'trBlindfold': 56,
 			'trBlindfoldIncorrectGuess': 57,
+			'trFullyResolve': 33,
 		},
 	},
 	30: {
@@ -155,6 +156,7 @@ interface GameStates {
 			'trNightShift': 60,
 			'trRuthlessCompetition': 61,
 			'trCunningNeighbour': 62,
+			'trCheer': 63,
 		},
 	},
 	31: {
@@ -181,6 +183,16 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 31,
 			'trSkipTurnStart': 30,
+		},
+	},
+	33: {
+		'name': 'fullyResolve',
+		'description': '',
+		'type': 'game',
+		'action': 'stFullyResolve',
+		'transitions': {
+			'trSamePlayer': 30,
+			'trNextPlayer': 41,
 		},
 	},
 	36: {
@@ -462,6 +474,24 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	63: {
+		'name': 'cheer',
+		'description': 'Other players are still searching their decks',
+		'descriptionmyturn': '${you} must search your deck for a card',
+		'type': 'multipleactiveplayer',
+		'action': 'stCheer',
+		'args': 'argDeckContent',
+		'possibleactions': {
+			'actCheer': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trChangeActivePlayer': 29,
 		},
 	},
 	98: {

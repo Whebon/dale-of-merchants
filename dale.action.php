@@ -267,4 +267,15 @@ class action_dale extends APP_GameAction
 		$this->game->actCunningNeighbour( $place_on_deck );
 		self::ajaxResponse();
 	}
+
+	public function actCheer()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actCheer( $card_id );
+		self::ajaxResponse();
+	}
 }

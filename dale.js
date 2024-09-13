@@ -2310,6 +2310,7 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
             this.updateHTML();
         };
         HiddenPile.prototype.hideContent = function () {
+            this.closePopin();
             var size = this.cards.length;
             this.cards = [];
             this.pushHiddenCards(size);
@@ -4160,6 +4161,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'cunningNeighbour':
                     this.myLimbo.setSelectionMode('none');
                     break;
+                case 'cheer':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
+                    break;
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -4410,6 +4415,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'cunningNeighbour':
                     this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
                     this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
+                    break;
+                case 'cheer':
+                    if (this.myDeck.size > 0) {
+                        var cheer_args = args;
+                        this.myDeck.setContent(cheer_args._private.cards.map(DaleCard_10.DaleCard.of));
+                        this.myDeck.setSelectionMode('single');
+                    }
                     break;
             }
         };
@@ -4916,6 +4928,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.bgaPerformAction('actMagnet', {
                         card_id: card.id
                     });
+                    break;
+                case 'cheer':
+                    this.bgaPerformAction('actCheer', {
+                        card_id: card.id
+                    });
+                    this.myDeck.setSelectionMode('none');
                     break;
             }
         };

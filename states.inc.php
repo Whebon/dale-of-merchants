@@ -22,6 +22,7 @@ if (false) {
 	$game->stStartGame();
 	$game->stChangeActivePlayer();
 	$game->stTurnStart();
+	$game->stFullyResolve();
 	$game->stCleanUpPhase();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
@@ -32,6 +33,7 @@ if (false) {
 	$game->stNightShift();
 	$game->stRuthlessCompetition();
 	$game->stCunningNeighbour();
+	$game->stCheer();
 	$game->stFinalStatistics();
 }
 
@@ -75,6 +77,7 @@ $machinestates = array(
 			'trSamePlayer' => 30,
 			'trBlindfold' => 56,
 			'trBlindfoldIncorrectGuess' => 57,
+			'trFullyResolve' => 33,
 		),
 	),
 	30 => array(
@@ -99,6 +102,7 @@ $machinestates = array(
 			'trNightShift' => 60,
 			'trRuthlessCompetition' => 61,
 			'trCunningNeighbour' => 62,
+			'trCheer' => 63,
 		),
 	),
 	31 => array(
@@ -111,6 +115,16 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 31,
 			'trSkipTurnStart' => 30,
+		),
+	),
+	33 => array(
+		'name' => 'fullyResolve',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stFullyResolve',
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trNextPlayer' => 41,
 		),
 	),
 	36 => array(
@@ -275,6 +289,18 @@ $machinestates = array(
 		'possibleactions' => ['actCunningNeighbour'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	63 => array(
+		'name' => 'cheer',
+		'description' => clienttranslate('Other players are still searching their decks'),
+		'descriptionmyturn' => clienttranslate('${you} must search your deck for a card'),
+		'type' => 'multipleactiveplayer',
+		'action' => 'stCheer',
+		'args' => 'argDeckContent',
+		'possibleactions' => ['actCheer'],
+		'transitions' => array(
+			'trChangeActivePlayer' => 29,
 		),
 	),
 	98 => array(

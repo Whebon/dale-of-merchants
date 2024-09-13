@@ -49,6 +49,7 @@ export class HiddenPile extends Pile {
      * e.g. `[23, 55, 34, 3]` => `[0, 0, 0, 0]`
      */
     public hideContent() {
+        this.closePopin();
         const size = this.cards.length;
         this.cards = [];
         this.pushHiddenCards(size);
