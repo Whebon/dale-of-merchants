@@ -878,8 +878,21 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return false;
         };
-        DaleCard.prototype.hasLocalBinding = function () {
-            return DaleCard.cardIdToChameleonChainLocal.has(this.id);
+        DaleCard.prototype.hasLocalBindingWithSeeingDoubles = function () {
+            var chain = DaleCard.cardIdToChameleonChainLocal.get(this.id);
+            if (!chain) {
+                return false;
+            }
+            if (this.original_type_id == DaleCard.CT_SEEINGDOUBLES) {
+                return true;
+            }
+            for (var _i = 0, _a = chain.type_ids; _i < _a.length; _i++) {
+                var type_id = _a[_i];
+                if (type_id == DaleCard.CT_SEEINGDOUBLES) {
+                    return true;
+                }
+            }
+            return false;
         };
         Object.defineProperty(DaleCard.prototype, "effective_type_id", {
             get: function () {
@@ -4631,7 +4644,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         var item = items_1[_f];
                         if (item.id != card.id) {
                             var card_2 = new DaleCard_10.DaleCard(item.id);
-                            if (card_2.hasLocalBinding()) {
+                            if (card_2.hasLocalBindingWithSeeingDoubles()) {
                                 continue;
                             }
                             targets.push(card_2);

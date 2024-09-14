@@ -405,10 +405,22 @@ export class DaleCard {
     }
 
     /**
-     * @returns `true` if this chameleon has a local binding
+     * @returns `true` if this chameleon has a local binding, and a seeingdoubles is involved
      */
-    public hasLocalBinding() {
-        return DaleCard.cardIdToChameleonChainLocal.has(this.id);
+    public hasLocalBindingWithSeeingDoubles() {
+        const chain = DaleCard.cardIdToChameleonChainLocal.get(this.id)
+        if (!chain) {
+            return false;
+        }
+        if (this.original_type_id == DaleCard.CT_SEEINGDOUBLES) {
+            return true;
+        }
+        for (let type_id of chain.type_ids) {
+            if (type_id == DaleCard.CT_SEEINGDOUBLES) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 
