@@ -3952,6 +3952,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'tasters':
                     this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
                     break;
+                case 'daringAdventurer':
+                    var daringAdventurer_args = args.args;
+                    this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
+                    this.market.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4163,6 +4168,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'tasters':
                     this.market.setSelectionMode(0);
+                    break;
+                case 'daringAdventurer':
+                    this.market.setSelectionMode(0);
+                    this.market.orderedSelection.setMaxSize(Number.POSITIVE_INFINITY);
                     break;
             }
         };
@@ -4435,6 +4444,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_tasters':
                     this.addActionButtonsOpponentLeftRight(this.onTasters.bind(this));
                     this.addActionButtonCancelClient();
+                    break;
+                case 'daringAdventurer':
+                    this.addActionButton("confirm-button", _("Ditch selected"), "onDaringAdventurer");
                     break;
             }
         };
@@ -6076,6 +6088,19 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             console.log("onTasters", reverse_direction ? "right" : "left");
             this.playTechniqueCardWithServerState({
                 reverse_direction: reverse_direction
+            });
+        };
+        Dale.prototype.onDaringAdventurer = function () {
+            var card_ids = this.market.orderedSelection.get();
+            var args = this.gamedatas.gamestate.args;
+            var total_cards = this.market.getCards().length;
+            var nbr = Math.min(args.die_value, total_cards);
+            if (card_ids.length != nbr) {
+                this.showMessage(_("Please select exactly ") + nbr + _(" card(s) from the market"), 'error');
+                return;
+            }
+            this.bgaPerformAction('actDaringAdventurer', {
+                card_ids: this.arrayToNumberList(card_ids)
             });
         };
         Dale.prototype.setupNotifications = function () {

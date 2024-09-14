@@ -107,6 +107,7 @@ $machinestates = array(
 			'trCheer' => 63,
 			'trCharity' => 64,
 			'trTasters' => 65,
+			'trDaringAdventurer' => 66,
 		),
 	),
 	31 => array(
@@ -327,6 +328,17 @@ $machinestates = array(
 		'possibleactions' => ['actTasters'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
+		),
+	),
+	66 => array(
+		'name' => 'daringAdventurer',
+		'description' => clienttranslate('Daring Adventurer: ${actplayer} must ditch ${die_value} of cards from the market'),
+		'descriptionmyturn' => clienttranslate('Daring Adventurer: ${you} must ditch ${die_value} of cards from the market'),
+		'type' => 'activeplayer',
+		'args' => 'argDie',
+		'possibleactions' => ['actDaringAdventurer'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	98 => array(

@@ -302,4 +302,15 @@ class action_dale extends APP_GameAction
 		$this->game->actTasters( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actDaringAdventurer()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actDaringAdventurer( $card_ids );
+		self::ajaxResponse();
+	}
 }

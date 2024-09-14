@@ -51,7 +51,8 @@ class Dale extends DaleTableBasic
             "player_id_3" => 19,
             "player_id_4" => 20,
             "hand_size_before" => 21,
-            "active_player_id" => 22
+            "active_player_id" => 22,
+            "die_value" => 23
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -111,6 +112,7 @@ class Dale extends DaleTableBasic
         $this->setGameStateInitialValue("player_id_4", -1);
         $this->setGameStateInitialValue("hand_size_before", 0);
         $this->setGameStateInitialValue("active_player_id", -1);
+        $this->setGameStateInitialValue("die_value", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -3180,6 +3182,16 @@ class Dale extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_DARINGADVENTURER:
+                $this->beginResolvingCard($technique_card_id);
+                $die_value = $this->rollDie(
+                    clienttranslate('Daring Adventurer: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_POLECATS,
+                    $technique_card,
+                );
+                $this->setGameStateValue("die_value", $die_value);
+                $this->gamestate->nextState("trDaringAdventurer");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3698,6 +3710,7 @@ class Dale extends DaleTableBasic
     }
 
     function actTasters($card_id) {
+        $this->checkAction("actTasters");
         //get the card
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, MARKET);
@@ -3722,7 +3735,34 @@ class Dale extends DaleTableBasic
             $this->setGameStateValuePlayerIds($opponent_ids);
             $this->nextStateChangeActivePlayer("trTasters", $opponent_id);
         }
+    }
+
+    function actDaringAdventurer($card_ids) {
+        $this->checkAction("actDaringAdventurer");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        $cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
+        $die_value = $this->getGameStateValue("die_value");
+        $nbr = count($cards);
+        if ($nbr != $die_value) {
+            if ($nbr > $die_value) {
+                throw new BgaVisibleSystemException("Attempted to ditch $nbr cards, exceeding the rolled value of $die_value");
+            }
+            $total_nbr = $this->cards->countCardsInLocation(MARKET);
+            if ($nbr < $total_nbr) {
+                throw new BgaVisibleSystemException("Attempted to ditch $nbr/$total_nbr cards, but the rolled value of $die_value was expected");
+            }
+        }
         
+        //ditch the selected cards from the market board
+        $this->ditchFromMarketBoard(
+            clienttranslate('Daring Adventuerer: ${player_name} ditches ${nbr} cards from the market'),
+            $card_ids, 
+            $cards
+        );
+        //refill the market
+        $this->refillMarket(false);
+        $this->fullyResolveCard($player_id);
     }
 
 
@@ -3906,6 +3946,12 @@ class Dale extends DaleTableBasic
     function argPlayerIds() {
         return array(
             'player_ids' => $this->getGameStateValuePlayerIds()
+        );
+    }
+
+    function argDie() {
+        return array(
+            'die_value' => $this->getGameStateValue("die_value")
         );
     }
 

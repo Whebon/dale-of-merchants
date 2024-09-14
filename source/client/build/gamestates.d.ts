@@ -160,6 +160,7 @@ interface GameStates {
 			'trCheer': 63,
 			'trCharity': 64,
 			'trTasters': 65,
+			'trDaringAdventurer': 66,
 		},
 	},
 	31: {
@@ -533,6 +534,23 @@ interface GameStates {
 		},
 		'transitions': {
 			'trChangeActivePlayer': 29,
+		},
+	},
+	66: {
+		'name': 'daringAdventurer',
+		'description': 'Daring Adventurer: ${actplayer} must ditch ${die_value} of cards from the market',
+		'descriptionmyturn': 'Daring Adventurer: ${you} must ditch ${die_value} of cards from the market',
+		'type': 'activeplayer',
+		'args': 'argDie',
+		'possibleactions': {
+			'actDaringAdventurer': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	98: {
