@@ -2492,6 +2492,13 @@ class Dale extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_NATURALSURVIVOR:
+                    $decksize = $this->cards->countCardInLocation(DECK.$player_id);
+                    $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+                    if ($decksize >= 1 && $handsize >= 2) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_NATURALSURVIVOR. There exists a card in the hand AND the deck.");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -3243,6 +3250,22 @@ class Dale extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_NATURALSURVIVOR:
+                $this->beginResolvingCard($technique_card_id);
+                $die_value = $this->rollDie(
+                    clienttranslate('Natural Survivor: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_POLECATS,
+                    $technique_card,
+                );
+                $decksize = $this->cards->countCardsInLocation(DECK.$player_id);
+                $handsize = $this->cards->countCardsInLocation(HAND.$player_id);
+                $die_value = min($die_value, $decksize, $handsize);
+                if ($decksize == 0 || $handsize == 0) {
+                    throw new BgaVisibleSystemException("Unable to resolve CT_NATURALSURVIVOR. The card should have fizzled instead");
+                }
+                $this->setGameStateValue("die_value", $die_value);
+                $this->gamestate->nextState("trNaturalSurvivor");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3816,7 +3839,35 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-
+    function actNaturalSurvivor($hand_card_ids, $deck_card_ids) {
+        $this->checkAction("actNaturalSurvivor");
+        $player_id = $this->getActivePlayerId();
+        $hand_card_ids = $this->numberListToArray($hand_card_ids);
+        $deck_card_ids = $this->numberListToArray($deck_card_ids);
+        $hand_cards = $this->cards->getCardsFromLocation($hand_card_ids, HAND.$player_id);
+        $deck_cards = $this->cards->getCardsFromLocation($deck_card_ids, DECK.$player_id);
+        $die_value = $this->getGameStateValue("die_value");
+        if (count($hand_cards) != $die_value) {
+            $count = count($hand_cards);
+            throw new BgaVisibleSystemException("Expected $die_value cards from hand, got $count");
+        }
+        if (count($deck_cards) != $die_value) {
+            $count = count($deck_cards);
+            throw new BgaVisibleSystemException("Expected $die_value cards from deck, got $count");
+        }
+        //place the hand cards on the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Natural Survivor: ${player_name} exchanges ${nbr} of cards between their hand and their deck'),
+            $hand_card_ids, 
+            $hand_cards
+        );
+        //draw cards
+        foreach ($deck_card_ids as $deck_card_id) {
+            $this->drawCardId('', $deck_card_id);
+        }
+        $this->fullyResolveCard($player_id);
+    }
 
     //(~acts)
 
@@ -4003,6 +4054,13 @@ class Dale extends DaleTableBasic
     function argDie() {
         return array(
             'die_value' => $this->getGameStateValue("die_value")
+        );
+    }
+
+    function argNaturalSurvivor() {
+        return array_merge(
+            $this->argDeckContent(),
+            $this->argDie()
         );
     }
 

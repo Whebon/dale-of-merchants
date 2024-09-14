@@ -166,11 +166,15 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param wrapClass (optional) if provided, set the class of this stock's wrap
 	 * @param actionLabelText (optional)
 	 * @param secondaryIconType (optional) types of icons to use for the secondary selection
+	 * @param selectionMax (optional) manually set the selection max (overrides the standard selectionMax of the `mode`)
 	 */
-	override setSelectionMode(mode: DaleStockSelectionMode, iconType?: SelectionIconType, wrapClass?: DaleWrapClass, actionLabelText?: string, secondaryIconType?: SelectionIconType): void {
+	override setSelectionMode(mode: DaleStockSelectionMode, iconType?: SelectionIconType, wrapClass?: DaleWrapClass, actionLabelText?: string, secondaryIconType?: SelectionIconType, selectionMax?: number): void {
 		this.selectionMode = mode;
 		this.orderedSelection.setIconType(iconType, secondaryIconType);
 		this.setSelectionMaxSize();
+		if (selectionMax !== undefined) {
+			this.orderedSelection.setMaxSize(selectionMax);
+		}
 		this.unselectAll(true);
 		this.setWrapClass(wrapClass, actionLabelText);
 		for(let i in this.items){

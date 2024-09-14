@@ -67,6 +67,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCheeseIcon = function () {
             return this.getIcon(4, 2);
         };
+        DaleIcons.getNaturalSurvivorIcon = function () {
+            return this.getIcon(4, 2);
+        };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
         };
@@ -334,6 +337,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                     break;
                 case 'hand':
                     icon = DaleIcons_1.DaleIcons.getHandIcon();
+                    break;
+                case 'naturalSurvivor':
+                    icon = DaleIcons_1.DaleIcons.getNaturalSurvivorIcon();
                     break;
             }
             if (icon) {
@@ -1606,10 +1612,13 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         DaleStock.prototype.unselectAll = function (secondary) {
             this.orderedSelection.unselectAll(secondary);
         };
-        DaleStock.prototype.setSelectionMode = function (mode, iconType, wrapClass, actionLabelText, secondaryIconType) {
+        DaleStock.prototype.setSelectionMode = function (mode, iconType, wrapClass, actionLabelText, secondaryIconType, selectionMax) {
             this.selectionMode = mode;
             this.orderedSelection.setIconType(iconType, secondaryIconType);
             this.setSelectionMaxSize();
+            if (selectionMax !== undefined) {
+                this.orderedSelection.setMaxSize(selectionMax);
+            }
             this.unselectAll(true);
             this.setWrapClass(wrapClass, actionLabelText);
             for (var i in this.items) {
@@ -4005,6 +4014,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_swank':
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
+                case 'naturalSurvivor':
+                    var naturalSurvivor_args = args.args;
+                    this.myDeck.setContent(naturalSurvivor_args._private.cards.map(DaleCard_10.DaleCard.of));
+                    this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', naturalSurvivor_args.die_value);
+                    this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4222,6 +4237,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.orderedSelection.setMaxSize(Number.POSITIVE_INFINITY);
                     break;
                 case 'client_swank':
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'naturalSurvivor':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
                     break;
             }
@@ -4511,6 +4531,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("button-3", '3', (function () { return _this.onRiskyBusiness(3); }).bind(this));
                     this.addActionButton("button-4", '4', (function () { return _this.onRiskyBusiness(4); }).bind(this));
                     this.addActionButton("button-5", '5', (function () { return _this.onRiskyBusiness(5); }).bind(this));
+                    break;
+                case 'naturalSurvivor':
+                    this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
                     break;
             }
         };
@@ -5677,6 +5700,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_riskyBusiness', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_NATURALSURVIVOR:
+                    fizzle = this.myDeck.size == 0 || this.myHand.count() <= 1;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6213,6 +6245,24 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onRiskyBusiness = function (value) {
             this.playTechniqueCard({
                 value: value
+            });
+        };
+        Dale.prototype.onNaturalSurvivor = function () {
+            var args = this.gamedatas.gamestate.args;
+            var hand_card_ids = this.myHand.orderedSelection.get();
+            var deck_card_ids = this.myDeck.orderedSelection.get();
+            if (hand_card_ids.length != args.die_value) {
+                this.showMessage(_("Please select exactly ") + args.die_value + _(" card(s) from your hand"), 'error');
+                return;
+            }
+            if (deck_card_ids.length != args.die_value) {
+                this.showMessage(_("Please select exactly ") + args.die_value + _(" card(s) from your deck"), 'error');
+                this.myDeck.openPopin();
+                return;
+            }
+            this.bgaPerformAction('actNaturalSurvivor', {
+                hand_card_ids: this.arrayToNumberList(hand_card_ids),
+                deck_card_ids: this.arrayToNumberList(deck_card_ids)
             });
         };
         Dale.prototype.setupNotifications = function () {

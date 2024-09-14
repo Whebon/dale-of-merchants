@@ -1,7 +1,7 @@
 import { DaleCard } from './DaleCard';
 import { DaleIcons } from './DaleIcons';
 
-export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | 'cheese' | 'numbers' | 'hand' | undefined;
+export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | 'cheese' | 'numbers' | 'hand' | 'naturalSurvivor' | undefined;
 
 export class OrderedSelection {
     private maxSize: number;
@@ -90,6 +90,9 @@ export class OrderedSelection {
                 break;
             case 'hand':
                 icon = DaleIcons.getHandIcon();
+                break;
+            case 'naturalSurvivor':
+                icon = DaleIcons.getNaturalSurvivorIcon();
                 break;
         }
         if (icon) {

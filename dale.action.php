@@ -313,4 +313,17 @@ class action_dale extends APP_GameAction
 		$this->game->actDaringAdventurer( $card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actNaturalSurvivor()
+	{
+		self::setAjaxMode();
+
+		/** @var string $hand_card_ids */
+		$hand_card_ids = self::getArg('hand_card_ids', AT_numberlist, true);
+		/** @var string $deck_card_ids */
+		$deck_card_ids = self::getArg('deck_card_ids', AT_numberlist, true);
+
+		$this->game->actNaturalSurvivor( $hand_card_ids, $deck_card_ids );
+		self::ajaxResponse();
+	}
 }

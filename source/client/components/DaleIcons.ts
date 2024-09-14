@@ -83,6 +83,10 @@ export class DaleIcons {
         return this.getIcon(4, 2);
     }
 
+    public static getNaturalSurvivorIcon(): HTMLElement {
+        return this.getIcon(4, 2); //TODO
+    }
+
     /////////////////////////////
     ////////    ROW 5    ////////
     /////////////////////////////

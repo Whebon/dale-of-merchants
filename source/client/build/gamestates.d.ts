@@ -161,6 +161,7 @@ interface GameStates {
 			'trCharity': 64,
 			'trTasters': 65,
 			'trDaringAdventurer': 66,
+			'trNaturalSurvivor': 67,
 		},
 	},
 	31: {
@@ -545,6 +546,27 @@ interface GameStates {
 		'possibleactions': {
 			'actDaringAdventurer': [{
 				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	67: {
+		'name': 'naturalSurvivor',
+		'description': 'Natural Survivor: ${actplayer} must search their deck for ${die_value} cards',
+		'descriptionmyturn': 'Natural Survivor: ${you} must search your deck for ${die_value} cards',
+		'type': 'activeplayer',
+		'args': 'argNaturalSurvivor',
+		'possibleactions': {
+			'actNaturalSurvivor': [{
+				'name': 'hand_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],

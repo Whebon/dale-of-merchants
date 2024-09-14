@@ -660,6 +660,12 @@ class Dale extends Gamegui
 			case 'client_swank':
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
+			case 'naturalSurvivor':
+				const naturalSurvivor_args = args.args as { _private: { cards: DbCard[] }, die_value: number };
+				this.myDeck.setContent(naturalSurvivor_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', naturalSurvivor_args.die_value);
+				this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -880,6 +886,11 @@ class Dale extends Gamegui
 				this.market!.orderedSelection.setMaxSize(Number.POSITIVE_INFINITY);
 				break;
 			case 'client_swank':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'naturalSurvivor':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
 		}
@@ -1169,6 +1180,9 @@ class Dale extends Gamegui
 				this.addActionButton("button-3", '3', (() => this.onRiskyBusiness(3)).bind(this));
 				this.addActionButton("button-4", '4', (() => this.onRiskyBusiness(4)).bind(this));
 				this.addActionButton("button-5", '5', (() => this.onRiskyBusiness(5)).bind(this));
+				break;
+			case 'naturalSurvivor':
+				this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
 				break;
 		}
 		//(~actionbuttons)
@@ -2583,6 +2597,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_riskyBusiness', card.id);
 				}
 				break;
+			case DaleCard.CT_NATURALSURVIVOR:
+				fizzle = this.myDeck.size == 0 || this.myHand.count() <= 1;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3184,6 +3207,25 @@ class Dale extends Gamegui
 		this.playTechniqueCard<'client_riskyBusiness'>({
 			value: value
 		})
+	}
+
+	onNaturalSurvivor() {
+		const args = this.gamedatas.gamestate.args as { die_value: number }; 
+		const hand_card_ids = this.myHand.orderedSelection.get();
+		const deck_card_ids = this.myDeck.orderedSelection.get();
+		if (hand_card_ids.length != args.die_value) {
+			this.showMessage(_("Please select exactly ")+args.die_value+_(" card(s) from your hand"), 'error');
+			return;
+		}
+		if (deck_card_ids.length != args.die_value) {
+			this.showMessage(_("Please select exactly ")+args.die_value+_(" card(s) from your deck"), 'error');
+			this.myDeck.openPopin();
+			return;
+		}
+		this.bgaPerformAction('actNaturalSurvivor', {
+			hand_card_ids: this.arrayToNumberList(hand_card_ids),
+			deck_card_ids: this.arrayToNumberList(deck_card_ids)
+		});
 	}
 
 	//(~on)

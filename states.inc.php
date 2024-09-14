@@ -108,6 +108,7 @@ $machinestates = array(
 			'trCharity' => 64,
 			'trTasters' => 65,
 			'trDaringAdventurer' => 66,
+			'trNaturalSurvivor' => 67,
 		),
 	),
 	31 => array(
@@ -337,6 +338,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argDie',
 		'possibleactions' => ['actDaringAdventurer'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	67 => array(
+		'name' => 'naturalSurvivor',
+		'description' => clienttranslate('Natural Survivor: ${actplayer} must search their deck for ${die_value} cards'),
+		'descriptionmyturn' => clienttranslate('Natural Survivor: ${you} must search your deck for ${die_value} cards'),
+		'type' => 'activeplayer',
+		'args' => 'argNaturalSurvivor',
+		'possibleactions' => ['actNaturalSurvivor'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
