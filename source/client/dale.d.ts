@@ -108,6 +108,7 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
+		'instant_discardToDeck': {}
 		'discardToDeck': {
 			card: DbCard
 			player_id: number,

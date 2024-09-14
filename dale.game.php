@@ -3160,6 +3160,26 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $player_id);
                 $this->gamestate->nextState("trTasters");
                 break;
+            case CT_RUMOURS:
+                $players = $this->loadPlayersBasicInfos();
+                $this->notifyAllPlayers('message', clienttranslate('Rumours: all players place the top 2 cards from their discard piles on their decks'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                for ($i=0; $i < 2; $i++) { //one by one
+                    foreach ($players as $opponent_id => $opponent) {
+                        $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id, 'temp');
+                        if ($dbcard) {
+                            $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
+                            $this->notifyAllPlayers('instant_discardToDeck', '', array(
+                                "player_id" => $opponent_id,
+                                "card" => $dbcard
+                            ));
+                        }
+                    }
+                    $this->delay500ms();
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

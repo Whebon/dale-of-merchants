@@ -6122,6 +6122,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['ditchFromDiscard', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
+                ['instant_discardToDeck', 1],
                 ['discardToDeck', 500],
                 ['deckToDiscard', 500],
                 ['rollDie', 1000],
@@ -6706,6 +6707,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 this.market.removeCard(pos);
                 delay += 75;
             }
+        };
+        Dale.prototype.notif_instant_discardToDeck = function (notif) {
+            this.notif_discardToDeck(notif);
         };
         Dale.prototype.notif_discardToDeck = function (notif) {
             var _a;

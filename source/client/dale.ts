@@ -3128,6 +3128,7 @@ class Dale extends Gamegui
 			['ditchFromDiscard', 				500],
 			['ditchFromMarketDeck', 			500],
 			['ditchFromMarketBoard', 			500],
+			['instant_discardToDeck', 			1],
 			['discardToDeck', 					500],
 			['deckToDiscard', 					500],
 			['rollDie', 						1000],
@@ -3857,6 +3858,10 @@ class Dale extends Gamegui
 			this.market!.removeCard(pos);
 			delay += 75; //delay indicates that ordering matters
 		}
+	}
+
+	notif_instant_discardToDeck(notif: NotifAs<'discardToDeck'>) {
+		this.notif_discardToDeck(notif);
 	}
 
 	notif_discardToDeck(notif: NotifAs<'discardToDeck'>) {
