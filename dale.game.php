@@ -3200,6 +3200,20 @@ class Dale extends DaleTableBasic
                 $this->effects->insertModification($card_id, CT_RAREARTEFACT, $die_value);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_SWANK:
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->ditch(clienttranslate('Swank: ${player_name} ditches a ${card_name}'), $card);
+                if ($this->isAnimalfolk($card)) {
+                    $this->draw(
+                        clienttranslate('Swank: ${player_name} draws a card from the supply'),
+                        1,
+                        false,
+                        MARKET
+                    );
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

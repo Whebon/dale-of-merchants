@@ -657,6 +657,9 @@ class Dale extends Gamegui
 					)
 				}).bind(this), 500);
 				break;
+			case 'client_swank':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -875,6 +878,9 @@ class Dale extends Gamegui
 			case 'daringAdventurer':
 				this.market!.setSelectionMode(0);
 				this.market!.orderedSelection.setMaxSize(Number.POSITIVE_INFINITY);
+				break;
+			case 'client_swank':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1152,6 +1158,9 @@ class Dale extends Gamegui
 				this.addActionButton("confirm-button", _("Ditch selected"), "onDaringAdventurer");
 				break;
 			case 'client_rareArtefact':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_swank':
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -2001,6 +2010,11 @@ class Dale extends Gamegui
 					card_id: card.id
 				})
 				break;
+			case 'client_swank':
+				this.playTechniqueCard<'client_swank'>({
+					card_id: card!.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -2544,6 +2558,14 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_rareArtefact', card.id);
 				}
 				break;
+			case DaleCard.CT_SWANK:
+				fizzle = this.myHand.count() == 1;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_swank', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
