@@ -353,6 +353,7 @@ declare global {
 		'client_tasters': { reverse_direction: boolean }
 		'client_rareArtefact': { card_id: number }
 		'client_swank': { card_id: number }
+		'client_riskyBusiness': { value: number }
 	}
 
 	interface ClientPassiveChoice {

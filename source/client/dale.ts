@@ -1163,6 +1163,13 @@ class Dale extends Gamegui
 			case 'client_swank':
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_riskyBusiness':
+				this.addActionButton("button-1", '1', (() => this.onRiskyBusiness(1)).bind(this));
+				this.addActionButton("button-2", '2', (() => this.onRiskyBusiness(2)).bind(this));
+				this.addActionButton("button-3", '3', (() => this.onRiskyBusiness(3)).bind(this));
+				this.addActionButton("button-4", '4', (() => this.onRiskyBusiness(4)).bind(this));
+				this.addActionButton("button-5", '5', (() => this.onRiskyBusiness(5)).bind(this));
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2567,6 +2574,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_swank', card.id);
 				}
 				break;
+			case DaleCard.CT_RISKYBUSINESS:
+				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_riskyBusiness', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3163,6 +3179,14 @@ class Dale extends Gamegui
 			});
 		}
 	}
+	
+	onRiskyBusiness(value: number) {
+		this.playTechniqueCard<'client_riskyBusiness'>({
+			value: value
+		})
+	}
+
+	//(~on)
 
 
 	///////////////////////////////////////////////////

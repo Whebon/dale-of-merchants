@@ -4505,6 +4505,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_swank':
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_riskyBusiness':
+                    this.addActionButton("button-1", '1', (function () { return _this.onRiskyBusiness(1); }).bind(this));
+                    this.addActionButton("button-2", '2', (function () { return _this.onRiskyBusiness(2); }).bind(this));
+                    this.addActionButton("button-3", '3', (function () { return _this.onRiskyBusiness(3); }).bind(this));
+                    this.addActionButton("button-4", '4', (function () { return _this.onRiskyBusiness(4); }).bind(this));
+                    this.addActionButton("button-5", '5', (function () { return _this.onRiskyBusiness(5); }).bind(this));
+                    break;
             }
         };
         Dale.prototype.verifyChameleon = function (card, pile) {
@@ -5661,6 +5668,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_swank', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_RISKYBUSINESS:
+                    fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_riskyBusiness', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6193,6 +6209,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     card_id: card_id
                 });
             }
+        };
+        Dale.prototype.onRiskyBusiness = function (value) {
+            this.playTechniqueCard({
+                value: value
+            });
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;

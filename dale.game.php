@@ -679,7 +679,8 @@ class Dale extends DaleTableBasic
             $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
             $this->notifyAllPlayers('ditchFromMarketDeck', $msg, array (
                 'player_name' => $this->getActivePlayerName(),
-                'card' => $dbcard
+                'card' => $dbcard,
+                'card_name' => $this->getCardName($dbcard)
             ));
         }
         return $dbcard;
@@ -2430,6 +2431,7 @@ class Dale extends DaleTableBasic
                     }
                     break;
                 case CT_NEWSEASON:
+                    //note that CT_NEWSEASON does NOT fizzle on empty deck/discard. In that case, it will redraw the ditched card
                     $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
                     foreach ($cards as $card) {
                         if ($this->isAnimalfolk($card)) {
@@ -2437,11 +2439,12 @@ class Dale extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_RISKYBUSINESS:
                 case CT_CHARM:
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
                     $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
                     if ($nbr > 0) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_CHARM. The market deck/discard contains card(s).");
+                        throw new BgaVisibleSystemException("Unable to fizzle. The market deck/discard contains card(s).");
                     }
                     break;
                 case CT_TIRELESSTINKERER:
@@ -3211,6 +3214,32 @@ class Dale extends DaleTableBasic
                         false,
                         MARKET
                     );
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_RISKYBUSINESS:
+                $value = $args["value"];
+                $topCard = $this->cards->pickCardForLocation(DECK.MARKET, DECK.MARKET);
+                $printed_value = $this->card_types[$topCard['type_arg']]['value'];
+                if ($value == $printed_value) {
+                    $this->notifyAllPlayers('message', clienttranslate('Risky Business: ${player_name} correctly guessed ${value}'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'value' => $value
+                    ));
+                    $this->draw(
+                        clienttranslate('Risky Business: ${player_name} draws a ${card_name} from the supply'),
+                        1,
+                        false,
+                        MARKET
+                    );
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Risky Business: ${player_name} guessed ${value}, but the actual value was ${printed_valued}'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'value' => $value,
+                        'printed_valued' => $printed_value
+                    ));
+                    $this->ditchFromMarketDeck(clienttranslate('Risky Business: ${player_name} ditches ${card_name}'));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
