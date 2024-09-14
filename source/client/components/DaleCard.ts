@@ -404,6 +404,13 @@ export class DaleCard {
         return false;
     }
 
+    /**
+     * @returns `true` if this chameleon has a local binding
+     */
+    public hasLocalBinding() {
+        return DaleCard.cardIdToChameleonChainLocal.has(this.id);
+    }
+
     /** 
      * Returns the effective type_id of this card (after applying chameleon targets)
      * */

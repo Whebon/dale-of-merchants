@@ -1331,7 +1331,11 @@ class Dale extends Gamegui
 				const items = this.myHand.getAllItems()
 				for (let item of items) {
 					if (item.id != card.id) {
-						targets.push(new DaleCard(item.id));
+						const card = new DaleCard(item.id);
+						if (card.hasLocalBinding()) {
+							continue; //see issue #109, players should copy switch up their ordering for this
+						}
+						targets.push(card);
 					}
 				}
 				break;

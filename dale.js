@@ -878,6 +878,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return false;
         };
+        DaleCard.prototype.hasLocalBinding = function () {
+            return DaleCard.cardIdToChameleonChainLocal.has(this.id);
+        };
         Object.defineProperty(DaleCard.prototype, "effective_type_id", {
             get: function () {
                 var _a, _b, _c, _d;
@@ -4627,7 +4630,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     for (var _f = 0, items_1 = items; _f < items_1.length; _f++) {
                         var item = items_1[_f];
                         if (item.id != card.id) {
-                            targets.push(new DaleCard_10.DaleCard(item.id));
+                            var card_2 = new DaleCard_10.DaleCard(item.id);
+                            if (card_2.hasLocalBinding()) {
+                                continue;
+                            }
+                            targets.push(card_2);
                         }
                     }
                     break;
@@ -5474,8 +5481,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case DaleCard_10.DaleCard.CT_NEWSEASON:
                     fizzle = true;
                     for (var _c = 0, _d = this.myDiscard.getCards(); _c < _d.length; _c++) {
-                        var card_2 = _d[_c];
-                        if (card_2.isAnimalfolk()) {
+                        var card_3 = _d[_c];
+                        if (card_3.isAnimalfolk()) {
                             fizzle = false;
                         }
                     }
@@ -5551,8 +5558,8 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case DaleCard_10.DaleCard.CT_HOUSECLEANING:
                     var houseCleaningJunk = 0;
                     for (var _e = 0, _f = this.myDiscard.getCards(); _e < _f.length; _e++) {
-                        var card_3 = _f[_e];
-                        if (card_3.isJunk() && houseCleaningJunk < 3) {
+                        var card_4 = _f[_e];
+                        if (card_4.isJunk() && houseCleaningJunk < 3) {
                             houseCleaningJunk++;
                         }
                     }
@@ -5682,16 +5689,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             var count_nostalgic_items = 0;
             for (var _i = 0, card_ids_4 = card_ids; _i < card_ids_4.length; _i++) {
                 var card_id = card_ids_4[_i];
-                var card_4 = new DaleCard_10.DaleCard(card_id);
-                if (card_4.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
+                var card_5 = new DaleCard_10.DaleCard(card_id);
+                if (card_5.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
                 }
             }
             if (count_nostalgic_items > 0) {
                 for (var _a = 0, _b = this.myDiscard.orderedSelection.get(); _a < _b.length; _a++) {
                     var card_id = _b[_a];
-                    var card_5 = new DaleCard_10.DaleCard(card_id);
-                    if (card_5.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
+                    var card_6 = new DaleCard_10.DaleCard(card_id);
+                    if (card_6.effective_type_id == DaleCard_10.DaleCard.CT_NOSTALGICITEM) {
                         count_nostalgic_items++;
                     }
                 }
