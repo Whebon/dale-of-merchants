@@ -4256,7 +4256,9 @@ class Dale extends DaleTableBasic
                     $this->actBlindfold($value);
                     break;
                 case 'tasters':
-                    throw new BgaVisibleSystemException("NotImplementedException: 'zombieTurn' for 'tasters'");
+                    $cards = $this->cards->getCardsInLocation(MARKET);
+                    $card_id = array_rand($cards);
+                    $this->actTasters($card_id);
                     break;
                 case 'postCleanUpPhase':
                     $this->actPostCleanUpPhase(array());
