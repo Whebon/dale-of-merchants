@@ -1462,18 +1462,6 @@ class Dale extends DaleTableBasic
         return false;
     }
 
-    //TODO: safely remove this
-    // /**
-    //  * Commit all local chameleons in the player's hand
-    //  */
-    // function addChameleonBindingsInHand($chameleons_json) {
-    //     $player_id = $this->getActivePlayerId();
-    //     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
-    //     $card_ids = $this->toCardIds($cards);
-    //     $raw_card_ids = implode(';', $card_ids);
-    //     $this->addChameleonBindings($chameleons_json, $raw_card_ids);
-    // }
-
     /**
      * Ensures that all used chameleon cards have a binding. Then commit those bindings.
      * @param mixed $chameleons_json `AT_json`. representing local chameleon bindings  array of chameleon `card_id`s. Must be a subset of the 'used' cards
@@ -3191,6 +3179,26 @@ class Dale extends DaleTableBasic
                 );
                 $this->setGameStateValue("die_value", $die_value);
                 $this->gamestate->nextState("trDaringAdventurer");
+                break;
+            case CT_RAREARTEFACT:
+                $card_id = $args["card_id"];
+                $this->addChameleonBindings($chameleons_json, $card_id);
+                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $die_value = $this->rollDie(
+                    clienttranslate('Rare Artefact: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_POLECATS,
+                    $card,
+                );
+                $current_value = $this->getValue($card);
+                $this->notifyAllPlayers('message', clienttranslate('Rare Artefact: ${player_name} multiplies ${card_name}\'s value by ${die_value} (${current_value} x ${die_value} = ${modified_value})'), array(
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_name' => $this->getCardName($card),
+                    'die_value' => $die_value,
+                    'current_value' => $current_value,
+                    'modified_value' => $current_value*$die_value
+                ));
+                $this->effects->insertModification($card_id, CT_RAREARTEFACT, $die_value);
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

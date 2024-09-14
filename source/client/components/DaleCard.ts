@@ -422,6 +422,9 @@ export class DaleCard {
                     case DaleCard.CT_BLINDFOLD:
                         value = effect.arg!;
                         break;
+                    case DaleCard.CT_RAREARTEFACT:
+                        value *= effect.arg!;
+                        break;
                 }
             }
         }

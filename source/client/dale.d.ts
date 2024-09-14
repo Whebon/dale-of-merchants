@@ -351,6 +351,7 @@ declare global {
 		'client_ruthlessCompetition': { opponent_id: number }
 		'client_raffle': { reverse_direction: boolean },
 		'client_tasters': { reverse_direction: boolean }
+		'client_rareArtefact': { card_id: number }
 	}
 
 	interface ClientPassiveChoice {

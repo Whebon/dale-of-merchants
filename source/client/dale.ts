@@ -643,6 +643,20 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
 				this.market!.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
 				break;
+			case 'client_rareArtefact':
+				const client_rareArtefact_args = (this.mainClientState.args as ClientGameStates['client_rareArtefact']);
+				setTimeout((() => {
+					new TargetingLine(
+						new DaleCard(client_rareArtefact_args.technique_card_id),
+						this.myHand.getAllItems().map(item => new DaleCard(item.id)),
+						"dale-line-source-technique",
+						"dale-line-target-technique",
+						"dale-line-technique",
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onRareArtefact(target_id)
+					)
+				}).bind(this), 500);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1136,6 +1150,9 @@ class Dale extends Gamegui
 				break;
 			case 'daringAdventurer':
 				this.addActionButton("confirm-button", _("Ditch selected"), "onDaringAdventurer");
+				break;
+			case 'client_rareArtefact':
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2514,9 +2531,20 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_tasters', card.id);
 				}
 				break;
+			case DaleCard.CT_RAREARTEFACT:
+				fizzle = this.myHand.count() == 1;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_rareArtefact', card.id);
+				}
+				break;
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
+			//(~schedule)
 		}
 	}
 
@@ -3100,6 +3128,14 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actDaringAdventurer', {
 			card_ids: this.arrayToNumberList(card_ids)
 		});
+	}
+
+	onRareArtefact(card_id: number) {
+		if (this.verifyChameleon(new DaleCard(card_id))) {
+			this.playTechniqueCard<'client_rareArtefact'>({
+				card_id: card_id
+			});
+		}
 	}
 
 

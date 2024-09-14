@@ -896,6 +896,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                             case DaleCard.CT_BLINDFOLD:
                                 value = effect.arg;
                                 break;
+                            case DaleCard.CT_RAREARTEFACT:
+                                value *= effect.arg;
+                                break;
                         }
                     }
                 }
@@ -3957,6 +3960,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
                     this.market.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
                     break;
+                case 'client_rareArtefact':
+                    var client_rareArtefact_args_1 = this.mainClientState.args;
+                    setTimeout((function () {
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_rareArtefact_args_1.technique_card_id), _this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRareArtefact(target_id); });
+                    }).bind(this), 500);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4447,6 +4456,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'daringAdventurer':
                     this.addActionButton("confirm-button", _("Ditch selected"), "onDaringAdventurer");
+                    break;
+                case 'client_rareArtefact':
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -5577,6 +5589,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_tasters', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_RAREARTEFACT:
+                    fizzle = this.myHand.count() == 1;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_rareArtefact', card.id);
+                    }
+                    break;
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6102,6 +6124,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.bgaPerformAction('actDaringAdventurer', {
                 card_ids: this.arrayToNumberList(card_ids)
             });
+        };
+        Dale.prototype.onRareArtefact = function (card_id) {
+            if (this.verifyChameleon(new DaleCard_10.DaleCard(card_id))) {
+                this.playTechniqueCard({
+                    card_id: card_id
+                });
+            }
         };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
