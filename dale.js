@@ -3223,6 +3223,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
                     case 'client_raffle':
                         return _("${card_name}: ${you} take a card from");
+                    case 'client_tasters':
+                        return _("${card_name}: ${you} may choose who takes a card from the market directly after you");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3947,6 +3949,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'charity':
                     this.myLimbo.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
                     break;
+                case 'tasters':
+                    this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4155,6 +4160,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'charity':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'tasters':
+                    this.market.setSelectionMode(0);
                     break;
             }
         };
@@ -4889,6 +4897,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
+                case 'tasters':
+                    this.bgaPerformAction('actTasters', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         Dale.prototype.onScheduleSelectionChanged = function () {
@@ -5540,7 +5553,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_TASTERS:
-                    if (this.unique_opponent_id) {
+                    var tasters_nbr = this.market.getCards().length;
+                    fizzle = tasters_nbr == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else if (this.unique_opponent_id || tasters_nbr == 1) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     else {
@@ -6056,7 +6074,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onTasters = function (reverse_direction) {
             console.log("onTasters", reverse_direction ? "right" : "left");
-            this.playTechniqueCard({
+            this.playTechniqueCardWithServerState({
                 reverse_direction: reverse_direction
             });
         };

@@ -635,6 +635,9 @@ class Dale extends Gamegui
 			case 'charity':
 				this.myLimbo.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
 				break;
+			case 'tasters':
+				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -846,6 +849,9 @@ class Dale extends Gamegui
 				break;
 			case 'charity':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'tasters':
+				this.market!.setSelectionMode(0);
 				break;
 		}
 		//(~leavingstate)
@@ -1756,6 +1762,11 @@ class Dale extends Gamegui
 					card_id: card.id
 				});
 				break;
+			case 'tasters':
+				this.bgaPerformAction('actTasters', {
+					card_id: card.id
+				})
+				break;
 		}
 	}
 	
@@ -2479,7 +2490,12 @@ class Dale extends Gamegui
 				}
 				break;
 			case DaleCard.CT_TASTERS:
-				if (this.unique_opponent_id) {
+				const tasters_nbr = this.market!.getCards().length;
+				fizzle = tasters_nbr == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else if (this.unique_opponent_id || tasters_nbr == 1) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				else {
@@ -3055,7 +3071,7 @@ class Dale extends Gamegui
 
 	onTasters(reverse_direction: boolean) {
 		console.log("onTasters", reverse_direction ? "right" : "left");
-		this.playTechniqueCard<'client_tasters'>({
+		this.playTechniqueCardWithServerState<'client_tasters'>({
 			reverse_direction: reverse_direction
 		})
 	}

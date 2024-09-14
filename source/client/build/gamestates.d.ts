@@ -56,6 +56,7 @@ interface GameStates {
 			'trBlindfold': 56,
 			'trBlindfoldIncorrectGuess': 57,
 			'trFullyResolve': 33,
+			'trTasters': 65,
 		},
 	},
 	30: {
@@ -158,6 +159,7 @@ interface GameStates {
 			'trCunningNeighbour': 62,
 			'trCheer': 63,
 			'trCharity': 64,
+			'trTasters': 65,
 		},
 	},
 	31: {
@@ -515,6 +517,22 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	65: {
+		'name': 'tasters',
+		'description': 'Tasters: ${actplayer} must take a card from the market',
+		'descriptionmyturn': 'Tasters: ${you} must take a card from the market',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actTasters': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trChangeActivePlayer': 29,
 		},
 	},
 	98: {

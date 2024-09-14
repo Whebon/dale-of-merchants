@@ -2408,10 +2408,12 @@ class Dale extends DaleTableBasic
         if (array_key_exists("fizzle", $args)) {
             switch($technique_type_id) {
                 case CT_PREPAIDGOOD:
+                case CT_GIFTVOUCHER:
+                case CT_TASTERS:
                     $cards = $this->cards->getCardsInLocation(MARKET);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_PREPAIDGOOD. The market is nonempty.");
+                        throw new BgaVisibleSystemException("Unable to fizzle. The market is nonempty.");
                     }
                     break;
                 case CT_ACORN:
@@ -2424,13 +2426,6 @@ class Dale extends DaleTableBasic
                     }
                     if (count($cards) >= 1) {
                         throw new BgaVisibleSystemException("Unable to fizzle CT_ACORN. Some players have cards in their stall");
-                    }
-                    break;
-                case CT_GIFTVOUCHER:
-                    $cards = $this->cards->getCardsInLocation(MARKET);
-                    if (count($cards) >= 1) {
-                        $name = $this->getCardName($technique_card);
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_GIFTVOUCHER. The market is nonempty.");
                     }
                     break;
                 case CT_TREASUREHUNTER:
@@ -3152,6 +3147,19 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trCharity");
                 break;
+            case CT_TASTERS:
+                $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
+                $next = $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
+                $opponent_ids = [$next[$player_id]];
+                $nbr = $this->getPlayersNumber();
+                while(count($opponent_ids) < $nbr) {
+                    $opponent_ids[] = $next[end($opponent_ids)];
+                }
+                $this->setGameStateValuePlayerIds($opponent_ids);
+                $this->beginResolvingCard($technique_card_id);
+                $this->setGameStateValue("opponent_id", $player_id);
+                $this->gamestate->nextState("trTasters");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3668,6 +3676,36 @@ class Dale extends DaleTableBasic
             $this->fullyResolveCard($player_id);
         }
     }
+
+    function actTasters($card_id) {
+        //get the card
+        $player_id = $this->getActivePlayerId();
+        $card = $this->cards->getCardFromLocation($card_id, MARKET);
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} placed a ${card_name} into their hand'), array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($card),
+            'market_card_id' => $card_id,
+            'pos' => $card["location_arg"],
+        ));
+        $nbr_market_cards = $this->cards->countCardsInLocation(MARKET);
+        $opponent_ids = $this->getGameStateValuePlayerIds();
+        if (count($opponent_ids) == 1 || $nbr_market_cards == 0) {
+            //return to the original player_id
+            $original_player_id = end($opponent_ids);
+            $this->nextStateChangeActivePlayer("trFullyResolve", $original_player_id);
+        }
+        else {
+            //continue to the next opponent
+            $opponent_id = array_shift($opponent_ids);
+            $this->setGameStateValuePlayerIds($opponent_ids);
+            $this->nextStateChangeActivePlayer("trTasters", $opponent_id);
+        }
+        
+    }
+
+
 
     //(~acts)
 
