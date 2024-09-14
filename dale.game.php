@@ -755,10 +755,11 @@ class Dale extends DaleTableBasic
     /**
      * @param mixed $player_id
      * @param array $hand_cards array of dbcards that are currently in the player's hand
+     * @param array $hand_cards array of dbcards that are currently in the player's stall
      * @return int maximum hand size
      */
-    function getMaximumHandSize($player_id, array $hand_cards): int {
-        return 5 + $this->countTypeId($hand_cards, CT_COOKIES);
+    function getMaximumHandSize($player_id, array $hand_cards, array $stall_cards): int {
+        return 5 + $this->countTypeId($hand_cards, CT_COOKIES) + $this->countTypeId($stall_cards, CT_SOFA);
     }
 
     /**
@@ -770,7 +771,8 @@ class Dale extends DaleTableBasic
         //get information about the hand
         $player_id = $this->getActivePlayerId();
         $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
-        $maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
+        $stall_cards = $this->cards->getCardsInLocation(STALL.$player_id);
+        $maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards, $stall_cards);
         $new_hand_cards = array();
         $hand_size_before = count($hand_cards);
 
@@ -824,7 +826,7 @@ class Dale extends DaleTableBasic
             }
             
             //recompute the maximum hand size
-            $new_maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards);
+            $new_maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards, $stall_cards);
             if ($maximum_hand_size == $new_maximum_hand_size) {
                 break;
             }
