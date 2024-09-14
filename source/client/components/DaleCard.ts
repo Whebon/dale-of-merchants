@@ -375,8 +375,9 @@ export class DaleCard {
 
     /**
      * Returns true if this cards passive is already used
+     * @param argNonNull (optional) default false. If true, only count passives with non-null args (e.g. bold haggler)
      */
-    public isPassiveUsed() {
+    public isPassiveUsed(argNonNull = false) {
         console.log("isPassiveUsed");
         const type_id = this.effective_type_id;
         
@@ -384,10 +385,19 @@ export class DaleCard {
             //N/A, this card doesn't have a usable passive, therefore it is considered "used"
             return true;
         }
+        //check if the passive is used by the target (recursively)
         let chameleonEffect = this.getChameleonDbEffect();
+        if (chameleonEffect?.chameleon_target_id) {
+            if (new DaleCard(chameleonEffect.chameleon_target_id!).isPassiveUsed(true)) {
+                return true;
+            }
+        }
+        //check if the passive is used
         for (let effect of DaleCard.effects) {
-            const is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
-            if ((effect.card_id == this.id || is_copied_effect) && effect.type_id == type_id && effect.chameleon_target_id == null) {
+            if (effect.card_id == this.id && effect.type_id == type_id && effect.chameleon_target_id == null) {
+                if (argNonNull && effect.arg == null) {
+                    continue;
+                }
                 return true;
             }
         }
@@ -409,9 +419,14 @@ export class DaleCard {
     public get effective_value(): number {
         let value = this.original_value;
         let chameleonEffect = this.getChameleonDbEffect();
+        if (chameleonEffect) {
+            value = new DaleCard(chameleonEffect.chameleon_target_id!).effective_value;
+        }
         for (let effect of DaleCard.effects) {
-            const is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
-            if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL || is_copied_effect) {
+            if (chameleonEffect && effect.effect_id < chameleonEffect.effect_id) {
+                continue;
+            }
+            if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
                 switch(effect.type_id) {
                     case DaleCard.CT_FLASHYSHOW:
                         value += 1;

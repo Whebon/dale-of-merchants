@@ -854,17 +854,25 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 DaleCard.updateHTML(card_id);
             });
         };
-        DaleCard.prototype.isPassiveUsed = function () {
+        DaleCard.prototype.isPassiveUsed = function (argNonNull) {
+            if (argNonNull === void 0) { argNonNull = false; }
             console.log("isPassiveUsed");
             var type_id = this.effective_type_id;
             if (!DaleCard.cardTypes[type_id].has_ability) {
                 return true;
             }
             var chameleonEffect = this.getChameleonDbEffect();
+            if (chameleonEffect === null || chameleonEffect === void 0 ? void 0 : chameleonEffect.chameleon_target_id) {
+                if (new DaleCard(chameleonEffect.chameleon_target_id).isPassiveUsed(true)) {
+                    return true;
+                }
+            }
             for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                 var effect = _a[_i];
-                var is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
-                if ((effect.card_id == this.id || is_copied_effect) && effect.type_id == type_id && effect.chameleon_target_id == null) {
+                if (effect.card_id == this.id && effect.type_id == type_id && effect.chameleon_target_id == null) {
+                    if (argNonNull && effect.arg == null) {
+                        continue;
+                    }
                     return true;
                 }
             }
@@ -882,10 +890,15 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             get: function () {
                 var value = this.original_value;
                 var chameleonEffect = this.getChameleonDbEffect();
+                if (chameleonEffect) {
+                    value = new DaleCard(chameleonEffect.chameleon_target_id).effective_value;
+                }
                 for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                     var effect = _a[_i];
-                    var is_copied_effect = (chameleonEffect != null) && (effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id);
-                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL || is_copied_effect) {
+                    if (chameleonEffect && effect.effect_id < chameleonEffect.effect_id) {
+                        continue;
+                    }
+                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
                         switch (effect.type_id) {
                             case DaleCard.CT_FLASHYSHOW:
                                 value += 1;

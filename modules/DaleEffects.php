@@ -172,9 +172,15 @@ class DaleEffects {
         $type_id = $this->getTypeId($dbcard);
         $value = $this->game->card_types[$type_id]['value'];
         $chameleonEffect = $this->getChameleonEffect($card_id);
+        if ($chameleonEffect) {
+            $targetCard = $this->game->cards->getCard($chameleonEffect["chameleon_target_id"]);
+            $value = $this->getValue($targetCard);
+        }
         foreach ($this->cache as $row) {
-            $is_copied_effect =  ($chameleonEffect != null) && ($row["card_id"] == $chameleonEffect["chameleon_target_id"]) && ($row["effect_id"] < $chameleonEffect["effect_id"]);
-            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL || $is_copied_effect) {
+            if ($chameleonEffect && $row["effect_id"] < $chameleonEffect["effect_id"]) {
+                continue;
+            }
+            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL) {
                 switch($row["type_id"]) {
                     case CT_FLASHYSHOW:
                         $value += 1;
@@ -235,14 +241,24 @@ class DaleEffects {
 
     /**
      * @return `true` if the passive ability of this card has been used already
+     * @param array $dbcard
+     * @param bool $argNonNull (optional) default false. If true, only count passives with non-null args (e.g. bold haggler)
      */
-    function isPassiveUsed(array $dbcard) {
+    function isPassiveUsed(array $dbcard, bool $argNonNull = false) {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
         $chameleonEffect = $this->getChameleonEffect($card_id);
+        if ($chameleonEffect) {
+            $fakedbcard = array("id" => $chameleonEffect["chameleon_target_id"], "type_arg" => $dbcard["type_arg"]);
+            if ($this->isPassiveUsed($fakedbcard, true)) {
+                return true;
+            }
+        }
         foreach ($this->cache as $row) {
-            $is_copied_effect =  ($chameleonEffect != null) && ($row["card_id"] == $chameleonEffect["chameleon_target_id"]) && ($row["effect_id"] < $chameleonEffect["effect_id"]);
-            if (($row["card_id"] == $card_id || $is_copied_effect) && $row["type_id"] == $type_id && $row["chameleon_target_id"] == null) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["chameleon_target_id"] == null) {
+                if ($argNonNull && ($row["arg"] == null || $row["arg"] == "NULL")) {
+                    continue;
+                }
                 return true;
             }
         }
