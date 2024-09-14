@@ -418,15 +418,21 @@ export class DaleCard {
      * */
     public get effective_value(): number {
         let value = this.original_value;
+        let chameleonEffects = [];
         let chameleonEffect = this.getChameleonDbEffect();
-        if (chameleonEffect) {
-            value = new DaleCard(chameleonEffect.chameleon_target_id!).effective_value;
+        while (chameleonEffect) {
+            chameleonEffects.push(chameleonEffect);
+            chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id!).getChameleonDbEffect();
         }
         for (let effect of DaleCard.effects) {
-            if (chameleonEffect && effect.effect_id < chameleonEffect.effect_id) {
-                continue;
+            let isCopiedEffect = false;
+            for (let chameleonEffect of chameleonEffects) {
+                if ((effect.card_id == chameleonEffect.chameleon_target_id) && (effect.effect_id < chameleonEffect.effect_id)) {
+                    isCopiedEffect = true;
+                    break;
+                }
             }
-            if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
+            if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL || isCopiedEffect) {
                 switch(effect.type_id) {
                     case DaleCard.CT_FLASHYSHOW:
                         value += 1;

@@ -171,16 +171,21 @@ class DaleEffects {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
         $value = $this->game->card_types[$type_id]['value'];
+        $chameleonEffects = array();
         $chameleonEffect = $this->getChameleonEffect($card_id);
-        if ($chameleonEffect) {
-            $targetCard = $this->game->cards->getCard($chameleonEffect["chameleon_target_id"]);
-            $value = $this->getValue($targetCard);
+        while ($chameleonEffect !== null) {
+            $chameleonEffects[] = $chameleonEffect;
+            $chameleonEffect = $this->getChameleonEffect($chameleonEffect["chameleon_target_id"]);
         }
         foreach ($this->cache as $row) {
-            if ($chameleonEffect && $row["effect_id"] < $chameleonEffect["effect_id"]) {
-                continue;
+            $isCopiedEffect = false;
+            foreach ($chameleonEffects as $chameleonEffect) {
+                if ($row["card_id"] == $chameleonEffect["chameleon_target_id"] && $row["effect_id"] < $chameleonEffect["effect_id"]) {
+                    $isCopiedEffect = true;
+                    break;
+                }
             }
-            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL) {
+            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL || $isCopiedEffect) {
                 switch($row["type_id"]) {
                     case CT_FLASHYSHOW:
                         $value += 1;
@@ -281,7 +286,7 @@ class DaleEffects {
 
     /**
      * Return the last chameleon copy effect that affects the specified card_id
-     * @return array
+     * @return array|null
      */
     function getChameleonEffect(int $card_id) {
         $effect = null;

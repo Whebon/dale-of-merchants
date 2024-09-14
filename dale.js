@@ -889,16 +889,23 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         Object.defineProperty(DaleCard.prototype, "effective_value", {
             get: function () {
                 var value = this.original_value;
+                var chameleonEffects = [];
                 var chameleonEffect = this.getChameleonDbEffect();
-                if (chameleonEffect) {
-                    value = new DaleCard(chameleonEffect.chameleon_target_id).effective_value;
+                while (chameleonEffect) {
+                    chameleonEffects.push(chameleonEffect);
+                    chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id).getChameleonDbEffect();
                 }
                 for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                     var effect = _a[_i];
-                    if (chameleonEffect && effect.effect_id < chameleonEffect.effect_id) {
-                        continue;
+                    var isCopiedEffect = false;
+                    for (var _b = 0, chameleonEffects_1 = chameleonEffects; _b < chameleonEffects_1.length; _b++) {
+                        var chameleonEffect_1 = chameleonEffects_1[_b];
+                        if ((effect.card_id == chameleonEffect_1.chameleon_target_id) && (effect.effect_id < chameleonEffect_1.effect_id)) {
+                            isCopiedEffect = true;
+                            break;
+                        }
                     }
-                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
+                    if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL || isCopiedEffect) {
                         switch (effect.type_id) {
                             case DaleCard.CT_FLASHYSHOW:
                                 value += 1;
