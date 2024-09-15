@@ -1744,9 +1744,9 @@ class Dale extends DaleTableBasic
      * Discard the resolving card, notify all players and transition to the next state. 
      * @param mixed $player_id id of the owner of the scheduled card
      * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
-     * @param bool $resolve_to_deck (optional) default false. If true, resolve to deck instead of to the discard pile
+     * @param string $resolve_to (optional) if true, resolve to the provided location instead of the discard pile
      */
-    function fullyResolveCard(mixed $player_id, array $technique_card = null, bool $resolve_to_deck = false) {
+    function fullyResolveCard(mixed $player_id, array $technique_card = null, string $resolve_to_location = null) {
         //get the resolving card
         if ($technique_card != null) {
             $technique_card_id = $technique_card["id"];
@@ -1764,15 +1764,23 @@ class Dale extends DaleTableBasic
         $type_id = $this->getTypeId($technique_card);
         $card_name = $this->getCardName($technique_card);
 
-        //move the card from the schedule to the discard pile
-        $location_prefix = $resolve_to_deck ? DECK : DISCARD;
-        $this->cards->moveCardOnTop($technique_card_id, $location_prefix.$player_id);
+        //move the card from the schedule to the discard pile (or a specified $resolve_to_location)
+        $resolve_to_location = $resolve_to_location ?? DISCARD.$player_id;
+        $to_prefix =  substr($resolve_to_location, 0, 4);
+        $to_suffix = substr($resolve_to_location, 4);
+        if ($to_prefix == DISCARD || $to_prefix == DECK) {
+            $this->cards->moveCardOnTop($technique_card_id, $resolve_to_location);
+        }
+        else {
+            $this->cards->moveCard($technique_card_id, $resolve_to_location);
+        }
         $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $card_name,
             'card' => $technique_card,
-            'to' => $location_prefix
+            'to_prefix' => $to_prefix,
+            'to_suffix' => $to_suffix
         ));
 
         //decide if the player can go again
@@ -3822,7 +3830,13 @@ class Dale extends DaleTableBasic
                 "cards" => $cards
             )
         ));
-        $this->fullyResolveCard($player_id, null, $place_on_deck);
+        if ($place_on_deck) {
+            $this->fullyResolveCard($player_id, null, DECK.$player_id);
+        }
+        else {
+            $this->fullyResolveCard($player_id);
+        }
+        
     }
     
     function actCheer($card_id) {

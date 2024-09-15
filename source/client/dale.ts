@@ -3524,15 +3524,20 @@ class Dale extends Gamegui
 		const schedule = this.playerSchedules[notif.args.player_id]!;
 		const card = DaleCard.of(notif.args.card);
 		const from = schedule.control_name+'_item_'+card.id;
-		switch(notif.args.to) {
+		switch(notif.args.to_prefix) {
 			case 'disc':
-				this.playerDiscards[notif.args.player_id]!.push(card, from, null, schedule.duration);
+				if (notif.args.to_suffix == 'mark') {
+					this.marketDiscard.push(card, from, null, schedule.duration);
+				}
+				else {
+					this.playerDiscards[notif.args.to_suffix]!.push(card, from, null, schedule.duration);
+				}
 				break;
 			case 'deck':
-				this.playerDecks[notif.args.player_id]!.push(card, from, null, schedule.duration);
+				this.allDecks[notif.args.to_suffix]!.push(card, from, null, schedule.duration);
 				break;
 			default:
-				throw new Error(`Unable to resolve the technique to '${notif.args.to}'`)
+				throw new Error(`Unable to resolve the technique to '${notif.args.to_prefix}'`)
 		}
 		schedule.removeFromStockByIdNoAnimation(card.id);
 	}

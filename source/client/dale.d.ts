@@ -43,7 +43,8 @@ declare global {
 		'resolveTechnique': {
 			player_id: number
 			card: DbCard
-			to: DbLocationPrefix
+			to_prefix: DbLocationPrefix
+			to_suffix: number | 'mark'
 		}
 		'addEffect': {
 			effect: RawDbEffect;
