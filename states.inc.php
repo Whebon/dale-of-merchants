@@ -115,6 +115,7 @@ $machinestates = array(
 			'trCulturalPreservation' => 69,
 			'trSliceOfLife' => 70,
 			'trDelightfulSurprise' => 71,
+			'trReplacement' => 72,
 		),
 	),
 	31 => array(
@@ -401,6 +402,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stDelightfulSurprise',
 		'possibleactions' => ['actDelightfulSurprise'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	72 => array(
+		'name' => 'replacement',
+		'description' => clienttranslate('Replacement: ${actplayer} must choose a card from the market valued ${value_minus_1}, ${value} or ${value_plus_1}'),
+		'descriptionmyturn' => clienttranslate('Replacement: ${you} must choose a card from the market valued ${value_minus_1}, ${value} or ${value_plus_1}'),
+		'type' => 'activeplayer',
+		'args' => 'argReplacement',
+		'possibleactions' => ['actReplacement'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

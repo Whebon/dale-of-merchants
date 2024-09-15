@@ -19,6 +19,7 @@ import { DaleDeckSelection } from './DaleDeckSelection';
  * 'clickAbilityPostCleanup':   no selection possible, only specific 'post clean-up' abilities are clickable
  * 'clickOnTurnStart'			no selection possible, only cards with an 'onTurnStart' trigger are clickable
  * 'clickOnFinish'				no selection possible, only cards with an 'onFinish' trigger are clickable
+ * 'clickAnimalfolk':			no selection possible, only animalfolk cards are clickable
  * 'single':			   		a single card can be selected	
  * 'multiple':             		multiple cards can be selected
  * 'multiple3':					multiple cards can be selected, but no more than 3
@@ -26,7 +27,7 @@ import { DaleDeckSelection } from './DaleDeckSelection';
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'single' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | 'single' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -193,7 +194,8 @@ export class DaleStock extends Stock implements DaleLocation {
 			this.selectionMode == 'clickAbilityPostCleanup' || 
 			this.selectionMode == 'clickRetainSelection' ||
 			this.selectionMode == 'clickOnTurnStart' ||
-			this.selectionMode == 'clickOnFinish'
+			this.selectionMode == 'clickOnFinish' ||
+			this.selectionMode == 'clickAnimalfolk'
 		);
 	}
 
@@ -300,6 +302,8 @@ export class DaleStock extends Stock implements DaleLocation {
 				return card.trigger == 'onTurnStart';
 			case 'clickOnFinish':
 				return card.trigger == 'onFinish';
+			case 'clickAnimalfolk':
+				return card.isAnimalfolk();
 			case 'single':
 				return true;
 			case 'multiple':

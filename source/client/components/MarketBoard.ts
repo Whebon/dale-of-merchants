@@ -210,6 +210,20 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     }
 
     /**
+     * Set the `clickable` properties of the slots based on CT_REPLACEMENT (cards are clickable iff they are within 1 of the provided value)
+     */
+    setClickableForReplacement(value: number) {
+        for (let slot of this.slots) {
+            if (!slot.card) {
+                slot.setClickable(false);
+            }
+            else {
+                slot.setClickable(Math.abs(slot.card.original_value - value) <= 1);
+            }
+        }
+    }
+
+    /**
      * Select a slot in the market by position
      * @param pos valid market position: 4, 3, 2, 1 or 0
      * @param enable (optional) default true. enable/disable the `selected` property.

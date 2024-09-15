@@ -370,4 +370,15 @@ class action_dale extends APP_GameAction
 		$this->game->actDelightfulSurprise( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actReplacement()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actReplacement( $card_id );
+		self::ajaxResponse();
+	}
 }

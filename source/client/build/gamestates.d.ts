@@ -166,6 +166,7 @@ interface GameStates {
 			'trCulturalPreservation': 69,
 			'trSliceOfLife': 70,
 			'trDelightfulSurprise': 71,
+			'trReplacement': 72,
 		},
 	},
 	31: {
@@ -640,6 +641,23 @@ interface GameStates {
 		'action': 'stDelightfulSurprise',
 		'possibleactions': {
 			'actDelightfulSurprise': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	72: {
+		'name': 'replacement',
+		'description': 'Replacement: ${actplayer} must choose a card from the market valued ${value_minus_1}, ${value} or ${value_plus_1}',
+		'descriptionmyturn': 'Replacement: ${you} must choose a card from the market valued ${value_minus_1}, ${value} or ${value_plus_1}',
+		'type': 'activeplayer',
+		'args': 'argReplacement',
+		'possibleactions': {
+			'actReplacement': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

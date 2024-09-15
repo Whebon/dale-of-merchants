@@ -2686,7 +2686,7 @@ class Dale extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} placed a ${card_name} into their hand'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} places a ${card_name} into their hand'), array (
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -3385,6 +3385,32 @@ class Dale extends DaleTableBasic
                 $this->draw(clienttranslate('Fortunate Upgrade: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_REPLACEMENT:
+                $card_id = $args["card_id"];
+                $this->addChameleonBindings($chameleons_json, $card_id);
+                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $value = $this->getValue($card);
+                $market_cards = $this->cards->getCardsInLocation(MARKET);
+                $replacement_fizzle = true;
+                foreach ($market_cards as $market_card) {
+                    $type_id = $this->getTypeId($market_card);
+                    $original_value = $this->card_types[$type_id]['value'];
+                    if (abs($value - $original_value) <= 1) {
+                        $replacement_fizzle = false;
+                        break;
+                    }
+                }
+                if ($replacement_fizzle) {
+                    $this->ditch(clienttranslate('Replacement: ${player_name} ditches their ${card_name}, but there exists no valid replacement'), $card);
+                    $this->fullyResolveCard($player_id, $technique_card);
+                }
+                else {
+                    $this->ditch(clienttranslate('Replacement: ${player_name} ditches their ${card_name}'), $card);
+                    $this->setGameStateValue("die_value", $value); //not really a die value, but we can safely reuse this label here
+                    $this->beginResolvingCard($technique_card_id);
+                    $this->gamestate->nextState("trReplacement");
+                }
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3439,7 +3465,7 @@ class Dale extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} placed a ${card_name} into their hand'), array(
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} places a ${card_name} into their hand'), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -3933,7 +3959,7 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, MARKET);
         $this->cards->moveCard($card_id, HAND.$player_id);
-        $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} placed a ${card_name} into their hand'), array (
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} places a ${card_name} into their hand'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $this->getCardName($card),
@@ -4058,6 +4084,7 @@ class Dale extends DaleTableBasic
     }
 
     function actSliceOfLife($card_id) {
+        $this->checkAction("actSliceOfLife");
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
@@ -4111,6 +4138,30 @@ class Dale extends DaleTableBasic
 
         //ditch the delightful surprise
         $this->fullyResolveCard($player_id, null, DISCARD.MARKET);
+    }
+
+    function actReplacement($card_id) {
+        $this->checkAction("actReplacement");
+        $player_id = $this->getActivePlayerId();
+        //Get the card from the market
+        $card = $this->cards->getCardFromLocation($card_id, MARKET);
+        $type_id = $this->getTypeId($card);
+        $value = $this->getGameStateValue("die_value");
+        $original_value = $this->card_types[$type_id]['value'];
+        if (abs($value - $original_value) > 1) {
+            throw new BgaUserException($this->_("The replacement card must be within 1 of value ").$value);
+        }
+
+        //Place the card into the player's hand
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Replacement: ${player_name} places a ${card_name} into their hand'), array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($card),
+            'market_card_id' => $card_id,
+            'pos' => $card["location_arg"],
+        ));
+        $this->fullyResolveCard($player_id);
     }
 
     //(~acts)
@@ -4305,6 +4356,15 @@ class Dale extends DaleTableBasic
         return array_merge(
             $this->argDeckContent(),
             $this->argDie()
+        );
+    }
+
+    function argReplacement() {
+        $value = $this->getGameStateValue("die_value");
+        return array(
+            'value_minus_1' => $value - 1,
+            'value' => $value,
+            'value_plus_1' => $value + 1
         );
     }
 

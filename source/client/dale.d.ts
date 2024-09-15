@@ -360,6 +360,7 @@ declare global {
 		'client_swank': { card_id: number }
 		'client_riskyBusiness': { value: number }
 		'client_historyLesson': { card_ids: number[] }
+		'client_replacement': { card_id?: number }
 	}
 
 	interface ClientPassiveChoice {
@@ -402,6 +403,7 @@ declare global {
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
 		'client_glue': ClientGameStates['client_purchase']
 		'client_houseCleaning': { technique_card_id: number, nbr_junk: number }
+		'client_replacementFizzle': { technique_card_id: number, ditch_card_id: number, ditch_card_name: string }
 	}
 
 	//

@@ -1642,7 +1642,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 this.selectionMode == 'clickAbilityPostCleanup' ||
                 this.selectionMode == 'clickRetainSelection' ||
                 this.selectionMode == 'clickOnTurnStart' ||
-                this.selectionMode == 'clickOnFinish');
+                this.selectionMode == 'clickOnFinish' ||
+                this.selectionMode == 'clickAnimalfolk');
         };
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
@@ -1730,6 +1731,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.trigger == 'onTurnStart';
                 case 'clickOnFinish':
                     return card.trigger == 'onFinish';
+                case 'clickAnimalfolk':
+                    return card.isAnimalfolk();
                 case 'single':
                     return true;
                 case 'multiple':
@@ -2674,6 +2677,17 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
                 var slot = _a[_i];
                 slot.setClickable(clickable);
+            }
+        };
+        MarketBoard.prototype.setClickableForReplacement = function (value) {
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var slot = _a[_i];
+                if (!slot.card) {
+                    slot.setClickable(false);
+                }
+                else {
+                    slot.setClickable(Math.abs(slot.card.original_value - value) <= 1);
+                }
             }
         };
         MarketBoard.prototype.setSelected = function (pos, enable) {
@@ -4095,6 +4109,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'delightfulSurprise':
                     this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to take"));
                     break;
+                case 'client_replacement':
+                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
+                    break;
+                case 'replacement':
+                    var replacement_args = args.args;
+                    this.market.setSelectionMode(1, undefined, 'dale-wrap-technique');
+                    this.market.setClickableForReplacement(replacement_args.value);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4338,6 +4360,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'delightfulSurprise':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'client_replacement':
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'replacement':
+                    this.market.setSelectionMode(0);
                     break;
             }
         };
@@ -4642,6 +4670,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'culturalPreservation':
                     this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
+                    break;
+                case 'client_replacement':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_replacementFizzle':
+                    this.addActionButton("fizzle-button", _("Ditch without replacement"), "onReplacementFizzle");
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -5113,6 +5148,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
+                case 'replacement':
+                    this.bgaPerformAction('actReplacement', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         Dale.prototype.onScheduleSelectionChanged = function () {
@@ -5316,6 +5356,25 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.bgaPerformAction('actSliceOfLife', {
                         card_id: card.id
                     });
+                    break;
+                case 'client_replacement':
+                    if (this.verifyChameleon(new DaleCard_10.DaleCard(card_id))) {
+                        var client_replacement_value = card.effective_value;
+                        for (var _d = 0, _e = this.market.getCards(); _d < _e.length; _d++) {
+                            var market_card = _e[_d];
+                            if (Math.abs(market_card.original_value - client_replacement_value) <= 1) {
+                                this.playTechniqueCard({
+                                    card_id: card.id
+                                });
+                                return;
+                            }
+                        }
+                        this.mainClientState.enter('client_replacementFizzle', {
+                            technique_card_id: this.mainClientState.args.technique_card_id,
+                            ditch_card_id: card.id,
+                            ditch_card_name: card.name
+                        });
+                    }
                     break;
                 case null:
                     throw new Error("gamestate.name is null");
@@ -5872,6 +5931,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     }
                     else {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
+                case DaleCard_10.DaleCard.CT_REPLACEMENT:
+                    if (this.myHand.count() == 1) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_replacement', card.id);
                     }
                     break;
                 default:
@@ -6446,6 +6513,12 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onCulturalPreservation = function () {
             this.bgaPerformAction('actCulturalPreservation', {
                 card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
+            });
+        };
+        Dale.prototype.onReplacementFizzle = function () {
+            var args = this.mainClientState.args;
+            this.playTechniqueCard({
+                card_id: args.ditch_card_id
             });
         };
         Dale.prototype.setupNotifications = function () {

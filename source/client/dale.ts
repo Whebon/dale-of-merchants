@@ -688,6 +688,14 @@ class Dale extends Gamegui
 			case 'delightfulSurprise':
 				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to take"));
 				break;
+			case 'client_replacement':
+				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
+				break;
+			case 'replacement':
+				const replacement_args = args.args as { value: number };
+				this.market!.setSelectionMode(1, undefined, 'dale-wrap-technique');
+				this.market!.setClickableForReplacement(replacement_args.value);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -934,6 +942,12 @@ class Dale extends Gamegui
 				break;
 			case 'delightfulSurprise':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_replacement':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'replacement':
+				this.market!.setSelectionMode(0);
 				break;
 		}
 		//(~leavingstate)
@@ -1238,6 +1252,13 @@ class Dale extends Gamegui
 				break;
 			case 'culturalPreservation':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
+				break;
+			case 'client_replacement':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_replacementFizzle':
+				this.addActionButton("fizzle-button", _("Ditch without replacement"), "onReplacementFizzle");
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -1885,6 +1906,11 @@ class Dale extends Gamegui
 					card_id: card.id
 				})
 				break;
+			case 'replacement':
+				this.bgaPerformAction('actReplacement', {
+					card_id: card.id
+				})
+				break;
 		}
 	}
 	
@@ -2105,6 +2131,26 @@ class Dale extends Gamegui
 				this.bgaPerformAction('actSliceOfLife', {
 					card_id: card.id
 				})
+				break;
+			case 'client_replacement':
+				if (this.verifyChameleon(new DaleCard(card_id))) {
+					const client_replacement_value = card.effective_value;
+					for (let market_card of this.market!.getCards()) {
+						if (Math.abs(market_card.original_value - client_replacement_value) <= 1) {
+							//a replacement for this card exists!
+							this.playTechniqueCard<'client_replacement'>({
+								card_id: card!.id
+							})
+							return;
+						}
+					}
+					//warn the player a replacement for this card does not exist
+					this.mainClientState.enter('client_replacementFizzle', {
+						technique_card_id: (this.mainClientState.args as ClientGameStates['client_replacement']).technique_card_id,
+						ditch_card_id: card!.id,
+						ditch_card_name: card.name
+					})
+				}
 				break;
 			case null:
 				throw new Error("gamestate.name is null")
@@ -2716,6 +2762,14 @@ class Dale extends Gamegui
 				}
 				else {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
+			case DaleCard.CT_REPLACEMENT:
+				if (this.myHand.count() == 1) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_replacement', card.id);
 				}
 				break;
 			default:
@@ -3359,6 +3413,13 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actCulturalPreservation', {
 			card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
 		});
+	}
+
+	onReplacementFizzle() {
+		const args = this.mainClientState.args as ClientGameStates['client_replacementFizzle'];
+		this.playTechniqueCard<'client_replacement'>({
+			card_id: args.ditch_card_id
+		})
 	}
 
 	//(~on)
