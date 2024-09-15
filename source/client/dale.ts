@@ -1236,6 +1236,7 @@ class Dale extends Gamegui
 				this.addActionButton("button-3", '3', (() => this.onRiskyBusiness(3)).bind(this));
 				this.addActionButton("button-4", '4', (() => this.onRiskyBusiness(4)).bind(this));
 				this.addActionButton("button-5", '5', (() => this.onRiskyBusiness(5)).bind(this));
+				this.addActionButtonCancelClient();
 				break;
 			case 'naturalSurvivor':
 				this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");

@@ -3284,7 +3284,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_swiftBroker':
                         return _("${card_name}: ${you} may choose the order to discard your hand");
                     case 'client_shatteredRelic':
-                        return _("${card_name}: ${you} must <stronger>ditch</stronger> a card from your hand");
+                        return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
                     case 'client_acorn':
                         return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
                     case 'client_giftVoucher':
@@ -3339,7 +3339,21 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_raffle':
                         return _("${card_name}: ${you} take a card from");
                     case 'client_tasters':
-                        return _("${card_name}: ${you} may choose who takes a card from the market directly after you");
+                        return _("${card_name}: ${you} must choose who takes a card from the market directly after you");
+                    case 'client_rareArtefact':
+                        return _("${card_name}: ${you} must choose a card to multiply its value");
+                    case 'client_swank':
+                        return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                    case 'client_riskyBusiness':
+                        return _("${card_name}: ${you} must guess the top card's value from the supply");
+                    case 'client_refreshingDrink':
+                        return _("${card_name}: ${you} must choose a card to discard");
+                    case 'client_historyLesson':
+                        return _("${card_name}: ${you} may select up to 3 cards from the top of your discard pile");
+                    case 'client_replacement':
+                        return _("${card_name}: ${you} must choose an animalfolk card to <stronger>ditch</stronger>");
+                    case 'client_replacementFizzle':
+                        return _("${card_name}: Are you sure you want to ditch '${ditch_card_name}'? The market has no valid replacement for this card");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4654,6 +4668,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButton("button-3", '3', (function () { return _this.onRiskyBusiness(3); }).bind(this));
                     this.addActionButton("button-4", '4', (function () { return _this.onRiskyBusiness(4); }).bind(this));
                     this.addActionButton("button-5", '5', (function () { return _this.onRiskyBusiness(5); }).bind(this));
+                    this.addActionButtonCancelClient();
                     break;
                 case 'naturalSurvivor':
                     this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");

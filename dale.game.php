@@ -3272,8 +3272,9 @@ class Dale extends DaleTableBasic
                 break;
             case CT_RISKYBUSINESS:
                 $value = $args["value"];
-                $topCard = $this->cards->pickCardForLocation(DECK.MARKET, DECK.MARKET);
+                $topCard = $this->cards->pickCardForLocation(DECK.MARKET, 'unstable');
                 $printed_value = $this->card_types[$topCard['type_arg']]['value'];
+                $this->cards->moveCardOnTop($topCard["id"], DECK.MARKET); //put it back on top
                 if ($value == $printed_value) {
                     $this->notifyAllPlayers('message', clienttranslate('Risky Business: ${player_name} correctly guessed ${value}'), array(
                         'player_name' => $this->getActivePlayerName(),
