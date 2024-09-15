@@ -2307,9 +2307,13 @@ class Dale extends DaleTableBasic
         }
         $cost = $this->getCost($market_card);
 
+        //Apply CT_RIGOROUSCHRONICLER
+        $optional_value = 2*$this->countTypeId($funds_cards, CT_RIGOROUSCHRONICLER);
+        
         //Check if funds are sufficient
-        if ($total_value < $cost) {
-            throw new BgaUserException($this->_("Insufficient funds")." ($total_value)");
+        if ($total_value + $optional_value < $cost) {
+            $total_value += $optional_value;
+            throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
         }
 
         //Check for overpaying
