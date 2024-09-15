@@ -326,4 +326,15 @@ class action_dale extends APP_GameAction
 		$this->game->actNaturalSurvivor( $hand_card_ids, $deck_card_ids );
 		self::ajaxResponse();
 	}
+
+	public function actDuplicateEntry()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actDuplicateEntry( $card_id );
+		self::ajaxResponse();
+	}
 }

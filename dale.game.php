@@ -623,6 +623,28 @@ class Dale extends DaleTableBasic
     }
 
     /**
+     * The active player ditches a card from their deck and notifies all players
+     * @param string $msg notification message
+     * @param int $card_id the id of a card in the deck pile to ditch
+     * @param array $msg_args
+     */
+    function ditchFromDeck(string $msg, int $card_id, array $msg_args = array()) {
+        //1. remove the card from the deck
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->getCardFromLocation($card_id, DECK.$player_id);
+
+        //2. ditch it
+        $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+        $this->cards->moveCardOnTop($dbcard["id"], $destination);
+        $this->notifyAllPlayers('ditchFromDeck', $msg, array_merge(array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "card" => $dbcard
+        ), $msg_args));
+    }
+
+    /**
      * Discard multiple cards for a player in the given order
      * @param string $msg notification message for all players
      * @param int $player_id player that will discard the cards from hand
@@ -2466,9 +2488,10 @@ class Dale extends DaleTableBasic
                     }
                     break;
                 case CT_MAGNET:
+                case CT_DUPLICATEENTRY:
                     $cards = $this->cards->getCardsInLocation(DECK.$player_id);
                     if (count($cards) >= 1) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_MAGNET. There exists a card in the deck.");
+                        throw new BgaVisibleSystemException("Unable to fizzle. There exists a card in the deck.");
                     }
                     break;
                 case CT_NIGHTSHIFT:
@@ -3272,6 +3295,10 @@ class Dale extends DaleTableBasic
                 $this->setGameStateValue("die_value", $die_value);
                 $this->gamestate->nextState("trNaturalSurvivor");
                 break;
+            case CT_DUPLICATEENTRY:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trDuplicateEntry");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3883,6 +3910,15 @@ class Dale extends DaleTableBasic
         //draw cards
         foreach ($deck_card_ids as $deck_card_id) {
             $this->drawCardId('', $deck_card_id);
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actDuplicateEntry($card_id) {
+        $this->checkAction("actDuplicateEntry");
+        $player_id = $this->getActivePlayerId();
+        if ($card_id != -1) {
+            $this->ditchFromDeck(clienttranslate('Duplicate Entry: ${player_name} ditches ${card_name} from their deck'), $card_id);
         }
         $this->fullyResolveCard($player_id);
     }

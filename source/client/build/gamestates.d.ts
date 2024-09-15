@@ -162,6 +162,7 @@ interface GameStates {
 			'trTasters': 65,
 			'trDaringAdventurer': 66,
 			'trNaturalSurvivor': 67,
+			'trDuplicateEntry': 68,
 		},
 	},
 	31: {
@@ -569,6 +570,23 @@ interface GameStates {
 				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	68: {
+		'name': 'duplicateEntry',
+		'description': 'Duplicate Entry: ${actplayer} may ditch a card from their deck',
+		'descriptionmyturn': 'Duplicate Entry: ${you} may ditch a card from their deck',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContent',
+		'possibleactions': {
+			'actDuplicateEntry': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

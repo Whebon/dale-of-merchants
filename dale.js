@@ -4025,6 +4025,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_refreshingDrink':
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
                     break;
+                case 'duplicateEntry':
+                    var duplicateEntry_args = args.args;
+                    this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard_10.DaleCard.of));
+                    this.myDeck.setSelectionMode('single');
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4251,6 +4256,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_refreshingDrink':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'duplicateEntry':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
                     break;
             }
         };
@@ -4545,6 +4554,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_refreshingDrink':
                     this.addActionButtonCancelClient();
+                    break;
+                case 'duplicateEntry':
+                    this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
                     break;
             }
         };
@@ -5090,6 +5102,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'duplicateEntry':
+                    this.bgaPerformAction('actDuplicateEntry', {
+                        card_id: card.id
+                    });
                     break;
             }
         };
@@ -5725,6 +5742,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_DUPLICATEENTRY:
+                    fizzle = this.myDeck.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6284,6 +6310,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 deck_card_ids: this.arrayToNumberList(deck_card_ids)
             });
         };
+        Dale.prototype.onDuplicateEntrySkip = function () {
+            this.bgaPerformAction('actDuplicateEntry', {
+                card_id: -1
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -6326,6 +6357,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['cunningNeighbourWatch', 500],
                 ['cunningNeighbourReturn', 500],
                 ['ditchFromDiscard', 500],
+                ['ditchFromDeck', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
                 ['instant_discardToDeck', 1],
@@ -6897,6 +6929,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             playerDiscard.removeAt(index);
             if (card.isAnimalfolk()) {
                 this.marketDiscard.push(card, playerDiscard.placeholderHTML);
+            }
+        };
+        Dale.prototype.notif_ditchFromDeck = function (notif) {
+            console.log("notif_ditchFromDeck");
+            var playerDeck = this.playerDecks[notif.args.player_id];
+            var dbcard = notif.args.card;
+            var card = DaleCard_10.DaleCard.of(dbcard);
+            playerDeck.pop();
+            if (card.isAnimalfolk()) {
+                this.marketDiscard.push(card, playerDeck.placeholderHTML);
             }
         };
         Dale.prototype.notif_ditchFromMarketDeck = function (notif) {

@@ -134,7 +134,8 @@
 			"trCharity": 64,
 			"trTasters": 65,
 			"trDaringAdventurer": 66,
-			"trNaturalSurvivor": 67
+			"trNaturalSurvivor": 67,
+			"trDuplicateEntry": 68
 		}
 	},
 
@@ -445,6 +446,20 @@
 			"actNaturalSurvivor": [
 				{"name": "hand_card_ids", "type": "AT_numberlist"},
 				{"name": "deck_card_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"68": {
+		"name": "duplicateEntry",
+		"description": "Duplicate Entry: ${actplayer} may ditch a card from their deck",
+		"descriptionmyturn": "Duplicate Entry: ${you} may ditch a card from their deck",
+		"type": "activeplayer",
+		"args": "argMyDeckContent",
+		"possibleactions": {
+			"actDuplicateEntry": [
+				{"name": "card_id", "type": "AT_int"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

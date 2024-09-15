@@ -669,6 +669,11 @@ class Dale extends Gamegui
 			case 'client_refreshingDrink':
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
 				break;
+			case 'duplicateEntry':
+				const duplicateEntry_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('single');
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -898,6 +903,10 @@ class Dale extends Gamegui
 				break;
 			case 'client_refreshingDrink':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'duplicateEntry':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1192,6 +1201,9 @@ class Dale extends Gamegui
 				break;
 			case 'client_refreshingDrink':
 				this.addActionButtonCancelClient();
+				break;
+			case 'duplicateEntry':
+				this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
 				break;
 		}
 		//(~actionbuttons)
@@ -1921,6 +1933,11 @@ class Dale extends Gamegui
 				})
 				this.myDeck.setSelectionMode('none');
 				break
+			case 'duplicateEntry':
+				this.bgaPerformAction('actDuplicateEntry', {
+					card_id: card.id
+				})
+				break
 		}
 	}
 
@@ -2620,6 +2637,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
+			case DaleCard.CT_DUPLICATEENTRY:
+				fizzle = this.myDeck.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3245,6 +3271,12 @@ class Dale extends Gamegui
 		});
 	}
 
+	onDuplicateEntrySkip() {
+		this.bgaPerformAction('actDuplicateEntry', {
+			card_id: -1
+		});
+	}
+
 	//(~on)
 
 
@@ -3296,6 +3328,7 @@ class Dale extends Gamegui
 			['cunningNeighbourWatch', 			500],
 			['cunningNeighbourReturn', 			500],
 			['ditchFromDiscard', 				500],
+			['ditchFromDeck', 					500],
 			['ditchFromMarketDeck', 			500],
 			['ditchFromMarketBoard', 			500],
 			['instant_discardToDeck', 			1],
@@ -4010,6 +4043,18 @@ class Dale extends Gamegui
 		playerDiscard.removeAt(index);
 		if (card.isAnimalfolk()) {
 			this.marketDiscard.push(card, playerDiscard.placeholderHTML);
+		}
+		//TODO: animate ditching non-animalfolk cards
+	}
+
+	notif_ditchFromDeck(notif: NotifAs<'ditchFromDeck'>) {
+		console.log("notif_ditchFromDeck");
+		const playerDeck = this.playerDecks[notif.args.player_id]!;
+		const dbcard = notif.args.card;
+		const card = DaleCard.of(dbcard);
+		playerDeck.pop(); //pop a cardback
+		if (card.isAnimalfolk()) {
+			this.marketDiscard.push(card, playerDeck.placeholderHTML);
 		}
 		//TODO: animate ditching non-animalfolk cards
 	}

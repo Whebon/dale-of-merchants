@@ -101,6 +101,10 @@ declare global {
 			player_id: number
 			card: DbCard
 		}
+		'ditchFromDeck': {
+			player_id: number
+			card: DbCard
+		}
 		'ditchFromMarketDeck': {
 			card: DbCard
 		}

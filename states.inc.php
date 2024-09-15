@@ -109,6 +109,7 @@ $machinestates = array(
 			'trTasters' => 65,
 			'trDaringAdventurer' => 66,
 			'trNaturalSurvivor' => 67,
+			'trDuplicateEntry' => 68,
 		),
 	),
 	31 => array(
@@ -349,6 +350,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argNaturalSurvivor',
 		'possibleactions' => ['actNaturalSurvivor'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	68 => array(
+		'name' => 'duplicateEntry',
+		'description' => clienttranslate('Duplicate Entry: ${actplayer} may ditch a card from their deck'),
+		'descriptionmyturn' => clienttranslate('Duplicate Entry: ${you} may ditch a card from their deck'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContent',
+		'possibleactions' => ['actDuplicateEntry'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
