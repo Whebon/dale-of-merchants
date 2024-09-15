@@ -337,4 +337,15 @@ class action_dale extends APP_GameAction
 		$this->game->actDuplicateEntry( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actCulturalPreservation()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actCulturalPreservation( $card_ids );
+		self::ajaxResponse();
+	}
 }

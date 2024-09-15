@@ -2490,6 +2490,7 @@ class Dale extends DaleTableBasic
                     break;
                 case CT_MAGNET:
                 case CT_DUPLICATEENTRY:
+                case CT_CULTURALPRESERVATION:
                     $cards = $this->cards->getCardsInLocation(DECK.$player_id);
                     if (count($cards) >= 1) {
                         throw new BgaVisibleSystemException("Unable to fizzle. There exists a card in the deck.");
@@ -3328,6 +3329,10 @@ class Dale extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_CULTURALPRESERVATION:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trCulturalPreservation");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -3948,6 +3953,41 @@ class Dale extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         if ($card_id != -1) {
             $this->ditchFromDeck(clienttranslate('Duplicate Entry: ${player_name} ditches ${card_name} from their deck'), $card_id);
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actCulturalPreservation($card_ids) {
+        $this->checkAction("actCulturalPreservation");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+        if (count($card_ids) == 0) {
+            $this->notifyAllPlayers('message', clienttranslate('Cultural Preservation: ${player_name} selected 0 cards'), array(
+                "player_name" => $this->getActivePlayerName()
+            ));
+        }
+        else {
+            //1. draw a card
+            $draw_card_id = array_pop($card_ids); //the last index is the card to draw
+            $this->drawCardId(clienttranslate('Cultural Preservation: ${player_name} draws a card'), $draw_card_id);
+
+            //2. discard the other cards
+            if (count($card_ids) > 0) {
+                $discard_cards = $this->cards->getCardsFromLocation($card_ids, DECK.$player_id); //removeCardsFromPile is not needed, since the deck will be shuffled soon
+                foreach ($card_ids as $card_id) {
+                    $discard_card = $discard_cards[$card_id]; //ordering matters
+                    $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('Cultural Preservation: ${player_name} discards ${card_name}'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getActivePlayerName(),
+                        "card" => $discard_card,
+                        "card_name" => $this->getCardName($discard_card)
+                    ));
+                }
+            }
+
+            //3. shuffle the deck
+            $this->cards->shuffle(DECK.$player_id);
         }
         $this->fullyResolveCard($player_id);
     }

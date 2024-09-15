@@ -677,6 +677,11 @@ class Dale extends Gamegui
 			case 'client_historyLesson':
 				this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'dale-wrap-technique', 3);
 				break;
+			case 'culturalPreservation':
+				const culturalPreservation_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', 3);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -914,6 +919,10 @@ class Dale extends Gamegui
 			case 'client_historyLesson':
 				this.myDiscard.setSelectionMode('none');
 				break;
+			case 'culturalPreservation':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -975,7 +984,7 @@ class Dale extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'spyglass':
-				this.addActionButton("confirm-button", _("Confirm selection"), "onSpyglass");
+				this.addActionButton("confirm-button", _("Confirm selected"), "onSpyglass");
 				break;
 			case 'client_acorn':
 				this.addActionButtonCancelClient();
@@ -1214,6 +1223,9 @@ class Dale extends Gamegui
 			case 'client_historyLesson':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
 				this.addActionButtonCancelClient();
+				break;
+			case 'culturalPreservation':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
 				break;
 		}
 		//(~actionbuttons)
@@ -2665,6 +2677,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_historyLesson', card.id);
 				}
 				break;
+			case DaleCard.CT_CULTURALPRESERVATION:
+				fizzle = this.myDeck.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3300,6 +3321,12 @@ class Dale extends Gamegui
 		this.playTechniqueCard<'client_historyLesson'>({
 			card_ids: this.myDiscard.orderedSelection.get()
 		})
+	}
+
+	onCulturalPreservation() {
+		this.bgaPerformAction('actCulturalPreservation', {
+			card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
+		});
 	}
 
 	//(~on)

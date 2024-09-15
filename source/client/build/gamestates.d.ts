@@ -163,6 +163,7 @@ interface GameStates {
 			'trDaringAdventurer': 66,
 			'trNaturalSurvivor': 67,
 			'trDuplicateEntry': 68,
+			'trCulturalPreservation': 69,
 		},
 	},
 	31: {
@@ -579,7 +580,7 @@ interface GameStates {
 	68: {
 		'name': 'duplicateEntry',
 		'description': 'Duplicate Entry: ${actplayer} may ditch a card from their deck',
-		'descriptionmyturn': 'Duplicate Entry: ${you} may ditch a card from their deck',
+		'descriptionmyturn': 'Duplicate Entry: ${you} may ditch a card from your deck',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContent',
 		'possibleactions': {
@@ -587,6 +588,23 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	69: {
+		'name': 'culturalPreservation',
+		'description': 'Cultural Preservation: ${actplayer} may search their deck for up to 3 cards',
+		'descriptionmyturn': 'Cultural Preservation: ${you} may search your deck for up to 3 cards',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContent',
+		'possibleactions': {
+			'actCulturalPreservation': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

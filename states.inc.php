@@ -110,6 +110,7 @@ $machinestates = array(
 			'trDaringAdventurer' => 66,
 			'trNaturalSurvivor' => 67,
 			'trDuplicateEntry' => 68,
+			'trCulturalPreservation' => 69,
 		),
 	),
 	31 => array(
@@ -357,10 +358,21 @@ $machinestates = array(
 	68 => array(
 		'name' => 'duplicateEntry',
 		'description' => clienttranslate('Duplicate Entry: ${actplayer} may ditch a card from their deck'),
-		'descriptionmyturn' => clienttranslate('Duplicate Entry: ${you} may ditch a card from their deck'),
+		'descriptionmyturn' => clienttranslate('Duplicate Entry: ${you} may ditch a card from your deck'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actDuplicateEntry'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	69 => array(
+		'name' => 'culturalPreservation',
+		'description' => clienttranslate('Cultural Preservation: ${actplayer} may search their deck for up to 3 cards'),
+		'descriptionmyturn' => clienttranslate('Cultural Preservation: ${you} may search your deck for up to 3 cards'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContent',
+		'possibleactions' => ['actCulturalPreservation'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

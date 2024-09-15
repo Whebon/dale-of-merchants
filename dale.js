@@ -4084,6 +4084,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_historyLesson':
                     this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'dale-wrap-technique', 3);
                     break;
+                case 'culturalPreservation':
+                    var culturalPreservation_args = args.args;
+                    this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard_10.DaleCard.of));
+                    this.myDeck.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', 3);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4318,6 +4323,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_historyLesson':
                     this.myDiscard.setSelectionMode('none');
                     break;
+                case 'culturalPreservation':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
+                    break;
             }
         };
         Dale.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -4372,7 +4381,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.addActionButtonCancelClient();
                     break;
                 case 'spyglass':
-                    this.addActionButton("confirm-button", _("Confirm selection"), "onSpyglass");
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onSpyglass");
                     break;
                 case 'client_acorn':
                     this.addActionButtonCancelClient();
@@ -4618,6 +4627,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_historyLesson':
                     this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'culturalPreservation':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
                     break;
             }
         };
@@ -5821,6 +5833,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_historyLesson', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_CULTURALPRESERVATION:
+                    fizzle = this.myDeck.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6388,6 +6409,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onHistoryLesson = function () {
             this.playTechniqueCard({
                 card_ids: this.myDiscard.orderedSelection.get()
+            });
+        };
+        Dale.prototype.onCulturalPreservation = function () {
+            this.bgaPerformAction('actCulturalPreservation', {
+                card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
             });
         };
         Dale.prototype.setupNotifications = function () {
