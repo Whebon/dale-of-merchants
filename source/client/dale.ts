@@ -2428,6 +2428,7 @@ class Dale extends Gamegui
 				this.clientScheduleTechnique('client_swiftBroker', card.id);
 				break;
 			case DaleCard.CT_SHATTEREDRELIC:
+			case DaleCard.CT_FORTUNATEUPGRADE:
 				if (this.myHand.count() == 1) {
 					//the hand only consists of the shatteredRelic itself
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

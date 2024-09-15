@@ -5580,6 +5580,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.clientScheduleTechnique('client_swiftBroker', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_SHATTEREDRELIC:
+                case DaleCard_10.DaleCard.CT_FORTUNATEUPGRADE:
                     if (this.myHand.count() == 1) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }

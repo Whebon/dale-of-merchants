@@ -2542,7 +2542,7 @@ class Dale extends DaleTableBasic
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_VORACIOUSCONSUMER. count(deck)+count(discard)>=1.");
+                        throw new BgaVisibleSystemException("Unable to fizzle. count(deck)+count(discard)>=1.");
                     }
                     break;
                 default:
@@ -3365,6 +3365,25 @@ class Dale extends DaleTableBasic
             case CT_DELIGHTFULSURPRISE:
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDelightfulSurprise");
+                break;
+            case CT_FORTUNATEUPGRADE:
+                //copied from shattered relic
+                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+                if ($handsize > 0) {
+                    if (!array_key_exists("card_id", $args)) {
+                        throw new BgaVisibleSystemException("Fortunate Upgrade: the player did not select a card to ditch");
+                    }
+                    $card_id = $args["card_id"];
+                    $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                    $this->ditch(clienttranslate('Fortunate Upgrade: ${player_name} ditches a ${card_name}'), $card);
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Fortunate Upgrade: ${player_name} has no cards to ditch'), array(
+                        "player_name" => $this->getActivePlayerName()
+                    ));
+                }
+                $this->draw(clienttranslate('Fortunate Upgrade: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
