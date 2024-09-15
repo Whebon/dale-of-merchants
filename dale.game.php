@@ -2530,6 +2530,13 @@ class Dale extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_NATURALSURVIVOR. There exists a card in the hand AND the deck.");
                     }
                     break;
+                case CT_VORACIOUSCONSUMER:
+                    $decksize = $this->cards->countCardInLocation(DECK.$player_id);
+                    $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
+                    if ($decksize + $discardsize >= 1) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_VORACIOUSCONSUMER. count(deck)+count(discard)>=1.");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -3332,6 +3339,20 @@ class Dale extends DaleTableBasic
             case CT_CULTURALPRESERVATION:
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCulturalPreservation");
+                break;
+            case CT_VORACIOUSCONSUMER:
+                $deck_nbr = $this->cards->countCardsInLocation(DECK.$player_id);
+                $discard_nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
+                if ($discard_nbr > 0) {
+                    $cards = $this->cards->pickCardsForLocation($discard_nbr + $deck_nbr, DECK.$player_id, DECK.$player_id);
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Voracious Consumer: ${player_name} shuffles their deck'), array(
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                }
+                $this->cards->shuffle(DECK.$player_id);
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
