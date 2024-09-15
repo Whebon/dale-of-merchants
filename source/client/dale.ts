@@ -666,6 +666,9 @@ class Dale extends Gamegui
 				this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', naturalSurvivor_args.die_value);
 				this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
 				break;
+			case 'client_refreshingDrink':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -891,6 +894,9 @@ class Dale extends Gamegui
 			case 'naturalSurvivor':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_refreshingDrink':
 				this.myHand.setSelectionMode('none');
 				break;
 		}
@@ -1183,6 +1189,9 @@ class Dale extends Gamegui
 				break;
 			case 'naturalSurvivor':
 				this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
+				break;
+			case 'client_refreshingDrink':
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2036,6 +2045,11 @@ class Dale extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'client_refreshingDrink':
+				this.playPassiveCard<'client_refreshingDrink'>({
+					card_id: card!.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -2662,6 +2676,9 @@ class Dale extends Gamegui
 					card_ids: client_calculations_card_ids, 
 					card_id_last: client_calculations_card_ids[0]!
 				});
+				break;
+			case DaleCard.CT_REFRESHINGDRINK:
+				this.mainClientState.enterOnStack('client_refreshingDrink', {passive_card_id: card.id});
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});

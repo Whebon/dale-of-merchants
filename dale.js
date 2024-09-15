@@ -1710,7 +1710,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickAbilityPostCleanup':
                     var clickAbilityPostCleanup_abilities = [
                         DaleCard_2.DaleCard.CT_GOODOLDTIMES,
-                        DaleCard_2.DaleCard.CT_MARKETDISCOVERY
+                        DaleCard_2.DaleCard.CT_MARKETDISCOVERY,
+                        DaleCard_2.DaleCard.CT_REFRESHINGDRINK,
+                        DaleCard_2.DaleCard.CT_SLICEOFLIFE
                     ];
                     return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
                 case 'clickRetainSelection':
@@ -4020,6 +4022,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', naturalSurvivor_args.die_value);
                     this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
                     break;
+                case 'client_refreshingDrink':
+                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4242,6 +4247,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'naturalSurvivor':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_refreshingDrink':
                     this.myHand.setSelectionMode('none');
                     break;
             }
@@ -4534,6 +4542,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'naturalSurvivor':
                     this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
+                    break;
+                case 'client_refreshingDrink':
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -5194,6 +5205,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_id: card.id
                     });
                     break;
+                case 'client_refreshingDrink':
+                    this.playPassiveCard({
+                        card_id: card.id
+                    });
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -5760,6 +5776,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         card_ids: client_calculations_card_ids,
                         card_id_last: client_calculations_card_ids[0]
                     });
+                    break;
+                case DaleCard_10.DaleCard.CT_REFRESHINGDRINK:
+                    this.mainClientState.enterOnStack('client_refreshingDrink', { passive_card_id: card.id });
                     break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });

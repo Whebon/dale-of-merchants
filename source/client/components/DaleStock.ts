@@ -289,7 +289,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickAbilityPostCleanup':
 				const clickAbilityPostCleanup_abilities = [
 					DaleCard.CT_GOODOLDTIMES,
-					DaleCard.CT_MARKETDISCOVERY
+					DaleCard.CT_MARKETDISCOVERY,
+					DaleCard.CT_REFRESHINGDRINK,
+					DaleCard.CT_SLICEOFLIFE
 				]
 				return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
 			case 'clickRetainSelection':

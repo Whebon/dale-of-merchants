@@ -2309,7 +2309,7 @@ class Dale extends DaleTableBasic
 
         //Apply CT_RIGOROUSCHRONICLER
         $optional_value = 2*$this->countTypeId($funds_cards, CT_RIGOROUSCHRONICLER);
-        
+
         //Check if funds are sufficient
         if ($total_value + $optional_value < $cost) {
             $total_value += $optional_value;
@@ -3396,19 +3396,19 @@ class Dale extends DaleTableBasic
         } //(~resolve)
     }
     
-    function actUsePassiveAbility($chameleons_json, $card_id, $args) {
+    function actUsePassiveAbility($chameleons_json, $passive_card_id, $args) {
         $this->inactUsePassiveAbility = true;
-        $this->addChameleonBindings($chameleons_json, $card_id);
+        $this->addChameleonBindings($chameleons_json, $passive_card_id);
         $this->checkAction("actUsePassiveAbility");
 
         $player_id = $this->getActivePlayerId();
-        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-        $type_id = $this->getTypeId($card);
+        $passive_card = $this->cards->getCardFromLocation($passive_card_id, HAND.$player_id);
+        $type_id = $this->getTypeId($passive_card);
         if ($this->card_types[$type_id]['has_ability'] == false) {
             throw new BgaUserException($this->_("That card has no ability!"));
         }
 
-        if ($this->effects->isPassiveUsed($card) && ($type_id != CT_GOODOLDTIMES || $this->effects->getArg($card_id, $type_id) == null)) {
+        if ($this->effects->isPassiveUsed($passive_card) && ($type_id != CT_GOODOLDTIMES || $this->effects->getArg($passive_card_id, $type_id) == null)) {
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
 
@@ -3418,26 +3418,38 @@ class Dale extends DaleTableBasic
                 $dbcard = $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
                 $target_type_id = $this->getTypeId($dbcard);
                 $chameleon_target_id = $dbcard["id"];
-                $goodoldtimes_type_id = $this->getTypeId($card);
+                $goodoldtimes_type_id = $this->getTypeId($passive_card);
                 if ($goodoldtimes_type_id == CT_GOODOLDTIMES) {
                     //if the chain was not broken by the ditch effect, immediately copy the new card
-                    $this->effects->insertModification($card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
+                    $this->effects->insertModification($passive_card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
                 }
                 break;
             case CT_MARKETDISCOVERY:
                 $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to ditch a card from the market deck'));
-                $this->effects->insertModification($card_id, CT_MARKETDISCOVERY);
+                $this->effects->insertModification($passive_card_id, CT_MARKETDISCOVERY);
                 break;
             case CT_BOLDHAGGLER:
                 $value = $this->rollDie(
                     clienttranslate('Bold Haggler: ${player_name} rolls ${die_icon} and adds ${die_label} to the card\'s value'),
                     ANIMALFOLK_OCELOTS,
-                    $card
+                    $passive_card
                 );
-                $this->effects->insertModification($card_id, CT_BOLDHAGGLER, $value);
+                $this->effects->insertModification($passive_card_id, CT_BOLDHAGGLER, $value);
+                break;
+            case CT_REFRESHINGDRINK:
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
+                $this->notifyAllPlayers('discard', clienttranslate('Refreshing Drink: ${player_name} discards their ${card_name}'), array(
+                    "player_id" => $player_id,
+                    "card" => $card,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->getCardName($card)
+                ));
+                $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
                 break;
             default:
-                $name = $this->getCardName($card);
+                $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
         } //(~passiveability)
 
@@ -4168,7 +4180,7 @@ class Dale extends DaleTableBasic
         $this->refillMarket(true);
 
         //3. check for post clean-up phase
-        $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES);
+        $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES, CT_REFRESHINGDRINK, CT_SLICEOFLIFE);
         if ($hasDrawnCards || !$isPostCleanUpPhase) {
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
             foreach ($dbcards as $card_id => $card) {

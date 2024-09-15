@@ -360,6 +360,7 @@ declare global {
 		'client_choicelessPassiveCard': {},
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
+		'client_refreshingDrink': { card_id: number }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
