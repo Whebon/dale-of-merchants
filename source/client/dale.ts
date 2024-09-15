@@ -685,6 +685,9 @@ class Dale extends Gamegui
 			case 'sliceOfLife':
 				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
 				break;
+			case 'delightfulSurprise':
+				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to take"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -928,6 +931,9 @@ class Dale extends Gamegui
 				break;
 			case 'sliceOfLife':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'delightfulSurprise':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2137,6 +2143,11 @@ class Dale extends Gamegui
 						(source_id: number, target_id: number) => this.onNightShift(source_id, target_id)
 					)
 				}
+				break;
+			case 'delightfulSurprise':
+				this.bgaPerformAction('actDelightfulSurprise', {
+					card_id: card.id
+				})
 				break;
 		}
 	}

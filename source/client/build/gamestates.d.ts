@@ -165,6 +165,7 @@ interface GameStates {
 			'trDuplicateEntry': 68,
 			'trCulturalPreservation': 69,
 			'trSliceOfLife': 70,
+			'trDelightfulSurprise': 71,
 		},
 	},
 	31: {
@@ -629,6 +630,23 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 30,
 			'trCleanUpPhase': 41,
+		},
+	},
+	71: {
+		'name': 'delightfulSurprise',
+		'description': 'Delightful Surprise: ${actplayer} must take a card',
+		'descriptionmyturn': 'Delightful Surprise: ${you} must take a card',
+		'type': 'activeplayer',
+		'action': 'stDelightfulSurprise',
+		'possibleactions': {
+			'actDelightfulSurprise': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	98: {

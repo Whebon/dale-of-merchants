@@ -36,6 +36,7 @@ if (false) {
 	$game->stCheer();
 	$game->stCharity();
 	$game->stSliceOfLife();
+	$game->stDelightfulSurprise();
 	$game->stFinalStatistics();
 }
 
@@ -113,6 +114,7 @@ $machinestates = array(
 			'trDuplicateEntry' => 68,
 			'trCulturalPreservation' => 69,
 			'trSliceOfLife' => 70,
+			'trDelightfulSurprise' => 71,
 		),
 	),
 	31 => array(
@@ -390,6 +392,17 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trCleanUpPhase' => 41,
+		),
+	),
+	71 => array(
+		'name' => 'delightfulSurprise',
+		'description' => clienttranslate('Delightful Surprise: ${actplayer} must take a card'),
+		'descriptionmyturn' => clienttranslate('Delightful Surprise: ${you} must take a card'),
+		'type' => 'activeplayer',
+		'action' => 'stDelightfulSurprise',
+		'possibleactions' => ['actDelightfulSurprise'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	98 => array(

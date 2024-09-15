@@ -3362,6 +3362,10 @@ class Dale extends DaleTableBasic
                 $this->cards->shuffle(DECK.$player_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_DELIGHTFULSURPRISE:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trDelightfulSurprise");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4054,6 +4058,42 @@ class Dale extends DaleTableBasic
         }
     }
 
+    function actDelightfulSurprise($card_id) {
+        $this->checkAction("actDelightfulSurprise");
+        $player_id = $this->getActivePlayerId();
+
+        //place one card into the hand
+        $limbo_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (!array_key_exists($card_id, $limbo_cards)) {
+            throw new BgaVisibleSystemException("Card $card_id is not in Limbo");
+        }
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Delightful Surprise: ${player_name} places 1 card into their hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "_private" => array(
+                "card" => $limbo_cards[$card_id]
+            ),
+            clienttranslate('Delightful Surprise: ${player_name} places a ${card_name} into their hand')
+        ));
+
+        //ditch the other card
+        unset($limbo_cards[$card_id]);
+        if (count($limbo_cards) > 1) {
+            throw new BgaVisibleSystemException("Delightful Surprise: expected only 2 cards in limbo");
+        }
+        else if (count($limbo_cards) == 1) {
+            $this->ditch(
+                clienttranslate('Delightful Surprise: ${player_name} ditches a ${card_name}'),
+                current($limbo_cards), 
+                true
+            );
+        }
+
+        //ditch the delightful surprise
+        $this->fullyResolveCard($player_id, null, DISCARD.MARKET);
+    }
+
     //(~acts)
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
@@ -4585,6 +4625,14 @@ class Dale extends DaleTableBasic
 
     function stSliceOfLife() {
         $this->draw(clienttranslate('Slice of Life: ${player_name} draws a card'));
+    }
+
+    function stDelightfulSurprise() {
+        $nbr = $this->draw(clienttranslate('Delightful Surprise: ${player_name} draws ${nbr} cards'), 2, true, MARKET);
+        if ($nbr == 0) {
+            //just ditch the delightful surprise
+            $this->fullyResolveCard($this->getActivePlayerId(), null, DISCARD.MARKET);
+        }
     }
 
     //(~st)

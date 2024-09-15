@@ -4092,6 +4092,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'sliceOfLife':
                     this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
                     break;
+                case 'delightfulSurprise':
+                    this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to take"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4332,6 +4335,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'sliceOfLife':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'delightfulSurprise':
+                    this.myLimbo.setSelectionMode('none');
                     break;
             }
         };
@@ -5341,6 +5347,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', label);
                         new TargetingLine_1.TargetingLine(card, nightShift_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
                     }
+                    break;
+                case 'delightfulSurprise':
+                    this.bgaPerformAction('actDelightfulSurprise', {
+                        card_id: card.id
+                    });
                     break;
             }
         };
