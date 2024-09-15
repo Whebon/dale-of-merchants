@@ -164,6 +164,7 @@ interface GameStates {
 			'trNaturalSurvivor': 67,
 			'trDuplicateEntry': 68,
 			'trCulturalPreservation': 69,
+			'trSliceOfLife': 70,
 		},
 	},
 	31: {
@@ -284,6 +285,7 @@ interface GameStates {
 		'transitions': {
 			'trNextPlayer': 41,
 			'trPassiveAbility': 41,
+			'trSliceOfLife': 70,
 		},
 	},
 	52: {
@@ -609,6 +611,24 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	70: {
+		'name': 'sliceOfLife',
+		'description': 'Slice of Life: ${actplayer} must discard a card',
+		'descriptionmyturn': 'Slice of Life: ${you} must discard a card',
+		'type': 'activeplayer',
+		'action': 'stSliceOfLife',
+		'possibleactions': {
+			'actSliceOfLife': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+			'trCleanUpPhase': 41,
 		},
 	},
 	98: {

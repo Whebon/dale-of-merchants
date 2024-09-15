@@ -3509,6 +3509,13 @@ class Dale extends DaleTableBasic
                 ));
                 $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
                 break;
+            case CT_SLICEOFLIFE:
+                if ($this->gamestate->state()['name'] == 'postCleanUpPhase') {
+                    $this->setGameStateValue("isPostCleanUpPhase", 1);
+                }
+                $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
+                $this->gamestate->nextState("trSliceOfLife"); return;
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
@@ -3990,6 +3997,26 @@ class Dale extends DaleTableBasic
             $this->cards->shuffle(DECK.$player_id);
         }
         $this->fullyResolveCard($player_id);
+    }
+
+    function actSliceOfLife($card_id) {
+        $player_id = $this->getActivePlayerId();
+        $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
+        $this->notifyAllPlayers('discard', clienttranslate('Slice of Life: ${player_name} discards ${card_name}'), array(
+            "player_id" => $player_id,
+            "card" => $card,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($card)
+        ));
+        $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
+        if ($isPostCleanUpPhase) {
+            $this->setGameStateValue("isPostCleanUpPhase", 0); //allows for another post clean up phase after this one
+            $this->gamestate->nextState("trCleanUpPhase");
+        }
+        else {
+            $this->gamestate->nextState("trSamePlayer");
+        }
     }
 
     //(~acts)
@@ -4519,6 +4546,10 @@ class Dale extends DaleTableBasic
                 ), clienttranslate('Charity: ${player_name} takes a ${card_name} from ${opponent_name}'));
             }
         }
+    }
+
+    function stSliceOfLife() {
+        $this->draw(clienttranslate('Slice of Life: ${player_name} draws a card'));
     }
 
     //(~st)

@@ -682,6 +682,9 @@ class Dale extends Gamegui
 				this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', 3);
 				break;
+			case 'sliceOfLife':
+				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -922,6 +925,9 @@ class Dale extends Gamegui
 			case 'culturalPreservation':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				break;
+			case 'sliceOfLife':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2087,6 +2093,11 @@ class Dale extends Gamegui
 			case 'client_refreshingDrink':
 				this.playPassiveCard<'client_refreshingDrink'>({
 					card_id: card!.id
+				})
+				break;
+			case 'sliceOfLife':
+				this.bgaPerformAction('actSliceOfLife', {
+					card_id: card.id
 				})
 				break;
 			case null:

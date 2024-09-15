@@ -136,7 +136,8 @@
 			"trDaringAdventurer": 66,
 			"trNaturalSurvivor": 67,
 			"trDuplicateEntry": 68,
-			"trCulturalPreservation": 69
+			"trCulturalPreservation": 69,
+			"trSliceOfLife": 70
 		}
 	},
 
@@ -215,7 +216,11 @@
 				{"name": "chameleons_json", "type": "AT_json"}
 			]
 		},
-		"transitions": { "trNextPlayer": 41, "trPassiveAbility": 41 }
+		"transitions": { 
+			"trNextPlayer": 41, 
+			"trPassiveAbility": 41,
+			"trSliceOfLife": 70 
+		}
 	},
 
 	//////////////// TECHNIQUES ////////////////
@@ -478,6 +483,20 @@
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"70": {
+		"name": "sliceOfLife",
+		"description": "Slice of Life: ${actplayer} must discard a card",
+		"descriptionmyturn": "Slice of Life: ${you} must discard a card",
+		"type": "activeplayer",
+		"action": "stSliceOfLife",
+		"possibleactions": {
+			"actSliceOfLife": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30, "trCleanUpPhase": 41 }
 	},
 
 

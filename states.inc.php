@@ -35,6 +35,7 @@ if (false) {
 	$game->stCunningNeighbour();
 	$game->stCheer();
 	$game->stCharity();
+	$game->stSliceOfLife();
 	$game->stFinalStatistics();
 }
 
@@ -111,6 +112,7 @@ $machinestates = array(
 			'trNaturalSurvivor' => 67,
 			'trDuplicateEntry' => 68,
 			'trCulturalPreservation' => 69,
+			'trSliceOfLife' => 70,
 		),
 	),
 	31 => array(
@@ -170,6 +172,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trNextPlayer' => 41,
 			'trPassiveAbility' => 41,
+			'trSliceOfLife' => 70,
 		),
 	),
 	52 => array(
@@ -375,6 +378,18 @@ $machinestates = array(
 		'possibleactions' => ['actCulturalPreservation'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	70 => array(
+		'name' => 'sliceOfLife',
+		'description' => clienttranslate('Slice of Life: ${actplayer} must discard a card'),
+		'descriptionmyturn' => clienttranslate('Slice of Life: ${you} must discard a card'),
+		'type' => 'activeplayer',
+		'action' => 'stSliceOfLife',
+		'possibleactions' => ['actSliceOfLife'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trCleanUpPhase' => 41,
 		),
 	),
 	98 => array(

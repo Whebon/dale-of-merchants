@@ -4089,6 +4089,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard_10.DaleCard.of));
                     this.myDeck.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', 3);
                     break;
+                case 'sliceOfLife':
+                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4326,6 +4329,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'culturalPreservation':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'sliceOfLife':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -5297,6 +5303,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'client_refreshingDrink':
                     this.playPassiveCard({
+                        card_id: card.id
+                    });
+                    break;
+                case 'sliceOfLife':
+                    this.bgaPerformAction('actSliceOfLife', {
                         card_id: card.id
                     });
                     break;
