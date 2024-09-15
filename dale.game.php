@@ -2476,9 +2476,10 @@ class Dale extends DaleTableBasic
                     }
                     break;
                 case CT_TIRELESSTINKERER:
+                case CT_HISTORYLESSON:
                     $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
                     if ($nbr > 0) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_TIRELESSTINKERER. The player's discard pile contains card(s).");
+                        throw new BgaVisibleSystemException("Unable to fizzle. The player's discard pile contains card(s).");
                     }
                     break;
                 case CT_SAFETYPRECAUTION:
@@ -3298,6 +3299,34 @@ class Dale extends DaleTableBasic
             case CT_DUPLICATEENTRY:
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDuplicateEntry");
+                break;
+            case CT_HISTORYLESSON:
+                $card_ids = $args["card_ids"];
+                $nbr = count($card_ids);
+                if ($nbr == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('History Lesson: ${player_name} shuffles 0 cards into their deck'), array(
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                }
+                else {
+                    while ($nbr > 0) {
+                        $nbr -= 1;
+                        $dbcard = $this->cards->getCardOnTop(DISCARD.$player_id);
+                        $card_id = $dbcard["id"];
+                        if (!in_array($card_id, $card_ids)) {
+                            throw new BgaVisibleSystemException("Since card $card_id is on top, it must be selected");
+                        }
+                        $this->cards->moveCardOnTop($card_id, DECK.$player_id);
+                        $this->notifyAllPlayers('discardToDeck', clienttranslate('History Lesson: ${player_name} shuffles their ${card_name} into their deck'), array(
+                            "player_id" => $player_id,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "card_name" => $this->getCardName($dbcard),
+                            "card" => $dbcard
+                        ));
+                    }
+                    $this->cards->shuffle(DECK.$player_id);
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

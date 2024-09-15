@@ -87,6 +87,10 @@ export class DaleIcons {
         return this.getIcon(4, 2); //TODO
     }
 
+    public static getHistoryLessonIcon(): HTMLElement {
+        return this.getIcon(4, 2); //TODO
+    }
+
     /////////////////////////////
     ////////    ROW 5    ////////
     /////////////////////////////

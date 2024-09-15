@@ -674,6 +674,9 @@ class Dale extends Gamegui
 				this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('single');
 				break;
+			case 'client_historyLesson':
+				this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'dale-wrap-technique', 3);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -907,6 +910,9 @@ class Dale extends Gamegui
 			case 'duplicateEntry':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				break;
+			case 'client_historyLesson':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1204,6 +1210,10 @@ class Dale extends Gamegui
 				break;
 			case 'duplicateEntry':
 				this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
+				break;
+			case 'client_historyLesson':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2646,6 +2656,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
+			case DaleCard.CT_HISTORYLESSON:
+				fizzle = this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_historyLesson', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3275,6 +3294,12 @@ class Dale extends Gamegui
 		this.bgaPerformAction('actDuplicateEntry', {
 			card_id: -1
 		});
+	}
+
+	onHistoryLesson() {
+		this.playTechniqueCard<'client_historyLesson'>({
+			card_ids: this.myDiscard.orderedSelection.get()
+		})
 	}
 
 	//(~on)

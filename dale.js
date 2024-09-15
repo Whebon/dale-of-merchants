@@ -70,6 +70,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getNaturalSurvivorIcon = function () {
             return this.getIcon(4, 2);
         };
+        DaleIcons.getHistoryLessonIcon = function () {
+            return this.getIcon(4, 2);
+        };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
         };
@@ -341,6 +344,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 case 'naturalSurvivor':
                     icon = DaleIcons_1.DaleIcons.getNaturalSurvivorIcon();
                     break;
+                case 'historyLesson':
+                    icon = DaleIcons_1.DaleIcons.getHistoryLessonIcon();
+                    break;
             }
             if (icon) {
                 if (secondary) {
@@ -423,6 +429,9 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
             var maxSize = secondary ? this.secondaryMaxSize : this.maxSize;
             if (maxSize == 0) {
+                return;
+            }
+            if (card_ids.includes(card_id)) {
                 return;
             }
             while (card_ids.length >= maxSize) {
@@ -1961,7 +1970,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.updateHTML = function () {
             var _a;
             var topCard = this.peek(true);
-            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk') && this.orderedSelection.getMaxSize() > 0) {
+            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTop') && this.orderedSelection.getMaxSize() > 0) {
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("dale-blinking");
                 }
@@ -2214,6 +2223,38 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     this.orderedSelection.toggle(card.id);
                     this.updateHTML();
                     break;
+                case 'multipleFromTop':
+                    var multipleFromTop_nbr = this.orderedSelection.getMaxSize();
+                    var multipleFromTop_index = -1;
+                    for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < this.cards.length; i++) {
+                        if (this.cards[i].id == card.id) {
+                            multipleFromTop_index = i;
+                            break;
+                        }
+                    }
+                    if (multipleFromTop_index == -1) {
+                        this.page.showMessage(_("This card is not within the top cards of the pile") + " (top ".concat(multipleFromTop_nbr, ")"), 'error');
+                        return;
+                    }
+                    if (this.orderedSelection.includes(card.id)) {
+                        var deselect_self = true;
+                        for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < multipleFromTop_index; i++) {
+                            if (this.orderedSelection.includes(this.cards[i].id)) {
+                                deselect_self = false;
+                            }
+                            this.orderedSelection.unselectItem(this.cards[i].id);
+                        }
+                        if (deselect_self) {
+                            this.orderedSelection.unselectItem(this.cards[multipleFromTop_index].id);
+                        }
+                    }
+                    else {
+                        for (var i = multipleFromTop_index; i < this.cards.length; i++) {
+                            this.orderedSelection.selectItem(this.cards[i].id);
+                        }
+                    }
+                    this.updateHTML();
+                    break;
             }
         };
         Pile.prototype.unselectItem = function (card_id) {
@@ -2253,6 +2294,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return;
                 case 'multiple':
                 case 'multipleJunk':
+                case 'multipleFromTop':
                     if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                         this.containerHTML.classList.add("dale-blinking");
                     }
@@ -2283,6 +2325,15 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return this.orderedSelection.getMaxSize() > 0;
                 case 'multipleJunk':
                     return card.isJunk();
+                case 'multipleFromTop':
+                    var multipleFromTop_nbr = this.orderedSelection.getMaxSize();
+                    for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < this.cards.length; i++) {
+                        var topCard = this.cards[i];
+                        if (card === topCard) {
+                            return true;
+                        }
+                    }
+                    return false;
                 default:
                     return false;
             }
@@ -4030,6 +4081,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard_10.DaleCard.of));
                     this.myDeck.setSelectionMode('single');
                     break;
+                case 'client_historyLesson':
+                    this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'dale-wrap-technique', 3);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4260,6 +4314,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'duplicateEntry':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'client_historyLesson':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -4557,6 +4614,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'duplicateEntry':
                     this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
+                    break;
+                case 'client_historyLesson':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -5751,6 +5812,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_HISTORYLESSON:
+                    fizzle = this.myDiscard.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_historyLesson', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6313,6 +6383,11 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         Dale.prototype.onDuplicateEntrySkip = function () {
             this.bgaPerformAction('actDuplicateEntry', {
                 card_id: -1
+            });
+        };
+        Dale.prototype.onHistoryLesson = function () {
+            this.playTechniqueCard({
+                card_ids: this.myDiscard.orderedSelection.get()
             });
         };
         Dale.prototype.setupNotifications = function () {

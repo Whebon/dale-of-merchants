@@ -358,6 +358,7 @@ declare global {
 		'client_rareArtefact': { card_id: number }
 		'client_swank': { card_id: number }
 		'client_riskyBusiness': { value: number }
+		'client_historyLesson': { card_ids: number[] }
 	}
 
 	interface ClientPassiveChoice {
