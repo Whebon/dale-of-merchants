@@ -62,37 +62,37 @@ export class DaleDie {
         }
         this.parent = parentHTML;
         this.container = document.createElement('div');
-        this.container.classList.add("dale-die-container");
+        this.container.classList.add("daleofmerchants-die-container");
         this.container.innerHTML = `
-            <div class="dale-die" type="${this.type}" side="1">
-                <div class="dale-die-side dale-die-side-1"></div>
-                <div class="dale-die-side dale-die-side-2"></div>
-                <div class="dale-die-side dale-die-side-3"></div>
-                <div class="dale-die-side dale-die-side-4"></div>
-                <div class="dale-die-side dale-die-side-5"></div>
-                <div class="dale-die-side dale-die-side-6"></div>
+            <div class="daleofmerchants-die" type="${this.type}" side="1">
+                <div class="daleofmerchants-die-side daleofmerchants-die-side-1"></div>
+                <div class="daleofmerchants-die-side daleofmerchants-die-side-2"></div>
+                <div class="daleofmerchants-die-side daleofmerchants-die-side-3"></div>
+                <div class="daleofmerchants-die-side daleofmerchants-die-side-4"></div>
+                <div class="daleofmerchants-die-side daleofmerchants-die-side-5"></div>
+                <div class="daleofmerchants-die-side daleofmerchants-die-side-6"></div>
             </div>
-            <div class="dale-die-result"></div>
+            <div class="daleofmerchants-die-result"></div>
         `;
         this.parent.appendChild(this.container);
-        this.die = this.container.querySelector(".dale-die")!;
+        this.die = this.container.querySelector(".daleofmerchants-die")!;
         this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
 
         //roll the die according to the given d6 roll
         setTimeout((() => {
             this.die.setAttribute('side', String(d6+1));
-            this.die.classList.toggle('dale-roll');
+            this.die.classList.toggle('daleofmerchants-roll');
         }).bind(this), 1)
 
         //show the result after 1000ms
-        const resultLabel = this.die.parentElement?.querySelector('.dale-die-result') as HTMLElement;
+        const resultLabel = this.die.parentElement?.querySelector('.daleofmerchants-die-result') as HTMLElement;
         if (resultLabel) {
-            resultLabel.classList.remove('dale-die-reveal');
-            resultLabel.classList.add('dale-die-hide');
+            resultLabel.classList.remove('daleofmerchants-die-reveal');
+            resultLabel.classList.add('daleofmerchants-die-hide');
             resultLabel.innerHTML = `Rolled ${name_displayed}`;
             setTimeout(() => {
-              resultLabel.classList.add('dale-die-reveal');
-              resultLabel.classList.remove('dale-die-hide');
+              resultLabel.classList.add('daleofmerchants-die-reveal');
+              resultLabel.classList.remove('daleofmerchants-die-hide');
             }, 1000);
         }
 
@@ -198,6 +198,6 @@ export class DaleDie {
                 col = 6;
                 break;
         }
-        return `<i class="dale-die-side dale-icon" style="background-position: -${col}00% -${row}00%;"></i>`
+        return `<i class="daleofmerchants-die-side daleofmerchants-icon" style="background-position: -${col}00% -${row}00%;"></i>`
     }
 }

@@ -2,9 +2,9 @@ import { DaleCard } from "./DaleCard";
 import { Images } from "./Images";
 import { Pile } from "./Pile";
 
-type lineClass = "dale-line-chameleon" | "dale-line-technique";
-type targetClass = "dale-line-target-chameleon" | "dale-line-target-technique";
-type sourceClass = "dale-line-source-chameleon" | "dale-line-source-technique";
+type lineClass = "daleofmerchants-line-chameleon" | "daleofmerchants-line-technique";
+type targetClass = "daleofmerchants-line-target-chameleon" | "daleofmerchants-line-target-technique";
+type sourceClass = "daleofmerchants-line-source-chameleon" | "daleofmerchants-line-source-technique";
 
 /**
  * Can be used to draw a svg lines
@@ -43,7 +43,7 @@ export class TargetingLine {
     */
     constructor(source: DaleCard, targets: (DaleCard | HTMLElement)[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: number) => void, onTarget: (source_id: number, target_id: number) => void, pile?: Pile) {
         TargetingLine.targetingLines.push(this);
-        this.svg = $("dale-svg-container")!.querySelector("svg")!;
+        this.svg = $("daleofmerchants-svg-container")!.querySelector("svg")!;
         this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         this.line.classList.add(lineClass);
         this.svg.appendChild(this.line);
@@ -62,7 +62,7 @@ export class TargetingLine {
         else {
             this.cardDiv = source.div;
         }
-        this.cardDiv.classList.add("dale-line-source", this.sourceClass);
+        this.cardDiv.classList.add("daleofmerchants-line-source", this.sourceClass);
         this.onSource = () => {
             thiz.remove();
             onSource(source_id);
@@ -74,7 +74,7 @@ export class TargetingLine {
         this.onTargets = [];
         for (let targetCard of targets) {
             const card_div = targetCard instanceof DaleCard ? targetCard.div : targetCard;
-            card_div.classList.add("dale-line-target", this.targetClass);
+            card_div.classList.add("daleofmerchants-line-target", this.targetClass);
             this.targetDivs.push(card_div);
             const target_id = targetCard instanceof DaleCard ? targetCard.id : +targetCard.dataset['target_id']!;
             const finalOnTarget = () => {
@@ -95,7 +95,7 @@ export class TargetingLine {
                     return;
                 }
                 thiz.cardDiv = source.div;
-                thiz.cardDiv.classList.add("dale-line-source", thiz.sourceClass);
+                thiz.cardDiv.classList.add("daleofmerchants-line-source", thiz.sourceClass);
                 thiz.cardDiv.addEventListener("click", thiz.onSource);
                 console.log("TargetingLine: new source found");
                 console.log(thiz.cardDiv);
@@ -105,8 +105,8 @@ export class TargetingLine {
             if (currTarget == thiz.prevTargetSnap) {
                 return;
             }
-            thiz.prevTargetHover?.classList.remove("dale-line-source", thiz.sourceClass);
-            thiz.prevTargetHover?.classList.add("dale-line-target", thiz.targetClass);
+            thiz.prevTargetHover?.classList.remove("daleofmerchants-line-source", thiz.sourceClass);
+            thiz.prevTargetHover?.classList.add("daleofmerchants-line-target", thiz.targetClass);
             thiz.prevTargetHover = undefined;
             thiz.prevTargetSnap = undefined;
             const x1 = sourceRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
@@ -122,8 +122,8 @@ export class TargetingLine {
                         }
                         if (currTarget == TargetingLine.previousMouseEvent?.target) {
                             const targetRect = currTarget.getBoundingClientRect();
-                            targetCard.classList.add("dale-line-source", thiz.sourceClass);
-                            targetCard.classList.remove("dale-line-target", thiz.targetClass);
+                            targetCard.classList.add("daleofmerchants-line-source", thiz.sourceClass);
+                            targetCard.classList.remove("daleofmerchants-line-target", thiz.targetClass);
                             x2 = targetRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
                             y2 = targetRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
                             thiz.line.setAttribute("x2", String(x2));
@@ -156,15 +156,15 @@ export class TargetingLine {
      */
     public remove() {
         removeEventListener("mousemove", this.updateLine);
-        this.cardDiv.classList.remove("dale-line-source", this.sourceClass);
+        this.cardDiv.classList.remove("daleofmerchants-line-source", this.sourceClass);
         this.cardDiv.removeEventListener("click", this.onSource);
         if (this.pile) {
             this.cardDiv.remove(); //delete the dummy
             this.pile.openPopin();
         }
         for (let i = 0; i < this.targetDivs.length; i++) {
-            this.targetDivs[i]!.classList.remove("dale-line-source", this.sourceClass);
-            this.targetDivs[i]!.classList.remove("dale-line-target", this.targetClass);
+            this.targetDivs[i]!.classList.remove("daleofmerchants-line-source", this.sourceClass);
+            this.targetDivs[i]!.classList.remove("daleofmerchants-line-target", this.targetClass);
             this.targetDivs[i]!.removeEventListener("click", this.onTargets[i]!);
         }
         this.line.remove();

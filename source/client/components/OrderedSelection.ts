@@ -43,7 +43,7 @@ export class OrderedSelection {
      * @return div element corresponding to the card_id
      */
     protected getDiv(card_id: number): HTMLElement | undefined {
-        //return $("dale-card-"+card_id);
+        //return $("daleofmerchants-card-"+card_id);
         return DaleCard.divs.get(card_id);
     }
 
@@ -60,7 +60,7 @@ export class OrderedSelection {
             console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
             return;
         }
-        div.classList.add("dale-selected");
+        div.classList.add("daleofmerchants-selected");
 
         let icon = undefined;
         switch(iconType) {
@@ -100,10 +100,10 @@ export class OrderedSelection {
         }
         if (icon) {
             if (secondary) {
-                icon.classList.add("dale-selection-icon-2");
+                icon.classList.add("daleofmerchants-selection-icon-2");
             }
             else {
-                icon.classList.add("dale-selection-icon-1");
+                icon.classList.add("daleofmerchants-selection-icon-1");
             }
             div.prepend(icon); //only the first icon is visible
         }
@@ -119,18 +119,18 @@ export class OrderedSelection {
             console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
             return;
         }
-        const primaryIcon = div?.querySelector(".dale-selection-icon-1");
-        const secondaryIcon = div?.querySelector(".dale-selection-icon-2");
+        const primaryIcon = div?.querySelector(".daleofmerchants-selection-icon-1");
+        const secondaryIcon = div?.querySelector(".daleofmerchants-selection-icon-2");
         if (secondary) {
             secondaryIcon?.remove();
             if (!primaryIcon) {
-                div?.classList.remove("dale-selected");
+                div?.classList.remove("daleofmerchants-selected");
             }
         }
         else {
             primaryIcon?.remove();
             if (!secondaryIcon) {
-                div?.classList.remove("dale-selected");
+                div?.classList.remove("daleofmerchants-selected");
             }
         }
     }

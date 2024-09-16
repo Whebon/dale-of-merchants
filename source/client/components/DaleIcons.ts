@@ -15,7 +15,7 @@ export class DaleIcons {
      */
     private static getIcon(row: number, col: number): HTMLElement {
         const icon = document.createElement("i");
-        icon.classList.add("dale-icon");
+        icon.classList.add("daleofmerchants-icon");
         icon.setAttribute('style', `
             background-size: ${DaleIcons.COLUMNS}00% ${DaleIcons.ROWS}00%;
             background-position: -${col}00% -${row}00%;

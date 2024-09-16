@@ -60,13 +60,13 @@ export class DaleDeckSelection {
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
-        this.cardContainer = (this.deckSelectionHTML.querySelector(".dale-deck-selection-container") as HTMLElement)!;
-        this.cardContainer.classList.add("dale-wrap-technique");
+        this.cardContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container") as HTMLElement)!;
+        this.cardContainer.classList.add("daleofmerchants-wrap-technique");
         if (!inDeckSelection) {
-            this.deckSelectionHTML.classList.add("dale-hidden");
+            this.deckSelectionHTML.classList.add("daleofmerchants-hidden");
             return;
         }
-        this.gameHTML.classList.add("dale-hidden");
+        this.gameHTML.classList.add("daleofmerchants-hidden");
 
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1)
@@ -74,7 +74,7 @@ export class DaleDeckSelection {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;
-            card_div.classList.add("dale-card", "dale-relative", "dale-clickable", "dale-deck-selection");
+            card_div.classList.add("daleofmerchants-card", "daleofmerchants-relative", "daleofmerchants-clickable", "daleofmerchants-deck-selection");
             this.cardContainer.appendChild(card_div);
             Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
 
@@ -92,7 +92,7 @@ export class DaleDeckSelection {
             //disable some animalfolk
             const unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
             if (unavailable) {
-                card_div.classList.add("dale-deck-selection-unavailable");
+                card_div.classList.add("daleofmerchants-deck-selection-unavailable");
             }
 
             //make selectable
@@ -122,20 +122,20 @@ export class DaleDeckSelection {
         for (let tooltip of this.tooltips) {
             tooltip.destroy();
         }
-        this.gameHTML.classList.remove("dale-hidden");
+        this.gameHTML.classList.remove("daleofmerchants-hidden");
     }
 
     public setResult(animalfolk_id: number) {
-        if (this.cardContainer.classList.contains("dale-wrap-technique")) {
-            this.cardContainer.classList.remove("dale-wrap-technique");
-            this.cardContainer.classList.add("dale-wrap-purchase");
+        if (this.cardContainer.classList.contains("daleofmerchants-wrap-technique")) {
+            this.cardContainer.classList.remove("daleofmerchants-wrap-technique");
+            this.cardContainer.classList.add("daleofmerchants-wrap-purchase");
             this.orderedSelection.unselectAll();
             this.orderedSelection.setIconType(undefined);
-            this.cardContainer.querySelectorAll(".dale-deck-selection").forEach(card_div => {
-                card_div.classList.add("dale-deck-selection-unavailable");
+            this.cardContainer.querySelectorAll(".daleofmerchants-deck-selection").forEach(card_div => {
+                card_div.classList.add("daleofmerchants-deck-selection-unavailable");
             });
         }
-        $("deck-"+animalfolk_id)?.classList.remove("dale-deck-selection-unavailable");
+        $("deck-"+animalfolk_id)?.classList.remove("daleofmerchants-deck-selection-unavailable");
         this.orderedSelection.selectItem(animalfolk_id);
     }
 }

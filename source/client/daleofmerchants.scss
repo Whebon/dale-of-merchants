@@ -27,14 +27,14 @@
 ////////////////////     DECK SELECTION     ////////////////////
 ////////////////////////////////////////////////////////////////
 
-.dale-deck-selection-container {
+.daleofmerchants-deck-selection-container {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
 	margin: 20px
 }
 
-.dale-deck-selection-unavailable {
+.daleofmerchants-deck-selection-unavailable {
 	background-color: black;
     background-blend-mode: luminosity;
 	opacity: 0.5;
@@ -44,22 +44,22 @@
 ////////////////////     GAME     ////////////////////
 //////////////////////////////////////////////////////
 
-.dale-component-name {
+.daleofmerchants-component-name {
 	text-align: center;
 	margin: 10px;
 	white-space: nowrap;
 }
 
-.dale-play-area-title {
+.daleofmerchants-play-area-title {
 	text-align: left;
 	white-space: nowrap;
 }
 
-.bgabutton.dale-bga-button-selected {
+.bgabutton.daleofmerchants-bga-button-selected {
 	outline: 3px solid red;
 }
 
-.dale-action-label {
+.daleofmerchants-action-label {
 	position: absolute;
 	left: 50%;
 	transform: translate(-50%, -10px);
@@ -70,22 +70,22 @@
 	text-align: center;
 }
 
-.dale-clickable {
+.daleofmerchants-clickable {
 	cursor: pointer;
 }
 
-.dale-text {
+.daleofmerchants-text {
 	pointer-events: none;
 	display: none; //by default, text is hidden
 }
 
-.dale-card[data-location="market"] {
-	.dale-effective-value {
+.daleofmerchants-card[data-location="market"] {
+	.daleofmerchants-effective-value {
 		color: lightcoral;
 	}
 }
 
-.dale-effective-value {
+.daleofmerchants-effective-value {
 	height: 20px;
     width: 20px;
     border-radius: 20px;
@@ -128,7 +128,7 @@
 	z-index: 200;
 }
 
-.dale-icon {
+.daleofmerchants-icon {
 	position: absolute;
 	width: 0px; //a more specific selector should override this
 	height: 0px; //a more specific selector should override this
@@ -137,23 +137,23 @@
 	background-image: url('img/icons.png');
     transform: translate(-50%, -50%);
 	z-index: 500;
-	&.dale-selection-icon-1 {
+	&.daleofmerchants-selection-icon-1 {
 		top: 80%;
 		width: 50px;
 		height: 50px;
-		&~.dale-selection-icon-2 {
+		&~.daleofmerchants-selection-icon-2 {
 			display: none;
 		}
 	}
-	&.dale-selection-icon-2 {
+	&.daleofmerchants-selection-icon-2 {
 		top: 80%;
 		width: 50px;
 		height: 50px;
-		&~.dale-selection-icon-1 {
+		&~.daleofmerchants-selection-icon-1 {
 			display: none;
 		}
 	}
-	&.dale-chameleon-icon {
+	&.daleofmerchants-chameleon-icon {
 		pointer-events: none;
 		width: 90px;
 		height: 90px;
@@ -164,7 +164,7 @@
 }
 
 .player_score {
-	.dale-icon {
+	.daleofmerchants-icon {
 		before {
 			content: "\f005";
 		}
@@ -178,7 +178,7 @@
 	}
 }
 
-.dale-myhandsize-icon {
+.daleofmerchants-myhandsize-icon {
 	before {
 		content: "\f005";
 	}
@@ -192,7 +192,7 @@
 	margin-right: 5px;
 }
 
-.dale-placeholder {
+.daleofmerchants-placeholder {
 	background-image: url('img/placeholders.png');
 	transition: transform 0.3s ease, scale 0.3s ease;
 	background-size: 500% 200%;
@@ -200,35 +200,35 @@
 	position: absolute;
 }
 
-// .dale-clickable {
+// .daleofmerchants-clickable {
 // 	cursor: pointer;
 // }
 
-#dale-market-wrap {
-	.dale-selected { //note that the slot is selected, not the card
-		&.dale-wrap-technique {
-			.dale-card {
-				box-shadow: 0px 2px 8px var(--dale-wrap-technique); //for CT_FASHIONHINT
-				outline: 3px solid var(--dale-wrap-technique); //for CT_FASHIONHINT
-				background-color: var(--dale-wrap-technique-a); //for CT_FASHIONHINT
+#daleofmerchants-market-wrap {
+	.daleofmerchants-selected { //note that the slot is selected, not the card
+		&.daleofmerchants-wrap-technique {
+			.daleofmerchants-card {
+				box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-technique); //for CT_FASHIONHINT
+				outline: 3px solid var(--daleofmerchants-wrap-technique); //for CT_FASHIONHINT
+				background-color: var(--daleofmerchants-wrap-technique-a); //for CT_FASHIONHINT
 				background-blend-mode: overlay; //for CT_FASHIONHINT
 			}
 		}
-		.dale-card {
+		.daleofmerchants-card {
 			border-radius: 10px;
-			box-shadow: 0px 2px 8px var(--dale-wrap-purchase); //for CT_MARKETDISCOVERY
-			outline: 3px solid var(--dale-wrap-purchase); //for CT_MARKETDISCOVERY
+			box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-purchase); //for CT_MARKETDISCOVERY
+			outline: 3px solid var(--daleofmerchants-wrap-purchase); //for CT_MARKETDISCOVERY
 			transform: translateY(5px);
 			scale: 1.1;
 			z-index: 200;
-			&.dale-line-target-chameleon {
+			&.daleofmerchants-line-target-chameleon {
 				transform: translateY(0);
 			}
 		}
 	}
 
 	//cost modification icon
-	.dale-stack-container > .dale-icon {
+	.daleofmerchants-stack-container > .daleofmerchants-icon {
 		top: -20px;
 		width: 40px;
 		height: 40px;
@@ -236,25 +236,25 @@
 	}
 
 	//align Supply and Bin with the market slots
-	.dale-pile-container {
+	.daleofmerchants-pile-container {
 		padding-bottom: 11px;
 	}
 }
 
-.dale-passive-selected {
+.daleofmerchants-passive-selected {
 	cursor: pointer;
 	scale: 1.1;
 	z-index: 200 !important;
-	outline: 3px solid var(--dale-wrap-technique);
-	// background-color: var(--dale-wrap-technique-a);
+	outline: 3px solid var(--daleofmerchants-wrap-technique);
+	// background-color: var(--daleofmerchants-wrap-technique-a);
 	// background-blend-mode: overlay;
-	// .dale-chameleon-overlay {
-	// 	background-color: var(--dale-wrap-technique-a);
+	// .daleofmerchants-chameleon-overlay {
+	// 	background-color: var(--daleofmerchants-wrap-technique-a);
 	// 	background-blend-mode: overlay;
 	// }
 }
 
-.dale-blinking {
+.daleofmerchants-blinking {
 	animation: blinker 1s infinite;
 }
 
@@ -264,40 +264,40 @@
 	to { opacity: 1.0; }
 }
 
-.dale-line-source {
+.daleofmerchants-line-source {
 	cursor: pointer;
 	border-radius: 10px;
 	z-index: 202 !important;
 }
 
-.dale-line-target {
+.daleofmerchants-line-target {
 	cursor: pointer;
 	border-radius: 10px;
 }
 
-.dale-line-source-chameleon {
+.daleofmerchants-line-source-chameleon {
 	scale: 1.1 !important;
 	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
 	outline: 3px solid rgba(31, 119, 44) !important;
 }
 
-.dale-line-target-chameleon {
+.daleofmerchants-line-target-chameleon {
 	scale: 1.05 !important;
 	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
 	outline: 3px solid rgba(31, 119, 44, 0.5) !important;
 }
 
-.dale-line-source-technique {
+.daleofmerchants-line-source-technique {
 	scale: 1.1 !important;
-	box-shadow: 0px 0px 16px var(--dale-wrap-technique) !important;
-	outline: 3px solid var(--dale-wrap-technique) !important;
+	box-shadow: 0px 0px 16px var(--daleofmerchants-wrap-technique) !important;
+	outline: 3px solid var(--daleofmerchants-wrap-technique) !important;
 }
 
-.dale-line-target-technique {
-	box-shadow: 0px 0px 16px var(--dale-wrap-technique) !important;
+.daleofmerchants-line-target-technique {
+	box-shadow: 0px 0px 16px var(--daleofmerchants-wrap-technique) !important;
 }
 
-.dale-card {
+.daleofmerchants-card {
 	background-image: url("img/cards.jpg");
 	background-size: cover;
 	box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
@@ -309,29 +309,29 @@
 		scale: 1.1;
 		z-index: 200;
 	}
-	&.dale-chameleon-overlay {
+	&.daleofmerchants-chameleon-overlay {
 		pointer-events: none;
 		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5); //no box shadows for overlays
 	}
-	&.dale-relative {
+	&.daleofmerchants-relative {
 		margin: 5px;
 		position: relative;
 	}
-	&.dale-deck-selection {
+	&.daleofmerchants-deck-selection {
 		background-image: url("img/cards_selection.jpg");
 	}
-	&.dale-card-sheet-1 {
+	&.daleofmerchants-card-sheet-1 {
 		background-image: url("img/cards_1.jpg");
 	}
-	&.dale-card-sheet-2 {
+	&.daleofmerchants-card-sheet-2 {
 		background-image: url("img/cards_2.jpg");
 	}
-	&.dale-card-sheet-3 {
+	&.daleofmerchants-card-sheet-3 {
 		background-image: url("img/cards_3.jpg");
 	}
 }
 
-#dale-market-board-background {
+#daleofmerchants-market-board-background {
     background-image: url(img/shop_day.jpg);
 	background-repeat: no-repeat;
 	position: relative;
@@ -340,22 +340,22 @@
 	border-radius: 5px;
 }
 
-.dale-horizontal-flex {
+.daleofmerchants-horizontal-flex {
 	display: flex; 
 	justify-content: space-evenly;
 	width: 100%;
 }
 
-.dale-no-vertical-margin {
+.daleofmerchants-no-vertical-margin {
 	margin-top: 0px !important;
 	margin-bottom: 0px !important;
 }
 
-.dale-left-margin {
+.daleofmerchants-left-margin {
 	margin-left: 10px;
 }
 
-.dale-stall-wrap {
+.daleofmerchants-stall-wrap {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -367,13 +367,13 @@
 	flex: 10 1; //naturally gifted at flexing competitions
 }
 
-.dale-stall-container {
+.daleofmerchants-stall-container {
 	width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
 	display: flex;
 	flex: 1 1;
 	justify-content: left; //stack containers are left aligned
 
-	.dale-stack-container {
+	.daleofmerchants-stack-container {
 		flex: 1 1; /* Allow items to grow and shrink */
 		// background-color: red;
 		// border: 2px solid black;
@@ -381,59 +381,59 @@
 		min-width: 0; /* Ensure items can shrink below their content width */
 		position: relative;
 
-		.dale-card:hover {
+		.daleofmerchants-card:hover {
 			//add a delay to the z-index to (issue #47)
 			transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
-			&.dale-line-source {
+			&.daleofmerchants-line-source {
 				transition: transform 0.3s ease 0s, scale 0.3s ease 0s; //...except when targeted with a targeting line
 			}
 		}
 
-		&.dale-grayed-out {
+		&.daleofmerchants-grayed-out {
 			pointer-events: none;
 			opacity: 0.5;
-			.dale-placeholder { 
+			.daleofmerchants-placeholder { 
 				background-position-y: -100%;
 			}
-			.dale-stack-index {
+			.daleofmerchants-stack-index {
 				color:#707070; //same as in placeholders.png
 			}
 		}
 
-		.dale-placeholder-market {
+		.daleofmerchants-placeholder-market {
 			background-position-x: -300%;
-			&.dale-placeholder-partially-covered {
+			&.daleofmerchants-placeholder-partially-covered {
 				background-position-x: -400%;
 			}
 		}
 
-		.dale-placeholder-stall {
+		.daleofmerchants-placeholder-stall {
 			background-position-x: 0%;
-			&.dale-placeholder-partially-covered {
+			&.daleofmerchants-placeholder-partially-covered {
 				background-position-x: -100%;
-				&.dale-clickable:hover {
-					.dale-icon {
+				&.daleofmerchants-clickable:hover {
+					.daleofmerchants-icon {
 						width: 50px;
 						height: 50px;
 						left: 78%;
 					}
 
-					.dale-text {
+					.daleofmerchants-text {
 						display: none;
 					}
 				}
 			}
-			&.dale-clickable:hover {
-				background-color: var(--dale-wrap-build-a);
-				.dale-icon {
+			&.daleofmerchants-clickable:hover {
+				background-color: var(--daleofmerchants-wrap-build-a);
+				.daleofmerchants-icon {
 					width: 50px;
 					height: 50px;
 					top: 40%;
 					left: 56%;
 				}
-				.dale-text {
+				.daleofmerchants-text {
 					display: block;
-					color: var(--dale-wrap-build);
+					color: var(--daleofmerchants-wrap-build);
 					position: absolute;
 					top: 65%;
 					left: 50%;
@@ -443,14 +443,14 @@
 					text-align: center;
 				}
 			}
-			&.dale-selected {
-				background-color: var(--dale-wrap-build-a);
+			&.daleofmerchants-selected {
+				background-color: var(--daleofmerchants-wrap-build-a);
 			}
 		}
 
-		.dale-stack-index {
+		.daleofmerchants-stack-index {
 			position: absolute;
-			color: var(--dale-wrap-build);
+			color: var(--daleofmerchants-wrap-build);
 			font-weight: bold;
 			left: 82%;
 			top: 5%;
@@ -458,7 +458,7 @@
 	}
 }
 
-.dale-pile-container {
+.daleofmerchants-pile-container {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -469,7 +469,7 @@
 	padding-top: 0px;
 	width: max-content;
 
-	.dale-pile-size {
+	.daleofmerchants-pile-size {
 		pointer-events: none;
 		z-index: 500; //must be higher than all sliding cards
 		position: absolute;
@@ -485,11 +485,11 @@
 		white-space: nowrap;
 	}
 
-	.dale-pile {
+	.daleofmerchants-pile {
 		position: relative;
 	}
 
-	.dale-placeholder {
+	.daleofmerchants-placeholder {
 		background-position-x: -200%;
 	}
 }
@@ -499,30 +499,30 @@
 	flex-wrap: wrap;
 }
 
-.dale-hidden {
+.daleofmerchants-hidden {
 	display: none;
 }
 
-.dale-card-tooltip {
+.daleofmerchants-card-tooltip {
 	pointer-events: none;
-	.dale-chameleon-name {
+	.daleofmerchants-chameleon-name {
 		text-decoration: line-through;
 		color: #1d7a2a;
 	}
-	.dale-original-value {
+	.daleofmerchants-original-value {
 		text-decoration: line-through;
 		color: gray;
 	}
-	.dale-card-tooltip-text {
+	.daleofmerchants-card-tooltip-text {
 		max-width: 300px;
 	}
 }
 
-.dale-fizzle {
+.daleofmerchants-fizzle {
 	scale: 1.1;
 }
 
-#dale-svg-container {
+#daleofmerchants-svg-container {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -535,23 +535,23 @@
 
 	pointer-events: none;
 	z-index: 201; //just above 'selected'
-	.dale-line-chameleon {
+	.daleofmerchants-line-chameleon {
 		stroke: green;
 		stroke-width: 10;
 		stroke-dashoffset: 1000;
 		stroke-dasharray: 30, 10;
-		animation: dale-dash 20s linear infinite;
+		animation: daleofmerchants-dash 20s linear infinite;
 	}
 
-	.dale-line-technique {
-		stroke: var(--dale-wrap-technique);
+	.daleofmerchants-line-technique {
+		stroke: var(--daleofmerchants-wrap-technique);
 		stroke-width: 10;
 		stroke-dashoffset: 1000;
 		stroke-dasharray: 30, 10;
-		animation: dale-dash 20s linear infinite;
+		animation: daleofmerchants-dash 20s linear infinite;
 	}
 	  
-	@keyframes dale-dash {
+	@keyframes daleofmerchants-dash {
 		from { stroke-dashoffset: 1000; }
 		to { stroke-dashoffset: 0; }
 	}
@@ -567,7 +567,7 @@
 	pointer-events: none;
 }
 
-.dale-dice {
+.daleofmerchants-dice {
 	position: absolute;
 	background-image: url('img/dice.png');
 	background-size: 600% 500%;
@@ -577,10 +577,10 @@
 	height: 50px;
 }
 
-.dale-log-span {
+.daleofmerchants-log-span {
     display: inline;
     vertical-align: middle;
-	.dale-icon {
+	.daleofmerchants-icon {
 		width: 25px;
 		height: 25px;
 		display: inline-block;
@@ -605,7 +605,7 @@
 	--die-half: 30px;
 }
 
-.dale-die-container {
+.daleofmerchants-die-container {
 	text-align: center;
 	padding: 10px;
 	position: absolute;
@@ -616,7 +616,7 @@
 	min-width: 100%;
 }
 
-.dale-die {
+.daleofmerchants-die {
 	width: var(--die-size);
 	height: var(--die-size);
 	transform-style: preserve-3d;
@@ -625,7 +625,7 @@
 	margin: auto;
 }
 
-.dale-die-side {
+.daleofmerchants-die-side {
 	display: block;
 	position: absolute;
 	width: 100%;
@@ -635,134 +635,134 @@
 	background-size: 600% 500%;
 }
 
-.dale-die {
-	.dale-die-side-1 { transform: translateZ(var(--die-half)); }
-	.dale-die-side-2 { transform: rotateX(-180deg) translateZ(var(--die-half)) scaleY(-1); }
-	.dale-die-side-3 { transform: rotateY(90deg) translateZ(var(--die-half)); }
-	.dale-die-side-4 { transform: rotateY(-90deg) translateZ(var(--die-half)); }
-	.dale-die-side-5 { transform: rotateX(90deg) translateZ(var(--die-half)); }
-	.dale-die-side-6 { transform: rotateX(-90deg) translateZ(var(--die-half)); }
+.daleofmerchants-die {
+	.daleofmerchants-die-side-1 { transform: translateZ(var(--die-half)); }
+	.daleofmerchants-die-side-2 { transform: rotateX(-180deg) translateZ(var(--die-half)) scaleY(-1); }
+	.daleofmerchants-die-side-3 { transform: rotateY(90deg) translateZ(var(--die-half)); }
+	.daleofmerchants-die-side-4 { transform: rotateY(-90deg) translateZ(var(--die-half)); }
+	.daleofmerchants-die-side-5 { transform: rotateX(90deg) translateZ(var(--die-half)); }
+	.daleofmerchants-die-side-6 { transform: rotateX(-90deg) translateZ(var(--die-half)); }
 }
-.dale-die[type="ocelot"] {
-	.dale-die-side-1 { background-position: 0% 0%; }
-	.dale-die-side-2 { background-position: -100% 0%; }
-	.dale-die-side-3 { background-position: -200% 0%; }
-	.dale-die-side-4 { background-position: -300% 0%; }
-	.dale-die-side-5 { background-position: -400% 0%; }
-	.dale-die-side-6 { background-position: -500% 0%; }
-	&~.dale-die-result { background-color: var(--ocelot); }
+.daleofmerchants-die[type="ocelot"] {
+	.daleofmerchants-die-side-1 { background-position: 0% 0%; }
+	.daleofmerchants-die-side-2 { background-position: -100% 0%; }
+	.daleofmerchants-die-side-3 { background-position: -200% 0%; }
+	.daleofmerchants-die-side-4 { background-position: -300% 0%; }
+	.daleofmerchants-die-side-5 { background-position: -400% 0%; }
+	.daleofmerchants-die-side-6 { background-position: -500% 0%; }
+	&~.daleofmerchants-die-result { background-color: var(--ocelot); }
 }
-.dale-die[type="polecat"] {
-	.dale-die-side-1 { background-position: 0% -100%; }
-	.dale-die-side-2 { background-position: -100% -100%; }
-	.dale-die-side-3 { background-position: -200% -100%; }
-	.dale-die-side-4 { background-position: -300% -100%; }
-	.dale-die-side-5 { background-position: -400% -100%; }
-	.dale-die-side-6 { background-position: -500% -100%; }
-	&~.dale-die-result { background-color: var(--polecat); }
+.daleofmerchants-die[type="polecat"] {
+	.daleofmerchants-die-side-1 { background-position: 0% -100%; }
+	.daleofmerchants-die-side-2 { background-position: -100% -100%; }
+	.daleofmerchants-die-side-3 { background-position: -200% -100%; }
+	.daleofmerchants-die-side-4 { background-position: -300% -100%; }
+	.daleofmerchants-die-side-5 { background-position: -400% -100%; }
+	.daleofmerchants-die-side-6 { background-position: -500% -100%; }
+	&~.daleofmerchants-die-result { background-color: var(--polecat); }
 }
-.dale-die[type="hare"] {
-	.dale-die-side-1 { background-position: 0% -200%; }
-	.dale-die-side-2 { background-position: -100% -200%; }
-	.dale-die-side-3 { background-position: -200% -200%; }
-	.dale-die-side-4 { background-position: -300% -200%; }
-	.dale-die-side-5 { background-position: -400% -200%; }
-	.dale-die-side-6 { background-position: -500% -200%; }
-	&~.dale-die-result { background-color: var(--hare); }
+.daleofmerchants-die[type="hare"] {
+	.daleofmerchants-die-side-1 { background-position: 0% -200%; }
+	.daleofmerchants-die-side-2 { background-position: -100% -200%; }
+	.daleofmerchants-die-side-3 { background-position: -200% -200%; }
+	.daleofmerchants-die-side-4 { background-position: -300% -200%; }
+	.daleofmerchants-die-side-5 { background-position: -400% -200%; }
+	.daleofmerchants-die-side-6 { background-position: -500% -200%; }
+	&~.daleofmerchants-die-result { background-color: var(--hare); }
 }
-.dale-die[type="pangolin1"] {
-	.dale-die-side-1 { background-position: 0% -300%; }
-	.dale-die-side-2 { background-position: -100% -300%; }
-	.dale-die-side-3 { background-position: -200% -300%; }
-	.dale-die-side-4 { background-position: -300% -300%; }
-	.dale-die-side-5 { background-position: -400% -300%; }
-	.dale-die-side-6 { background-position: -500% -300%; }
-	&~.dale-die-result { background-color: var(--pangolin1); }
+.daleofmerchants-die[type="pangolin1"] {
+	.daleofmerchants-die-side-1 { background-position: 0% -300%; }
+	.daleofmerchants-die-side-2 { background-position: -100% -300%; }
+	.daleofmerchants-die-side-3 { background-position: -200% -300%; }
+	.daleofmerchants-die-side-4 { background-position: -300% -300%; }
+	.daleofmerchants-die-side-5 { background-position: -400% -300%; }
+	.daleofmerchants-die-side-6 { background-position: -500% -300%; }
+	&~.daleofmerchants-die-result { background-color: var(--pangolin1); }
 }
-	.dale-die[type="pangolin2"] {
-	.dale-die-side-1 { background-position: 0% -400%; }
-	.dale-die-side-2 { background-position: -100% -400%; }
-	.dale-die-side-3 { background-position: -200% -400%; }
-	.dale-die-side-4 { background-position: -300% -400%; }
-	.dale-die-side-5 { background-position: -400% -400%; }
-	.dale-die-side-6 { background-position: -500% -400%; }
-	&~.dale-die-result { background-color: var(--pangolin2); }
+	.daleofmerchants-die[type="pangolin2"] {
+	.daleofmerchants-die-side-1 { background-position: 0% -400%; }
+	.daleofmerchants-die-side-2 { background-position: -100% -400%; }
+	.daleofmerchants-die-side-3 { background-position: -200% -400%; }
+	.daleofmerchants-die-side-4 { background-position: -300% -400%; }
+	.daleofmerchants-die-side-5 { background-position: -400% -400%; }
+	.daleofmerchants-die-side-6 { background-position: -500% -400%; }
+	&~.daleofmerchants-die-result { background-color: var(--pangolin2); }
 }
 
-.dale-die[side="1"] {
+.daleofmerchants-die[side="1"] {
 	transform: rotateX(0deg) rotateY(0deg);
-	&.dale-roll {
+	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 	}
 }
-.dale-die[side="2"] {
+.daleofmerchants-die[side="2"] {
 	transform: rotateX(0deg) rotateY(180deg);
-	&.dale-roll {
+	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(180deg) rotateX(360deg) rotateY(360deg);
 	}
 }
-.dale-die[side="3"] {
+.daleofmerchants-die[side="3"] {
 	transform: rotateX(0deg) rotateY(-90deg);
-	&.dale-roll {
+	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(-90deg) rotateX(360deg) rotateY(360deg);
 	}
 }
-.dale-die[side="4"] {
+.daleofmerchants-die[side="4"] {
 	transform: rotateX(0deg) rotateY(90deg);
-	&.dale-roll {
+	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(90deg) rotateX(360deg) rotateY(360deg);
 	}
 }
-.dale-die[side="5"] {
+.daleofmerchants-die[side="5"] {
 	transform: rotateX(-90deg) rotateY(0deg);
-	&.dale-roll {
+	&.daleofmerchants-roll {
 		transform: rotateX(-90deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 	}
 }
-.dale-die[side="6"] {
+.daleofmerchants-die[side="6"] {
 	transform: rotateX(90deg) rotateY(0deg);
-	&.dale-roll {
+	&.daleofmerchants-roll {
 		transform: rotateX(90deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 	}
 }
 
 //TODO: safely delete this
-// .dale-die[side="1"] {
+// .daleofmerchants-die[side="1"] {
 // 	&[spin360="-1"] { transform: rotateX(-720deg) rotateY(-720deg); }
 // 	&[spin360="-2"] { transform: rotateX(-360deg) rotateY(-360deg); }
 // 	&[spin360="0"] { transform: rotateX(0deg) rotateY(0deg); }
 // 	&[spin360="1"] { transform: rotateX(360deg) rotateY(360deg); }
 // 	&[spin360="2"] { transform: rotateX(720deg) rotateY(720deg); }
 // }
-// .dale-die[side="2"] {
+// .daleofmerchants-die[side="2"] {
 // 	&[spin360="-1"] { transform: rotateX(-720deg) rotateY(-720deg)	rotateY(180deg); }
 // 	&[spin360="-2"] { transform: rotateX(-360deg) rotateY(-360deg)	rotateY(180deg); }
 // 	&[spin360="0"] { transform: rotateX(0deg) rotateY(0deg) 		rotateY(180deg); }
 // 	&[spin360="1"] { transform: rotateX(360deg) rotateY(360deg)		rotateY(180deg); }
 // 	&[spin360="2"] { transform: rotateX(720deg) rotateY(720deg)		rotateY(180deg); }
 // }
-// .dale-die[side="3"] {
+// .daleofmerchants-die[side="3"] {
 // 	&[spin360="-1"] { transform: rotateX(-720deg) rotateY(-720deg)	rotateY(270deg); }
 // 	&[spin360="-2"] { transform: rotateX(-360deg) rotateY(-360deg)	rotateY(270deg); }
 // 	&[spin360="0"] { transform: rotateX(0deg) rotateY(0deg) 		rotateY(270deg); }
 // 	&[spin360="1"] { transform: rotateX(360deg) rotateY(360deg)		rotateY(270deg); }
 // 	&[spin360="2"] { transform: rotateX(720deg) rotateY(720deg)		rotateY(270deg); }
 // }
-// .dale-die[side="4"] {
+// .daleofmerchants-die[side="4"] {
 // 	&[spin360="-1"] { transform: rotateX(-720deg) rotateY(-720deg)	rotateY(90deg); }
 // 	&[spin360="-2"] { transform: rotateX(-360deg) rotateY(-360deg)	rotateY(90deg); }
 // 	&[spin360="0"] { transform: rotateX(0deg) rotateY(0deg) 		rotateY(90deg); }
 // 	&[spin360="1"] { transform: rotateX(360deg) rotateY(360deg)		rotateY(90deg); }
 // 	&[spin360="2"] { transform: rotateX(720deg) rotateY(720deg)		rotateY(90deg); }
 // }
-// .dale-die[side="5"] {
+// .daleofmerchants-die[side="5"] {
 // 	&[spin360="-1"] { transform: rotateX(-720deg) rotateY(-720deg)	rotateX(270deg); }
 // 	&[spin360="-2"] { transform: rotateX(-360deg) rotateY(-360deg)	rotateX(270deg); }
 // 	&[spin360="0"] { transform: rotateX(0deg) rotateY(0deg) 		rotateX(270deg); }
 // 	&[spin360="1"] { transform: rotateX(360deg) rotateY(360deg)		rotateX(270deg); }
 // 	&[spin360="2"] { transform: rotateX(720deg) rotateY(720deg)		rotateX(270deg); }
 // }
-// .dale-die[side="6"] {
+// .daleofmerchants-die[side="6"] {
 // 	&[spin360="-1"] { transform: rotateX(-720deg) rotateY(-720deg)	rotateX(90deg); }
 // 	&[spin360="-2"] { transform: rotateX(-360deg) rotateY(-360deg)	rotateX(90deg); }
 // 	&[spin360="0"] { transform: rotateX(0deg) rotateY(0deg) 		rotateX(90deg); }
@@ -770,7 +770,7 @@
 // 	&[spin360="2"] { transform: rotateX(720deg) rotateY(720deg)		rotateX(90deg); }
 // }
 
-.dale-die-result {
+.daleofmerchants-die-result {
 	margin-top: 20px;
 	display: inline-block;
 	position: relative;
@@ -779,8 +779,8 @@
 		padding: 0.5rem 1rem;
 		border-radius: 0.25rem;
 		box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
-	&.dale-die-hide { opacity: 0; }
-	&.dale-die-reveal { animation: fadeUp 0.3s forwards; }
+	&.daleofmerchants-die-hide { opacity: 0; }
+	&.daleofmerchants-die-reveal { animation: fadeUp 0.3s forwards; }
 }
 
 @keyframes fadeUp {
@@ -800,171 +800,171 @@
 ////////////////////////////////////
 
 :root {
-	--dale-wrap-technique: rgb(40,125,184);
-	--dale-wrap-technique-a: rgba(40,125,184,0.15);
-	--dale-wrap-purchase: rgb(210,128,21);
-	--dale-wrap-purchase-a: rgba(210,128,21,0.15);
-	--dale-wrap-build: rgb(192, 61, 120);
-	--dale-wrap-build-a: rgb(192,61,120,0.15);
-	--dale-wrap-discard: rgb(232,62,51);
-	--dale-wrap-discard-a: rgb(232,62,51,0.15);
-	--dale-wrap-default: rgb(100,100,100); 
-	--dale-wrap-default-g: rgb(100,100,100, 0.5); //grayed out
-	--dale-wrap-default-a: rgb(100,100,100,0.15);
+	--daleofmerchants-wrap-technique: rgb(40,125,184);
+	--daleofmerchants-wrap-technique-a: rgba(40,125,184,0.15);
+	--daleofmerchants-wrap-purchase: rgb(210,128,21);
+	--daleofmerchants-wrap-purchase-a: rgba(210,128,21,0.15);
+	--daleofmerchants-wrap-build: rgb(192, 61, 120);
+	--daleofmerchants-wrap-build-a: rgb(192,61,120,0.15);
+	--daleofmerchants-wrap-discard: rgb(232,62,51);
+	--daleofmerchants-wrap-discard-a: rgb(232,62,51,0.15);
+	--daleofmerchants-wrap-default: rgb(100,100,100); 
+	--daleofmerchants-wrap-default-g: rgb(100,100,100, 0.5); //grayed out
+	--daleofmerchants-wrap-default-a: rgb(100,100,100,0.15);
 }
   
 body {
 	background: url('https://stories.daimyria.fi/img/background-page.jpg');
 }
 
-#dale-myhand-wrap {
+#daleofmerchants-myhand-wrap {
 	flex-grow: 1;
 }
 
-#dale-mylimbo-wrap {
+#daleofmerchants-mylimbo-wrap {
 	flex-grow: 0;
 	min-width: 35%; //js overrides this to 3x card width
-	transition: padding 0.5s, min-width 0.5s; //should match the js for "dale-hidden-transitioning"
-	&.dale-hidden-transitioning {
+	transition: padding 0.5s, min-width 0.5s; //should match the js for "daleofmerchants-hidden-transitioning"
+	&.daleofmerchants-hidden-transitioning {
 		min-width: 0;
 		padding: 0;
-		.dale-label {
+		.daleofmerchants-label {
 			color: transparent;
 			padding: 0px 0px;
 			width: 0px;
 		}
 	}
-	&.dale-hidden {
+	&.daleofmerchants-hidden {
 		display: none;
 		min-width: 0;
 		padding: 0;
-		.dale-label {
+		.daleofmerchants-label {
 			display: none;
 		}
 	}
 }
 
-.dale-wrap-technique { 
-	&.dale-arc-stock {
-		outline: 3px solid var(--dale-wrap-technique); 
+.daleofmerchants-wrap-technique { 
+	&.daleofmerchants-arc-stock {
+		outline: 3px solid var(--daleofmerchants-wrap-technique); 
 	}
-	.dale-label { 
-		background-color: var(--dale-wrap-technique); 
+	.daleofmerchants-label { 
+		background-color: var(--daleofmerchants-wrap-technique); 
 	}
-	.dale-card.dale-selected {
-		outline: 3px solid var(--dale-wrap-technique);
-		background-color: var(--dale-wrap-technique-a);
+	.daleofmerchants-card.daleofmerchants-selected {
+		outline: 3px solid var(--daleofmerchants-wrap-technique);
+		background-color: var(--daleofmerchants-wrap-technique-a);
 		background-blend-mode: overlay;
-		.dale-card.dale-chameleon-overlay {
-			background-color: var(--dale-wrap-technique-a);
+		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
+			background-color: var(--daleofmerchants-wrap-technique-a);
 			background-blend-mode: overlay;
 		}
 	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-technique);
+	.daleofmerchants-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-technique);
 	}
-	.dale-pile-selected-size {
-		color: var(--dale-wrap-technique);
+	.daleofmerchants-pile-selected-size {
+		color: var(--daleofmerchants-wrap-technique);
 	}
 }
 
-.dale-wrap-purchase { 
-	&.dale-arc-stock {
-		outline: 3px solid var(--dale-wrap-purchase); 
+.daleofmerchants-wrap-purchase { 
+	&.daleofmerchants-arc-stock {
+		outline: 3px solid var(--daleofmerchants-wrap-purchase); 
 	}
-	.dale-label { 
-		background-color: var(--dale-wrap-purchase); 
+	.daleofmerchants-label { 
+		background-color: var(--daleofmerchants-wrap-purchase); 
 	}
-	.dale-card.dale-selected {
-		outline: 3px solid var(--dale-wrap-purchase);
-		background-color: var(--dale-wrap-purchase-a);
+	.daleofmerchants-card.daleofmerchants-selected {
+		outline: 3px solid var(--daleofmerchants-wrap-purchase);
+		background-color: var(--daleofmerchants-wrap-purchase-a);
 		background-blend-mode: overlay;
-		.dale-card.dale-chameleon-overlay {
-			background-color: var(--dale-wrap-purchase-a);
+		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
+			background-color: var(--daleofmerchants-wrap-purchase-a);
 			background-blend-mode: overlay;
 		}
 	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-purchase);
+	.daleofmerchants-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-purchase);
 	}
-	.dale-pile-selected-size {
-		color: var(--dale-wrap-purchase);
+	.daleofmerchants-pile-selected-size {
+		color: var(--daleofmerchants-wrap-purchase);
 	}
 }
 
-.dale-wrap-build { 
-	&.dale-arc-stock {
-		outline: 3px solid var(--dale-wrap-build); 
+.daleofmerchants-wrap-build { 
+	&.daleofmerchants-arc-stock {
+		outline: 3px solid var(--daleofmerchants-wrap-build); 
 	}
-	.dale-label { 
-		background-color: var(--dale-wrap-build); 
+	.daleofmerchants-label { 
+		background-color: var(--daleofmerchants-wrap-build); 
 	}
-	.dale-card.dale-selected {
-		outline: 3px solid var(--dale-wrap-build);
-		background-color: var(--dale-wrap-build-a);
+	.daleofmerchants-card.daleofmerchants-selected {
+		outline: 3px solid var(--daleofmerchants-wrap-build);
+		background-color: var(--daleofmerchants-wrap-build-a);
 		background-blend-mode: overlay;
-		.dale-card.dale-chameleon-overlay {
-			background-color: var(--dale-wrap-build-a);
+		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
+			background-color: var(--daleofmerchants-wrap-build-a);
 			background-blend-mode: overlay;
 		}
 	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-build);
+	.daleofmerchants-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-build);
 	}
-	.dale-pile-selected-size {
-		color: var(--dale-wrap-build);
+	.daleofmerchants-pile-selected-size {
+		color: var(--daleofmerchants-wrap-build);
 	}
 }
 
-.dale-wrap-discard { 
-	&.dale-arc-stock {
-		outline: 3px solid var(--dale-wrap-discard); 
+.daleofmerchants-wrap-discard { 
+	&.daleofmerchants-arc-stock {
+		outline: 3px solid var(--daleofmerchants-wrap-discard); 
 	}
-	.dale-label { 
-		background-color: var(--dale-wrap-discard); 
+	.daleofmerchants-label { 
+		background-color: var(--daleofmerchants-wrap-discard); 
 	}
-	.dale-card.dale-selected {
-		outline: 3px solid var(--dale-wrap-discard);
-		background-color: var(--dale-wrap-discard-a);
+	.daleofmerchants-card.daleofmerchants-selected {
+		outline: 3px solid var(--daleofmerchants-wrap-discard);
+		background-color: var(--daleofmerchants-wrap-discard-a);
 		background-blend-mode: overlay;
-		.dale-card.dale-chameleon-overlay {
-			background-color: var(--dale-wrap-discard-a);
+		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
+			background-color: var(--daleofmerchants-wrap-discard-a);
 			background-blend-mode: overlay;
 		}
 	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-discard);
+	.daleofmerchants-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-discard);
 	}
-	.dale-pile-selected-size {
-		color: var(--dale-wrap-discard);
+	.daleofmerchants-pile-selected-size {
+		color: var(--daleofmerchants-wrap-discard);
 	}
 }
 
-.dale-wrap-default { 
-	&.dale-arc-stock {
-		outline: 3px solid var(--dale-wrap-default-g); 
+.daleofmerchants-wrap-default { 
+	&.daleofmerchants-arc-stock {
+		outline: 3px solid var(--daleofmerchants-wrap-default-g); 
 	}
-	.dale-label { 
-		background-color: var(--dale-wrap-default-g); 
+	.daleofmerchants-label { 
+		background-color: var(--daleofmerchants-wrap-default-g); 
 	}
-	.dale-card.dale-selected {
-		outline: 3px solid var(--dale-wrap-default);
-		background-color: var(--dale-wrap-default-a);
+	.daleofmerchants-card.daleofmerchants-selected {
+		outline: 3px solid var(--daleofmerchants-wrap-default);
+		background-color: var(--daleofmerchants-wrap-default-a);
 		background-blend-mode: overlay;
-		.dale-card.dale-chameleon-overlay {
-			background-color: var(--dale-wrap-default-a);
+		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
+			background-color: var(--daleofmerchants-wrap-default-a);
 			background-blend-mode: overlay;
 		}
 	}
-	.dale-clickable:hover {
-		box-shadow: 0px 0px 8px 2px var(--dale-wrap-default);
+	.daleofmerchants-clickable:hover {
+		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-default);
 	}
-	.dale-pile-selected-size {
-		color: var(--dale-wrap-default);
+	.daleofmerchants-pile-selected-size {
+		color: var(--daleofmerchants-wrap-default);
 	}
 }
 
-.dale-card.dale-selected:before {
+.daleofmerchants-card.daleofmerchants-selected:before {
 	content: "";
 	display: block;
 	position: absolute;
@@ -974,24 +974,24 @@ body {
 	right: 0;
 }
 
-.dale-schedule {
+.daleofmerchants-schedule {
 	margin-left: 5px;
     margin-right: 5px;
 	max-width: 100%;
     flex-grow: 1;
 }
 
-.dale-flat-stock {
-	.dale-card {
+.daleofmerchants-flat-stock {
+	.daleofmerchants-card {
 		z-index: 100;
-		&:hover:not(.dale-line-source):not(.dale-line-target) {
+		&:hover:not(.daleofmerchants-line-source):not(.daleofmerchants-line-target) {
 			scale: 1.1;
 			z-index: 200 !important;
 		}
 	}
 }
 
-.dale-arc-stock {
+.daleofmerchants-arc-stock {
 	padding: 0 10px 15px;
 	text-align: center;
 	border-radius: 10px;
@@ -999,22 +999,22 @@ body {
 	font-family: helvetica;
 	width: auto;
 
-	.dale-label {
+	.daleofmerchants-label {
 		color: white;
 		padding: 10px 15px;
 		border-radius: 0 0 10px 10px;
 		display: inline-block;
 		margin-bottom: 20px;
-		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "dale-hidden-transitioning"
+		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "daleofmerchants-hidden-transitioning"
 	}
 
-	.dale-card {
+	.daleofmerchants-card {
 		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
 		border-radius: 10px;
 		transition: scale 0.3s ease, transform 0.5s ease;
 		z-index: 100;
 		
-		&:hover:not(.dale-line-source):not(.dale-line-target) {
+		&:hover:not(.daleofmerchants-line-source):not(.daleofmerchants-line-target) {
 			scale: 1.1;
 			z-index: 200 !important;
 		}
@@ -1025,326 +1025,326 @@ body {
 	/* ----------------------------- */
 
 	/* 1 cards */
-	.dale-card[data-arc="1/1"] {
+	.daleofmerchants-card[data-arc="1/1"] {
 		transform: rotate(0deg) translateY(-0px);
 	}
 
 	/* 2 cards */
-	.dale-card[data-arc="1/2"] {
+	.daleofmerchants-card[data-arc="1/2"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/2"] {
+	.daleofmerchants-card[data-arc="2/2"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 3 cards */
-	.dale-card[data-arc="1/3"] {
+	.daleofmerchants-card[data-arc="1/3"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/3"] {
+	.daleofmerchants-card[data-arc="2/3"] {
 		transform: rotate(0.0deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="3/3"] {
+	.daleofmerchants-card[data-arc="3/3"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 4 cards */
-	.dale-card[data-arc="1/4"] {
+	.daleofmerchants-card[data-arc="1/4"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/4"] {
+	.daleofmerchants-card[data-arc="2/4"] {
 		transform: rotate(-1.666666666666667deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="3/4"] {
+	.daleofmerchants-card[data-arc="3/4"] {
 		transform: rotate(1.6666666666666663deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="4/4"] {
+	.daleofmerchants-card[data-arc="4/4"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 5 cards */
-	.dale-card[data-arc="1/5"] {
+	.daleofmerchants-card[data-arc="1/5"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/5"] {
+	.daleofmerchants-card[data-arc="2/5"] {
 		transform: rotate(-2.5deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="3/5"] {
+	.daleofmerchants-card[data-arc="3/5"] {
 		transform: rotate(0.0deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="4/5"] {
+	.daleofmerchants-card[data-arc="4/5"] {
 		transform: rotate(2.5deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="5/5"] {
+	.daleofmerchants-card[data-arc="5/5"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 6 cards */
-	.dale-card[data-arc="1/6"] {
+	.daleofmerchants-card[data-arc="1/6"] {
 		transform: rotate(-4.581220085277042deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/6"] {
+	.daleofmerchants-card[data-arc="2/6"] {
 		transform: rotate(-2.7487320511662254deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="3/6"] {
+	.daleofmerchants-card[data-arc="3/6"] {
 		transform: rotate(-0.9162440170554083deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="4/6"] {
+	.daleofmerchants-card[data-arc="4/6"] {
 		transform: rotate(0.9162440170554083deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="5/6"] {
+	.daleofmerchants-card[data-arc="5/6"] {
 		transform: rotate(2.748732051166226deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="6/6"] {
+	.daleofmerchants-card[data-arc="6/6"] {
 		transform: rotate(4.581220085277042deg) translateY(-0px);
 	}
 
 	/* 7 cards */
-	.dale-card[data-arc="1/7"] {
+	.daleofmerchants-card[data-arc="1/7"] {
 		transform: rotate(-3.8183048659927548deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/7"] {
+	.daleofmerchants-card[data-arc="2/7"] {
 		transform: rotate(-2.5455365773285035deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="3/7"] {
+	.daleofmerchants-card[data-arc="3/7"] {
 		transform: rotate(-1.2727682886642517deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="4/7"] {
+	.daleofmerchants-card[data-arc="4/7"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="5/7"] {
+	.daleofmerchants-card[data-arc="5/7"] {
 		transform: rotate(1.2727682886642513deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="6/7"] {
+	.daleofmerchants-card[data-arc="6/7"] {
 		transform: rotate(2.5455365773285035deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="7/7"] {
+	.daleofmerchants-card[data-arc="7/7"] {
 		transform: rotate(3.8183048659927548deg) translateY(-0px);
 	}
 
 	/* 8 cards */
-	.dale-card[data-arc="1/8"] {
+	.daleofmerchants-card[data-arc="1/8"] {
 		transform: rotate(-3.27315408323344deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/8"] {
+	.daleofmerchants-card[data-arc="2/8"] {
 		transform: rotate(-2.3379672023096deg) translateY(-6px);
 	}
 
-	.dale-card[data-arc="3/8"] {
+	.daleofmerchants-card[data-arc="3/8"] {
 		transform: rotate(-1.4027803213857601deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="4/8"] {
+	.daleofmerchants-card[data-arc="4/8"] {
 		transform: rotate(-0.46759344046192014deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="5/8"] {
+	.daleofmerchants-card[data-arc="5/8"] {
 		transform: rotate(0.4675934404619198deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/8"] {
+	.daleofmerchants-card[data-arc="6/8"] {
 		transform: rotate(1.4027803213857601deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="7/8"] {
+	.daleofmerchants-card[data-arc="7/8"] {
 		transform: rotate(2.3379672023095996deg) translateY(-6px);
 	}
 
-	.dale-card[data-arc="8/8"] {
+	.daleofmerchants-card[data-arc="8/8"] {
 		transform: rotate(3.27315408323344deg) translateY(-0px);
 	}
 
 	/* 9 cards */
-	.dale-card[data-arc="1/9"] {
+	.daleofmerchants-card[data-arc="1/9"] {
 		transform: rotate(-2.864192368329286deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/9"] {
+	.daleofmerchants-card[data-arc="2/9"] {
 		transform: rotate(-2.1481442762469642deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="3/9"] {
+	.daleofmerchants-card[data-arc="3/9"] {
 		transform: rotate(-1.432096184164643deg) translateY(-9px);
 	}
 
-	.dale-card[data-arc="4/9"] {
+	.daleofmerchants-card[data-arc="4/9"] {
 		transform: rotate(-0.7160480920823215deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="5/9"] {
+	.daleofmerchants-card[data-arc="5/9"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/9"] {
+	.daleofmerchants-card[data-arc="6/9"] {
 		transform: rotate(0.7160480920823215deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="7/9"] {
+	.daleofmerchants-card[data-arc="7/9"] {
 		transform: rotate(1.432096184164643deg) translateY(-9px);
 	}
 
-	.dale-card[data-arc="8/9"] {
+	.daleofmerchants-card[data-arc="8/9"] {
 		transform: rotate(2.1481442762469642deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="9/9"] {
+	.daleofmerchants-card[data-arc="9/9"] {
 		transform: rotate(2.864192368329286deg) translateY(-0px);
 	}
 
 	/* 10 cards */
-	.dale-card[data-arc="1/10"] {
+	.daleofmerchants-card[data-arc="1/10"] {
 		transform: rotate(-2.546060040113423deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/10"] {
+	.daleofmerchants-card[data-arc="2/10"] {
 		transform: rotate(-1.980268920088218deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="3/10"] {
+	.daleofmerchants-card[data-arc="3/10"] {
 		transform: rotate(-1.414477800063013deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="4/10"] {
+	.daleofmerchants-card[data-arc="4/10"] {
 		transform: rotate(-0.8486866800378078deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="5/10"] {
+	.daleofmerchants-card[data-arc="5/10"] {
 		transform: rotate(-0.2828955600126027deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/10"] {
+	.daleofmerchants-card[data-arc="6/10"] {
 		transform: rotate(0.2828955600126027deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="7/10"] {
+	.daleofmerchants-card[data-arc="7/10"] {
 		transform: rotate(0.8486866800378075deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="8/10"] {
+	.daleofmerchants-card[data-arc="8/10"] {
 		transform: rotate(1.414477800063013deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="9/10"] {
+	.daleofmerchants-card[data-arc="9/10"] {
 		transform: rotate(1.9802689200882178deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="10/10"] {
+	.daleofmerchants-card[data-arc="10/10"] {
 		transform: rotate(2.546060040113423deg) translateY(-0px);
 	}
 
 	/* 11 cards */
-	.dale-card[data-arc="1/11"] {
+	.daleofmerchants-card[data-arc="1/11"] {
 		transform: rotate(-2.2915256763502043deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/11"] {
+	.daleofmerchants-card[data-arc="2/11"] {
 		transform: rotate(-1.8332205410801636deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="3/11"] {
+	.daleofmerchants-card[data-arc="3/11"] {
 		transform: rotate(-1.3749154058101225deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="4/11"] {
+	.daleofmerchants-card[data-arc="4/11"] {
 		transform: rotate(-0.9166102705400818deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="5/11"] {
+	.daleofmerchants-card[data-arc="5/11"] {
 		transform: rotate(-0.45830513527004074deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/11"] {
+	.daleofmerchants-card[data-arc="6/11"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="7/11"] {
+	.daleofmerchants-card[data-arc="7/11"] {
 		transform: rotate(0.45830513527004074deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="8/11"] {
+	.daleofmerchants-card[data-arc="8/11"] {
 		transform: rotate(0.9166102705400815deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="9/11"] {
+	.daleofmerchants-card[data-arc="9/11"] {
 		transform: rotate(1.3749154058101227deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="10/11"] {
+	.daleofmerchants-card[data-arc="10/11"] {
 		transform: rotate(1.8332205410801636deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="11/11"] {
+	.daleofmerchants-card[data-arc="11/11"] {
 		transform: rotate(2.2915256763502043deg) translateY(-0px);
 	}
 
 	/* 12 cards */
-	.dale-card[data-arc="1/12"] {
+	.daleofmerchants-card[data-arc="1/12"] {
 		transform: rotate(-2.0832533520199354deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/12"] {
+	.daleofmerchants-card[data-arc="2/12"] {
 		transform: rotate(-1.704480015289038deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="3/12"] {
+	.daleofmerchants-card[data-arc="3/12"] {
 		transform: rotate(-1.3257066785581406deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="4/12"] {
+	.daleofmerchants-card[data-arc="4/12"] {
 		transform: rotate(-0.9469333418272434deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="5/12"] {
+	.daleofmerchants-card[data-arc="5/12"] {
 		transform: rotate(-0.568160005096346deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="6/12"] {
+	.daleofmerchants-card[data-arc="6/12"] {
 		transform: rotate(-0.18938666836544873deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="7/12"] {
+	.daleofmerchants-card[data-arc="7/12"] {
 		transform: rotate(0.1893866683654485deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="8/12"] {
+	.daleofmerchants-card[data-arc="8/12"] {
 		transform: rotate(0.568160005096346deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="9/12"] {
+	.daleofmerchants-card[data-arc="9/12"] {
 		transform: rotate(0.9469333418272434deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="10/12"] {
+	.daleofmerchants-card[data-arc="10/12"] {
 		transform: rotate(1.3257066785581408deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="11/12"] {
+	.daleofmerchants-card[data-arc="11/12"] {
 		transform: rotate(1.704480015289038deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="12/12"] {
+	.daleofmerchants-card[data-arc="12/12"] {
 		transform: rotate(2.0832533520199354deg) translateY(-0px);
 	}
 

@@ -300,11 +300,11 @@ export class MainClientState {
             const div = new DaleCard(this._args.passive_card_id).div;
             if (div) {
                 if (enable) {
-                    div.classList.add("dale-passive-selected");
+                    div.classList.add("daleofmerchants-passive-selected");
                     div.addEventListener('click', this.leaveThis);
                 }
                 else {
-                    div.classList.remove("dale-passive-selected");
+                    div.classList.remove("daleofmerchants-passive-selected");
                     div.removeEventListener('click', this.leaveThis);
                 }
             }

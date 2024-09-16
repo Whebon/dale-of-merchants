@@ -39,7 +39,7 @@ def generate_css(num_cards):
             # translate_y = f"{-6 - (n - 2) * 2}px" if (i == 0 or i == n) else "0px"
             rotate = arc*(i/(n-1) - 1/2) if n > 1 else 0
             translate_y = math.sqrt(radius**2 - (i*CARD_WIDTH - width/2)**2) - y0
-            css.append(f"\t.dale-card[data-arc=\"{i+1}/{n}\"] {{")
+            css.append(f"\t.daleofmerchants-card[data-arc=\"{i+1}/{n}\"] {{")
             # css.append(f"\t\ttransition: transform 1s ease;")
             css.append(f"\t\ttransform: rotate({rotate}deg) translateY(-{round(translate_y)}px);")
             # css.append(f"\t\t&:hover {{ ")

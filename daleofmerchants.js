@@ -33,7 +33,7 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         }
         DaleIcons.getIcon = function (row, col) {
             var icon = document.createElement("i");
-            icon.classList.add("dale-icon");
+            icon.classList.add("daleofmerchants-icon");
             icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
             return icon;
         };
@@ -126,7 +126,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                     var y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                     dojo.setStyle(div, 'background-position', "-".concat(x, "00% -").concat(y, "00%"));
                     if (sheet_index > 0) {
-                        div.classList.add('dale-card-sheet-' + sheet_index);
+                        div.classList.add('daleofmerchants-card-sheet-' + sheet_index);
                     }
                 }
                 else {
@@ -141,7 +141,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.getPlaceholder = function () {
             var placeholder = document.createElement('div');
             placeholder.setAttribute('style', "width:".concat(Images.CARD_WIDTH_S, "px; height:").concat(Images.CARD_HEIGHT_S, "px;"));
-            placeholder.classList.add("dale-placeholder");
+            placeholder.classList.add("daleofmerchants-placeholder");
             return placeholder;
         };
         Images.IMAGES_PER_ROW = 6;
@@ -311,7 +311,7 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
                 return;
             }
-            div.classList.add("dale-selected");
+            div.classList.add("daleofmerchants-selected");
             var icon = undefined;
             switch (iconType) {
                 case 'pileBlue':
@@ -350,10 +350,10 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
             }
             if (icon) {
                 if (secondary) {
-                    icon.classList.add("dale-selection-icon-2");
+                    icon.classList.add("daleofmerchants-selection-icon-2");
                 }
                 else {
-                    icon.classList.add("dale-selection-icon-1");
+                    icon.classList.add("daleofmerchants-selection-icon-1");
                 }
                 div.prepend(icon);
             }
@@ -364,18 +364,18 @@ define("components/OrderedSelection", ["require", "exports", "components/DaleCar
                 console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
                 return;
             }
-            var primaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-1");
-            var secondaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".dale-selection-icon-2");
+            var primaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".daleofmerchants-selection-icon-1");
+            var secondaryIcon = div === null || div === void 0 ? void 0 : div.querySelector(".daleofmerchants-selection-icon-2");
             if (secondary) {
                 secondaryIcon === null || secondaryIcon === void 0 ? void 0 : secondaryIcon.remove();
                 if (!primaryIcon) {
-                    div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
+                    div === null || div === void 0 ? void 0 : div.classList.remove("daleofmerchants-selected");
                 }
             }
             else {
                 primaryIcon === null || primaryIcon === void 0 ? void 0 : primaryIcon.remove();
                 if (!secondaryIcon) {
-                    div === null || div === void 0 ? void 0 : div.classList.remove("dale-selected");
+                    div === null || div === void 0 ? void 0 : div.classList.remove("daleofmerchants-selected");
                 }
             }
         };
@@ -523,19 +523,19 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
             this.tooltips = [];
             this.deckSelectionHTML = deckSelectionHTML;
             this.gameHTML = gameHTML;
-            this.cardContainer = this.deckSelectionHTML.querySelector(".dale-deck-selection-container");
-            this.cardContainer.classList.add("dale-wrap-technique");
+            this.cardContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container");
+            this.cardContainer.classList.add("daleofmerchants-wrap-technique");
             if (!inDeckSelection) {
-                this.deckSelectionHTML.classList.add("dale-hidden");
+                this.deckSelectionHTML.classList.add("daleofmerchants-hidden");
                 return;
             }
-            this.gameHTML.classList.add("dale-hidden");
+            this.gameHTML.classList.add("daleofmerchants-hidden");
             this.orderedSelection.setIconType('numbers');
             this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1);
             var _loop_1 = function (animalfolk_id) {
                 var card_div = document.createElement('div');
                 card_div.id = "deck-" + animalfolk_id;
-                card_div.classList.add("dale-card", "dale-relative", "dale-clickable", "dale-deck-selection");
+                card_div.classList.add("daleofmerchants-card", "daleofmerchants-relative", "daleofmerchants-clickable", "daleofmerchants-deck-selection");
                 this_1.cardContainer.appendChild(card_div);
                 Images_1.Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
                 var tooltip = new dijit.Tooltip({
@@ -549,7 +549,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 this_1.tooltips.push(tooltip);
                 var unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
                 if (unavailable) {
-                    card_div.classList.add("dale-deck-selection-unavailable");
+                    card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
                 var thiz = this_1;
                 var card_id = animalfolk_id;
@@ -577,20 +577,20 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 var tooltip = _a[_i];
                 tooltip.destroy();
             }
-            this.gameHTML.classList.remove("dale-hidden");
+            this.gameHTML.classList.remove("daleofmerchants-hidden");
         };
         DaleDeckSelection.prototype.setResult = function (animalfolk_id) {
             var _a;
-            if (this.cardContainer.classList.contains("dale-wrap-technique")) {
-                this.cardContainer.classList.remove("dale-wrap-technique");
-                this.cardContainer.classList.add("dale-wrap-purchase");
+            if (this.cardContainer.classList.contains("daleofmerchants-wrap-technique")) {
+                this.cardContainer.classList.remove("daleofmerchants-wrap-technique");
+                this.cardContainer.classList.add("daleofmerchants-wrap-purchase");
                 this.orderedSelection.unselectAll();
                 this.orderedSelection.setIconType(undefined);
-                this.cardContainer.querySelectorAll(".dale-deck-selection").forEach(function (card_div) {
-                    card_div.classList.add("dale-deck-selection-unavailable");
+                this.cardContainer.querySelectorAll(".daleofmerchants-deck-selection").forEach(function (card_div) {
+                    card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 });
             }
-            (_a = $("deck-" + animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-deck-selection-unavailable");
+            (_a = $("deck-" + animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.remove("daleofmerchants-deck-selection-unavailable");
             this.orderedSelection.selectItem(animalfolk_id);
         };
         DaleDeckSelection.ANIMALFOLK_NONE = 0;
@@ -654,23 +654,23 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
             }
             this.parent = parentHTML;
             this.container = document.createElement('div');
-            this.container.classList.add("dale-die-container");
-            this.container.innerHTML = "\n            <div class=\"dale-die\" type=\"".concat(this.type, "\" side=\"1\">\n                <div class=\"dale-die-side dale-die-side-1\"></div>\n                <div class=\"dale-die-side dale-die-side-2\"></div>\n                <div class=\"dale-die-side dale-die-side-3\"></div>\n                <div class=\"dale-die-side dale-die-side-4\"></div>\n                <div class=\"dale-die-side dale-die-side-5\"></div>\n                <div class=\"dale-die-side dale-die-side-6\"></div>\n            </div>\n            <div class=\"dale-die-result\"></div>\n        ");
+            this.container.classList.add("daleofmerchants-die-container");
+            this.container.innerHTML = "\n            <div class=\"daleofmerchants-die\" type=\"".concat(this.type, "\" side=\"1\">\n                <div class=\"daleofmerchants-die-side daleofmerchants-die-side-1\"></div>\n                <div class=\"daleofmerchants-die-side daleofmerchants-die-side-2\"></div>\n                <div class=\"daleofmerchants-die-side daleofmerchants-die-side-3\"></div>\n                <div class=\"daleofmerchants-die-side daleofmerchants-die-side-4\"></div>\n                <div class=\"daleofmerchants-die-side daleofmerchants-die-side-5\"></div>\n                <div class=\"daleofmerchants-die-side daleofmerchants-die-side-6\"></div>\n            </div>\n            <div class=\"daleofmerchants-die-result\"></div>\n        ");
             this.parent.appendChild(this.container);
-            this.die = this.container.querySelector(".dale-die");
+            this.die = this.container.querySelector(".daleofmerchants-die");
             this.die.setAttribute('side', String(Math.floor(Math.random() * 6) + 1));
             setTimeout((function () {
                 _this.die.setAttribute('side', String(d6 + 1));
-                _this.die.classList.toggle('dale-roll');
+                _this.die.classList.toggle('daleofmerchants-roll');
             }).bind(this), 1);
-            var resultLabel = (_a = this.die.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.dale-die-result');
+            var resultLabel = (_a = this.die.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.daleofmerchants-die-result');
             if (resultLabel) {
-                resultLabel.classList.remove('dale-die-reveal');
-                resultLabel.classList.add('dale-die-hide');
+                resultLabel.classList.remove('daleofmerchants-die-reveal');
+                resultLabel.classList.add('daleofmerchants-die-hide');
                 resultLabel.innerHTML = "Rolled ".concat(name_displayed);
                 setTimeout(function () {
-                    resultLabel.classList.add('dale-die-reveal');
-                    resultLabel.classList.remove('dale-die-hide');
+                    resultLabel.classList.add('daleofmerchants-die-reveal');
+                    resultLabel.classList.remove('daleofmerchants-die-hide');
                 }, 1000);
             }
             var thiz = this;
@@ -750,7 +750,7 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
                     col = 6;
                     break;
             }
-            return "<i class=\"dale-die-side dale-icon\" style=\"background-position: -".concat(col, "00% -").concat(row, "00%;\"></i>");
+            return "<i class=\"daleofmerchants-die-side daleofmerchants-icon\" style=\"background-position: -".concat(col, "00% -").concat(row, "00%;\"></i>");
         };
         DaleDie.DIE_OCELOT_0 = 1;
         DaleDie.DIE_OCELOT_1 = 2;
@@ -1170,7 +1170,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 }
                 for (var _i = 0, type_ids_1 = type_ids; _i < type_ids_1.length; _i++) {
                     var type_id = type_ids_1[_i];
-                    chameleonName += "<span class=dale-chameleon-name>".concat(DaleCard.cardTypes[type_id].name, "</span><br>");
+                    chameleonName += "<span class=daleofmerchants-chameleon-name>".concat(DaleCard.cardTypes[type_id].name, "</span><br>");
                 }
             }
             if (this.isChameleon()) {
@@ -1178,9 +1178,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             var effective_value = this.effective_value;
             if (effective_value != cardType.value) {
-                effective_value = "(<span class=dale-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
+                effective_value = "(<span class=daleofmerchants-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }
-            return "<div class=\"dale-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"dale-card-tooltip-text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -1206,19 +1206,19 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.format_string = function (text) {
             if (text.includes('DIE_OCELOT')) {
-                text = text.replaceAll('DIE_OCELOT', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_0), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n            </span>"));
+                text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_0), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n            </span>"));
             }
             if (text.includes('DIE_POLECAT')) {
-                text = text.replaceAll('DIE_POLECAT', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n            </span>"));
+                text = text.replaceAll('DIE_POLECAT', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n            </span>"));
             }
             if (text.includes('DIE_HARE')) {
-                text = text.replaceAll('DIE_HARE', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET_REROLL), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_COMET), "\n            </span>"));
+                text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET_REROLL), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_COMET), "\n            </span>"));
             }
             if (text.includes('DIE_PANGOLIN1')) {
-                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND), "\n            </span>"));
+                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND), "\n            </span>"));
             }
             if (text.includes('DIE_PANGOLIN2')) {
-                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"dale-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND2), "\n            </span>"));
+                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND2), "\n            </span>"));
             }
             if (text.includes('SOURCE')) {
                 text = text.replaceAll('SOURCE', "<span style=\"color: var(--pangolin1); font-weight: bold;\">".concat(_("source"), "</span>"));
@@ -1234,10 +1234,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (!div) {
                 return;
             }
-            var old_overlay = div.querySelector(".dale-chameleon-overlay:not(.dale-fading)");
+            var old_overlay = div.querySelector(".daleofmerchants-chameleon-overlay:not(.daleofmerchants-fading)");
             if (old_overlay) {
                 if (fade) {
-                    old_overlay.classList.add("dale-fading");
+                    old_overlay.classList.add("daleofmerchants-fading");
                     dojo.fadeOut({ node: old_overlay, onEnd: function (node) { dojo.destroy(node); } }).play();
                 }
                 else {
@@ -1246,10 +1246,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             if (this.isBoundChameleon()) {
                 var chameleon_icon = DaleIcons_2.DaleIcons.getChameleonIcon();
-                chameleon_icon.classList.add("dale-chameleon-icon");
+                chameleon_icon.classList.add("daleofmerchants-chameleon-icon");
                 var new_overlay = document.createElement("div");
-                new_overlay.classList.add("dale-card");
-                new_overlay.classList.add("dale-chameleon-overlay");
+                new_overlay.classList.add("daleofmerchants-card");
+                new_overlay.classList.add("daleofmerchants-chameleon-overlay");
                 Images_2.Images.setCardStyle(new_overlay, this.effective_type_id);
                 new_overlay.appendChild(chameleon_icon);
                 div.appendChild(new_overlay);
@@ -1269,11 +1269,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 value = this.effective_value;
             }
             if (value == this.original_value) {
-                (_b = card_div.querySelector(".dale-effective-value")) === null || _b === void 0 ? void 0 : _b.remove();
+                (_b = card_div.querySelector(".daleofmerchants-effective-value")) === null || _b === void 0 ? void 0 : _b.remove();
             }
             else {
-                var value_div = (_c = card_div.querySelector(".dale-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
-                value_div.classList.add("dale-effective-value");
+                var value_div = (_c = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
+                value_div.classList.add("daleofmerchants-effective-value");
                 value_div.innerHTML = String(value);
                 card_div.append(value_div);
             }
@@ -1307,8 +1307,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.toDiv = function (parent_id, dataLocation) {
             var _a;
             var div = document.createElement("div");
-            div.classList.add("dale-card");
-            div.id = "dale-card-" + this.id;
+            div.classList.add("daleofmerchants-card");
+            div.id = "daleofmerchants-card-" + this.id;
             Images_2.Images.setCardStyle(div, this.original_type_id);
             if (dataLocation) {
                 div.dataset['location'] = dataLocation;
@@ -1329,7 +1329,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.attachDiv = function (div) {
-            div.classList.add("dale-card");
+            div.classList.add("daleofmerchants-card");
             Images_2.Images.setCardStyle(div, this.original_type_id);
             DaleCard.divs.set(this.id, div);
             this.updateHTML();
@@ -1534,7 +1534,7 @@ define("components/types/DaleWrapClass", ["require", "exports"], function (requi
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DALE_WRAP_CLASSES = void 0;
-    exports.DALE_WRAP_CLASSES = ['dale-wrap-technique', 'dale-wrap-purchase', 'dale-wrap-build', 'dale-wrap-discard', 'dale-wrap-default'];
+    exports.DALE_WRAP_CLASSES = ['daleofmerchants-wrap-technique', 'daleofmerchants-wrap-purchase', 'daleofmerchants-wrap-build', 'daleofmerchants-wrap-discard', 'daleofmerchants-wrap-default'];
 });
 define("components/DaleStock", ["require", "exports", "ebg/stock", "components/DaleCard", "components/Images", "components/OrderedSelection", "components/types/DaleWrapClass", "ebg/stock"], function (require, exports, Stock, DaleCard_2, Images_3, OrderedSelection_2, DaleWrapClass_1) {
     "use strict";
@@ -1551,7 +1551,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this._shuffle_animation = false;
             _this.duration = 500;
             _this.orderedSelection = new OrderedSelection_2.OrderedSelection();
-            _this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
+            _this.jstpl_stock_item = '<div id="${id}" class="daleofmerchants-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
             addEventListener("resize", _this.onResize.bind(_this));
             _this.onResize();
             return _this;
@@ -1571,7 +1571,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 dojo.setStyle(wrap, 'min-height', 2 * Images_3.Images.CARD_WIDTH_S + 'px');
                 dojo.setStyle(wrap, 'max-height', 2 * Images_3.Images.CARD_WIDTH_S + 'px');
                 this.wrap = wrap;
-                this.actionLabel = (_a = wrap.querySelector(".dale-label")) !== null && _a !== void 0 ? _a : undefined;
+                this.actionLabel = (_a = wrap.querySelector(".daleofmerchants-label")) !== null && _a !== void 0 ? _a : undefined;
                 if (!this.actionLabel) {
                     throw new Error("initActionLabelWrap failed: no action label found");
                 }
@@ -1594,7 +1594,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             console.log("onClickOnItem");
             evt.stopPropagation();
             var target = evt.currentTarget;
-            if (target.classList.contains("dale-clickable")) {
+            if (target.classList.contains("daleofmerchants-clickable")) {
                 var match = target.id.match(/(\d+)$/);
                 var item_id = +match[0];
                 if (this.isClickable(item_id)) {
@@ -1651,10 +1651,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 throw new Error("Card ".concat(card_id, " does not exist in hand, so setClickable cannot be set"));
             }
             if (this.isClickable(card_id)) {
-                div.classList.add("dale-clickable");
+                div.classList.add("daleofmerchants-clickable");
             }
             else {
-                div.classList.remove("dale-clickable");
+                div.classList.remove("daleofmerchants-clickable");
             }
         };
         DaleStock.prototype.setSelectionMaxSize = function () {
@@ -1758,7 +1758,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         };
         DaleStock.prototype.setWrapClass = function (wrapClass, labelText) {
             var _a;
-            if (wrapClass === void 0) { wrapClass = 'dale-wrap-default'; }
+            if (wrapClass === void 0) { wrapClass = 'daleofmerchants-wrap-default'; }
             if (this.actionLabel && wrapClass != 'previous') {
                 if (!labelText) {
                     labelText = this.actionLabelDefaultText;
@@ -1945,22 +1945,22 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.popin = new ebg.popindialog();
             this.isPopinOpen = false;
             this.cardIdToPopinDiv = new Map();
-            this.wrapClass = "dale-wrap-default";
+            this.wrapClass = "daleofmerchants-wrap-default";
             page.allPiles.push(this);
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
             this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"dale-pile\" style=\"").concat(Images_4.Images.getCardStyle(), "\">\n                <div class=\"dale-pile-size\"></div>\n                <div class=\"dale-pile-size dale-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"daleofmerchants-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"daleofmerchants-pile\" style=\"").concat(Images_4.Images.getCardStyle(), "\">\n                <div class=\"daleofmerchants-pile-size\"></div>\n                <div class=\"daleofmerchants-pile-size daleofmerchants-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = Images_4.Images.getPlaceholder();
-            var sizeElements = this.containerHTML.querySelectorAll('.dale-pile-size');
+            var sizeElements = this.containerHTML.querySelectorAll('.daleofmerchants-pile-size');
             this.sizeHTML = sizeElements[0];
             this.selectedSizeHTML = sizeElements[1];
             this.cards = [];
             this._slidingCards = [];
             this.orderedSelection = new OrderedSelection_3.OrderedSelection();
-            (_a = this.containerHTML.querySelector(".dale-pile")) === null || _a === void 0 ? void 0 : _a.prepend(this.placeholderHTML);
+            (_a = this.containerHTML.querySelector(".daleofmerchants-pile")) === null || _a === void 0 ? void 0 : _a.prepend(this.placeholderHTML);
             this.updateHTML();
             dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
             dojo.connect(this.orderedSelection, 'onUnselect', this, 'onUnselectPileCard');
@@ -1980,16 +1980,16 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var topCard = this.peek(true);
             if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTop') && this.orderedSelection.getMaxSize() > 0) {
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
-                    this.containerHTML.classList.add("dale-blinking");
+                    this.containerHTML.classList.add("daleofmerchants-blinking");
                 }
                 else {
-                    this.containerHTML.classList.remove("dale-blinking");
+                    this.containerHTML.classList.remove("daleofmerchants-blinking");
                 }
-                this.selectedSizeHTML.classList.remove("dale-hidden");
+                this.selectedSizeHTML.classList.remove("daleofmerchants-hidden");
                 this.selectedSizeHTML.innerHTML = "(x ".concat(this.orderedSelection.getSize(), ")");
             }
             else {
-                this.selectedSizeHTML.classList.add("dale-hidden");
+                this.selectedSizeHTML.classList.add("daleofmerchants-hidden");
             }
             this.sizeHTML.innerHTML = 'x ' + this.cards.length;
             if (!this.isPopinOpen && this.previousTopCard != topCard) {
@@ -1997,7 +1997,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.topCardHTML = undefined;
                 if (topCard !== undefined) {
                     this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'pile');
-                    this.topCardHTML.classList.add("dale-clickable");
+                    this.topCardHTML.classList.add("daleofmerchants-clickable");
                     dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
                 }
                 this.previousTopCard = topCard;
@@ -2175,9 +2175,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var container_id = popin_id + "-card-container";
             var _loop_3 = function (card) {
                 var div = card.toDiv(container_id, 'stock');
-                div.classList.add("dale-relative");
+                div.classList.add("daleofmerchants-relative");
                 if (this_2.isClickable(card)) {
-                    div.classList.add("dale-clickable");
+                    div.classList.add("daleofmerchants-clickable");
                     var thiz_2 = this_2;
                     dojo.connect(div, 'onclick', function () {
                         thiz_2.onClickCard(card, div);
@@ -2273,15 +2273,15 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         };
         Pile.prototype.unselectTopCard = function () {
             var _a;
-            (_a = this.containerHTML) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-selected");
+            (_a = this.containerHTML) === null || _a === void 0 ? void 0 : _a.classList.remove("daleofmerchants-selected");
         };
         Pile.prototype.selectTopCard = function () {
             var _a;
-            (_a = this.containerHTML) === null || _a === void 0 ? void 0 : _a.classList.add("dale-selected");
+            (_a = this.containerHTML) === null || _a === void 0 ? void 0 : _a.classList.add("daleofmerchants-selected");
         };
         Pile.prototype.setWrapClass = function (wrapClass) {
             var _a;
-            if (wrapClass === void 0) { wrapClass = 'dale-wrap-default'; }
+            if (wrapClass === void 0) { wrapClass = 'daleofmerchants-wrap-default'; }
             if (wrapClass != 'previous') {
                 (_a = this.containerHTML.classList).remove.apply(_a, DaleWrapClass_2.DALE_WRAP_CLASSES);
                 if (wrapClass) {
@@ -2291,7 +2291,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
         };
         Pile.prototype.setSelectionMode = function (mode, iconType, wrapClass, max) {
-            if (wrapClass === void 0) { wrapClass = 'dale-wrap-default'; }
+            if (wrapClass === void 0) { wrapClass = 'daleofmerchants-wrap-default'; }
             if (max === void 0) { max = 0; }
             this.setWrapClass(wrapClass);
             this.orderedSelection.setMaxSize(max);
@@ -2304,19 +2304,19 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 case 'multipleJunk':
                 case 'multipleFromTop':
                     if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
-                        this.containerHTML.classList.add("dale-blinking");
+                        this.containerHTML.classList.add("daleofmerchants-blinking");
                     }
                     else {
-                        this.containerHTML.classList.remove("dale-blinking");
+                        this.containerHTML.classList.remove("daleofmerchants-blinking");
                     }
                     break;
                 case 'single':
                 case 'singleAnimalfolk':
-                    this.containerHTML.classList.add("dale-blinking");
+                    this.containerHTML.classList.add("daleofmerchants-blinking");
                     this.openPopin();
                     break;
                 default:
-                    this.containerHTML.classList.remove("dale-blinking");
+                    this.containerHTML.classList.remove("daleofmerchants-blinking");
                     this.orderedSelection.unselectAll();
                     this.closePopin();
                     break;
@@ -2418,7 +2418,7 @@ define("components/CardSlot", ["require", "exports", "components/Images"], funct
             this.pos = pos;
             this.selected = false;
             this.container = container;
-            this.container.classList.add("dale-slot");
+            this.container.classList.add("daleofmerchants-slot");
             this._card = undefined;
             if (card) {
                 this.insertCard(card);
@@ -2502,11 +2502,11 @@ define("components/CardSlot", ["require", "exports", "components/Images"], funct
             this.container.remove();
         };
         CardSlot.prototype.selectItem = function () {
-            this.container.classList.add("dale-selected");
+            this.container.classList.add("daleofmerchants-selected");
             this.selected = true;
         };
         CardSlot.prototype.unselectItem = function () {
-            this.container.classList.remove("dale-selected");
+            this.container.classList.remove("daleofmerchants-selected");
             this.selected = false;
         };
         CardSlot.prototype.setClickable = function (enable) {
@@ -2520,10 +2520,10 @@ define("components/CardSlot", ["require", "exports", "components/Images"], funct
                         evt.stopPropagation();
                         thiz_3.parent.onCardSlotClick(thiz_3);
                     };
-                    div.classList.add("dale-clickable");
+                    div.classList.add("daleofmerchants-clickable");
                 }
                 else {
-                    div.classList.remove("dale-clickable");
+                    div.classList.remove("daleofmerchants-clickable");
                     div.onclick = null;
                 }
             }
@@ -2561,12 +2561,12 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
             this.page = page;
-            $("dale-market-board-background").setAttribute("style", "\n            width: ".concat(Images_6.Images.MARKET_WIDTH_S - Images_6.Images.MARKET_PADDING_LEFT_S - Images_6.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_6.Images.MARKET_HEIGHT_S - Images_6.Images.MARKET_PADDING_TOP_S - Images_6.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-top: ").concat(Images_6.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_6.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_6.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_6.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
-            this.container = $("dale-market-board-background").querySelector("#dale-market-board");
+            $("daleofmerchants-market-board-background").setAttribute("style", "\n            width: ".concat(Images_6.Images.MARKET_WIDTH_S - Images_6.Images.MARKET_PADDING_LEFT_S - Images_6.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_6.Images.MARKET_HEIGHT_S - Images_6.Images.MARKET_PADDING_TOP_S - Images_6.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-top: ").concat(Images_6.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_6.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_6.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_6.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
+            this.container = $("daleofmerchants-market-board-background").querySelector("#daleofmerchants-market-board");
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var stackContainer = document.createElement("div");
-                stackContainer.classList.add("dale-stack-container");
+                stackContainer.classList.add("daleofmerchants-stack-container");
                 if (pos == 0) {
                     stackContainer.setAttribute('style', "min-width: ".concat(Images_6.Images.CARD_WIDTH_S, "px;margin-left: ").concat(Images_6.Images.MARKET_ITEM_MARGIN_S, "px;"));
                 }
@@ -2574,7 +2574,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                     stackContainer.setAttribute('style', "max-width: ".concat(Images_6.Images.CARD_WIDTH_S, "px;margin-left: ").concat(pos == 4 ? 0 : Images_6.Images.MARKET_ITEM_MARGIN_S, "px;"));
                 }
                 var slotDiv = Images_6.Images.getPlaceholder();
-                slotDiv.classList.add("dale-placeholder-market");
+                slotDiv.classList.add("daleofmerchants-placeholder-market");
                 stackContainer.appendChild(slotDiv);
                 if (pos > 0) {
                     stackContainer.appendChild(DaleIcons_3.DaleIcons.getCostModificationIcon(pos - 1));
@@ -2662,7 +2662,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
         };
         MarketBoard.prototype.setWrapClass = function (wrapClass) {
             var _a;
-            if (wrapClass === void 0) { wrapClass = 'dale-wrap-default'; }
+            if (wrapClass === void 0) { wrapClass = 'daleofmerchants-wrap-default'; }
             if (wrapClass != 'previous') {
                 (_a = this.container.classList).remove.apply(_a, DaleWrapClass_3.DALE_WRAP_CLASSES);
                 if (wrapClass) {
@@ -2671,7 +2671,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             }
         };
         MarketBoard.prototype.setSelectionMode = function (mode, iconType, wrapClass) {
-            if (wrapClass === void 0) { wrapClass = "dale-wrap-default"; }
+            if (wrapClass === void 0) { wrapClass = "daleofmerchants-wrap-default"; }
             this.orderedSelection.setIconType(iconType);
             if (this.selectionMode == mode)
                 return;
@@ -2843,18 +2843,18 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             var totalWidth = this.container.getBoundingClientRect().width;
             if (totalWidth < (1 + Images_6.Images.STACK_MIN_MARGIN_X) * Images_6.Images.CARD_WIDTH_S * this.MAX_SIZE) {
                 for (var i = 1; i < this.slots.length; i++) {
-                    (_a = this.slots[i]) === null || _a === void 0 ? void 0 : _a.container.classList.add("dale-placeholder-partially-covered");
+                    (_a = this.slots[i]) === null || _a === void 0 ? void 0 : _a.container.classList.add("daleofmerchants-placeholder-partially-covered");
                 }
             }
             else {
                 for (var i = 1; i < this.slots.length; i++) {
-                    (_b = this.slots[i]) === null || _b === void 0 ? void 0 : _b.container.classList.remove("dale-placeholder-partially-covered");
+                    (_b = this.slots[i]) === null || _b === void 0 ? void 0 : _b.container.classList.remove("daleofmerchants-placeholder-partially-covered");
                 }
             }
             var overlap = Math.max(0, Images_6.Images.CARD_WIDTH_S - totalWidth / this.MAX_SIZE);
             var left = Math.round((Images_6.Images.CARD_WIDTH_S - overlap) / 2) + 'px';
             for (var pos = 1; pos < this.MAX_SIZE; pos++) {
-                var icon = (_d = (_c = this.slots[pos]) === null || _c === void 0 ? void 0 : _c.container.parentElement) === null || _d === void 0 ? void 0 : _d.querySelector(".dale-icon");
+                var icon = (_d = (_c = this.slots[pos]) === null || _c === void 0 ? void 0 : _c.container.parentElement) === null || _d === void 0 ? void 0 : _d.querySelector(".daleofmerchants-icon");
                 if (icon) {
                     dojo.setStyle(icon, 'left', left);
                 }
@@ -2872,11 +2872,11 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         function Stall(page, player_id) {
             this.page = page;
             this.player_id = player_id;
-            this.wrapPortrait = $("dale-stall-wrap-portrait-" + player_id);
-            this.wrapLandscape = $("dale-stall-wrap-landscape-" + player_id);
+            this.wrapPortrait = $("daleofmerchants-stall-wrap-portrait-" + player_id);
+            this.wrapLandscape = $("daleofmerchants-stall-wrap-landscape-" + player_id);
             console.log(this.wrapPortrait);
             console.log(this.wrapLandscape);
-            this.container = $("dale-stall-" + player_id);
+            this.container = $("daleofmerchants-stall-" + player_id);
             this.stackContainers = [];
             this.selectionMode = 'none';
             this.slots = [];
@@ -2892,7 +2892,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         }
         Object.defineProperty(Stall.prototype, "leftMostPlaceholder", {
             get: function () {
-                var placeholder = this.container.querySelector(".dale-placeholder");
+                var placeholder = this.container.querySelector(".daleofmerchants-placeholder");
                 if (placeholder) {
                     return placeholder;
                 }
@@ -2909,20 +2909,20 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                     prevStackContainer.setAttribute('style', "max-width: ".concat(Images_7.Images.CARD_WIDTH_S * (1 + Images_7.Images.STACK_MAX_MARGIN_X), "px;"));
                 }
                 var stackContainer = document.createElement("div");
-                stackContainer.classList.add("dale-stack-container");
+                stackContainer.classList.add("daleofmerchants-stack-container");
                 stackContainer.setAttribute('style', "min-width: ".concat(Images_7.Images.CARD_WIDTH_S, "px;"));
                 var placeholder = Images_7.Images.getPlaceholder();
-                placeholder.classList.add("dale-placeholder-stall");
+                placeholder.classList.add("daleofmerchants-placeholder-stall");
                 if (this.slots.length > 0) {
-                    stackContainer.classList.add("dale-grayed-out");
-                    placeholder.classList.add("dale-placeholder-partially-covered");
+                    stackContainer.classList.add("daleofmerchants-grayed-out");
+                    placeholder.classList.add("daleofmerchants-placeholder-partially-covered");
                 }
                 var text = document.createElement("div");
-                text.classList.add("dale-text");
+                text.classList.add("daleofmerchants-text");
                 text.textContent = _("Build a new stack");
                 placeholder.appendChild(text);
                 var stackIndexDiv = document.createElement("div");
-                stackIndexDiv.classList.add("dale-stack-index");
+                stackIndexDiv.classList.add("daleofmerchants-stack-index");
                 stackIndexDiv.innerText = String(this.slots.length + 1);
                 placeholder.append(stackIndexDiv);
                 placeholder.appendChild(DaleIcons_4.DaleIcons.getBuildIcon());
@@ -2983,7 +2983,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 this.numberOfStacks += 1;
             }
             var stackContainer = this.stackContainers[stack_index];
-            stackContainer.classList.remove("dale-grayed-out");
+            stackContainer.classList.remove("daleofmerchants-grayed-out");
             var stack = this.slots[stack_index];
             if (index == undefined) {
                 index = 0;
@@ -3074,13 +3074,13 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             var placeholder = this.leftMostPlaceholder;
             if (placeholder) {
                 if (enable) {
-                    placeholder.classList.add("dale-clickable");
-                    placeholder.parentElement.classList.remove("dale-grayed-out");
+                    placeholder.classList.add("daleofmerchants-clickable");
+                    placeholder.parentElement.classList.remove("daleofmerchants-grayed-out");
                     placeholder.onclick = this.page.onRequestBuildAction.bind(this.page);
                 }
                 else {
-                    placeholder.classList.remove("dale-clickable");
-                    placeholder.parentElement.classList.add("dale-grayed-out");
+                    placeholder.classList.remove("daleofmerchants-clickable");
+                    placeholder.parentElement.classList.add("daleofmerchants-grayed-out");
                     placeholder.onclick = null;
                 }
             }
@@ -3088,15 +3088,15 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         Stall.prototype.selectLeftPlaceholder = function () {
             var placeholder = this.leftMostPlaceholder;
             if (placeholder) {
-                placeholder.classList.add("dale-selected");
-                placeholder.parentElement.classList.remove("dale-grayed-out");
+                placeholder.classList.add("daleofmerchants-selected");
+                placeholder.parentElement.classList.remove("daleofmerchants-grayed-out");
             }
         };
         Stall.prototype.unselectLeftPlaceholder = function () {
             var placeholder = this.leftMostPlaceholder;
             if (placeholder) {
-                placeholder.classList.remove("dale-selected");
-                placeholder.parentElement.classList.add("dale-grayed-out");
+                placeholder.classList.remove("daleofmerchants-selected");
+                placeholder.parentElement.classList.add("daleofmerchants-grayed-out");
             }
         };
         Stall.prototype.selectItem = function (card_id) {
@@ -3182,24 +3182,24 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
         Stall.prototype.onResize = function () {
             if (window.innerWidth < 1250) {
                 this.wrapPortrait.appendChild(this.container);
-                this.wrapPortrait.classList.remove("dale-hidden");
-                this.wrapLandscape.classList.add("dale-hidden");
+                this.wrapPortrait.classList.remove("daleofmerchants-hidden");
+                this.wrapLandscape.classList.add("daleofmerchants-hidden");
             }
             else {
                 this.wrapLandscape.appendChild(this.container);
-                this.wrapLandscape.classList.remove("dale-hidden");
-                this.wrapPortrait.classList.add("dale-hidden");
+                this.wrapLandscape.classList.remove("daleofmerchants-hidden");
+                this.wrapPortrait.classList.add("daleofmerchants-hidden");
             }
             if (this.container.getBoundingClientRect().width < (1 + Images_7.Images.STACK_MIN_MARGIN_X) * Images_7.Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
                 for (var i = 1; i < this.slots.length; i++) {
-                    var placeholder = this.stackContainers[i].querySelector(".dale-placeholder");
-                    placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.add("dale-placeholder-partially-covered");
+                    var placeholder = this.stackContainers[i].querySelector(".daleofmerchants-placeholder");
+                    placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.add("daleofmerchants-placeholder-partially-covered");
                 }
             }
             else {
                 for (var i = 1; i < this.slots.length; i++) {
-                    var placeholder = this.stackContainers[i].querySelector(".dale-placeholder");
-                    placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.remove("dale-placeholder-partially-covered");
+                    var placeholder = this.stackContainers[i].querySelector(".daleofmerchants-placeholder");
+                    placeholder === null || placeholder === void 0 ? void 0 : placeholder.classList.remove("daleofmerchants-placeholder-partially-covered");
                 }
             }
         };
@@ -3464,11 +3464,11 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                 var div = new DaleCard_8.DaleCard(this._args.passive_card_id).div;
                 if (div) {
                     if (enable) {
-                        div.classList.add("dale-passive-selected");
+                        div.classList.add("daleofmerchants-passive-selected");
                         div.addEventListener('click', this.leaveThis);
                     }
                     else {
-                        div.classList.remove("dale-passive-selected");
+                        div.classList.remove("daleofmerchants-passive-selected");
                         div.removeEventListener('click', this.leaveThis);
                     }
                 }
@@ -3485,7 +3485,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
     var TargetingLine = (function () {
         function TargetingLine(source, targets, sourceClass, targetClass, lineClass, onSource, onTarget, pile) {
             TargetingLine.targetingLines.push(this);
-            this.svg = $("dale-svg-container").querySelector("svg");
+            this.svg = $("daleofmerchants-svg-container").querySelector("svg");
             this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
             this.line.classList.add(lineClass);
             this.svg.appendChild(this.line);
@@ -3502,7 +3502,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             else {
                 this.cardDiv = source.div;
             }
-            this.cardDiv.classList.add("dale-line-source", this.sourceClass);
+            this.cardDiv.classList.add("daleofmerchants-line-source", this.sourceClass);
             this.onSource = function () {
                 thiz.remove();
                 onSource(source_id);
@@ -3512,7 +3512,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             this.onTargets = [];
             var _loop_4 = function (targetCard) {
                 var card_div = targetCard instanceof DaleCard_9.DaleCard ? targetCard.div : targetCard;
-                card_div.classList.add("dale-line-target", this_3.targetClass);
+                card_div.classList.add("daleofmerchants-line-target", this_3.targetClass);
                 this_3.targetDivs.push(card_div);
                 var target_id = targetCard instanceof DaleCard_9.DaleCard ? targetCard.id : +targetCard.dataset['target_id'];
                 var finalOnTarget = function () {
@@ -3536,7 +3536,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                         return;
                     }
                     thiz.cardDiv = source.div;
-                    thiz.cardDiv.classList.add("dale-line-source", thiz.sourceClass);
+                    thiz.cardDiv.classList.add("daleofmerchants-line-source", thiz.sourceClass);
                     thiz.cardDiv.addEventListener("click", thiz.onSource);
                     console.log("TargetingLine: new source found");
                     console.log(thiz.cardDiv);
@@ -3546,8 +3546,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 if (currTarget == thiz.prevTargetSnap) {
                     return;
                 }
-                (_a = thiz.prevTargetHover) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-line-source", thiz.sourceClass);
-                (_b = thiz.prevTargetHover) === null || _b === void 0 ? void 0 : _b.classList.add("dale-line-target", thiz.targetClass);
+                (_a = thiz.prevTargetHover) === null || _a === void 0 ? void 0 : _a.classList.remove("daleofmerchants-line-source", thiz.sourceClass);
+                (_b = thiz.prevTargetHover) === null || _b === void 0 ? void 0 : _b.classList.add("daleofmerchants-line-target", thiz.targetClass);
                 thiz.prevTargetHover = undefined;
                 thiz.prevTargetSnap = undefined;
                 var x1 = sourceRect.left + window.scrollX + Images_8.Images.CARD_WIDTH_S / 2;
@@ -3563,8 +3563,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                             }
                             if (currTarget == ((_a = TargetingLine.previousMouseEvent) === null || _a === void 0 ? void 0 : _a.target)) {
                                 var targetRect = currTarget.getBoundingClientRect();
-                                targetCard.classList.add("dale-line-source", thiz.sourceClass);
-                                targetCard.classList.remove("dale-line-target", thiz.targetClass);
+                                targetCard.classList.add("daleofmerchants-line-source", thiz.sourceClass);
+                                targetCard.classList.remove("daleofmerchants-line-target", thiz.targetClass);
                                 x2 = targetRect.left + window.scrollX + Images_8.Images.CARD_WIDTH_S / 2;
                                 y2 = targetRect.top + window.scrollY + Images_8.Images.CARD_HEIGHT_S / 2;
                                 thiz.line.setAttribute("x2", String(x2));
@@ -3597,15 +3597,15 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
         }
         TargetingLine.prototype.remove = function () {
             removeEventListener("mousemove", this.updateLine);
-            this.cardDiv.classList.remove("dale-line-source", this.sourceClass);
+            this.cardDiv.classList.remove("daleofmerchants-line-source", this.sourceClass);
             this.cardDiv.removeEventListener("click", this.onSource);
             if (this.pile) {
                 this.cardDiv.remove();
                 this.pile.openPopin();
             }
             for (var i = 0; i < this.targetDivs.length; i++) {
-                this.targetDivs[i].classList.remove("dale-line-source", this.sourceClass);
-                this.targetDivs[i].classList.remove("dale-line-target", this.targetClass);
+                this.targetDivs[i].classList.remove("daleofmerchants-line-source", this.sourceClass);
+                this.targetDivs[i].classList.remove("daleofmerchants-line-target", this.targetClass);
                 this.targetDivs[i].removeEventListener("click", this.onTargets[i]);
             }
             this.line.remove();
@@ -3706,12 +3706,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.log(this.gamedatas);
             console.log("------------------------");
             if (this.isSpectator) {
-                (_a = $("dale-hand-limbo-flex")) === null || _a === void 0 ? void 0 : _a.classList.add("dale-hidden");
+                (_a = $("daleofmerchants-hand-limbo-flex")) === null || _a === void 0 ? void 0 : _a.classList.add("daleofmerchants-hidden");
             }
-            var svgContainer = $("dale-svg-container");
+            var svgContainer = $("daleofmerchants-svg-container");
             (_b = $("overall-content")) === null || _b === void 0 ? void 0 : _b.appendChild(svgContainer);
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
-            this.deckSelection = new DaleDeckSelection_2.DaleDeckSelection(this, $("dale-page-deck-selection"), $("dale-page-game"), gamedatas.inDeckSelection);
+            this.deckSelection = new DaleDeckSelection_2.DaleDeckSelection(this, $("daleofmerchants-page-deck-selection"), $("daleofmerchants-page-game"), gamedatas.inDeckSelection);
             DaleCard_10.DaleCard.init(this, gamedatas.cardTypes);
             if (gamedatas.playerorder.length == 2) {
                 for (var _i = 0, _e = gamedatas.playerorder; _i < _e.length; _i++) {
@@ -3726,14 +3726,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var handsize_span = document.createElement('span');
                 var handsize_icon = DaleIcons_5.DaleIcons.getHandIcon();
                 var player_board_div = (_c = $('player_board_' + player_id)) === null || _c === void 0 ? void 0 : _c.querySelector(".player_score");
-                handsize_icon.id = 'dale-myhandsize-icon-' + player_id;
+                handsize_icon.id = 'daleofmerchants-myhandsize-icon-' + player_id;
                 player_board_div.prepend(handsize_icon);
                 player_board_div.prepend(handsize_span);
                 handsize_span.innerText = '0';
                 this.playerHandSizes[player_id] = new ebg.counter();
                 this.playerHandSizes[player_id].create(handsize_span);
                 this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]);
-                this.addTooltip('dale-myhandsize-icon-' + player_id, _("Number of cards in hand."), '');
+                this.addTooltip('daleofmerchants-myhandsize-icon-' + player_id, _("Number of cards in hand."), '');
                 this.addTooltip('icon_point_' + player_id, _("Number of stacks built."), '');
                 (_d = player_board_div.querySelector(".player_score_value")) === null || _d === void 0 ? void 0 : _d.insertAdjacentText('afterend', "/8");
                 this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, 'deck-' + player_id, 'Deck', +player_id);
@@ -3760,7 +3760,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card = gamedatas.market[i];
                 this.market.insertCard(DaleCard_10.DaleCard.of(card), +card.location_arg);
             }
-            this.myHand.init(this, $('dale-myhand'), $('dale-myhand-wrap'), _("Your hand"));
+            this.myHand.init(this, $('daleofmerchants-myhand'), $('daleofmerchants-myhand-wrap'), _("Your hand"));
             this.myHand.centerItems = true;
             for (var i in gamedatas.hand) {
                 var card = gamedatas.hand[i];
@@ -3778,8 +3778,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             };
             var onLimboItemCreate = function () {
                 var classList = thiz.myLimbo.wrap.classList;
-                if (classList.contains("dale-hidden")) {
-                    classList.remove("dale-hidden");
+                if (classList.contains("daleofmerchants-hidden")) {
+                    classList.remove("daleofmerchants-hidden");
                     limboTransitionUpdateDisplay();
                 }
             };
@@ -3787,15 +3787,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var classList = thiz.myLimbo.wrap.classList;
                 if (thiz.myLimbo.count() <= 1) {
                     setTimeout(function () {
-                        if (!classList.contains("dale-hidden")) {
-                            classList.add("dale-hidden");
+                        if (!classList.contains("daleofmerchants-hidden")) {
+                            classList.add("daleofmerchants-hidden");
                             limboTransitionUpdateDisplay();
                         }
                     }, thiz.myLimbo.duration);
                 }
             };
-            this.myLimbo.init(this, $('dale-mylimbo'), $('dale-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
-            this.myLimbo.wrap.classList.add("dale-hidden");
+            this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+            this.myLimbo.wrap.classList.add("daleofmerchants-hidden");
             this.myLimbo.centerItems = true;
             for (var i in gamedatas.limbo) {
                 var card = gamedatas.limbo[i];
@@ -3806,8 +3806,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
             dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             for (var player_id in gamedatas.schedules) {
-                var container = $('dale-schedule-' + player_id);
-                var wrap = $('dale-schedule-wrap-' + player_id);
+                var container = $('daleofmerchants-schedule-' + player_id);
+                var wrap = $('daleofmerchants-schedule-wrap-' + player_id);
                 dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_9.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
@@ -3849,7 +3849,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var blindfold_args = args.args;
                         if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.card_id) {
                             var card = new DaleCard_10.DaleCard(blindfold_args._private.card_id);
-                            this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default', _("Your opponent is guessing the value of ") + card.name);
+                            this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default', _("Your opponent is guessing the value of ") + card.name);
                             this.myHand.orderedSelection.setMaxSize(1);
                             this.myHand.selectItem(blindfold_args._private.card_id);
                         }
@@ -3859,45 +3859,45 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             switch (stateName) {
                 case 'turnStart':
-                    this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'dale-wrap-technique');
+                    this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'daleofmerchants-wrap-technique');
                     var turnStart_unique_card_id_1 = this.mySchedule.getUniqueClickableCardId();
                     if (turnStart_unique_card_id_1) {
                         setTimeout((function () { return _this.onTurnStartTriggerTechnique(turnStart_unique_card_id_1); }).bind(this), 1);
                     }
                     break;
                 case 'postCleanUpPhase':
-                    this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+                    this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
                     break;
                 case 'playerTurn':
                     this.mainClientState.enter();
                     break;
                 case 'client_purchase':
-                    this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-purchase");
+                    this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.setPurchaseSelectionModes(this.mainClientState.args);
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_technique':
-                    this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-purchase");
+                    this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_build':
-                    this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-purchase");
+                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
                 case 'client_inventory':
-                    this.myHand.setSelectionMode('multiple', 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-purchase");
+                    this.myHand.setSelectionMode('multiple', 'pileRed', 'daleofmerchants-wrap-discard', _("Click cards to <strong>discard</strong>"));
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
                 case 'client_essentialPurchase':
                     var client_essentialPurchase_args = this.mainClientState.args;
                     this.setPurchaseSelectionModes(client_essentialPurchase_args);
                     this.myHand.unselectAll();
-                    this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+                    this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
                     var junk_selected = 0;
                     var client_essentialPurchase_skip = true;
                     for (var _i = 0, _c = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _c.length; _i++) {
@@ -3919,7 +3919,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var client_glue_args = this.mainClientState.args;
                     this.setPurchaseSelectionModes(client_glue_args);
                     this.myHand.unselectAll();
-                    this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
+                    this.myHand.setSelectionMode('glue', 'hand', 'daleofmerchants-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
                     for (var _d = 0, _e = client_glue_args.funds_card_ids.slice().reverse(); _d < _e.length; _d++) {
                         var card_id = _e[_d];
                         this.myHand.selectItem(card_id, true);
@@ -3929,18 +3929,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'winterIsComing':
-                    this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
+                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
                 case 'client_swiftBroker':
-                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
+                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_shatteredRelic':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'spyglass':
-                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_acorn':
                     var client_acorn_targets = [];
@@ -3950,20 +3950,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     var client_acorn_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onAcorn(source_id, target_id); });
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onAcorn(source_id, target_id); });
                     break;
                 case 'client_giftVoucher':
                     var client_giftVoucher_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onGiftVoucher(source_id, target_id); });
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onGiftVoucher(source_id, target_id); });
                     break;
                 case 'client_loyalPartner':
-                    this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
+                    this.market.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
                     break;
                 case 'client_prepaidGood':
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'specialOffer':
-                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
+                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_rottenFood':
                     for (var _f = 0, _g = Object.entries(this.allDecks); _f < _g.length; _f++) {
@@ -3972,13 +3972,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             deck.setSelectionMode('noneCantViewContent');
                         }
                     }
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
                     break;
                 case 'dirtyExchange':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
                     break;
                 case 'sabotage':
-                    this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'client_treasureHunter':
                     var client_treasureHunter_args_1 = this.mainClientState.args;
@@ -3994,21 +3994,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
                     }
                     setTimeout((function () {
-                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_treasureHunter_args_1.technique_card_id), targets_2, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onTreasureHunter(target_id); });
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_treasureHunter_args_1.technique_card_id), targets_2, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onTreasureHunter(target_id); });
                     }).bind(this), 500);
                     break;
                 case 'client_newSeason':
-                    this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'dale-wrap-technique');
+                    this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'client_whirligig':
-                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
+                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_blindfold':
                     if (this.unique_opponent_id) {
-                        this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card"));
+                        this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     }
                     else {
-                        this.myHand.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+                        this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     }
                     break;
                 case 'chameleon_flexibleShopkeeper':
@@ -4029,18 +4029,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.marketDiscard.setSelectionMode('noneCantViewContent');
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
-                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "dale-line-source-chameleon", "dale-line-target-chameleon", "dale-line-chameleon", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onConfirmChameleon(target_id); }, this.chameleonArgs.pile);
+                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "daleofmerchants-line-source-chameleon", "daleofmerchants-line-target-chameleon", "daleofmerchants-line-chameleon", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onConfirmChameleon(target_id); }, this.chameleonArgs.pile);
                     break;
                 case 'client_marketDiscovery':
-                    this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
-                    this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-purchase');
+                    this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
+                    this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
                     break;
                 case 'client_calculations':
-                    this.market.setSelectionMode(1, undefined, 'dale-wrap-technique');
+                    this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'client_safetyPrecaution':
                     var client_safetyPrecaution_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); });
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); });
                     break;
                 case 'magnet':
                     var magnet_args = args.args;
@@ -4048,30 +4048,30 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('single');
                     break;
                 case 'dangerousTest':
-                    this.myHand.setSelectionMode('multiple3', 'pileBlue', 'dale-wrap-technique', _("Choose 3 cards to discard"));
+                    this.myHand.setSelectionMode('multiple3', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 3 cards to discard"));
                     break;
                 case 'client_shoppingJourney':
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'client_houseCleaning':
                     var client_houseCleaning_args = this.mainClientState.args;
-                    this.myDiscard.setSelectionMode('multipleJunk', 'hand', "dale-wrap-technique", client_houseCleaning_args.nbr_junk);
+                    this.myDiscard.setSelectionMode('multipleJunk', 'hand', "daleofmerchants-wrap-technique", client_houseCleaning_args.nbr_junk);
                     if (client_houseCleaning_args.nbr_junk > 0) {
                         this.myDiscard.openPopin();
                     }
                     break;
                 case 'client_houseCleaningDitch':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'client_siesta':
-                    this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
+                    this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
                     break;
                 case 'nightShift':
                     for (var _q = 0, _r = Object.values(this.playerDecks); _q < _r.length; _q++) {
                         var deck = _r[_q];
                         deck.setSelectionMode('noneCantViewContent');
                     }
-                    this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place back"));
                     break;
                 case 'client_ruthlessCompetition':
                     var client_ruthlessCompetition_args_1 = this.mainClientState.args;
@@ -4094,44 +4094,44 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else {
                         setTimeout((function () {
-                            new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_ruthlessCompetition_args_1.technique_card_id), client_ruthlessCompetition_targets_1, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRuthlessCompetition(target_id); });
+                            new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_ruthlessCompetition_args_1.technique_card_id), client_ruthlessCompetition_targets_1, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRuthlessCompetition(target_id); });
                         }).bind(this), 500);
                     }
                     break;
                 case 'ruthlessCompetition':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place back"));
                     break;
                 case 'cunningNeighbour':
-                    this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Opponent's hand"));
+                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Opponent's hand"));
                     break;
                 case 'charity':
-                    this.myLimbo.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+                    this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     break;
                 case 'tasters':
-                    this.market.setSelectionMode(1, undefined, "dale-wrap-technique");
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'daringAdventurer':
                     var daringAdventurer_args = args.args;
-                    this.market.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
+                    this.market.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
                     this.market.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
                     break;
                 case 'client_rareArtefact':
                     var client_rareArtefact_args_1 = this.mainClientState.args;
                     setTimeout((function () {
-                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_rareArtefact_args_1.technique_card_id), _this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRareArtefact(target_id); });
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_rareArtefact_args_1.technique_card_id), _this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRareArtefact(target_id); });
                     }).bind(this), 500);
                     break;
                 case 'client_swank':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'naturalSurvivor':
                     var naturalSurvivor_args = args.args;
                     this.myDeck.setContent(naturalSurvivor_args._private.cards.map(DaleCard_10.DaleCard.of));
-                    this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', naturalSurvivor_args.die_value);
-                    this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
+                    this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', naturalSurvivor_args.die_value);
+                    this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
                     break;
                 case 'client_refreshingDrink':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
                     break;
                 case 'duplicateEntry':
                     var duplicateEntry_args = args.args;
@@ -4139,40 +4139,40 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('single');
                     break;
                 case 'client_historyLesson':
-                    this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'dale-wrap-technique', 3);
+                    this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
                     break;
                 case 'culturalPreservation':
                     var culturalPreservation_args = args.args;
                     this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard_10.DaleCard.of));
-                    this.myDeck.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', 3);
+                    this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
                     break;
                 case 'sliceOfLife':
-                    this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
                     break;
                 case 'delightfulSurprise':
-                    this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to take"));
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_replacement':
-                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
                     break;
                 case 'replacement':
                     var replacement_args = args.args;
-                    this.market.setSelectionMode(1, undefined, 'dale-wrap-technique');
+                    this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
                     this.market.setClickableForReplacement(replacement_args.value);
                     break;
                 case 'client_fashionHint':
-                    this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
-                    this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-technique');
+                    this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
+                    this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'fashionHint':
                     var fashionHint_args = args.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onFashionHintSwapSkip(); }, function (source_id, target_id) { return _this.onFashionHintSwap(target_id); });
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onFashionHintSwapSkip(); }, function (source_id, target_id) { return _this.onFashionHintSwap(target_id); });
                     this.myDiscard.setSelectionMode('noneCantViewContent');
-                    this.myHand.setSelectionMode('none', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to swap with ") + fashionHint_args.card_name);
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + fashionHint_args.card_name);
                     break;
                 case 'royalPrivilege':
-                    this.market.setSelectionMode(1, undefined, 'dale-wrap-purchase');
-                    this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'dale-wrap-purchase', _("Choose an animalfolk card to ditch"));
+                    this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
+                    this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to ditch"));
                     break;
             }
         };
@@ -4592,7 +4592,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var value = _c[_b];
                         _loop_7(value);
                     }
-                    this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
+                    this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
                     this.myHand.orderedSelection.setMaxSize(1);
                     this.myHand.selectItem(blindfoldDecideValue_args.card_id);
                     break;
@@ -4979,7 +4979,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 if ('die_icon' in args) {
                     var iconTpl = DaleDie_2.DaleDie.getIconTpl(args['die_icon']);
-                    args['die_icon'] = "<span class=\"dale-log-span\">".concat(iconTpl, "</span>");
+                    args['die_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl, "</span>");
                 }
                 if (log.includes('${ocelot}')) {
                     args['ocelot'] = 'OCELOT_DIE_ICON';
@@ -5104,7 +5104,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("opponent-selection-button-" + opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
                     if (this.opponent_ids.length < this.max_opponents) {
                         this.opponent_ids.push(opponent_id);
-                        (_a = $("opponent-selection-button-" + opponent_id)) === null || _a === void 0 ? void 0 : _a.classList.add("dale-bga-button-selected");
+                        (_a = $("opponent-selection-button-" + opponent_id)) === null || _a === void 0 ? void 0 : _a.classList.add("daleofmerchants-bga-button-selected");
                     }
                 }
             }
@@ -5122,14 +5122,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var index = this.opponent_ids.indexOf(opponent_id);
                     if (index == -1) {
                         if (this.opponent_ids.length >= this.max_opponents) {
-                            (_a = $("opponent-selection-button-" + this.opponent_ids.pop())) === null || _a === void 0 ? void 0 : _a.classList.remove("dale-bga-button-selected");
+                            (_a = $("opponent-selection-button-" + this.opponent_ids.pop())) === null || _a === void 0 ? void 0 : _a.classList.remove("daleofmerchants-bga-button-selected");
                         }
                         this.opponent_ids.push(opponent_id);
-                        target.classList.add("dale-bga-button-selected");
+                        target.classList.add("daleofmerchants-bga-button-selected");
                     }
                     else if (this.max_opponents != 1) {
                         this.opponent_ids.splice(index, 1);
-                        target.classList.remove("dale-bga-button-selected");
+                        target.classList.remove("daleofmerchants-bga-button-selected");
                     }
                     this.updateConfirmOpponentsButton();
                     console.log(this.opponent_ids);
@@ -5216,7 +5216,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                 calculations_targets.push(new DaleCard_10.DaleCard(target_id));
                             }
                         }
-                        new TargetingLine_1.TargetingLine(card, calculations_targets, 'dale-line-source-technique', 'dale-line-target-technique', 'dale-line-technique', function (source_id) {
+                        new TargetingLine_1.TargetingLine(card, calculations_targets, 'daleofmerchants-line-source-technique', 'daleofmerchants-line-target-technique', 'daleofmerchants-line-technique', function (source_id) {
                             TargetingLine_1.TargetingLine.remove();
                         }, function (source_id, target_id) { return _this.onCalculationsSwap(source_id, target_id); });
                     }
@@ -5410,8 +5410,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     var label = _("Place '") + card.name + _("' on another player\'s deck");
                     this.setMainTitle(label);
-                    this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
-                    new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
+                    new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
                     break;
                 case 'dirtyExchange':
                     this.bgaPerformAction('actDirtyExchange', {
@@ -5502,8 +5502,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             nightShift_targets.push(target);
                         }
                         var label = _("Place '") + card.name + _("' on a deck");
-                        this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', label);
-                        new TargetingLine_1.TargetingLine(card, nightShift_targets, "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
+                        this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
+                        new TargetingLine_1.TargetingLine(card, nightShift_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
                     }
                     break;
                 case 'delightfulSurprise':
@@ -6134,7 +6134,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.myDiscard.setSelectionMode('none');
             }
             else {
-                this.myDiscard.setSelectionMode('multiple', 'build', "dale-wrap-build", count_nostalgic_items);
+                this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", count_nostalgic_items);
             }
         };
         DaleOfMerchants.prototype.onBuild = function () {
@@ -6490,7 +6490,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onNightShiftNext = function () {
             TargetingLine_1.TargetingLine.remove();
             var label = _("Choose another card to place back");
-            this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
+            this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', label);
         };
         DaleOfMerchants.prototype.onRuthlessCompetition = function (opponent_id) {
             this.playTechniqueCardWithServerState({
@@ -7209,7 +7209,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.log("whirligigShuffle");
             var opponent_nbr = notif.args.opponent_nbr;
             if (!this.isSpectator) {
-                this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Whirligig"));
+                this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
                 var nbr = notif.args.opponent_nbr + notif.args.player_nbr;
                 var opponent_card_ids = this.myHand.getAllItems().map(function (item) { return item.id; }).reverse();
                 for (var i = 1; i <= nbr; i++) {

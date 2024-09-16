@@ -129,21 +129,21 @@ class DaleOfMerchants extends Gamegui
 		console.log(this.gamedatas)
 		console.log("------------------------")
 
-		//hide the "dale-hand-limbo-flex" for spectators
+		//hide the "daleofmerchants-hand-limbo-flex" for spectators
 		if (this.isSpectator) {
-			$("dale-hand-limbo-flex")?.classList.add("dale-hidden");
+			$("daleofmerchants-hand-limbo-flex")?.classList.add("daleofmerchants-hidden");
 		}
 
 		//positioning the svg container
-		const svgContainer = $("dale-svg-container") as HTMLElement;
+		const svgContainer = $("daleofmerchants-svg-container") as HTMLElement;
 		$("overall-content")?.appendChild(svgContainer);
 		addEventListener("mousemove", function(this: Window, evt: MouseEvent) { TargetingLine.previousMouseEvent = evt; });
 
 		//initialize the deck selection
 		this.deckSelection = new DaleDeckSelection(
 			this,
-			$("dale-page-deck-selection") as HTMLElement,
-			$("dale-page-game") as HTMLElement,
+			$("daleofmerchants-page-deck-selection") as HTMLElement,
+			$("daleofmerchants-page-game") as HTMLElement,
 			gamedatas.inDeckSelection
 		);
 
@@ -167,7 +167,7 @@ class DaleOfMerchants extends Gamegui
 			const handsize_span = document.createElement('span'); 
 			const handsize_icon = DaleIcons.getHandIcon();
 			const player_board_div = $('player_board_'+player_id)?.querySelector(".player_score")!;
-			handsize_icon.id = 'dale-myhandsize-icon-'+player_id;
+			handsize_icon.id = 'daleofmerchants-myhandsize-icon-'+player_id;
 			player_board_div.prepend(handsize_icon);
 			player_board_div.prepend(handsize_span);
 			handsize_span.innerText = '0';
@@ -178,7 +178,7 @@ class DaleOfMerchants extends Gamegui
 			this.playerHandSizes[player_id] = new ebg.counter();
 			this.playerHandSizes[player_id].create(handsize_span);
 			this.playerHandSizes[player_id].setValue(gamedatas.handSizes[player_id]!);
-			this.addTooltip('dale-myhandsize-icon-'+player_id, _("Number of cards in hand."), '');
+			this.addTooltip('daleofmerchants-myhandsize-icon-'+player_id, _("Number of cards in hand."), '');
 			this.addTooltip('icon_point_'+player_id, _("Number of stacks built."), '');
 
 			//maximum stack size
@@ -221,7 +221,7 @@ class DaleOfMerchants extends Gamegui
 		}
 
 		//initialize the hand
-		this.myHand.init(this, $('dale-myhand')!, $('dale-myhand-wrap')!, _("Your hand"));
+		this.myHand.init(this, $('daleofmerchants-myhand')!, $('daleofmerchants-myhand-wrap')!, _("Your hand"));
 		this.myHand.centerItems = true;
 		for (let i in gamedatas.hand) {
 			let card = gamedatas.hand[i]!;
@@ -241,8 +241,8 @@ class DaleOfMerchants extends Gamegui
 		}
 		const onLimboItemCreate = () => {
 			const classList = thiz.myLimbo.wrap!.classList;
-			if (classList.contains("dale-hidden")) {
-				classList.remove("dale-hidden");
+			if (classList.contains("daleofmerchants-hidden")) {
+				classList.remove("daleofmerchants-hidden");
 				limboTransitionUpdateDisplay();
 			}
 		}
@@ -250,8 +250,8 @@ class DaleOfMerchants extends Gamegui
 			const classList = thiz.myLimbo.wrap!.classList;
 			if (thiz.myLimbo.count() <= 1) {
 				setTimeout(() => {
-					if (!classList.contains("dale-hidden")) {
-						classList.add("dale-hidden");
+					if (!classList.contains("daleofmerchants-hidden")) {
+						classList.add("daleofmerchants-hidden");
 						limboTransitionUpdateDisplay();
 					}
 				}, thiz.myLimbo.duration);
@@ -259,22 +259,22 @@ class DaleOfMerchants extends Gamegui
 		}
 
 		//initialize limbo
-		this.myLimbo.init(this, $('dale-mylimbo')!, $('dale-mylimbo-wrap')!, _("Limbo"), onLimboItemCreate, onLimboItemDelete);
-		this.myLimbo.wrap!.classList.add("dale-hidden");
+		this.myLimbo.init(this, $('daleofmerchants-mylimbo')!, $('daleofmerchants-mylimbo-wrap')!, _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+		this.myLimbo.wrap!.classList.add("daleofmerchants-hidden");
 		this.myLimbo.centerItems = true;
 		for (let i in gamedatas.limbo) {
 			const card = gamedatas.limbo[i]!;
 			this.myLimbo.addDaleCardToStock(DaleCard.of(card));
 		}
 		this.myLimbo.setSelectionMode('none');
-		dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #dale-mylimbo-wrap style
+		dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #daleofmerchants-mylimbo-wrap style
 		dojo.connect( this.myLimbo, 'onClick', this, 'onSelectLimboCard' );
 		dojo.connect( this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard' );
 
 		//initialize the schedules
 		for (let player_id in gamedatas.schedules) {
-			const container = $('dale-schedule-'+player_id)!
-			const wrap = $('dale-schedule-wrap-'+player_id)!
+			const container = $('daleofmerchants-schedule-'+player_id)!
+			const wrap = $('daleofmerchants-schedule-wrap-'+player_id)!
 			dojo.setStyle(wrap, 'min-width', `${1.75*Images.CARD_WIDTH_S}px`);
 			this.playerSchedules[player_id] = new DaleStock();
 			this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
@@ -329,7 +329,7 @@ class DaleOfMerchants extends Gamegui
 					const blindfold_args = args.args as { _private?: { card_id?: number } };
 					if (blindfold_args._private?.card_id) {
 						const card = new DaleCard(blindfold_args._private.card_id);
-						this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default', _("Your opponent is guessing the value of ")+card.name);
+						this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default', _("Your opponent is guessing the value of ")+card.name);
 						this.myHand.orderedSelection.setMaxSize(1);
 						this.myHand.selectItem(blindfold_args._private.card_id);
 					}
@@ -341,7 +341,7 @@ class DaleOfMerchants extends Gamegui
 		//turn on selection mode(s)
 		switch( stateName ){
 			case 'turnStart':
-				this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'dale-wrap-technique');
+				this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'daleofmerchants-wrap-technique');
 				const turnStart_unique_card_id = this.mySchedule.getUniqueClickableCardId();
 				if (turnStart_unique_card_id) {
 					setTimeout((()=>this.onTurnStartTriggerTechnique(turnStart_unique_card_id)).bind(this), 1);
@@ -349,38 +349,38 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'postCleanUpPhase':
-				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'dale-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
 				break;
 			case 'playerTurn':
 				this.mainClientState.enter();
 				break;
 			case 'client_purchase':
-				this.myHand.setSelectionMode('multiple', 'pileYellow', 'dale-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
+				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.setPurchaseSelectionModes(this.mainClientState.args as ClientGameStates['client_purchase']);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
-				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'dale-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
+				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_build':
-				this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build stacks</strong>"));
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_inventory':
-				this.myHand.setSelectionMode('multiple', 'pileRed', 'dale-wrap-discard', _("Click cards to <strong>discard</strong>"));
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-purchase");
+				this.myHand.setSelectionMode('multiple', 'pileRed', 'daleofmerchants-wrap-discard', _("Click cards to <strong>discard</strong>"));
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_essentialPurchase':
 				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);	
 				this.setPurchaseSelectionModes(client_essentialPurchase_args);
 				this.myHand.unselectAll();
-				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'dale-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
 				let junk_selected = 0;
 				let client_essentialPurchase_skip = true;
 				for (let card_id of client_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
@@ -401,7 +401,7 @@ class DaleOfMerchants extends Gamegui
 				const client_glue_args = (this.mainClientState.args as ClientGameStates['client_glue']);
 				this.setPurchaseSelectionModes(client_glue_args);
 				this.myHand.unselectAll();
-				this.myHand.setSelectionMode('glue', 'hand', 'dale-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
+				this.myHand.setSelectionMode('glue', 'hand', 'daleofmerchants-wrap-purchase', _("Choose Glue cards to keep in your hand"), 'pileYellow');
 				for (let card_id of client_glue_args.funds_card_ids!.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 					if (new DaleCard(card_id).effective_type_id == DaleCard.CT_GLUE) {
@@ -410,18 +410,18 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'winterIsComing':
-				this.myHand.setSelectionMode('multiple', 'build', 'dale-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_swiftBroker':
-				this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_shatteredRelic':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'spyglass':
-				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', _("Choose a card to take"));
+				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'client_acorn':
 				let client_acorn_targets: DaleCard[] = [];
@@ -434,9 +434,9 @@ class DaleOfMerchants extends Gamegui
 				new TargetingLine(
 					new DaleCard(client_acorn_args.technique_card_id),
 					client_acorn_targets,
-					"dale-line-source-technique",
-					"dale-line-target-technique",
-					"dale-line-technique",
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
 					(source_id: number) => this.onCancelClient(),
 					(source_id: number, target_id: number) => this.onAcorn(source_id, target_id)
 				)
@@ -446,21 +446,21 @@ class DaleOfMerchants extends Gamegui
 				new TargetingLine(
 					new DaleCard(client_giftVoucher_args.technique_card_id),
 					this.market!.getCards(),
-					"dale-line-source-technique",
-					"dale-line-target-technique",
-					"dale-line-technique",
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
 					(source_id: number) => this.onCancelClient(),
 					(source_id: number, target_id: number) => this.onGiftVoucher(source_id, target_id)
 				)
 				break;
 			case 'client_loyalPartner':
-				this.market!.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
+				this.market!.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
 				break;
 			case 'client_prepaidGood':
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'specialOffer':
-				this.myLimbo.setSelectionMode('multiple', 'cheese', 'dale-wrap-technique', _("Choose a card to take"));
+				this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'client_rottenFood':
 				for (const [player_id, deck] of Object.entries(this.allDecks)) {
@@ -468,13 +468,13 @@ class DaleOfMerchants extends Gamegui
 						deck.setSelectionMode('noneCantViewContent');
 					}
 				}
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'dirtyExchange':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to give"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'sabotage':
-				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'client_treasureHunter':
 				const client_treasureHunter_args = (this.mainClientState.args as ClientGameStates['client_treasureHunter']);
@@ -492,26 +492,26 @@ class DaleOfMerchants extends Gamegui
 					new TargetingLine(
 						new DaleCard(client_treasureHunter_args.technique_card_id),
 						targets,
-						"dale-line-source-technique",
-						"dale-line-target-technique",
-						"dale-line-technique",
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
 						(source_id: number) => this.onCancelClient(),
 						(source_id: number, target_id: number) => this.onTreasureHunter(target_id)
 					)
 				}).bind(this), 500);
 				break;
 			case 'client_newSeason':
-				this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'dale-wrap-technique');
+				this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'client_whirligig':
-				this.myHand.setSelectionMode('multiple', 'pileBlue', 'dale-wrap-technique', _("Choose the order to discard your hand"));
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_blindfold':
 				if (this.unique_opponent_id) {
-					this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card"));
+					this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				}
 				else {
-					this.myHand.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+					this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				}
 				break;
 			case 'chameleon_flexibleShopkeeper':
@@ -534,29 +534,29 @@ class DaleOfMerchants extends Gamegui
 				new TargetingLine(
 					this.chameleonArgs!.firstSource,
 					this.chameleonArgs!.currentTargets,
-					"dale-line-source-chameleon",
-					"dale-line-target-chameleon",
-					"dale-line-chameleon",
+					"daleofmerchants-line-source-chameleon",
+					"daleofmerchants-line-target-chameleon",
+					"daleofmerchants-line-chameleon",
 					(source_id: number) => this.onCancelClient(),
 					(source_id: number, target_id: number) => this.onConfirmChameleon(target_id),
 					this.chameleonArgs!.pile
 				)
 				break;
 			case 'client_marketDiscovery':
-				this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
-				this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-purchase');
+				this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
+				this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
 				break;
 			case 'client_calculations':
-				this.market!.setSelectionMode(1, undefined, 'dale-wrap-technique');
+				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'client_safetyPrecaution':
 				const client_safetyPrecaution_args = (this.mainClientState.args as ClientGameStates['client_safetyPrecaution']);
 				new TargetingLine(
 					new DaleCard(client_safetyPrecaution_args.technique_card_id),
 					this.myStall.getCardsInStall(),
-					"dale-line-source-technique",
-					"dale-line-target-technique",
-					"dale-line-technique",
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
 					(source_id: number) => this.onCancelClient(),
 					(source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)
 				)
@@ -567,29 +567,29 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('single');
 				break;
 			case 'dangerousTest':
-				this.myHand.setSelectionMode('multiple3', 'pileBlue', 'dale-wrap-technique', _("Choose 3 cards to discard"));
+				this.myHand.setSelectionMode('multiple3', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 3 cards to discard"));
 				break;
 			case 'client_shoppingJourney':
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'client_houseCleaning':
 				const client_houseCleaning_args = (this.mainClientState.args as ClientGameStates['client_houseCleaning']);
-				this.myDiscard.setSelectionMode('multipleJunk', 'hand', "dale-wrap-technique", client_houseCleaning_args.nbr_junk);
+				this.myDiscard.setSelectionMode('multipleJunk', 'hand', "daleofmerchants-wrap-technique", client_houseCleaning_args.nbr_junk);
 				if (client_houseCleaning_args.nbr_junk > 0) {
 					this.myDiscard.openPopin();
 				}
 				break;
 			case 'client_houseCleaningDitch':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'client_siesta':
-				this.myDiscard.setSelectionMode('single', 'hand', "dale-wrap-technique");
+				this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
 				break;
 			case 'nightShift':
 				for (const deck of Object.values(this.playerDecks)) {
 					deck.setSelectionMode('noneCantViewContent');
 				}
-				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place back"));
 				break;
 			case 'client_ruthlessCompetition':
 				const client_ruthlessCompetition_args = (this.mainClientState.args as ClientGameStates['client_ruthlessCompetition']);
@@ -614,9 +614,9 @@ class DaleOfMerchants extends Gamegui
 						new TargetingLine(
 							new DaleCard(client_ruthlessCompetition_args.technique_card_id),
 							client_ruthlessCompetition_targets,
-							"dale-line-source-technique",
-							"dale-line-target-technique",
-							"dale-line-technique",
+							"daleofmerchants-line-source-technique",
+							"daleofmerchants-line-target-technique",
+							"daleofmerchants-line-technique",
 							(source_id: number) => this.onCancelClient(),
 							(source_id: number, target_id: number) => this.onRuthlessCompetition(target_id)
 						)
@@ -624,20 +624,20 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'ruthlessCompetition':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to place back"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place back"));
 				break;
 			case 'cunningNeighbour':
-				this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Opponent's hand"));
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Opponent's hand"));
 				break;
 			case 'charity':
-				this.myLimbo.setSelectionMode('single', undefined, 'dale-wrap-technique', _("Choose a card"));
+				this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				break;
 			case 'tasters':
-				this.market!.setSelectionMode(1, undefined, "dale-wrap-technique");
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'daringAdventurer':
 				const daringAdventurer_args = args.args as { die_value: number };
-				this.market!.setSelectionMode(2, 'pileBlue', "dale-wrap-technique");
+				this.market!.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
 				this.market!.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
 				break;
 			case 'client_rareArtefact':
@@ -646,25 +646,25 @@ class DaleOfMerchants extends Gamegui
 					new TargetingLine(
 						new DaleCard(client_rareArtefact_args.technique_card_id),
 						this.myHand.getAllItems().map(item => new DaleCard(item.id)),
-						"dale-line-source-technique",
-						"dale-line-target-technique",
-						"dale-line-technique",
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
 						(source_id: number) => this.onCancelClient(),
 						(source_id: number, target_id: number) => this.onRareArtefact(target_id)
 					)
 				}).bind(this), 500);
 				break;
 			case 'client_swank':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
 				break;
 			case 'naturalSurvivor':
 				const naturalSurvivor_args = args.args as { _private: { cards: DbCard[] }, die_value: number };
 				this.myDeck.setContent(naturalSurvivor_args._private.cards.map(DaleCard.of));
-				this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', naturalSurvivor_args.die_value);
-				this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'dale-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
+				this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', naturalSurvivor_args.die_value);
+				this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
 				break;
 			case 'client_refreshingDrink':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
 				break;
 			case 'duplicateEntry':
 				const duplicateEntry_args = args.args as { _private: { cards: DbCard[] } };
@@ -672,48 +672,48 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('single');
 				break;
 			case 'client_historyLesson':
-				this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'dale-wrap-technique', 3);
+				this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
 				break;
 			case 'culturalPreservation':
 				const culturalPreservation_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard.of));
-				this.myDeck.setSelectionMode('multiple', 'spyglass', 'dale-wrap-technique', 3);
+				this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
 				break;
 			case 'sliceOfLife':
-				this.myHand.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to discard"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
 				break;
 			case 'delightfulSurprise':
-				this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', _("Choose a card to take"));
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'client_replacement':
-				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
 				break;
 			case 'replacement':
 				const replacement_args = args.args as { value: number };
-				this.market!.setSelectionMode(1, undefined, 'dale-wrap-technique');
+				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
 				this.market!.setClickableForReplacement(replacement_args.value);
 				break;
 			case 'client_fashionHint':
-				this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
-				this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-technique');
+				this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
+				this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'fashionHint':
 				const fashionHint_args = args.args as { card_id: number, card_name: string };
 				new TargetingLine(
 					new DaleCard(fashionHint_args.card_id),
 					this.myHand.getAllItems().map(item => new DaleCard(item.id)).filter(card => card.isAnimalfolk()),
-					"dale-line-source-technique",
-					"dale-line-target-technique",
-					"dale-line-technique",
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
 					(source_id: number) => this.onFashionHintSwapSkip(),
 					(source_id: number, target_id: number) => this.onFashionHintSwap(target_id)
 				)
 				this.myDiscard.setSelectionMode('noneCantViewContent');
-				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to swap with ")+fashionHint_args.card_name);
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+fashionHint_args.card_name);
 				break;
 			case 'royalPrivilege':
-				this.market!.setSelectionMode(1, undefined, 'dale-wrap-purchase');
-				this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'dale-wrap-purchase', _("Choose an animalfolk card to ditch"));
+				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
+				this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to ditch"));
 				break;
 		}
 		//(~enteringstate)
@@ -1133,7 +1133,7 @@ class DaleOfMerchants extends Gamegui
 					this.addActionButton("button-"+value, blindfoldDecideValue_label, (() => this.onBlindfoldDecideValue(value)).bind(this));
 					blindfoldDecideValue_baseValue += 1;
 				}
-				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'dale-wrap-default');
+				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
 				this.myHand.orderedSelection.setMaxSize(1);
 				this.myHand.selectItem(blindfoldDecideValue_args.card_id);
 				break;
@@ -1573,13 +1573,13 @@ class DaleOfMerchants extends Gamegui
 			//parse die icon
 			if ('die_icon' in args) {
 				const iconTpl = DaleDie.getIconTpl(args['die_icon']);
-				args['die_icon'] = `<span class="dale-log-span">${iconTpl}</span>`;
+				args['die_icon'] = `<span class="daleofmerchants-log-span">${iconTpl}</span>`;
 			}
 
 			//parse ocelot die
 			if (log.includes('${ocelot}')) {
 				args['ocelot'] = 'OCELOT_DIE_ICON';
-				//args['ocelot'] = `<span class="dale-log-span">${DaleIcons.getChameleonIcon().outerHTML}</span>`;
+				//args['ocelot'] = `<span class="daleofmerchants-log-span">${DaleIcons.getChameleonIcon().outerHTML}</span>`;
 			}
 		}
 		return super.format_string_recursive(log, args)
@@ -1795,7 +1795,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("opponent-selection-button-"+opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
 				if (this.opponent_ids.length < this.max_opponents) {
 					this.opponent_ids.push(opponent_id);
-					$("opponent-selection-button-"+opponent_id)?.classList.add("dale-bga-button-selected");
+					$("opponent-selection-button-"+opponent_id)?.classList.add("daleofmerchants-bga-button-selected");
 				}
 			}
 		}
@@ -1813,14 +1813,14 @@ class DaleOfMerchants extends Gamegui
 				const index = this.opponent_ids.indexOf(opponent_id);
 				if (index == -1) {
 					if (this.opponent_ids.length >= this.max_opponents) {
-						$("opponent-selection-button-"+this.opponent_ids.pop())?.classList.remove("dale-bga-button-selected");
+						$("opponent-selection-button-"+this.opponent_ids.pop())?.classList.remove("daleofmerchants-bga-button-selected");
 					}
 					this.opponent_ids.push(opponent_id);
-					target.classList.add("dale-bga-button-selected");
+					target.classList.add("daleofmerchants-bga-button-selected");
 				}
 				else if (this.max_opponents != 1) {
 					this.opponent_ids.splice(index, 1);
-					target.classList.remove("dale-bga-button-selected");
+					target.classList.remove("daleofmerchants-bga-button-selected");
 				}
 				this.updateConfirmOpponentsButton();
 				console.log(this.opponent_ids);
@@ -1931,9 +1931,9 @@ class DaleOfMerchants extends Gamegui
 					new TargetingLine(
 						card,
 						calculations_targets,
-						'dale-line-source-technique',
-						'dale-line-target-technique',
-						'dale-line-technique',
+						'daleofmerchants-line-source-technique',
+						'daleofmerchants-line-target-technique',
+						'daleofmerchants-line-technique',
 						(source_id: number) => {
 							TargetingLine.remove();
 						},
@@ -2139,13 +2139,13 @@ class DaleOfMerchants extends Gamegui
 				}
 				const label = _("Place '") + card.name + _("' on another player\'s deck");
 				this.setMainTitle(label);
-				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-default', label);
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
 				new TargetingLine(
 					card,
 					client_rottenFood_targets,
-					"dale-line-source-technique",
-					"dale-line-target-technique",
-					"dale-line-technique",
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
 					(source_id: number) => this.onCancelClient(),
 					(source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)
 				)
@@ -2239,13 +2239,13 @@ class DaleOfMerchants extends Gamegui
 						nightShift_targets.push(target);
 					}
 					const label = _("Place '") + card.name + _("' on a deck");
-					this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', label);
+					this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
 					new TargetingLine(
 						card,
 						nightShift_targets,
-						"dale-line-source-technique",
-						"dale-line-target-technique",
-						"dale-line-technique",
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
 						(source_id: number) => this.onNightShiftNext(),
 						(source_id: number, target_id: number) => this.onNightShift(source_id, target_id)
 					)
@@ -2932,7 +2932,7 @@ class DaleOfMerchants extends Gamegui
 			this.myDiscard.setSelectionMode('none');
 		}
 		else {
-			this.myDiscard.setSelectionMode('multiple', 'build', "dale-wrap-build", count_nostalgic_items);
+			this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", count_nostalgic_items);
 		}
 		
 	}
@@ -3336,7 +3336,7 @@ class DaleOfMerchants extends Gamegui
 	onNightShiftNext() {
 		TargetingLine.remove();
 		const label = _("Choose another card to place back");
-		this.myLimbo.setSelectionMode('click', undefined, 'dale-wrap-technique', label);
+		this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', label);
 	}
 
 	onRuthlessCompetition(opponent_id: number) {
@@ -4219,7 +4219,7 @@ class DaleOfMerchants extends Gamegui
 		console.log("whirligigShuffle");
 		const opponent_nbr = notif.args.opponent_nbr;
 		if (!this.isSpectator) {
-			this.myLimbo.setSelectionMode('none', undefined, 'dale-wrap-default', _("Whirligig"));
+			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
 			const nbr = notif.args.opponent_nbr + notif.args.player_nbr
 			const opponent_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
 			for (let i = 1; i <= nbr; i++) {

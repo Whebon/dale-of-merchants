@@ -1,5 +1,5 @@
 {
-  "name": "dale-of-merchants",
+  "name": "daleofmerchants-of-merchants",
   "version": "1.0.0",
   "description": "BGA Adaptation of the game Dale of Merchants",
   "main": "daleofmerchants.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Whebon/dale-of-merchants.git"
+    "url": "git+https://github.com/Whebon/daleofmerchants-of-merchants.git"
   },
   "keywords": [
     "BGA"
@@ -18,9 +18,9 @@
   "author": "Bart Swinkels",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Whebon/dale-of-merchants/issues"
+    "url": "https://github.com/Whebon/daleofmerchants-of-merchants/issues"
   },
-  "homepage": "https://github.com/Whebon/dale-of-merchants#readme",
+  "homepage": "https://github.com/Whebon/daleofmerchants-of-merchants#readme",
   "dependencies": {
     "bga-ts-template": "^1.1.10"
   }

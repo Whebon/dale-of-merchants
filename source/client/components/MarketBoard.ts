@@ -26,7 +26,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         //set the background for the market board
         //background-size: ${Images.MARKET_WIDTH_S}px ${Images.MARKET_HEIGHT_S}px;
         this.page = page;
-        $("dale-market-board-background").setAttribute("style", `
+        $("daleofmerchants-market-board-background").setAttribute("style", `
             width: ${Images.MARKET_WIDTH_S - Images.MARKET_PADDING_LEFT_S - Images.MARKET_PADDING_RIGHT_S}px;
             height: ${Images.MARKET_HEIGHT_S - Images.MARKET_PADDING_TOP_S - Images.MARKET_PADDING_BOTTOM_S}px;
 			padding-top: ${Images.MARKET_PADDING_TOP_S}px;
@@ -34,13 +34,13 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
             padding-bottom: ${Images.MARKET_PADDING_BOTTOM_S}px;
 			padding-right: ${Images.MARKET_PADDING_RIGHT_S}px;
 		`);
-        this.container = $("dale-market-board-background").querySelector("#dale-market-board")!;
+        this.container = $("daleofmerchants-market-board-background").querySelector("#daleofmerchants-market-board")!;
 
         //card containers
         this.slots = []
         for (let pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
             const stackContainer = document.createElement("div");
-            stackContainer.classList.add("dale-stack-container");
+            stackContainer.classList.add("daleofmerchants-stack-container");
             if (pos == 0) {
                 //rightmost container has a min width
                 stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;margin-left: ${Images.MARKET_ITEM_MARGIN_S}px;`); 
@@ -50,7 +50,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
                 stackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S}px;margin-left: ${pos == 4 ? 0 : Images.MARKET_ITEM_MARGIN_S}px;`); 
             }
             const slotDiv = Images.getPlaceholder();
-            slotDiv.classList.add("dale-placeholder-market");
+            slotDiv.classList.add("daleofmerchants-placeholder-market");
             stackContainer.appendChild(slotDiv);
             if (pos > 0) {
                 stackContainer.appendChild(DaleIcons.getCostModificationIcon(pos-1));
@@ -179,7 +179,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         return this.slots[pos]!.id;
     }
 
-	private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default') {
+	private setWrapClass(wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default') {
 		if (wrapClass != 'previous') {
 			this.container.classList.remove(...DALE_WRAP_CLASSES);
 			if (wrapClass) {
@@ -196,7 +196,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * 2: multiple items can be selected by the player at the same time.
      * @param iconType (optional) types of icons to use for the selection
     */
-    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass: DaleWrapClass = "dale-wrap-default") {
+    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass: DaleWrapClass = "daleofmerchants-wrap-default") {
         //TODO: action label?
         this.orderedSelection.setIconType(iconType);
         if( this.selectionMode == mode ) return;
@@ -416,20 +416,20 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         if (totalWidth < (1+Images.STACK_MIN_MARGIN_X) * Images.CARD_WIDTH_S * this.MAX_SIZE) {
             //stacks overlap
             for (let i = 1; i < this.slots.length; i++) {
-                this.slots[i]?.container.classList.add("dale-placeholder-partially-covered");
+                this.slots[i]?.container.classList.add("daleofmerchants-placeholder-partially-covered");
             }
         }
         else {
             //stacks are fully visible
             for (let i = 1; i < this.slots.length; i++) {
-                this.slots[i]?.container.classList.remove("dale-placeholder-partially-covered");
+                this.slots[i]?.container.classList.remove("daleofmerchants-placeholder-partially-covered");
             }
         }
         //center the cost modification icons
         const overlap = Math.max(0, Images.CARD_WIDTH_S - totalWidth/this.MAX_SIZE);
         const left = Math.round((Images.CARD_WIDTH_S-overlap)/2)+'px';
         for (let pos = 1; pos < this.MAX_SIZE; pos++) {
-            const icon = this.slots[pos]?.container.parentElement?.querySelector(".dale-icon");
+            const icon = this.slots[pos]?.container.parentElement?.querySelector(".daleofmerchants-icon");
             if (icon) {
                 dojo.setStyle(icon, 'left', left);
             }

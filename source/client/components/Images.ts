@@ -88,7 +88,7 @@ export class Images {
                 let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                 dojo.setStyle(div, 'background-position', `-${x}00% -${y}00%`);
                 if (sheet_index > 0) {  //0 is the default sheet
-                    div.classList.add('dale-card-sheet-'+sheet_index);
+                    div.classList.add('daleofmerchants-card-sheet-'+sheet_index);
                 }
             }
             else {
@@ -113,7 +113,7 @@ export class Images {
     static getPlaceholder(): HTMLElement {
         const placeholder = document.createElement('div');
         placeholder.setAttribute('style',`width:${Images.CARD_WIDTH_S}px; height:${Images.CARD_HEIGHT_S}px;`);
-        placeholder.classList.add("dale-placeholder")
+        placeholder.classList.add("daleofmerchants-placeholder")
         return placeholder;
     }
 }

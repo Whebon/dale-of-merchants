@@ -38,7 +38,7 @@ export class CardSlot {
         this.pos = pos;
         this.selected = false;
         this.container = container;
-        this.container.classList.add("dale-slot");
+        this.container.classList.add("daleofmerchants-slot");
         this._card = undefined;
         if (card) {
             this.insertCard(card);
@@ -148,7 +148,7 @@ export class CardSlot {
      * Select this item
      */
     selectItem(): void {
-        this.container.classList.add("dale-selected");
+        this.container.classList.add("daleofmerchants-selected");
         this.selected = true;
     }
 
@@ -156,7 +156,7 @@ export class CardSlot {
      * Unselect this item
      */
     unselectItem(): void {
-        this.container.classList.remove("dale-selected");
+        this.container.classList.remove("daleofmerchants-selected");
         this.selected = false;
     }
 
@@ -174,10 +174,10 @@ export class CardSlot {
                     evt.stopPropagation();
                     thiz.parent.onCardSlotClick(thiz);
                 };
-                div.classList.add("dale-clickable");
+                div.classList.add("daleofmerchants-clickable");
             }
             else {
-                div.classList.remove("dale-clickable");
+                div.classList.remove("daleofmerchants-clickable");
                 div.onclick = null;
             }
         }

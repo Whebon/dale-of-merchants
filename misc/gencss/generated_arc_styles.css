@@ -3,326 +3,326 @@
 	/* ----------------------------- */
 
 	/* 1 cards */
-	.dale-card[data-arc="1/1"] {
+	.daleofmerchants-card[data-arc="1/1"] {
 		transform: rotate(0deg) translateY(-0px);
 	}
 
 	/* 2 cards */
-	.dale-card[data-arc="1/2"] {
+	.daleofmerchants-card[data-arc="1/2"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/2"] {
+	.daleofmerchants-card[data-arc="2/2"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 3 cards */
-	.dale-card[data-arc="1/3"] {
+	.daleofmerchants-card[data-arc="1/3"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/3"] {
+	.daleofmerchants-card[data-arc="2/3"] {
 		transform: rotate(0.0deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="3/3"] {
+	.daleofmerchants-card[data-arc="3/3"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 4 cards */
-	.dale-card[data-arc="1/4"] {
+	.daleofmerchants-card[data-arc="1/4"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/4"] {
+	.daleofmerchants-card[data-arc="2/4"] {
 		transform: rotate(-1.666666666666667deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="3/4"] {
+	.daleofmerchants-card[data-arc="3/4"] {
 		transform: rotate(1.6666666666666663deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="4/4"] {
+	.daleofmerchants-card[data-arc="4/4"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 5 cards */
-	.dale-card[data-arc="1/5"] {
+	.daleofmerchants-card[data-arc="1/5"] {
 		transform: rotate(-5.0deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/5"] {
+	.daleofmerchants-card[data-arc="2/5"] {
 		transform: rotate(-2.5deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="3/5"] {
+	.daleofmerchants-card[data-arc="3/5"] {
 		transform: rotate(0.0deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="4/5"] {
+	.daleofmerchants-card[data-arc="4/5"] {
 		transform: rotate(2.5deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="5/5"] {
+	.daleofmerchants-card[data-arc="5/5"] {
 		transform: rotate(5.0deg) translateY(-0px);
 	}
 
 	/* 6 cards */
-	.dale-card[data-arc="1/6"] {
+	.daleofmerchants-card[data-arc="1/6"] {
 		transform: rotate(-4.581220085277042deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/6"] {
+	.daleofmerchants-card[data-arc="2/6"] {
 		transform: rotate(-2.7487320511662254deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="3/6"] {
+	.daleofmerchants-card[data-arc="3/6"] {
 		transform: rotate(-0.9162440170554083deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="4/6"] {
+	.daleofmerchants-card[data-arc="4/6"] {
 		transform: rotate(0.9162440170554083deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="5/6"] {
+	.daleofmerchants-card[data-arc="5/6"] {
 		transform: rotate(2.748732051166226deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="6/6"] {
+	.daleofmerchants-card[data-arc="6/6"] {
 		transform: rotate(4.581220085277042deg) translateY(-0px);
 	}
 
 	/* 7 cards */
-	.dale-card[data-arc="1/7"] {
+	.daleofmerchants-card[data-arc="1/7"] {
 		transform: rotate(-3.8183048659927548deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/7"] {
+	.daleofmerchants-card[data-arc="2/7"] {
 		transform: rotate(-2.5455365773285035deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="3/7"] {
+	.daleofmerchants-card[data-arc="3/7"] {
 		transform: rotate(-1.2727682886642517deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="4/7"] {
+	.daleofmerchants-card[data-arc="4/7"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="5/7"] {
+	.daleofmerchants-card[data-arc="5/7"] {
 		transform: rotate(1.2727682886642513deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="6/7"] {
+	.daleofmerchants-card[data-arc="6/7"] {
 		transform: rotate(2.5455365773285035deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="7/7"] {
+	.daleofmerchants-card[data-arc="7/7"] {
 		transform: rotate(3.8183048659927548deg) translateY(-0px);
 	}
 
 	/* 8 cards */
-	.dale-card[data-arc="1/8"] {
+	.daleofmerchants-card[data-arc="1/8"] {
 		transform: rotate(-3.27315408323344deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/8"] {
+	.daleofmerchants-card[data-arc="2/8"] {
 		transform: rotate(-2.3379672023096deg) translateY(-6px);
 	}
 
-	.dale-card[data-arc="3/8"] {
+	.daleofmerchants-card[data-arc="3/8"] {
 		transform: rotate(-1.4027803213857601deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="4/8"] {
+	.daleofmerchants-card[data-arc="4/8"] {
 		transform: rotate(-0.46759344046192014deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="5/8"] {
+	.daleofmerchants-card[data-arc="5/8"] {
 		transform: rotate(0.4675934404619198deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/8"] {
+	.daleofmerchants-card[data-arc="6/8"] {
 		transform: rotate(1.4027803213857601deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="7/8"] {
+	.daleofmerchants-card[data-arc="7/8"] {
 		transform: rotate(2.3379672023095996deg) translateY(-6px);
 	}
 
-	.dale-card[data-arc="8/8"] {
+	.daleofmerchants-card[data-arc="8/8"] {
 		transform: rotate(3.27315408323344deg) translateY(-0px);
 	}
 
 	/* 9 cards */
-	.dale-card[data-arc="1/9"] {
+	.daleofmerchants-card[data-arc="1/9"] {
 		transform: rotate(-2.864192368329286deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/9"] {
+	.daleofmerchants-card[data-arc="2/9"] {
 		transform: rotate(-2.1481442762469642deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="3/9"] {
+	.daleofmerchants-card[data-arc="3/9"] {
 		transform: rotate(-1.432096184164643deg) translateY(-9px);
 	}
 
-	.dale-card[data-arc="4/9"] {
+	.daleofmerchants-card[data-arc="4/9"] {
 		transform: rotate(-0.7160480920823215deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="5/9"] {
+	.daleofmerchants-card[data-arc="5/9"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/9"] {
+	.daleofmerchants-card[data-arc="6/9"] {
 		transform: rotate(0.7160480920823215deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="7/9"] {
+	.daleofmerchants-card[data-arc="7/9"] {
 		transform: rotate(1.432096184164643deg) translateY(-9px);
 	}
 
-	.dale-card[data-arc="8/9"] {
+	.daleofmerchants-card[data-arc="8/9"] {
 		transform: rotate(2.1481442762469642deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="9/9"] {
+	.daleofmerchants-card[data-arc="9/9"] {
 		transform: rotate(2.864192368329286deg) translateY(-0px);
 	}
 
 	/* 10 cards */
-	.dale-card[data-arc="1/10"] {
+	.daleofmerchants-card[data-arc="1/10"] {
 		transform: rotate(-2.546060040113423deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/10"] {
+	.daleofmerchants-card[data-arc="2/10"] {
 		transform: rotate(-1.980268920088218deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="3/10"] {
+	.daleofmerchants-card[data-arc="3/10"] {
 		transform: rotate(-1.414477800063013deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="4/10"] {
+	.daleofmerchants-card[data-arc="4/10"] {
 		transform: rotate(-0.8486866800378078deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="5/10"] {
+	.daleofmerchants-card[data-arc="5/10"] {
 		transform: rotate(-0.2828955600126027deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/10"] {
+	.daleofmerchants-card[data-arc="6/10"] {
 		transform: rotate(0.2828955600126027deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="7/10"] {
+	.daleofmerchants-card[data-arc="7/10"] {
 		transform: rotate(0.8486866800378075deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="8/10"] {
+	.daleofmerchants-card[data-arc="8/10"] {
 		transform: rotate(1.414477800063013deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="9/10"] {
+	.daleofmerchants-card[data-arc="9/10"] {
 		transform: rotate(1.9802689200882178deg) translateY(-5px);
 	}
 
-	.dale-card[data-arc="10/10"] {
+	.daleofmerchants-card[data-arc="10/10"] {
 		transform: rotate(2.546060040113423deg) translateY(-0px);
 	}
 
 	/* 11 cards */
-	.dale-card[data-arc="1/11"] {
+	.daleofmerchants-card[data-arc="1/11"] {
 		transform: rotate(-2.2915256763502043deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/11"] {
+	.daleofmerchants-card[data-arc="2/11"] {
 		transform: rotate(-1.8332205410801636deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="3/11"] {
+	.daleofmerchants-card[data-arc="3/11"] {
 		transform: rotate(-1.3749154058101225deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="4/11"] {
+	.daleofmerchants-card[data-arc="4/11"] {
 		transform: rotate(-0.9166102705400818deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="5/11"] {
+	.daleofmerchants-card[data-arc="5/11"] {
 		transform: rotate(-0.45830513527004074deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="6/11"] {
+	.daleofmerchants-card[data-arc="6/11"] {
 		transform: rotate(0.0deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="7/11"] {
+	.daleofmerchants-card[data-arc="7/11"] {
 		transform: rotate(0.45830513527004074deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="8/11"] {
+	.daleofmerchants-card[data-arc="8/11"] {
 		transform: rotate(0.9166102705400815deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="9/11"] {
+	.daleofmerchants-card[data-arc="9/11"] {
 		transform: rotate(1.3749154058101227deg) translateY(-8px);
 	}
 
-	.dale-card[data-arc="10/11"] {
+	.daleofmerchants-card[data-arc="10/11"] {
 		transform: rotate(1.8332205410801636deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="11/11"] {
+	.daleofmerchants-card[data-arc="11/11"] {
 		transform: rotate(2.2915256763502043deg) translateY(-0px);
 	}
 
 	/* 12 cards */
-	.dale-card[data-arc="1/12"] {
+	.daleofmerchants-card[data-arc="1/12"] {
 		transform: rotate(-2.0832533520199354deg) translateY(-0px);
 	}
 
-	.dale-card[data-arc="2/12"] {
+	.daleofmerchants-card[data-arc="2/12"] {
 		transform: rotate(-1.704480015289038deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="3/12"] {
+	.daleofmerchants-card[data-arc="3/12"] {
 		transform: rotate(-1.3257066785581406deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="4/12"] {
+	.daleofmerchants-card[data-arc="4/12"] {
 		transform: rotate(-0.9469333418272434deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="5/12"] {
+	.daleofmerchants-card[data-arc="5/12"] {
 		transform: rotate(-0.568160005096346deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="6/12"] {
+	.daleofmerchants-card[data-arc="6/12"] {
 		transform: rotate(-0.18938666836544873deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="7/12"] {
+	.daleofmerchants-card[data-arc="7/12"] {
 		transform: rotate(0.1893866683654485deg) translateY(-12px);
 	}
 
-	.dale-card[data-arc="8/12"] {
+	.daleofmerchants-card[data-arc="8/12"] {
 		transform: rotate(0.568160005096346deg) translateY(-11px);
 	}
 
-	.dale-card[data-arc="9/12"] {
+	.daleofmerchants-card[data-arc="9/12"] {
 		transform: rotate(0.9469333418272434deg) translateY(-10px);
 	}
 
-	.dale-card[data-arc="10/12"] {
+	.daleofmerchants-card[data-arc="10/12"] {
 		transform: rotate(1.3257066785581408deg) translateY(-7px);
 	}
 
-	.dale-card[data-arc="11/12"] {
+	.daleofmerchants-card[data-arc="11/12"] {
 		transform: rotate(1.704480015289038deg) translateY(-4px);
 	}
 
-	.dale-card[data-arc="12/12"] {
+	.daleofmerchants-card[data-arc="12/12"] {
 		transform: rotate(2.0832533520199354deg) translateY(-0px);
 	}
 

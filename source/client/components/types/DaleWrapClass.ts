@@ -1,3 +1,3 @@
-export type DaleWrapClass = 'dale-wrap-technique' | 'dale-wrap-purchase' | 'dale-wrap-build' | 'dale-wrap-discard' | 'dale-wrap-default' | 'previous';
+export type DaleWrapClass = 'daleofmerchants-wrap-technique' | 'daleofmerchants-wrap-purchase' | 'daleofmerchants-wrap-build' | 'daleofmerchants-wrap-discard' | 'daleofmerchants-wrap-default' | 'previous';
 
-export const DALE_WRAP_CLASSES = ['dale-wrap-technique', 'dale-wrap-purchase', 'dale-wrap-build', 'dale-wrap-discard', 'dale-wrap-default'];
+export const DALE_WRAP_CLASSES = ['daleofmerchants-wrap-technique', 'daleofmerchants-wrap-purchase', 'daleofmerchants-wrap-build', 'daleofmerchants-wrap-discard', 'daleofmerchants-wrap-default'];

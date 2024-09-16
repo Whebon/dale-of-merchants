@@ -37,11 +37,11 @@ export class Stall implements CardSlotManager, DaleLocation {
     constructor(page: Gamegui, player_id: number) {
         this.page = page;
         this.player_id = player_id;
-        this.wrapPortrait = $("dale-stall-wrap-portrait-"+player_id);
-        this.wrapLandscape = $("dale-stall-wrap-landscape-"+player_id);
+        this.wrapPortrait = $("daleofmerchants-stall-wrap-portrait-"+player_id);
+        this.wrapLandscape = $("daleofmerchants-stall-wrap-landscape-"+player_id);
         console.log(this.wrapPortrait);
         console.log(this.wrapLandscape);
-        this.container = $("dale-stall-"+player_id);
+        this.container = $("daleofmerchants-stall-"+player_id);
         this.stackContainers = [];
         this.selectionMode = 'none';
         this.slots = [];
@@ -58,7 +58,7 @@ export class Stall implements CardSlotManager, DaleLocation {
     }
 
     private get leftMostPlaceholder(): HTMLElement | undefined {
-        const placeholder = this.container.querySelector(".dale-placeholder");
+        const placeholder = this.container.querySelector(".daleofmerchants-placeholder");
         if (placeholder) {
             return placeholder as HTMLElement;
         }
@@ -76,21 +76,21 @@ export class Stall implements CardSlotManager, DaleLocation {
                 prevStackContainer.setAttribute('style', `max-width: ${Images.CARD_WIDTH_S*(1+Images.STACK_MAX_MARGIN_X)}px;`); //the last stack containers has a max width (to stay in bounds)
             }
             const stackContainer = document.createElement("div");
-            stackContainer.classList.add("dale-stack-container");
+            stackContainer.classList.add("daleofmerchants-stack-container");
             stackContainer.setAttribute('style', `min-width: ${Images.CARD_WIDTH_S}px;`); //stack containers have a min width (to stay left aligned)
 
             const placeholder = Images.getPlaceholder();
-            placeholder.classList.add("dale-placeholder-stall");
+            placeholder.classList.add("daleofmerchants-placeholder-stall");
             if (this.slots.length > 0) {
-                stackContainer.classList.add("dale-grayed-out");
-                placeholder.classList.add("dale-placeholder-partially-covered");
+                stackContainer.classList.add("daleofmerchants-grayed-out");
+                placeholder.classList.add("daleofmerchants-placeholder-partially-covered");
             }
             const text = document.createElement("div");
-            text.classList.add("dale-text");
+            text.classList.add("daleofmerchants-text");
             text.textContent = _("Build a new stack");
             placeholder.appendChild(text);
             const stackIndexDiv = document.createElement("div");
-            stackIndexDiv.classList.add("dale-stack-index");
+            stackIndexDiv.classList.add("daleofmerchants-stack-index");
             stackIndexDiv.innerText = String(this.slots.length+1);
             placeholder.append(stackIndexDiv);
             placeholder.appendChild(DaleIcons.getBuildIcon());
@@ -185,7 +185,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         //     this.createNewStack();
         // }
         const stackContainer = this.stackContainers[stack_index]!;
-        stackContainer.classList.remove("dale-grayed-out");
+        stackContainer.classList.remove("daleofmerchants-grayed-out");
         const stack = this.slots[stack_index]!;
         if (index == undefined) {
             index = 0;
@@ -312,13 +312,13 @@ export class Stall implements CardSlotManager, DaleLocation {
         const placeholder = this.leftMostPlaceholder;
         if (placeholder) {
             if (enable) {
-                placeholder.classList.add("dale-clickable");
-                placeholder.parentElement!.classList.remove("dale-grayed-out");
+                placeholder.classList.add("daleofmerchants-clickable");
+                placeholder.parentElement!.classList.remove("daleofmerchants-grayed-out");
                 placeholder.onclick = (this.page as any).onRequestBuildAction.bind(this.page);
             }
             else {
-                placeholder.classList.remove("dale-clickable");
-                placeholder.parentElement!.classList.add("dale-grayed-out"); //parent element to also block click events of overlapping stacks
+                placeholder.classList.remove("daleofmerchants-clickable");
+                placeholder.parentElement!.classList.add("daleofmerchants-grayed-out"); //parent element to also block click events of overlapping stacks
                 placeholder.onclick = null;
             }
         }
@@ -330,8 +330,8 @@ export class Stall implements CardSlotManager, DaleLocation {
     selectLeftPlaceholder() {
         const placeholder = this.leftMostPlaceholder;
         if (placeholder) {
-            placeholder.classList.add("dale-selected");
-            placeholder.parentElement!.classList.remove("dale-grayed-out");
+            placeholder.classList.add("daleofmerchants-selected");
+            placeholder.parentElement!.classList.remove("daleofmerchants-grayed-out");
         }
     }
 
@@ -341,8 +341,8 @@ export class Stall implements CardSlotManager, DaleLocation {
     unselectLeftPlaceholder() {
         const placeholder = this.leftMostPlaceholder;
         if (placeholder) {
-            placeholder.classList.remove("dale-selected");
-            placeholder.parentElement!.classList.add("dale-grayed-out");
+            placeholder.classList.remove("daleofmerchants-selected");
+            placeholder.parentElement!.classList.add("daleofmerchants-grayed-out");
         }
     }
 
@@ -438,27 +438,27 @@ export class Stall implements CardSlotManager, DaleLocation {
         //set portrait or landscape mode
         if (window.innerWidth < 1250) {
             this.wrapPortrait.appendChild(this.container);
-            this.wrapPortrait.classList.remove("dale-hidden");
-            this.wrapLandscape.classList.add("dale-hidden");
+            this.wrapPortrait.classList.remove("daleofmerchants-hidden");
+            this.wrapLandscape.classList.add("daleofmerchants-hidden");
         }
         else {
             this.wrapLandscape.appendChild(this.container);
-            this.wrapLandscape.classList.remove("dale-hidden");
-            this.wrapPortrait.classList.add("dale-hidden");
+            this.wrapLandscape.classList.remove("daleofmerchants-hidden");
+            this.wrapPortrait.classList.add("daleofmerchants-hidden");
         }
         //set placeholder graphics
         if (this.container.getBoundingClientRect().width < (1+Images.STACK_MIN_MARGIN_X) * Images.CARD_WIDTH_S * Stall.MAX_STACKS) {
             //stacks overlap
             for (let i = 1; i < this.slots.length; i++) {
-                const placeholder = this.stackContainers[i]!.querySelector(".dale-placeholder");
-                placeholder?.classList.add("dale-placeholder-partially-covered");
+                const placeholder = this.stackContainers[i]!.querySelector(".daleofmerchants-placeholder");
+                placeholder?.classList.add("daleofmerchants-placeholder-partially-covered");
             }
         }
         else {
             //stacks are fully visible
             for (let i = 1; i < this.slots.length; i++) {
-                const placeholder = this.stackContainers[i]!.querySelector(".dale-placeholder");
-                placeholder?.classList.remove("dale-placeholder-partially-covered");
+                const placeholder = this.stackContainers[i]!.querySelector(".daleofmerchants-placeholder");
+                placeholder?.classList.remove("daleofmerchants-placeholder-partially-covered");
             }
         }
     }

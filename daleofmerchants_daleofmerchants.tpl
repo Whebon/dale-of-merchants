@@ -10,55 +10,55 @@
 -------
 -->
 
-<div id="dale-svg-container">
+<div id="daleofmerchants-svg-container">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%"></svg>
 </div>
 
-<div id="dale-page-deck-selection">
-    <div class="dale-deck-selection-container"></div>
+<div id="daleofmerchants-page-deck-selection">
+    <div class="daleofmerchants-deck-selection-container"></div>
 </div>
 
-<div id="dale-page-game">
-    <div id="dale-market-wrap" class="whiteblock">
+<div id="daleofmerchants-page-game">
+    <div id="daleofmerchants-market-wrap" class="whiteblock">
         <!-- Display the name of this area? <h3>{MARKET}</h3> -->
         <div style="display:flex; align-items: center; justify-content: space-evenly;">
-            <div id="market-deck" class="dale-pile-container"></div>
-            <div id="dale-market-board-background">
-                <div id="dale-market-board" class="dale-stall-container"></div>
+            <div id="market-deck" class="daleofmerchants-pile-container"></div>
+            <div id="daleofmerchants-market-board-background">
+                <div id="daleofmerchants-market-board" class="daleofmerchants-stall-container"></div>
             </div>
-            <div id="market-discard" class="dale-pile-container"></div>
+            <div id="market-discard" class="daleofmerchants-pile-container"></div>
         </div>
     </div>
 
-    <div id="dale-hand-limbo-flex" class="dale-horizontal-flex">
-        <div id="dale-myhand-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin">
-            <div class="dale-label"></div>
-            <div id="dale-myhand"></div>
+    <div id="daleofmerchants-hand-limbo-flex" class="daleofmerchants-horizontal-flex">
+        <div id="daleofmerchants-myhand-wrap" class="whiteblock daleofmerchants-arc-stock daleofmerchants-no-vertical-margin">
+            <div class="daleofmerchants-label"></div>
+            <div id="daleofmerchants-myhand"></div>
         </div> 
-        <div id="dale-mylimbo-wrap" class="whiteblock dale-arc-stock dale-no-vertical-margin dale-left-margin">
-            <div class="dale-label"></div>
-            <div id="dale-mylimbo"></div>
+        <div id="daleofmerchants-mylimbo-wrap" class="whiteblock daleofmerchants-arc-stock daleofmerchants-no-vertical-margin daleofmerchants-left-margin">
+            <div class="daleofmerchants-label"></div>
+            <div id="daleofmerchants-mylimbo"></div>
         </div>
     </div> 
 
     <!-- BEGIN stall -->
     <div class="whiteblock">
-        <h3 class="dale-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
-        <div class="dale-horizontal-flex">
-            <div id="deck-{PLAYER_ID}" class="dale-pile-container"></div>
-            <div id="discard-{PLAYER_ID}" class="dale-pile-container"></div>
-            <div id="dale-stall-wrap-landscape-{PLAYER_ID}" class="dale-stall-wrap">
-                <h3 class="dale-component-name"> {STALL} </h3>
-                <div id="dale-stall-{PLAYER_ID}" class="dale-stall-container"></div>
+        <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
+        <div class="daleofmerchants-horizontal-flex">
+            <div id="deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
+            <div id="discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
+            <div id="daleofmerchants-stall-wrap-landscape-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
+                <h3 class="daleofmerchants-component-name"> {STALL} </h3>
+                <div id="daleofmerchants-stall-{PLAYER_ID}" class="daleofmerchants-stall-container"></div>
             </div>
-            <div id="dale-schedule-wrap-{PLAYER_ID}" class="dale-flat-stock dale-schedule">
-                <div class="dale-hidden dale-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
-                <h3 class="dale-component-name"> {SCHEDULE} </h3>
-                <div id="dale-schedule-{PLAYER_ID}"></div>
+            <div id="daleofmerchants-schedule-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-schedule">
+                <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
+                <h3 class="daleofmerchants-component-name"> {SCHEDULE} </h3>
+                <div id="daleofmerchants-schedule-{PLAYER_ID}"></div>
             </div>
         </div>
-        <div id="dale-stall-wrap-portrait-{PLAYER_ID}" class="dale-stall-wrap">
-            <h3 class="dale-component-name"> {STALL} </h3>
+        <div id="daleofmerchants-stall-wrap-portrait-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
+            <h3 class="daleofmerchants-component-name"> {STALL} </h3>
             <!-- on narrow screens, the stall will automatically be moved here -->
         </div>
         <br>
@@ -70,7 +70,7 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-//var jstpl_hand_size = '<span id="handsize-${player.id}">0</span><i id="dale-myhandsize-icon-${player.id}" class="dale-myhandsize-icon"></i>';
+//var jstpl_hand_size = '<span id="handsize-${player.id}">0</span><i id="daleofmerchants-myhandsize-icon-${player.id}" class="daleofmerchants-myhandsize-icon"></i>';
 
 </script>
 

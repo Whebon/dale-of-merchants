@@ -44,7 +44,7 @@ export class Pile implements DaleLocation {
     private popin: PopInDialog = new ebg.popindialog();
     private isPopinOpen: boolean = false;
     private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
-    private wrapClass: DaleWrapClass = "dale-wrap-default";
+    private wrapClass: DaleWrapClass = "daleofmerchants-wrap-default";
 
     public orderedSelection: OrderedSelection;
 
@@ -61,22 +61,22 @@ export class Pile implements DaleLocation {
         this.pile_name = pile_name;
         this.player_id = player_id;
         $(pile_container_id).innerHTML = `
-            ${pile_name ? `<h3 class="dale-component-name">${pile_name}</h3>` : ""}
-            <div class="dale-pile" style="${Images.getCardStyle()}">
-                <div class="dale-pile-size"></div>
-                <div class="dale-pile-size dale-pile-selected-size" style="top: 16%;"></div>
+            ${pile_name ? `<h3 class="daleofmerchants-component-name">${pile_name}</h3>` : ""}
+            <div class="daleofmerchants-pile" style="${Images.getCardStyle()}">
+                <div class="daleofmerchants-pile-size"></div>
+                <div class="daleofmerchants-pile-size daleofmerchants-pile-selected-size" style="top: 16%;"></div>
             </div>
         `;
         this.page = page;
         this.containerHTML = $(pile_container_id);
         this.placeholderHTML = Images.getPlaceholder()
-        const sizeElements = this.containerHTML.querySelectorAll('.dale-pile-size')! as unknown as HTMLElement[];
+        const sizeElements = this.containerHTML.querySelectorAll('.daleofmerchants-pile-size')! as unknown as HTMLElement[];
         this.sizeHTML = sizeElements[0]!;
         this.selectedSizeHTML = sizeElements[1]!;
         this.cards = [];
         this._slidingCards = [];
         this.orderedSelection = new OrderedSelection();
-        this.containerHTML.querySelector(".dale-pile")?.prepend(this.placeholderHTML);
+        this.containerHTML.querySelector(".daleofmerchants-pile")?.prepend(this.placeholderHTML);
         this.updateHTML();
         dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
         dojo.connect(this.orderedSelection, 'onUnselect', this, 'onUnselectPileCard');
@@ -101,16 +101,16 @@ export class Pile implements DaleLocation {
         let topCard = this.peek(true);
         if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTop') && this.orderedSelection.getMaxSize() > 0) {
             if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
-                this.containerHTML.classList.add("dale-blinking");
+                this.containerHTML.classList.add("daleofmerchants-blinking");
             }
             else {
-                this.containerHTML.classList.remove("dale-blinking");
+                this.containerHTML.classList.remove("daleofmerchants-blinking");
             }
-            this.selectedSizeHTML.classList.remove("dale-hidden");
+            this.selectedSizeHTML.classList.remove("daleofmerchants-hidden");
             this.selectedSizeHTML.innerHTML = `(x ${this.orderedSelection.getSize()})`;
         }
         else {
-            this.selectedSizeHTML.classList.add("dale-hidden");
+            this.selectedSizeHTML.classList.add("daleofmerchants-hidden");
         }
         this.sizeHTML.innerHTML = 'x '+this.cards.length;
         if (!this.isPopinOpen && this.previousTopCard != topCard) {
@@ -118,7 +118,7 @@ export class Pile implements DaleLocation {
             this.topCardHTML = undefined;
             if (topCard !== undefined) {
                 this.topCardHTML = topCard.toDiv(this.placeholderHTML, 'pile');
-                this.topCardHTML.classList.add("dale-clickable");
+                this.topCardHTML.classList.add("daleofmerchants-clickable");
                 dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
             }
             this.previousTopCard = topCard;
@@ -364,9 +364,9 @@ export class Pile implements DaleLocation {
         const container_id = popin_id+"-card-container";
         for (let card of this.cards) {
             const div = card.toDiv(container_id, 'stock');
-            div.classList.add("dale-relative");
+            div.classList.add("daleofmerchants-relative");
             if(this.isClickable(card)) {
-                div.classList.add("dale-clickable");
+                div.classList.add("daleofmerchants-clickable");
                 const thiz = this;
                 dojo.connect(div, 'onclick', function() {
                     thiz.onClickCard(card, div);
@@ -485,20 +485,20 @@ export class Pile implements DaleLocation {
      * Unselect the top card of this pile (html only)
      */
     unselectTopCard() {
-        this.containerHTML?.classList.remove("dale-selected");
+        this.containerHTML?.classList.remove("daleofmerchants-selected");
     }
 
     /**
      * Select the top card of this pile (html only)
      */
     selectTopCard() {
-        this.containerHTML?.classList.add("dale-selected");
+        this.containerHTML?.classList.add("daleofmerchants-selected");
     }
 
     /**
      * Give the pile's wrap the specified css class
      */
-    private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default') {
+    private setWrapClass(wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default') {
 		if (wrapClass != 'previous') {
 			this.containerHTML.classList.remove(...DALE_WRAP_CLASSES);
 			if (wrapClass) {
@@ -515,7 +515,7 @@ export class Pile implements DaleLocation {
      * @param max (optional) default 0.
      * if selection mode is 'multiple', a maximum number of selected cards is enforced upon the selection
      */
-    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, wrapClass: DaleWrapClass = 'dale-wrap-default', max: number = 0) {
+    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default', max: number = 0) {
         this.setWrapClass(wrapClass);
         this.orderedSelection.setMaxSize(max);
         this.orderedSelection.setIconType(iconType);
@@ -527,19 +527,19 @@ export class Pile implements DaleLocation {
             case 'multipleJunk':
             case 'multipleFromTop':
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
-                    this.containerHTML.classList.add("dale-blinking");
+                    this.containerHTML.classList.add("daleofmerchants-blinking");
                 }
                 else {
-                    this.containerHTML.classList.remove("dale-blinking");
+                    this.containerHTML.classList.remove("daleofmerchants-blinking");
                 }
                 break;
             case 'single':
             case 'singleAnimalfolk':
-                this.containerHTML.classList.add("dale-blinking");
+                this.containerHTML.classList.add("daleofmerchants-blinking");
                 this.openPopin();
                 break;
             default:
-                this.containerHTML.classList.remove("dale-blinking");
+                this.containerHTML.classList.remove("daleofmerchants-blinking");
                 this.orderedSelection.unselectAll();
                 this.closePopin();
                 break;

@@ -631,7 +631,7 @@ export class DaleCard {
     //  */
     // private static createChameleonIcon() {
     //     const div = DaleIcons.getChameleonIcon();
-    //     div.classList.add("dale-chameleon-icon");
+    //     div.classList.add("daleofmerchants-chameleon-icon");
     //     return div;
     // }
 
@@ -741,7 +741,7 @@ export class DaleCard {
                 type_ids.push(chain.type_ids[i]!);
             }
             for(let type_id of type_ids) {
-                chameleonName += `<span class=dale-chameleon-name>${DaleCard.cardTypes[type_id]!.name}</span><br>`;
+                chameleonName += `<span class=daleofmerchants-chameleon-name>${DaleCard.cardTypes[type_id]!.name}</span><br>`;
             }
         }
         if (this.isChameleon()) {
@@ -749,14 +749,14 @@ export class DaleCard {
         }
         let effective_value: string | number = this.effective_value;
         if (effective_value != cardType.value) {
-            effective_value =  `(<span class=dale-original-value>${cardType.value}</span>) ${effective_value}`;
+            effective_value =  `(<span class=daleofmerchants-original-value>${cardType.value}</span>) ${effective_value}`;
         }
-        return `<div class="dale-card-tooltip">
+        return `<div class="daleofmerchants-card-tooltip">
             <h3>${chameleonName}${cardType.name}</h3>
             <hr>
             ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="dale-card-tooltip-text">${this.format_string(cardType.text)}${reminderText}</div>
+            <div class="daleofmerchants-card-tooltip-text">${this.format_string(cardType.text)}${reminderText}</div>
             <br style="line-height: 10px" />
         </div>`
 	}
@@ -795,7 +795,7 @@ export class DaleCard {
      */
     private format_string(text: string): string {
         if (text.includes('DIE_OCELOT')) {
-            text = text.replaceAll('DIE_OCELOT', `<span class="dale-log-span">
+            text = text.replaceAll('DIE_OCELOT', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
@@ -805,7 +805,7 @@ export class DaleCard {
             </span>`);
         }
         if (text.includes('DIE_POLECAT')) {
-            text = text.replaceAll('DIE_POLECAT', `<span class="dale-log-span">
+            text = text.replaceAll('DIE_POLECAT', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
@@ -815,7 +815,7 @@ export class DaleCard {
             </span>`);
         }
         if (text.includes('DIE_HARE')) {
-            text = text.replaceAll('DIE_HARE', `<span class="dale-log-span">
+            text = text.replaceAll('DIE_HARE', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
@@ -825,7 +825,7 @@ export class DaleCard {
             </span>`);
         }
         if (text.includes('DIE_PANGOLIN1')) {
-            text = text.replaceAll('DIE_PANGOLIN1', `<span class="dale-log-span">
+            text = text.replaceAll('DIE_PANGOLIN1', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
@@ -835,7 +835,7 @@ export class DaleCard {
             </span>`);
         }
         if (text.includes('DIE_PANGOLIN2')) {
-            text = text.replaceAll('DIE_PANGOLIN2', `<span class="dale-log-span">
+            text = text.replaceAll('DIE_PANGOLIN2', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
@@ -863,13 +863,13 @@ export class DaleCard {
         if (!div) {
             return;
         }
-        const old_overlay = div.querySelector(".dale-chameleon-overlay:not(.dale-fading)");
+        const old_overlay = div.querySelector(".daleofmerchants-chameleon-overlay:not(.daleofmerchants-fading)");
 		if (old_overlay) {
             // if ((old_overlay as HTMLElement).dataset['typeid'] == String(this.effective_type_id)) {
             //     return;
             // }
             if (fade) {
-                old_overlay.classList.add("dale-fading");
+                old_overlay.classList.add("daleofmerchants-fading");
                 dojo.fadeOut({node: old_overlay as HTMLElement, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
             }
             else {
@@ -878,10 +878,10 @@ export class DaleCard {
 		}
         if (this.isBoundChameleon()) {
             const chameleon_icon = DaleIcons.getChameleonIcon();
-            chameleon_icon.classList.add("dale-chameleon-icon");
+            chameleon_icon.classList.add("daleofmerchants-chameleon-icon");
             const new_overlay = document.createElement("div");
-            new_overlay.classList.add("dale-card");
-            new_overlay.classList.add("dale-chameleon-overlay");
+            new_overlay.classList.add("daleofmerchants-card");
+            new_overlay.classList.add("daleofmerchants-chameleon-overlay");
             Images.setCardStyle(new_overlay, this.effective_type_id);
             //new_overlay.setAttribute('style', Images.getCardStyle(this.effective_type_id));
             new_overlay.appendChild(chameleon_icon);
@@ -907,11 +907,11 @@ export class DaleCard {
             value = this.effective_value;
         }
         if (value == this.original_value) {
-            card_div.querySelector(".dale-effective-value")?.remove();
+            card_div.querySelector(".daleofmerchants-effective-value")?.remove();
         }
         else {
-            const value_div = card_div.querySelector(".dale-effective-value") ?? document.createElement('div');
-            value_div.classList.add("dale-effective-value");
+            const value_div = card_div.querySelector(".daleofmerchants-effective-value") ?? document.createElement('div');
+            value_div.classList.add("daleofmerchants-effective-value");
             value_div.innerHTML = String(value);
             card_div.append(value_div);
         }
@@ -965,8 +965,8 @@ export class DaleCard {
      */
     public toDiv(parent_id?: string | HTMLElement, dataLocation?: DataLocation): HTMLElement {
         const div = document.createElement("div")
-        div.classList.add("dale-card");
-        div.id = "dale-card-"+this.id;
+        div.classList.add("daleofmerchants-card");
+        div.id = "daleofmerchants-card-"+this.id;
         Images.setCardStyle(div, this.original_type_id);
         if (dataLocation) {
             div.dataset['location'] = dataLocation;
@@ -996,7 +996,7 @@ export class DaleCard {
      * Uniquely associate this card with the specified div
      */
     public attachDiv(div: HTMLElement) {
-        div.classList.add("dale-card");
+        div.classList.add("daleofmerchants-card");
         Images.setCardStyle(div, this.original_type_id); //div.setAttribute('style', Images.getCardStyle(this.original_type_id))
         DaleCard.divs.set(this.id, div);
         this.updateHTML();

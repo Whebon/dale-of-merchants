@@ -49,7 +49,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		super();
 		this.duration = 500;
 		this.orderedSelection = new OrderedSelection();
-		this.jstpl_stock_item = '<div id="${id}" class="dale-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
+		this.jstpl_stock_item = '<div id="${id}" class="daleofmerchants-card" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 		//this.jstpl_stock_item = '<div id="${id}" class="stockitem ${extra_classes}" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};"></div>';
 		addEventListener("resize", this.onResize.bind(this));
         this.onResize();
@@ -81,7 +81,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			dojo.setStyle(wrap, 'min-height', 2*Images.CARD_WIDTH_S+'px');
 			dojo.setStyle(wrap, 'max-height', 2*Images.CARD_WIDTH_S+'px');
 			this.wrap = wrap;
-			this.actionLabel = wrap.querySelector(".dale-label") ?? undefined;
+			this.actionLabel = wrap.querySelector(".daleofmerchants-label") ?? undefined;
 			if (!this.actionLabel) {
 				throw new Error("initActionLabelWrap failed: no action label found")
 			}
@@ -112,7 +112,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		console.log("onClickOnItem");
 		evt.stopPropagation();
 		const target = evt.currentTarget as HTMLElement
-		if (target.classList.contains("dale-clickable")) {
+		if (target.classList.contains("daleofmerchants-clickable")) {
 			const match = target.id.match(/(\d+)$/)
 			const item_id = +match![0]
 			if (this.isClickable(item_id)) {
@@ -209,10 +209,10 @@ export class DaleStock extends Stock implements DaleLocation {
 			throw new Error(`Card ${card_id} does not exist in hand, so setClickable cannot be set`);
 		}
 		if (this.isClickable(card_id)) {
-			div.classList.add("dale-clickable");
+			div.classList.add("daleofmerchants-clickable");
 		}
 		else {
-			div.classList.remove("dale-clickable");
+			div.classList.remove("daleofmerchants-clickable");
 		}
 	}
 
@@ -331,10 +331,10 @@ export class DaleStock extends Stock implements DaleLocation {
 
 	 /**
      * Set the wrap class to one of the pre-made wrap classes.
-     * @param wrapClass (optional) default `'dale-wrap-default'`
+     * @param wrapClass (optional) default `'daleofmerchants-wrap-default'`
 	 * @param labelText (optional) this text will be displayed on the label of the wrap
      */
-	private setWrapClass(wrapClass: DaleWrapClass = 'dale-wrap-default', labelText?: string) {
+	private setWrapClass(wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default', labelText?: string) {
 		if (this.actionLabel && wrapClass != 'previous') {
 			if (!labelText) {
 				labelText = this.actionLabelDefaultText
