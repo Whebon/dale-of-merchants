@@ -173,6 +173,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose an animalfolk card to <stronger>ditch</stronger>");
             case 'client_replacementFizzle':
                 return _("${card_name}: Are you sure you want to ditch '${ditch_card_name}'? The market has no valid replacement for this card");
+            case 'client_fashionHint':
+                return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from the supply");
         }
         return "MISSING DESCRIPTION";
     }
