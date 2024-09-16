@@ -1,13 +1,13 @@
 /*
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * Dale implementation : © Bart Swinkels
+ * DaleOfMerchants implementation : © Bart Swinkels
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  */
-/// <amd-module name="bgagame/dale"/>
+/// <amd-module name="bgagame/daleofmerchants"/>
 
 //needed for the IDE
 import Gamegui = require('ebg/core/gamegui');
@@ -37,7 +37,7 @@ import { DaleIcons } from './components/DaleIcons';
 import { PrivateNotification } from './components/types/PrivateNotification'
 
 /** The root for all of your game code. */
-class Dale extends Gamegui
+class DaleOfMerchants extends Gamegui
 {
 	/** For conveniene, each new Pile will add a reference to itself in this array*/
 	allPiles: Pile[] = [];
@@ -4456,7 +4456,7 @@ class Dale extends Gamegui
 
 
 // The global 'bgagame.dale' class is instantiated when the page is loaded. The following code sets this variable to your game class.
-dojo.setObject( "bgagame.dale", Dale );
+dojo.setObject( "bgagame.daleofmerchants", DaleOfMerchants );
 
 export { PrivateNotification };
-// Same as: (window.bgagame ??= {}).dale = Dale;
+// Same as: (window.bgagame ??= {}).daleofmerchants = DaleOfMerchants;

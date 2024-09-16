@@ -3,7 +3,7 @@
 <!-- 
 --------
 -- BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
--- Dale implementation : © Bart Swinkels bart-man99@hotmail.com
+-- DaleOfMerchants implementation : © Bart Swinkels bart-man99@hotmail.com
 -- 
 -- This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
 -- See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -52,7 +52,7 @@
                 <div id="dale-stall-{PLAYER_ID}" class="dale-stall-container"></div>
             </div>
             <div id="dale-schedule-wrap-{PLAYER_ID}" class="dale-flat-stock dale-schedule">
-                <div class="dale-hidden dale-label"></div> <!-- not used, but exists so this component can be a proper DaleStock -->
+                <div class="dale-hidden dale-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
                 <h3 class="dale-component-name"> {SCHEDULE} </h3>
                 <div id="dale-schedule-{PLAYER_ID}"></div>
             </div>

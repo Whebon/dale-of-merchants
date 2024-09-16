@@ -13,11 +13,11 @@ if (!defined('EC_GLOBAL')) {
  * This class is responsible for managing card effects that last until end of turn.
  */
 class DaleEffects {
-    public Dale $game;
+    public DaleOfMerchants $game;
     public array $cache;
     public int $last_effect_id;
 
-    function __construct(Dale $game) {
+    function __construct(DaleOfMerchants $game) {
         $this->game = $game;
         $this->loadFromDb();
     }

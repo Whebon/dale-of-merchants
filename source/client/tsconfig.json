@@ -9,8 +9,8 @@
  */
 {
 	"files": [
-		"dale.ts",
-		"dale.d.ts",
+		"daleofmerchants.ts",
+		"daleofmerchants.d.ts",
 		// Add Cookbook files here: ../../node_modules/bga-ts-template/typescript/cookbook/<module>.ts
 		// "../../node_modules/bga-ts-template/typescript/cookbook/common.ts",
 	],

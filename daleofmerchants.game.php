@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
-  * Dale implementation : © Bart Swinkels bart-man99@hotmail.com
+  * DaleOfMerchants implementation : © Bart Swinkels bart-man99@hotmail.com
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * dale.game.php
+  * daleofmerchants.game.php
   *
   * This is the main file for your game logic.
   *
@@ -20,7 +20,7 @@
 require_once "modules/DaleEffects.php";
 require_once "modules/DaleDeckSelection.php";
 
-class Dale extends DaleTableBasic
+class DaleOfMerchants extends DaleTableBasic
 {
     var DaleDeckSelection $deckSelection;
     var DaleDeck $cards;
@@ -64,7 +64,7 @@ class Dale extends DaleTableBasic
     protected function getGameName( )
     {
 		// Used for translations and stuff. Please do not modify.
-        return "dale";
+        return "daleofmerchants";
     }
 
     /*
@@ -139,7 +139,7 @@ class Dale extends DaleTableBasic
         $result = array();
         $current_player_id = $this->getCurrentPlayerId();
 
-        //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleDeck will not work as intended)
+        //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleOfMerchantsDeck will not work as intended)
         if (strlen(MARKET) != 4 || strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(JUNKRESERVE) != 4 || strlen(SCHEDULE) != 4 || strlen(LIMBO) != 4) {
             throw new AssertionError("All location prefixes must be of length 4");
         }
@@ -1599,7 +1599,7 @@ class Dale extends DaleTableBasic
 
     //TODO: safely remove this
     // /**
-    //  * (Called by DaleDeck) This function should be called if the top card a location will be changed.
+    //  * (Called by DaleOfMerchantsDeck) This function should be called if the top card a location will be changed.
     //  * If the provided location is a discard pile, expire CT_REFLECTION or CT_GOODOLDTIMES card modifications.
     //  */
     // function expireChameleonTargetInDiscard(string $location) {
@@ -2234,10 +2234,10 @@ class Dale extends DaleTableBasic
     }
 
     /**
-     * Get information about a dale card from the client's perspective
+     * Get information about a daleofmerchants card from the client's perspective
      */
-    function debugDaleCard($card_id) {
-        $this->notifyAllPlayers('debugClient', 'debugDaleCard', array('arg' => 'debugDaleCard', 'card_id' => $card_id));
+    function debugDaleOfMerchantsCard($card_id) {
+        $this->notifyAllPlayers('debugClient', 'debugDaleOfMerchantsCard', array('arg' => 'debugDaleOfMerchantsCard', 'card_id' => $card_id));
     }
 
     function d($arg) {
@@ -2260,7 +2260,7 @@ class Dale extends DaleTableBasic
 
     /*
         Each time a player is doing some game action, one of the methods below is called.
-        (note: each method below must match an input method in dale.action.php)
+        (note: each method below must match an input method in daleofmerchants.action.php)
     */
 
     function actSubmitPreference($animalfolk_ids) {
@@ -2329,7 +2329,7 @@ class Dale extends DaleTableBasic
         $market_card = $this->cards->getCard($market_card_id);
         if ($market_card['location'] != MARKET && $market_card['location'] != DISCARD.MARKET) {
             $invalid_location = $market_card['location'];
-            throw new BgaVisibleSystemException($this->_("Cards cannot be purchased from '$invalid_location'"));
+            throw new BgaVisibleSystemException("Cards cannot be purchased from '$invalid_location'");
         }
         $from_bin = $market_card['location'] == DISCARD.MARKET;
         if ($from_bin) {
@@ -4845,7 +4845,7 @@ class Dale extends DaleTableBasic
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
     */
 
-    function zombieTurn( $state, $active_player )
+    function zombieTurn( array $state, int $active_player ): void
     {
     	$statename = $state['name'];
     	

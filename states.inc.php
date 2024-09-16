@@ -4,7 +4,7 @@ declare(strict_types=1);
  * THIS FILE HAS BEEN AUTOMATICALLY GENERATED. ANY CHANGES MADE DIRECTLY MAY BE OVERWRITTEN.
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * Dale implementation : © Bart Swinkels
+ * DaleOfMerchants implementation : © Bart Swinkels
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -17,7 +17,7 @@ declare(strict_types=1);
  * If the function does not match the parameters correctly, you are either calling an invalid function, or you have incorrectly added parameters to a state function.
  */
 if (false) {
-	/** @var dale $game */
+	/** @var daleofmerchants $game */
 	$game->stDeckSelection();
 	$game->stStartGame();
 	$game->stChangeActivePlayer();
