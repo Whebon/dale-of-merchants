@@ -42,7 +42,7 @@ export class ChameleonArgs {
      * Pick the chosen target
      */
     pickTarget(target: DaleCard) {
-        console.log("pickTarget");
+        console.warn("pickTarget");
         for (let child of this.tree.children) {
             if (target.id == child.card.id) {
                 this.chain.push(target.id, target.effective_type_id);

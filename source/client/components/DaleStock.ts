@@ -105,11 +105,11 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @param card_id that has been clicked
 	 */
 	public onClick(card_id: number) {
-		console.log(`onClickOnCard(${card_id})`);
+		console.warn(`onClickOnCard(${card_id})`);
 	}
 
 	override onClickOnItem( evt: MouseEvent ) {
-		console.log("onClickOnItem");
+		console.warn("onClickOnItem");
 		evt.stopPropagation();
 		const target = evt.currentTarget as HTMLElement
 		if (target.classList.contains("daleofmerchants-clickable")) {

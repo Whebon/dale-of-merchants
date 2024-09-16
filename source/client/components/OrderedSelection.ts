@@ -25,7 +25,7 @@ export class OrderedSelection {
      * @param secondary true if the card was added/removed from the second selection layer
      */
     private onSelect(card_id: number, secondary?: boolean) {
-        console.log(`onSelect(card_id=${card_id}, secondary=${secondary})`);
+        console.warn(`onSelect(card_id=${card_id}, secondary=${secondary})`);
     }
 
     /**
@@ -35,7 +35,7 @@ export class OrderedSelection {
      * @param secondary true if the card was added/removed from the second selection layer
      */
     private onUnselect(card_id: number, secondary?: boolean) {
-        console.log(`onUnselect(card_id=${card_id}, secondary=${secondary})`);
+        console.warn(`onUnselect(card_id=${card_id}, secondary=${secondary})`);
     }
 
     /**
@@ -57,7 +57,7 @@ export class OrderedSelection {
         const iconType = secondary ? this.secondaryIconType : this.iconType
         const div = this.getDiv(card_id);
         if (!div) {
-            console.log("addIcon skipped, card is not on screen (likely because it is inside a pile)");
+            console.warn("addIcon skipped, card is not on screen (likely because it is inside a pile)");
             return;
         }
         div.classList.add("daleofmerchants-selected");
@@ -116,7 +116,7 @@ export class OrderedSelection {
     private removeIcon(card_id: number, secondary?: boolean) {
         const div = this.getDiv(card_id);
         if (!div) {
-            console.log("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
+            console.warn("removeIcon skipped, no icon on screen (likely because it is inside a pile)");
             return;
         }
         const primaryIcon = div?.querySelector(".daleofmerchants-selection-icon-1");
@@ -140,7 +140,7 @@ export class OrderedSelection {
      * If maxSize = 0, don't add
      */
     public setMaxSize(max: number, secondary?: boolean) {
-        console.log("setMaxSize: "+max);
+        console.warn("setMaxSize: "+max);
         if (max < 0) {
             throw new Error("Maximum selection size must be non-negative");
         }

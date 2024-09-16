@@ -118,16 +118,16 @@ class DaleOfMerchants extends Gamegui
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
-		console.log('dale constructor');
+		console.warn('dale constructor');
 	}
 
 	/** @gameSpecific See {@link Gamegui.setup} for more information. */
 	override setup(gamedatas: Gamedatas): void
 	{
-		console.log( "Starting game setup" );
-		console.log("------ GAME DATAS ------ !")
-		console.log(this.gamedatas)
-		console.log("------------------------")
+		console.warn( "Starting game setup" );
+		console.warn("------ GAME DATAS ------ !")
+		console.warn(this.gamedatas)
+		console.warn("------------------------")
 
 		//hide the "daleofmerchants-hand-limbo-flex" for spectators
 		if (this.isSpectator) {
@@ -235,7 +235,7 @@ class DaleOfMerchants extends Gamegui
 		//limbo transition
 		const thiz = this;
 		const limboTransitionUpdateDisplay = () => {
-			console.log("limboTransitionUpdateDisplay");
+			console.warn("limboTransitionUpdateDisplay");
 			setTimeout(function() {thiz.myLimbo.updateDisplay()}, 1)
 			setTimeout(function() {thiz.myHand.updateDisplay()}, 1)
 		}
@@ -289,7 +289,7 @@ class DaleOfMerchants extends Gamegui
 		dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
 
 		//display any effects on the client-side
-		console.log("DbEffects:");
+		console.warn("DbEffects:");
 		for (let i in gamedatas.effects) {
 			const effect = gamedatas.effects[i]!;
 			DaleCard.addEffect(new DbEffect(effect));
@@ -298,7 +298,7 @@ class DaleOfMerchants extends Gamegui
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
 
-		console.log( "Ending game setup" );
+		console.warn( "Ending game setup" );
 	}
 
 	///////////////////////////////////////////////////
@@ -307,14 +307,14 @@ class DaleOfMerchants extends Gamegui
 	/** @gameSpecific See {@link Gamegui.onEnteringState} for more information. */
 	override onEnteringState(stateName: GameStateName, args: CurrentStateArgs): void
 	{
-		console.log( 'Entering state: '+stateName );
+		console.warn( 'Entering state: '+stateName );
 
 		if (this.isSpectator) {
 			return;
 		}
 
 		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
-			console.log("Revalidate all local chameleons");
+			console.warn("Revalidate all local chameleons");
 			this.validateChameleonsLocal();
 		}
 
@@ -437,8 +437,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onAcorn(source_id, target_id)
+					((source_id: number) => this.onCancelClient()).bind(this),
+					((source_id: number, target_id: number) => this.onAcorn(source_id, target_id)).bind(this)
 				)
 				break;
 			case 'client_giftVoucher':
@@ -449,8 +449,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onGiftVoucher(source_id, target_id)
+					((source_id: number) => this.onCancelClient()).bind(this),
+					((source_id: number, target_id: number) => this.onGiftVoucher(source_id, target_id)).bind(this)
 				)
 				break;
 			case 'client_loyalPartner':
@@ -495,8 +495,8 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
-						(source_id: number) => this.onCancelClient(),
-						(source_id: number, target_id: number) => this.onTreasureHunter(target_id)
+						((source_id: number) => this.onCancelClient()).bind(this),
+						((source_id: number, target_id: number) => this.onTreasureHunter(target_id)).bind(this)
 					)
 				}).bind(this), 500);
 				break;
@@ -537,8 +537,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-chameleon",
 					"daleofmerchants-line-target-chameleon",
 					"daleofmerchants-line-chameleon",
-					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onConfirmChameleon(target_id),
+					((source_id: number) => this.onCancelClient()).bind(this),
+					((source_id: number, target_id: number) => this.onConfirmChameleon(target_id)).bind(this),
 					this.chameleonArgs!.pile
 				)
 				break;
@@ -557,8 +557,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)
+					((source_id: number) => this.onCancelClient()).bind(this),
+					((source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)).bind(this)
 				)
 				break;
 			case 'magnet':
@@ -617,8 +617,8 @@ class DaleOfMerchants extends Gamegui
 							"daleofmerchants-line-source-technique",
 							"daleofmerchants-line-target-technique",
 							"daleofmerchants-line-technique",
-							(source_id: number) => this.onCancelClient(),
-							(source_id: number, target_id: number) => this.onRuthlessCompetition(target_id)
+							((source_id: number) => this.onCancelClient()).bind(this),
+							((source_id: number, target_id: number) => this.onRuthlessCompetition(target_id)).bind(this)
 						)
 					}).bind(this), 500);
 				}
@@ -649,8 +649,8 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
-						(source_id: number) => this.onCancelClient(),
-						(source_id: number, target_id: number) => this.onRareArtefact(target_id)
+						((source_id: number) => this.onCancelClient()).bind(this),
+						((source_id: number, target_id: number) => this.onRareArtefact(target_id)).bind(this)
 					)
 				}).bind(this), 500);
 				break;
@@ -705,8 +705,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					(source_id: number) => this.onFashionHintSwapSkip(),
-					(source_id: number, target_id: number) => this.onFashionHintSwap(target_id)
+					((source_id: number) => this.onFashionHintSwapSkip()).bind(this),
+					((source_id: number, target_id: number) => this.onFashionHintSwap(target_id)).bind(this)
 				)
 				this.myDiscard.setSelectionMode('noneCantViewContent');
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+fashionHint_args.card_name);
@@ -722,14 +722,14 @@ class DaleOfMerchants extends Gamegui
 	/** @gameSpecific See {@link Gamegui.onLeavingState} for more information. */
 	override onLeavingState(stateName: GameStateName): void
 	{
-		console.log( 'Leaving state: '+stateName );
+		console.warn( 'Leaving state: '+stateName );
 
 		if (this.isSpectator) {
 			return;
 		}
 		
 		if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
-			console.log("this.chameleonArgs => don't turn off selection modes");
+			console.warn("this.chameleonArgs => don't turn off selection modes");
 			return;
 		}
 
@@ -988,7 +988,7 @@ class DaleOfMerchants extends Gamegui
 	/** @gameSpecific See {@link Gamegui.onUpdateActionButtons} for more information. */
 	override onUpdateActionButtons(stateName: GameStateName, args: AnyGameStateArgs | null): void
 	{
-		console.log( 'onUpdateActionButtons: ' + stateName, args );
+		console.warn( 'onUpdateActionButtons: ' + stateName, args );
 
 		if(!this.isCurrentPlayerActive())
 			return;
@@ -1376,9 +1376,9 @@ class DaleOfMerchants extends Gamegui
 			//create a new chameleon tree and enter the chameleon client state on the stack
 			this.chameleonArgs = new ChameleonArgs(this.createChameleonTree(card), pile);
 			const targets = this.chameleonArgs.getAllTargets();
-			console.log(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
-			console.log(`'${card.name}' has ${targets.size} total target(s)`);
-			console.log(Array.from(targets).map(target => target instanceof HTMLElement ? target : target.div));
+			console.warn(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
+			console.warn(`'${card.name}' has ${targets.size} total target(s)`);
+			console.warn(Array.from(targets).map(target => target instanceof HTMLElement ? target : target.div));
 			if (targets.size == 0) {
 				this.chameleonArgs = undefined;
 				return true;
@@ -1823,7 +1823,7 @@ class DaleOfMerchants extends Gamegui
 					target.classList.remove("daleofmerchants-bga-button-selected");
 				}
 				this.updateConfirmOpponentsButton();
-				console.log(this.opponent_ids);
+				console.warn(this.opponent_ids);
 			}
 		}
 	}
@@ -1873,7 +1873,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onStallCardClick(stall: Stall, card: DaleCard, stack_index: number, index: number) {
-        console.log(`Clicked on CardStack[${stack_index}, ${index}]`);
+        console.warn(`Clicked on CardStack[${stack_index}, ${index}]`);
 
 		switch(this.gamedatas.gamestate.name) {
 
@@ -1882,7 +1882,7 @@ class DaleOfMerchants extends Gamegui
 
 	onMarketCardClick(card: DaleCard, pos: number) {
 		pos = this.market!.getValidPos(pos);
-		console.log("onMarketCardClick");
+		console.warn("onMarketCardClick");
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
@@ -1934,10 +1934,8 @@ class DaleOfMerchants extends Gamegui
 						'daleofmerchants-line-source-technique',
 						'daleofmerchants-line-target-technique',
 						'daleofmerchants-line-technique',
-						(source_id: number) => {
-							TargetingLine.remove();
-						},
-						(source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)
+						((source_id: number) => {TargetingLine.remove();}).bind(this),
+						((source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)).bind(this)
 					);
 				}
 				break;
@@ -1968,11 +1966,11 @@ class DaleOfMerchants extends Gamegui
 	
 	onScheduleSelectionChanged() {
 		//should not be possible at the moment
-		console.log("You click on a card in the... schedule...?");
+		console.warn("You click on a card in the... schedule...?");
 	}
 
 	onUnselectPileCard(pile: Pile, card_id: number) {
-		console.log("onUnselectPileCard");
+		console.warn("onUnselectPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
 				this.onBuildSelectionChanged();
@@ -1981,7 +1979,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSelectPileCard(pile: Pile, card_id: number) {
-		console.log("onSelectPileCard");
+		console.warn("onSelectPileCard");
 		const card = new DaleCard(card_id);
 		if (pile === this.myDiscard) {
 			this.onSelectMyDiscardPileCard(pile, card);
@@ -1995,7 +1993,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSelectMyDiscardPileCard(pile: Pile, card: DaleCard) {
-		console.log("onSelectMyDiscardPileCard");
+		console.warn("onSelectMyDiscardPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
 				if (this.verifyChameleon(card, pile)) {
@@ -2016,7 +2014,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSelectMarketPileCard(pile: Pile, card: DaleCard) {
-		console.log("onSelectMarketPileCard");
+		console.warn("onSelectMarketPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
 				this.mainClientState.leave();
@@ -2041,7 +2039,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onOtherPileSelectionChanged(pile: Pile, card: DaleCard) {
-		console.log("onOtherPileSelectionChanged");
+		console.warn("onOtherPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'magnet':
 				this.bgaPerformAction('actMagnet', {
@@ -2063,7 +2061,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onUnselectHandCard(card_id: number) {
-		console.log("onUnselectHandCard: "+card_id);
+		console.warn("onUnselectHandCard: "+card_id);
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
@@ -2088,7 +2086,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSelectHandCard(card_id: number) {
-		console.log("onSelectHandCard: "+card_id);
+		console.warn("onSelectHandCard: "+card_id);
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
@@ -2146,8 +2144,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)
+					((source_id: number) => this.onCancelClient()).bind(this),
+					((source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)).bind(this)
 				)
 				break;
 			case 'dirtyExchange':
@@ -2219,7 +2217,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSelectLimboCard(card_id: number) {
-		console.log("onSelectLimboCard: "+card_id);
+		console.warn("onSelectLimboCard: "+card_id);
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
@@ -2246,8 +2244,8 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
-						(source_id: number) => this.onNightShiftNext(),
-						(source_id: number, target_id: number) => this.onNightShift(source_id, target_id)
+						((source_id: number) => this.onNightShiftNext()).bind(this),
+						((source_id: number, target_id: number) => this.onNightShift(source_id, target_id)).bind(this)
 					)
 				}
 				break;
@@ -2260,7 +2258,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSelectScheduleCard(card_id: number) {
-		console.log("onSelectScheduleCard: "+card_id);
+		console.warn("onSelectScheduleCard: "+card_id);
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
@@ -2319,7 +2317,7 @@ class DaleOfMerchants extends Gamegui
 		var card_id;
 		if (args.market_discovery_card_id === undefined) {
 			card_id = this.market!.getCardId(args.pos);
-			console.log(card_id);
+			console.warn(card_id);
 		}
 		else {
 			const card = this.marketDiscard.peek();
@@ -2909,7 +2907,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onBuildSelectionChanged(card?: DaleCard){
-		console.log("onBuildSelectionChanged");
+		console.warn("onBuildSelectionChanged");
 		const card_ids = this.myHand.orderedSelection.get();
 		let count_nostalgic_items = 0;
 		for (let card_id of card_ids) {
@@ -2927,7 +2925,7 @@ class DaleOfMerchants extends Gamegui
 				}
 			}
 		}
-		console.log("count_nostalgic_items = "+count_nostalgic_items);
+		console.warn("count_nostalgic_items = "+count_nostalgic_items);
 		if (count_nostalgic_items == 0) {
 			this.myDiscard.setSelectionMode('none');
 		}
@@ -2958,7 +2956,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onCancelClient() {
-		console.log("onCancelClient");
+		console.warn("onCancelClient");
 		TargetingLine.removeAll();
 		if (this.chameleonArgs) {
 			//undo the chameleon state
@@ -2971,7 +2969,7 @@ class DaleOfMerchants extends Gamegui
 			}
 			this.chameleonArgs = undefined;
 		}
-		console.log(this.mainClientState.args);
+		console.warn(this.mainClientState.args);
 		if ('technique_card_id' in this.mainClientState.args) {
 			//undo the technique choice state
 			const card_id = this.mainClientState.args.technique_card_id
@@ -2992,10 +2990,10 @@ class DaleOfMerchants extends Gamegui
 	 * @returns 
 	 */
 	onConfirmChameleon(target_id: number) {
-		console.log("onConfirmChameleon");
+		console.warn("onConfirmChameleon");
 		const target = new DaleCard(target_id);
 		const args = this.chameleonArgs!;
-		console.log(args);
+		console.warn(args);
 		
 		if (target.isCardBack()) {
 			//good old times is used for its passive ability
@@ -3088,7 +3086,7 @@ class DaleOfMerchants extends Gamegui
 
 	onSpyglass() {
 		const card_ids = this.myLimbo.orderedSelection.get();
-		console.log("Sending "+this.arrayToNumberList(card_ids));
+		console.warn("Sending "+this.arrayToNumberList(card_ids));
 		if (card_ids.length == 0) {
 			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
 			return;
@@ -3106,7 +3104,7 @@ class DaleOfMerchants extends Gamegui
 
 	onSpecialOffer() {
 		const card_ids = this.myLimbo.orderedSelection.get();
-		console.log("Sending "+this.arrayToNumberList(card_ids));
+		console.warn("Sending "+this.arrayToNumberList(card_ids));
 		if (card_ids.length == 0) {
 			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
 			return;
@@ -3199,7 +3197,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onBlindfoldDecideValue(value: number) {
-		console.log("onBlindfoldDecideValue "+value);
+		console.warn("onBlindfoldDecideValue "+value);
 		this.bgaPerformAction('actBlindfoldDecideValue', {
 			value: value
 		});
@@ -3358,7 +3356,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onRaffle(reverse_direction: boolean) {
-		console.log("onRaffle", reverse_direction ? "right" : "left");
+		console.warn("onRaffle", reverse_direction ? "right" : "left");
 		this.playTechniqueCard<'client_raffle'>({
 			reverse_direction: reverse_direction
 		})
@@ -3414,7 +3412,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onTasters(reverse_direction: boolean) {
-		console.log("onTasters", reverse_direction ? "right" : "left");
+		console.warn("onTasters", reverse_direction ? "right" : "left");
 		this.playTechniqueCardWithServerState<'client_tasters'>({
 			reverse_direction: reverse_direction
 		})
@@ -3511,7 +3509,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onFashionHintSwapSkip() {
-		console.log("onFashionHintSwapSkip");
+		console.warn("onFashionHintSwapSkip");
 		console.trace();
 		this.bgaPerformAction('actFashionHint', {
 			card_id: -1
@@ -3551,7 +3549,7 @@ class DaleOfMerchants extends Gamegui
 	/** @gameSpecific See {@link Gamegui.setupNotifications} for more information. */
 	override setupNotifications()
 	{
-		console.log( 'notifications subscriptions setup42' );
+		console.warn( 'notifications subscriptions setup42' );
 		
 		//[notif_type, duration, has_private_arguments]
 		const notifs: ([keyof NotifTypes, number, boolean?])[] = [
@@ -3622,7 +3620,7 @@ class DaleOfMerchants extends Gamegui
 			}
 		});
 		
-		console.log( 'notifications subscriptions setup done' );
+		console.warn( 'notifications subscriptions setup done' );
 
 		// With base Gamegui class...
 		// dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
@@ -3640,13 +3638,13 @@ class DaleOfMerchants extends Gamegui
 	// - `NotifAs<'cardPlayed'>`: A notification that is explicitly a 'cardPlayed' Notif. See {@link NotifAs}.
 	notif_cardPlayed( notif: NotifFrom<'cardPlayed'> )
 	{
-		console.log( 'notif_cardPlayed', notif );
+		console.warn( 'notif_cardPlayed', notif );
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
 
 	notif_delay(notif: NotifAs<'delay'>) {
-		console.log("notif_delay (500ms)");
+		console.warn("notif_delay (500ms)");
 	}
 
 	notif_deckSelectionResult(notif: NotifAs<'deckSelectionResult'>) {
@@ -3673,7 +3671,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
-				console.log("SKIP scheduling the technique: already done by client")
+				console.warn("SKIP scheduling the technique: already done by client")
 				return;
 			}
 		}
@@ -3687,7 +3685,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_scheduleTechniqueDelay(notif: NotifAs<'scheduleTechniqueDelay'>) {
-		console.log("notif_scheduleTechniqueDelay");
+		console.warn("notif_scheduleTechniqueDelay");
 	}
 
 	notif_cancelTechnique(notif: NotifAs<'cancelTechnique'>) {
@@ -3714,7 +3712,7 @@ class DaleOfMerchants extends Gamegui
 
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
 		//schedule to discard/deck
-		console.log(this.playerSchedules);
+		console.warn(this.playerSchedules);
 		const schedule = this.playerSchedules[notif.args.player_id]!;
 		const card = DaleCard.of(notif.args.card);
 		const from = schedule.control_name+'_item_'+card.id;
@@ -3737,7 +3735,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_buildStack(notif: NotifAs<'buildStack'>) {
-		console.log("notif_buildStack");
+		console.warn("notif_buildStack");
 		const stall = this.playerStalls[notif.args.player_id]!;
 		for (let i in notif.args.cards) {
 			const dbcard = notif.args.cards[i]!
@@ -3761,7 +3759,7 @@ class DaleOfMerchants extends Gamegui
 					const discard = this.playerDiscards[notif.args.player_id]!;
 					const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed
 					stall.insertCard(card, notif.args.stack_index, undefined, discard.placeholderHTML)
-					console.log("index = "+index);
+					console.warn("index = "+index);
 					discard.removeAt(index); 
 					break;
 				case 'deck':
@@ -3787,8 +3785,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
-		console.log("notif_fillEmptyMarketSlots");
-		console.log(notif.args);
+		console.warn("notif_fillEmptyMarketSlots");
+		console.warn(notif.args);
 		const cards = notif.args.cards;
 		const positions = notif.args.positions;
 		if (cards.length != positions.length) {
@@ -3826,7 +3824,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_swapHandStall(notif: NotifAs<'swapHandStall'>) {
-		console.log("swapHandStall");
+		console.warn("swapHandStall");
 		const stall = this.playerStalls[notif.args.stall_player_id]!;
 		if (notif.args.player_id == this.player_id) {
 			stall.swapWithStock(notif.args.stall_card_id, this.myHand, DaleCard.of(notif.args.card));
@@ -3837,7 +3835,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_swapHandMarket(notif: NotifAs<'swapHandMarket'>) {
-		console.log("swapHandMarket");
+		console.warn("swapHandMarket");
 		if (notif.args.player_id == this.player_id) {
 			this.market!.swapWithStock(notif.args.market_card_id, this.myHand, DaleCard.of(notif.args.card));
 		}
@@ -3847,11 +3845,11 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_handToLimbo(notif: NotifAs<'handToLimbo'>) {
-		console.log("notif_handToLimbo");
+		console.warn("notif_handToLimbo");
 		if (notif.args._private) {
 			const card_id = +notif.args._private.card.id;
 			if ($(this.myHand.control_name+'_item_' + card_id)) {
-				console.log(notif.args);
+				console.warn(notif.args);
 				this.myLimbo.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.myHand.control_name+'_item_' + card_id)
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
@@ -3864,11 +3862,11 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_limboToHand(notif: NotifAs<'limboToHand'>) {
-		console.log("notif_limboToHand");
+		console.warn("notif_limboToHand");
 		if (notif.args._private) {
 			const card_id = +notif.args._private.card.id;
 			if ($(this.myLimbo.control_name+'_item_' + card_id)) {
-				console.log(notif.args);
+				console.warn(notif.args);
 				this.myHand.addDaleCardToStock(DaleCard.of(notif.args._private.card), this.myLimbo.control_name+'_item_' + card_id)
 				this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
 			}
@@ -3897,8 +3895,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_opponentHandToPlayerHand(notif: NotifFrom<'opponentHandToPlayerHand'>) {
-		console.log("opponentHandToPlayerHand");
-		console.log(notif);
+		console.warn("opponentHandToPlayerHand");
+		console.warn(notif);
 		//Move a card from an `opponent_id`'s hand/limbo to a `player_id`'s hand/limbo
 		if (notif.args._private) {
 			if (this.player_id == notif.args.opponent_id) {
@@ -3981,8 +3979,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
-		console.log("discardMultiple");
-		console.log(notif.args);
+		console.warn("discardMultiple");
+		console.warn(notif.args);
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -3997,7 +3995,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
-		console.log("placeOnDeckMultiple");
+		console.warn("placeOnDeckMultiple");
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (notif.args._private) {
 			//you GIVE the cards
@@ -4028,7 +4026,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_marketDiscardToHand(notif: NotifAs<'marketDiscardToHand'>) {
-		console.log("notif_marketDiscardToHand");
+		console.warn("notif_marketDiscardToHand");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
 		//update the hand sizes
@@ -4036,7 +4034,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
-		console.log("notif_discardToHand");
+		console.warn("notif_discardToHand");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
@@ -4045,7 +4043,7 @@ class DaleOfMerchants extends Gamegui
 	}
 	
 	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
-		console.log("notif_discardToHandMultiple");
+		console.warn("notif_discardToHandMultiple");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		let dbcards_desc = []; //we remove from top to bottom: [(BottomCard, 1), (TopCard, 2)] -> [(BottomCard, 1)] -> []
@@ -4061,7 +4059,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_draw(notif: NotifAs<'draw'>) {
-		console.log("notif_draw");
+		console.warn("notif_draw");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		if (notif.args._private) {
@@ -4081,11 +4079,11 @@ class DaleOfMerchants extends Gamegui
 	}
 	
 	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
-		console.log("notif_drawMultiple");
-		console.log(notif.args);
+		console.warn("notif_drawMultiple");
+		console.warn(notif.args);
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
-		console.log(deck.size);
+		console.warn(deck.size);
 		if (notif.args._private) {
 			//you drew the cards
 			for (let i in notif.args._private?.cards) {
@@ -4107,7 +4105,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_reshuffleDeck(notif: NotifAs<'reshuffleDeck'>) {
-		console.log(`reshuffleDeck [market=${notif.args.market}, player_id=${notif.args.player_id}]`);
+		console.warn(`reshuffleDeck [market=${notif.args.market}, player_id=${notif.args.player_id}]`);
 		if (notif.args.market) {
 			this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
 		}
@@ -4202,7 +4200,7 @@ class DaleOfMerchants extends Gamegui
 		// }
 		// anim();
 		// for (let i = 0; i < discardsize; i++) {
-		// 	console.log(deck.placeholderHTML);
+		// 	console.warn(deck.placeholderHTML);
 		// 	discard.pop(deck.placeholderHTML, () => { deck.push(new DaleCard(0, 0)) }, step/2, delay);
 		// 	delay += step;
 		// }
@@ -4216,7 +4214,7 @@ class DaleOfMerchants extends Gamegui
 
 	
 	notif_whirligigShuffle(notif: NotifAs<'whirligigShuffle'>) {
-		console.log("whirligigShuffle");
+		console.warn("whirligigShuffle");
 		const opponent_nbr = notif.args.opponent_nbr;
 		if (!this.isSpectator) {
 			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
@@ -4262,7 +4260,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_whirligigTakeBack(notif: NotifAs<'whirligigTakeBack'>) {
-		console.log("notif_whirligigTakeBack");
+		console.warn("notif_whirligigTakeBack");
 		if (!this.isSpectator) {
 			const limbo_card_ids = this.myLimbo.getAllItems().map(item=>item.id).sort(() => Math.random() - 0.5);
 			if (notif.args._private) {
@@ -4314,7 +4312,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_ditchFromDiscard(notif: NotifAs<'ditchFromDiscard'>) {
-		console.log("notif_ditchFromDiscard");
+		console.warn("notif_ditchFromDiscard");
 		const playerDiscard = this.playerDiscards[notif.args.player_id]!;
 		const dbcard = notif.args.card;
 		const card = DaleCard.of(dbcard);
@@ -4327,7 +4325,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_ditchFromDeck(notif: NotifAs<'ditchFromDeck'>) {
-		console.log("notif_ditchFromDeck");
+		console.warn("notif_ditchFromDeck");
 		const playerDeck = this.playerDecks[notif.args.player_id]!;
 		const dbcard = notif.args.card;
 		const card = DaleCard.of(dbcard);
@@ -4381,21 +4379,21 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_selectBlindfold(notif: NotifAs<'selectBlindfold'>) {
-		console.log("notif_selectBlindfold");
+		console.warn("notif_selectBlindfold");
 		//TODO: refactor this to a 'message'
 	}
 
 	notif_addEffect(notif: NotifAs<'addEffect'>) {
-		console.log("notif_addEffect");
+		console.warn("notif_addEffect");
 		const effect = new DbEffect(notif.args.effect);
-		console.log(effect);
+		console.warn(effect);
 		DaleCard.addEffect(effect);
 	}
 
 	notif_expireEffects(notif: NotifAs<'expireEffects'>){
-		console.log("notif_expireEffects");
+		console.warn("notif_expireEffects");
 		const effects = notif.args.effects.map(effect => new DbEffect(effect));
-		console.log(effects);
+		console.warn(effects);
 		DaleCard.expireEffects(effects);
 	}
 
@@ -4406,9 +4404,9 @@ class DaleOfMerchants extends Gamegui
 	notif_debugClient(notif: NotifAs<'debugClient'>) {
 		//this notification only exists for debugging purposes
 		let arg = notif.args.arg;
-		console.log(`Debug with argument ${arg}`)
+		console.warn(`Debug with argument ${arg}`)
 		if (arg == 'log') {
-			console.log("RECEIVED A DEBUG NOTIFICATION !");
+			console.warn("RECEIVED A DEBUG NOTIFICATION !");
 		}
 		else if (arg == 'shuffleToDiscard') {
 			this.marketDeck.shuffleToDrawPile(this.marketDiscard!)
@@ -4431,19 +4429,19 @@ class DaleOfMerchants extends Gamegui
 			this.myHand.addDaleCardToStock(new DaleCard(0, 0));
 		}
 		else if (arg == 'clientConsoleLog') {
-			console.log(notif.args.msg);
+			console.warn(notif.args.msg);
 		}
 		else if (arg == 'increaseDeckSize') {
 			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
 		else if (arg == 'bindings') {
-			console.log(DaleCard.getLocalChameleonsJSON());
+			console.warn(DaleCard.getLocalChameleonsJSON());
 		}
 		else if (arg == 'debugDaleCard') {
-			console.log(new DaleCard(notif.args.card_id));
+			console.warn(new DaleCard(notif.args.card_id));
 		}
 		else if (arg == 'divs') {
-			console.log(Array.from(DaleCard.divs.entries()).sort((a, b) => a[0] - b[0]));
+			console.warn(Array.from(DaleCard.divs.entries()).sort((a, b) => a[0] - b[0]));
 		}
 		else if (arg == '') {
 			

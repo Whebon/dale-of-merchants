@@ -39,8 +39,8 @@ export class Stall implements CardSlotManager, DaleLocation {
         this.player_id = player_id;
         this.wrapPortrait = $("daleofmerchants-stall-wrap-portrait-"+player_id);
         this.wrapLandscape = $("daleofmerchants-stall-wrap-landscape-"+player_id);
-        console.log(this.wrapPortrait);
-        console.log(this.wrapLandscape);
+        console.warn(this.wrapPortrait);
+        console.warn(this.wrapLandscape);
         this.container = $("daleofmerchants-stall-"+player_id);
         this.stackContainers = [];
         this.selectionMode = 'none';
@@ -117,10 +117,10 @@ export class Stall implements CardSlotManager, DaleLocation {
                 maxHeight = Math.max(maxHeight, stack.length);
             }
             const y_offset = Images.VERTICAL_STACK_OFFSET_S * (maxHeight - 1);
-            console.log("Update height");
-            console.log(stackContainer.getAttribute('style'));
+            console.warn("Update height");
+            console.warn(stackContainer.getAttribute('style'));
             const prevStyleWithoutHeight = stackContainer.getAttribute('style')?.replace(/height:.*px;/, '');
-            console.log(prevStyleWithoutHeight);
+            console.warn(prevStyleWithoutHeight);
             stackContainer.setAttribute('style', prevStyleWithoutHeight+`height: ${Images.CARD_HEIGHT_S + y_offset}px;`);
         }
     }
@@ -196,7 +196,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         while (index >= stack.length) {
             this.createNewSlot(stack_index);
         }
-        console.log(`insertCard(stack_index=${stack_index}, index=${index})`);
+        console.warn(`insertCard(stack_index=${stack_index}, index=${index})`);
         stack[index]!.insertCard(card, from);
         setTimeout(() => {
             stack[index]!.card?.updateLocation('stall');
@@ -281,8 +281,8 @@ export class Stall implements CardSlotManager, DaleLocation {
      * @param mode see StallSelectionMode
     */
     setSelectionMode(mode: StallSelectionMode) {
-        console.log("Stall setSelectionMode");
-        console.log(mode);
+        console.warn("Stall setSelectionMode");
+        console.warn(mode);
         //important: setSelectionMode is also used as a refresh when the number of slots changes
         //therefore, we can not shortcircuit when this.selectionMode == mode
         this.unselectAll();

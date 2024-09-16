@@ -241,7 +241,7 @@ export class DaleCard {
         // for (let i = 0; i < DaleCard.cardTypes.length; i++) {
         //     const card = cards[i];
         //     // Process the card object
-        //     console.log(card);
+        //     console.warn(card);
         // }
     }
 
@@ -255,8 +255,8 @@ export class DaleCard {
      * @param local (optional) default false. If true, mark the effect as local.
      */
     public static addEffect(effect: DbEffect) {
-        console.log("addEffect");
-        console.log(effect);
+        console.warn("addEffect");
+        console.warn(effect);
         DaleCard.effects.push(effect);
 
         //a chameleon effect was added
@@ -298,10 +298,10 @@ export class DaleCard {
         for (let effect of effects) {
             const index = DaleCard.effects.findIndex(e => e.effect_id == effect.effect_id);
             if (index == -1) {
-                console.log("Known effects:");
-                console.log(DaleCard.effects);
-                console.log("Expired effect:");
-                console.log(effect);
+                console.warn("Known effects:");
+                console.warn(DaleCard.effects);
+                console.warn("Expired effect:");
+                console.warn(effect);
                 throw new Error("Attempted to remove a non-existing effect");
             }
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
@@ -378,7 +378,7 @@ export class DaleCard {
      * @param argNonNull (optional) default false. If true, only count passives with non-null args (e.g. bold haggler)
      */
     public isPassiveUsed(argNonNull = false) {
-        console.log("isPassiveUsed");
+        console.warn("isPassiveUsed");
         const type_id = this.effective_type_id;
         
         if (!DaleCard.cardTypes[type_id]!.has_ability) {
@@ -516,7 +516,7 @@ export class DaleCard {
         let chameleon_effect = null;
         for (let effect of DaleCard.effects) {
             if (this.id == 74) {
-                console.log(effect);
+                console.warn(effect);
             }
             if (effect.card_id == this.id && effect.chameleon_target_id != null) {
                 chameleon_effect = effect;
@@ -589,8 +589,8 @@ export class DaleCard {
      * @return `size` - number of local chameleon bindings
      */
     public static countChameleonsLocal(): number {
-        console.log("countChameleonsLocal");
-        console.log(DaleCard.cardIdToChameleonChainLocal);
+        console.warn("countChameleonsLocal");
+        console.warn(DaleCard.cardIdToChameleonChainLocal);
         return DaleCard.cardIdToChameleonChainLocal.size;
     }
 

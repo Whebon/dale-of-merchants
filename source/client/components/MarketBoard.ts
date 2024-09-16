@@ -127,7 +127,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      */
     insertCard(card: DaleCard, pos?: number, from?: HTMLElement | string): void {
         pos = this.getValidPos(pos);
-        console.log("INSERT CARD IN POS "+pos);
+        console.warn("INSERT CARD IN POS "+pos);
         this.slots[pos]!.insertCard(card, from);
         this.slots[pos]!.card?.updateLocation('market');
     }
@@ -154,7 +154,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         for (let pos = 0; pos < this.MAX_SIZE; pos++) {
             if (this.slots[pos]!.hasCard()) {
                 if (pos != emptyPos) {
-                    console.log(`${pos} slides to ${emptyPos}`)
+                    console.warn(`${pos} slides to ${emptyPos}`)
                     //move the data
                     let card = this.slots[pos]!.removeCard()!
                     this.insertCard(card, emptyPos)

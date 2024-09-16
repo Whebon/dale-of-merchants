@@ -406,7 +406,7 @@ export class Pile implements DaleLocation {
      * User clicked on a card within the popin.
      */
     public onClickCard(card: DaleCard, div: HTMLElement) {
-        console.log("Clicked on a card in the popin");
+        console.warn("Clicked on a card in the popin");
         //when in a chameleon client state, make sure the user is directed towards selecting a target
         const chameleonArgs: ChameleonArgs = (this.page as any).chameleonArgs!;
         if (chameleonArgs) {
@@ -588,7 +588,7 @@ export class Pile implements DaleLocation {
      * Triggers when a user closed the popin
      */
     private onClosePopin(){
-        console.log("onClosePopin");
+        console.warn("onClosePopin");
         //Delete all tooltips from the popin
         for (let card of this.cards) {
             card.detachDiv();
