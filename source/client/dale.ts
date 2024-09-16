@@ -711,6 +711,10 @@ class Dale extends Gamegui
 				this.myDiscard.setSelectionMode('noneCantViewContent');
 				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to swap with ")+fashionHint_args.card_name);
 				break;
+			case 'royalPrivilege':
+				this.market!.setSelectionMode(1, undefined, 'dale-wrap-purchase');
+				this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'dale-wrap-purchase', _("Choose an animalfolk card to ditch"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -971,6 +975,10 @@ class Dale extends Gamegui
 			case 'fashionHint':
 				TargetingLine.remove();
 				this.myDiscard.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'royalPrivilege':
+				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode('none');
 				break;
 		}
@@ -1292,6 +1300,10 @@ class Dale extends Gamegui
 				break;
 			case 'fashionHint':
 				this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
+				break;
+			case 'royalPrivilege':
+				this.addActionButton("ditch-button", _("Purchase"), "onRoyalPrivilege");
+				this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
 				break;
 		}
 		//(~actionbuttons)
@@ -1943,6 +1955,13 @@ class Dale extends Gamegui
 				this.bgaPerformAction('actReplacement', {
 					card_id: card.id
 				})
+				break;
+			case 'royalPrivilege':
+				const royalPrivilege_selected = this.market!.getSelected(pos);
+				this.market!.unselectAll();
+				if (!royalPrivilege_selected) {
+					this.market!.setSelected(pos);
+				}
 				break;
 		}
 	}
@@ -3499,6 +3518,30 @@ class Dale extends Gamegui
 		});
 	}
 
+	onRoyalPrivilege() {
+		const ditch_card_id = this.myHand.orderedSelection.get()[0];
+		if (!ditch_card_id) {
+			this.showMessage(_("Please select a hand card to ditch"), 'error');
+			return;
+		}
+		const market_card_id = this.market!.getSelectedCardId();
+		if (!market_card_id) {
+			this.showMessage(_("Please select a market card to purchase"), 'error');
+			return;
+		}
+		this.bgaPerformAction('actRoyalPrivilege', {
+			ditch_card_id: ditch_card_id,
+			market_card_id: market_card_id
+		});
+	}
+
+	onRoyalPrivilegeSkip() {
+		this.bgaPerformAction('actRoyalPrivilege', {
+			ditch_card_id: -1,
+			market_card_id: -1
+		});
+	}
+
 	//(~on)
 
 
@@ -3766,8 +3809,12 @@ class Dale extends Gamegui
 		const slotId = this.market!.getSlotId(notif.args.pos);
 		this.market!.unselectAll();
 		if (notif.args.player_id == this.player_id) {
-			//move card from market to hand
+			//move card from market to hand (or limbo)
 			this.market!.removeCard(notif.args.pos);
+			if (notif.args.to_limbo) {
+				this.myLimbo.addDaleCardToStock(daleCard, slotId);
+				return; //don't update the hand size!
+			}
 			this.myHand.addDaleCardToStock(daleCard, slotId)
 		}
 		else {

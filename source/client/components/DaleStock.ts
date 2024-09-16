@@ -20,14 +20,15 @@ import { DaleDeckSelection } from './DaleDeckSelection';
  * 'clickOnTurnStart'			no selection possible, only cards with an 'onTurnStart' trigger are clickable
  * 'clickOnFinish'				no selection possible, only cards with an 'onFinish' trigger are clickable
  * 'clickAnimalfolk':			no selection possible, only animalfolk cards are clickable
- * 'single':			   		a single card can be selected	
+ * 'single':			   		a single card can be selected
+ * 'singleAnimalfolk':			a single animalfolk card can be selected
  * 'multiple':             		multiple cards can be selected
  * 'multiple3':					multiple cards can be selected, but no more than 3
  * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | 'single' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -226,6 +227,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'single':
 				this.orderedSelection.setMaxSize(1);
 				break;
+			case 'singleAnimalfolk':
+				this.orderedSelection.setMaxSize(1);
+				break;
 			case 'multiple':
 				this.orderedSelection.setMaxSize(Infinity);
 				break;
@@ -306,6 +310,8 @@ export class DaleStock extends Stock implements DaleLocation {
 				return card.isAnimalfolk();
 			case 'single':
 				return true;
+			case 'singleAnimalfolk':
+				return card.isAnimalfolk();
 			case 'multiple':
 				return true;
 			case 'multiple3':

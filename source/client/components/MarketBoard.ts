@@ -224,6 +224,27 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
     }
 
     /**
+     * @returns the rightmost selected card id
+     */
+    getSelectedCardId(): number | null {
+        for (let slot of this.slots) {
+            if (slot.selected && slot.hasCard()) {
+                return slot.card!.id;
+            }
+        }
+        return null
+    }
+
+    /**
+     * @param pos valid market position: 4, 3, 2, 1 or 0
+     * @returns `true` if the market slot is selected
+     */
+    getSelected(pos: number) {
+        pos = this.getValidPos(pos);
+        return this.slots[pos]!.selected;
+    }
+
+    /**
      * Select a slot in the market by position
      * @param pos valid market position: 4, 3, 2, 1 or 0
      * @param enable (optional) default true. enable/disable the `selected` property.

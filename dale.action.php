@@ -134,6 +134,19 @@ class action_dale extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actRoyalPrivilege()
+	{
+		self::setAjaxMode();
+
+		/** @var int $ditch_card_id */
+		$ditch_card_id = self::getArg('ditch_card_id', AT_int, true);
+		/** @var int $market_card_id */
+		$market_card_id = self::getArg('market_card_id', AT_int, true);
+
+		$this->game->actRoyalPrivilege( $ditch_card_id, $market_card_id );
+		self::ajaxResponse();
+	}
+
 	public function actPostCleanUpPhase()
 	{
 		self::setAjaxMode();

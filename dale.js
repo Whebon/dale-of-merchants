@@ -1665,6 +1665,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'single':
                     this.orderedSelection.setMaxSize(1);
                     break;
+                case 'singleAnimalfolk':
+                    this.orderedSelection.setMaxSize(1);
+                    break;
                 case 'multiple':
                     this.orderedSelection.setMaxSize(Infinity);
                     break;
@@ -1735,6 +1738,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.isAnimalfolk();
                 case 'single':
                     return true;
+                case 'singleAnimalfolk':
+                    return card.isAnimalfolk();
                 case 'multiple':
                     return true;
                 case 'multiple3':
@@ -2689,6 +2694,19 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                     slot.setClickable(Math.abs(slot.card.original_value - value) <= 1);
                 }
             }
+        };
+        MarketBoard.prototype.getSelectedCardId = function () {
+            for (var _i = 0, _a = this.slots; _i < _a.length; _i++) {
+                var slot = _a[_i];
+                if (slot.selected && slot.hasCard()) {
+                    return slot.card.id;
+                }
+            }
+            return null;
+        };
+        MarketBoard.prototype.getSelected = function (pos) {
+            pos = this.getValidPos(pos);
+            return this.slots[pos].selected;
         };
         MarketBoard.prototype.setSelected = function (pos, enable) {
             if (enable === void 0) { enable = true; }
@@ -4152,6 +4170,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.myDiscard.setSelectionMode('noneCantViewContent');
                     this.myHand.setSelectionMode('none', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to swap with ") + fashionHint_args.card_name);
                     break;
+                case 'royalPrivilege':
+                    this.market.setSelectionMode(1, undefined, 'dale-wrap-purchase');
+                    this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'dale-wrap-purchase', _("Choose an animalfolk card to ditch"));
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4409,6 +4431,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'fashionHint':
                     TargetingLine_1.TargetingLine.remove();
                     this.myDiscard.setSelectionMode('none');
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'royalPrivilege':
+                    this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode('none');
                     break;
             }
@@ -4730,6 +4756,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'fashionHint':
                     this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
+                    break;
+                case 'royalPrivilege':
+                    this.addActionButton("ditch-button", _("Purchase"), "onRoyalPrivilege");
+                    this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
                     break;
             }
         };
@@ -5205,6 +5235,13 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.bgaPerformAction('actReplacement', {
                         card_id: card.id
                     });
+                    break;
+                case 'royalPrivilege':
+                    var royalPrivilege_selected = this.market.getSelected(pos);
+                    this.market.unselectAll();
+                    if (!royalPrivilege_selected) {
+                        this.market.setSelected(pos);
+                    }
                     break;
             }
         };
@@ -6614,6 +6651,28 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 card_id: -1
             });
         };
+        Dale.prototype.onRoyalPrivilege = function () {
+            var ditch_card_id = this.myHand.orderedSelection.get()[0];
+            if (!ditch_card_id) {
+                this.showMessage(_("Please select a hand card to ditch"), 'error');
+                return;
+            }
+            var market_card_id = this.market.getSelectedCardId();
+            if (!market_card_id) {
+                this.showMessage(_("Please select a market card to purchase"), 'error');
+                return;
+            }
+            this.bgaPerformAction('actRoyalPrivilege', {
+                ditch_card_id: ditch_card_id,
+                market_card_id: market_card_id
+            });
+        };
+        Dale.prototype.onRoyalPrivilegeSkip = function () {
+            this.bgaPerformAction('actRoyalPrivilege', {
+                ditch_card_id: -1,
+                market_card_id: -1
+            });
+        };
         Dale.prototype.setupNotifications = function () {
             var _this = this;
             console.log('notifications subscriptions setup42');
@@ -6829,6 +6888,10 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             this.market.unselectAll();
             if (notif.args.player_id == this.player_id) {
                 this.market.removeCard(notif.args.pos);
+                if (notif.args.to_limbo) {
+                    this.myLimbo.addDaleCardToStock(daleCard, slotId);
+                    return;
+                }
                 this.myHand.addDaleCardToStock(daleCard, slotId);
             }
             else {

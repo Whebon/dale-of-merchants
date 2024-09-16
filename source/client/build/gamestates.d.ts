@@ -145,6 +145,7 @@ interface GameStates {
 			'trChangeActivePlayer': 29,
 			'trPassiveAbility': 30,
 			'trWinterIsComing': 36,
+			'trRoyalPrivilege': 37,
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
 			'trGameEnd': 98,
@@ -247,6 +248,26 @@ interface GameStates {
 			'trNextPlayer': 41,
 			'trSamePlayer': 30,
 			'trGameEnd': 98,
+		},
+	},
+	37: {
+		'name': 'royalPrivilege',
+		'description': 'Royal Privilege: ${actplayer} may ditch an animalfolk card to purchase an additional card for free',
+		'descriptionmyturn': 'Royal Privilege: ${you} may ditch an animalfolk card to purchase an additional card for free',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actRoyalPrivilege': [{
+				'name': 'ditch_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'market_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trNextPlayer': 41,
 		},
 	},
 	41: {

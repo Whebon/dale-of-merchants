@@ -2298,6 +2298,9 @@ class Dale extends DaleTableBasic
         }
         $this->incStat(1, "actions_purchase", $player_id);
 
+        //Check for CT_ROYALPRIVILEGE (before chameleons expire)
+        $royal_privilege = $this->containsTypeId($funds_cards, CT_ROYALPRIVILEGE);
+
         //Apply CT_CALCULATIONS
         if (isset($args["calculations_card_ids"])) {
             if (!$this->containsTypeId($funds_cards, CT_CALCULATIONS)) {
@@ -2411,10 +2414,51 @@ class Dale extends DaleTableBasic
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
                 'market_card_id' => $market_card_id,
-                'pos' => $market_card["location_arg"],
+                'pos' => $market_card["location_arg"]
             ));
         }
 
+        //Apply CT_ROYALPRIVILEGE (this effect does not stack: it's too rare to be worth tracking)
+        if ($royal_privilege) {
+            $this->setGameStateValue("card_id", $market_card_id);
+            $this->gamestate->nextState("trRoyalPrivilege");
+            return;
+        }
+
+        //end turn
+        $this->gamestate->nextState("trNextPlayer");
+    }
+
+    function actRoyalPrivilege($ditch_card_id, $market_card_id) {
+        $this->checkAction("actRoyalPrivilege");
+        $player_id = $this->getActivePlayerId();
+
+        if ($ditch_card_id != -1 && $market_card_id != -1) {
+            //ensure the card to ditch was not just purchased
+            $first_market_card_id = $this->getGameStateValue("card_id");
+            if ($ditch_card_id == $first_market_card_id) {
+                //TODO: forbid immediately ditching the purchased card? Use limbo? (see issue #111)
+                //throw new BgaUserException($this->_("You just bought this card, please choose another card!")); 
+            }
+
+            //ditch the animalfolk card
+            $ditch_card = $this->cards->getCardFromLocation($ditch_card_id, HAND.$player_id);
+            if (!$this->isAnimalfolk($ditch_card)) {
+                throw new BgaUserException($this->_("Royal Privilege: the chosen card is not an animalfolk card"));
+            }
+            $this->ditch(clienttranslate('Royal Privilege: ${player_name} ditches their ${card_name}'), $ditch_card);
+    
+            //purchase the additional market card
+            $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
+            $this->cards->moveCard($market_card_id, HAND.$player_id);
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought a ${card_name}'), array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($market_card),
+                'market_card_id' => $market_card_id,
+                'pos' => $market_card["location_arg"],
+            ));
+        }
 
         //end turn
         $this->gamestate->nextState("trNextPlayer");

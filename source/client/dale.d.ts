@@ -146,12 +146,10 @@ declare global {
 			cards: DbCard[] //actually an array, not an object
 		}
 		'marketToHand': {
-			// i18n: any
-			// player_name: string
-			// card_name: string
 			player_id: number
 			market_card_id: number
-			pos: number
+			pos: number,
+			to_limbo?: boolean
 		}
 		'swapHandStall': {
 			player_id: number
