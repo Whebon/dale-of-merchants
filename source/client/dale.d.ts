@@ -199,6 +199,7 @@ declare global {
 			nbr: number
 			from_limbo?: boolean
 		}
+		'instant_marketDiscardToHand': {}
 		'marketDiscardToHand': {
 			player_id: number
 			card: DbCard
@@ -361,6 +362,7 @@ declare global {
 		'client_riskyBusiness': { value: number }
 		'client_historyLesson': { card_ids: number[] }
 		'client_replacement': { card_id?: number }
+		'client_fashionHint': { ditch: boolean }
 	}
 
 	interface ClientPassiveChoice {

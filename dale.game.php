@@ -2477,6 +2477,7 @@ class Dale extends DaleTableBasic
                     break;
                 case CT_RISKYBUSINESS:
                 case CT_CHARM:
+                case CT_FASHIONHINT:
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
                     $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
                     if ($nbr > 0) {
@@ -3412,6 +3413,21 @@ class Dale extends DaleTableBasic
                     $this->gamestate->nextState("trReplacement");
                 }
                 break;
+            case CT_FASHIONHINT:
+                $ditch = $args["ditch"];
+                if ($ditch) {
+                    $this->ditchFromMarketDeck(clienttranslate('Fashion Hint: ${player_name} ditches a ${card_name} from the supply'));
+                }
+                else {
+                    $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
+                    if (!$dbcard) {
+                        $this->fullyResolveCard($player_id, $technique_card);
+                        return;
+                    }
+                }
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trFashionHint");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4165,6 +4181,34 @@ class Dale extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actFashionHint($card_id) {
+        $this->checkAction("actFashionHint");
+        $player_id = $this->getActivePlayerId();
+        if ($card_id != -1) {
+            //server-side swap
+            $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+            if (!$this->isAnimalfolk($card)) {
+                $card_name = $this->getCardName($card);
+                throw new BgaUserException("actFashionHint expected an animalfolk card from hand, but got ".$card_name);
+            }
+            $topCard = $this->cards->getCardOnTop(DISCARD.MARKET);
+            if (!$topCard) {
+                throw new BgaVisibleSystemException("actFashionHint was called on an empty discard pile. We should not have entered this game state to begin with");
+            }
+            $this->cards->moveCard($topCard["id"], HAND.$player_id);
+            //client-side swap
+            $this->notifyAllPlayers('instant_marketDiscardToHand', '', array(
+                'player_id' => $player_id,
+                'card' => $topCard
+            ));
+            $this->ditch(clienttranslate('Fashion Hint: ${player_name} swaps their ${card_name} with a ${bin_card_name}'), $card, false, array(
+                'bin_card_name' => $this->getCardName($topCard)
+            ));
+        }
+        $this->gamestate->nextState("trSamePlayer");
+        $this->fullyResolveCard($player_id);
+    }
+
     //(~acts)
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
@@ -4366,6 +4410,14 @@ class Dale extends DaleTableBasic
             'value_minus_1' => $value - 1,
             'value' => $value,
             'value_plus_1' => $value + 1
+        );
+    }
+
+    function argTopCardBin() {
+        $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
+        return array(
+            'card_id' => $dbcard["id"],
+            'card_name' => $this->getCardName($dbcard)
         );
     }
 

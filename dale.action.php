@@ -381,4 +381,15 @@ class action_dale extends APP_GameAction
 		$this->game->actReplacement( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actFashionHint()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actFashionHint( $card_id );
+		self::ajaxResponse();
+	}
 }

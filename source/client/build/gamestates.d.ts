@@ -167,6 +167,7 @@ interface GameStates {
 			'trSliceOfLife': 70,
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
+			'trFashionHint': 73,
 		},
 	},
 	31: {
@@ -658,6 +659,23 @@ interface GameStates {
 		'args': 'argReplacement',
 		'possibleactions': {
 			'actReplacement': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	73: {
+		'name': 'fashionHint',
+		'description': 'Fashion Hint: ${actplayer} may choose an animalfolk card from their hand to swap with ${card_name}',
+		'descriptionmyturn': 'Fashion Hint: ${you} may choose an animalfolk card from your hand to swap with ${card_name}',
+		'type': 'activeplayer',
+		'args': 'argTopCardBin',
+		'possibleactions': {
+			'actFashionHint': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

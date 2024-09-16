@@ -109,9 +109,6 @@ class Dale extends Gamegui
 	/** Arguments for chameleon client states. This card needs to be highlighted while selecting a valid target for it. */
 	chameleonArgs: ChameleonArgs | undefined;
 
-	/** the main targetingLine used as the current selection mode. */
-	targetingLine: TargetingLine | undefined;
-
 	/** Current client state */
 	mainClientState: MainClientState = new MainClientState(this);
 
@@ -696,6 +693,24 @@ class Dale extends Gamegui
 				this.market!.setSelectionMode(1, undefined, 'dale-wrap-technique');
 				this.market!.setClickableForReplacement(replacement_args.value);
 				break;
+			case 'client_fashionHint':
+				this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
+				this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-technique');
+				break;
+			case 'fashionHint':
+				const fashionHint_args = args.args as { card_id: number, card_name: string };
+				new TargetingLine(
+					new DaleCard(fashionHint_args.card_id),
+					this.myHand.getAllItems().map(item => new DaleCard(item.id)).filter(card => card.isAnimalfolk()),
+					"dale-line-source-technique",
+					"dale-line-target-technique",
+					"dale-line-technique",
+					(source_id: number) => this.onFashionHintSwapSkip(),
+					(source_id: number, target_id: number) => this.onFashionHintSwap(target_id)
+				)
+				this.myDiscard.setSelectionMode('noneCantViewContent');
+				this.myHand.setSelectionMode('none', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to swap with ")+fashionHint_args.card_name);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -948,6 +963,15 @@ class Dale extends Gamegui
 				break;
 			case 'replacement':
 				this.market!.setSelectionMode(0);
+				break;
+			case 'client_fashionHint':
+				this.marketDeck.setSelectionMode('none');
+				this.marketDiscard.setSelectionMode('none');
+				break;
+			case 'fashionHint':
+				TargetingLine.remove();
+				this.myDiscard.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1260,6 +1284,14 @@ class Dale extends Gamegui
 			case 'client_replacementFizzle':
 				this.addActionButton("fizzle-button", _("Ditch without replacement"), "onReplacementFizzle");
 				this.addActionButtonCancelClient();
+				break;
+			case 'client_fashionHint':
+				this.addActionButton("ditch-button", _("Ditch"), "onFashionHintDitch");
+				this.addActionButton("skip-button", _("Skip"), "onFashionHintDitchSkip", undefined, false, 'gray');
+				this.addActionButtonCancelClient();
+				break;
+			case 'fashionHint':
+				this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
 				break;
 		}
 		//(~actionbuttons)
@@ -1977,6 +2009,15 @@ class Dale extends Gamegui
 				else if (pile === this.marketDiscard) {
 					this.onMarketDiscoveryPurchase();
 				}
+				break;
+			case 'client_fashionHint':
+				if (pile === this.marketDeck) {
+					this.onFashionHintDitch();
+				}
+				else if (pile === this.marketDiscard) {
+					this.onFashionHintDitchSkip();
+				}
+				break;
 		}
 	}
 
@@ -2773,6 +2814,15 @@ class Dale extends Gamegui
 					this.clientScheduleTechnique('client_replacement', card.id);
 				}
 				break;
+			case DaleCard.CT_FASHIONHINT:
+				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_fashionHint', card.id);
+				}
+				break
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3418,9 +3468,35 @@ class Dale extends Gamegui
 
 	onReplacementFizzle() {
 		const args = this.mainClientState.args as ClientGameStates['client_replacementFizzle'];
-		this.playTechniqueCard<'client_replacement'>({
+		this.playTechniqueCardWithServerState<'client_replacement'>({
 			card_id: args.ditch_card_id
 		})
+	}
+
+	onFashionHintDitch() {
+		this.playTechniqueCardWithServerState<'client_fashionHint'>({
+			ditch: true
+		});
+	}
+
+	onFashionHintDitchSkip() {
+		this.playTechniqueCardWithServerState<'client_fashionHint'>({
+			ditch: false
+		});
+	}
+
+	onFashionHintSwap(card_id: number) {
+		this.bgaPerformAction('actFashionHint', {
+			card_id: card_id
+		});
+	}
+
+	onFashionHintSwapSkip() {
+		console.log("onFashionHintSwapSkip");
+		console.trace();
+		this.bgaPerformAction('actFashionHint', {
+			card_id: -1
+		});
 	}
 
 	//(~on)
@@ -3450,6 +3526,7 @@ class Dale extends Gamegui
 			['marketToHand', 					500],
 			['swapHandStall', 					1],
 			['swapHandMarket', 					1],
+			['instant_marketDiscardToHand', 	1],
 			['marketDiscardToHand', 			500],
 			['discardToHand', 					500],
 			['discardToHandMultiple', 			500],
@@ -3897,6 +3974,10 @@ class Dale extends Gamegui
 		if (stock === this.myHand) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
 		}
+	}
+
+	notif_instant_marketDiscardToHand(notif: NotifAs<'marketDiscardToHand'>) {
+		this.notif_marketDiscardToHand(notif);
 	}
 
 	notif_marketDiscardToHand(notif: NotifAs<'marketDiscardToHand'>) {

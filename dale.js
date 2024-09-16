@@ -1945,7 +1945,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
             this.player_id = player_id;
-            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"dale-pile\" style=\"").concat(Images_4.Images.getCardStyle(), "\">\n                <div class=\"dale-card\"></div>\n                <div class=\"dale-pile-size\"></div>\n                <div class=\"dale-pile-size dale-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
+            $(pile_container_id).innerHTML = "\n            ".concat(pile_name ? "<h3 class=\"dale-component-name\">".concat(pile_name, "</h3>") : "", "\n            <div class=\"dale-pile\" style=\"").concat(Images_4.Images.getCardStyle(), "\">\n                <div class=\"dale-pile-size\"></div>\n                <div class=\"dale-pile-size dale-pile-selected-size\" style=\"top: 16%;\"></div>\n            </div>\n        ");
             this.page = page;
             this.containerHTML = $(pile_container_id);
             this.placeholderHTML = Images_4.Images.getPlaceholder();
@@ -3558,6 +3558,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 thiz.line.setAttribute("x2", String(x2));
                 thiz.line.setAttribute("y2", String(y2));
                 if (!document.body.contains(thiz.cardDiv)) {
+                    console.log("TargetingLine: source lost");
+                    console.log(thiz.cardDiv);
                     thiz.onSource();
                 }
             };
@@ -4131,6 +4133,16 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     this.market.setSelectionMode(1, undefined, 'dale-wrap-technique');
                     this.market.setClickableForReplacement(replacement_args.value);
                     break;
+                case 'client_fashionHint':
+                    this.marketDeck.setSelectionMode('top', undefined, 'dale-wrap-technique');
+                    this.marketDiscard.setSelectionMode('top', undefined, 'dale-wrap-technique');
+                    break;
+                case 'fashionHint':
+                    var fashionHint_args = args.args;
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "dale-line-source-technique", "dale-line-target-technique", "dale-line-technique", function (source_id) { return _this.onFashionHintSwapSkip(); }, function (source_id, target_id) { return _this.onFashionHintSwap(target_id); });
+                    this.myDiscard.setSelectionMode('noneCantViewContent');
+                    this.myHand.setSelectionMode('none', undefined, 'dale-wrap-technique', _("Choose an animalfolk card to swap with ") + fashionHint_args.card_name);
+                    break;
             }
         };
         Dale.prototype.onLeavingState = function (stateName) {
@@ -4380,6 +4392,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     break;
                 case 'replacement':
                     this.market.setSelectionMode(0);
+                    break;
+                case 'client_fashionHint':
+                    this.marketDeck.setSelectionMode('none');
+                    this.marketDiscard.setSelectionMode('none');
+                    break;
+                case 'fashionHint':
+                    TargetingLine_1.TargetingLine.remove();
+                    this.myDiscard.setSelectionMode('none');
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -4692,6 +4713,14 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 case 'client_replacementFizzle':
                     this.addActionButton("fizzle-button", _("Ditch without replacement"), "onReplacementFizzle");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'client_fashionHint':
+                    this.addActionButton("ditch-button", _("Ditch"), "onFashionHintDitch");
+                    this.addActionButton("skip-button", _("Skip"), "onFashionHintDitchSkip", undefined, false, 'gray');
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'fashionHint':
+                    this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
                     break;
             }
         };
@@ -5227,6 +5256,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                     else if (pile === this.marketDiscard) {
                         this.onMarketDiscoveryPurchase();
                     }
+                    break;
+                case 'client_fashionHint':
+                    if (pile === this.marketDeck) {
+                        this.onFashionHintDitch();
+                    }
+                    else if (pile === this.marketDiscard) {
+                        this.onFashionHintDitchSkip();
+                    }
+                    break;
             }
         };
         Dale.prototype.onOtherPileSelectionChanged = function (pile, card) {
@@ -5956,6 +5994,15 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                         this.clientScheduleTechnique('client_replacement', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_FASHIONHINT:
+                    fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_fashionHint', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6532,8 +6579,30 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
         };
         Dale.prototype.onReplacementFizzle = function () {
             var args = this.mainClientState.args;
-            this.playTechniqueCard({
+            this.playTechniqueCardWithServerState({
                 card_id: args.ditch_card_id
+            });
+        };
+        Dale.prototype.onFashionHintDitch = function () {
+            this.playTechniqueCardWithServerState({
+                ditch: true
+            });
+        };
+        Dale.prototype.onFashionHintDitchSkip = function () {
+            this.playTechniqueCardWithServerState({
+                ditch: false
+            });
+        };
+        Dale.prototype.onFashionHintSwap = function (card_id) {
+            this.bgaPerformAction('actFashionHint', {
+                card_id: card_id
+            });
+        };
+        Dale.prototype.onFashionHintSwapSkip = function () {
+            console.log("onFashionHintSwapSkip");
+            console.trace();
+            this.bgaPerformAction('actFashionHint', {
+                card_id: -1
             });
         };
         Dale.prototype.setupNotifications = function () {
@@ -6554,6 +6623,7 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
                 ['marketToHand', 500],
                 ['swapHandStall', 1],
                 ['swapHandMarket', 1],
+                ['instant_marketDiscardToHand', 1],
                 ['marketDiscardToHand', 500],
                 ['discardToHand', 500],
                 ['discardToHandMultiple', 500],
@@ -6930,6 +7000,9 @@ define("bgagame/dale", ["require", "exports", "ebg/core/gamegui", "components/Da
             if (stock === this.myHand) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
             }
+        };
+        Dale.prototype.notif_instant_marketDiscardToHand = function (notif) {
+            this.notif_marketDiscardToHand(notif);
         };
         Dale.prototype.notif_marketDiscardToHand = function (notif) {
             console.log("notif_marketDiscardToHand");

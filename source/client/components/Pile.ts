@@ -63,7 +63,6 @@ export class Pile implements DaleLocation {
         $(pile_container_id).innerHTML = `
             ${pile_name ? `<h3 class="dale-component-name">${pile_name}</h3>` : ""}
             <div class="dale-pile" style="${Images.getCardStyle()}">
-                <div class="dale-card"></div>
                 <div class="dale-pile-size"></div>
                 <div class="dale-pile-size dale-pile-selected-size" style="top: 16%;"></div>
             </div>
@@ -71,7 +70,6 @@ export class Pile implements DaleLocation {
         this.page = page;
         this.containerHTML = $(pile_container_id);
         this.placeholderHTML = Images.getPlaceholder()
-        //this.topCardHTML = this.containerHTML.querySelector('.dale-card')!;
         const sizeElements = this.containerHTML.querySelectorAll('.dale-pile-size')! as unknown as HTMLElement[];
         this.sizeHTML = sizeElements[0]!;
         this.selectedSizeHTML = sizeElements[1]!;

@@ -133,6 +133,8 @@ export class TargetingLine {
             thiz.line.setAttribute("y2", String(y2));
             //the source is gone, cancel the effect
             if (!document.body.contains(thiz.cardDiv)) {
+                console.log("TargetingLine: source lost");
+                console.log(thiz.cardDiv);
                 thiz.onSource(); 
             }
         }
