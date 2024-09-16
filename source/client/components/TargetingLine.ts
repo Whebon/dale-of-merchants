@@ -87,6 +87,19 @@ export class TargetingLine {
 
         //setup line
         this.updateLine = function(this: Window, evt: MouseEvent) {
+            if (!document.body.contains(thiz.cardDiv)) {
+                //the source is lost (this sometimes happens in 'fashionHint')
+                console.log("TargetingLine: source lost");
+                console.log(thiz.cardDiv);
+                if (!DaleCard.divs.has(source.id)) {
+                    return;
+                }
+                thiz.cardDiv = source.div;
+                thiz.cardDiv.classList.add("dale-line-source", thiz.sourceClass);
+                thiz.cardDiv.addEventListener("click", thiz.onSource);
+                console.log("TargetingLine: new source found");
+                console.log(thiz.cardDiv);
+            }
             const sourceRect = thiz.cardDiv.getBoundingClientRect();
             const currTarget = evt.target as HTMLElement;
             if (currTarget == thiz.prevTargetSnap) {
@@ -131,12 +144,6 @@ export class TargetingLine {
             thiz.line.setAttribute("y1", String(y1));
             thiz.line.setAttribute("x2", String(x2));
             thiz.line.setAttribute("y2", String(y2));
-            //the source is gone, cancel the effect
-            if (!document.body.contains(thiz.cardDiv)) {
-                console.log("TargetingLine: source lost");
-                console.log(thiz.cardDiv);
-                thiz.onSource(); 
-            }
         }
         addEventListener("mousemove", this.updateLine);
         if (TargetingLine.previousMouseEvent) {

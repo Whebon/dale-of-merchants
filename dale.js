@@ -3509,6 +3509,18 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             }
             this.updateLine = function (evt) {
                 var _a, _b;
+                if (!document.body.contains(thiz.cardDiv)) {
+                    console.log("TargetingLine: source lost");
+                    console.log(thiz.cardDiv);
+                    if (!DaleCard_9.DaleCard.divs.has(source.id)) {
+                        return;
+                    }
+                    thiz.cardDiv = source.div;
+                    thiz.cardDiv.classList.add("dale-line-source", thiz.sourceClass);
+                    thiz.cardDiv.addEventListener("click", thiz.onSource);
+                    console.log("TargetingLine: new source found");
+                    console.log(thiz.cardDiv);
+                }
                 var sourceRect = thiz.cardDiv.getBoundingClientRect();
                 var currTarget = evt.target;
                 if (currTarget == thiz.prevTargetSnap) {
@@ -3557,11 +3569,6 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 thiz.line.setAttribute("y1", String(y1));
                 thiz.line.setAttribute("x2", String(x2));
                 thiz.line.setAttribute("y2", String(y2));
-                if (!document.body.contains(thiz.cardDiv)) {
-                    console.log("TargetingLine: source lost");
-                    console.log(thiz.cardDiv);
-                    thiz.onSource();
-                }
             };
             addEventListener("mousemove", this.updateLine);
             if (TargetingLine.previousMouseEvent) {
