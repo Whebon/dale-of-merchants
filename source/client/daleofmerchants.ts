@@ -437,8 +437,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					((source_id: number) => this.onCancelClient()).bind(this),
-					((source_id: number, target_id: number) => this.onAcorn(source_id, target_id)).bind(this)
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onAcorn(source_id, target_id)
 				)
 				break;
 			case 'client_giftVoucher':
@@ -449,8 +449,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					((source_id: number) => this.onCancelClient()).bind(this),
-					((source_id: number, target_id: number) => this.onGiftVoucher(source_id, target_id)).bind(this)
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onGiftVoucher(source_id, target_id)
 				)
 				break;
 			case 'client_loyalPartner':
@@ -495,8 +495,8 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
-						((source_id: number) => this.onCancelClient()).bind(this),
-						((source_id: number, target_id: number) => this.onTreasureHunter(target_id)).bind(this)
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onTreasureHunter(target_id)
 					)
 				}).bind(this), 500);
 				break;
@@ -537,8 +537,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-chameleon",
 					"daleofmerchants-line-target-chameleon",
 					"daleofmerchants-line-chameleon",
-					((source_id: number) => this.onCancelClient()).bind(this),
-					((source_id: number, target_id: number) => this.onConfirmChameleon(target_id)).bind(this),
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onConfirmChameleon(target_id),
 					this.chameleonArgs!.pile
 				)
 				break;
@@ -557,8 +557,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					((source_id: number) => this.onCancelClient()).bind(this),
-					((source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)).bind(this)
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onSafetyPrecaution(source_id, target_id)
 				)
 				break;
 			case 'magnet':
@@ -617,8 +617,8 @@ class DaleOfMerchants extends Gamegui
 							"daleofmerchants-line-source-technique",
 							"daleofmerchants-line-target-technique",
 							"daleofmerchants-line-technique",
-							((source_id: number) => this.onCancelClient()).bind(this),
-							((source_id: number, target_id: number) => this.onRuthlessCompetition(target_id)).bind(this)
+							(source_id: number) => this.onCancelClient(),
+							(source_id: number, target_id: number) => this.onRuthlessCompetition(target_id)
 						)
 					}).bind(this), 500);
 				}
@@ -649,8 +649,8 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
-						((source_id: number) => this.onCancelClient()).bind(this),
-						((source_id: number, target_id: number) => this.onRareArtefact(target_id)).bind(this)
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onRareArtefact(target_id)
 					)
 				}).bind(this), 500);
 				break;
@@ -705,8 +705,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					((source_id: number) => this.onFashionHintSwapSkip()).bind(this),
-					((source_id: number, target_id: number) => this.onFashionHintSwap(target_id)).bind(this)
+					(source_id: number) => this.onFashionHintSwapSkip(),
+					(source_id: number, target_id: number) => this.onFashionHintSwap(target_id)
 				)
 				this.myDiscard.setSelectionMode('noneCantViewContent');
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+fashionHint_args.card_name);
@@ -1934,8 +1934,8 @@ class DaleOfMerchants extends Gamegui
 						'daleofmerchants-line-source-technique',
 						'daleofmerchants-line-target-technique',
 						'daleofmerchants-line-technique',
-						((source_id: number) => {TargetingLine.remove();}).bind(this),
-						((source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)).bind(this)
+						(source_id: number) => TargetingLine.remove(),
+						(source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)
 					);
 				}
 				break;
@@ -2144,8 +2144,8 @@ class DaleOfMerchants extends Gamegui
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
 					"daleofmerchants-line-technique",
-					((source_id: number) => this.onCancelClient()).bind(this),
-					((source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)).bind(this)
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onRottenFood(source_id, target_id)
 				)
 				break;
 			case 'dirtyExchange':
@@ -2244,8 +2244,8 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
-						((source_id: number) => this.onNightShiftNext()).bind(this),
-						((source_id: number, target_id: number) => this.onNightShift(source_id, target_id)).bind(this)
+						(source_id: number) => this.onNightShiftNext(),
+						(source_id: number, target_id: number) => this.onNightShift(source_id, target_id)
 					)
 				}
 				break;

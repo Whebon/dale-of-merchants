@@ -3484,6 +3484,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
     exports.TargetingLine = void 0;
     var TargetingLine = (function () {
         function TargetingLine(source, targets, sourceClass, targetClass, lineClass, onSource, onTarget, pile) {
+            var _this = this;
             TargetingLine.targetingLines.push(this);
             this.svg = $("daleofmerchants-svg-container").querySelector("svg");
             this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -3504,8 +3505,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             }
             this.cardDiv.classList.add("daleofmerchants-line-source", this.sourceClass);
             this.onSource = function () {
-                console.warn("IMPORTANT: onSource");
-                thiz.remove();
+                console.warn("arrowfunction onSource");
+                _this.remove();
                 onSource(source_id);
             };
             console.warn("onSource");
@@ -3519,8 +3520,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 this_3.targetDivs.push(card_div);
                 var target_id = targetCard instanceof DaleCard_9.DaleCard ? targetCard.id : +targetCard.dataset['target_id'];
                 var finalOnTarget = function () {
-                    console.warn("IMPORTANT: finalOnTarget");
-                    thiz.remove();
+                    console.warn("arrowfunction finalOnTarget");
+                    _this.remove();
                     onTarget(source_id, target_id);
                 };
                 console.warn("finalOnTarget");
@@ -3956,11 +3957,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     var client_acorn_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(this), (function (source_id, target_id) { return _this.onAcorn(source_id, target_id); }).bind(this));
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_acorn_args.technique_card_id), client_acorn_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onAcorn(source_id, target_id); });
                     break;
                 case 'client_giftVoucher':
                     var client_giftVoucher_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(this), (function (source_id, target_id) { return _this.onGiftVoucher(source_id, target_id); }).bind(this));
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_giftVoucher_args.technique_card_id), this.market.getCards(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onGiftVoucher(source_id, target_id); });
                     break;
                 case 'client_loyalPartner':
                     this.market.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
@@ -4000,7 +4001,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
                     }
                     setTimeout((function () {
-                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_treasureHunter_args_1.technique_card_id), targets_2, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(_this), (function (source_id, target_id) { return _this.onTreasureHunter(target_id); }).bind(_this));
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_treasureHunter_args_1.technique_card_id), targets_2, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onTreasureHunter(target_id); });
                     }).bind(this), 500);
                     break;
                 case 'client_newSeason':
@@ -4035,7 +4036,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.marketDiscard.setSelectionMode('noneCantViewContent');
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
-                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "daleofmerchants-line-source-chameleon", "daleofmerchants-line-target-chameleon", "daleofmerchants-line-chameleon", (function (source_id) { return _this.onCancelClient(); }).bind(this), (function (source_id, target_id) { return _this.onConfirmChameleon(target_id); }).bind(this), this.chameleonArgs.pile);
+                    new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "daleofmerchants-line-source-chameleon", "daleofmerchants-line-target-chameleon", "daleofmerchants-line-chameleon", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onConfirmChameleon(target_id); }, this.chameleonArgs.pile);
                     break;
                 case 'client_marketDiscovery':
                     this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
@@ -4046,7 +4047,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_safetyPrecaution':
                     var client_safetyPrecaution_args = this.mainClientState.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(this), (function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); }).bind(this));
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); });
                     break;
                 case 'magnet':
                     var magnet_args = args.args;
@@ -4100,7 +4101,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else {
                         setTimeout((function () {
-                            new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_ruthlessCompetition_args_1.technique_card_id), client_ruthlessCompetition_targets_1, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(_this), (function (source_id, target_id) { return _this.onRuthlessCompetition(target_id); }).bind(_this));
+                            new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_ruthlessCompetition_args_1.technique_card_id), client_ruthlessCompetition_targets_1, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRuthlessCompetition(target_id); });
                         }).bind(this), 500);
                     }
                     break;
@@ -4124,7 +4125,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_rareArtefact':
                     var client_rareArtefact_args_1 = this.mainClientState.args;
                     setTimeout((function () {
-                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_rareArtefact_args_1.technique_card_id), _this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(_this), (function (source_id, target_id) { return _this.onRareArtefact(target_id); }).bind(_this));
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_rareArtefact_args_1.technique_card_id), _this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRareArtefact(target_id); });
                     }).bind(this), 500);
                     break;
                 case 'client_swank':
@@ -4172,7 +4173,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'fashionHint':
                     var fashionHint_args = args.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onFashionHintSwapSkip(); }).bind(this), (function (source_id, target_id) { return _this.onFashionHintSwap(target_id); }).bind(this));
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onFashionHintSwapSkip(); }, function (source_id, target_id) { return _this.onFashionHintSwap(target_id); });
                     this.myDiscard.setSelectionMode('noneCantViewContent');
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + fashionHint_args.card_name);
                     break;
@@ -5222,7 +5223,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                 calculations_targets.push(new DaleCard_10.DaleCard(target_id));
                             }
                         }
-                        new TargetingLine_1.TargetingLine(card, calculations_targets, 'daleofmerchants-line-source-technique', 'daleofmerchants-line-target-technique', 'daleofmerchants-line-technique', (function (source_id) { TargetingLine_1.TargetingLine.remove(); }).bind(this), (function (source_id, target_id) { return _this.onCalculationsSwap(source_id, target_id); }).bind(this));
+                        new TargetingLine_1.TargetingLine(card, calculations_targets, 'daleofmerchants-line-source-technique', 'daleofmerchants-line-target-technique', 'daleofmerchants-line-technique', function (source_id) { return TargetingLine_1.TargetingLine.remove(); }, function (source_id, target_id) { return _this.onCalculationsSwap(source_id, target_id); });
                     }
                     break;
                 case 'client_shoppingJourney':
@@ -5415,7 +5416,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var label = _("Place '") + card.name + _("' on another player\'s deck");
                     this.setMainTitle(label);
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
-                    new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onCancelClient(); }).bind(this), (function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); }).bind(this));
+                    new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
                     break;
                 case 'dirtyExchange':
                     this.bgaPerformAction('actDirtyExchange', {
@@ -5507,7 +5508,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                         var label = _("Place '") + card.name + _("' on a deck");
                         this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
-                        new TargetingLine_1.TargetingLine(card, nightShift_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", (function (source_id) { return _this.onNightShiftNext(); }).bind(this), (function (source_id, target_id) { return _this.onNightShift(source_id, target_id); }).bind(this));
+                        new TargetingLine_1.TargetingLine(card, nightShift_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
                     }
                     break;
                 case 'delightfulSurprise':

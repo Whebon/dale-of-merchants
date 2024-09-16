@@ -64,8 +64,8 @@ export class TargetingLine {
         }
         this.cardDiv.classList.add("daleofmerchants-line-source", this.sourceClass);
         this.onSource = () => {
-            console.warn("IMPORTANT: onSource");
-            thiz.remove();
+            console.warn("arrowfunction onSource");
+            this.remove();
             onSource(source_id);
         }
         console.warn("onSource");
@@ -81,8 +81,8 @@ export class TargetingLine {
             this.targetDivs.push(card_div);
             const target_id = targetCard instanceof DaleCard ? targetCard.id : +targetCard.dataset['target_id']!;
             const finalOnTarget = () => {
-                console.warn("IMPORTANT: finalOnTarget");
-                thiz.remove();
+                console.warn("arrowfunction finalOnTarget");
+                this.remove();
                 onTarget(source_id, target_id);
             }
             console.warn("finalOnTarget");
