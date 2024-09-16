@@ -3421,9 +3421,23 @@ class Dale extends DaleTableBasic
                 else {
                     $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
                     if (!$dbcard) {
+                        //skip swappping: the bin is empty
                         $this->fullyResolveCard($player_id, $technique_card);
                         return;
                     }
+                }
+                $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                $has_valid_targets = false;
+                foreach ($hand_cards as $hand_card) {
+                    if ($this->isAnimalfolk($hand_card)) {
+                        $has_valid_targets = true;
+                        break;
+                    }
+                }
+                if (!$has_valid_targets) {
+                    //skip swappping: the hand has no animalfolk cards
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
                 }
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trFashionHint");
