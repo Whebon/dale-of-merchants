@@ -3767,51 +3767,53 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card = gamedatas.market[i];
                 this.market.insertCard(DaleCard_10.DaleCard.of(card), +card.location_arg);
             }
-            this.myHand.init(this, $('daleofmerchants-myhand'), $('daleofmerchants-myhand-wrap'), _("Your hand"));
-            this.myHand.centerItems = true;
-            for (var i in gamedatas.hand) {
-                var card = gamedatas.hand[i];
-                this.myHand.addDaleCardToStock(DaleCard_10.DaleCard.of(card));
-            }
-            this.myHand.setSelectionMode('none');
-            dojo.connect(this.myHand, 'onClick', this, 'onSelectHandCard');
-            dojo.connect(this.myHand.orderedSelection, 'onSelect', this, 'onSelectHandCard');
-            dojo.connect(this.myHand.orderedSelection, 'onUnselect', this, 'onUnselectHandCard');
-            var thiz = this;
-            var limboTransitionUpdateDisplay = function () {
-                console.warn("limboTransitionUpdateDisplay");
-                setTimeout(function () { thiz.myLimbo.updateDisplay(); }, 1);
-                setTimeout(function () { thiz.myHand.updateDisplay(); }, 1);
-            };
-            var onLimboItemCreate = function () {
-                var classList = thiz.myLimbo.wrap.classList;
-                if (classList.contains("daleofmerchants-hidden")) {
-                    classList.remove("daleofmerchants-hidden");
-                    limboTransitionUpdateDisplay();
+            if (!this.isSpectator) {
+                this.myHand.init(this, $('daleofmerchants-myhand'), $('daleofmerchants-myhand-wrap'), _("Your hand"));
+                this.myHand.centerItems = true;
+                for (var i in gamedatas.hand) {
+                    var card = gamedatas.hand[i];
+                    this.myHand.addDaleCardToStock(DaleCard_10.DaleCard.of(card));
                 }
-            };
-            var onLimboItemDelete = function () {
-                var classList = thiz.myLimbo.wrap.classList;
-                if (thiz.myLimbo.count() <= 1) {
-                    setTimeout(function () {
-                        if (!classList.contains("daleofmerchants-hidden")) {
-                            classList.add("daleofmerchants-hidden");
-                            limboTransitionUpdateDisplay();
-                        }
-                    }, thiz.myLimbo.duration);
+                this.myHand.setSelectionMode('none');
+                dojo.connect(this.myHand, 'onClick', this, 'onSelectHandCard');
+                dojo.connect(this.myHand.orderedSelection, 'onSelect', this, 'onSelectHandCard');
+                dojo.connect(this.myHand.orderedSelection, 'onUnselect', this, 'onUnselectHandCard');
+                var thiz_4 = this;
+                var limboTransitionUpdateDisplay_1 = function () {
+                    console.warn("limboTransitionUpdateDisplay");
+                    setTimeout(function () { thiz_4.myLimbo.updateDisplay(); }, 1);
+                    setTimeout(function () { thiz_4.myHand.updateDisplay(); }, 1);
+                };
+                var onLimboItemCreate = function () {
+                    var classList = thiz_4.myLimbo.wrap.classList;
+                    if (classList.contains("daleofmerchants-hidden")) {
+                        classList.remove("daleofmerchants-hidden");
+                        limboTransitionUpdateDisplay_1();
+                    }
+                };
+                var onLimboItemDelete = function () {
+                    var classList = thiz_4.myLimbo.wrap.classList;
+                    if (thiz_4.myLimbo.count() <= 1) {
+                        setTimeout(function () {
+                            if (!classList.contains("daleofmerchants-hidden")) {
+                                classList.add("daleofmerchants-hidden");
+                                limboTransitionUpdateDisplay_1();
+                            }
+                        }, thiz_4.myLimbo.duration);
+                    }
+                };
+                this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+                this.myLimbo.wrap.classList.add("daleofmerchants-hidden");
+                this.myLimbo.centerItems = true;
+                for (var i in gamedatas.limbo) {
+                    var card = gamedatas.limbo[i];
+                    this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card));
                 }
-            };
-            this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
-            this.myLimbo.wrap.classList.add("daleofmerchants-hidden");
-            this.myLimbo.centerItems = true;
-            for (var i in gamedatas.limbo) {
-                var card = gamedatas.limbo[i];
-                this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card));
+                this.myLimbo.setSelectionMode('none');
+                dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_9.Images.CARD_WIDTH_S + 'px');
+                dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
+                dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             }
-            this.myLimbo.setSelectionMode('none');
-            dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_9.Images.CARD_WIDTH_S + 'px');
-            dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
-            dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
             for (var player_id in gamedatas.schedules) {
                 var container = $('daleofmerchants-schedule-' + player_id);
                 var wrap = $('daleofmerchants-schedule-wrap-' + player_id);
@@ -3825,8 +3827,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.playerSchedules[player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(card));
                 }
             }
-            dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
-            dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
+            if (!this.isSpectator) {
+                dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
+                dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
+            }
             console.warn("DbEffects:");
             for (var i in gamedatas.effects) {
                 var effect = gamedatas.effects[i];
