@@ -183,7 +183,7 @@ class DaleOfMerchants extends Gamegui
 
 			//maximum stack size
 			player_board_div.querySelector(".player_score_value")?.insertAdjacentText('afterend', "/8")
-
+			
 			//deck per player
 			this.playerDecks[player_id] = new HiddenPile(this, 'deck-'+player_id, 'Deck', +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
@@ -2359,6 +2359,7 @@ class DaleOfMerchants extends Gamegui
 			return;
 		}
 		if (this.checkLock()) {
+			this.mainClientState.setPassiveSelected(false);
 			this.mainClientState.enter('client_purchase', {
 				pos: -1,
 				market_discovery_card_id: market_discovery_card_id,
@@ -3772,7 +3773,7 @@ class DaleOfMerchants extends Gamegui
 			}
 
 		}
-		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
+			
 		//update the hand sizes
 		if (notif.args.from == 'hand') {
 			const nbr = Object.keys(notif.args.cards).length;
