@@ -4644,7 +4644,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onChoicelessTriggerTechniqueCard();
                     break;
                 case 'client_choicelessTechniqueCard':
-                    this.onChoicelessTechniqueCard();
+                    var client_choicelessTechniqueCard_confirmation = this.getGameUserPreference(100);
+                    if (client_choicelessTechniqueCard_confirmation == 1) {
+                        this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTechniqueCardConfirmed");
+                        this.addActionButtonCancelClient();
+                    }
+                    else {
+                        this.onChoicelessTechniqueCard();
+                    }
                     break;
                 case 'client_fizzle':
                     this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
@@ -5644,6 +5651,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onChoicelessTechniqueCard = function () {
             this.playTechniqueCard({
                 choiceless: true
+            });
+        };
+        DaleOfMerchants.prototype.onChoicelessTechniqueCardConfirmed = function () {
+            this.playTechniqueCard({
+                choiceless: false
             });
         };
         DaleOfMerchants.prototype.onChoicelessPassiveCard = function () {

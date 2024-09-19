@@ -334,7 +334,7 @@ declare global {
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
 	interface ClientTechniqueChoice {
 		'client_fizzle': { fizzle: boolean }
-		'client_choicelessTechniqueCard': { choiceless: true }
+		'client_choicelessTechniqueCard': { choiceless: boolean }
 		'client_selectOpponentTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }

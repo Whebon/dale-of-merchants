@@ -2605,7 +2605,8 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Schedule Technique
         if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION) {
-            $this->scheduleCard($player_id, $technique_card, array_key_exists("choiceless", $args));
+            $choiceless = isset($args["choiceless"]) ? $args["choiceless"] : false;
+            $this->scheduleCard($player_id, $technique_card, $choiceless);
         }
 
         //Resolve Technique from Hand

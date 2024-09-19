@@ -11,5 +11,19 @@
  * This file is enforced by schema file located at 'bga-ts-template/template/schema'. If you are using VS Code, this schema file will be linked to this file automatically if 'generate-vscode-files' is set to true in 'template.config.jsonc. Hover over any fields for more information.
  */
 {
-	"$schema": "../../node_modules/bga-ts-template/schema/gamepreferences.schema.json"
+	"$schema": "../../node_modules/bga-ts-template/schema/gamepreferences.schema.json",
+
+	"100": {
+		"name": "Confirm technique",
+		"needReload": false,
+		"values": {
+		  "0": {
+			"name": "Only when a choice is involved"
+		  },
+		  "1": {
+			"name": "Always"
+		  }
+		},
+		"default": 0
+	  }
 }

@@ -1179,7 +1179,14 @@ class DaleOfMerchants extends Gamegui
 				//this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTriggerTechniqueCard");
 				break;
 			case 'client_choicelessTechniqueCard':
-				this.onChoicelessTechniqueCard(); //immediately leave this state
+				const client_choicelessTechniqueCard_confirmation = this.getGameUserPreference(100); // "Confirm technique"
+				if (client_choicelessTechniqueCard_confirmation == 1) {
+					this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTechniqueCardConfirmed");
+					this.addActionButtonCancelClient();
+				}
+				else {
+					this.onChoicelessTechniqueCard(); //immediately leave this state
+				}
 				break;
 			case 'client_fizzle':
 				this.addActionButton("fizzle-button", _("Confirm"), "onFizzle");
@@ -2396,6 +2403,13 @@ class DaleOfMerchants extends Gamegui
 	onChoicelessTechniqueCard() {
 		this.playTechniqueCard<'client_choicelessTechniqueCard'>({
 			choiceless: true
+		})
+	}
+
+	onChoicelessTechniqueCardConfirmed() {
+		//if the player plays with "Confirm technique" turned on, the technique is not considered "choiceless" anymore
+		this.playTechniqueCard<'client_choicelessTechniqueCard'>({
+			choiceless: false
 		})
 	}
 

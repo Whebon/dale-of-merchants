@@ -1,1 +1,1 @@
-{}
+{	"100": {		"name": "Confirm technique",		"needReload": false,		"values": {		  "0": {			"name": "Only when a choice is involved"		  },		  "1": {			"name": "Always"		  }		},		"default": 0	  }}
