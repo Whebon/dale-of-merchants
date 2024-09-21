@@ -129,6 +129,11 @@ class DaleOfMerchants extends Gamegui
 		console.warn(this.gamedatas)
 		console.warn("------------------------")
 
+		//add debug tools
+		if (gamedatas.debugMode) {
+			this.addDebugTools();
+		}
+
 		//hide the "daleofmerchants-hand-limbo-flex" for spectators
 		if (this.isSpectator) {
 			$("daleofmerchants-hand-limbo-flex")?.classList.add("daleofmerchants-hidden");
@@ -743,10 +748,11 @@ class DaleOfMerchants extends Gamegui
 			case 'turnStart':
 				this.mySchedule.setSelectionMode('none');
 				break;
+			case 'cleanUpPhase':
+				this.mainClientState.leaveAndDontReturn();
+				break;
 			case 'postCleanUpPhase':
 				this.myHand.setSelectionMode('none');
-				break;
-			case 'playerTurn':
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
@@ -1002,6 +1008,9 @@ class DaleOfMerchants extends Gamegui
 			case 'deckSelection':
 				this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
 				this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
+				if (!this.gamedatas.debugMode) {
+					this.addActionButton("debug-button", _("Enable Debug Mode"), "onEnableDebugMode", undefined, false, 'red');
+				}
 				break;
 			case 'postCleanUpPhase':
 				this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
@@ -1870,6 +1879,10 @@ class DaleOfMerchants extends Gamegui
 		- check the action is possible at this game state.
 		- make a call to the game server
 	*/
+
+	onEnableDebugMode() {
+		this.bgaPerformAction('actEnableDebugMode', {});
+	}
 
 	onSubmitPreference() {
 		let animalfolk_ids = this.deckSelection!.orderedSelection.get().reverse();
@@ -3238,6 +3251,7 @@ class DaleOfMerchants extends Gamegui
 
 	onCalculations() {
 		if (this.checkLock()) {
+			this.mainClientState.setPassiveSelected(false);
 			const args = this.mainClientState.args as ClientGameStates['client_calculations'];
 			const card = new DaleCard(args.card_id_last);
 			const pos = args.card_ids.indexOf(args.card_id_last);
@@ -4483,12 +4497,86 @@ class DaleOfMerchants extends Gamegui
 		else if (arg == 'divs') {
 			console.warn(Array.from(DaleCard.divs.entries()).sort((a, b) => a[0] - b[0]));
 		}
-		else if (arg == '') {
-			
+		else if (arg == 'enableDebugMode') {
+			this.gamedatas.debugMode = true;
+			this.removeActionButtons();
+			this.onUpdateActionButtons(this.gamedatas.gamestate.name, {});
+			this.addDebugTools();
 		}
 		else {
 			throw new Error(`Unknown argument ${notif.args.arg}`)
 		}	
+	}
+	
+	///////////////////////////////////////////////////
+	//// Debug functions
+
+	addDebugTools() {
+		// Get the words
+		const words: string[] = [];
+		for (let i in this.gamedatas.cardTypes) {
+			const cardType = this.gamedatas.cardTypes[i]!;
+			if (cardType.type_id > 4 &&
+				cardType.animalfolk_id < DaleDeckSelection.ANIMALFOLK_MAGPIES && 
+				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_OWLS && 
+				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_BEAVERS
+			) {
+				words.push(cardType.name.toLowerCase());
+			}
+		}
+
+		// Get the html elements
+		document.querySelector('.daleofmerchants-debugtools')!.classList.remove("daleofmerchants-hidden");
+		const container = document.querySelector('.daleofmerchants-autocomplete-container')!;
+		const inputField = container.querySelector('input')! as HTMLInputElement;
+		const dropdown = container.querySelector('div')!;
+		const button = document.getElementById('daleofmerchants-spawn-button')!;
+
+		// Function to populate the dropdown based on query
+		function populateDropdown(query: string) {
+			dropdown.innerHTML = ''; // Clear previous dropdown items
+			const filteredWords = words.filter(word => word.toLowerCase().startsWith(query));
+			if (filteredWords.length > 0) {
+				filteredWords.forEach(word => {
+					const option = document.createElement('div');
+					option.textContent = word;
+					option.addEventListener('click', function() {
+						inputField.value = word; // Set the selected word to the input field
+						dropdown.style.display = 'none'; // Hide the dropdown
+					});
+					dropdown.appendChild(option);
+				});
+				dropdown.style.display = 'block'; // Show dropdown
+			} else {
+				dropdown.style.display = 'none'; // Hide dropdown if no matches
+			}
+		}
+		inputField.addEventListener('input', function() {populateDropdown(this.value.toLowerCase());});
+		inputField.addEventListener('focus', function() {populateDropdown(this.value.toLowerCase());});
+
+		// actSpawn on enter or button click
+		inputField.addEventListener('keydown', (event) => {
+			if (event.key === "Enter") {
+				console.warn("actSpawn");
+				this.bgaPerformAction('actSpawn', {
+					card_name: JSON.stringify(inputField.value)
+				})
+			}
+		});
+		button.addEventListener('click', (event) => {
+			console.warn("actSpawn");
+			this.bgaPerformAction('actSpawn', {
+				card_name: JSON.stringify(inputField.value)
+			})
+		});
+		
+
+		// Hide the dropdown when clicking outside the input
+		document.addEventListener('click', function(e) {
+			if (!document.querySelector('.daleofmerchants-autocomplete-container')!.contains(e.target as HTMLElement)) {
+				dropdown.style.display = 'none';
+			}
+		});
 	}
 }
 

@@ -32,6 +32,7 @@ interface GameStates {
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],
+			'actEnableDebugMode': [],
 		},
 		'transitions': {
 			'trStartGame': 3,
@@ -138,6 +139,11 @@ interface GameStates {
 			'actInventoryAction': [{
 				'name': 'ids',
 				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+			'actSpawn': [{
+				'name': 'card_name',
+				'type': 'AT_json',
 				'typescriptType': string,
 			}],
 		},

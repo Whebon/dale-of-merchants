@@ -57,7 +57,7 @@ $machinestates = array(
 		'args' => 'argNumberOfPlayers',
 		'type' => 'multipleactiveplayer',
 		'action' => 'stDeckSelection',
-		'possibleactions' => ['actSubmitPreference'],
+		'possibleactions' => ['actSubmitPreference', 'actEnableDebugMode'],
 		'transitions' => array(
 			'trStartGame' => 3,
 		),
@@ -89,7 +89,7 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take an action'),
 		'descriptionmyturn' => clienttranslate('${you} must take an action'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actFullyResolveTechniqueCard', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction'],
+		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actFullyResolveTechniqueCard', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction', 'actSpawn'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
 			'trPassiveAbility' => 30,

@@ -316,6 +316,7 @@ declare global {
 		'market': {[card_id: number]: DbCard}
 		'effects': {[_index: number]: RawDbEffect}
 
+		'debugMode': boolean
 		'inDeckSelection': boolean
 		'animalfolkIds': number[]
 	}

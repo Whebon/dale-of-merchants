@@ -38,6 +38,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actEnableDebugMode()
+	{
+		self::setAjaxMode();
+
+		$this->game->actEnableDebugMode(  );
+		self::ajaxResponse();
+	}
+
 	public function actPurchase()
 	{
 		self::setAjaxMode();
@@ -131,6 +139,17 @@ class action_daleofmerchants extends APP_GameAction
 		$ids = self::getArg('ids', AT_numberlist, true);
 
 		$this->game->actInventoryAction( $ids );
+		self::ajaxResponse();
+	}
+
+	public function actSpawn()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_name */
+		$card_name = self::getArg('card_name', AT_json, true);
+
+		$this->game->actSpawn( $card_name );
 		self::ajaxResponse();
 	}
 

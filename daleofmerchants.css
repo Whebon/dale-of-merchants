@@ -523,6 +523,36 @@
   transform: translate(0, 0);
 }
 
+/* Basic styling for input and dropdown */
+.daleofmerchants-autocomplete-container {
+  position: relative;
+  display: inline-block;
+}
+.daleofmerchants-autocomplete-container input {
+  width: 300px;
+  padding: 8px;
+}
+
+.daleofmerchants-dropdown {
+  position: absolute;
+  border: 1px solid #ccc;
+  border-top: none;
+  background-color: white;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.daleofmerchants-dropdown div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.daleofmerchants-dropdown div:hover {
+  background-color: #f1f1f1;
+}
+
 :root {
   --ocelot: rgb(227,6,19);
   --polecat: rgb(215,64,119);

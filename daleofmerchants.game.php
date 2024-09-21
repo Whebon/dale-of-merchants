@@ -52,7 +52,8 @@ class DaleOfMerchants extends DaleTableBasic
             "player_id_4" => 20,
             "hand_size_before" => 21,
             "active_player_id" => 22,
-            "die_value" => 23
+            "die_value" => 23,
+            "debugMode" => 24
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -113,6 +114,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("hand_size_before", 0);
         $this->setGameStateInitialValue("active_player_id", -1);
         $this->setGameStateInitialValue("die_value", -1);
+        $this->setGameStateInitialValue("debugMode", 0);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -190,6 +192,7 @@ class DaleOfMerchants extends DaleTableBasic
         $result['effects'] = $this->effects->loadFromDb();
         $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
         $result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
+        $result['debugMode'] = $this->getGameStateValue("debugMode") == '1';
   
         return $result;
     }
@@ -2102,6 +2105,39 @@ class DaleOfMerchants extends DaleTableBasic
             In this space, you can put debugging tools
         */
 
+    function actEnableDebugMode() {
+        $debugMode = $this->getGameStateValue("debugMode", 1);
+        if ($debugMode) {
+            throw new BgaUserException(_("Debug mode is already enabled for this game!"));
+        }
+        $player_id = $this->getCurrentPlayerId();
+        $player_ids = $this->getGameStateValuePlayerIds();
+        if (!in_array($player_id, $player_ids)) {
+            $player_ids[] = $player_id;
+            $this->setGameStateValuePlayerIds($player_ids);
+            $this->notifyAllPlayers('message', clienttranslate('DEBUG: ${player_name} wants to enable debug mode. To enable debug mode, all players need to press \'Enable Debug Mode\'. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
+                "player_name" => $this->getPlayerNameById($player_id)
+            ));
+        }
+        else {
+            throw new BgaUserException(_("Waiting for other players to enable debug mode..."));
+        }
+        if (count($player_ids) == $this->getPlayersNumber()) {
+            $this->setGameStateValue("debugMode", 1);
+            $this->notifyAllPlayers('debugClient', clienttranslate('DEBUG: debug mode is enabled for this game. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
+                "arg" => "enableDebugMode"
+            ));
+        }
+        $this->gamestate->setPlayersMultiactive($this->gamestate->getActivePlayerList(), "");
+    }
+
+    function actSpawn($card_name) {
+        if (!$this->getGameStateValue("debugMode")) {
+            throw new BgaUserException(_("Debug mode is disabled"));
+        }
+        $this->spawn($card_name);
+    }
+
     function spawnStall(int $pos, string $name = "emptychest") {
         //spawn a card in a stall position
         $player_id = $this->getCurrentPlayerId();
@@ -2209,11 +2245,18 @@ class DaleOfMerchants extends DaleTableBasic
             return substr($uppercase, 0, $len);
         };
         foreach ($this->card_types as $type_id => $card) {
+            if ($type_id <= 4 || 
+                $card['animalfolk_id'] >= ANIMALFOLK_MAGPIES ||
+				$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
+				$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
+            ) {
+                continue;
+            }
             if ($f($card['name']) == $f($prefix)) {
                 return $type_id;
             }
         }
-        throw new BgaVisibleSystemException("No card name matches prefix '$prefix'");
+        throw new BgaUserException("No card name matches prefix '$prefix'");
         return -1;
     }
 

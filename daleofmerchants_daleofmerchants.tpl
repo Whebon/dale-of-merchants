@@ -65,7 +65,23 @@
         
     </div>
     <!-- END stall -->
+
+    <!---------------------------->
+    <!--       Debug Tools      -->
+    <!---------------------------->
+    <div class="daleofmerchants-debugtools daleofmerchants-hidden whiteblock">
+        <span>
+            <strong></strong>
+            <div class="daleofmerchants-autocomplete-container">
+                <input type="text" placeholder="Type a card name..." autocomplete="off">
+                <div class="daleofmerchants-dropdown" style="display: none;"></div>
+            </div>
+            <button id = "daleofmerchants-spawn-button" style="width: 120px;" class="action-button bgabutton bgabutton_blue">Spawn Card</button>
+        </span>
+    </div>
 </div>
+
+
 
 <script type="text/javascript">
 

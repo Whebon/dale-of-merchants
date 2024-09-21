@@ -36,7 +36,8 @@
 		"type": "multipleactiveplayer",
 		"action": "stDeckSelection",
 		"possibleactions": {
-			"actSubmitPreference": [{ "name": "animalfolk_ids", "type": "AT_numberlist" }]
+			"actSubmitPreference": [{ "name": "animalfolk_ids", "type": "AT_numberlist" }],
+			"actEnableDebugMode": []
 		},
 		"transitions": { "trStartGame": 3 }
 	},
@@ -109,6 +110,11 @@
 			//Inventory Actions
 			"actInventoryAction": [
 				{"name": "ids", "type": "AT_numberlist"} //TODO: change this
+			],
+
+			//Debug Action
+			"actSpawn": [
+				{"name": "card_name", "type": "AT_json"}
 			]
 		},
 		"transitions": { 
