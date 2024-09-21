@@ -189,6 +189,7 @@ class DaleOfMerchants extends DaleTableBasic
         $result['cardTypes'] = $this->card_types;
         $result['effects'] = $this->effects->loadFromDb();
         $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
+        $result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
   
         return $result;
     }
@@ -4497,7 +4498,7 @@ class DaleOfMerchants extends DaleTableBasic
         //Complete the deck selection and get the results
         $this->setGameStateValue("inDeckSelection", 0);
         $players = $this->loadPlayersBasicInfos();
-        $animalfolk_ids = $this->deckSelection->getAnimalfolkIds();
+        $animalfolk_ids = $this->deckSelection->selectAnimalfolkIds();
         foreach ($animalfolk_ids as $animalfolk_id) {
             $this->initStat("table", "deck_selection_".$animalfolk_id, true);
             $this->notifyAllPlayers('deckSelectionResult', clienttranslate('${animalfolk_displayed_name} have been selected'), array(

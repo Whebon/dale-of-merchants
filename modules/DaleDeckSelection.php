@@ -48,7 +48,7 @@ class DaleDeckSelection {
     /**
      * @return array n+1 animalfolk_ids to play with (based on the preferences)
      */
-    function getAnimalfolkIds() {
+    function selectAnimalfolkIds() {
         $animalfolk_ids = $this->getPreferences();
         $n = $this->game->getPlayersNumber();
         while(count($animalfolk_ids) < $n + 1) {
@@ -62,6 +62,21 @@ class DaleDeckSelection {
                 throw new BgaSystemException($animalfolk_id+" is not a valid animalfolk_id");
             }
         }
-        return array_slice($animalfolk_ids, 0, $n + 1);
+        $selected_animalfolk_ids = array_slice($animalfolk_ids, 0, $n + 1);
+        $this->submitPreference(0, $animalfolk_ids); //0 means selected, this is needed for 'getAnimalfolkIds'
+        return $selected_animalfolk_ids;
+    }
+
+    /**
+     * @return array n+1 animalfolk_ids selected by 'selectAnimalfolkIds'
+     */
+    function getAnimalfolkIds() {
+        $sql = "SELECT animalfolk_id FROM deckselection WHERE player_id = 0";
+        $collection = $this->game->getCollectionFromDB($sql);
+        $n = $this->game->getPlayersNumber();
+        if (count($collection) != $n+1) {
+            throw new BgaVisibleSystemException("'getAnimalfolkIds' failed, please ensure that 'selectAnimalfolkIds' was called exactly once");
+        }
+        return array_keys($collection);
     }
 }

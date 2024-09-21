@@ -1316,6 +1316,13 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("ditch-button", _("Purchase"), "onRoyalPrivilege");
 				this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
 				break;
+			case 'client_pompousProfessional':
+				for (let animalfolk_id of this.gamedatas.animalfolkIds) {
+					const callback = () => this.onPompousProfessional(animalfolk_id);
+					this.addActionButton("animalfolk-button-"+animalfolk_id, this.getAnimalfolkName(animalfolk_id), callback.bind(this));
+				}
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -1846,6 +1853,10 @@ class DaleOfMerchants extends Gamegui
 				(confirm_button as HTMLElement).innerText = _("Confirm Selection ")+`(${this.opponent_ids.length})`;
 			}
 		}
+	}
+
+	getAnimalfolkName(animalfolk_id: number) {
+		return DaleCard.cardTypes[6*animalfolk_id]!.animalfolk_displayed;
 	}
 
 	
@@ -2858,7 +2869,10 @@ class DaleOfMerchants extends Gamegui
 				else {
 					this.clientScheduleTechnique('client_fashionHint', card.id);
 				}
-				break
+				break;
+			case DaleCard.CT_POMPOUSPROFESSIONAL:
+				this.clientScheduleTechnique('client_pompousProfessional', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3556,6 +3570,13 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actRoyalPrivilege', {
 			ditch_card_id: -1,
 			market_card_id: -1
+		});
+	}
+
+	onPompousProfessional(animalfolk_id: number) {
+		console.warn("onPompousProfessional ", animalfolk_id);
+		this.playTechniqueCardWithServerState<'client_pompousProfessional'>({
+			animalfolk_id: animalfolk_id
 		});
 	}
 

@@ -3374,6 +3374,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: Are you sure you want to ditch '${ditch_card_name}'? The market has no valid replacement for this card");
                     case 'client_fashionHint':
                         return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from the supply");
+                    case 'client_pompousProfessional':
+                        return _("${card_name}: ${you} must choose an animalfolk set");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4779,6 +4781,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("ditch-button", _("Purchase"), "onRoyalPrivilege");
                     this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
                     break;
+                case 'client_pompousProfessional':
+                    var _loop_8 = function (animalfolk_id) {
+                        var callback = function () { return _this.onPompousProfessional(animalfolk_id); };
+                        this_6.addActionButton("animalfolk-button-" + animalfolk_id, this_6.getAnimalfolkName(animalfolk_id), callback.bind(this_6));
+                    };
+                    var this_6 = this;
+                    for (var _d = 0, _e = this.gamedatas.animalfolkIds; _d < _e.length; _d++) {
+                        var animalfolk_id = _e[_d];
+                        _loop_8(animalfolk_id);
+                    }
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -5095,18 +5109,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
-            var _loop_8 = function (opponent_id) {
-                if (opponent_id != this_6.player_id) {
-                    var name_1 = this_6.gamedatas.players[opponent_id].name;
-                    var color = this_6.gamedatas.players[opponent_id].color;
+            var _loop_9 = function (opponent_id) {
+                if (opponent_id != this_7.player_id) {
+                    var name_1 = this_7.gamedatas.players[opponent_id].name;
+                    var color = this_7.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
-                    this_6.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
+                    this_7.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
                 }
             };
-            var this_6 = this;
+            var this_7 = this;
             for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
                 var opponent_id = _a[_i];
-                _loop_8(opponent_id);
+                _loop_9(opponent_id);
             }
         };
         DaleOfMerchants.prototype.addActionButtonsOpponentSelection = function (maxSize, player_ids) {
@@ -5161,6 +5175,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     confirm_button.innerText = _("Confirm Selection ") + "(".concat(this.opponent_ids.length, ")");
                 }
             }
+        };
+        DaleOfMerchants.prototype.getAnimalfolkName = function (animalfolk_id) {
+            return DaleCard_10.DaleCard.cardTypes[6 * animalfolk_id].animalfolk_displayed;
         };
         DaleOfMerchants.prototype.onSubmitPreference = function () {
             var animalfolk_ids = this.deckSelection.orderedSelection.get().reverse();
@@ -6071,6 +6088,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_fashionHint', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_POMPOUSPROFESSIONAL:
+                    this.clientScheduleTechnique('client_pompousProfessional', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6693,6 +6713,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.bgaPerformAction('actRoyalPrivilege', {
                 ditch_card_id: -1,
                 market_card_id: -1
+            });
+        };
+        DaleOfMerchants.prototype.onPompousProfessional = function (animalfolk_id) {
+            console.warn("onPompousProfessional ", animalfolk_id);
+            this.playTechniqueCardWithServerState({
+                animalfolk_id: animalfolk_id
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

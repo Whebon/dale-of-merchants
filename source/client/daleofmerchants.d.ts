@@ -317,6 +317,7 @@ declare global {
 		'effects': {[_index: number]: RawDbEffect}
 
 		'inDeckSelection': boolean
+		'animalfolkIds': number[]
 	}
 
 	type ClientChoiceSubsetValidation<T extends Record<keyof T, unknown>, U extends Record<string, unknown>> = {
@@ -361,6 +362,7 @@ declare global {
 		'client_historyLesson': { card_ids: number[] }
 		'client_replacement': { card_id?: number }
 		'client_fashionHint': { ditch: boolean }
+		'client_pompousProfessional': { animalfolk_id: number }
 	}
 
 	interface ClientPassiveChoice {
