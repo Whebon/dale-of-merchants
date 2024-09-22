@@ -2905,7 +2905,13 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_POMPOUSPROFESSIONAL:
-				this.clientScheduleTechnique('client_pompousProfessional', card.id);
+				fizzle = this.myDeck.size + this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_pompousProfessional', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

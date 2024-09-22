@@ -2631,6 +2631,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_VORACIOUSCONSUMER:
+                case CT_POMPOUSPROFESSIONAL:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
