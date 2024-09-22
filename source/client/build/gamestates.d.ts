@@ -175,6 +175,7 @@ interface GameStates {
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
 			'trFashionHint': 73,
+			'trWhirligig': 74,
 		},
 	},
 	31: {
@@ -707,6 +708,19 @@ interface GameStates {
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	74: {
+		'name': 'whirligig',
+		'description': 'Whirligig: ${actplayer} may look at their drawn cards',
+		'descriptionmyturn': 'Whirligig: ${you} may look at your drawn cards',
+		'type': 'activeplayer',
+		'action': 'stWhirligig',
+		'possibleactions': {
+			'actWhirligig': [],
 		},
 		'transitions': {
 			'trSamePlayer': 30,

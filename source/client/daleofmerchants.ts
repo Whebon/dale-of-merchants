@@ -1103,6 +1103,9 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.addActionButtonCancelClient();
 				break;
+			case 'whirligig':
+				this.addActionButton("whirligig-button", _("Next"), "onWhirligigDoneLooking");
+				break;
 			case 'client_gamble':
 				this.addActionButtonsOpponent(this.onGamble.bind(this));
 				this.addActionButtonCancelClient();
@@ -3208,6 +3211,10 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onWhirligigDoneLooking() {
+		this.bgaPerformAction('actWhirligig', {});
+	}
+
 	onGamble(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_gamble'>({
 			opponent_id: opponent_id
@@ -4273,13 +4280,13 @@ class DaleOfMerchants extends Gamegui
 		if (!this.isSpectator) {
 			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
 			const nbr = notif.args.opponent_nbr + notif.args.player_nbr
-			const opponent_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
+			const hand_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
 			for (let i = 1; i <= nbr; i++) {
 				if ((i%2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
 					notif.args.opponent_nbr -= 1;
 					if (this.player_id == notif.args.opponent_id) {
 						//from hand
-						const opponent_card_id = opponent_card_ids.pop()!;
+						const opponent_card_id = hand_card_ids.pop()!;
 						this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.myHand.control_name+"_item_"+opponent_card_id);
 						this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
 					}
@@ -4289,10 +4296,17 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				else {
-					//from deck
 					notif.args.player_nbr -= 1;
-					this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.playerDecks[notif.args.player_id]!.placeholderHTML);
-					this.playerDecks[notif.args.player_id]!.pop();
+					if (this.player_id == notif.args.player_id) {
+						//from hand
+						const player_card_id = hand_card_ids.pop()!;
+						this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), this.myHand.control_name+"_item_"+player_card_id);
+						this.myHand.removeFromStockByIdNoAnimation(player_card_id);
+					}
+					else {
+						//from overall player board
+						this.myLimbo.addDaleCardToStock(new DaleCard(-i,0), "overall_player_board_"+notif.args.player_id);
+					}
 				}
 			}
 			if (notif.args.opponent_nbr != 0 || notif.args.player_nbr != 0) {

@@ -4559,6 +4559,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.addActionButtonCancelClient();
                     break;
+                case 'whirligig':
+                    this.addActionButton("whirligig-button", _("Next"), "onWhirligigDoneLooking");
+                    break;
                 case 'client_gamble':
                     this.addActionButtonsOpponent(this.onGamble.bind(this));
                     this.addActionButtonCancelClient();
@@ -6382,6 +6385,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.myHand.orderedSelection.get()
             });
         };
+        DaleOfMerchants.prototype.onWhirligigDoneLooking = function () {
+            this.bgaPerformAction('actWhirligig', {});
+        };
         DaleOfMerchants.prototype.onGamble = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
@@ -7268,12 +7274,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!this.isSpectator) {
                 this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
                 var nbr = notif.args.opponent_nbr + notif.args.player_nbr;
-                var opponent_card_ids = this.myHand.getAllItems().map(function (item) { return item.id; }).reverse();
+                var hand_card_ids = this.myHand.getAllItems().map(function (item) { return item.id; }).reverse();
                 for (var i = 1; i <= nbr; i++) {
                     if ((i % 2 == 0 || notif.args.player_nbr == 0) && notif.args.opponent_nbr > 0) {
                         notif.args.opponent_nbr -= 1;
                         if (this.player_id == notif.args.opponent_id) {
-                            var opponent_card_id = opponent_card_ids.pop();
+                            var opponent_card_id = hand_card_ids.pop();
                             this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(-i, 0), this.myHand.control_name + "_item_" + opponent_card_id);
                             this.myHand.removeFromStockByIdNoAnimation(opponent_card_id);
                         }
@@ -7283,8 +7289,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else {
                         notif.args.player_nbr -= 1;
-                        this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(-i, 0), this.playerDecks[notif.args.player_id].placeholderHTML);
-                        this.playerDecks[notif.args.player_id].pop();
+                        if (this.player_id == notif.args.player_id) {
+                            var player_card_id = hand_card_ids.pop();
+                            this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(-i, 0), this.myHand.control_name + "_item_" + player_card_id);
+                            this.myHand.removeFromStockByIdNoAnimation(player_card_id);
+                        }
+                        else {
+                            this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(-i, 0), "overall_player_board_" + notif.args.player_id);
+                        }
                     }
                 }
                 if (notif.args.opponent_nbr != 0 || notif.args.player_nbr != 0) {

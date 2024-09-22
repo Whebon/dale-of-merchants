@@ -424,4 +424,12 @@ class action_daleofmerchants extends APP_GameAction
 		$this->game->actFashionHint( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actWhirligig()
+	{
+		self::setAjaxMode();
+
+		$this->game->actWhirligig(  );
+		self::ajaxResponse();
+	}
 }

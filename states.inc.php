@@ -37,6 +37,7 @@ if (false) {
 	$game->stCharity();
 	$game->stSliceOfLife();
 	$game->stDelightfulSurprise();
+	$game->stWhirligig();
 	$game->stFinalStatistics();
 }
 
@@ -118,6 +119,7 @@ $machinestates = array(
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
 			'trFashionHint' => 73,
+			'trWhirligig' => 74,
 		),
 	),
 	31 => array(
@@ -436,6 +438,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argTopCardBin',
 		'possibleactions' => ['actFashionHint'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	74 => array(
+		'name' => 'whirligig',
+		'description' => clienttranslate('Whirligig: ${actplayer} may look at their drawn cards'),
+		'descriptionmyturn' => clienttranslate('Whirligig: ${you} may look at your drawn cards'),
+		'type' => 'activeplayer',
+		'action' => 'stWhirligig',
+		'possibleactions' => ['actWhirligig'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

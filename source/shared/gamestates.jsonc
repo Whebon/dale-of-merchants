@@ -147,7 +147,8 @@
 			"trSliceOfLife": 70,
 			"trDelightfulSurprise": 71,
 			"trReplacement": 72,
-			"trFashionHint": 73
+			"trFashionHint": 73,
+			"trWhirligig": 74
 		}
 	},
 
@@ -561,6 +562,18 @@
 			"actFashionHint": [
 				{"name": "card_id", "type": "AT_int"}
 			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"74": {
+		"name": "whirligig",
+		"description": "Whirligig: ${actplayer} may look at their drawn cards",
+		"descriptionmyturn": "Whirligig: ${you} may look at your drawn cards",
+		"type": "activeplayer",
+		"action": "stWhirligig",
+		"possibleactions": {
+			"actWhirligig": []
 		},
 		"transitions": { "trSamePlayer": 30 }
 	},
