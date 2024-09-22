@@ -1158,6 +1158,19 @@ class DaleOfMerchants extends DaleTableBasic
         return $this->card_types[$type_id]['name'];
     }
 
+    /**
+     * Returns the effective name of the card AND the animalfolk name + value
+     * @param array $dbcard card to get the name of
+     * @example "Good Old Times (Chameleons 3)"
+    */
+    function getCardNameExt(array $dbcard): string {
+        $type_id = $this->getTypeId($dbcard);
+        $name = $this->card_types[$type_id]['name'];
+        $animalfolk_name = $this->card_types[$type_id]['animalfolk_displayed'];
+        $value = $this->card_types[$type_id]['value'];
+        return "<strong>$name</strong> ($animalfolk_name $value)";
+    }
+
 
     /**
      * Returns true iff the original card is a junk card
@@ -2448,18 +2461,20 @@ class DaleOfMerchants extends DaleTableBasic
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
         if ($from_bin) {
-            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${card_name}'), array (
+            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${extended_card_name}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
+                'extended_card_name' => $this->getCardNameExt($market_card),
                 'card' => $market_card,
             ));
         }
         else {
-            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${card_name}'), array (
+            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
+                'extended_card_name' => $this->getCardNameExt($market_card),
                 'market_card_id' => $market_card_id,
                 'pos' => $market_card["location_arg"]
             ));
@@ -2498,10 +2513,11 @@ class DaleOfMerchants extends DaleTableBasic
             //purchase the additional market card
             $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
             $this->cards->moveCard($market_card_id, HAND.$player_id);
-            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought a ${card_name}'), array(
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought a ${extended_card_name}'), array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
+                'extended_card_name' => $this->getCardNameExt($market_card),
                 'market_card_id' => $market_card_id,
                 'pos' => $market_card["location_arg"],
             ));
