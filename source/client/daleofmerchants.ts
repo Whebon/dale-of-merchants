@@ -4276,6 +4276,7 @@ class DaleOfMerchants extends Gamegui
 	
 	notif_whirligigShuffle(notif: NotifAs<'whirligigShuffle'>) {
 		console.warn("whirligigShuffle");
+		const player_nbr = notif.args.player_nbr;
 		const opponent_nbr = notif.args.opponent_nbr;
 		if (!this.isSpectator) {
 			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
@@ -4323,8 +4324,6 @@ class DaleOfMerchants extends Gamegui
 				this.playerDecks[notif.args.player_id]!.pop();
 			}
 		}
-		//update the hand sizes
-		this.playerHandSizes[notif.args.opponent_id]!.incValue(-opponent_nbr);
 	}
 
 	notif_whirligigTakeBack(notif: NotifAs<'whirligigTakeBack'>) {
@@ -4351,8 +4350,6 @@ class DaleOfMerchants extends Gamegui
 				}
 			}
 		}
-		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
 	}
 
 	notif_cunningNeighbourWatch(notif: NotifAs<'cunningNeighbourWatch'>) {

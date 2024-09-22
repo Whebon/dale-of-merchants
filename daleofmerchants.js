@@ -7270,6 +7270,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_whirligigShuffle = function (notif) {
             var _this = this;
             console.warn("whirligigShuffle");
+            var player_nbr = notif.args.player_nbr;
             var opponent_nbr = notif.args.opponent_nbr;
             if (!this.isSpectator) {
                 this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
@@ -7309,7 +7310,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.playerDecks[notif.args.player_id].pop();
                 }
             }
-            this.playerHandSizes[notif.args.opponent_id].incValue(-opponent_nbr);
         };
         DaleOfMerchants.prototype.notif_whirligigTakeBack = function (notif) {
             console.warn("notif_whirligigTakeBack");
@@ -7334,7 +7334,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 }
             }
-            this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
         };
         DaleOfMerchants.prototype.notif_cunningNeighbourWatch = function (notif) {
             var _a;
