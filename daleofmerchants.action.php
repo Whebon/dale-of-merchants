@@ -432,4 +432,15 @@ class action_daleofmerchants extends APP_GameAction
 		$this->game->actWhirligig(  );
 		self::ajaxResponse();
 	}
+
+	public function actPompousProfessional()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actPompousProfessional( $card_id );
+		self::ajaxResponse();
+	}
 }

@@ -176,6 +176,7 @@ interface GameStates {
 			'trReplacement': 72,
 			'trFashionHint': 73,
 			'trWhirligig': 74,
+			'trPompousProfessional': 75,
 		},
 	},
 	31: {
@@ -721,6 +722,24 @@ interface GameStates {
 		'action': 'stWhirligig',
 		'possibleactions': {
 			'actWhirligig': [],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	75: {
+		'name': 'pompousProfessional',
+		'description': 'Pompous Professional: ${actplayer} must choose a \\\'${animalfolk_name}\\\' card to place in their hand',
+		'descriptionmyturn': 'Pompous Professional: ${you} must choose a \\\'${animalfolk_name}\\\' card to place in your hand',
+		'type': 'activeplayer',
+		'args': 'argAnimalfolk',
+		'action': 'stPompousProfessional',
+		'possibleactions': {
+			'actPompousProfessional': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
 		},
 		'transitions': {
 			'trSamePlayer': 30,

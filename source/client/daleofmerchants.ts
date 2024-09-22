@@ -991,6 +991,9 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'pompousProfessional':
+				this.myLimbo.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -1334,6 +1337,15 @@ class DaleOfMerchants extends Gamegui
 					this.addActionButton("animalfolk-button-"+animalfolk_id, this.getAnimalfolkName(animalfolk_id), callback.bind(this));
 				}
 				this.addActionButtonCancelClient();
+				break;
+			case 'pompousProfessional':
+				const pompousProfessional_args = args as { animalfolk_id: number, animalfolk_name: number };
+				const pompousProfessional_mode = 'clickAnimalfolk'+pompousProfessional_args.animalfolk_id as `clickAnimalfolk${number}`;
+				const pompousProfessional_label = _("Choose a '")+pompousProfessional_args.animalfolk_name+("' card to take");
+				this.myLimbo.setSelectionMode(pompousProfessional_mode, undefined, 'daleofmerchants-wrap-technique', pompousProfessional_label);
+				if (this.myLimbo.getAllClickableCardIds().length == 0) {
+					this.addActionButton("pompous-professional-fizzle-button", _("Skip"), "onPompousProfessionalFizzle", undefined, false, 'gray');
+				}
 				break;
 		}
 		//(~actionbuttons)
@@ -2290,6 +2302,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'delightfulSurprise':
 				this.bgaPerformAction('actDelightfulSurprise', {
+					card_id: card.id
+				})
+				break;
+			case 'pompousProfessional':
+				this.bgaPerformAction('actPompousProfessional', {
 					card_id: card.id
 				})
 				break;
@@ -3602,6 +3619,13 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
+	onPompousProfessionalFizzle() {
+		this.bgaPerformAction('actPompousProfessional', {
+			card_id: -1
+		});
+		this.removeActionButtons();
+	}
+
 	//(~on)
 
 
@@ -3711,6 +3735,9 @@ class DaleOfMerchants extends Gamegui
 
 	notif_deckSelectionResult(notif: NotifAs<'deckSelectionResult'>) {
 		this.deckSelection!.setResult(notif.args.animalfolk_id);
+		if (!this.gamedatas.animalfolkIds.includes(notif.args.animalfolk_id)) {
+			this.gamedatas.animalfolkIds.push(notif.args.animalfolk_id);
+		}
 	}
 
 	notif_startGame(notif: NotifAs<'startGame'>) {

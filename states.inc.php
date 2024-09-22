@@ -38,6 +38,7 @@ if (false) {
 	$game->stSliceOfLife();
 	$game->stDelightfulSurprise();
 	$game->stWhirligig();
+	$game->stPompousProfessional();
 	$game->stFinalStatistics();
 }
 
@@ -120,6 +121,7 @@ $machinestates = array(
 			'trReplacement' => 72,
 			'trFashionHint' => 73,
 			'trWhirligig' => 74,
+			'trPompousProfessional' => 75,
 		),
 	),
 	31 => array(
@@ -449,6 +451,18 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stWhirligig',
 		'possibleactions' => ['actWhirligig'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	75 => array(
+		'name' => 'pompousProfessional',
+		'description' => clienttranslate('Pompous Professional: ${actplayer} must choose a \'${animalfolk_name}\' card to place in their hand'),
+		'descriptionmyturn' => clienttranslate('Pompous Professional: ${you} must choose a \'${animalfolk_name}\' card to place in your hand'),
+		'type' => 'activeplayer',
+		'args' => 'argAnimalfolk',
+		'action' => 'stPompousProfessional',
+		'possibleactions' => ['actPompousProfessional'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

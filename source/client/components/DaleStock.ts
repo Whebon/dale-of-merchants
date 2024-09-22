@@ -20,6 +20,7 @@ import { DaleDeckSelection } from './DaleDeckSelection';
  * 'clickOnTurnStart'			no selection possible, only cards with an 'onTurnStart' trigger are clickable
  * 'clickOnFinish'				no selection possible, only cards with an 'onFinish' trigger are clickable
  * 'clickAnimalfolk':			no selection possible, only animalfolk cards are clickable
+ * 'clickAnimalfolk16':			no selection possible, only cards of a specific animalfolk id are clickable
  * 'single':			   		a single card can be selected
  * 'singleAnimalfolk':			a single animalfolk card can be selected
  * 'multiple':             		multiple cards can be selected
@@ -28,7 +29,7 @@ import { DaleDeckSelection } from './DaleDeckSelection';
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -189,15 +190,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 * @return `true` if the selectionMode doesn't use the orderedSelection, but only responds to a click on a card
 	 */
 	private isClickSelectionMode() {
-		return (this.selectionMode == 'click' || 
-			this.selectionMode == 'clickTechnique' || 
-			this.selectionMode == 'clickAbility' || 
-			this.selectionMode == 'clickAbilityPostCleanup' || 
-			this.selectionMode == 'clickRetainSelection' ||
-			this.selectionMode == 'clickOnTurnStart' ||
-			this.selectionMode == 'clickOnFinish' ||
-			this.selectionMode == 'clickAnimalfolk'
-		);
+		return this.selectionMode.substring(0, 5) == 'click';
 	}
 
 	/**
@@ -321,9 +314,13 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'glue':
 				return card.effective_type_id == DaleCard.CT_GLUE && this.orderedSelection.get(true).includes(card.id);
 			default:
-				const match = this.selectionMode.match(/^only_card_id(\d+)$/);
-				if (match) {
-					return card.id == +match[1]!;
+				const only_card_id_match = this.selectionMode.match(/^only_card_id(\d+)$/);
+				if (only_card_id_match) {
+					return card.id == +only_card_id_match[1]!;
+				}
+				const clickAnimalfolk_match = this.selectionMode.match(/^clickAnimalfolk(\d+)$/);
+				if (clickAnimalfolk_match) {
+					return card.effective_animalfolk_id == +clickAnimalfolk_match[1]!;
 				}
 				throw new Error(`isClickable has no definition for selectionMode '${this.selectionMode}'`)
 		}

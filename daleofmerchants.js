@@ -1641,14 +1641,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
         };
         DaleStock.prototype.isClickSelectionMode = function () {
-            return (this.selectionMode == 'click' ||
-                this.selectionMode == 'clickTechnique' ||
-                this.selectionMode == 'clickAbility' ||
-                this.selectionMode == 'clickAbilityPostCleanup' ||
-                this.selectionMode == 'clickRetainSelection' ||
-                this.selectionMode == 'clickOnTurnStart' ||
-                this.selectionMode == 'clickOnFinish' ||
-                this.selectionMode == 'clickAnimalfolk');
+            return this.selectionMode.substring(0, 5) == 'click';
         };
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
@@ -1754,9 +1747,13 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'glue':
                     return card.effective_type_id == DaleCard_2.DaleCard.CT_GLUE && this.orderedSelection.get(true).includes(card.id);
                 default:
-                    var match = this.selectionMode.match(/^only_card_id(\d+)$/);
-                    if (match) {
-                        return card.id == +match[1];
+                    var only_card_id_match = this.selectionMode.match(/^only_card_id(\d+)$/);
+                    if (only_card_id_match) {
+                        return card.id == +only_card_id_match[1];
+                    }
+                    var clickAnimalfolk_match = this.selectionMode.match(/^clickAnimalfolk(\d+)$/);
+                    if (clickAnimalfolk_match) {
+                        return card.effective_animalfolk_id == +clickAnimalfolk_match[1];
                     }
                     throw new Error("isClickable has no definition for selectionMode '".concat(this.selectionMode, "'"));
             }
@@ -4459,6 +4456,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'pompousProfessional':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -4807,6 +4807,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         _loop_8(animalfolk_id);
                     }
                     this.addActionButtonCancelClient();
+                    break;
+                case 'pompousProfessional':
+                    var pompousProfessional_args = args;
+                    var pompousProfessional_mode = 'clickAnimalfolk' + pompousProfessional_args.animalfolk_id;
+                    var pompousProfessional_label = _("Choose a '") + pompousProfessional_args.animalfolk_name + ("' card to take");
+                    this.myLimbo.setSelectionMode(pompousProfessional_mode, undefined, 'daleofmerchants-wrap-technique', pompousProfessional_label);
+                    if (this.myLimbo.getAllClickableCardIds().length == 0) {
+                        this.addActionButton("pompous-professional-fizzle-button", _("Skip"), "onPompousProfessionalFizzle", undefined, false, 'gray');
+                    }
                     break;
             }
         };
@@ -5560,6 +5569,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'delightfulSurprise':
                     this.bgaPerformAction('actDelightfulSurprise', {
+                        card_id: card.id
+                    });
+                    break;
+                case 'pompousProfessional':
+                    this.bgaPerformAction('actPompousProfessional', {
                         card_id: card.id
                     });
                     break;
@@ -6744,6 +6758,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 animalfolk_id: animalfolk_id
             });
         };
+        DaleOfMerchants.prototype.onPompousProfessionalFizzle = function () {
+            this.bgaPerformAction('actPompousProfessional', {
+                card_id: -1
+            });
+            this.removeActionButtons();
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -6820,6 +6840,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_deckSelectionResult = function (notif) {
             this.deckSelection.setResult(notif.args.animalfolk_id);
+            if (!this.gamedatas.animalfolkIds.includes(notif.args.animalfolk_id)) {
+                this.gamedatas.animalfolkIds.push(notif.args.animalfolk_id);
+            }
         };
         DaleOfMerchants.prototype.notif_startGame = function (notif) {
             this.deckSelection.remove();

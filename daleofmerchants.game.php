@@ -53,7 +53,8 @@ class DaleOfMerchants extends DaleTableBasic
             "hand_size_before" => 21,
             "active_player_id" => 22,
             "die_value" => 23,
-            "debugMode" => 24
+            "debugMode" => 24,
+            "animalfolk_id" => 25
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -115,6 +116,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("active_player_id", -1);
         $this->setGameStateInitialValue("die_value", -1);
         $this->setGameStateInitialValue("debugMode", 0);
+        $this->setGameStateInitialValue("animalfolk_id", 0);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -2245,13 +2247,14 @@ class DaleOfMerchants extends DaleTableBasic
             return substr($uppercase, 0, $len);
         };
         foreach ($this->card_types as $type_id => $card) {
-            if ($type_id <= 4 || 
-                $card['animalfolk_id'] > ANIMALFOLK_CHAMELEONS ||
-				$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
-				$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
-            ) {
-                continue;
-            }
+            //spawn filter
+            // if ($type_id <= 4 || 
+            //     $card['animalfolk_id'] > ANIMALFOLK_CHAMELEONS ||
+			// 	$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
+			// 	$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
+            // ) {
+            //     continue;
+            // }
             if ($f($card['name']) == $f($prefix)) {
                 return $type_id;
             }
@@ -3495,6 +3498,16 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trFashionHint");
                 break;
+            case CT_POMPOUSPROFESSIONAL:
+                $animalfolk_id = $args["animalfolk_id"];
+                $this->notifyAllPlayers('message', clienttranslate('Pompous Professional: ${player_name} named \'${animalfolk_name}\''), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "animalfolk_name" => $this->getAnimalfolkDisplayedName($animalfolk_id)
+                ));
+                $this->setGameStateValue("animalfolk_id", $animalfolk_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trPompousProfessional");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4328,6 +4341,54 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actPompousProfessional($card_id) {
+        $this->checkAction("actPompousProfessional");
+        $player_id = $this->getActivePlayerId();
+        $animalfolk_id = $this->getGameStateValue("animalfolk_id");
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+
+        if ($card_id == -1) {
+            //confirm the player can indeed not draw any card of the chosen animalfolk
+            foreach ($dbcards as $dbcard) {
+                if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
+                    throw new BgaUserException(_("You must take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                }
+            }
+        }
+        else {
+            //take the selected card
+            if (!isset($dbcards[$card_id])) {
+                throw new BgaUserException(_("The selected card was is not in limbo"));
+            }
+            $dbcard = $dbcards[$card_id];
+            unset($dbcards[$card_id]);
+            if ($animalfolk_id != $this->getAnimalfolk($dbcard)) {
+                throw new BgaUserException(_("You can only take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+            }
+            $this->cards->moveCard($card_id, HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Pompous Professional: ${player_name} places a ${card_name} into their hand'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "card_name" => $this->getCardName($dbcard),
+                "_private" => array(
+                    "card" => $dbcard
+                )
+            ));
+        }
+
+        //shuffle the other cards back into the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Pompous Professional: ${player_name} shuffles ${nbr} cards back into their deck'),
+            $this->toCardIds($dbcards),
+            $dbcards,
+            null,
+            true
+        );
+        $this->cards->shuffle(DECK.$player_id);
+        $this->fullyResolveCard($player_id);
+    }
+
     //(~acts)
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
@@ -4537,6 +4598,15 @@ class DaleOfMerchants extends DaleTableBasic
         return array(
             'card_id' => $dbcard["id"],
             'card_name' => $this->getCardName($dbcard)
+        );
+    }
+
+    function argAnimalfolk() {
+        $animalfolk_id = $this->getGameStateValue("animalfolk_id");
+        $animalfolk_name = $this->getAnimalfolkDisplayedName($animalfolk_id);
+        return array(
+            'animalfolk_id' => $animalfolk_id,
+            'animalfolk_name' => $animalfolk_name
         );
     }
 
@@ -4889,6 +4959,19 @@ class DaleOfMerchants extends DaleTableBasic
     function stWhirligig() {
         $nbr = $this->getGameStateValue("die_value");
         $this->draw(clienttranslate('Whirligig: ${player_name} draws ${nbr} cards'), $nbr);
+    }
+
+    function stPompousProfessional() {
+        $this->draw('', 3, true); //draw 3 without a message
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        foreach ($dbcards as $dbcard) {
+            //mention all 3 cards
+            $this->notifyAllPlayers('message', clienttranslate('Pompous Professional: ${player_name} draws ${card_name}'), array(
+                "player_name" => $this->getActivePlayerName(),
+                "card_name" => $this->getCardName($dbcard)
+            ));
+        }
     }
 
     //(~st)
