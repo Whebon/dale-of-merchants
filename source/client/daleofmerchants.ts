@@ -3867,7 +3867,10 @@ class DaleOfMerchants extends Gamegui
 			}
 
 		}
-			
+
+		//update the score
+		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
+
 		//update the hand sizes
 		if (notif.args.from == 'hand') {
 			const nbr = Object.keys(notif.args.cards).length;

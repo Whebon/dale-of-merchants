@@ -6920,6 +6920,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             schedule.removeFromStockByIdNoAnimation(card.id);
         };
         DaleOfMerchants.prototype.notif_buildStack = function (notif) {
+            var _a;
             console.warn("notif_buildStack");
             var stall = this.playerStalls[notif.args.player_id];
             for (var i in notif.args.cards) {
@@ -6956,6 +6957,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         throw new Error("Unable to build from '".concat(notif.args.from, "'"));
                 }
             }
+            (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.toValue(notif.args.stack_index_plus_1);
             if (notif.args.from == 'hand') {
                 var nbr = Object.keys(notif.args.cards).length;
                 this.playerHandSizes[notif.args.player_id].incValue(-nbr);
