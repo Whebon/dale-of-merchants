@@ -191,8 +191,7 @@ class DaleOfMerchants extends DaleTableBasic
         $result['cardTypes'] = $this->card_types;
         $result['effects'] = $this->effects->loadFromDb();
         $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
-        $result['animalfolkIds'] = array();
-        //$result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
+        $result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
         $result['debugMode'] = $this->getGameStateValue("debugMode") == '1';
   
         return $result;
