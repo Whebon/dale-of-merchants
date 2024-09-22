@@ -90,7 +90,12 @@ export class DaleDeckSelection {
             this.tooltips.push(tooltip);
 
             //disable some animalfolk
-            const unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
+            const unavailable = (
+                animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS || 
+                animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS || 
+                animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS || 
+                animalfolk_id >= DaleDeckSelection.ANIMALFOLK_MAGPIES
+            );
             if (unavailable) {
                 card_div.classList.add("daleofmerchants-deck-selection-unavailable");
             }
@@ -108,6 +113,10 @@ export class DaleDeckSelection {
                 }
             })
         }
+
+        //move owls and beavers to the back
+        this.cardContainer.appendChild($("deck-"+DaleDeckSelection.ANIMALFOLK_OWLS)!);
+        this.cardContainer.appendChild($("deck-"+DaleDeckSelection.ANIMALFOLK_BEAVERS)!);
     }
 
     private getTooltipContent(animalfolk_id: number): string {

@@ -547,7 +547,10 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                     tooltip.close();
                 });
                 this_1.tooltips.push(tooltip);
-                var unavailable = (animalfolk_id < 1 || animalfolk_id > 6);
+                var unavailable = (animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS ||
+                    animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS ||
+                    animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS ||
+                    animalfolk_id >= DaleDeckSelection.ANIMALFOLK_MAGPIES);
                 if (unavailable) {
                     card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
@@ -567,6 +570,8 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
             for (var animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
                 _loop_1(animalfolk_id);
             }
+            this.cardContainer.appendChild($("deck-" + DaleDeckSelection.ANIMALFOLK_OWLS));
+            this.cardContainer.appendChild($("deck-" + DaleDeckSelection.ANIMALFOLK_BEAVERS));
         }
         DaleDeckSelection.prototype.getTooltipContent = function (animalfolk_id) {
             return "TODO: TOOLTIP";
@@ -5198,6 +5203,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.showMessage(_("Please select at least 1 animalfolk to vote"), 'error');
                 return;
             }
+            console.warn("onSubmitPreference", this.arrayToNumberList(animalfolk_ids));
             this.bgaPerformAction('actSubmitPreference', {
                 animalfolk_ids: this.arrayToNumberList(animalfolk_ids)
             });

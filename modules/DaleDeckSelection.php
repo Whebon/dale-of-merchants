@@ -27,7 +27,7 @@ class DaleDeckSelection {
             throw new BgaVisibleSystemException("A player's deck selection preferences must be unique");
         }
         if (count($animalfolk_ids) > $n+1) {
-            throw new BgaVisibleSystemException("Players can only select up to n+1 preferences");
+            throw new BgaVisibleSystemException("Players can only select up to n+1 preferences, got ".count($animalfolk_ids));
         }
         for ($i = 0; $i < count($animalfolk_ids); $i++) { 
             $animalfolk_id = $animalfolk_ids[$i];
@@ -52,7 +52,10 @@ class DaleDeckSelection {
         $animalfolk_ids = $this->getPreferences();
         $n = $this->game->getPlayersNumber();
         while(count($animalfolk_ids) < $n + 1) {
-            $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_CHAMELEONS); //TODO: random animalfolk are restricted to DoM1
+            $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_LEMURS); //TODO: random animalfolks are restricted to the currently implemented animalfolk
+            if ($random_id == ANIMALFOLK_OWLS || $random_id == ANIMALFOLK_BEAVERS) {
+                continue;
+            }
             if (!in_array($random_id, $animalfolk_ids)) {
                 $animalfolk_ids[] = $random_id;
             }
@@ -63,7 +66,7 @@ class DaleDeckSelection {
             }
         }
         $selected_animalfolk_ids = array_slice($animalfolk_ids, 0, $n + 1);
-        $this->submitPreference(0, $animalfolk_ids); //0 means selected, this is needed for 'getAnimalfolkIds'
+        $this->submitPreference(0, $selected_animalfolk_ids); //0 means selected, this is needed for 'getAnimalfolkIds'
         return $selected_animalfolk_ids;
     }
 

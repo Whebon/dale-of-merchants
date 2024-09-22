@@ -1893,6 +1893,7 @@ class DaleOfMerchants extends Gamegui
 			this.showMessage(_("Please select at least 1 animalfolk to vote"), 'error');
 			return;
 		}
+		console.warn("onSubmitPreference", this.arrayToNumberList(animalfolk_ids));
 		this.bgaPerformAction('actSubmitPreference', {
 			animalfolk_ids: this.arrayToNumberList(animalfolk_ids)
 		})
