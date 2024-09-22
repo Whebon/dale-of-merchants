@@ -2246,7 +2246,7 @@ class DaleOfMerchants extends DaleTableBasic
         };
         foreach ($this->card_types as $type_id => $card) {
             if ($type_id <= 4 || 
-                $card['animalfolk_id'] >= ANIMALFOLK_MAGPIES ||
+                $card['animalfolk_id'] > ANIMALFOLK_CHAMELEONS ||
 				$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
 				$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
             ) {

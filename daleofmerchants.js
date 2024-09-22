@@ -550,7 +550,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 var unavailable = (animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS ||
-                    animalfolk_id >= DaleDeckSelection.ANIMALFOLK_MAGPIES);
+                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_CHAMELEONS);
                 if (unavailable) {
                     card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
@@ -7500,7 +7500,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var i in this.gamedatas.cardTypes) {
                 var cardType = this.gamedatas.cardTypes[i];
                 if (cardType.type_id > 4 &&
-                    cardType.animalfolk_id < DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_MAGPIES &&
+                    cardType.animalfolk_id <= DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_CHAMELEONS &&
                     cardType.animalfolk_id != DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_OWLS &&
                     cardType.animalfolk_id != DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_BEAVERS) {
                     words.push(cardType.name.toLowerCase());

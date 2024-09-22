@@ -4529,7 +4529,7 @@ class DaleOfMerchants extends Gamegui
 		for (let i in this.gamedatas.cardTypes) {
 			const cardType = this.gamedatas.cardTypes[i]!;
 			if (cardType.type_id > 4 &&
-				cardType.animalfolk_id < DaleDeckSelection.ANIMALFOLK_MAGPIES && 
+				cardType.animalfolk_id <= DaleDeckSelection.ANIMALFOLK_CHAMELEONS && 
 				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_OWLS && 
 				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_BEAVERS
 			) {
