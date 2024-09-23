@@ -3350,12 +3350,13 @@ class DaleOfMerchants extends DaleTableBasic
                 $printed_value = $this->card_types[$topCard['type_arg']]['value'];
                 $this->cards->moveCardOnTop($topCard["id"], DECK.MARKET); //put it back on top
                 if ($value == $printed_value) {
-                    $this->notifyAllPlayers('message', clienttranslate('Risky Business: ${player_name} correctly guessed ${value}'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('Risky Business: ${player_name} correctly guessed ${value} and draws ${card_name} from the supply'), array(
                         'player_name' => $this->getActivePlayerName(),
-                        'value' => $value
+                        'value' => $value,
+                        'card_name' => $this->getCardName($topCard)
                     ));
                     $this->draw(
-                        clienttranslate('Risky Business: ${player_name} draws a ${card_name} from the supply'),
+                        '',
                         1,
                         false,
                         MARKET
