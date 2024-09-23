@@ -787,7 +787,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @return int maximum hand size
      */
     function getMaximumHandSize($player_id, array $hand_cards, array $stall_cards): int {
-        return 5 + $this->countTypeId($hand_cards, CT_COOKIES) + $this->countTypeId($stall_cards, CT_SOFA);
+        $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
+        $cookies = $this->countTypeId($hand_cards, CT_COOKIES);
+        $sofas = $this->countTypeId($stall_cards, CT_SOFA);
+        return 5 + $bribes + $cookies + $sofas;
     }
 
     /**
@@ -2360,6 +2363,22 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Check for CT_ROYALPRIVILEGE (before chameleons expire)
         $royal_privilege = $this->containsTypeId($funds_cards, CT_ROYALPRIVILEGE);
+
+        //Apply CT_Bribe
+        $bribes = 0;
+        foreach ($funds_cards as $fund_card) {
+            $type_id = $this->getTypeId($fund_card);
+            if ($type_id == CT_BRIBE) {
+                $bribes += 1;
+                $this->effects->insertGlobal($fund_card["id"], CT_BRIBE);
+            }
+        }
+        if ($bribes > 0) {
+            $this->notifyAllPlayers('message', clienttranslate('Bribe: ${player_name} increases their hand size by ${nbr}'), array(
+                'player_name' => $this->getActivePlayerName(),
+                'nbr' => $bribes
+            ));
+        }
 
         //Apply CT_CALCULATIONS
         if (isset($args["calculations_card_ids"])) {
