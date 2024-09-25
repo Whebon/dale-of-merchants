@@ -550,7 +550,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 var unavailable = (animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS ||
-                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_LEMURS);
+                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_CHAMELEONS);
                 if (unavailable) {
                     card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
@@ -831,11 +831,21 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
                 for (var _i = 0, _a = Array.from(DaleCard.divs.keys()); _i < _a.length; _i++) {
                     var card_id = _a[_i];
-                    DaleCard.updateHTML(card_id);
+                    try {
+                        DaleCard.updateHTML(card_id);
+                    }
+                    catch (_b) {
+                        console.warn("WARNING: skipped a global effect of type ".concat(effect.type_id, " applying to an unknown card ").concat(effect.card_id));
+                    }
                 }
             }
             else {
-                DaleCard.updateHTML(effect.card_id);
+                try {
+                    DaleCard.updateHTML(effect.card_id);
+                }
+                catch (_c) {
+                    console.warn("WARNING: skipped a modification effect of type ".concat(effect.type_id, " applying to an unknown card ").concat(effect.card_id));
+                }
             }
         };
         DaleCard.expireEffects = function (effects) {

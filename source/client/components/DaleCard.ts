@@ -280,11 +280,21 @@ export class DaleCard {
         //update card affected divs
         if (effect.effect_class == DaleCard.EC_GLOBAL) {
             for (let card_id of Array.from(DaleCard.divs.keys())) {
-                DaleCard.updateHTML(card_id);
+                try {
+                    DaleCard.updateHTML(card_id);
+                }
+                catch {
+                    console.warn(`WARNING: skipped a global effect of type ${effect.type_id} applying to an unknown card ${effect.card_id}`)
+                }
             }
         }
         else {
-            DaleCard.updateHTML(effect.card_id);
+            try {
+                DaleCard.updateHTML(effect.card_id);
+            }
+            catch {
+                console.warn(`WARNING: skipped a modification effect of type ${effect.type_id} applying to an unknown card ${effect.card_id}`)
+            }
         }
     }
 
