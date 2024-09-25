@@ -433,6 +433,14 @@ export class DaleCard {
         return false;
     }
 
+    
+    /** 
+     * Returns the effective type_id of this card, skipping local chameleon effects
+     * */
+    public get effective_server_type_id(): number {
+        return DaleCard.cardIdToChameleonChain.get(this.id)?.type_id ?? this.original_type_id;
+    }
+
     /** 
      * Returns the effective type_id of this card (after applying chameleon targets)
      * */

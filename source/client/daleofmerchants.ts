@@ -1544,7 +1544,7 @@ class DaleOfMerchants extends Gamegui
 			let isValid = false;
 			let isRoot = true;
 			let card_id = chameleon_card_id;
-			let type_id = new DaleCard(chameleon_card_id).original_type_id;
+			let type_id = new DaleCard(chameleon_card_id).effective_server_type_id;
 			for (let i = 0; i < chain.length; i++) {
 				const target_id = chain.card_ids[i]!;
 				const valid_target_ids = this.getChameleonTargets(new DaleCard(card_id), isRoot, type_id);

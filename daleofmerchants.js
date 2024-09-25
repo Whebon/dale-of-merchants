@@ -924,6 +924,14 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return false;
         };
+        Object.defineProperty(DaleCard.prototype, "effective_server_type_id", {
+            get: function () {
+                var _a, _b;
+                return (_b = (_a = DaleCard.cardIdToChameleonChain.get(this.id)) === null || _a === void 0 ? void 0 : _a.type_id) !== null && _b !== void 0 ? _b : this.original_type_id;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(DaleCard.prototype, "effective_type_id", {
             get: function () {
                 var _a, _b, _c, _d;
@@ -4991,7 +4999,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var isValid = false;
                 var isRoot = true;
                 var card_id = chameleon_card_id;
-                var type_id = new DaleCard_10.DaleCard(chameleon_card_id).original_type_id;
+                var type_id = new DaleCard_10.DaleCard(chameleon_card_id).effective_server_type_id;
                 for (var i = 0; i < chain.length; i++) {
                     var target_id = chain.card_ids[i];
                     var valid_target_ids = this.getChameleonTargets(new DaleCard_10.DaleCard(card_id), isRoot, type_id);
