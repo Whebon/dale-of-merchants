@@ -283,7 +283,7 @@ export class DaleCard {
                 try {
                     DaleCard.updateHTML(card_id);
                 }
-                catch {
+                catch (error) {
                     console.warn(`WARNING: skipped a global effect of type ${effect.type_id} applying to an unknown card ${effect.card_id}`)
                 }
             }
@@ -292,7 +292,7 @@ export class DaleCard {
             try {
                 DaleCard.updateHTML(effect.card_id);
             }
-            catch {
+            catch (error) {
                 console.warn(`WARNING: skipped a modification effect of type ${effect.type_id} applying to an unknown card ${effect.card_id}`)
             }
         }

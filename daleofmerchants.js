@@ -834,7 +834,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     try {
                         DaleCard.updateHTML(card_id);
                     }
-                    catch (_b) {
+                    catch (error) {
                         console.warn("WARNING: skipped a global effect of type ".concat(effect.type_id, " applying to an unknown card ").concat(effect.card_id));
                     }
                 }
@@ -843,7 +843,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 try {
                     DaleCard.updateHTML(effect.card_id);
                 }
-                catch (_c) {
+                catch (error) {
                     console.warn("WARNING: skipped a modification effect of type ".concat(effect.type_id, " applying to an unknown card ").concat(effect.card_id));
                 }
             }
