@@ -4755,8 +4755,14 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->gamestate->nextState("trPostCleanUpPhase");
                     return;
                 }
-                $target_ids = $this->getChameleonTargets($card_id, $type_id);
+                $visited_chameleons = array();
+                $target_ids = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
                 $dbtargets = $this->cards->getCards($target_ids);
+                if (in_array(CT_GOODOLDTIMES, $visited_chameleons) && !$this->effects->isPassiveUsed($card)) {
+                    //the chameleon can reach an CT_GOODOLDTIMES node
+                    $this->gamestate->nextState("trPostCleanUpPhase");
+                    return;
+                }
                 foreach ($dbtargets as $dbtarget) {
                     $target_type_id = $this->getTypeId($dbtarget);
                     $optional_cookies = ($target_type_id == CT_COOKIES && count($dbtargets) >= 2);
