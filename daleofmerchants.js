@@ -947,7 +947,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 var chameleonEffect = this.getChameleonDbEffect();
                 while (chameleonEffect) {
                     chameleonEffects.push(chameleonEffect);
-                    chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id).getChameleonDbEffect();
+                    chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id, chameleonEffect.arg).getChameleonDbEffect();
                 }
                 for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                     var effect = _a[_i];
@@ -1321,9 +1321,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.updateLocation = function (dataLocation) {
-            var div = this.div;
+            var div = DaleCard.divs.get(this.id);
             if (div) {
-                this.div.dataset['location'] = dataLocation;
+                div.dataset['location'] = dataLocation;
                 this.updateHTML(div, true);
             }
         };

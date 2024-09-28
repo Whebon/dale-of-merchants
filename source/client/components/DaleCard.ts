@@ -459,7 +459,7 @@ export class DaleCard {
         let chameleonEffect = this.getChameleonDbEffect();
         while (chameleonEffect) {
             chameleonEffects.push(chameleonEffect);
-            chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id!).getChameleonDbEffect();
+            chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id!, chameleonEffect.arg!).getChameleonDbEffect();
         }
         for (let effect of DaleCard.effects) {
             let isCopiedEffect = false;
@@ -969,9 +969,9 @@ export class DaleCard {
      * Update the data-location attribute of the attached div
      */
     public updateLocation(dataLocation?: DataLocation) {
-        const div = this.div;
+        const div = DaleCard.divs.get(this.id);
         if (div) {
-            this.div.dataset['location'] = dataLocation;
+            div.dataset['location'] = dataLocation;
             this.updateHTML(div, true);
         }
     }
