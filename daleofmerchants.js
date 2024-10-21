@@ -3396,6 +3396,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from the supply");
                     case 'client_pompousProfessional':
                         return _("${card_name}: ${you} must choose an animalfolk set");
+                    case 'client_burglaryOpponentId':
+                        return _("${card_name}: ${you} must choose an opponent");
+                    case 'client_burglaryValue':
+                        return _("${card_name}: ${you} guess the value of the top card of ${opponent_name}\'s deck");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4018,19 +4022,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_treasureHunter':
                     var client_treasureHunter_args_1 = this.mainClientState.args;
-                    var targets_2 = [];
+                    var client_treasureHunter_targets_1 = [];
                     for (var _j = 0, _k = Object.entries(this.playerDiscards); _j < _k.length; _j++) {
                         var _l = _k[_j], player_id = _l[0], pile = _l[1];
                         if (+player_id != +this.player_id && pile.size > 0) {
                             pile.setSelectionMode('noneCantViewContent');
-                            targets_2.push(pile.peek());
+                            client_treasureHunter_targets_1.push(pile.peek());
                         }
                     }
-                    if (targets_2.length == 0) {
+                    if (client_treasureHunter_targets_1.length == 0) {
                         throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
                     }
                     setTimeout((function () {
-                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_treasureHunter_args_1.technique_card_id), targets_2, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onTreasureHunter(target_id); });
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_treasureHunter_args_1.technique_card_id), client_treasureHunter_targets_1, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onTreasureHunter(target_id); });
                     }).bind(this), 500);
                     break;
                 case 'client_newSeason':
@@ -4481,6 +4485,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
             var _this = this;
+            var _a;
             console.warn('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -4614,8 +4619,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         blindfold_baseValue += 1;
                     };
                     var this_4 = this;
-                    for (var _i = 0, _a = blindfold_args.possible_values; _i < _a.length; _i++) {
-                        var value = _a[_i];
+                    for (var _i = 0, _b = blindfold_args.possible_values; _i < _b.length; _i++) {
+                        var value = _b[_i];
                         _loop_6(value);
                     }
                     break;
@@ -4634,8 +4639,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         blindfoldDecideValue_baseValue += 1;
                     };
                     var this_5 = this;
-                    for (var _b = 0, _c = blindfoldDecideValue_args.possible_values; _b < _c.length; _b++) {
-                        var value = _c[_b];
+                    for (var _c = 0, _d = blindfoldDecideValue_args.possible_values; _c < _d.length; _c++) {
+                        var value = _d[_c];
                         _loop_7(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
@@ -4820,8 +4825,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this_6.addActionButton("animalfolk-button-" + animalfolk_id, this_6.getAnimalfolkName(animalfolk_id), callback.bind(this_6));
                     };
                     var this_6 = this;
-                    for (var _d = 0, _e = this.gamedatas.animalfolkIds; _d < _e.length; _d++) {
-                        var animalfolk_id = _e[_d];
+                    for (var _e = 0, _f = this.gamedatas.animalfolkIds; _e < _f.length; _e++) {
+                        var animalfolk_id = _f[_e];
                         _loop_8(animalfolk_id);
                     }
                     this.addActionButtonCancelClient();
@@ -4834,6 +4839,34 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (this.myLimbo.getAllClickableCardIds().length == 0) {
                         this.addActionButton("pompous-professional-fizzle-button", _("Skip"), "onPompousProfessionalFizzle", undefined, false, 'gray');
                     }
+                    break;
+                case 'client_burglaryOpponentId':
+                    var burglaryOpponentId_args_1 = this.mainClientState.args;
+                    this.addActionButtonsOpponent(function (opponent_id) {
+                        _this.mainClientState.enter('client_burglaryValue', {
+                            technique_card_id: burglaryOpponentId_args_1.technique_card_id,
+                            opponent_id: opponent_id,
+                            opponent_name: _this.gamedatas.players[opponent_id].name
+                        });
+                    });
+                    for (var player_id in this.gamedatas.players) {
+                        if (+player_id != this.player_id) {
+                            var deck = this.playerDecks[player_id];
+                            var discard = this.playerDiscards[player_id];
+                            if (deck.size + discard.size == 0) {
+                                (_a = $("opponent-selection-button-" + player_id)) === null || _a === void 0 ? void 0 : _a.remove();
+                            }
+                        }
+                    }
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_burglaryValue':
+                    this.addActionButton("button-1", '1', (function () { return _this.onBurglary(1); }).bind(this));
+                    this.addActionButton("button-2", '2', (function () { return _this.onBurglary(2); }).bind(this));
+                    this.addActionButton("button-3", '3', (function () { return _this.onBurglary(3); }).bind(this));
+                    this.addActionButton("button-4", '4', (function () { return _this.onBurglary(4); }).bind(this));
+                    this.addActionButton("button-5", '5', (function () { return _this.onBurglary(5); }).bind(this));
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -6148,6 +6181,36 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_pompousProfessional', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_BURGLARY:
+                    var burglary_opponents_nbr = 0;
+                    var burglary_opponent_id = undefined;
+                    for (var player_id in this.gamedatas.players) {
+                        if (+player_id != this.player_id) {
+                            var deck = this.playerDecks[player_id];
+                            var discard = this.playerDiscards[player_id];
+                            if (deck.size + discard.size > 0) {
+                                burglary_opponents_nbr += 1;
+                                burglary_opponent_id = +player_id;
+                            }
+                        }
+                    }
+                    if (burglary_opponents_nbr == 0) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_burglaryOpponentId', card.id);
+                        if (burglary_opponents_nbr == 1) {
+                            if (burglary_opponent_id === undefined) {
+                                throw new Error("Invariant Error: burglary_opponent_id should have been defined");
+                            }
+                            this.mainClientState.enter('client_burglaryValue', {
+                                technique_card_id: card.id,
+                                opponent_id: burglary_opponent_id,
+                                opponent_name: this.gamedatas.players[burglary_opponent_id].name
+                            });
+                        }
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6787,6 +6850,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_id: -1
             });
             this.removeActionButtons();
+        };
+        DaleOfMerchants.prototype.onBurglary = function (value) {
+            var args = this.mainClientState.args;
+            this.playTechniqueCard({
+                opponent_id: args.opponent_id,
+                value: value
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

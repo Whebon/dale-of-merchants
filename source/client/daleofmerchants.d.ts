@@ -364,6 +364,8 @@ declare global {
 		'client_replacement': { card_id?: number }
 		'client_fashionHint': { ditch: boolean }
 		'client_pompousProfessional': { animalfolk_id: number }
+		'client_burglaryOpponentId': {},
+		'client_burglaryValue': { opponent_id: number, value: number }
 	}
 
 	interface ClientPassiveChoice {
@@ -407,6 +409,7 @@ declare global {
 		'client_glue': ClientGameStates['client_purchase']
 		'client_houseCleaning': { technique_card_id: number, nbr_junk: number }
 		'client_replacementFizzle': { technique_card_id: number, ditch_card_id: number, ditch_card_name: string }
+		'client_burglaryValue': { technique_card_id: number, opponent_id: number, opponent_name: string }
 	}
 
 	//

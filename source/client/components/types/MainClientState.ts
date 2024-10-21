@@ -177,6 +177,10 @@ export class MainClientState {
                 return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from the supply");
             case 'client_pompousProfessional':
                 return _("${card_name}: ${you} must choose an animalfolk set");
+            case 'client_burglaryOpponentId':
+                return _("${card_name}: ${you} must choose an opponent");
+            case 'client_burglaryValue':
+                return _("${card_name}: ${you} guess the value of the top card of ${opponent_name}\'s deck");
         }
         return "MISSING DESCRIPTION";
     }

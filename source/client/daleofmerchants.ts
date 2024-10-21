@@ -487,20 +487,20 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_treasureHunter':
 				const client_treasureHunter_args = (this.mainClientState.args as ClientGameStates['client_treasureHunter']);
-				const targets: DaleCard[] = [];
+				const client_treasureHunter_targets: DaleCard[] = [];
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
 					if (+player_id != +this.player_id && pile.size > 0) {
 						pile.setSelectionMode('noneCantViewContent');
-						targets.push(pile.peek()!);
+						client_treasureHunter_targets.push(pile.peek()!);
 					}
 				}
-				if (targets.length == 0) {
+				if (client_treasureHunter_targets.length == 0) {
 					throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
 				}
 				setTimeout((() => {
 					new TargetingLine(
 						new DaleCard(client_treasureHunter_args.technique_card_id),
-						targets,
+						client_treasureHunter_targets,
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
@@ -1346,6 +1346,36 @@ class DaleOfMerchants extends Gamegui
 				if (this.myLimbo.getAllClickableCardIds().length == 0) {
 					this.addActionButton("pompous-professional-fizzle-button", _("Skip"), "onPompousProfessionalFizzle", undefined, false, 'gray');
 				}
+				break;
+			case 'client_burglaryOpponentId':
+				const burglaryOpponentId_args = (this.mainClientState.args as ClientGameStates['client_burglaryOpponentId']);
+				//add a button for each opponent
+				this.addActionButtonsOpponent((opponent_id: number) => {
+					this.mainClientState.enter('client_burglaryValue', {
+						technique_card_id: burglaryOpponentId_args.technique_card_id,
+						opponent_id: opponent_id,
+						opponent_name: this.gamedatas.players[opponent_id]!.name!
+					})
+				});
+				//remove invalid opponents
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						const deck = this.playerDecks[player_id]!;
+						const discard = this.playerDiscards[player_id]!;
+						if (deck.size + discard.size == 0) {
+							$("opponent-selection-button-"+player_id)?.remove();
+						}
+					}
+				}
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_burglaryValue':
+				this.addActionButton("button-1", '1', (() => this.onBurglary(1)).bind(this));
+				this.addActionButton("button-2", '2', (() => this.onBurglary(2)).bind(this));
+				this.addActionButton("button-3", '3', (() => this.onBurglary(3)).bind(this));
+				this.addActionButton("button-4", '4', (() => this.onBurglary(4)).bind(this));
+				this.addActionButton("button-5", '5', (() => this.onBurglary(5)).bind(this));
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2913,6 +2943,37 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_pompousProfessional', card.id);
 				}
 				break;
+			case DaleCard.CT_BURGLARY:
+				let burglary_opponents_nbr = 0;
+				let burglary_opponent_id = undefined;
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						const deck = this.playerDecks[player_id]!;
+						const discard = this.playerDiscards[player_id]!;
+						if (deck.size + discard.size > 0) {
+							burglary_opponents_nbr += 1
+							burglary_opponent_id = +player_id;
+						}
+					}
+				}
+				if (burglary_opponents_nbr == 0) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_burglaryOpponentId', card.id);
+					//immediately go the the value selection state
+					if (burglary_opponents_nbr == 1) {
+						if (burglary_opponent_id === undefined) {
+							throw new Error("Invariant Error: burglary_opponent_id should have been defined");
+						}
+						this.mainClientState.enter('client_burglaryValue', {
+							technique_card_id: card.id,
+							opponent_id: burglary_opponent_id,
+							opponent_name: this.gamedatas.players[burglary_opponent_id]!.name!
+						})
+					}
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3630,6 +3691,14 @@ class DaleOfMerchants extends Gamegui
 			card_id: -1
 		});
 		this.removeActionButtons();
+	}
+
+	onBurglary(value: number) {
+		const args = this.mainClientState.args as ClientTechniqueChoice['client_burglaryValue'];
+		this.playTechniqueCard<'client_burglaryValue'>({
+			opponent_id: args.opponent_id,
+			value: value
+		})
 	}
 
 	//(~on)

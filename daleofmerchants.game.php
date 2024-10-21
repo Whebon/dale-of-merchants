@@ -3545,6 +3545,47 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trPompousProfessional");
                 break;
+            case CT_BURGLARY:
+                $opponent_id = $args["opponent_id"];
+                $value = $args["value"];
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Burglary cannot target the active player");
+                }
+                //mostly copied from risky business
+                $topCard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
+                $printed_value = $this->card_types[$topCard['type_arg']]['value'];
+                $this->cards->moveCardOnTop($topCard["id"], DECK.$opponent_id); //put it back on top
+                if ($value == $printed_value) {
+                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} correctly guessed ${value} and draws a ${card_name} from ${opponent_name}\'s deck'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'opponent_name' => $this->getPlayerNameById($opponent_id),
+                        'value' => $value,
+                        'card_name' => $this->getCardName($topCard)
+                    ));
+                    $this->draw(
+                        '',
+                        1,
+                        false,
+                        $opponent_id
+                    );
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} guessed ${value}, but the actual value was ${printed_valued}'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'value' => $value,
+                        'printed_valued' => $printed_value
+                    ));
+                    $this->cards->moveCardOnTop($topCard["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('Burglary: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                        "player_id" => $opponent_id,
+                        "card" => $topCard,
+                        'player_name' => $this->getActivePlayerName(),
+                        'opponent_name' => $this->getPlayerNameById($opponent_id),
+                        'card_name' => $this->getCardName($topCard)
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
