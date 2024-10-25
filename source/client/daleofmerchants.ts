@@ -130,8 +130,8 @@ class DaleOfMerchants extends Gamegui
 		console.warn("------------------------")
 
 		//add debug tools
-		if (gamedatas.debugMode) {
-			this.addDebugTools();
+		if (!gamedatas.debugMode) {
+			this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools')!, _("Spawn Card"), this.spawnCard.bind(this));
 		}
 
 		//hide the "daleofmerchants-hand-limbo-flex" for spectators
@@ -1407,6 +1407,32 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponent(this.onSuddenNap.bind(this));
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_periscopeOpponentId':
+				const periscopeOpponentId_args = (this.mainClientState.args as ClientGameStates['client_periscopeOpponentId']);
+				//add a button for each opponent
+				this.addActionButtonsOpponent((opponent_id: number) => {
+					this.mainClientState.enter('client_periscopeName', {
+						technique_card_id: periscopeOpponentId_args.technique_card_id,
+						opponent_id: opponent_id,
+						opponent_name: this.gamedatas.players[opponent_id]!.name!
+					})
+				});
+				//remove invalid opponents
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						const deck = this.playerDecks[player_id]!;
+						const discard = this.playerDiscards[player_id]!;
+						if (deck.size + discard.size == 0) {
+							$("opponent-selection-button-"+player_id)?.remove();
+						}
+					}
+				}
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_periscopeName':
+				this.addCardNameInputField($("pagemaintitletext")! as HTMLElement, "Confirm", this.onPeriscope.bind(this));
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2556,8 +2582,9 @@ class DaleOfMerchants extends Gamegui
 			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
-		});
-		this.mainClientState.leave();
+		}).then(
+			() => this.mainClientState.leave()
+		);
 	}
 
 	/**
@@ -3033,6 +3060,37 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_SUDDENNAP:
 				this.clientScheduleTechnique('client_suddenNap', card.id);
+				break;
+			case DaleCard.CT_PERISCOPE:
+				let periscope_opponents_nbr = 0;
+				let periscope_opponent_id = undefined;
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id) {
+						const deck = this.playerDecks[player_id]!;
+						const discard = this.playerDiscards[player_id]!;
+						if (deck.size + discard.size > 0) {
+							periscope_opponents_nbr += 1
+							periscope_opponent_id = +player_id;
+						}
+					}
+				}
+				if (periscope_opponents_nbr == 0) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_periscopeOpponentId', card.id);
+					//immediately go the the name selection state
+					if (periscope_opponents_nbr == 1) {
+						if (periscope_opponent_id === undefined) {
+							throw new Error("Invariant Error: burglary_opponent_id should have been defined");
+						}
+						this.mainClientState.enter('client_periscopeName', {
+							technique_card_id: card.id,
+							opponent_id: periscope_opponent_id,
+							opponent_name: this.gamedatas.players[periscope_opponent_id]!.name!
+						})
+					}
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -3772,6 +3830,14 @@ class DaleOfMerchants extends Gamegui
 	onSuddenNap(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_suddenNap'>({
 			opponent_id: opponent_id
+		})
+	}
+
+	onPeriscope(card_name: string) {
+		const args = this.mainClientState.args as ClientTechniqueChoice['client_periscopeName'];
+		this.playTechniqueCard<'client_periscopeName'>({
+			opponent_id: args.opponent_id,
+			card_name: card_name
 		})
 	}
 
@@ -4692,7 +4758,7 @@ class DaleOfMerchants extends Gamegui
 			this.gamedatas.debugMode = true;
 			this.removeActionButtons();
 			this.onUpdateActionButtons(this.gamedatas.gamestate.name, {});
-			this.addDebugTools();
+			this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools')!, _("Spawn Card"), this.spawnCard.bind(this));
 		}
 		else {
 			throw new Error(`Unknown argument ${notif.args.arg}`)
@@ -4702,26 +4768,43 @@ class DaleOfMerchants extends Gamegui
 	///////////////////////////////////////////////////
 	//// Debug functions
 
-	addDebugTools() {
+	/**
+	 * Add an input field for a card name, along with a submit button
+	 * @param parent Container to place the input field in
+	 * @param button_label Label to display on the submit button
+	 * @param callback Callback function that takes the written card name
+	 */
+	addCardNameInputField(parent: HTMLElement, button_label: string, callback: (card_name: string) => void) {
 		// Get the words
 		const words: string[] = [];
 		for (let i in this.gamedatas.cardTypes) {
 			const cardType = this.gamedatas.cardTypes[i]!;
 			if (cardType.type_id > 4 &&
-				cardType.animalfolk_id <= DaleDeckSelection.ANIMALFOLK_CHAMELEONS && 
+				//cardType.animalfolk_id <= DaleDeckSelection.ANIMALFOLK_CHAMELEONS && 
 				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_OWLS && 
 				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_BEAVERS
 			) {
 				words.push(cardType.name.toLowerCase());
 			}
 		}
-
+		
 		// Get the html elements
-		document.querySelector('.daleofmerchants-debugtools')!.classList.remove("daleofmerchants-hidden");
-		const container = document.querySelector('.daleofmerchants-autocomplete-container')!;
+		parent.classList.remove("daleofmerchants-hidden");
+		parent.innerHTML += `
+			<span>
+				<strong></strong>
+				<div class="daleofmerchants-autocomplete-container">
+					<input type="text" placeholder="Type a card name..." autocomplete="off">
+					<div class="daleofmerchants-dropdown" style="display: none;"></div>
+				</div>
+				<button style="width: 120px;" class="action-button bgabutton bgabutton_blue">${button_label}</button>
+			</span>
+		`
+		const container = parent.querySelector('.daleofmerchants-autocomplete-container')!;
 		const inputField = container.querySelector('input')! as HTMLInputElement;
 		const dropdown = container.querySelector('div')!;
-		const button = document.getElementById('daleofmerchants-spawn-button')!;
+		const button = parent.querySelector('button')!;
+		console.log(container);
 
 		// Function to populate the dropdown based on query
 		function populateDropdown(query: string) {
@@ -4748,17 +4831,11 @@ class DaleOfMerchants extends Gamegui
 		// actSpawn on enter or button click
 		inputField.addEventListener('keydown', (event) => {
 			if (event.key === "Enter") {
-				console.warn("actSpawn");
-				this.bgaPerformAction('actSpawn', {
-					card_name: JSON.stringify(inputField.value)
-				})
+				callback(JSON.stringify(inputField.value));
 			}
 		});
 		button.addEventListener('click', (event) => {
-			console.warn("actSpawn");
-			this.bgaPerformAction('actSpawn', {
-				card_name: JSON.stringify(inputField.value)
-			})
+			callback(JSON.stringify(inputField.value));
 		});
 		
 
@@ -4768,6 +4845,13 @@ class DaleOfMerchants extends Gamegui
 				dropdown.style.display = 'none';
 			}
 		});
+	}
+
+	spawnCard(card_name: string) {
+		console.warn("actSpawn");
+		this.bgaPerformAction('actSpawn', {
+			card_name: card_name
+		})
 	}
 }
 

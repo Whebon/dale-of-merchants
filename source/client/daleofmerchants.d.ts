@@ -368,7 +368,9 @@ declare global {
 		'client_burglaryValue': { opponent_id: number, value: number }
 		'client_graspOpponentId': {},
 		'client_graspValue': { opponent_id: number, value: number }
-		'client_suddenNap': { opponent_id: number }
+		'client_suddenNap': { opponent_id: number },
+		'client_periscopeOpponentId': {},
+		'client_periscopeName': { opponent_id: number, card_name: string }
 	}
 
 	interface ClientPassiveChoice {
@@ -413,7 +415,8 @@ declare global {
 		'client_houseCleaning': { technique_card_id: number, nbr_junk: number }
 		'client_replacementFizzle': { technique_card_id: number, ditch_card_id: number, ditch_card_name: string }
 		'client_burglaryValue': { technique_card_id: number, opponent_id: number, opponent_name: string }
-		'client_graspValue': { technique_card_id: number, opponent_id: number, opponent_name: string }
+		'client_graspValue': { technique_card_id: number, opponent_id: number, opponent_name: string },
+		'client_periscopeName': { technique_card_id: number, opponent_id: number, opponent_name: string },
 	}
 
 	//

@@ -2254,7 +2254,7 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Return the first type id of a card type with the given prefix
      * @example example
-     * stringToTypeId("coo") = CT_COOKIES
+     * nameToTypeId("coo") = CT_COOKIES
      */
     function nameToTypeId(string $prefix): int {
         $len = strlen($prefix);
@@ -2264,13 +2264,13 @@ class DaleOfMerchants extends DaleTableBasic
         };
         foreach ($this->card_types as $type_id => $card) {
             //spawn filter
-            // if ($type_id <= 4 || 
-            //     $card['animalfolk_id'] > ANIMALFOLK_CHAMELEONS ||
-			// 	$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
-			// 	$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
-            // ) {
-            //     continue;
-            // }
+            if ($type_id <= 4 || 
+                //$card['animalfolk_id'] > ANIMALFOLK_CHAMELEONS ||
+				$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
+				$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
+            ) {
+                continue;
+            }
             if ($f($card['name']) == $f($prefix)) {
                 return $type_id;
             }
@@ -2642,6 +2642,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_RUTHLESSCOMPETITION:
                 case CT_BURGLARY:
+                case CT_PERISCOPE:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $opponent_id => $opponent) {
@@ -3597,7 +3598,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_GRASP:
-                $opponent_id = $args["opponent_id"];
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $value = $args["value"];
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Grasp cannot target the active player");
@@ -3665,6 +3666,48 @@ class DaleOfMerchants extends DaleTableBasic
                     "card_name" => $this->getCardName($dbcard),
                     "card" => $dbcard
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_PERISCOPE:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Periscope cannot target the active player");
+                }
+                $card_name = trim($args['card_name'], '"');
+                $type_id = $this->nameToTypeId($card_name);
+                $players = $this->loadPlayersBasicInfos();
+                $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${card_name}"'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->card_types[$type_id]['name'],
+                ));
+                // $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} discards 2 cards from ${opponent_name}\'s deck'), array(
+                //     "player_name" => $this->getPlayerNameById($player_id),
+                //     "opponent_name" => $this->getPlayerNameById($opponent_id),
+                // ));
+                for ($i=0; $i < 2; $i++) { //one by one
+                    $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'temp');
+                    if ($dbcard) {
+                        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                        $this->notifyAllPlayers('deckToDiscard', clienttranslate('Periscope: ${player_name} discards a ${card_name} from ${opponent_name}\'s deck'), array(
+                            "player_id" => $opponent_id,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "opponent_name" => $this->getPlayerNameById($opponent_id),
+                            "card" => $dbcard,
+                            "card_name" => $this->getCardName($dbcard)
+                        ));
+                        if ($this->getTypeId($dbcard) == $type_id) {
+                            $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+                            $this->notifyAllPlayers('discardToHand', clienttranslate('Periscope: ${player_name} takes a ${card_name} from ${opponent_name}\'s discard pile'), array(
+                                "player_id" => $player_id,
+                                "player_name" => $this->getPlayerNameById($player_id),
+                                "discard_id" => $opponent_id,
+                                "opponent_name" => $this->getPlayerNameById($opponent_id),
+                                "card_name" => $this->getCardName($dbcard),
+                                "card" => $dbcard
+                            ));
+                        }
+                    }
+                }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

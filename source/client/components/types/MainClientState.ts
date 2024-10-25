@@ -185,6 +185,10 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_graspValue':
                 return _("${card_name}: ${you} must guess the value of a card from ${opponent_name}\'s hand");
+            case 'client_periscopeOpponentId':
+                return _("${card_name}: ${you} must choose an opponent");
+            case 'client_periscopeName':
+                return _("${card_name}: ${you} must name a card");
         }
         return "MISSING DESCRIPTION";
     }
