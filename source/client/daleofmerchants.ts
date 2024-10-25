@@ -1377,6 +1377,32 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("button-5", '5', (() => this.onBurglary(5)).bind(this));
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_graspOpponentId':
+				const graspOpponentId_args = (this.mainClientState.args as ClientGameStates['client_graspOpponentId']);
+				//add a button for each opponent
+				this.addActionButtonsOpponent((opponent_id: number) => {
+					this.mainClientState.enter('client_graspValue', {
+						technique_card_id: graspOpponentId_args.technique_card_id,
+						opponent_id: opponent_id,
+						opponent_name: this.gamedatas.players[opponent_id]!.name!
+					})
+				});
+				//remove invalid opponents
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id && this.playerHandSizes[player_id]!.getValue() <= 0) {
+						$("opponent-selection-button-"+player_id)?.remove();
+					}
+				}
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_graspValue':
+				this.addActionButton("button-1", '1', (() => this.onGrasp(1)).bind(this));
+				this.addActionButton("button-2", '2', (() => this.onGrasp(2)).bind(this));
+				this.addActionButton("button-3", '3', (() => this.onGrasp(3)).bind(this));
+				this.addActionButton("button-4", '4', (() => this.onGrasp(4)).bind(this));
+				this.addActionButton("button-5", '5', (() => this.onGrasp(5)).bind(this));
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2974,6 +3000,33 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case DaleCard.CT_GRASP:
+				let grasp_opponents_nbr = 0;
+				let grasp_opponent_id = undefined;
+				for (let player_id in this.gamedatas.players) {
+					if (+player_id != this.player_id && this.playerHandSizes[player_id]!.getValue() > 0) {
+						grasp_opponents_nbr += 1
+						grasp_opponent_id = +player_id;
+					}
+				}
+				if (grasp_opponents_nbr == 0) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_graspOpponentId', card.id);
+					//immediately go the the value selection state
+					if (grasp_opponents_nbr == 1) {
+						if (grasp_opponent_id === undefined) {
+							throw new Error("Invariant Error: grasp_opponent_id should have been defined");
+						}
+						this.mainClientState.enter('client_graspValue', {
+							technique_card_id: card.id,
+							opponent_id: grasp_opponent_id,
+							opponent_name: this.gamedatas.players[grasp_opponent_id]!.name!
+						})
+					}
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3696,6 +3749,14 @@ class DaleOfMerchants extends Gamegui
 	onBurglary(value: number) {
 		const args = this.mainClientState.args as ClientTechniqueChoice['client_burglaryValue'];
 		this.playTechniqueCard<'client_burglaryValue'>({
+			opponent_id: args.opponent_id,
+			value: value
+		})
+	}
+
+	onGrasp(value: number) {
+		const args = this.mainClientState.args as ClientTechniqueChoice['client_graspValue'];
+		this.playTechniqueCard<'client_graspValue'>({
 			opponent_id: args.opponent_id,
 			value: value
 		})

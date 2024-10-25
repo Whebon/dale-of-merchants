@@ -180,7 +180,11 @@ export class MainClientState {
             case 'client_burglaryOpponentId':
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_burglaryValue':
-                return _("${card_name}: ${you} guess the value of the top card of ${opponent_name}\'s deck");
+                return _("${card_name}: ${you} must guess the value of the top card of ${opponent_name}\'s deck");
+            case 'client_graspOpponentId':
+                return _("${card_name}: ${you} must choose an opponent");
+            case 'client_graspValue':
+                return _("${card_name}: ${you} must guess the value of a card from ${opponent_name}\'s hand");
         }
         return "MISSING DESCRIPTION";
     }

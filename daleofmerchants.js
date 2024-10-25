@@ -3399,7 +3399,11 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_burglaryOpponentId':
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_burglaryValue':
-                        return _("${card_name}: ${you} guess the value of the top card of ${opponent_name}\'s deck");
+                        return _("${card_name}: ${you} must guess the value of the top card of ${opponent_name}\'s deck");
+                    case 'client_graspOpponentId':
+                        return _("${card_name}: ${you} must choose an opponent");
+                    case 'client_graspValue':
+                        return _("${card_name}: ${you} must guess the value of a card from ${opponent_name}\'s hand");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4485,7 +4489,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
             var _this = this;
-            var _a;
+            var _a, _b;
             console.warn('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -4619,8 +4623,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         blindfold_baseValue += 1;
                     };
                     var this_4 = this;
-                    for (var _i = 0, _b = blindfold_args.possible_values; _i < _b.length; _i++) {
-                        var value = _b[_i];
+                    for (var _i = 0, _c = blindfold_args.possible_values; _i < _c.length; _i++) {
+                        var value = _c[_i];
                         _loop_6(value);
                     }
                     break;
@@ -4639,8 +4643,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         blindfoldDecideValue_baseValue += 1;
                     };
                     var this_5 = this;
-                    for (var _c = 0, _d = blindfoldDecideValue_args.possible_values; _c < _d.length; _c++) {
-                        var value = _d[_c];
+                    for (var _d = 0, _e = blindfoldDecideValue_args.possible_values; _d < _e.length; _d++) {
+                        var value = _e[_d];
                         _loop_7(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
@@ -4825,8 +4829,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this_6.addActionButton("animalfolk-button-" + animalfolk_id, this_6.getAnimalfolkName(animalfolk_id), callback.bind(this_6));
                     };
                     var this_6 = this;
-                    for (var _e = 0, _f = this.gamedatas.animalfolkIds; _e < _f.length; _e++) {
-                        var animalfolk_id = _f[_e];
+                    for (var _f = 0, _g = this.gamedatas.animalfolkIds; _f < _g.length; _f++) {
+                        var animalfolk_id = _g[_f];
                         _loop_8(animalfolk_id);
                     }
                     this.addActionButtonCancelClient();
@@ -4866,6 +4870,30 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("button-3", '3', (function () { return _this.onBurglary(3); }).bind(this));
                     this.addActionButton("button-4", '4', (function () { return _this.onBurglary(4); }).bind(this));
                     this.addActionButton("button-5", '5', (function () { return _this.onBurglary(5); }).bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_graspOpponentId':
+                    var graspOpponentId_args_1 = this.mainClientState.args;
+                    this.addActionButtonsOpponent(function (opponent_id) {
+                        _this.mainClientState.enter('client_graspValue', {
+                            technique_card_id: graspOpponentId_args_1.technique_card_id,
+                            opponent_id: opponent_id,
+                            opponent_name: _this.gamedatas.players[opponent_id].name
+                        });
+                    });
+                    for (var player_id in this.gamedatas.players) {
+                        if (+player_id != this.player_id && this.playerHandSizes[player_id].getValue() <= 0) {
+                            (_b = $("opponent-selection-button-" + player_id)) === null || _b === void 0 ? void 0 : _b.remove();
+                        }
+                    }
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_graspValue':
+                    this.addActionButton("button-1", '1', (function () { return _this.onGrasp(1); }).bind(this));
+                    this.addActionButton("button-2", '2', (function () { return _this.onGrasp(2); }).bind(this));
+                    this.addActionButton("button-3", '3', (function () { return _this.onGrasp(3); }).bind(this));
+                    this.addActionButton("button-4", '4', (function () { return _this.onGrasp(4); }).bind(this));
+                    this.addActionButton("button-5", '5', (function () { return _this.onGrasp(5); }).bind(this));
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -6211,6 +6239,32 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_GRASP:
+                    var grasp_opponents_nbr = 0;
+                    var grasp_opponent_id = undefined;
+                    for (var player_id in this.gamedatas.players) {
+                        if (+player_id != this.player_id && this.playerHandSizes[player_id].getValue() > 0) {
+                            grasp_opponents_nbr += 1;
+                            grasp_opponent_id = +player_id;
+                        }
+                    }
+                    if (grasp_opponents_nbr == 0) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_graspOpponentId', card.id);
+                        if (grasp_opponents_nbr == 1) {
+                            if (grasp_opponent_id === undefined) {
+                                throw new Error("Invariant Error: grasp_opponent_id should have been defined");
+                            }
+                            this.mainClientState.enter('client_graspValue', {
+                                technique_card_id: card.id,
+                                opponent_id: grasp_opponent_id,
+                                opponent_name: this.gamedatas.players[grasp_opponent_id].name
+                            });
+                        }
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6852,6 +6906,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.removeActionButtons();
         };
         DaleOfMerchants.prototype.onBurglary = function (value) {
+            var args = this.mainClientState.args;
+            this.playTechniqueCard({
+                opponent_id: args.opponent_id,
+                value: value
+            });
+        };
+        DaleOfMerchants.prototype.onGrasp = function (value) {
             var args = this.mainClientState.args;
             this.playTechniqueCard({
                 opponent_id: args.opponent_id,

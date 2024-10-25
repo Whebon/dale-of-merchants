@@ -2641,6 +2641,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_RUTHLESSCOMPETITION:
+                case CT_BURGLARY:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $opponent_id => $opponent) {
@@ -2671,6 +2672,15 @@ class DaleOfMerchants extends DaleTableBasic
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
                         throw new BgaVisibleSystemException("Unable to fizzle. count(deck)+count(discard)>=1.");
+                    }
+                    break;
+                case CT_GRASP:
+                    $players = $this->loadPlayersBasicInfos();
+                    $counts = $this->cards->countCardsInLocations();
+                    foreach ($players as $opponent_id => $player) {
+                        if ($opponent_id != $player_id && isset($counts[HAND.$opponent_id])) {
+                            throw new BgaVisibleSystemException("Unable to fizzle CT_GRASP. There exists at least 1 card in opponent's hands.");
+                        }
                     }
                     break;
                 default:
@@ -3582,6 +3592,53 @@ class DaleOfMerchants extends DaleTableBasic
                         'player_name' => $this->getActivePlayerName(),
                         'opponent_name' => $this->getPlayerNameById($opponent_id),
                         'card_name' => $this->getCardName($topCard)
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_GRASP:
+                $opponent_id = $args["opponent_id"];
+                $value = $args["value"];
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Grasp cannot target the active player");
+                }
+                $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($cards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} tries to take a card from ${opponent_name}, but their hand was empty'), array(
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "opponent_name" => $this->getPlayerNameById($opponent_id)
+                    ));
+                    $this->fullyResolveCard($player_id);
+                    return;
+                }
+                $card_id = array_rand($cards);
+                $card = $cards[$card_id];
+                $printed_value = $this->card_types[$card['type_arg']]['value'];
+                if ($value == $printed_value) {
+                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} correctly guessed ${value} and takes a ${card_name} from ${opponent_name}\'s hand'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'opponent_name' => $this->getPlayerNameById($opponent_id),
+                        'value' => $value,
+                        'card_name' => $this->getCardName($card)
+                    ));
+                    $this->cards->moveCard($card_id, HAND.$player_id);
+                    $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
+                        "player_id" => $player_id,
+                        "opponent_id" => $opponent_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "opponent_name" => $this->getPlayerNameById($opponent_id),
+                        "_private" => array(
+                            "card" => $card,
+                            "card_name" => $this->getCardName($card)
+                        )
+                    ));
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} guessed ${value}, but the actual value was ${printed_valued} (${card_name})'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'value' => $value,
+                        'printed_valued' => $printed_value,
+                        'card_name' => $this->getCardName($card)
                     ));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
