@@ -1403,6 +1403,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("button-5", '5', (() => this.onGrasp(5)).bind(this));
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_suddenNap':
+				this.addActionButtonsOpponent(this.onSuddenNap.bind(this));
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -3027,6 +3031,9 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case DaleCard.CT_SUDDENNAP:
+				this.clientScheduleTechnique('client_suddenNap', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3759,6 +3766,12 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCard<'client_graspValue'>({
 			opponent_id: args.opponent_id,
 			value: value
+		})
+	}
+
+	onSuddenNap(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_suddenNap'>({
+			opponent_id: opponent_id
 		})
 	}
 

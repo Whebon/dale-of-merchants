@@ -3604,11 +3604,11 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($cards) == 0) {
-                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} tries to take a card from ${opponent_name}, but their hand was empty'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} tries to take a card from ${opponent_name}\'s hand, but their hand was empty'), array(
                         "player_name" => $this->getPlayerNameById($player_id),
                         "opponent_name" => $this->getPlayerNameById($opponent_id)
                     ));
-                    $this->fullyResolveCard($player_id);
+                    $this->fullyResolveCard($player_id, $technique_card);
                     return;
                 }
                 $card_id = array_rand($cards);
@@ -3641,6 +3641,30 @@ class DaleOfMerchants extends DaleTableBasic
                         'card_name' => $this->getCardName($card)
                     ));
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SUDDENNAP:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($cards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Sudden Nap: ${player_name} tried to ditch a card from ${opponent_name}, but their hand was empty'), array(
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "opponent_name" => $this->getPlayerNameById($opponent_id)
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $card_id = array_rand($cards);
+                $dbcard = $cards[$card_id];
+                $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+                $this->cards->moveCardOnTop($dbcard["id"], $destination);
+                $this->notifyAllPlayers('ditch', clienttranslate('Sudden Nap: ${player_name} ditched a ${card_name} from ${opponent_name}\'s hand'), array(
+                    "player_id" => $opponent_id, #we ditch a card from the OPPONENT, not the active player
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "opponent_name" => $this->getPlayerNameById($opponent_id),
+                    "card_name" => $this->getCardName($dbcard),
+                    "card" => $dbcard
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

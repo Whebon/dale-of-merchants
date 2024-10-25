@@ -3404,6 +3404,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_graspValue':
                         return _("${card_name}: ${you} must guess the value of a card from ${opponent_name}\'s hand");
+                    case 'client_suddenNap':
+                        return _("${card_name}: ${you} must choose an opponent to ditch a card from");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4896,6 +4898,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("button-5", '5', (function () { return _this.onGrasp(5); }).bind(this));
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_suddenNap':
+                    this.addActionButtonsOpponent(this.onSuddenNap.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -6265,6 +6271,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_SUDDENNAP:
+                    this.clientScheduleTechnique('client_suddenNap', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6917,6 +6926,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.playTechniqueCard({
                 opponent_id: args.opponent_id,
                 value: value
+            });
+        };
+        DaleOfMerchants.prototype.onSuddenNap = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
