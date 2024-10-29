@@ -52,7 +52,7 @@ class DaleDeckSelection {
         $animalfolk_ids = $this->getPreferences();
         $n = $this->game->getPlayersNumber();
         while(count($animalfolk_ids) < $n + 1) {
-            $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_CHAMELEONS); //TODO: random animalfolks are restricted to DoM1
+            $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_MAGPIES); //TODO: random animalfolks are restricted to DoM1
             if ($random_id == ANIMALFOLK_OWLS || $random_id == ANIMALFOLK_BEAVERS) {
                 continue;
             }

@@ -94,7 +94,7 @@ export class DaleDeckSelection {
                 animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS || 
                 animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS || 
                 animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS || 
-                animalfolk_id > DaleDeckSelection.ANIMALFOLK_CHAMELEONS //TODO: increase this
+                animalfolk_id > DaleDeckSelection.ANIMALFOLK_MAGPIES //TODO: increase this
             );
             if (unavailable) {
                 card_div.classList.add("daleofmerchants-deck-selection-unavailable");
