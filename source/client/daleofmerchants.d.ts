@@ -203,6 +203,7 @@ declare global {
 			card: DbCard
 			to_limbo?: boolean
 		}
+		'instant_discardToHand': {}
 		'discardToHand': {
 			player_id: number
 			discard_id?: number
@@ -371,6 +372,7 @@ declare global {
 		'client_suddenNap': { opponent_id: number },
 		'client_periscopeOpponentId': {},
 		'client_periscopeName': { opponent_id: number, card_name: string }
+		'client_carefreeSwapper': { card_id: number },
 	}
 
 	interface ClientPassiveChoice {

@@ -2582,12 +2582,13 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_TREASUREHUNTER:
+                case CT_CAREFREESWAPPER:
                     $players = $this->loadPlayersBasicInfos();
                     foreach ($players as $opponent_id => $opponent) {
                         if ($player_id != $opponent_id) {
                             $target = $this->cards->getCardOnTop(DISCARD.$player_id);
                             if ($target) {
-                                throw new BgaVisibleSystemException("Unable to fizzle CT_TREASUREHUNTER. There exists a card to take.");
+                                throw new BgaVisibleSystemException("Unable to fizzle. There exists a card to take.");
                             }
                         }
                     }
@@ -3709,6 +3710,29 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_CAREFREESWAPPER:
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCard($card_id);
+                $prefix = substr($card["location"], 0, 4);
+                $opponent_id = substr($card["location"], 4);
+                if ($prefix != DISCARD || $opponent_id == MARKET) {
+                    throw new BgaVisibleSystemException("CT_CAREFREESWAPPER can only take cards from player discard piles");
+                }
+                $top_card = $this->cards->getCardOnTop(DISCARD.$opponent_id);
+                if ($card["id"] != $top_card["id"]) {
+                    throw new BgaVisibleSystemException("CT_CAREFREESWAPPER can only take the top card of a discard pile (card $card_id is not on top)");
+                }
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('instant_discardToHand', clienttranslate('Carefree Swapper: ${player_name} swaps with a ${card_name} from ${opponent_name}\'s discard pile'), array(
+                    "player_id" => $player_id,
+                    "discard_id" => $opponent_id,
+                    "opponent_name" => $this->getPlayerNameById($opponent_id),
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->getCardName($card),   
+                    "card" => $card
+                ));
+                $this->fullyResolveCard($player_id, $technique_card, DISCARD.$opponent_id);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

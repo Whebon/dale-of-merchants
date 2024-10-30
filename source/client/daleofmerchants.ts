@@ -724,6 +724,30 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
 				this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to ditch"));
 				break;
+			case 'client_carefreeSwapper':
+				const client_carefreeSwapper_args = (this.mainClientState.args as ClientGameStates['client_carefreeSwapper']);
+				const client_carefreeSwapper_targets: DaleCard[] = [];
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						pile.setSelectionMode('noneCantViewContent');
+						client_carefreeSwapper_targets.push(pile.peek()!);
+					}
+				}
+				if (client_carefreeSwapper_targets.length == 0) {
+					throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_carefreeSwapper')");
+				}
+				setTimeout((() => {
+					new TargetingLine(
+						new DaleCard(client_carefreeSwapper_args.technique_card_id),
+						client_carefreeSwapper_targets,
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onCarefreeSwapper(target_id)
+					)
+				}).bind(this), 500);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -835,6 +859,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'client_treasureHunter':
+			case 'client_carefreeSwapper':
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
 					if (+player_id != +this.player_id && pile.size > 0) {
 						pile.setSelectionMode('none');
@@ -1091,6 +1116,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_treasureHunter':
+			case 'client_carefreeSwapper':
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_newSeason':
@@ -3092,6 +3118,20 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case DaleCard.CT_CAREFREESWAPPER:
+				fizzle = true;
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						fizzle = false;
+					}
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_carefreeSwapper', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3840,6 +3880,12 @@ class DaleOfMerchants extends Gamegui
 			card_name: card_name
 		})
 	}
+	
+	onCarefreeSwapper(card_id: number) {
+		this.playTechniqueCard<'client_carefreeSwapper'>({
+			card_id: card_id,
+		})
+	}
 
 	//(~on)
 
@@ -3870,6 +3916,7 @@ class DaleOfMerchants extends Gamegui
 			['swapHandMarket', 					1],
 			['instant_marketDiscardToHand', 	1],
 			['marketDiscardToHand', 			500],
+			['instant_discardToHand', 			1],
 			['discardToHand', 					500],
 			['discardToHandMultiple', 			500],
 			['draw', 							500, true],
@@ -4338,6 +4385,10 @@ class DaleOfMerchants extends Gamegui
 		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+	}
+
+	notif_instant_discardToHand(notif: NotifAs<'discardToHand'>) {
+		this.notif_discardToHand(notif);
 	}
 
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {

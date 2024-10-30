@@ -3408,6 +3408,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_periscopeName':
                         return _("${card_name}: ${you} must name a card");
+                    case 'client_carefreeSwapper':
+                        return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4222,6 +4224,23 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
                     this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to ditch"));
                     break;
+                case 'client_carefreeSwapper':
+                    var client_carefreeSwapper_args_1 = this.mainClientState.args;
+                    var client_carefreeSwapper_targets_1 = [];
+                    for (var _u = 0, _v = Object.entries(this.playerDiscards); _u < _v.length; _u++) {
+                        var _w = _v[_u], player_id = _w[0], pile = _w[1];
+                        if (+player_id != +this.player_id && pile.size > 0) {
+                            pile.setSelectionMode('noneCantViewContent');
+                            client_carefreeSwapper_targets_1.push(pile.peek());
+                        }
+                    }
+                    if (client_carefreeSwapper_targets_1.length == 0) {
+                        throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_carefreeSwapper')");
+                    }
+                    setTimeout((function () {
+                        new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_carefreeSwapper_args_1.technique_card_id), client_carefreeSwapper_targets_1, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onCarefreeSwapper(target_id); });
+                    }).bind(this), 500);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4326,6 +4345,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'client_treasureHunter':
+                case 'client_carefreeSwapper':
                     for (var _e = 0, _f = Object.entries(this.playerDiscards); _e < _f.length; _e++) {
                         var _g = _f[_e], player_id = _g[0], pile = _g[1];
                         if (+player_id != +this.player_id && pile.size > 0) {
@@ -4580,6 +4600,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_treasureHunter':
+                case 'client_carefreeSwapper':
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_newSeason':
@@ -6330,6 +6351,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_CAREFREESWAPPER:
+                    fizzle = true;
+                    for (var _l = 0, _m = Object.entries(this.playerDiscards); _l < _m.length; _l++) {
+                        var _o = _m[_l], player_id = _o[0], pile = _o[1];
+                        if (+player_id != +this.player_id && pile.size > 0) {
+                            fizzle = false;
+                        }
+                    }
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_carefreeSwapper', card.id);
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6996,6 +7032,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_name: card_name
             });
         };
+        DaleOfMerchants.prototype.onCarefreeSwapper = function (card_id) {
+            this.playTechniqueCard({
+                card_id: card_id,
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -7016,6 +7057,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['swapHandMarket', 1],
                 ['instant_marketDiscardToHand', 1],
                 ['marketDiscardToHand', 500],
+                ['instant_discardToHand', 1],
                 ['discardToHand', 500],
                 ['discardToHandMultiple', 500],
                 ['draw', 500, true],
@@ -7407,6 +7449,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
             this.playerHandSizes[notif.args.player_id].incValue(1);
+        };
+        DaleOfMerchants.prototype.notif_instant_discardToHand = function (notif) {
+            this.notif_discardToHand(notif);
         };
         DaleOfMerchants.prototype.notif_discardToHand = function (notif) {
             var _a;
