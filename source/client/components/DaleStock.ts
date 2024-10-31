@@ -290,7 +290,8 @@ export class DaleStock extends Stock implements DaleLocation {
 					DaleCard.CT_GOODOLDTIMES,
 					DaleCard.CT_MARKETDISCOVERY,
 					DaleCard.CT_REFRESHINGDRINK,
-					DaleCard.CT_SLICEOFLIFE
+					DaleCard.CT_SLICEOFLIFE,
+					DaleCard.CT_BARGAINSEEKER
 				]
 				return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
 			case 'clickRetainSelection':

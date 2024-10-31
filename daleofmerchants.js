@@ -1741,7 +1741,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                         DaleCard_2.DaleCard.CT_GOODOLDTIMES,
                         DaleCard_2.DaleCard.CT_MARKETDISCOVERY,
                         DaleCard_2.DaleCard.CT_REFRESHINGDRINK,
-                        DaleCard_2.DaleCard.CT_SLICEOFLIFE
+                        DaleCard_2.DaleCard.CT_SLICEOFLIFE,
+                        DaleCard_2.DaleCard.CT_BARGAINSEEKER
                     ];
                     return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
                 case 'clickRetainSelection':

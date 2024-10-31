@@ -3917,6 +3917,20 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
                 $this->gamestate->nextState("trSliceOfLife"); return;
                 break;
+            case CT_BARGAINSEEKER:
+                $rightmostcards = $this->cards->getCardsInLocation(MARKET, 0);
+                if (count($rightmostcards) != 1) {
+                    throw new BgaUserException("Unable to ditch the rightmost card in the market");
+                }
+                $this->ditchFromMarketBoard(
+                    clienttranslate('Bargain Seeker: ${player_name} ditches the rightmost card from the market'),
+                    $this->toCardIds($rightmostcards), 
+                    $rightmostcards
+                );
+                //refill the market
+                $this->refillMarket(false);
+                $this->effects->insertModification($passive_card_id, CT_BARGAINSEEKER);
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
@@ -4934,7 +4948,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->refillMarket(true);
 
         //3. check for post clean-up phase
-        $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES, CT_REFRESHINGDRINK, CT_SLICEOFLIFE);
+        $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES, CT_REFRESHINGDRINK, CT_SLICEOFLIFE, CT_BARGAINSEEKER);
         if ($hasDrawnCards || !$isPostCleanUpPhase) {
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
             foreach ($dbcards as $card_id => $card) {
