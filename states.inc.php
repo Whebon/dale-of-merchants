@@ -39,6 +39,8 @@ if (false) {
 	$game->stDelightfulSurprise();
 	$game->stWhirligig();
 	$game->stPompousProfessional();
+	$game->stDelicacy();
+	$game->stUmbrella();
 	$game->stFinalStatistics();
 }
 
@@ -122,6 +124,8 @@ $machinestates = array(
 			'trFashionHint' => 73,
 			'trWhirligig' => 74,
 			'trPompousProfessional' => 75,
+			'trDelicacy' => 76,
+			'trUmbrella' => 77,
 		),
 	),
 	31 => array(
@@ -463,6 +467,30 @@ $machinestates = array(
 		'args' => 'argAnimalfolk',
 		'action' => 'stPompousProfessional',
 		'possibleactions' => ['actPompousProfessional'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	76 => array(
+		'name' => 'delicacy',
+		'description' => clienttranslate('Delicacy: ${actplayer} may swap with a card from ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Delicacy: ${you} may swap with a card from ${opponent_name}\'s deck'),
+		'type' => 'activeplayer',
+		'action' => 'stDelicacy',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actDelicacy'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	77 => array(
+		'name' => 'umbrella',
+		'description' => clienttranslate('Umbrella: ${actplayer} may swap with a card from ${opponent_name}\'s hand'),
+		'descriptionmyturn' => clienttranslate('Umbrella: ${you} may swap with a card from ${opponent_name}\'s hand'),
+		'type' => 'activeplayer',
+		'action' => 'stUmbrella',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actUmbrella'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

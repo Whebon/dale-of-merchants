@@ -443,4 +443,26 @@ class action_daleofmerchants extends APP_GameAction
 		$this->game->actPompousProfessional( $card_id );
 		self::ajaxResponse();
 	}
+
+	public function actDelicacy()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actDelicacy( $card_id );
+		self::ajaxResponse();
+	}
+
+	public function actUmbrella()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actUmbrella( $card_id );
+		self::ajaxResponse();
+	}
 }

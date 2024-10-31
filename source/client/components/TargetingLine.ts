@@ -64,12 +64,9 @@ export class TargetingLine {
         }
         this.cardDiv.classList.add("daleofmerchants-line-source", this.sourceClass);
         this.onSource = () => {
-            console.warn("arrowfunction onSource");
             this.remove();
             onSource(source_id);
         }
-        console.warn("onSource");
-        console.warn(onSource);
         this.cardDiv.addEventListener("click", this.onSource);
 
         //setup targets
@@ -81,12 +78,9 @@ export class TargetingLine {
             this.targetDivs.push(card_div);
             const target_id = targetCard instanceof DaleCard ? targetCard.id : +targetCard.dataset['target_id']!;
             const finalOnTarget = () => {
-                console.warn("arrowfunction finalOnTarget");
                 this.remove();
                 onTarget(source_id, target_id);
             }
-            console.warn("finalOnTarget");
-            console.warn(finalOnTarget);
             this.onTargets.push(finalOnTarget);
             card_div.addEventListener("click", finalOnTarget);
         }
@@ -95,16 +89,12 @@ export class TargetingLine {
         this.updateLine = function(this: Window, evt: MouseEvent) {
             if (!document.body.contains(thiz.cardDiv)) {
                 //the source is lost (this sometimes happens in 'fashionHint')
-                console.warn("TargetingLine: source lost");
-                console.warn(thiz.cardDiv);
                 if (!DaleCard.divs.has(source.id)) {
                     return;
                 }
                 thiz.cardDiv = source.div;
                 thiz.cardDiv.classList.add("daleofmerchants-line-source", thiz.sourceClass);
                 thiz.cardDiv.addEventListener("click", thiz.onSource);
-                console.warn("TargetingLine: new source found");
-                console.warn(thiz.cardDiv);
             }
             const sourceRect = thiz.cardDiv.getBoundingClientRect();
             const currTarget = evt.target as HTMLElement;

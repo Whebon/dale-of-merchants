@@ -419,14 +419,14 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $unordered_cards (optional) - if provided, first place this collection of unordered cards on top of the deck
      * @param bool $from_limbo (optional) - default false. If `false`, place from hand. If `true`, place from limbo.
      */
-    function placeOnDeckMultiple(mixed $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false) {
+    function placeOnDeckMultiple(mixed $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, $msg_args = array()) {
         //1: move the unordered cards on top of the deck (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DECK.$deck_player_id);
-            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array (
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array_merge( array (
                 'player_id' => $this->getActivePlayerId(),
                 'player_name' => $this->getActivePlayerName(),
                 "_private" => array(
@@ -436,7 +436,7 @@ class DaleOfMerchants extends DaleTableBasic
                 'deck_player_id' => $deck_player_id,
                 'nbr' => $nbr_unordered_cards,
                 'from_limbo' => $from_limbo
-            ));
+            ), $msg_args));
         }
         
         //2: move the ordered cards on top of the deck
@@ -1787,23 +1787,25 @@ class DaleOfMerchants extends DaleTableBasic
         $card_name = $this->getCardName($technique_card);
 
         //move the card from the schedule to the discard pile (or a specified $resolve_to_location)
-        $resolve_to_location = $resolve_to_location ?? DISCARD.$player_id;
-        $to_prefix =  substr($resolve_to_location, 0, 4);
-        $to_suffix = substr($resolve_to_location, 4);
-        if ($to_prefix == DISCARD || $to_prefix == DECK) {
-            $this->cards->moveCardOnTop($technique_card_id, $resolve_to_location);
+        if ($resolve_to_location != 'skip') { //echidnas can skip the default mechanism of resolving a card
+            $resolve_to_location = $resolve_to_location ?? DISCARD.$player_id;
+            $to_prefix =  substr($resolve_to_location, 0, 4);
+            $to_suffix = substr($resolve_to_location, 4);
+            if ($to_prefix == DISCARD || $to_prefix == DECK) {
+                $this->cards->moveCardOnTop($technique_card_id, $resolve_to_location);
+            }
+            else {
+                $this->cards->moveCard($technique_card_id, $resolve_to_location);
+            }
+            $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $card_name,
+                'card' => $technique_card,
+                'to_prefix' => $to_prefix,
+                'to_suffix' => $to_suffix
+            ));
         }
-        else {
-            $this->cards->moveCard($technique_card_id, $resolve_to_location);
-        }
-        $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_name' => $card_name,
-            'card' => $technique_card,
-            'to_prefix' => $to_prefix,
-            'to_suffix' => $to_suffix
-        ));
 
         //decide if the player can go again
         if ($this->card_types[$type_id]["trigger"] != null) {
@@ -3172,7 +3174,7 @@ class DaleOfMerchants extends DaleTableBasic
                 foreach ($players as $opponent_id => $opponent) {
                     if ($opponent_id != $player_id) {
                         for ($i=0; $i < 2; $i++) { //one by one
-                            $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'temp');
+                            $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
                             if ($dbcard) {
                                 $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
                                 $this->notifyAllPlayers('deckToDiscard', '', array(
@@ -3318,7 +3320,7 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 for ($i=0; $i < 2; $i++) { //one by one
                     foreach ($players as $opponent_id => $opponent) {
-                        $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id, 'temp');
+                        $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id, 'unstable');
                         if ($dbcard) {
                             $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
                             $this->notifyAllPlayers('instant_discardToDeck', '', array(
@@ -3686,7 +3688,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //     "opponent_name" => $this->getPlayerNameById($opponent_id),
                 // ));
                 for ($i=0; $i < 2; $i++) { //one by one
-                    $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'temp');
+                    $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
                     if ($dbcard) {
                         $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
                         $this->notifyAllPlayers('deckToDiscard', clienttranslate('Periscope: ${player_name} discards a ${card_name} from ${opponent_name}\'s deck'), array(
@@ -3733,6 +3735,24 @@ class DaleOfMerchants extends DaleTableBasic
                     "card" => $card
                 ));
                 $this->fullyResolveCard($player_id, $technique_card, DISCARD.$opponent_id);
+                break;
+            case CT_DELICACY:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Delicacy must be used on ANOTHER player");
+                }
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trDelicacy");
+                break;
+            case CT_UMBRELLA:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                if ($opponent_id == $player_id) {
+                    throw new BgaVisibleSystemException("Umbrella must be used on ANOTHER player");
+                }
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trUmbrella");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -4629,6 +4649,73 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actDelicacy($card_id) {
+        $this->checkAction("actDelicacy");
+        $player_id = $this->getActivePlayerId();
+        //swap
+        if ($card_id != -1) {
+            //limbo to hand
+            $dbcard = $this->cards->getCardFromLocation($card_id, LIMBO.$player_id);
+            $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('instant_limboToHand', clienttranslate('Delicacy: ${player_name} swaps a card'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "_private" => array(
+                    "card" => $dbcard
+                )
+            ));
+            //schedule to limbo
+            $technique_card_id = $this->getGameStateValue("resolvingCard");
+            $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
+            $this->cards->moveCard($technique_card_id, LIMBO.$player_id);
+            $this->notifyAllPlayers('scheduleToHand', '', array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($technique_card),
+                'card' => $technique_card,
+                'to_limbo' => true
+            ));
+        }
+
+        //shuffle the remaining cards into the deck
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $this->placeOnDeckMultiple(
+            $opponent_id, 
+            clienttranslate('Delicacy: ${player_name} shuffles ${nbr} cards into ${opponent_name}\'s deck'),
+            array(), 
+            array(), 
+            $dbcards,
+            true,
+            array(
+                "opponent_name" => $this->getPlayerNameById($opponent_id)
+            )
+        );
+        $this->cards->shuffle(DECK.$opponent_id);
+
+        //resolve
+        if ($card_id != -1) {
+            $this->fullyResolveCard($player_id, null, 'skip');
+        }
+        else {
+            $this->notifyAllPlayers('message', clienttranslate('Delicacy: ${player_name} did not swap a card'), array(
+                "player_name" => $this->getActivePlayerName()
+            ));
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
+    function actUmbrella($card_id) {
+        $this->checkAction("actUmbrella");
+        $player_id = $this->getActivePlayerId();
+
+        die("TODO: actUmbrella");
+
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $this->fullyResolveCard($player_id);
+    }
+
+
     //(~acts)
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
@@ -5219,6 +5306,58 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
     }
+
+    function stDelicacy() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $nbr = $this->draw(
+            clienttranslate('Delicacy: ${player_name} draws ${nbr} cards from ${opponent_name}\'s deck'),
+            2,
+            true,
+            $opponent_id,
+            $player_id
+        );
+        if ($nbr == 0) {
+            //delicacy has no effect
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
+    function stUmbrella() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        $nbr = 0;
+        for ($i = 0; $i < 2; $i++) {
+            if (count($cards) == 0) {
+                break;
+            }
+            $card_id = array_rand($cards);
+            $dbcard = $cards[$card_id];
+            unset($cards[$card_id]);
+            $this->cards->moveCard($card_id, LIMBO.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
+                "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                ),
+                "to_limbo" => true
+            ));
+            $nbr += 1;
+        }
+        $this->notifyAllPlayers('message', clienttranslate('Umbrella: ${player_name} takes ${nbr} cards from ${opponent_name}\'s hand'), array(
+            "player_name" => $this->getPlayerNameById($player_id),
+            "opponent_name" => $this->getPlayerNameById($opponent_id),
+            "nbr" => $nbr,
+        ));
+        if ($nbr == 0) {
+            //umbrella has no effect
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
 
     //(~st)
 

@@ -734,7 +734,7 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				if (client_carefreeSwapper_targets.length == 0) {
-					throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_carefreeSwapper')");
+					throw new Error("No valid targets for Carefree Swapper ('client_fizzle' should have been entered instead of 'client_carefreeSwapper')");
 				}
 				setTimeout((() => {
 					new TargetingLine(
@@ -1019,6 +1019,11 @@ class DaleOfMerchants extends Gamegui
 			case 'pompousProfessional':
 				this.myLimbo.setSelectionMode('none');
 				break;
+			case 'delicacy':
+			case 'umbrella':
+				TargetingLine.remove();
+				this.myLimbo.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -1222,7 +1227,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_choicelessTechniqueCard':
 				const client_choicelessTechniqueCard_confirmation = this.getGameUserPreference(100); // "Confirm technique"
 				if (client_choicelessTechniqueCard_confirmation == 1) {
-					this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTechniqueCardConfirmed");
+					this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTechniqueCard");
 					this.addActionButtonCancelClient();
 				}
 				else {
@@ -1458,6 +1463,34 @@ class DaleOfMerchants extends Gamegui
 			case 'client_periscopeName':
 				this.addCardNameInputField($("pagemaintitletext")! as HTMLElement, "Confirm", this.onPeriscope.bind(this));
 				this.addActionButtonCancelClient();
+				break;
+			case 'delicacy':
+			case 'umbrella':
+				const delicacy_args = (args as { opponent_name: string });
+				const delicacy_action = stateName == 'delicacy' ? this.onDelicacy.bind(this) : this.onUmbrella.bind(this);
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', delicacy_args.opponent_name+_("'s cards"));
+				setTimeout((() => {
+					const delicacy_type = stateName == 'delicacy' ? DaleCard.CT_DELICACY : DaleCard.CT_UMBRELLA;
+					const delicacy_targets: DaleCard[] = this.myLimbo.getAllItems().map(item => new DaleCard(item.id));
+					this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, "gray");
+					if (delicacy_targets.length > 0) {
+						new TargetingLine(
+							this.getScheduledCardOfTypeId(delicacy_type),
+							delicacy_targets,
+							"daleofmerchants-line-source-technique",
+							"daleofmerchants-line-target-technique",
+							"daleofmerchants-line-technique",
+							(source_id: number) => delicacy_action(-1),
+							(source_id: number, target_id: number) => delicacy_action(target_id)
+						)
+					}
+					else {
+						//Sometimes the delicacy_targets are not yet available due to client-server delays
+						//As a workaround, we will fall back on a click selection method
+						console.warn("No targets found in limbo, TargetingLine will not be created");
+						this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to swap"));
+					}
+				}).bind(this), 1); //workaround to ensure that limbo is filled before the targeting line is created
 				break;
 		}
 		//(~actionbuttons)
@@ -1746,6 +1779,20 @@ class DaleOfMerchants extends Gamegui
 	 */
 	setMainTitle(text: string) {
 		$('pagemaintitletext')!.innerHTML = text;
+	}
+
+	/**
+	 * Asserts that a card of the given type id exists in the current player's schedule. Then returns it.
+	 * @return DaleCard of the given type present in the current player's schedule
+	 */
+	getScheduledCardOfTypeId(type_id: number): DaleCard {
+		for (let item of this.mySchedule.getAllItems()) {
+			const card = new DaleCard(item.id);
+			if (card.effective_type_id == type_id) {
+				return card;
+			}
+		}
+		throw new Error(`getScheduledCardOfTypeId expected a card of type id ${type_id}, but such a card was not found`);
 	}
 
 	/**
@@ -2422,6 +2469,12 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break;
+			case 'delicacy':
+				this.onDelicacy(card.id);
+				break;
+			case 'umbrella':
+				this.onUmbrella(card.id);
+				break;
 		}
 	}
 
@@ -2558,15 +2611,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onChoicelessTechniqueCard() {
-		this.playTechniqueCard<'client_choicelessTechniqueCard'>({
+		this.playTechniqueCardWithServerState<'client_choicelessTechniqueCard'>({
 			choiceless: true
-		})
-	}
-
-	onChoicelessTechniqueCardConfirmed() {
-		//if the player plays with "Confirm technique" turned on, the technique is not considered "choiceless" anymore
-		this.playTechniqueCard<'client_choicelessTechniqueCard'>({
-			choiceless: false
 		})
 	}
 
@@ -2773,6 +2819,8 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_SABOTAGE:
 			case DaleCard.CT_CUNNINGNEIGHBOUR:
+			case DaleCard.CT_DELICACY:
+			case DaleCard.CT_UMBRELLA:
 				if (this.unique_opponent_id) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
@@ -3887,6 +3935,21 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onDelicacy(card_id: number) {
+		this.bgaPerformAction('actDelicacy', {
+			card_id: card_id
+		});
+		TargetingLine.remove();
+	}
+
+	onUmbrella(card_id: number) {
+		this.bgaPerformAction('actUmbrella', {
+			card_id: card_id
+		});
+		TargetingLine.remove();
+	}
+
+
 	//(~on)
 
 
@@ -3907,6 +3970,7 @@ class DaleOfMerchants extends Gamegui
 			['scheduleTechniqueDelay', 			500, true],
 			['resolveTechnique', 				500],
 			['cancelTechnique', 				500],
+			['scheduleToHand',					500],
 			['buildStack', 						500],
 			['rearrangeMarket', 				500],
 			['fillEmptyMarketSlots', 			1],
@@ -3922,6 +3986,7 @@ class DaleOfMerchants extends Gamegui
 			['draw', 							500, true],
 			['drawMultiple', 					500, true],
 			['handToLimbo', 					500, true],
+			['instant_limboToHand',				1, true],
 			['limboToHand', 					500, true],
 			['instant_playerHandToOpponentHand',1, true],
 			['instant_opponentHandToPlayerHand',1, true],
@@ -4061,6 +4126,31 @@ class DaleOfMerchants extends Gamegui
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
 	}
 
+	notif_scheduleToHand(notif: NotifAs<'scheduleToHand'>) {
+		//schedule to hand
+		if (notif.args.player_id == this.player_id) {
+			//animate from my hand
+			const stock = notif.args.to_limbo ? this.myLimbo : this.myHand; 
+			const card_id = +notif.args.card.id;
+			if ($(this.mySchedule.control_name+'_item_' + card_id)) {
+				stock.addDaleCardToStock(DaleCard.of(notif.args.card), this.mySchedule.control_name+'_item_' + card_id)
+				this.mySchedule.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				throw new Error(`scheduleToHand failed. Technique card ${card_id} does not exist in the schedule.`);
+			}
+		}
+		else {
+			//animate from player board
+			const schedule = this.playerSchedules[notif.args.player_id]!;
+			schedule.removeFromStockById(+notif.args.card.id, 'overall_player_board_'+notif.args.player_id);
+		}
+		//update the hand sizes
+		if (!notif.args.to_limbo) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		}
+	}
+
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
 		//schedule to discard/deck
 		console.warn(this.playerSchedules);
@@ -4078,6 +4168,20 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'deck':
 				this.allDecks[notif.args.to_suffix]!.push(card, from, null, schedule.duration);
+				break;
+			case 'limb':
+				//TODO: safely remove this
+				// if (notif.args.player_id == this.player_id) {
+				// 	//animate to limbo
+				// 	const card_id = +notif.args.card.id;
+				// 	this.myLimbo.addDaleCardToStock(card, this.mySchedule.control_name+'_item_'+card_id)
+				// 	this.mySchedule.removeFromStockByIdNoAnimation(card_id);
+				// }
+				// else {
+				// 	//animate to player board
+				// 	const schedule = this.playerSchedules[notif.args.player_id]!;
+				// 	schedule.addDaleCardToStock(card, 'overall_player_board_'+notif.args.player_id)
+				// }
 				break;
 			default:
 				throw new Error(`Unable to resolve the technique to '${notif.args.to_prefix}'`)
@@ -4213,6 +4317,10 @@ class DaleOfMerchants extends Gamegui
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+	}
+
+	notif_instant_limboToHand(notif: NotifAs<'limboToHand'>) {
+		this.notif_limboToHand(notif);
 	}
 
 	notif_limboToHand(notif: NotifAs<'limboToHand'>) {

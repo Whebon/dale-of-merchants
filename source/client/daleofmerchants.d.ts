@@ -36,6 +36,11 @@ declare global {
 			player_id: number
 			_private: true | undefined
 		},
+		'scheduleToHand': {
+			player_id: number
+			card: DbCard
+			to_limbo?: boolean
+		}
 		'cancelTechnique': {
 			player_id: number
 			card: DbCard
@@ -240,6 +245,7 @@ declare global {
 				card: DbCard
 			}
 		}
+		'instant_limboToHand': {},
 		'limboToHand': {
 			player_id: number 
 			_private?: {
@@ -338,6 +344,7 @@ declare global {
 	interface ClientTechniqueChoice {
 		'client_fizzle': { fizzle: boolean }
 		'client_choicelessTechniqueCard': { choiceless: boolean }
+		'client_choicelessTechniqueCardWithServerState': { choiceless: boolean }
 		'client_selectOpponentTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }

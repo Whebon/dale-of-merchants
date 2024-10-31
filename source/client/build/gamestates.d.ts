@@ -177,6 +177,8 @@ interface GameStates {
 			'trFashionHint': 73,
 			'trWhirligig': 74,
 			'trPompousProfessional': 75,
+			'trDelicacy': 76,
+			'trUmbrella': 77,
 		},
 	},
 	31: {
@@ -736,6 +738,42 @@ interface GameStates {
 		'action': 'stPompousProfessional',
 		'possibleactions': {
 			'actPompousProfessional': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	76: {
+		'name': 'delicacy',
+		'description': 'Delicacy: ${actplayer} may swap with a card from ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Delicacy: ${you} may swap with a card from ${opponent_name}\\\'s deck',
+		'type': 'activeplayer',
+		'action': 'stDelicacy',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actDelicacy': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	77: {
+		'name': 'umbrella',
+		'description': 'Umbrella: ${actplayer} may swap with a card from ${opponent_name}\\\'s hand',
+		'descriptionmyturn': 'Umbrella: ${you} may swap with a card from ${opponent_name}\\\'s hand',
+		'type': 'activeplayer',
+		'action': 'stUmbrella',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actUmbrella': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
