@@ -7863,13 +7863,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.addCardNameInputField = function (parent, button_label, callback) {
+            var wordExt = new Map();
             var words = [];
             for (var i in this.gamedatas.cardTypes) {
                 var cardType = this.gamedatas.cardTypes[i];
                 if (cardType.type_id > 4 &&
                     cardType.animalfolk_id != DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_OWLS &&
                     cardType.animalfolk_id != DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_BEAVERS) {
-                    words.push(cardType.name.toLowerCase());
+                    var cardName = cardType.name.toLowerCase();
+                    var cardNameExt = cardType.animalfolk_displayed.length > 0 ? " (".concat(cardType.animalfolk_displayed.toLowerCase(), " ").concat(cardType.value, ")") : "";
+                    words.push(cardName);
+                    wordExt.set(cardName, " <span style=\"font-size: x-small;\">".concat(cardNameExt, "</span>"));
                 }
             }
             parent.classList.remove("daleofmerchants-hidden");
@@ -7885,7 +7889,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 if (filteredWords.length > 0) {
                     filteredWords.forEach(function (word) {
                         var option = document.createElement('div');
-                        option.textContent = word;
+                        option.innerHTML = word + wordExt.get(word);
                         option.addEventListener('click', function () {
                             inputField.value = word;
                             dropdown.style.display = 'none';

@@ -4935,6 +4935,7 @@ class DaleOfMerchants extends Gamegui
 	 */
 	addCardNameInputField(parent: HTMLElement, button_label: string, callback: (card_name: string) => void) {
 		// Get the words
+		const wordExt: Map<string, string> = new Map<string, string>(); // wordExt holds extra information about the card (set + value)
 		const words: string[] = [];
 		for (let i in this.gamedatas.cardTypes) {
 			const cardType = this.gamedatas.cardTypes[i]!;
@@ -4943,7 +4944,10 @@ class DaleOfMerchants extends Gamegui
 				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_OWLS && 
 				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_BEAVERS
 			) {
-				words.push(cardType.name.toLowerCase());
+				const cardName = cardType.name.toLowerCase();
+				const cardNameExt = cardType.animalfolk_displayed.length > 0 ? ` (${cardType.animalfolk_displayed.toLowerCase()} ${cardType.value})` : "";
+				words.push(cardName);
+				wordExt.set(cardName, ` <span style="font-size: x-small;">${cardNameExt}</span>`);
 			}
 		}
 		
@@ -4972,7 +4976,8 @@ class DaleOfMerchants extends Gamegui
 			if (filteredWords.length > 0) {
 				filteredWords.forEach(word => {
 					const option = document.createElement('div');
-					option.textContent = word;
+					//option.textContent = word + wordExt.get(word);
+					option.innerHTML = word + wordExt.get(word);
 					option.addEventListener('click', function() {
 						inputField.value = word; // Set the selected word to the input field
 						dropdown.style.display = 'none'; // Hide the dropdown
