@@ -130,7 +130,7 @@ class DaleOfMerchants extends Gamegui
 		console.warn("------------------------")
 
 		//add debug tools
-		if (!gamedatas.debugMode) {
+		if (gamedatas.debugMode) {
 			this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools')!, _("Spawn Card"), this.spawnCard.bind(this));
 		}
 

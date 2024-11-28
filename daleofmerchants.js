@@ -3739,7 +3739,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("------ GAME DATAS ------ !");
             console.warn(this.gamedatas);
             console.warn("------------------------");
-            if (!gamedatas.debugMode) {
+            if (gamedatas.debugMode) {
                 this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools'), _("Spawn Card"), this.spawnCard.bind(this));
             }
             if (this.isSpectator) {
