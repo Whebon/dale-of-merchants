@@ -1490,7 +1490,7 @@ class DaleOfMerchants extends Gamegui
 						console.warn("No targets found in limbo, TargetingLine will not be created");
 						this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to swap"));
 					}
-				}).bind(this), 1); //workaround to ensure that limbo is filled before the targeting line is created
+				}).bind(this), stateName === 'umbrella' ? 750 : 1); //workaround to ensure that limbo is filled before the targeting line is created
 				break;
 		}
 		//(~actionbuttons)

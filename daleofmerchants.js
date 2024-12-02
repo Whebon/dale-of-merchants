@@ -4973,7 +4973,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             console.warn("No targets found in limbo, TargetingLine will not be created");
                             _this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to swap"));
                         }
-                    }).bind(this), 1);
+                    }).bind(this), stateName === 'umbrella' ? 750 : 1);
                     break;
             }
         };
