@@ -2,9 +2,9 @@ import Gamegui = require('ebg/core/gamegui');
 import PopInDialog = require('bga-ts-template/typescript/types/ebg/popindialog');
 import { DaleLocation } from './types/DaleLocation';
 import { Images } from './Images';
-import { DaleCard } from './DaleCard';
+import { DaleCard, OrderedSelection } from './DaleCard';
 import { ChameleonArgs } from './types/ChameleonArgs';
-import { OrderedSelection, SelectionIconType } from './OrderedSelection';
+import { SelectionIconType } from './SelectionIconType';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
 

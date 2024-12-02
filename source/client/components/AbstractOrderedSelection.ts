@@ -1,9 +1,10 @@
-import { DaleCard } from './DaleCard';
 import { DaleIcons } from './DaleIcons';
+import { SelectionIconType } from './SelectionIconType';
 
-export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | 'cheese' | 'numbers' | 'hand' | 'naturalSurvivor' | 'historyLesson' | undefined;
-
-export class OrderedSelection {
+/**
+ * Originally called OrderedSelection, but due to a circular dependency (see issue #120), OrderedSelection is moved to DaleCard
+ */
+export abstract class AbstractOrderedSelection {
     private maxSize: number;
     private iconType: SelectionIconType;
     private card_ids: number[];
@@ -18,6 +19,12 @@ export class OrderedSelection {
         this.maxSize = Number.POSITIVE_INFINITY;
         this.secondaryMaxSize = Number.POSITIVE_INFINITY;
     }
+
+    /**
+     * @param card_id
+     * @return div element corresponding to the card_id
+     */
+    protected abstract getDiv(card_id: number): HTMLElement | undefined
 
     /**
      * Function to call when a card is added to the selection. dojo.connect should be used to connect to this hook
@@ -36,15 +43,6 @@ export class OrderedSelection {
      */
     private onUnselect(card_id: number, secondary?: boolean) {
         console.warn(`onUnselect(card_id=${card_id}, secondary=${secondary})`);
-    }
-
-    /**
-     * @param card_id
-     * @return div element corresponding to the card_id
-     */
-    protected getDiv(card_id: number): HTMLElement | undefined {
-        //return $("daleofmerchants-card-"+card_id);
-        return DaleCard.divs.get(card_id);
     }
 
 	/**

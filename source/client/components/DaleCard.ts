@@ -7,11 +7,22 @@ import { DbEffect } from './types/DbEffect';
 import { DaleTrigger } from './types/DaleTrigger';
 import { ChameleonChain } from './types/ChameleonChain'
 import { DaleDie } from './DaleDie';
+import { AbstractOrderedSelection } from './AbstractOrderedSelection';
 
 /**
  * HTML data attribute representing a card div's location
  */
 type DataLocation = 'moving' | 'stock' | 'market' | 'stall' | 'pile';
+
+/**
+ * An OrderedSelection that uses DaleCards
+ */
+export class OrderedSelection extends AbstractOrderedSelection {
+    override getDiv(card_id: number): HTMLElement | undefined {
+        //return $("daleofmerchants-card-"+card_id);
+        return DaleCard.divs.get(card_id);
+    }
+}
 
 /**
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.

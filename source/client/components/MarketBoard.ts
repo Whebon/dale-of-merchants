@@ -1,10 +1,10 @@
 import Gamegui = require('ebg/core/gamegui');
-import { DaleCard } from './DaleCard';
+import { DaleCard, OrderedSelection } from './DaleCard';
 import { DaleStock } from './DaleStock';
 import { Images } from './Images';
 import { CardSlot, CardSlotManager } from './CardSlot';
 import { DaleLocation } from './types/DaleLocation';
-import { OrderedSelection, SelectionIconType } from './OrderedSelection';
+import { SelectionIconType } from './SelectionIconType';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 import { DaleIcons } from './DaleIcons';
 

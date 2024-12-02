@@ -1,9 +1,9 @@
 import Gamegui = require("ebg/core/gamegui");
 
 import { Images } from "./Images";
-import { OrderedSelection } from "./OrderedSelection";
+import { AbstractOrderedSelection } from "./AbstractOrderedSelection";
 
-class OrderedDeckSelection extends OrderedSelection {
+class OrderedDeckSelection extends AbstractOrderedSelection {
     override getDiv(card_id: number): HTMLElement | undefined {
         return document.querySelector(`#deck-${card_id}`) as HTMLAudioElement;
     }

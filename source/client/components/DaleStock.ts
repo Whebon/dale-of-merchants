@@ -1,12 +1,11 @@
 import Gamegui = require('ebg/core/gamegui');
 import Stock = require('ebg/stock'); 
 import "ebg/stock"; 
-import { DaleCard } from './DaleCard';
+import { DaleCard, OrderedSelection } from './DaleCard';
 import { Images } from './Images';
 import { DaleLocation } from './types/DaleLocation';
-import { OrderedSelection, SelectionIconType } from './OrderedSelection';
+import { SelectionIconType } from './SelectionIconType';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
-import { DaleDeckSelection } from './DaleDeckSelection';
 
 /**
  * Selection modes for the dale stock
