@@ -169,6 +169,15 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * Same as `moveCard`, but without expiring effects
+     * Move a card from the `$location` to `$location`, updating the location arg
+     * IMPORTANT: The caller is responsible for ensuring the card is already in location `$location`
+     */
+    function moveCardWithinLocation($card_id, $location, $location_arg) {
+        parent::moveCard($card_id, $location, $location_arg);
+    }
+
+    /**
      * Move a card to specific location
      */
     function moveCard($card_id, $location, $location_arg=0) {

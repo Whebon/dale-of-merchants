@@ -941,7 +941,7 @@ class DaleOfMerchants extends DaleTableBasic
             $shouldNotifyMarketSlideRight = false;
             foreach ($cards as $card) {
                 if ($card["location_arg"] != $first_free_slot) {
-                    $this->cards->moveCard($card['id'], MARKET, $first_free_slot);
+                    $this->cards->moveCardWithinLocation($card['id'], MARKET, $first_free_slot);
                     $shouldNotifyMarketSlideRight = true;
                 }
                 $first_free_slot++;
