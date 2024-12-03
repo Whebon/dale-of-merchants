@@ -3423,6 +3423,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must name a card");
                     case 'client_carefreeSwapper':
                         return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
+                    case 'client_velocipede':
+                        return _("${card_name}: ${you} must choose a card from any stall to swap with");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -3996,9 +3998,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_acorn':
+                case 'client_velocipede':
                     var client_acorn_targets = [];
                     for (var player_id in this.gamedatas.players) {
-                        if (+player_id != this.player_id) {
+                        if (stateName == 'client_velocipede' || +player_id != this.player_id) {
                             client_acorn_targets = client_acorn_targets.concat(this.playerStalls[player_id].getCardsInStall());
                         }
                     }
@@ -4517,6 +4520,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     TargetingLine_1.TargetingLine.remove();
                     this.myLimbo.setSelectionMode('none');
                     break;
+                case 'client_velocipede':
+                    TargetingLine_1.TargetingLine.remove();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -4974,6 +4980,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }).bind(this), stateName === 'umbrella' ? 750 : 1);
                     this.addActionButton("skip-button", _("Skip"), function () { return delicacy_action_1(-1); }, undefined, false, "gray");
+                    break;
+                case 'client_velocipede':
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -6405,6 +6414,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_carefreeSwapper', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_VELOCIPEDE:
+                    for (var player_id in this.gamedatas.players) {
+                        if (this.playerStalls[player_id].getNumberOfStacks() > 0) {
+                            fizzle = false;
+                            break;
+                        }
+                    }
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.mainClientState.enterOnStack('client_velocipede', { technique_card_id: card.id });
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -6528,7 +6551,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card_id = this.mainClientState.args.technique_card_id;
                 var card = new DaleCard_9.DaleCard(card_id);
                 var type_id = card.effective_type_id;
-                if ((type_id != DaleCard_9.DaleCard.CT_ACORN && type_id != DaleCard_9.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_9.DaleCard.CT_SAFETYPRECAUTION) || this.mainClientState.name == 'client_fizzle') {
+                if ((type_id != DaleCard_9.DaleCard.CT_ACORN && type_id != DaleCard_9.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_9.DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard_9.DaleCard.CT_VELOCIPEDE) || this.mainClientState.name == 'client_fizzle') {
                     this.myHand.addDaleCardToStock(card, this.mySchedule.control_name + '_item_' + card_id);
                     this.mySchedule.removeFromStockByIdNoAnimation(card_id);
                     this.myHandSize.incValue(1);

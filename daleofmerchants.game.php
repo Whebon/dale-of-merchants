@@ -2580,7 +2580,7 @@ class DaleOfMerchants extends DaleTableBasic
                         }
                     }
                     if (count($cards) >= 1) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_ACORN. Some players have cards in their stall");
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_ACORN. Some opponents have cards in their stall");
                     }
                     break;
                 case CT_TREASUREHUNTER:
@@ -2687,6 +2687,16 @@ class DaleOfMerchants extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_VELOCIPEDE:
+                    $players = $this->loadPlayersBasicInfos();
+                    $cards = array();
+                    foreach ($players as $other_player_id => $player) {
+                        $cards = array_merge($cards, $this->cards->getCardsInLocation(STALL.$other_player_id));
+                    }
+                    if (count($cards) >= 1) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_VELOCIPEDE. Some players have cards in their stall");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -2701,7 +2711,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Schedule Technique
-        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION) {
+        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_VELOCIPEDE) {
             $choiceless = isset($args["choiceless"]) ? $args["choiceless"] : false;
             $this->scheduleCard($player_id, $technique_card, $choiceless);
         }
@@ -2777,6 +2787,9 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ACORN:
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
+                if ($stall_player_id == $player_id) {
+                    throw new BgaUserException("Acorn cannot be used to swap with a card in your OWN stall");
+                }
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                 $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
@@ -3753,6 +3766,23 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trUmbrella");
+                break;
+            case CT_VELOCIPEDE:
+                //wet code: copied from CT_ACORN
+                $stall_card_id = $args["stall_card_id"];
+                $stall_player_id = $args["stall_player_id"];
+                $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
+                $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
+                $this->cards->moveCard($stall_card_id, HAND.$player_id);
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Velocipede: ${player_name} swaps with a ${card_name}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "card_name" => $this->getCardName($stall_card),
+                    "player_id" => $player_id,
+                    "card" => $technique_card,
+                    "stall_player_id" => $stall_player_id,
+                    "stall_card_id" => $stall_card_id
+                ));
+                $this->gamestate->nextState("trSamePlayer");
                 break;
             default:
                 $name = $this->getCardName($technique_card);

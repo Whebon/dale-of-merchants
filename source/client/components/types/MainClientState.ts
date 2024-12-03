@@ -191,6 +191,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must name a card");
             case 'client_carefreeSwapper':
                 return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
+            case 'client_velocipede':
+                return _("${card_name}: ${you} must choose a card from any stall to swap with");
         }
         return "MISSING DESCRIPTION";
     }
