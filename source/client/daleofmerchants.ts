@@ -1472,7 +1472,6 @@ class DaleOfMerchants extends Gamegui
 				setTimeout((() => {
 					const delicacy_type = stateName == 'delicacy' ? DaleCard.CT_DELICACY : DaleCard.CT_UMBRELLA;
 					const delicacy_targets: DaleCard[] = this.myLimbo.getAllItems().map(item => new DaleCard(item.id));
-					this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, "gray");
 					if (delicacy_targets.length > 0) {
 						new TargetingLine(
 							this.getScheduledCardOfTypeId(delicacy_type),
@@ -1491,6 +1490,7 @@ class DaleOfMerchants extends Gamegui
 						this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to swap"));
 					}
 				}).bind(this), stateName === 'umbrella' ? 750 : 1); //workaround to ensure that limbo is filled before the targeting line is created
+				this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, "gray");
 				break;
 		}
 		//(~actionbuttons)

@@ -4965,7 +4965,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     setTimeout((function () {
                         var delicacy_type = stateName == 'delicacy' ? DaleCard_9.DaleCard.CT_DELICACY : DaleCard_9.DaleCard.CT_UMBRELLA;
                         var delicacy_targets = _this.myLimbo.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); });
-                        _this.addActionButton("skip-button", _("Skip"), function () { return delicacy_action_1(-1); }, undefined, false, "gray");
                         if (delicacy_targets.length > 0) {
                             new TargetingLine_1.TargetingLine(_this.getScheduledCardOfTypeId(delicacy_type), delicacy_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return delicacy_action_1(-1); }, function (source_id, target_id) { return delicacy_action_1(target_id); });
                         }
@@ -4974,6 +4973,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             _this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to swap"));
                         }
                     }).bind(this), stateName === 'umbrella' ? 750 : 1);
+                    this.addActionButton("skip-button", _("Skip"), function () { return delicacy_action_1(-1); }, undefined, false, "gray");
                     break;
             }
         };

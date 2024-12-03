@@ -4708,11 +4708,63 @@ class DaleOfMerchants extends DaleTableBasic
     function actUmbrella($card_id) {
         $this->checkAction("actUmbrella");
         $player_id = $this->getActivePlayerId();
+        //swap
+        if ($card_id != -1) {
+            //limbo to hand
+            $dbcard = $this->cards->getCardFromLocation($card_id, LIMBO.$player_id);
+            $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('instant_limboToHand', clienttranslate('Umbrella: ${player_name} swaps a card'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            ), clienttranslate('Umbrella: ${player_name} swaps with ${card_name}'));
+            //schedule to limbo
+            $technique_card_id = $this->getGameStateValue("resolvingCard");
+            $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
+            $this->cards->moveCard($technique_card_id, LIMBO.$player_id);
+            $this->notifyAllPlayers('scheduleToHand', '', array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_name' => $this->getCardName($technique_card),
+                'card' => $technique_card,
+                'to_limbo' => true
+            ));
+        }
 
-        die("TODO: actUmbrella");
-
+        //return the remaining cards to the opponent's hand
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $this->fullyResolveCard($player_id);
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $public_msg = clienttranslate('Umbrella: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'); 
+        foreach($dbcards as $dbcard) {
+            $this->cards->moveCard($dbcard["id"], HAND.$opponent_id);
+            $this->notifyAllPlayersWithPrivateArguments('instant_playerHandToOpponentHand', $public_msg, array(
+                "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "opponent_name" => $this->getPlayerNameById($opponent_id),
+                "nbr" => count($dbcards),
+                "from_limbo" => true,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            )); //no private message here, to see which card was swapped, players should refer to the 'swap' message
+            $public_msg = ''; //only show the public message once
+        }
+
+        //resolve
+        if ($card_id != -1) {
+            $this->fullyResolveCard($player_id, null, 'skip');
+        }
+        else {
+            $this->notifyAllPlayers('delay', clienttranslate('Umbrella: ${player_name} did not swap a card'), array(
+                "player_name" => $this->getActivePlayerName()
+            ));
+            $this->fullyResolveCard($player_id);
+        }
     }
 
 
