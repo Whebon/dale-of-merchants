@@ -551,7 +551,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 var unavailable = (animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS ||
-                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_MAGPIES);
+                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_ECHIDNAS);
                 if (unavailable) {
                     card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
