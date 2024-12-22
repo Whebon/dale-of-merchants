@@ -2596,7 +2596,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $players = $this->loadPlayersBasicInfos();
                     foreach ($players as $opponent_id => $opponent) {
                         if ($player_id != $opponent_id) {
-                            $target = $this->cards->getCardOnTop(DISCARD.$player_id);
+                            $target = $this->cards->getCardOnTop(DISCARD.$opponent_id);
                             if ($target) {
                                 throw new BgaVisibleSystemException("Unable to fizzle. There exists a card to take.");
                             }
