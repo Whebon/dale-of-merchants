@@ -2088,13 +2088,11 @@ class DaleOfMerchants extends Gamegui
 				}
 			}
 		}
-		console.log("----");
-		console.log(cards.length);
 		return cards;
 	}
 
 	/**
-	 * Returns all cards in any opponent's stall that have the same value asthe given hand card
+	 * Returns all cards in any opponent's stall that have the same value as the given hand card
 	 * @param matchingColours_card_id the matching colors card that will be played. Should be excluded from the targets.
 	 */
 	getMatchingColoursStallTargets(handCard: DaleCard): DaleCard[] {
@@ -3290,7 +3288,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_fizzle', card.id); //UNDO
+					this.clientScheduleTechnique('client_matchingColours', card.id);
 				}
 				break;
 			default:

@@ -1943,6 +1943,7 @@ define("components/types/ChameleonArgs", ["require", "exports", "components/Dale
                     return;
                 }
             }
+            console.trace();
             throw new Error("Card ".concat(target.id, " is not a valid chameleon target"));
         };
         ChameleonArgs.prototype.getAllTargets = function (tree) {
@@ -3437,6 +3438,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
                     case 'client_velocipede':
                         return _("${card_name}: ${you} must choose a card from any stall to swap with");
+                    case 'client_matchingColours':
+                        return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5427,8 +5430,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 }
             }
-            console.log("----");
-            console.log(cards.length);
             return cards;
         };
         DaleOfMerchants.prototype.getMatchingColoursStallTargets = function (handCard) {
@@ -6512,7 +6513,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_fizzle', card.id);
+                        this.clientScheduleTechnique('client_matchingColours', card.id);
                     }
                     break;
                 default:
