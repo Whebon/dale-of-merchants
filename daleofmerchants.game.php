@@ -1108,10 +1108,18 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Returns the effective value of a card (accounts for modifications such as 'Flashy Show').
-     * @param array $dbcard card to get the value of
+     * @param array $dbcard card to get the effective value of
     */
     function getValue(array $dbcard): int {
         return $this->effects->getValue($dbcard);
+    }
+
+    /**
+     * Returns the original value of a card (IGNORES modifications such as 'Flashy Show').
+     * @param array $dbcard card to get the original value of
+    */
+    function getOriginalValue(array $dbCard): int {
+        return $this->card_types[$this->getTypeId($dbCard)]['value'];
     }
 
     /**
@@ -2697,6 +2705,45 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_VELOCIPEDE. Some players have cards in their stall");
                     }
                     break;
+                case CT_MATCHINGCOLOURS:
+                    //get the possible values
+                    $players = $this->loadPlayersBasicInfos();
+                    $values = [];
+                    foreach ($players as $other_player_id => $player) {
+                        if ($other_player_id != $player_id) {
+                            foreach($this->cards->getCardsInLocation(STALL.$other_player_id) as $stallCard) {
+                                $value = $this->getOriginalValue($stallCard);
+                                if (!in_array($value, $values)) {
+                                    $values[] = $value;
+                                }
+                            }
+                        }
+                    }
+                    //verify that all the hand cards do not match the possible values
+                    foreach($this->cards->getCardsInLocation(HAND.$player_id) as $dbCard) {
+                        //get the chameleon target if needed
+                        $chameleon_target_ids = $this->getChameleonTargets($dbCard["id"], $this->getTypeId($dbCard));
+                        if (count($chameleon_target_ids) == 1 && $chameleon_target_ids[0] == $dbCard["id"]) {
+                            $targets = array($dbCard);
+                        }
+                        else {
+                            $targets = $this->cards->getCards($chameleon_target_ids);
+                        }
+                        foreach ($targets as $handCard) {
+                            $isOtherAnimalfolk = $this->isAnimalfolk($handCard) && $handCard["id"] != $technique_card_id;
+                            if ($isOtherAnimalfolk && in_array($this->getValue($handCard), $values)) {
+                                $card_name = $this->getCardName($dbCard);
+                                $target_name = $this->getCardName($handCard);
+                                if ($card_name == $target_name) {
+                                    throw new BgaVisibleSystemException("Unable to fizzle CT_MATCHINGCOLOURS. '". $card_name."' can be swapped...");
+                                }
+                                else {
+                                    throw new BgaUserException(_("Matching Colours has valid targets. Try using '").$card_name."' as '".$target_name."'.");
+                                } 
+                            }
+                        }
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -3768,7 +3815,6 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trUmbrella");
                 break;
             case CT_VELOCIPEDE:
-                //wet code: copied from CT_ACORN
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
@@ -3783,6 +3829,38 @@ class DaleOfMerchants extends DaleTableBasic
                     "stall_card_id" => $stall_card_id
                 ));
                 $this->gamestate->nextState("trSamePlayer");
+                break;
+            case CT_MATCHINGCOLOURS:
+                //get the both cards that need to be swapped
+                $hand_card_id = $args["card_id"];
+                $this->addChameleonBindings($chameleons_json, $hand_card_id); //if the hand_card_id was locally bound, commit it now
+                $hand_card = $this->cards->getCardFromLocation($hand_card_id, HAND.$player_id);
+                $stall_card_id = $args["stall_card_id"];
+                $stall_player_id = $args["stall_player_id"];
+                $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
+
+                //Verify the value: the ORIGINAL value of the stallCard should equal the EFFECTIVE value of the handCard
+                if ($this->getOriginalValue($stall_card) != $this->getValue($hand_card)) {
+                    $stall_name = $this->getCardName($stall_card);
+                    $hand_name = $this->getCardName($hand_card);
+                    $stall_value = $this->getOriginalValue($stall_card);
+                    $hand_value = $this->getValue($hand_card);
+                    throw new BgaUserException("Matching Colours failed: '$stall_name' and '$hand_name' have different values ($stall_value and $hand_value)");
+                }
+                
+                //swap the cards
+                $this->cards->moveCard($hand_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
+                $this->cards->moveCard($stall_card_id, HAND.$player_id);
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Matching Colours: ${player_name} swaps with a ${card_name}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "card_name" => $this->getCardName($stall_card),
+                    "player_id" => $player_id,
+                    "card" => $hand_card,
+                    "stall_player_id" => $stall_player_id,
+                    "stall_card_id" => $stall_card_id
+                ));
+                $this->delay500ms(); //swapHandStall has no delay (this is the only technique that swaps another card)
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

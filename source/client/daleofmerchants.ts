@@ -749,6 +749,12 @@ class DaleOfMerchants extends Gamegui
 					)
 				}).bind(this), 500);
 				break;
+			case 'client_matchingColours':
+				//TODO: safely remove the 'whitelist' idea. It is better to let the player click on ANY card, not just the valid cards. The error message will guide them.
+				//const client_matchingColours_args = (this.mainClientState.args as ClientGameStates['client_matchingColours']);
+				//this.myHand.setWhitelist(this.getMatchingColoursHandTargets(client_matchingColours_args.technique_card_id));
+				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1026,6 +1032,10 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'client_velocipede':
+				TargetingLine.remove();
+				break;
+			case 'client_matchingColours':
+				this.myHand.setSelectionMode('none');
 				TargetingLine.remove();
 				break;
 		}
@@ -1497,6 +1507,9 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, "gray");
 				break;
 			case 'client_velocipede':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_matchingColours':
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -2049,6 +2062,55 @@ class DaleOfMerchants extends Gamegui
 		return DaleCard.cardTypes[6*animalfolk_id]!.animalfolk_displayed;
 	}
 
+	/**
+	 * Returns all cards in the current player's hand that can possibly be swapped using the "Matching Colous" technique card
+	 * @param matchingColours_card_id the matching colors card that will be played. Should be excluded from the targets.
+	 */
+	getMatchingColoursHandTargets(matchingColours_card_id: number): DaleCard[] {
+		const cards: DaleCard[] = [];
+		const values: Set<number> = new Set();
+		for (let player_id in this.gamedatas.players) {
+			if (+player_id != this.player_id) {
+				for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
+					values.add(stallCard.original_value); //notice that we use the ORIGINAL value of the stall card...
+				}
+			}
+		}
+		for (let item of this.myHand.getAllItems()) {
+			let chameleonTargets = [new DaleCard(item.id)];
+			if (chameleonTargets[0]!.isUnboundChameleon()) {
+				chameleonTargets = this.getChameleonTargets(chameleonTargets[0]!, true).filter(target => target instanceof DaleCard);
+			}
+			for (let handCard of chameleonTargets) {
+				const isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != matchingColours_card_id;
+				if (isOtherAnimalfolk && values.has(handCard.effective_value)) { //...and the EFFECTIVE value of the hand card
+					cards.push(handCard);
+				}
+			}
+		}
+		console.log("----");
+		console.log(cards.length);
+		return cards;
+	}
+
+	/**
+	 * Returns all cards in any opponent's stall that have the same value asthe given hand card
+	 * @param matchingColours_card_id the matching colors card that will be played. Should be excluded from the targets.
+	 */
+	getMatchingColoursStallTargets(handCard: DaleCard): DaleCard[] {
+		const stallCards = [];
+		for (let player_id in this.gamedatas.players) {
+			if (+player_id != this.player_id) {
+				for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
+					if (stallCard.original_value == handCard.effective_value) { //original value of the stallCard, effective value of the handCard
+						stallCards.push(stallCard);
+					}
+				}
+			}
+		}
+		return stallCards;
+	}
+
 	
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -2426,6 +2488,27 @@ class DaleOfMerchants extends Gamegui
 						ditch_card_id: card!.id,
 						ditch_card_name: card.name
 					})
+				}
+				break;
+			case 'client_matchingColours':
+				if (this.verifyChameleon(card)) {
+					const client_matchingColours_targets = this.getMatchingColoursStallTargets(card);
+					if (client_matchingColours_targets.length == 0) {
+						this.showMessage(_("No card in any oppponent's stall matches this card's value")+` (${card.effective_value})`, "error");
+						return;
+					}
+					const client_matchingColours_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
+					this.setMainTitle(client_matchingColours_label);
+					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_matchingColours_label);
+					new TargetingLine(
+						card,
+						client_matchingColours_targets,
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onMatchingColours(source_id, target_id)
+					)
 				}
 				break;
 			case null:
@@ -3201,6 +3284,15 @@ class DaleOfMerchants extends Gamegui
 					this.mainClientState.enterOnStack('client_velocipede', { technique_card_id: card.id });
 				}
 				break;
+			case DaleCard.CT_MATCHINGCOLOURS:
+				fizzle = this.getMatchingColoursHandTargets(card.id).length == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_fizzle', card.id); //UNDO
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3969,7 +4061,19 @@ class DaleOfMerchants extends Gamegui
 		});
 		TargetingLine.remove();
 	}
-
+	
+	onMatchingColours(card_id: number, target_id: number) {
+		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
+			if (player_stall.contains(target_id)) {
+				this.playTechniqueCard<'client_matchingColours'>({
+					card_id: card_id,
+					stall_player_id: +player_id,
+					stall_card_id: target_id
+				})
+				break;
+			}
+		}
+	}
 
 	//(~on)
 

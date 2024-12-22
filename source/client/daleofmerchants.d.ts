@@ -381,6 +381,7 @@ declare global {
 		'client_periscopeName': { opponent_id: number, card_name: string }
 		'client_carefreeSwapper': { card_id: number },
 		'client_velocipede': { stall_player_id: number, stall_card_id: number }
+		'client_matchingColours': { card_id: number, stall_player_id: number, stall_card_id: number }
 	}
 
 	interface ClientPassiveChoice {
