@@ -959,7 +959,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 var chameleonEffect = this.getChameleonDbEffect();
                 while (chameleonEffect) {
                     chameleonEffects.push(chameleonEffect);
-                    chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id, chameleonEffect.arg).getChameleonDbEffect();
+                    chameleonEffect = new DaleCard(chameleonEffect.chameleon_target_id).getChameleonDbEffect();
                 }
                 for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
                     var effect = _a[_i];
