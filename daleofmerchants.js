@@ -5020,6 +5020,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 return false;
             }
             if (this.chameleonArgs) {
+                console.warn(this.chameleonArgs);
                 this.chameleonArgs.pickTarget(card);
             }
             var chameleonStatename;

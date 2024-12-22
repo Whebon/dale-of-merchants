@@ -1539,6 +1539,7 @@ class DaleOfMerchants extends Gamegui
 
 		if (this.chameleonArgs) {
 			//pick a target in the pre-computed tree
+			console.warn(this.chameleonArgs); //known bug: sometimes, chameleonArgs is not cleared when it should be
 			this.chameleonArgs.pickTarget(card);
 		}
 		
