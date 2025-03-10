@@ -2880,7 +2880,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $non_selected_cards
                 );
                 //2. refill the market
-                $this->refillMarket(false);
+                $this->refillMarket(true);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_PREPAIDGOOD:
@@ -3923,6 +3923,7 @@ class DaleOfMerchants extends DaleTableBasic
                     'market_card_id' => $card_id,
                     'pos' => $card["location_arg"],
                 ));
+                $this->refillMarket(true);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_HOUSECLEANING:
@@ -4433,6 +4434,7 @@ class DaleOfMerchants extends DaleTableBasic
         ));
         $nbr_market_cards = $this->cards->countCardsInLocation(MARKET);
         $opponent_ids = $this->getGameStateValuePlayerIds();
+        $this->refillMarket(true);
         if (count($opponent_ids) == 1 || $nbr_market_cards == 0) {
             //return to the original player_id
             $original_player_id = end($opponent_ids);
