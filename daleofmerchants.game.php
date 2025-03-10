@@ -396,13 +396,13 @@ class DaleOfMerchants extends DaleTableBasic
 
         //the active player receives the notification with the private arguments
         $private_player_id = $args["player_id"];
-        $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+        $this->notifyPlayer($private_player_id, $type, $private_message == null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
 
         //(optional) the involved opponent also receives the notification with the private arguments
         $private_opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : null;
         if ($private_opponent_id) {
             $private_opponent_id = $args["opponent_id"];
-            $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+            $this->notifyPlayer($private_opponent_id, $type, $private_message == null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
         }
 
         //all players receive the notification without the private arguments. (the player and opponent will ignore this on the client-side)
@@ -5379,7 +5379,7 @@ class DaleOfMerchants extends DaleTableBasic
             "_private" => array(
                 "cards" => $cards
             )
-        ));
+        ), '');
     }
 
     function stCheer() {
