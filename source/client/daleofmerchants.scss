@@ -70,9 +70,22 @@
 	text-align: center;
 }
 
+
+@keyframes high-priority {
+	from { opacity: 1.0; scale: 1; }
+	25% { opacity: 0.75;}
+	50% { opacity: 1; scale: 1.1; }
+	75% { opacity: 0.75;}
+	to { opacity: 1.0; scale: 1; }
+}
+
 .daleofmerchants-clickable {
 	cursor: pointer;
+	&.daleofmerchants-high-priority {
+		animation: high-priority 1s ease-in-out infinite;
+	}
 }
+
 
 .daleofmerchants-text {
 	pointer-events: none;

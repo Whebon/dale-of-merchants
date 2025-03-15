@@ -47,10 +47,10 @@ card_types = {}
 
 # Iterate over the rows in the dataframe
 for index, row in df.iterrows():
-    type_id = row['type_id']
+    type_id = int(row['type_id'])
     animalfolk = string_literal(row['animalfolk'])
     card_types[type_id] = {
-        'type_id': row['type_id'],
+        'type_id': int(row['type_id']),
         'name': f"clienttranslate(\"{row['name']}\")",
         'text': f"clienttranslate(\"{row['text']}\")",
         'type_displayed': type_displayed(row),
@@ -59,10 +59,10 @@ for index, row in df.iterrows():
         'has_ability': has_ability(row),
         'playable': playable(row),
         'trigger': string_literal("" if row['trigger'] == "onClient" else row['trigger']),
-        'value': row['value'],
-        'nbr': row['nbr'],
+        'value': int(row['value']),
+        'nbr': int(row['nbr']),
         'animalfolk_displayed': '""' if animalfolk == "null" else f"clienttranslate({animalfolk})",
-        'animalfolk_id': row['animalfolk_id']
+        'animalfolk_id': int(row['animalfolk_id'])
     }
 
 

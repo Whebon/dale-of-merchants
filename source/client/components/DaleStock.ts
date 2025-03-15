@@ -39,6 +39,8 @@ export class DaleStock extends Stock implements DaleLocation {
 	private actionLabel: Element | undefined = undefined;
 	private actionLabelDefaultText: string = "<DefaultText>";
 
+	private page: Gamegui | undefined;
+
 	/** Keeps track of the order in which cards in are selected (in !REVERSED! order). */
 	public orderedSelection: OrderedSelection;
 
@@ -68,6 +70,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	 */
 	init(page: Gamegui, container: Element, wrap?: Element, defaultText?: string, onItemCreate?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void, onItemDelete?: (itemDiv: HTMLElement, typeId: number, itemId: number) => void) {
 		//configure card types
+		this.page = page;
 		(page as any).allDaleStocks.push(this);
 		for (let i in page.gamedatas.cardTypes) {
 			let type_id = page.gamedatas.cardTypes[i]!.type_id;
@@ -211,9 +214,16 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 		if (this.isClickable(card_id)) {
 			div.classList.add("daleofmerchants-clickable");
+			if (this.isClickableHighPriority(card_id)) {
+				div.classList.add("daleofmerchants-high-priority");
+			}
+			else {
+				div.classList.remove("daleofmerchants-high-priority");
+			}
 		}
 		else {
 			div.classList.remove("daleofmerchants-clickable");
+			div.classList.remove("daleofmerchants-high-priority");
 		}
 	}
 
@@ -294,14 +304,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickAbility':
 				return card.isPlayable() && !card.isTechnique();
 			case 'clickAbilityPostCleanup':
-				const clickAbilityPostCleanup_abilities = [
-					DaleCard.CT_GOODOLDTIMES,
-					DaleCard.CT_MARKETDISCOVERY,
-					DaleCard.CT_REFRESHINGDRINK,
-					DaleCard.CT_SLICEOFLIFE,
-					DaleCard.CT_BARGAINSEEKER
-				]
-				return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
+				return card.isPlayablePostCleanUp();
 			case 'clickRetainSelection':
 				return true;
 			case 'clickOnTurnStart':
@@ -339,6 +342,20 @@ export class DaleStock extends Stock implements DaleLocation {
 					return card.effective_animalfolk_id == +clickAnimalfolk_match[1]!;
 				}
 				throw new Error(`isClickable has no definition for selectionMode '${this.selectionMode}'`)
+		}
+	}
+
+	/**
+	 * @returns `true` if the card should be highlighted (usually if `isClickable` is true)
+	 * "Hello, please use me!"
+	 */
+	private isClickableHighPriority(card_id: number): boolean {
+		const card = new DaleCard(card_id);
+		switch (this.selectionMode) {
+			case 'clickAbilityPostCleanup':
+				return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
+			default:
+				return false;
 		}
 	}
 

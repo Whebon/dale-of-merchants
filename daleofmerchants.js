@@ -1187,7 +1187,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return DaleCard.cardTypes[this.effective_type_id].is_technique;
         };
         DaleCard.prototype.isPlayable = function () {
-            return DaleCard.cardTypes[this.effective_type_id].playable;
+            return DaleCard.cardTypes[this.effective_type_id].playable && DaleCard.cardTypes[this.effective_type_id].trigger == null;
+        };
+        DaleCard.prototype.isPlayablePostCleanUp = function () {
+            return DaleCard.cardTypes[this.effective_type_id].playable && DaleCard.cardTypes[this.effective_type_id].trigger == 'onCleanUp';
         };
         DaleCard.isPlayable = function (type_id) {
             return DaleCard.cardTypes[type_id].playable;
@@ -1594,6 +1597,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         }
         DaleStock.prototype.init = function (page, container, wrap, defaultText, onItemCreate, onItemDelete) {
             var _a;
+            this.page = page;
             page.allDaleStocks.push(this);
             for (var i in page.gamedatas.cardTypes) {
                 var type_id = page.gamedatas.cardTypes[i].type_id;
@@ -1684,9 +1688,16 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
             if (this.isClickable(card_id)) {
                 div.classList.add("daleofmerchants-clickable");
+                if (this.isClickableHighPriority(card_id)) {
+                    div.classList.add("daleofmerchants-high-priority");
+                }
+                else {
+                    div.classList.remove("daleofmerchants-high-priority");
+                }
             }
             else {
                 div.classList.remove("daleofmerchants-clickable");
+                div.classList.remove("daleofmerchants-high-priority");
             }
         };
         DaleStock.prototype.setSelectionMaxSize = function () {
@@ -1753,14 +1764,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickAbility':
                     return card.isPlayable() && !card.isTechnique();
                 case 'clickAbilityPostCleanup':
-                    var clickAbilityPostCleanup_abilities = [
-                        DaleCard_1.DaleCard.CT_GOODOLDTIMES,
-                        DaleCard_1.DaleCard.CT_MARKETDISCOVERY,
-                        DaleCard_1.DaleCard.CT_REFRESHINGDRINK,
-                        DaleCard_1.DaleCard.CT_SLICEOFLIFE,
-                        DaleCard_1.DaleCard.CT_BARGAINSEEKER
-                    ];
-                    return card.isChameleon() || clickAbilityPostCleanup_abilities.includes(card.effective_type_id);
+                    return card.isPlayablePostCleanUp();
                 case 'clickRetainSelection':
                     return true;
                 case 'clickOnTurnStart':
@@ -1799,6 +1803,15 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                         return card.effective_animalfolk_id == +clickAnimalfolk_match[1];
                     }
                     throw new Error("isClickable has no definition for selectionMode '".concat(this.selectionMode, "'"));
+            }
+        };
+        DaleStock.prototype.isClickableHighPriority = function (card_id) {
+            var card = new DaleCard_1.DaleCard(card_id);
+            switch (this.selectionMode) {
+                case 'clickAbilityPostCleanup':
+                    return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
+                default:
+                    return false;
             }
         };
         DaleStock.prototype.setWrapClass = function (wrapClass, labelText) {

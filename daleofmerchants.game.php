@@ -788,9 +788,9 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function getMaximumHandSize($player_id, array $hand_cards, array $stall_cards): int {
         $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
-        $cookies = $this->countTypeId($hand_cards, CT_COOKIES);
+        //$cookies = $this->countTypeId($hand_cards, CT_COOKIES); //old cookies effect
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
-        return 5 + $bribes + $cookies + $sofas;
+        return 5 + $bribes + $sofas;
     }
 
     /**
@@ -831,31 +831,32 @@ class DaleOfMerchants extends DaleTableBasic
                 $hand_cards = array_merge($hand_cards, $cards);
             }
 
-            //autobind chameleons to cookies
-            foreach ($hand_cards as $hand_card) {
-                $type_id = $this->getTypeId($hand_card);
-                if ($this->isChameleonTypeId($type_id)) {
-                    $target_ids = $this->getChameleonTargets($hand_card["id"], $type_id);
-                    $targets = $this->cards->getCards($target_ids);
-                    $onlyCookies = count($targets) > 0;
-                    foreach ($targets as $target) {
-                        if ($this->getTypeId($target) != CT_COOKIES) {
-                            $onlyCookies = false;
-                            break;
-                        }
-                    }
-                    if ($onlyCookies) {
-                        if ($this->getTypeId(current($targets)) == CT_COOKIES) {
-                            $this->effects->insertModification($hand_card["id"], $type_id, CT_COOKIES, current($target_ids));
-                            $this->notifyAllPlayers('message', clienttranslate('${player_name}\'s ${chameleon_card_name} automatically copies Cookies'), array(
-                                'chameleon_card_name' => $this->card_types[$type_id]['name'],
-                                'player_name' => $this->getActivePlayerName()
-                            ));
-                        }
-                    }
-                }
-            }
-            
+            //TODO: safely remove this (deprecated chameleons)
+            // //autobind chameleons to cookies
+            // foreach ($hand_cards as $hand_card) {
+            //     $type_id = $this->getTypeId($hand_card);
+            //     if ($this->isChameleonTypeId($type_id)) {
+            //         $target_ids = $this->getChameleonTargets($hand_card["id"], $type_id);
+            //         $targets = $this->cards->getCards($target_ids);
+            //         $onlyCookies = count($targets) > 0;
+            //         foreach ($targets as $target) {
+            //             if ($this->getTypeId($target) != CT_COOKIES) {
+            //                 $onlyCookies = false;
+            //                 break;
+            //             }
+            //         }
+            //         if ($onlyCookies) {
+            //             if ($this->getTypeId(current($targets)) == CT_COOKIES) {
+            //                 $this->effects->insertModification($hand_card["id"], $type_id, CT_COOKIES, current($target_ids));
+            //                 $this->notifyAllPlayers('message', clienttranslate('${player_name}\'s ${chameleon_card_name} automatically copies Cookies'), array(
+            //                     'chameleon_card_name' => $this->card_types[$type_id]['name'],
+            //                     'player_name' => $this->getActivePlayerName()
+            //                 ));
+            //             }
+            //         }
+            //     }
+            // }
+
             //recompute the maximum hand size
             $new_maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards, $stall_cards);
             if ($maximum_hand_size == $new_maximum_hand_size) {
@@ -874,14 +875,14 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
 
-        //notify players about CT_COOKIES
-        $number_of_cookies = $this->countTypeId($hand_cards, CT_COOKIES);
-        if ($number_of_cookies > 0) {
-            $this->notifyAllPlayers('message', clienttranslate('Cookies: ${player_name} increases their hand size by ${nbr}'), array(
-                "player_name" => $this->getPlayerNameById($player_id),
-                "nbr" => $number_of_cookies
-            ));
-        }
+        // //notify players about CT_COOKIES (DoM v1)
+        // $number_of_cookies = $this->countTypeId($hand_cards, CT_COOKIES);
+        // if ($number_of_cookies > 0) {
+        //     $this->notifyAllPlayers('message', clienttranslate('Cookies: ${player_name} increases their hand size by ${nbr}'), array(
+        //         "player_name" => $this->getPlayerNameById($player_id),
+        //         "nbr" => $number_of_cookies
+        //     ));
+        // }
 
         //notify about the new cards from deck
         if (count($new_hand_cards) > 0) {
@@ -4003,8 +4004,21 @@ class DaleOfMerchants extends DaleTableBasic
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
 
+        //Check triggers
+        $isPostCleanUpPhase = $this->gamestate->state()['name'] == 'postCleanUpPhase';
+        if ($isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] != "onCleanUp") {
+            throw new BgaUserException($this->_("This card's ability can not be used at the end of your turn"));
+        }
+        if (!$isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] == "onCleanUp") {
+            throw new BgaUserException($this->_("This card's ability can only be used at the end of your turn"));
+        }
+
         //Execute Passive Ability
         switch($type_id) {
+            case CT_COOKIES:
+                $this->draw(clienttranslate('Cookies: ${player_name} draws a card'));
+                $this->effects->insertModification($passive_card_id, CT_COOKIES);
+                break;
             case CT_GOODOLDTIMES:
                 $dbcard = $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to ditch a card from the market deck'));
                 $target_type_id = $this->getTypeId($dbcard);
@@ -4963,7 +4977,8 @@ class DaleOfMerchants extends DaleTableBasic
         foreach ($chameleons_json as $local_chain) {
             $target_type_ids = $local_chain["target_type_ids"];
             if ($target_type_ids > 0) {
-                if ($target_type_ids[count($target_type_ids)-1] == CT_COOKIES) {
+                $target_type_id = $target_type_ids[count($target_type_ids)-1];
+                if ($this->card_types[$target_type_id]["trigger"] == "onCleanUp") {
                     $chameleon_ids[] = $local_chain["card_id"];
                 }
             }
@@ -5188,42 +5203,42 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stCleanUpPhase() {
-        //1. fill your hand to the maximum hand size
+        //1. fill empty market slots
+        $this->refillMarket(true);
+
+        //2. fill your hand to the maximum hand size
         $player_id = $this->getActivePlayerId();
         $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
         $hasDrawnCards = $this->refillHand($isPostCleanUpPhase);
 
-        //2. fill empty market slots
-        $this->refillMarket(true);
-
         //3. check for post clean-up phase
-        $usesPostCleanUp = array(CT_MARKETDISCOVERY, CT_GOODOLDTIMES, CT_REFRESHINGDRINK, CT_SLICEOFLIFE, CT_BARGAINSEEKER);
         if ($hasDrawnCards || !$isPostCleanUpPhase) {
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
             foreach ($dbcards as $card_id => $card) {
                 $type_id = $this->getTypeId($card);
-                if (in_array($type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card)) {
+                if ($this->card_types[$type_id]["trigger"] == "onCleanUp" && !$this->effects->isPassiveUsed($card)) {
                     //the hand contains a card that uses the post clean up phase
                     $this->gamestate->nextState("trPostCleanUpPhase");
                     return;
                 }
-                $visited_chameleons = array();
-                $target_ids = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
-                $dbtargets = $this->cards->getCards($target_ids);
-                if (in_array(CT_GOODOLDTIMES, $visited_chameleons) && !$this->effects->isPassiveUsed($card)) {
-                    //the chameleon can reach an CT_GOODOLDTIMES node
-                    $this->gamestate->nextState("trPostCleanUpPhase");
-                    return;
-                }
-                foreach ($dbtargets as $dbtarget) {
-                    $target_type_id = $this->getTypeId($dbtarget);
-                    $optional_cookies = ($target_type_id == CT_COOKIES && count($dbtargets) >= 2);
-                    if ($optional_cookies || (in_array($target_type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card))) {
-                        //the hand contains a chameleon card that can reach a card that uses the post clean up phase
-                        $this->gamestate->nextState("trPostCleanUpPhase");
-                        return; 
-                    }
-                }
+                //TODO: safely remove this (deprecated chameleons)
+                // $visited_chameleons = array();
+                // $target_ids = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
+                // $dbtargets = $this->cards->getCards($target_ids);
+                // if (in_array(CT_GOODOLDTIMES, $visited_chameleons) && !$this->effects->isPassiveUsed($card)) {
+                //     //the chameleon can reach an CT_GOODOLDTIMES node
+                //     $this->gamestate->nextState("trPostCleanUpPhase");
+                //     return;
+                // }
+                // foreach ($dbtargets as $dbtarget) {
+                //     $target_type_id = $this->getTypeId($dbtarget);
+                //     $optional_cookies = ($target_type_id == CT_COOKIES && count($dbtargets) >= 2);
+                //     if ($optional_cookies || (in_array($target_type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card))) {
+                //         //the hand contains a chameleon card that can reach a card that uses the post clean up phase
+                //         $this->gamestate->nextState("trPostCleanUpPhase");
+                //         return; 
+                //     }
+                // }
             }
         }
         $this->setGameStateValue("isPostCleanUpPhase", 0);
