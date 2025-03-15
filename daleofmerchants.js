@@ -3367,11 +3367,11 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_giftVoucher':
                         return _("${card_name}: ${you} must choose a card from the market to swap with");
                     case 'client_loyalPartner':
-                        return _("${card_name}: ${you} may choose the order to <stronger>ditch</stronger> all cards from the market");
+                        return _("${card_name}: ${you} may choose to <stronger>ditch</stronger> any number of cards from the market");
                     case 'client_prepaidGood':
                         return _("${card_name}: ${you} must choose a card from the market");
                     case 'client_nuisance':
-                        return _("${card_name}: ${you} may choose up to 2 opponents");
+                        return _("${card_name}: ${you} must choose 1-2 opponent(s)");
                     case 'client_rottenFood':
                         return _("${card_name}: ${you} must choose a card to place on another player\'s deck");
                     case 'client_dirtyExchange':
@@ -4626,7 +4626,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_loyalPartner':
-                    this.addActionButton("confirm-button", _("Ditch all"), "onLoyalPartner");
+                    this.addActionButton("confirm-button", _("Ditch selected"), "onLoyalPartner");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_prepaidGood':

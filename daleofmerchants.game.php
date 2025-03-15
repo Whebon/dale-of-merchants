@@ -2877,13 +2877,17 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trSamePlayer");
                 break;
             case CT_LOYALPARTNER:
-                //get the non-selected cards and selected cards
+                //get the selected cards
                 $card_ids = $args["card_ids"];
-                $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
                 $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
-                foreach ($selected_cards as $card_id => $card) {
-                    unset($non_selected_cards[$card_id]);
-                }
+                $non_selected_cards = null;
+
+                //get the non-selected cards (10th anniversary:: "all" -> "any")
+                //$non_selected_cards = $this->cards->getCardsInLocation(MARKET);
+                // foreach ($selected_cards as $card_id => $card) {
+                //     unset($non_selected_cards[$card_id]);
+                // }
+
                 //1. ditch all cards from the market board
                 $this->ditchFromMarketBoard(
                     clienttranslate('Loyal Partner: ${player_name} ditches all cards from the market'),
@@ -2937,8 +2941,11 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_NUISANCE:
                 $opponent_ids = $args["opponent_ids"];
+                if (count($opponent_ids) == 0) {
+                    throw new BgaUserException("Nuisance cannot have 0 targets");
+                }
                 if (count($opponent_ids) > 2) {
-                    throw new BgaVisibleSystemException("Nuisance cannot have more than 2 targets");
+                    throw new BgaUserException("Nuisance cannot have more than 2 targets");
                 }
                 foreach ($opponent_ids as $opponent_id) {
                     if ($opponent_id == $player_id) {

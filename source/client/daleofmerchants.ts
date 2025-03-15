@@ -1112,7 +1112,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_loyalPartner':
-				this.addActionButton("confirm-button", _("Ditch all"), "onLoyalPartner");
+				this.addActionButton("confirm-button", _("Ditch selected"), "onLoyalPartner");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_prepaidGood':
