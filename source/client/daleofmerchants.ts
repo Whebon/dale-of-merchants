@@ -688,6 +688,7 @@ class DaleOfMerchants extends Gamegui
 				const culturalPreservation_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
+				this.myDeck.openPopin();
 				break;
 			case 'sliceOfLife':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
@@ -2999,7 +3000,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_MAGNET:
-				fizzle = this.myDeck.size == 0;
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
@@ -3102,7 +3103,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_DUPLICATEENTRY:
-				fizzle = this.myDeck.size == 0;
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
@@ -3120,7 +3121,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_CULTURALPRESERVATION:
-				fizzle = this.myDeck.size == 0;
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}

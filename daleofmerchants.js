@@ -4229,6 +4229,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var culturalPreservation_args = args.args;
                     this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard_9.DaleCard.of));
                     this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
+                    this.myDeck.openPopin();
                     break;
                 case 'sliceOfLife':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
@@ -6236,7 +6237,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_MAGNET:
-                    fizzle = this.myDeck.size == 0;
+                    fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
@@ -6342,7 +6343,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_DUPLICATEENTRY:
-                    fizzle = this.myDeck.size == 0;
+                    fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
@@ -6360,7 +6361,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_CULTURALPRESERVATION:
-                    fizzle = this.myDeck.size == 0;
+                    fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }

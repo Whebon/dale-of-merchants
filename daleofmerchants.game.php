@@ -465,6 +465,22 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Check for the maximum amount of cards the effect can need, and if your deck has fewer cards, add your discard to your deck before searching
+     */
+    function reshuffleDeckForSearch(mixed $player_id, int $amount) {
+        $deck_amount = $this->cards->countCardsInLocation(DECK.$player_id);
+        if ($deck_amount < $amount) {
+            $this->cards->moveAllCardsInLocation(DISCARD.$player_id, DECK.$player_id);
+            $this->cards->shuffle(DECK.$player_id);
+            $this->notifyAllPlayers('reshuffleDeck', clienttranslate('${player_name} shuffles their discard pile to form a new deck'), array(
+                "market" => false,
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id)
+            )); 
+        }
+    }
+
+    /**
      * Draw $nbr cards from your deck and place them into your hand.
      * @param string $msg notification message for all players
      * @param int $nbr (optional) default 1. number of cards to draw from the specified player's draw pile
@@ -2638,17 +2654,12 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_MAGNET:
                 case CT_DUPLICATEENTRY:
                 case CT_CULTURALPRESERVATION:
-                    $cards = $this->cards->getCardsInLocation(DECK.$player_id);
-                    if (count($cards) >= 1) {
-                        throw new BgaVisibleSystemException("Unable to fizzle. There exists a card in the deck.");
-                    }
-                    break;
                 case CT_NIGHTSHIFT:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
                         if (isset($counts[DECK.$other_player_id]) || isset($counts[DISCARD.$other_player_id])) {
-                            throw new BgaVisibleSystemException("Unable to fizzle CT_NIGHTSHIFT. There exist cards to draw.");
+                            throw new BgaVisibleSystemException("Unable to fizzle. There exist cards in the deck/discard piles.");
                         }
                     }
                     break;
@@ -3188,6 +3199,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_MAGNET:
                 $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 1);
                 $this->gamestate->nextState("trMagnet");
                 break;
             case CT_DANGEROUSTEST:
@@ -3484,6 +3496,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DUPLICATEENTRY:
                 $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 1);
                 $this->gamestate->nextState("trDuplicateEntry");
                 break;
             case CT_HISTORYLESSON:
@@ -3516,6 +3529,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_CULTURALPRESERVATION:
                 $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 3);
                 $this->gamestate->nextState("trCulturalPreservation");
                 break;
             case CT_VORACIOUSCONSUMER:

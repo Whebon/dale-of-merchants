@@ -532,6 +532,7 @@ export class Pile implements DaleLocation {
                 else {
                     this.containerHTML.classList.remove("daleofmerchants-blinking");
                 }
+                //this.openPopin(); //doesn't call openPopin, because of nostalgic item for example
                 break;
             case 'single':
             case 'singleAnimalfolk':
