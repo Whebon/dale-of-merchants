@@ -229,8 +229,8 @@
 		}
 		.daleofmerchants-card {
 			border-radius: 10px;
-			box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-purchase); //for CT_MARKETDISCOVERY
-			outline: 3px solid var(--daleofmerchants-wrap-purchase); //for CT_MARKETDISCOVERY
+			box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-purchase); //for DEPRECATED_CT_MARKETDISCOVERY
+			outline: 3px solid var(--daleofmerchants-wrap-purchase); //for DEPRECATED_CT_MARKETDISCOVERY
 			transform: translateY(5px);
 			scale: 1.1;
 			z-index: 200;

@@ -2440,7 +2440,7 @@ class DaleOfMerchants extends DaleTableBasic
         $from_bin = $market_card['location'] == DISCARD.MARKET;
         if ($from_bin) {
             $market_card = $this->cards->getCardOnTop(DISCARD.MARKET);
-            if (!$this->containsTypeId($funds_cards, CT_MARKETDISCOVERY)) {
+            if (!$this->containsTypeId($funds_cards, DEPRECATED_CT_MARKETDISCOVERY)) {
                 throw new BgaUserException($this->_("To purchase from the bin, 'Market Discovery' must be included in the funds"));
             }
         }
@@ -4050,9 +4050,9 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->effects->insertModification($passive_card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
                 }
                 break;
-            case CT_MARKETDISCOVERY:
+            case DEPRECATED_CT_MARKETDISCOVERY:
                 $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to ditch a card from the market deck'));
-                $this->effects->insertModification($passive_card_id, CT_MARKETDISCOVERY);
+                $this->effects->insertModification($passive_card_id, DEPRECATED_CT_MARKETDISCOVERY);
                 break;
             case CT_BOLDHAGGLER:
                 $value = $this->rollDie(

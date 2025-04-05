@@ -79,6 +79,12 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCostModificationIcon = function (index) {
             return this.getIcon(6, index);
         };
+        DaleIcons.getCardIcon = function () {
+            return this.getIcon(0, 6);
+        };
+        DaleIcons.getCardsIcon = function () {
+            return this.getIcon(0, 6);
+        };
         DaleIcons.ROWS = 7;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
@@ -1264,6 +1270,12 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DESTINATION')) {
                 text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
             }
+            if (text.includes('CARDS')) {
+                text = text.replaceAll('CARDS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardsIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('CARD')) {
+                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardIcon().outerHTML, "</span>"));
+            }
             return text;
         };
         DaleCard.prototype.updateChameleonOverlay = function (temp_div, fade) {
@@ -1407,7 +1419,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_LOYALPARTNER = 12;
         DaleCard.CT_PREPAIDGOOD = 13;
         DaleCard.CT_ESSENTIALPURCHASE = 14;
-        DaleCard.CT_MARKETDISCOVERY = 15;
+        DaleCard.CT_GIFTVOUCHER = 15;
         DaleCard.CT_SPECIALOFFER = 16;
         DaleCard.CT_STOCKCLEARANCE = 17;
         DaleCard.CT_WILYFELLOW = 18;
@@ -1431,7 +1443,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_FLEXIBLESHOPKEEPER = 36;
         DaleCard.CT_REFLECTION = 37;
         DaleCard.CT_GOODOLDTIMES = 38;
-        DaleCard.CT_GIFTVOUCHER = 39;
+        DaleCard.CT_SOUNDDETECTORS = 39;
         DaleCard.CT_TRENDSETTING = 40;
         DaleCard.CT_SEEINGDOUBLES = 41;
         DaleCard.CT_TIRELESSTINKERER = 42;
@@ -1560,6 +1572,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_SECRETMISSION = 165;
         DaleCard.CT_CAPTURE = 166;
         DaleCard.CT_PROVOCATION = 167;
+        DaleCard.DEPRECATED_CT_MARKETDISCOVERY = 168;
         return DaleCard;
     }());
     exports.DaleCard = DaleCard;
@@ -6537,7 +6550,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onClickPassive = function (card, postCleanUp) {
             if (postCleanUp === void 0) { postCleanUp = false; }
             var type_id = card.effective_type_id;
-            if (type_id != DaleCard_9.DaleCard.CT_GOODOLDTIMES && type_id != DaleCard_9.DaleCard.CT_MARKETDISCOVERY) {
+            if (type_id != DaleCard_9.DaleCard.CT_GOODOLDTIMES && type_id != DaleCard_9.DaleCard.DEPRECATED_CT_MARKETDISCOVERY) {
                 if (card.isChameleon()) {
                     this.showMessage(_("This chameleon card has no valid targets"), 'error');
                     return;
@@ -6556,7 +6569,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.showMessage(_("This passive's ability has no valid target"), 'error');
                     }
                     break;
-                case DaleCard_9.DaleCard.CT_MARKETDISCOVERY:
+                case DaleCard_9.DaleCard.DEPRECATED_CT_MARKETDISCOVERY:
                     if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
                         if (card.isPassiveUsed()) {
                             this.showMessage(_("This passive's ability was already used"), 'error');

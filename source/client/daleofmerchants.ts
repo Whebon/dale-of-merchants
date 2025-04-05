@@ -3308,7 +3308,7 @@ class DaleOfMerchants extends Gamegui
 	 */
 	onClickPassive(card: DaleCard, postCleanUp: boolean = false) {
 		const type_id = card.effective_type_id;
-		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.CT_MARKETDISCOVERY) {
+		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.DEPRECATED_CT_MARKETDISCOVERY) {
 			if (card.isChameleon()) {
 				this.showMessage(_("This chameleon card has no valid targets"), 'error');
 				return;
@@ -3327,7 +3327,7 @@ class DaleOfMerchants extends Gamegui
 					this.showMessage(_("This passive's ability has no valid target"), 'error');
 				}
 				break;
-			case DaleCard.CT_MARKETDISCOVERY:
+			case DaleCard.DEPRECATED_CT_MARKETDISCOVERY:
 				if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
 					if (card.isPassiveUsed()) {
 						this.showMessage(_("This passive's ability was already used"), 'error');

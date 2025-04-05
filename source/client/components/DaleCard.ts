@@ -58,7 +58,7 @@ export class DaleCard {
     static readonly CT_LOYALPARTNER: number = 12;
     static readonly CT_PREPAIDGOOD: number = 13;
     static readonly CT_ESSENTIALPURCHASE: number = 14;
-    static readonly CT_MARKETDISCOVERY: number = 15;
+    static readonly CT_GIFTVOUCHER: number = 15;
     static readonly CT_SPECIALOFFER: number = 16;
     static readonly CT_STOCKCLEARANCE: number = 17;
     static readonly CT_WILYFELLOW: number = 18;
@@ -82,7 +82,7 @@ export class DaleCard {
     static readonly CT_FLEXIBLESHOPKEEPER: number = 36;
     static readonly CT_REFLECTION: number = 37;
     static readonly CT_GOODOLDTIMES: number = 38;
-    static readonly CT_GIFTVOUCHER: number = 39;
+    static readonly CT_SOUNDDETECTORS: number = 39;
     static readonly CT_TRENDSETTING: number = 40;
     static readonly CT_SEEINGDOUBLES: number = 41;
     static readonly CT_TIRELESSTINKERER: number = 42;
@@ -211,6 +211,7 @@ export class DaleCard {
     static readonly CT_SECRETMISSION: number = 165;
     static readonly CT_CAPTURE: number = 166;
     static readonly CT_PROVOCATION: number = 167;
+    static readonly DEPRECATED_CT_MARKETDISCOVERY: number = 168;
     
 
     public id: number
@@ -883,6 +884,12 @@ export class DaleCard {
         }
         if (text.includes('DESTINATION')) {
             text = text.replaceAll('DESTINATION', `<span style="color: var(--pangolin2); font-weight: bold;">${_("destination")}</span>`);
+        }
+        if (text.includes('CARDS')) {
+            text = text.replaceAll('CARDS', `<span class="daleofmerchants-log-span">${DaleIcons.getCardsIcon().outerHTML}</span>`);
+        }
+        if (text.includes('CARD')) {
+            text = text.replaceAll('CARD', `<span class="daleofmerchants-log-span">${DaleIcons.getCardIcon().outerHTML}</span>`);
         }
         return text;
     }

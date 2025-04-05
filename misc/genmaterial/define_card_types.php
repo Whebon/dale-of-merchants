@@ -13,7 +13,7 @@
   define('CT_LOYALPARTNER', 12);
   define('CT_PREPAIDGOOD', 13);
   define('CT_ESSENTIALPURCHASE', 14);
-  define('CT_MARKETDISCOVERY', 15);
+  define('CT_GIFTVOUCHER', 15);
   define('CT_SPECIALOFFER', 16);
   define('CT_STOCKCLEARANCE', 17);
   define('CT_WILYFELLOW', 18);
@@ -37,7 +37,7 @@
   define('CT_FLEXIBLESHOPKEEPER', 36);
   define('CT_REFLECTION', 37);
   define('CT_GOODOLDTIMES', 38);
-  define('CT_GIFTVOUCHER', 39);
+  define('CT_SOUNDDETECTORS', 39);
   define('CT_TRENDSETTING', 40);
   define('CT_SEEINGDOUBLES', 41);
   define('CT_TIRELESSTINKERER', 42);
@@ -166,3 +166,4 @@
   define('CT_SECRETMISSION', 165);
   define('CT_CAPTURE', 166);
   define('CT_PROVOCATION', 167);
+  define('DEPRECATED_CT_MARKETDISCOVERY', 168);

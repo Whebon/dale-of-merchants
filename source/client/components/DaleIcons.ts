@@ -107,4 +107,17 @@ export class DaleIcons {
     public static getCostModificationIcon(index: number): HTMLElement {
         return this.getIcon(6, index);
     }
+
+
+    ////////////////////////////////////////
+    ////////    DO NOT EXIST YET    ////////
+    ////////////////////////////////////////
+
+    public static getCardIcon(): HTMLElement {
+        return this.getIcon(0, 6); //TODO
+    }
+
+    public static getCardsIcon(): HTMLElement {
+        return this.getIcon(0, 6); //TODO
+    }
 }
