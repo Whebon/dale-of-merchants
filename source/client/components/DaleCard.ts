@@ -833,9 +833,9 @@ export class DaleCard {
             text = text.replaceAll('DIE_OCELOT', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
+                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
             </span>`);
         }

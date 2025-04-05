@@ -1249,17 +1249,17 @@ class DaleOfMerchants extends DaleTableBasic
                         $die_icon = DIE_OCELOT_0;
                         break;
                     case 1:
-                    case 2:
                         $die_value = 1;
                         $die_label = '1';
                         $die_icon = DIE_OCELOT_1;
                         break;
+                    case 2:
                     case 3:
-                    case 4:
                         $die_value = 2;
                         $die_label = '2';
                         $die_icon = DIE_OCELOT_2;
                         break;
+                    case 4:
                     case 5:
                         $die_value = 3;
                         $die_label = '3';
