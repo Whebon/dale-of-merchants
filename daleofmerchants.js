@@ -1810,6 +1810,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             switch (this.selectionMode) {
                 case 'clickAbilityPostCleanup':
                     return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
+                case 'clickOnTurnStart':
+                    return true;
                 default:
                     return false;
             }
@@ -3943,10 +3945,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             switch (stateName) {
                 case 'turnStart':
                     this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'daleofmerchants-wrap-technique');
-                    var turnStart_unique_card_id_1 = this.mySchedule.getUniqueClickableCardId();
-                    if (turnStart_unique_card_id_1) {
-                        setTimeout((function () { return _this.onTurnStartTriggerTechnique(turnStart_unique_card_id_1); }).bind(this), 1);
-                    }
                     break;
                 case 'postCleanUpPhase':
                     this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));

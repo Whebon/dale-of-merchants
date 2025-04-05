@@ -351,11 +351,13 @@ class DaleOfMerchants extends Gamegui
 		switch( stateName ){
 			case 'turnStart':
 				this.mySchedule.setSelectionMode('clickOnTurnStart', undefined, 'daleofmerchants-wrap-technique');
-				const turnStart_unique_card_id = this.mySchedule.getUniqueClickableCardId();
-				if (turnStart_unique_card_id) {
-					setTimeout((()=>this.onTurnStartTriggerTechnique(turnStart_unique_card_id)).bind(this), 1);
-					//this.onTurnStartTriggerTechnique(turnStart_unique_card_id);
-				}
+				// The code below automatically plays the only resolvable card in the schedule
+				// However, automatic actions lead to the "Move Recorded, Waiting for Update" issue spotted by Sir Thecos
+				// const turnStart_unique_card_id = this.mySchedule.getUniqueClickableCardId();
+				// if (turnStart_unique_card_id) {
+				// 	setTimeout((()=>this.onTurnStartTriggerTechnique(turnStart_unique_card_id)).bind(this), 1);
+				// 	//this.onTurnStartTriggerTechnique(turnStart_unique_card_id);
+				// }
 				break;
 			case 'postCleanUpPhase':
 				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));

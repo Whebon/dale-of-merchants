@@ -354,6 +354,8 @@ export class DaleStock extends Stock implements DaleLocation {
 		switch (this.selectionMode) {
 			case 'clickAbilityPostCleanup':
 				return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
+			case 'clickOnTurnStart':
+				return true;
 			default:
 				return false;
 		}
