@@ -649,8 +649,8 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'daringAdventurer':
 				const daringAdventurer_args = args.args as { die_value: number };
-				this.market!.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
-				this.market!.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to discard"));
+				this.myHand.orderedSelection.setMaxSize(daringAdventurer_args.die_value);
 				break;
 			case 'client_rareArtefact':
 				const client_rareArtefact_args = (this.mainClientState.args as ClientGameStates['client_rareArtefact']);
@@ -976,8 +976,7 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(0);
 				break;
 			case 'daringAdventurer':
-				this.market!.setSelectionMode(0);
-				this.market!.orderedSelection.setMaxSize(Number.POSITIVE_INFINITY);
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_swank':
 				this.myHand.setSelectionMode('none');
@@ -1328,7 +1327,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'daringAdventurer':
-				this.addActionButton("confirm-button", _("Ditch selected"), "onDaringAdventurer");
+				this.addActionButton("confirm-button", _("Discard selected"), "onDaringAdventurer");
 				break;
 			case 'client_rareArtefact':
 				this.addActionButtonCancelClient();
@@ -3879,17 +3878,16 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onDaringAdventurer() {
-		const card_ids = this.market!.orderedSelection.get();
+		const card_ids = this.myHand.orderedSelection.get();
 		const args = this.gamedatas.gamestate.args as { die_value: number };
-		const total_cards = this.market!.getCards().length;
-		const nbr = Math.min(args.die_value, total_cards);
-		if (card_ids.length != nbr) {
-			this.showMessage(_("Please select exactly ")+nbr+_(" card(s) from the market"), 'error');
+		if (card_ids.length != args.die_value) {
+			this.showMessage(_("Please select exactly ") + args.die_value + _(" card(s) to discard"), 'error');
 			return;
 		}
 		this.bgaPerformAction('actDaringAdventurer', {
 			card_ids: this.arrayToNumberList(card_ids)
-		});
+		})
+
 	}
 
 	onRareArtefact(card_id: number) {

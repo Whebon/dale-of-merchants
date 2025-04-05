@@ -396,13 +396,13 @@ class DaleOfMerchants extends DaleTableBasic
 
         //the active player receives the notification with the private arguments
         $private_player_id = $args["player_id"];
-        $this->notifyPlayer($private_player_id, $type, $private_message == null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+        $this->notifyPlayer($private_player_id, $type, $private_message != null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
 
         //(optional) the involved opponent also receives the notification with the private arguments
         $private_opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : null;
         if ($private_opponent_id) {
             $private_opponent_id = $args["opponent_id"];
-            $this->notifyPlayer($private_opponent_id, $type, $private_message == null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+            $this->notifyPlayer($private_opponent_id, $type, $private_message != null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
         }
 
         //all players receive the notification without the private arguments. (the player and opponent will ignore this on the client-side)
@@ -3420,6 +3420,7 @@ class DaleOfMerchants extends DaleTableBasic
                     ANIMALFOLK_POLECATS,
                     $technique_card,
                 );
+                $die_value = min($die_value, $this->cards->countCardsInDrawAndDiscardOfPlayer($player_id)); //the die value is restricted by the number of available cards
                 $this->setGameStateValue("die_value", $die_value);
                 $this->gamestate->nextState("trDaringAdventurer");
                 break;
@@ -4485,29 +4486,19 @@ class DaleOfMerchants extends DaleTableBasic
 
     function actDaringAdventurer($card_ids) {
         $this->checkAction("actDaringAdventurer");
-        $player_id = $this->getActivePlayerId();
         $card_ids = $this->numberListToArray($card_ids);
-        $cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
+        $player_id = $this->getActivePlayerId(); 
         $die_value = $this->getGameStateValue("die_value");
-        $nbr = count($cards);
-        if ($nbr != $die_value) {
-            if ($nbr > $die_value) {
-                throw new BgaVisibleSystemException("Attempted to ditch $nbr cards, exceeding the rolled value of $die_value");
-            }
-            $total_nbr = $this->cards->countCardsInLocation(MARKET);
-            if ($nbr < $total_nbr) {
-                throw new BgaVisibleSystemException("Attempted to ditch $nbr/$total_nbr cards, but the rolled value of $die_value was expected");
-            }
+        if (count($card_ids) != $die_value) {
+            throw new BgaUserException($this->_("You must discard the same number of cards that you drew"));
         }
-        
-        //ditch the selected cards from the market board
-        $this->ditchFromMarketBoard(
-            clienttranslate('Daring Adventuerer: ${player_name} ditches ${nbr} cards from the market'),
+        $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        $this->discardMultiple(
+            clienttranslate('Daring Adventurer: ${player_name} discards ${nbr} cards'),
+            $player_id, 
             $card_ids, 
             $cards
         );
-        //refill the market
-        $this->refillMarket(false);
         $this->fullyResolveCard($player_id);
     }
 
@@ -5472,6 +5463,18 @@ class DaleOfMerchants extends DaleTableBasic
                     "to_limbo" => true
                 ), clienttranslate('Charity: ${player_name} takes a ${card_name} from ${opponent_name}'));
             }
+        }
+    }
+
+    function stDaringAdventurer() {
+        $die_value = $this->getGameStateValue("die_value");
+        $nbr_cards_drawn =$this->draw(
+            clienttranslate('Daring Adventurer: ${player_name} draws ${nbr} cards'), 
+            $die_value
+        );
+        if ($nbr_cards_drawn == 0) {
+            //daring adventurer has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 

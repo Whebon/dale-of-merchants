@@ -193,7 +193,6 @@ if (!defined('CT_CARDBACK')) {
     define('CT_DEPRECATED_WHIRLIGIG', 169);
     define('CT_DEPRECATED_CHEER', 170);
     define('CT_DEPRECATED_TASTERS', 171);
-    define('CT_DEPRECATED_DARINGADVENTURER', 172);
 }
 
 //define all animalfolk

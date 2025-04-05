@@ -446,8 +446,8 @@ interface GameStates {
 	},
 	59: {
 		'name': 'dangerousTest',
-		'description': 'Dangerous Test: ${actplayer} must discard 3 cards',
-		'descriptionmyturn': 'Dangerous Test: ${you} must discard 3 cards',
+		'description': 'Dangerous Test: ${actplayer} must discard 3 card(s)',
+		'descriptionmyturn': 'Dangerous Test: ${you} must discard 3 card(s)',
 		'type': 'activeplayer',
 		'action': 'stDangerousTest',
 		'possibleactions': {
@@ -522,7 +522,7 @@ interface GameStates {
 	64: {
 		'name': 'charity',
 		'description': 'Charity: ${actplayer} must give back all drawn cards',
-		'descriptionmyturn': 'Charity: ${you} must choose a card and an opponent',
+		'descriptionmyturn': 'Charity: ${you} must choose a card and a player',
 		'type': 'activeplayer',
 		'action': 'stCharity',
 		'args': 'argPlayerIds',
@@ -543,10 +543,11 @@ interface GameStates {
 	},
 	66: {
 		'name': 'daringAdventurer',
-		'description': 'Daring Adventurer: ${actplayer} must ditch ${die_value} of cards from the market',
-		'descriptionmyturn': 'Daring Adventurer: ${you} must ditch ${die_value} of cards from the market',
+		'description': 'Daring Adventurer: ${actplayer} must discard ${die_value} card(s)',
+		'descriptionmyturn': 'Daring Adventurer: ${you} must discard ${die_value} card(s)',
 		'type': 'activeplayer',
 		'args': 'argDie',
+		'action': 'stDaringAdventurer',
 		'possibleactions': {
 			'actDaringAdventurer': [{
 				'name': 'card_ids',
@@ -560,8 +561,8 @@ interface GameStates {
 	},
 	67: {
 		'name': 'naturalSurvivor',
-		'description': 'Natural Survivor: ${actplayer} must search their deck for ${die_value} cards',
-		'descriptionmyturn': 'Natural Survivor: ${you} must search your deck for ${die_value} cards',
+		'description': 'Natural Survivor: ${actplayer} must search their deck for ${die_value} card(s)',
+		'descriptionmyturn': 'Natural Survivor: ${you} must search your deck for ${die_value} card(s)',
 		'type': 'activeplayer',
 		'args': 'argNaturalSurvivor',
 		'possibleactions': {

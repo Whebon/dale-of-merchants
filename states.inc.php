@@ -34,6 +34,7 @@ if (false) {
 	$game->stRuthlessCompetition();
 	$game->stCunningNeighbour();
 	$game->stCharity();
+	$game->stDaringAdventurer();
 	$game->stSliceOfLife();
 	$game->stDelightfulSurprise();
 	$game->stPompousProfessional();
@@ -280,8 +281,8 @@ $machinestates = array(
 	),
 	59 => array(
 		'name' => 'dangerousTest',
-		'description' => clienttranslate('Dangerous Test: ${actplayer} must discard 3 cards'),
-		'descriptionmyturn' => clienttranslate('Dangerous Test: ${you} must discard 3 cards'),
+		'description' => clienttranslate('Dangerous Test: ${actplayer} must discard 3 card(s)'),
+		'descriptionmyturn' => clienttranslate('Dangerous Test: ${you} must discard 3 card(s)'),
 		'type' => 'activeplayer',
 		'action' => 'stDangerousTest',
 		'possibleactions' => ['actDangerousTest'],
@@ -328,7 +329,7 @@ $machinestates = array(
 	64 => array(
 		'name' => 'charity',
 		'description' => clienttranslate('Charity: ${actplayer} must give back all drawn cards'),
-		'descriptionmyturn' => clienttranslate('Charity: ${you} must choose a card and an opponent'),
+		'descriptionmyturn' => clienttranslate('Charity: ${you} must choose a card and a player'),
 		'type' => 'activeplayer',
 		'action' => 'stCharity',
 		'args' => 'argPlayerIds',
@@ -339,10 +340,11 @@ $machinestates = array(
 	),
 	66 => array(
 		'name' => 'daringAdventurer',
-		'description' => clienttranslate('Daring Adventurer: ${actplayer} must ditch ${die_value} of cards from the market'),
-		'descriptionmyturn' => clienttranslate('Daring Adventurer: ${you} must ditch ${die_value} of cards from the market'),
+		'description' => clienttranslate('Daring Adventurer: ${actplayer} must discard ${die_value} card(s)'),
+		'descriptionmyturn' => clienttranslate('Daring Adventurer: ${you} must discard ${die_value} card(s)'),
 		'type' => 'activeplayer',
 		'args' => 'argDie',
+		'action' => 'stDaringAdventurer',
 		'possibleactions' => ['actDaringAdventurer'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
@@ -350,8 +352,8 @@ $machinestates = array(
 	),
 	67 => array(
 		'name' => 'naturalSurvivor',
-		'description' => clienttranslate('Natural Survivor: ${actplayer} must search their deck for ${die_value} cards'),
-		'descriptionmyturn' => clienttranslate('Natural Survivor: ${you} must search your deck for ${die_value} cards'),
+		'description' => clienttranslate('Natural Survivor: ${actplayer} must search their deck for ${die_value} card(s)'),
+		'descriptionmyturn' => clienttranslate('Natural Survivor: ${you} must search your deck for ${die_value} card(s)'),
 		'type' => 'activeplayer',
 		'args' => 'argNaturalSurvivor',
 		'possibleactions' => ['actNaturalSurvivor'],
