@@ -1187,7 +1187,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return DaleCard.cardTypes[this.effective_type_id].is_technique;
         };
         DaleCard.prototype.isPlayable = function () {
-            return DaleCard.cardTypes[this.effective_type_id].playable && DaleCard.cardTypes[this.effective_type_id].trigger == null;
+            return this.isTechnique() || (DaleCard.cardTypes[this.effective_type_id].playable && DaleCard.cardTypes[this.effective_type_id].trigger == null);
         };
         DaleCard.prototype.isPlayablePostCleanUp = function () {
             return DaleCard.cardTypes[this.effective_type_id].playable && DaleCard.cardTypes[this.effective_type_id].trigger == 'onCleanUp';

@@ -748,7 +748,7 @@ export class DaleCard {
     }
 
     public isPlayable(): boolean {
-        return DaleCard.cardTypes[this.effective_type_id]!.playable && DaleCard.cardTypes[this.effective_type_id]!.trigger == null;
+        return this.isTechnique() || (DaleCard.cardTypes[this.effective_type_id]!.playable && DaleCard.cardTypes[this.effective_type_id]!.trigger == null);
     }
 
     public isPlayablePostCleanUp(): boolean {
