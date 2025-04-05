@@ -1574,7 +1574,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_PROVOCATION = 167;
         DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 168;
         DaleCard.CT_DEPRECATED_WHIRLIGIG = 169;
-        DaleCard.CT_DEPRECATED_CUNNINGNEIGHBOUR = 170;
+        DaleCard.CT_DEPRECATED_CHEER = 170;
         DaleCard.CT_DEPRECATED_TASTERS = 171;
         DaleCard.CT_DEPRECATED_DARINGADVENTURER = 172;
         return DaleCard;
@@ -4495,7 +4495,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'cunningNeighbour':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'cheer':
+                case 'deprecated_cheer':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
@@ -4840,7 +4840,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
                     this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
                     break;
-                case 'cheer':
+                case 'deprecated_cheer':
                     if (!this.isSpectator && this.myDeck.size > 0) {
                         var cheer_args = args;
                         this.myDeck.setContent(cheer_args._private.cards.map(DaleCard_9.DaleCard.of));
@@ -5655,8 +5655,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'cheer':
-                    this.bgaPerformAction('actCheer', {
+                case 'deprecated_cheer':
+                    this.bgaPerformAction('actDeprecatedCheer', {
                         card_id: card.id
                     });
                     this.myDeck.setSelectionMode('none');

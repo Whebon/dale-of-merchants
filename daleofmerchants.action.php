@@ -300,14 +300,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actCheer()
+	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();
 
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 
-		$this->game->actCheer( $card_id );
+		$this->game->actDeprecatedCheer( $card_id );
 		self::ajaxResponse();
 	}
 

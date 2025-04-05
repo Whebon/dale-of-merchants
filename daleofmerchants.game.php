@@ -3316,7 +3316,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCunningNeighbour");
                 break;
-            case CT_CHEER:
+            case CT_DEPRECATED_CHEER:
                 $this->beginResolvingCard($technique_card_id);
                 $this->setGameStateValue("active_player_id", $player_id);
                 $this->gamestate->nextState("trCheer");
@@ -4389,8 +4389,8 @@ class DaleOfMerchants extends DaleTableBasic
         
     }
     
-    function actCheer($card_id) {
-        $this->checkAction("actCheer");
+    function actDeprecatedCheer($card_id) {
+        $this->checkAction("actDeprecatedCheer");
         $player_id = $this->getCurrentPlayerId();
         $this->drawCardId(
             clienttranslate('Cheer: ${player_name} draws a card from their deck'), 
@@ -5420,7 +5420,7 @@ class DaleOfMerchants extends DaleTableBasic
         ), '');
     }
 
-    function stCheer() {
+    function stDeprecatedCheer() {
         $this->gamestate->setAllPlayersMultiactive();
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $player_id => $player ) {

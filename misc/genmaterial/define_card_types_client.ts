@@ -168,6 +168,6 @@ static readonly CT_CAPTURE: number = 166;
 static readonly CT_PROVOCATION: number = 167;
 static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 168;
 static readonly CT_DEPRECATED_WHIRLIGIG: number = 169;
-static readonly CT_DEPRECATED_CUNNINGNEIGHBOUR: number = 170;
+static readonly CT_DEPRECATED_CHEER: number = 170;
 static readonly CT_DEPRECATED_TASTERS: number = 171;
 static readonly CT_DEPRECATED_DARINGADVENTURER: number = 172;

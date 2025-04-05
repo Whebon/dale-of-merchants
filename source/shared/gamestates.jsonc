@@ -175,7 +175,7 @@
 	},
 
 	"33": {
-		//only used for CT_CHEER and CT_TASTERS
+		//only used for CT_DEPRECATED_CHEER and CT_DEPRECATED_TASTERS
 		"name": "fullyResolve",
 		"description": "",
 		"type": "game",
@@ -415,14 +415,14 @@
 	},
 
 	"63": {
-		"name": "cheer",
+		"name": "deprecated_cheer",
 		"description": "Other players are still searching their decks",
 		"descriptionmyturn": "${you} must search your deck for a card",
 		"type": "multipleactiveplayer",
-		"action": "stCheer",
+		"action": "stDeprecatedCheer",
 		"args": "argDeckContent",
 		"possibleactions": {
-			"actCheer": [{ "name": "card_id", "type": "AT_int" }]
+			"actDeprecatedCheer": [{ "name": "card_id", "type": "AT_int" }]
 		},
 		"transitions": { "trChangeActivePlayer": 29 }
 	},

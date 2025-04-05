@@ -520,14 +520,14 @@ interface GameStates {
 		},
 	},
 	63: {
-		'name': 'cheer',
+		'name': 'deprecated_cheer',
 		'description': 'Other players are still searching their decks',
 		'descriptionmyturn': '${you} must search your deck for a card',
 		'type': 'multipleactiveplayer',
-		'action': 'stCheer',
+		'action': 'stDeprecatedCheer',
 		'args': 'argDeckContent',
 		'possibleactions': {
-			'actCheer': [{
+			'actDeprecatedCheer': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

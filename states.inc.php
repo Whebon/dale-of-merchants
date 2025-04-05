@@ -33,7 +33,7 @@ if (false) {
 	$game->stNightShift();
 	$game->stRuthlessCompetition();
 	$game->stCunningNeighbour();
-	$game->stCheer();
+	$game->stDeprecatedCheer();
 	$game->stCharity();
 	$game->stSliceOfLife();
 	$game->stDelightfulSurprise();
@@ -326,13 +326,13 @@ $machinestates = array(
 		),
 	),
 	63 => array(
-		'name' => 'cheer',
+		'name' => 'deprecated_cheer',
 		'description' => clienttranslate('Other players are still searching their decks'),
 		'descriptionmyturn' => clienttranslate('${you} must search your deck for a card'),
 		'type' => 'multipleactiveplayer',
-		'action' => 'stCheer',
+		'action' => 'stDeprecatedCheer',
 		'args' => 'argDeckContent',
-		'possibleactions' => ['actCheer'],
+		'possibleactions' => ['actDeprecatedCheer'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
 		),
