@@ -1572,7 +1572,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_SECRETMISSION = 165;
         DaleCard.CT_CAPTURE = 166;
         DaleCard.CT_PROVOCATION = 167;
-        DaleCard.DEPRECATED_CT_MARKETDISCOVERY = 168;
+        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 168;
+        DaleCard.CT_DEPRECATED_WHIRLIGIG = 169;
+        DaleCard.CT_DEPRECATED_CUNNINGNEIGHBOUR = 170;
+        DaleCard.CT_DEPRECATED_TASTERS = 171;
+        DaleCard.CT_DEPRECATED_DARINGADVENTURER = 172;
         return DaleCard;
     }());
     exports.DaleCard = DaleCard;
@@ -3395,7 +3399,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take a card from an opponent's discard pile");
                     case 'client_newSeason':
                         return _("${card_name}: ${you} must <stronger>ditch</stronger> an animalfolk card from your discard pile");
-                    case 'client_whirligig':
+                    case 'client_deprecated_whirligig':
                         if (this._page.unique_opponent_id) {
                             return _("${card_name}: ${you} may choose the order to discard your hand");
                         }
@@ -4095,7 +4099,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_newSeason':
                     this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'daleofmerchants-wrap-technique');
                     break;
-                case 'client_whirligig':
+                case 'client_deprecated_whirligig':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_blindfold':
@@ -4406,7 +4410,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_newSeason':
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'client_whirligig':
+                case 'client_deprecated_whirligig':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_blindfold':
@@ -4667,7 +4671,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_newSeason':
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_whirligig':
+                case 'client_deprecated_whirligig':
                     if (this.unique_opponent_id) {
                         this.addActionButton("confirm-button", _("Discard all"), "onWhirligig");
                     }
@@ -4677,7 +4681,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.addActionButtonCancelClient();
                     break;
-                case 'whirligig':
+                case 'deprecated_whirligig':
                     this.addActionButton("whirligig-button", _("Next"), "onWhirligigDoneLooking");
                     break;
                 case 'client_gamble':
@@ -6194,13 +6198,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_newSeason', card.id);
                     }
                     break;
-                case DaleCard_9.DaleCard.CT_WHIRLIGIG:
+                case DaleCard_9.DaleCard.CT_DEPRECATED_WHIRLIGIG:
                     fizzle = this.myHand.count() == 1;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_whirligig', card.id);
+                        this.clientScheduleTechnique('client_deprecated_whirligig', card.id);
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_CHARM:
@@ -6550,7 +6554,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onClickPassive = function (card, postCleanUp) {
             if (postCleanUp === void 0) { postCleanUp = false; }
             var type_id = card.effective_type_id;
-            if (type_id != DaleCard_9.DaleCard.CT_GOODOLDTIMES && type_id != DaleCard_9.DaleCard.DEPRECATED_CT_MARKETDISCOVERY) {
+            if (type_id != DaleCard_9.DaleCard.CT_GOODOLDTIMES && type_id != DaleCard_9.DaleCard.CT_DEPRECATED_MARKETDISCOVERY) {
                 if (card.isChameleon()) {
                     this.showMessage(_("This chameleon card has no valid targets"), 'error');
                     return;
@@ -6569,7 +6573,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.showMessage(_("This passive's ability has no valid target"), 'error');
                     }
                     break;
-                case DaleCard_9.DaleCard.DEPRECATED_CT_MARKETDISCOVERY:
+                case DaleCard_9.DaleCard.CT_DEPRECATED_MARKETDISCOVERY:
                     if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
                         if (card.isPassiveUsed()) {
                             this.showMessage(_("This passive's ability was already used"), 'error');
@@ -6824,7 +6828,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onWhirligigDoneLooking = function () {
-            this.bgaPerformAction('actWhirligig', {});
+            this.bgaPerformAction('actDeprecatedWhirligig', {});
         };
         DaleOfMerchants.prototype.onGamble = function (opponent_id) {
             this.playTechniqueCardWithServerState({

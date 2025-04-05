@@ -37,11 +37,11 @@ if (false) {
 	$game->stCharity();
 	$game->stSliceOfLife();
 	$game->stDelightfulSurprise();
-	$game->stWhirligig();
 	$game->stPompousProfessional();
 	$game->stDelicacy();
 	$game->stUmbrella();
 	$game->stFinalStatistics();
+	$game->stDeprecatedWhirligig();
 }
 
 $machinestates = array(
@@ -122,7 +122,7 @@ $machinestates = array(
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
 			'trFashionHint' => 73,
-			'trWhirligig' => 74,
+			'trDeprecatedWhirligig' => 7400,
 			'trPompousProfessional' => 75,
 			'trDelicacy' => 76,
 			'trUmbrella' => 77,
@@ -448,17 +448,6 @@ $machinestates = array(
 			'trSamePlayer' => 30,
 		),
 	),
-	74 => array(
-		'name' => 'whirligig',
-		'description' => clienttranslate('Whirligig: ${actplayer} may look at their drawn cards'),
-		'descriptionmyturn' => clienttranslate('Whirligig: ${you} may look at your drawn cards'),
-		'type' => 'activeplayer',
-		'action' => 'stWhirligig',
-		'possibleactions' => ['actWhirligig'],
-		'transitions' => array(
-			'trSamePlayer' => 30,
-		),
-	),
 	75 => array(
 		'name' => 'pompousProfessional',
 		'description' => clienttranslate('Pompous Professional: ${actplayer} must choose a \'${animalfolk_name}\' card to place in their hand'),
@@ -511,5 +500,16 @@ $machinestates = array(
 		'action' => 'stGameEnd',
 		'args' => 'argGameEnd',
 		'updateGameProgression' => true,
+	),
+	7400 => array(
+		'name' => 'deprecated_whirligig',
+		'description' => clienttranslate('Whirligig: ${actplayer} may look at their drawn cards'),
+		'descriptionmyturn' => clienttranslate('Whirligig: ${you} may look at your drawn cards'),
+		'type' => 'activeplayer',
+		'action' => 'stDeprecatedWhirligig',
+		'possibleactions' => ['actDeprecatedWhirligig'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
 	),
 );

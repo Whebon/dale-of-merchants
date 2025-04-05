@@ -2440,7 +2440,7 @@ class DaleOfMerchants extends DaleTableBasic
         $from_bin = $market_card['location'] == DISCARD.MARKET;
         if ($from_bin) {
             $market_card = $this->cards->getCardOnTop(DISCARD.MARKET);
-            if (!$this->containsTypeId($funds_cards, DEPRECATED_CT_MARKETDISCOVERY)) {
+            if (!$this->containsTypeId($funds_cards, CT_DEPRECATED_MARKETDISCOVERY)) {
                 throw new BgaUserException($this->_("To purchase from the bin, 'Market Discovery' must be included in the funds"));
             }
         }
@@ -3031,7 +3031,7 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_WHIRLIGIG:
+            case CT_DEPRECATED_WHIRLIGIG:
                 //get args
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $card_ids = $args["card_ids"];
@@ -3053,7 +3053,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->setGameStateValue("die_value", $nbr); //not actually a die value, but we will use this state to store the number of cards for the player
                 $this->beginResolvingCard($technique_card_id);
-                $this->gamestate->nextState("trWhirligig");
+                $this->gamestate->nextState("trDeprecatedWhirligig");
                 break;
             case CT_CHARM:
                 $this->beginResolvingCard($technique_card_id);
@@ -4050,9 +4050,9 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->effects->insertModification($passive_card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
                 }
                 break;
-            case DEPRECATED_CT_MARKETDISCOVERY:
+            case CT_DEPRECATED_MARKETDISCOVERY:
                 $this->ditchFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to ditch a card from the market deck'));
-                $this->effects->insertModification($passive_card_id, DEPRECATED_CT_MARKETDISCOVERY);
+                $this->effects->insertModification($passive_card_id, CT_DEPRECATED_MARKETDISCOVERY);
                 break;
             case CT_BOLDHAGGLER:
                 $value = $this->rollDie(
@@ -4694,8 +4694,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actWhirligig() {
-        $this->checkAction("actWhirligig");
+    function actDeprecatedWhirligig() {
+        $this->checkAction("actDeprecatedWhirligig");
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
 
@@ -5487,7 +5487,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function stWhirligig() {
+    function stDeprecatedWhirligig() {
         $nbr = $this->getGameStateValue("die_value");
         $this->draw(clienttranslate('Whirligig: ${player_name} draws ${nbr} cards'), $nbr);
     }

@@ -21,15 +21,12 @@
 
  //define all Card Types (CT)
 if (!defined('CT_CARDBACK')) {
-    //Junk
     define('CT_CARDBACK', 0);
     define('CT_JUNK', 1);
     define('CT_JUNK2', 2);
     define('CT_JUNK3', 3);
     define('CT_JUNK4', 4);
     define('CT_JUNK5', 5);
-
-    //DoM1
     define('CT_SWIFTBROKER', 6);
     define('CT_COOKIES', 7);
     define('CT_SHATTEREDRELIC', 8);
@@ -66,8 +63,6 @@ if (!defined('CT_CARDBACK')) {
     define('CT_SOUNDDETECTORS', 39);
     define('CT_TRENDSETTING', 40);
     define('CT_SEEINGDOUBLES', 41);
-
-    //DoM2
     define('CT_TIRELESSTINKERER', 42);
     define('CT_CALCULATIONS', 43);
     define('CT_SAFETYPRECAUTION', 44);
@@ -104,16 +99,12 @@ if (!defined('CT_CARDBACK')) {
     define('CT_BINOCULARS', 75);
     define('CT_BALANCING', 76);
     define('CT_EXTRAREMARKS', 77);
-
-    //Beavers
     define('CT_MASTERBUILDER', 78);
     define('CT_SNACK', 79);
     define('CT_WINDOFCHANGE', 80);
     define('CT_OVERTIME', 81);
     define('CT_ORDERINCHAOS', 82);
     define('CT_PRACTICE', 83);
-
-    //DoM3
     define('CT_RIGOROUSCHRONICLER', 84);
     define('CT_REFRESHINGDRINK', 85);
     define('CT_DUPLICATEENTRY', 86);
@@ -150,8 +141,6 @@ if (!defined('CT_CARDBACK')) {
     define('CT_VIGILANCE', 117);
     define('CT_SUPPLYDEPOT', 118);
     define('CT_TACTICALMEASUREMENT', 119);
-
-    //DoMC
     define('CT_RESOURCEFULALLY', 120);
     define('CT_ICETRADE', 121);
     define('CT_TRAVELINGEQUIPMENT', 122);
@@ -200,9 +189,11 @@ if (!defined('CT_CARDBACK')) {
     define('CT_SECRETMISSION', 165);
     define('CT_CAPTURE', 166);
     define('CT_PROVOCATION', 167);
-
-    //Deprecated effects
-    define('DEPRECATED_CT_MARKETDISCOVERY', 168);
+    define('CT_DEPRECATED_MARKETDISCOVERY', 168);
+    define('CT_DEPRECATED_WHIRLIGIG', 169);
+    define('CT_DEPRECATED_CUNNINGNEIGHBOUR', 170);
+    define('CT_DEPRECATED_TASTERS', 171);
+    define('CT_DEPRECATED_DARINGADVENTURER', 172);
 }
 
 //define all animalfolk

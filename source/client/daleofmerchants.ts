@@ -515,7 +515,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'daleofmerchants-wrap-technique');
 				break;
-			case 'client_whirligig':
+			case 'client_deprecated_whirligig':
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_blindfold':
@@ -880,7 +880,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('none');
 				break;
-			case 'client_whirligig':
+			case 'client_deprecated_whirligig':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_blindfold':
@@ -1144,7 +1144,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_newSeason':
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_whirligig':
+			case 'client_deprecated_whirligig':
 				if (this.unique_opponent_id) {
 					this.addActionButton("confirm-button", _("Discard all"), "onWhirligig"); //only confirm discard order
 				}
@@ -1154,7 +1154,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.addActionButtonCancelClient();
 				break;
-			case 'whirligig':
+			case 'deprecated_whirligig':
 				this.addActionButton("whirligig-button", _("Next"), "onWhirligigDoneLooking");
 				break;
 			case 'client_gamble':
@@ -2948,13 +2948,13 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_newSeason', card.id);
 				}
 				break;
-			case DaleCard.CT_WHIRLIGIG:
+			case DaleCard.CT_DEPRECATED_WHIRLIGIG:
 				fizzle = this.myHand.count() == 1;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_whirligig', card.id);
+					this.clientScheduleTechnique('client_deprecated_whirligig', card.id);
 				}
 				break;
 			case DaleCard.CT_CHARM:
@@ -3308,7 +3308,7 @@ class DaleOfMerchants extends Gamegui
 	 */
 	onClickPassive(card: DaleCard, postCleanUp: boolean = false) {
 		const type_id = card.effective_type_id;
-		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.DEPRECATED_CT_MARKETDISCOVERY) {
+		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.CT_DEPRECATED_MARKETDISCOVERY) {
 			if (card.isChameleon()) {
 				this.showMessage(_("This chameleon card has no valid targets"), 'error');
 				return;
@@ -3327,7 +3327,7 @@ class DaleOfMerchants extends Gamegui
 					this.showMessage(_("This passive's ability has no valid target"), 'error');
 				}
 				break;
-			case DaleCard.DEPRECATED_CT_MARKETDISCOVERY:
+			case DaleCard.CT_DEPRECATED_MARKETDISCOVERY:
 				if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
 					if (card.isPassiveUsed()) {
 						this.showMessage(_("This passive's ability was already used"), 'error');
@@ -3611,14 +3611,14 @@ class DaleOfMerchants extends Gamegui
 		else {
 			throw new Error("'addActionButtonsOpponentSelection' did not work as expected");
 		}
-		this.playTechniqueCard<'client_whirligig'> ({
+		this.playTechniqueCard<'client_deprecated_whirligig'> ({
 			opponent_id: opponent_id,
 			card_ids: this.myHand.orderedSelection.get()
 		})
 	}
 
 	onWhirligigDoneLooking() {
-		this.bgaPerformAction('actWhirligig', {});
+		this.bgaPerformAction('actDeprecatedWhirligig', {});
 	}
 
 	onGamble(opponent_id: number) {

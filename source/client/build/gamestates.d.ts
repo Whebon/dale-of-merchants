@@ -175,7 +175,7 @@ interface GameStates {
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
 			'trFashionHint': 73,
-			'trWhirligig': 74,
+			'trDeprecatedWhirligig': 7400,
 			'trPompousProfessional': 75,
 			'trDelicacy': 76,
 			'trUmbrella': 77,
@@ -716,19 +716,6 @@ interface GameStates {
 			'trSamePlayer': 30,
 		},
 	},
-	74: {
-		'name': 'whirligig',
-		'description': 'Whirligig: ${actplayer} may look at their drawn cards',
-		'descriptionmyturn': 'Whirligig: ${you} may look at your drawn cards',
-		'type': 'activeplayer',
-		'action': 'stWhirligig',
-		'possibleactions': {
-			'actWhirligig': [],
-		},
-		'transitions': {
-			'trSamePlayer': 30,
-		},
-	},
 	75: {
 		'name': 'pompousProfessional',
 		'description': 'Pompous Professional: ${actplayer} must choose a \\\'${animalfolk_name}\\\' card to place in their hand',
@@ -800,6 +787,19 @@ interface GameStates {
 		'args': 'argGameEnd',
 		'updateGameProgression': true,
 		'argsType': object,
+	},
+	7400: {
+		'name': 'deprecated_whirligig',
+		'description': 'Whirligig: ${actplayer} may look at their drawn cards',
+		'descriptionmyturn': 'Whirligig: ${you} may look at your drawn cards',
+		'type': 'activeplayer',
+		'action': 'stDeprecatedWhirligig',
+		'possibleactions': {
+			'actDeprecatedWhirligig': [],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
 	},
 }
 
