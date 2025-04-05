@@ -2589,7 +2589,7 @@ class DaleOfMerchants extends DaleTableBasic
             switch($technique_type_id) {
                 case CT_PREPAIDGOOD:
                 case CT_GIFTVOUCHER:
-                case CT_TASTERS:
+                case CT_DEPRECATED_TASTERS:
                     $cards = $this->cards->getCardsInLocation(MARKET);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
@@ -3319,7 +3319,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_DEPRECATED_CHEER:
                 $this->beginResolvingCard($technique_card_id);
                 $this->setGameStateValue("active_player_id", $player_id);
-                $this->gamestate->nextState("trCheer");
+                $this->gamestate->nextState("trDeprecatedCheer");
                 break;
             case CT_RAFFLE:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
@@ -3380,7 +3380,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trCharity");
                 break;
-            case CT_TASTERS:
+            case CT_DEPRECATED_TASTERS:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
                 $next = $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
                 $opponent_ids = [$next[$player_id]];
@@ -3391,7 +3391,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValuePlayerIds($opponent_ids);
                 $this->beginResolvingCard($technique_card_id);
                 $this->setGameStateValue("opponent_id", $player_id);
-                $this->gamestate->nextState("trTasters");
+                $this->gamestate->nextState("trDeprecatedTasters");
                 break;
             case CT_RUMOURS:
                 $players = $this->loadPlayersBasicInfos();
@@ -4454,8 +4454,8 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function actTasters($card_id) {
-        $this->checkAction("actTasters");
+    function actDeprecatedTasters($card_id) {
+        $this->checkAction("actDeprecatedTasters");
         //get the card
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, MARKET);
@@ -4479,7 +4479,7 @@ class DaleOfMerchants extends DaleTableBasic
             //continue to the next opponent
             $opponent_id = array_shift($opponent_ids);
             $this->setGameStateValuePlayerIds($opponent_ids);
-            $this->nextStateChangeActivePlayer("trTasters", $opponent_id);
+            $this->nextStateChangeActivePlayer("trDeprecatedTasters", $opponent_id);
         }
     }
 
@@ -5589,10 +5589,10 @@ class DaleOfMerchants extends DaleTableBasic
                     $value = $values[$key];
                     $this->actBlindfold($value);
                     break;
-                case 'tasters':
+                case 'deprecated_tasters':
                     $cards = $this->cards->getCardsInLocation(MARKET);
                     $card_id = array_rand($cards);
-                    $this->actTasters($card_id);
+                    $this->actDeprecatedTasters($card_id);
                     break;
                 case 'postCleanUpPhase':
                     $this->actPostCleanUpPhase(array());

@@ -644,7 +644,7 @@ class DaleOfMerchants extends Gamegui
 			case 'charity':
 				this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				break;
-			case 'tasters':
+			case 'deprecated_tasters':
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'daringAdventurer':
@@ -972,7 +972,7 @@ class DaleOfMerchants extends Gamegui
 			case 'charity':
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'tasters':
+			case 'deprecated_tasters':
 				this.market!.setSelectionMode(0);
 				break;
 			case 'daringAdventurer':
@@ -1146,16 +1146,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_deprecated_whirligig':
 				if (this.unique_opponent_id) {
-					this.addActionButton("confirm-button", _("Discard all"), "onWhirligig"); //only confirm discard order
+					this.addActionButton("confirm-button", _("Discard all"), "onDeprecatedWhirligig"); //only confirm discard order
 				}
 				else {
 					this.addActionButtonsOpponentSelection(1);
-					this.addActionButton("confirm-button", _("Confirm"), "onWhirligig"); //confirm opponent and discard order
+					this.addActionButton("confirm-button", _("Confirm"), "onDeprecatedWhirligig"); //confirm opponent and discard order
 				}
 				this.addActionButtonCancelClient();
 				break;
 			case 'deprecated_whirligig':
-				this.addActionButton("whirligig-button", _("Next"), "onWhirligigDoneLooking");
+				this.addActionButton("whirligig-button", _("Next"), "onDeprecatedWhirligigDoneLooking");
 				break;
 			case 'client_gamble':
 				this.addActionButtonsOpponent(this.onGamble.bind(this));
@@ -1323,8 +1323,8 @@ class DaleOfMerchants extends Gamegui
 				this.max_opponents = 1; //ensure that no opponent is selected by default
 				this.addActionButton("confirm-button", _("Confirm"), "onCharity"); //confirm the opponent and the card
 				break;
-			case 'client_tasters':
-				this.addActionButtonsOpponentLeftRight(this.onTasters.bind(this));
+			case 'client_deprecated_tasters':
+				this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'daringAdventurer':
@@ -2225,8 +2225,8 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				});
 				break;
-			case 'tasters':
-				this.bgaPerformAction('actTasters', {
+			case 'deprecated_tasters':
+				this.bgaPerformAction('actDeprecatedTasters', {
 					card_id: card.id
 				})
 				break;
@@ -3055,17 +3055,17 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_raffle', card.id);
 				}
 				break;
-			case DaleCard.CT_TASTERS:
-				const tasters_nbr = this.market!.getCards().length;
-				fizzle = tasters_nbr == 0;
+			case DaleCard.CT_DEPRECATED_TASTERS:
+				const deprecated_tasters_nbr = this.market!.getCards().length;
+				fizzle = deprecated_tasters_nbr == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
-				else if (this.unique_opponent_id || tasters_nbr == 1) {
+				else if (this.unique_opponent_id || deprecated_tasters_nbr == 1) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_tasters', card.id);
+					this.clientScheduleTechnique('client_deprecated_tasters', card.id);
 				}
 				break;
 			case DaleCard.CT_RAREARTEFACT:
@@ -3600,7 +3600,7 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onWhirligig() {
+	onDeprecatedWhirligig() {
 		var opponent_id;
 		if (this.unique_opponent_id) {
 			opponent_id = this.unique_opponent_id;
@@ -3617,7 +3617,7 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onWhirligigDoneLooking() {
+	onDeprecatedWhirligigDoneLooking() {
 		this.bgaPerformAction('actDeprecatedWhirligig', {});
 	}
 
@@ -3871,9 +3871,9 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onTasters(reverse_direction: boolean) {
-		console.warn("onTasters", reverse_direction ? "right" : "left");
-		this.playTechniqueCardWithServerState<'client_tasters'>({
+	onDeprecatedTasters(reverse_direction: boolean) {
+		console.warn("onDeprecatedTasters", reverse_direction ? "right" : "left");
+		this.playTechniqueCardWithServerState<'client_deprecated_tasters'>({
 			reverse_direction: reverse_direction
 		})
 	}

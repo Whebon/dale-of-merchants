@@ -57,7 +57,7 @@ interface GameStates {
 			'trBlindfold': 56,
 			'trBlindfoldIncorrectGuess': 57,
 			'trFullyResolve': 33,
-			'trTasters': 65,
+			'trDeprecatedTasters': 6500,
 		},
 	},
 	30: {
@@ -164,9 +164,9 @@ interface GameStates {
 			'trNightShift': 60,
 			'trRuthlessCompetition': 61,
 			'trCunningNeighbour': 62,
-			'trCheer': 63,
+			'trDeprecatedCheer': 6300,
 			'trCharity': 64,
-			'trTasters': 65,
+			'trDeprecatedTasters': 6500,
 			'trDaringAdventurer': 66,
 			'trNaturalSurvivor': 67,
 			'trDuplicateEntry': 68,
@@ -519,24 +519,6 @@ interface GameStates {
 			'trSamePlayer': 30,
 		},
 	},
-	63: {
-		'name': 'deprecated_cheer',
-		'description': 'Other players are still searching their decks',
-		'descriptionmyturn': '${you} must search your deck for a card',
-		'type': 'multipleactiveplayer',
-		'action': 'stDeprecatedCheer',
-		'args': 'argDeckContent',
-		'possibleactions': {
-			'actDeprecatedCheer': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-		},
-		'transitions': {
-			'trChangeActivePlayer': 29,
-		},
-	},
 	64: {
 		'name': 'charity',
 		'description': 'Charity: ${actplayer} must give back all drawn cards',
@@ -557,22 +539,6 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
-		},
-	},
-	65: {
-		'name': 'tasters',
-		'description': 'Tasters: ${actplayer} must take a card from the market',
-		'descriptionmyturn': 'Tasters: ${you} must take a card from the market',
-		'type': 'activeplayer',
-		'possibleactions': {
-			'actTasters': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}],
-		},
-		'transitions': {
-			'trChangeActivePlayer': 29,
 		},
 	},
 	66: {
@@ -787,6 +753,40 @@ interface GameStates {
 		'args': 'argGameEnd',
 		'updateGameProgression': true,
 		'argsType': object,
+	},
+	6300: {
+		'name': 'deprecated_cheer',
+		'description': 'Other players are still searching their decks',
+		'descriptionmyturn': '${you} must search your deck for a card',
+		'type': 'multipleactiveplayer',
+		'action': 'stDeprecatedCheer',
+		'args': 'argDeckContent',
+		'possibleactions': {
+			'actDeprecatedCheer': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trChangeActivePlayer': 29,
+		},
+	},
+	6500: {
+		'name': 'deprecated_tasters',
+		'description': 'Tasters: ${actplayer} must take a card from the market',
+		'descriptionmyturn': 'Tasters: ${you} must take a card from the market',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actDeprecatedTasters': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trChangeActivePlayer': 29,
+		},
 	},
 	7400: {
 		'name': 'deprecated_whirligig',

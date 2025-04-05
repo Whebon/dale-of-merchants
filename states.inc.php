@@ -33,7 +33,6 @@ if (false) {
 	$game->stNightShift();
 	$game->stRuthlessCompetition();
 	$game->stCunningNeighbour();
-	$game->stDeprecatedCheer();
 	$game->stCharity();
 	$game->stSliceOfLife();
 	$game->stDelightfulSurprise();
@@ -41,6 +40,7 @@ if (false) {
 	$game->stDelicacy();
 	$game->stUmbrella();
 	$game->stFinalStatistics();
+	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
 }
 
@@ -85,7 +85,7 @@ $machinestates = array(
 			'trBlindfold' => 56,
 			'trBlindfoldIncorrectGuess' => 57,
 			'trFullyResolve' => 33,
-			'trTasters' => 65,
+			'trDeprecatedTasters' => 6500,
 		),
 	),
 	30 => array(
@@ -111,9 +111,9 @@ $machinestates = array(
 			'trNightShift' => 60,
 			'trRuthlessCompetition' => 61,
 			'trCunningNeighbour' => 62,
-			'trCheer' => 63,
+			'trDeprecatedCheer' => 6300,
 			'trCharity' => 64,
-			'trTasters' => 65,
+			'trDeprecatedTasters' => 6500,
 			'trDaringAdventurer' => 66,
 			'trNaturalSurvivor' => 67,
 			'trDuplicateEntry' => 68,
@@ -325,18 +325,6 @@ $machinestates = array(
 			'trSamePlayer' => 30,
 		),
 	),
-	63 => array(
-		'name' => 'deprecated_cheer',
-		'description' => clienttranslate('Other players are still searching their decks'),
-		'descriptionmyturn' => clienttranslate('${you} must search your deck for a card'),
-		'type' => 'multipleactiveplayer',
-		'action' => 'stDeprecatedCheer',
-		'args' => 'argDeckContent',
-		'possibleactions' => ['actDeprecatedCheer'],
-		'transitions' => array(
-			'trChangeActivePlayer' => 29,
-		),
-	),
 	64 => array(
 		'name' => 'charity',
 		'description' => clienttranslate('Charity: ${actplayer} must give back all drawn cards'),
@@ -347,16 +335,6 @@ $machinestates = array(
 		'possibleactions' => ['actCharity'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
-		),
-	),
-	65 => array(
-		'name' => 'tasters',
-		'description' => clienttranslate('Tasters: ${actplayer} must take a card from the market'),
-		'descriptionmyturn' => clienttranslate('Tasters: ${you} must take a card from the market'),
-		'type' => 'activeplayer',
-		'possibleactions' => ['actTasters'],
-		'transitions' => array(
-			'trChangeActivePlayer' => 29,
 		),
 	),
 	66 => array(
@@ -500,6 +478,28 @@ $machinestates = array(
 		'action' => 'stGameEnd',
 		'args' => 'argGameEnd',
 		'updateGameProgression' => true,
+	),
+	6300 => array(
+		'name' => 'deprecated_cheer',
+		'description' => clienttranslate('Other players are still searching their decks'),
+		'descriptionmyturn' => clienttranslate('${you} must search your deck for a card'),
+		'type' => 'multipleactiveplayer',
+		'action' => 'stDeprecatedCheer',
+		'args' => 'argDeckContent',
+		'possibleactions' => ['actDeprecatedCheer'],
+		'transitions' => array(
+			'trChangeActivePlayer' => 29,
+		),
+	),
+	6500 => array(
+		'name' => 'deprecated_tasters',
+		'description' => clienttranslate('Tasters: ${actplayer} must take a card from the market'),
+		'descriptionmyturn' => clienttranslate('Tasters: ${you} must take a card from the market'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actDeprecatedTasters'],
+		'transitions' => array(
+			'trChangeActivePlayer' => 29,
+		),
 	),
 	7400 => array(
 		'name' => 'deprecated_whirligig',

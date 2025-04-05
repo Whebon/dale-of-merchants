@@ -300,17 +300,6 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actDeprecatedCheer()
-	{
-		self::setAjaxMode();
-
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
-
-		$this->game->actDeprecatedCheer( $card_id );
-		self::ajaxResponse();
-	}
-
 	public function actCharity()
 	{
 		self::setAjaxMode();
@@ -321,17 +310,6 @@ class action_daleofmerchants extends APP_GameAction
 		$player_ids = self::getArg('player_ids', AT_numberlist, true);
 
 		$this->game->actCharity( $card_ids, $player_ids );
-		self::ajaxResponse();
-	}
-
-	public function actTasters()
-	{
-		self::setAjaxMode();
-
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
-
-		$this->game->actTasters( $card_id );
 		self::ajaxResponse();
 	}
 
@@ -455,6 +433,28 @@ class action_daleofmerchants extends APP_GameAction
 		$card_id = self::getArg('card_id', AT_int, true);
 
 		$this->game->actUmbrella( $card_id );
+		self::ajaxResponse();
+	}
+
+	public function actDeprecatedCheer()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actDeprecatedCheer( $card_id );
+		self::ajaxResponse();
+	}
+
+	public function actDeprecatedTasters()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actDeprecatedTasters( $card_id );
 		self::ajaxResponse();
 	}
 

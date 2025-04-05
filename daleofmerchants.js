@@ -3434,7 +3434,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
                     case 'client_raffle':
                         return _("${card_name}: ${you} take a card from");
-                    case 'client_tasters':
+                    case 'client_deprecated_tasters':
                         return _("${card_name}: ${you} must choose who takes a card from the market directly after you");
                     case 'client_rareArtefact':
                         return _("${card_name}: ${you} must choose a card to multiply its value");
@@ -4206,7 +4206,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'charity':
                     this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     break;
-                case 'tasters':
+                case 'deprecated_tasters':
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'daringAdventurer':
@@ -4505,7 +4505,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'charity':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'tasters':
+                case 'deprecated_tasters':
                     this.market.setSelectionMode(0);
                     break;
                 case 'daringAdventurer':
@@ -4673,16 +4673,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_deprecated_whirligig':
                     if (this.unique_opponent_id) {
-                        this.addActionButton("confirm-button", _("Discard all"), "onWhirligig");
+                        this.addActionButton("confirm-button", _("Discard all"), "onDeprecatedWhirligig");
                     }
                     else {
                         this.addActionButtonsOpponentSelection(1);
-                        this.addActionButton("confirm-button", _("Confirm"), "onWhirligig");
+                        this.addActionButton("confirm-button", _("Confirm"), "onDeprecatedWhirligig");
                     }
                     this.addActionButtonCancelClient();
                     break;
                 case 'deprecated_whirligig':
-                    this.addActionButton("whirligig-button", _("Next"), "onWhirligigDoneLooking");
+                    this.addActionButton("whirligig-button", _("Next"), "onDeprecatedWhirligigDoneLooking");
                     break;
                 case 'client_gamble':
                     this.addActionButtonsOpponent(this.onGamble.bind(this));
@@ -4857,8 +4857,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.max_opponents = 1;
                     this.addActionButton("confirm-button", _("Confirm"), "onCharity");
                     break;
-                case 'client_tasters':
-                    this.addActionButtonsOpponentLeftRight(this.onTasters.bind(this));
+                case 'client_deprecated_tasters':
+                    this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'daringAdventurer':
@@ -5560,8 +5560,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'tasters':
-                    this.bgaPerformAction('actTasters', {
+                case 'deprecated_tasters':
+                    this.bgaPerformAction('actDeprecatedTasters', {
                         card_id: card.id
                     });
                     break;
@@ -6308,17 +6308,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_raffle', card.id);
                     }
                     break;
-                case DaleCard_9.DaleCard.CT_TASTERS:
-                    var tasters_nbr = this.market.getCards().length;
-                    fizzle = tasters_nbr == 0;
+                case DaleCard_9.DaleCard.CT_DEPRECATED_TASTERS:
+                    var deprecated_tasters_nbr = this.market.getCards().length;
+                    fizzle = deprecated_tasters_nbr == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
-                    else if (this.unique_opponent_id || tasters_nbr == 1) {
+                    else if (this.unique_opponent_id || deprecated_tasters_nbr == 1) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_tasters', card.id);
+                        this.clientScheduleTechnique('client_deprecated_tasters', card.id);
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_RAREARTEFACT:
@@ -6811,7 +6811,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_id: card_id,
             });
         };
-        DaleOfMerchants.prototype.onWhirligig = function () {
+        DaleOfMerchants.prototype.onDeprecatedWhirligig = function () {
             var opponent_id;
             if (this.unique_opponent_id) {
                 opponent_id = this.unique_opponent_id;
@@ -6827,7 +6827,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.myHand.orderedSelection.get()
             });
         };
-        DaleOfMerchants.prototype.onWhirligigDoneLooking = function () {
+        DaleOfMerchants.prototype.onDeprecatedWhirligigDoneLooking = function () {
             this.bgaPerformAction('actDeprecatedWhirligig', {});
         };
         DaleOfMerchants.prototype.onGamble = function (opponent_id) {
@@ -7060,8 +7060,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
             }
         };
-        DaleOfMerchants.prototype.onTasters = function (reverse_direction) {
-            console.warn("onTasters", reverse_direction ? "right" : "left");
+        DaleOfMerchants.prototype.onDeprecatedTasters = function (reverse_direction) {
+            console.warn("onDeprecatedTasters", reverse_direction ? "right" : "left");
             this.playTechniqueCardWithServerState({
                 reverse_direction: reverse_direction
             });

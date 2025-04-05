@@ -157,7 +157,7 @@ export class MainClientState {
                 return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
             case 'client_raffle':
                 return _("${card_name}: ${you} take a card from");
-            case 'client_tasters':
+            case 'client_deprecated_tasters':
                 return _("${card_name}: ${you} must choose who takes a card from the market directly after you");
             case 'client_rareArtefact':
                 return _("${card_name}: ${you} must choose a card to multiply its value");
