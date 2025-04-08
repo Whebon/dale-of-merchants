@@ -115,6 +115,7 @@ $machinestates = array(
 			'trDeprecatedCheer' => 6300,
 			'trCharity' => 64,
 			'trDeprecatedTasters' => 6500,
+			'trTasters' => 65,
 			'trDaringAdventurer' => 66,
 			'trNaturalSurvivor' => 67,
 			'trDuplicateEntry' => 68,
@@ -334,6 +335,17 @@ $machinestates = array(
 		'action' => 'stCharity',
 		'args' => 'argPlayerIds',
 		'possibleactions' => ['actCharity'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	65 => array(
+		'name' => 'tasters',
+		'description' => clienttranslate('Tasters: ${actplayer} must give each player a card from the market'),
+		'descriptionmyturn' => clienttranslate('Tasters: ${you} must choose a card from the market and a player'),
+		'type' => 'activeplayer',
+		'args' => 'argPlayerIds',
+		'possibleactions' => ['actTasters'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

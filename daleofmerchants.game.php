@@ -948,6 +948,9 @@ class DaleOfMerchants extends DaleTableBasic
     */
     function refillMarket(bool $move){
         $cards = $this->cards->getCardsInLocation(MARKET, null, 'location_arg');
+        if (count($cards) == 5) {
+            return;
+        }
         if (count($cards) > 5) {
             throw new BgaVisibleSystemException("The market has more than 5 cards");
         }
@@ -1832,6 +1835,9 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
 
+        //refill the market if needed (10th anniversary rule change)
+        $this->refillMarket(true);
+
         //decide if the player can go again
         if ($this->card_types[$type_id]["trigger"] != null) {
             $this->gamestate->nextState("trSamePlayer");
@@ -2614,6 +2620,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_PREPAIDGOOD:
                 case CT_GIFTVOUCHER:
                 case CT_DEPRECATED_TASTERS:
+                case CT_TASTERS:
                     $cards = $this->cards->getCardsInLocation(MARKET);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
@@ -3440,6 +3447,16 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->setGameStateValue("opponent_id", $player_id);
                 $this->gamestate->nextState("trDeprecatedTasters");
+                break;
+            case CT_TASTERS:
+                $this->beginResolvingCard($technique_card_id);
+                $players = $this->loadPlayersBasicInfos();
+                $player_ids = [];
+                foreach ($players as $player_id => $player) {
+                    $player_ids[] = $player_id;
+                }
+                $this->setGameStateValuePlayerIds($player_ids);
+                $this->gamestate->nextState("trTasters");
                 break;
             case CT_CHEER:
                 $players = $this->loadPlayersBasicInfos();
@@ -4541,6 +4558,52 @@ class DaleOfMerchants extends DaleTableBasic
             $opponent_id = array_shift($opponent_ids);
             $this->setGameStateValuePlayerIds($opponent_ids);
             $this->nextStateChangeActivePlayer("trDeprecatedTasters", $opponent_id);
+        }
+    }
+
+    function actTasters($card_ids, $player_ids) {
+        $this->checkAction("actTasters");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_ids = $this->numberListToArray($player_ids);
+        if (count($card_ids) != count($player_ids)) {
+            throw new BgaVisibleSystemException("Tasters: count(card_ids) != count(player_ids)");
+        }
+        $remaining_player_ids = $this->getGameStateValuePlayerIds($player_ids);
+        for ($i = 0; $i < count($card_ids); $i++) {
+            //get the player that will receive the card
+            $other_player_id = $player_ids[$i];
+            if (!in_array($other_player_id, $remaining_player_ids)) {
+                throw new BgaVisibleSystemException("Tasters: provided player_id is not authorized to receive a card");
+            }
+            //give the card
+            $card_id = $card_ids[$i];
+            $card = $this->cards->getCardFromLocation($card_id, MARKET);
+            $this->cards->moveCard($card_id, HAND.$other_player_id);
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} places a ${card_name} into their hand'), array (
+                'player_id' => $other_player_id,
+                'player_name' => $this->getPlayerNameById($other_player_id),
+                'card_name' => $this->getCardName($card),
+                'market_card_id' => $card_id,
+                'pos' => $card["location_arg"],
+            ));
+        }
+        //update the remaining player_ids
+        $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
+        $this->setGameStateValuePlayerIds($remaining_player_ids);
+        if (count($remaining_player_ids) == 0) {
+            $this->fullyResolveCard($player_id);
+            return;
+        }
+        //market is empty? the remaining players miss out on receiving a card
+        if ($this->cards->countCardsInLocation(MARKET) == 0) {
+            foreach ($remaining_player_ids as $remaining_player_id) {
+                $this->notifyAllPlayers('message', clienttranslate('Tasters: ${player_name} receives nothing'), array (
+                    'player_name' => $this->getPlayerNameById($remaining_player_id),
+                ));
+            }
+            $this->fullyResolveCard($player_id);
+            return;
         }
     }
 

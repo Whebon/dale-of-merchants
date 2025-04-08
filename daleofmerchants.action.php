@@ -313,6 +313,19 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actTasters()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+		/** @var string $player_ids */
+		$player_ids = self::getArg('player_ids', AT_numberlist, true);
+
+		$this->game->actTasters( $card_ids, $player_ids );
+		self::ajaxResponse();
+	}
+
 	public function actDaringAdventurer()
 	{
 		self::setAjaxMode();

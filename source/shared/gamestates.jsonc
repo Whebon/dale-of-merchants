@@ -140,6 +140,7 @@
 			"trDeprecatedCheer": 6300,
 			"trCharity": 64,
 			"trDeprecatedTasters": 6500,
+			"trTasters": 65,
 			"trDaringAdventurer": 66,
 			"trNaturalSurvivor": 67,
 			"trDuplicateEntry": 68,
@@ -454,6 +455,21 @@
 			]
 		},
 		"transitions": { "trChangeActivePlayer": 29 }
+	},
+
+	"65": {
+		"name": "tasters",
+		"description": "Tasters: ${actplayer} must give each player a card from the market",
+		"descriptionmyturn": "Tasters: ${you} must choose a card from the market and a player",
+		"type": "activeplayer",
+		"args": "argPlayerIds",
+		"possibleactions": {
+			"actTasters": [
+				{"name": "card_ids", "type": "AT_numberlist"},
+				{"name": "player_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
 	},
 
 	"66": {

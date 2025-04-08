@@ -167,6 +167,7 @@ interface GameStates {
 			'trDeprecatedCheer': 6300,
 			'trCharity': 64,
 			'trDeprecatedTasters': 6500,
+			'trTasters': 65,
 			'trDaringAdventurer': 66,
 			'trNaturalSurvivor': 67,
 			'trDuplicateEntry': 68,
@@ -528,6 +529,27 @@ interface GameStates {
 		'args': 'argPlayerIds',
 		'possibleactions': {
 			'actCharity': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'player_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	65: {
+		'name': 'tasters',
+		'description': 'Tasters: ${actplayer} must give each player a card from the market',
+		'descriptionmyturn': 'Tasters: ${you} must choose a card from the market and a player',
+		'type': 'activeplayer',
+		'args': 'argPlayerIds',
+		'possibleactions': {
+			'actTasters': [{
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,

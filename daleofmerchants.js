@@ -4215,6 +4215,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'deprecated_tasters':
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
+                case 'tasters':
+                    this.market.setSelectionMode(2, 'cheese', "daleofmerchants-wrap-technique");
+                    this.market.orderedSelection.setMaxSize(1);
+                    break;
                 case 'daringAdventurer':
                     var daringAdventurer_args = args.args;
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to discard"));
@@ -4512,6 +4516,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'deprecated_tasters':
+                    this.market.setSelectionMode(0);
+                    break;
+                case 'tasters':
                     this.market.setSelectionMode(0);
                     break;
                 case 'daringAdventurer':
@@ -4872,6 +4879,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_deprecated_tasters':
                     this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
                     this.addActionButtonCancelClient();
+                    break;
+                case 'tasters':
+                    var tasters_args = args;
+                    this.addActionButtonsOpponentSelection(0, tasters_args.player_ids);
+                    this.max_opponents = 1;
+                    this.addActionButton("confirm-button", _("Confirm"), "onTasters");
                     break;
                 case 'daringAdventurer':
                     this.addActionButton("confirm-button", _("Discard selected"), "onDaringAdventurer");
@@ -6340,6 +6353,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_deprecated_tasters', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_TASTERS:
+                    var tasters_nbr = this.market.getCards().length;
+                    fizzle = tasters_nbr == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
                 case DaleCard_9.DaleCard.CT_RAREARTEFACT:
                     fizzle = this.myHand.count() == 1;
                     if (fizzle) {
@@ -7096,6 +7119,32 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("onDeprecatedTasters", reverse_direction ? "right" : "left");
             this.playTechniqueCardWithServerState({
                 reverse_direction: reverse_direction
+            });
+        };
+        DaleOfMerchants.prototype.onTasters = function () {
+            var card_id = this.market.orderedSelection.get()[0];
+            if (!card_id) {
+                this.showMessage(_("Please choose a card from the market"), 'error');
+                return;
+            }
+            var player_id = this.opponent_ids[0];
+            if (player_id === undefined) {
+                this.showMessage(_("Please choose the player that will receive ") + "'".concat(new DaleCard_9.DaleCard(card_id).name, "'"), 'error');
+                return;
+            }
+            var args = this.gamedatas.gamestate.args;
+            var index = args.player_ids.indexOf(player_id);
+            if (index == -1) {
+                throw new Error("Charity: player ".concat(player_id, " is not authorized to receive a card"));
+            }
+            else {
+                args.player_ids.splice(index, 1);
+                this.removeActionButtons();
+                this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
+            }
+            this.bgaPerformAction('actTasters', {
+                card_ids: this.arrayToNumberList([card_id]),
+                player_ids: this.arrayToNumberList([player_id])
             });
         };
         DaleOfMerchants.prototype.onDaringAdventurer = function () {

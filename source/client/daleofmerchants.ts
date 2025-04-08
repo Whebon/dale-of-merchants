@@ -647,6 +647,10 @@ class DaleOfMerchants extends Gamegui
 			case 'deprecated_tasters':
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
+			case 'tasters':
+				this.market!.setSelectionMode(2, 'cheese', "daleofmerchants-wrap-technique");
+				this.market!.orderedSelection.setMaxSize(1);
+				break;
 			case 'daringAdventurer':
 				const daringAdventurer_args = args.args as { die_value: number };
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to discard"));
@@ -973,6 +977,9 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'deprecated_tasters':
+				this.market!.setSelectionMode(0);
+				break;
+			case 'tasters':
 				this.market!.setSelectionMode(0);
 				break;
 			case 'daringAdventurer':
@@ -1332,6 +1339,12 @@ class DaleOfMerchants extends Gamegui
 			case 'client_deprecated_tasters':
 				this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
 				this.addActionButtonCancelClient();
+				break;
+			case 'tasters':
+				const tasters_args = args as { player_ids: number[] };
+				this.addActionButtonsOpponentSelection(0, tasters_args.player_ids);
+				this.max_opponents = 1; //ensure that no opponent is selected by default
+				this.addActionButton("confirm-button", _("Confirm"), "onTasters"); //confirm the opponent and the card
 				break;
 			case 'daringAdventurer':
 				this.addActionButton("confirm-button", _("Discard selected"), "onDaringAdventurer");
@@ -3081,6 +3094,16 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_deprecated_tasters', card.id);
 				}
 				break;
+			case DaleCard.CT_TASTERS:
+				const tasters_nbr = this.market!.getCards().length;
+				fizzle = tasters_nbr == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
 			case DaleCard.CT_RAREARTEFACT:
 				fizzle = this.myHand.count() == 1;
 				if (fizzle) {
@@ -3903,6 +3926,37 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCardWithServerState<'client_deprecated_tasters'>({
 			reverse_direction: reverse_direction
 		})
+	}
+
+	onTasters() {
+		//get the selected card and opponent
+		const card_id = this.market!.orderedSelection.get()[0];
+		if (!card_id) {
+			this.showMessage(_("Please choose a card from the market"), 'error');
+			return;
+		}
+		const player_id = this.opponent_ids[0];
+		if (player_id === undefined) {
+			this.showMessage(_("Please choose the player that will receive ")+`'${new DaleCard(card_id).name}'`, 'error');
+			return;
+		}
+		const args = this.gamedatas.gamestate.args as { player_ids: number[] };
+		const index = args.player_ids.indexOf(player_id);
+		if (index == -1) {
+			throw new Error(`Charity: player ${player_id} is not authorized to receive a card`);
+		}
+		else {
+			args.player_ids.splice(index, 1);
+			this.removeActionButtons();
+			this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
+		}
+		//send the action (for now, one card at a time.
+		// automatically giving the last card is not needed 
+		// because having an equal number of players and cards in the market is super rare)
+		this.bgaPerformAction('actTasters', {
+			card_ids: this.arrayToNumberList([card_id]),
+			player_ids: this.arrayToNumberList([player_id])
+		});
 	}
 
 	onDaringAdventurer() {
