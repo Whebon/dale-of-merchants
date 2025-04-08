@@ -1156,6 +1156,10 @@ class DaleOfMerchants extends Gamegui
 			case 'deprecated_whirligig':
 				this.addActionButton("whirligig-button", _("Next"), "onDeprecatedWhirligigDoneLooking");
 				break;
+			case 'client_whirligig':
+				this.addActionButtonsOpponent(this.onWhirligig.bind(this));
+				this.addActionButtonCancelClient();
+				break;
 			case 'client_gamble':
 				this.addActionButtonsOpponent(this.onGamble.bind(this));
 				this.addActionButtonCancelClient();
@@ -2956,6 +2960,14 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_deprecated_whirligig', card.id);
 				}
 				break;
+			case DaleCard.CT_WHIRLIGIG:
+				if (this.unique_opponent_id) {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_whirligig', card.id);
+				}
+				break;
 			case DaleCard.CT_CHARM:
 				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
 				if (fizzle) {
@@ -3620,6 +3632,12 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actDeprecatedWhirligig', {});
 	}
 
+	onWhirligig(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_whirligig'>({
+			opponent_id: opponent_id
+		})
+	}
+
 	onGamble(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_gamble'>({
 			opponent_id: opponent_id
@@ -4133,6 +4151,8 @@ class DaleOfMerchants extends Gamegui
 			['ditchFromDeck', 					500],
 			['ditchFromMarketDeck', 			500],
 			['ditchFromMarketBoard', 			500],
+			['instant_deckToDeck', 				1],
+			['deckToDeck', 						500],
 			['instant_discardToDeck', 			1],
 			['discardToDeck', 					500],
 			['deckToDiscard', 					500],
@@ -4944,6 +4964,18 @@ class DaleOfMerchants extends Gamegui
 			this.marketDiscard.push(new DaleCard(id), slot_id, undefined, undefined, delay);
 			this.market!.removeCard(pos);
 			delay += 75; //delay indicates that ordering matters
+		}
+	}
+
+	notif_instant_deckToDeck(notif: NotifAs<'deckToDeck'>) {
+		this.notif_deckToDeck(notif);
+	}
+
+	notif_deckToDeck(notif: NotifAs<'deckToDeck'>) {
+		const from_deck = this.playerDecks[notif.args.from_player_id]!;
+		const to_deck = this.playerDecks[notif.args.to_player_id]!;
+		for (let index = 0; index < notif.args.nbr; index++) {
+			from_deck.pop(to_deck.placeholderHTML, () => to_deck.pushHiddenCards(1));
 		}
 	}
 

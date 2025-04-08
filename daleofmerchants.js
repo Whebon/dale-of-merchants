@@ -3406,6 +3406,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         else {
                             return _("${card_name}: ${you} must choose an opponent");
                         }
+                    case 'client_whirligig':
+                        return _("${card_name}: ${you} must choose another player to swap cards with");
                     case 'client_gamble':
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_blindfold':
@@ -4682,6 +4684,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'deprecated_whirligig':
                     this.addActionButton("whirligig-button", _("Next"), "onDeprecatedWhirligigDoneLooking");
+                    break;
+                case 'client_whirligig':
+                    this.addActionButtonsOpponent(this.onWhirligig.bind(this));
+                    this.addActionButtonCancelClient();
                     break;
                 case 'client_gamble':
                     this.addActionButtonsOpponent(this.onGamble.bind(this));
@@ -6206,6 +6212,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_deprecated_whirligig', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_WHIRLIGIG:
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_whirligig', card.id);
+                    }
+                    break;
                 case DaleCard_9.DaleCard.CT_CHARM:
                     fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
                     if (fizzle) {
@@ -6829,6 +6843,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onDeprecatedWhirligigDoneLooking = function () {
             this.bgaPerformAction('actDeprecatedWhirligig', {});
         };
+        DaleOfMerchants.prototype.onWhirligig = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
+            });
+        };
         DaleOfMerchants.prototype.onGamble = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
@@ -7288,6 +7307,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['ditchFromDeck', 500],
                 ['ditchFromMarketDeck', 500],
                 ['ditchFromMarketBoard', 500],
+                ['instant_deckToDeck', 1],
+                ['deckToDeck', 500],
                 ['instant_discardToDeck', 1],
                 ['discardToDeck', 500],
                 ['deckToDiscard', 500],
@@ -7930,6 +7951,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.marketDiscard.push(new DaleCard_9.DaleCard(id), slot_id, undefined, undefined, delay);
                 this.market.removeCard(pos);
                 delay += 75;
+            }
+        };
+        DaleOfMerchants.prototype.notif_instant_deckToDeck = function (notif) {
+            this.notif_deckToDeck(notif);
+        };
+        DaleOfMerchants.prototype.notif_deckToDeck = function (notif) {
+            var from_deck = this.playerDecks[notif.args.from_player_id];
+            var to_deck = this.playerDecks[notif.args.to_player_id];
+            for (var index = 0; index < notif.args.nbr; index++) {
+                from_deck.pop(to_deck.placeholderHTML, function () { return to_deck.pushHiddenCards(1); });
             }
         };
         DaleOfMerchants.prototype.notif_instant_discardToDeck = function (notif) {

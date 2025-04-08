@@ -2231,6 +2231,30 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Spawn cards on top of the current player's deck
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnDeck(string $name, int $nbr = 1) {
+        $player_id = $this->getCurrentPlayerId();
+        $cards = $this->spawn($name, $nbr);
+        $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('DEBUG: deck'), array_merge( array (
+            'player_id' => $this->getCurrentPlayerId(),
+            'player_name' => $this->getActivePlayerName(),
+            "_private" => array(
+                'card_ids' => $this->toCardIds($cards),
+                'cards' => $cards,
+            ),
+            'deck_player_id' => $player_id,
+            'nbr' => $nbr,
+            'from_limbo' => false
+        )));
+        return $cards;
+    }
+
+    /**
      * Spawn and immediately discard the spawned cards
      * @param string $name prefix of the card name
      * @param int $nbr (optional) amount of cards to spawn
@@ -3054,6 +3078,36 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("die_value", $nbr); //not actually a die value, but we will use this state to store the number of cards for the player
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDeprecatedWhirligig");
+                break;
+            case CT_WHIRLIGIG:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $nbr = $this->rollDie(
+                    clienttranslate('Whirligig: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_OCELOTS,
+                    $technique_card,
+                );
+                $nbr = min(
+                    $nbr,
+                    $this->cards->countCardsInDrawAndDiscardOfPlayer($player_id),
+                    $this->cards->countCardsInDrawAndDiscardOfPlayer($opponent_id)
+                );
+                $cards_for_player = $this->cards->pickCardsForLocation($nbr, DECK.$opponent_id, 'whirligig1');
+                $cards_for_opponent = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, 'whirligig2');
+                $this->cards->moveCardsOnTop($this->toCardIds($cards_for_player), DECK.$player_id);
+                $this->cards->moveCardsOnTop($this->toCardIds($cards_for_opponent), DECK.$opponent_id);
+                $this->notifyAllPlayers('instant_deckToDeck', '', array(
+                    "from_player_id" => $player_id,
+                    "to_player_id" => $opponent_id,
+                    "nbr" => $nbr
+                ));
+                $this->notifyAllPlayers('deckToDeck', clienttranslate('${player_name} and ${opponent_name} swap ${nbr} card(s) between the tops of their decks'), array(
+                    "from_player_id" => $opponent_id,
+                    "to_player_id" => $player_id,
+                    "nbr" => $nbr,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "opponent_name" => $this->getPlayerNameById($opponent_id)
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_CHARM:
                 $this->beginResolvingCard($technique_card_id);

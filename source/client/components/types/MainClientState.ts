@@ -131,6 +131,8 @@ export class MainClientState {
                 } else {
                     return _("${card_name}: ${you} must choose an opponent"); //omitted, but true: you may also choose the order to discard your hand
                 }
+            case 'client_whirligig':
+                return _("${card_name}: ${you} must choose another player to swap cards with");
             case 'client_gamble':
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_blindfold':

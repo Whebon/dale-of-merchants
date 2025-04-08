@@ -124,6 +124,12 @@ declare global {
 			player_id: number,
 			opponent_id?: number, //by default the same as the player_id
 		}
+		'instant_deckToDeck': {}
+		'deckToDeck': {
+			nbr: number
+			from_player_id: number,
+			to_player_id: number,
+		}
 		'deckToDiscard': {
 			card: DbCard
 			player_id: number,
@@ -358,6 +364,7 @@ declare global {
 		'client_treasureHunter': { card_id: number }
 		'client_newSeason': { card_id: number }
 		'client_deprecated_whirligig': { card_ids: number[], opponent_id: number }
+		'client_whirligig': {opponent_id: number }
 		'client_gamble': { opponent_id: number }
 		'client_blindfold': { card_id: number, opponent_id: number }
 		'client_safetyPrecaution': { card_id: number }
