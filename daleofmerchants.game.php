@@ -3441,12 +3441,12 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $player_id);
                 $this->gamestate->nextState("trDeprecatedTasters");
                 break;
-            case CT_RUMOURS:
+            case CT_CHEER:
                 $players = $this->loadPlayersBasicInfos();
-                $this->notifyAllPlayers('message', clienttranslate('Rumours: all players place the top 2 cards from their discard piles on their decks'), array(
+                $this->notifyAllPlayers('message', clienttranslate('Cheer: all players place the top 1 card from their discard piles on their decks'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
-                for ($i=0; $i < 2; $i++) { //one by one
+                for ($i=0; $i < 1; $i++) { //one by one (10th anniversary rule change: only 1 card is moved)
                     foreach ($players as $opponent_id => $opponent) {
                         $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id, 'unstable');
                         if ($dbcard) {
