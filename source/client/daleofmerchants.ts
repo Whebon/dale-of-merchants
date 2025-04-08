@@ -1136,6 +1136,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponent(this.onSelectOpponentTechnique.bind(this));
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_selectOpponentPassive':
+				this.addActionButtonsOpponent(this.onSelectOpponentPassive.bind(this));
+				this.addActionButtonCancelClient();
+				break;
 			case 'client_treasureHunter':
 			case 'client_carefreeSwapper':
 				this.addActionButtonCancelClient();
@@ -1305,8 +1309,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'cunningNeighbour':
-				this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
-				this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
+				this.addActionButton("continue-button", _("Continue"), "onCunningNeighbour");
 				break;
 			case 'deprecated_cheer':
 				//this needs to be in onUpdateActionButton (see https://studio.boardgamearena.com/doc/Game_interface_logic:_yourgamename.js)
@@ -2913,7 +2916,6 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_SABOTAGE:
-			case DaleCard.CT_CUNNINGNEIGHBOUR:
 			case DaleCard.CT_DELICACY:
 			case DaleCard.CT_UMBRELLA:
 				if (this.unique_opponent_id) {
@@ -3363,6 +3365,14 @@ class DaleOfMerchants extends Gamegui
 					card_id_last: client_calculations_card_ids[0]!
 				});
 				break;
+			case DaleCard.CT_CUNNINGNEIGHBOUR:
+				if (this.unique_opponent_id) {
+					this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
+				}
+				else {
+					this.mainClientState.enterOnStack('client_selectOpponentPassive', {passive_card_id: card.id});
+				}
+				break;
 			case DaleCard.CT_REFRESHINGDRINK:
 				this.mainClientState.enterOnStack('client_refreshingDrink', {passive_card_id: card.id});
 				break;
@@ -3605,6 +3615,12 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onSelectOpponentPassive(opponent_id: number) {
+		this.playPassiveCard<'client_selectOpponentPassive'>({
+			opponent_id: opponent_id
+		})
+	}
+
 	onTreasureHunter(card_id: number) {
 		this.playTechniqueCard<'client_treasureHunter'>({
 			card_id: card_id,
@@ -3820,15 +3836,9 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onCunningNeighbourDeck() {
+	onCunningNeighbour() {
 		this.bgaPerformAction('actCunningNeighbour', {
-			place_on_deck: true
-		})
-	}
-
-	onCunningNeighbourDiscard() {
-		this.bgaPerformAction('actCunningNeighbour', {
-			place_on_deck: false
+			place_on_deck: false //always false since the 10th anniversary rule change
 		})
 	}
 

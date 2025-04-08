@@ -393,6 +393,7 @@ declare global {
 
 	interface ClientPassiveChoice {
 		'client_choicelessPassiveCard': {},
+		'client_selectOpponentPassive': { opponent_id: number }
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_refreshingDrink': { card_id: number }

@@ -1175,10 +1175,10 @@ $this->card_types = array(
         'type_id' => 60,
         'name' => clienttranslate("Cunning Neighbour"),
         'text' => clienttranslate("Look at another player's hand."),
-        'type_displayed' => clienttranslate("Technique"),
-        'is_technique' => true,
-        'has_plus' => true,
-        'has_ability' => false,
+        'type_displayed' => clienttranslate("Passive"),
+        'is_technique' => false,
+        'has_plus' => false,
+        'has_ability' => true,
         'playable' => true,
         'trigger' => null,
         'value' => 1,
@@ -2792,4 +2792,5 @@ $this->card_types = array(
         'animalfolk_id' => 27
     )
   );
+  
   

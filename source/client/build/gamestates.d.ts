@@ -504,7 +504,7 @@ interface GameStates {
 	62: {
 		'name': 'cunningNeighbour',
 		'description': 'Cunning Neighbour: ${actplayer} is looking at ${opponent_name}\\\'s hand',
-		'descriptionmyturn': 'Cunning Neighbour: ${you} are looking at ${opponent_name}\\\'s hand. Choose where to place Cunning Neighbour',
+		'descriptionmyturn': 'Cunning Neighbour: ${you} are looking at ${opponent_name}\\\'s hand',
 		'type': 'activeplayer',
 		'action': 'stCunningNeighbour',
 		'args': 'argOpponentName',

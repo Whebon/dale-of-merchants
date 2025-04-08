@@ -83,6 +83,8 @@ export class MainClientState {
             //Generic passive states
             case 'client_choicelessPassiveCard':
                 return _("${card_name}: ${you} may use this card's ability");
+            case 'client_selectOpponentPassive':
+                return _("${card_name}: ${you} must choose an opponent"); //e.g. cunning neighbour
             
             //Specific passive states
             case 'client_marketDiscovery':
@@ -96,7 +98,7 @@ export class MainClientState {
             case 'client_triggerFizzle':
                 return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
             case 'client_selectOpponentTechnique':
-                return _("${card_name}: ${you} must choose an opponent"); //e.g. sabotage and cunning neighbour
+                return _("${card_name}: ${you} must choose an opponent"); //e.g. sabotage
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
             case 'client_choicelessTriggerTechniqueCard':

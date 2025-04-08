@@ -3363,6 +3363,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("Seeing Doubles: ${you} must copy another card in your hand");
                     case 'client_choicelessPassiveCard':
                         return _("${card_name}: ${you} may use this card's ability");
+                    case 'client_selectOpponentPassive':
+                        return _("${card_name}: ${you} must choose an opponent");
                     case 'client_marketDiscovery':
                         return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
@@ -4665,6 +4667,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonsOpponent(this.onSelectOpponentTechnique.bind(this));
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_selectOpponentPassive':
+                    this.addActionButtonsOpponent(this.onSelectOpponentPassive.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
                 case 'client_treasureHunter':
                 case 'client_carefreeSwapper':
                     this.addActionButtonCancelClient();
@@ -4842,8 +4848,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'cunningNeighbour':
-                    this.addActionButton("deck-button", _("Deck"), "onCunningNeighbourDeck");
-                    this.addActionButton("discard-button", _("Discard"), "onCunningNeighbourDiscard");
+                    this.addActionButton("continue-button", _("Continue"), "onCunningNeighbour");
                     break;
                 case 'deprecated_cheer':
                     if (!this.isSpectator && this.myDeck.size > 0) {
@@ -6163,7 +6168,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_SABOTAGE:
-                case DaleCard_9.DaleCard.CT_CUNNINGNEIGHBOUR:
                 case DaleCard_9.DaleCard.CT_DELICACY:
                 case DaleCard_9.DaleCard.CT_UMBRELLA:
                     if (this.unique_opponent_id) {
@@ -6611,6 +6615,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id_last: client_calculations_card_ids[0]
                     });
                     break;
+                case DaleCard_9.DaleCard.CT_CUNNINGNEIGHBOUR:
+                    if (this.unique_opponent_id) {
+                        this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
+                    }
+                    else {
+                        this.mainClientState.enterOnStack('client_selectOpponentPassive', { passive_card_id: card.id });
+                    }
+                    break;
                 case DaleCard_9.DaleCard.CT_REFRESHINGDRINK:
                     this.mainClientState.enterOnStack('client_refreshingDrink', { passive_card_id: card.id });
                     break;
@@ -6819,6 +6831,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id
             });
         };
+        DaleOfMerchants.prototype.onSelectOpponentPassive = function (opponent_id) {
+            this.playPassiveCard({
+                opponent_id: opponent_id
+            });
+        };
         DaleOfMerchants.prototype.onTreasureHunter = function (card_id) {
             this.playTechniqueCard({
                 card_id: card_id,
@@ -7016,12 +7033,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id
             });
         };
-        DaleOfMerchants.prototype.onCunningNeighbourDeck = function () {
-            this.bgaPerformAction('actCunningNeighbour', {
-                place_on_deck: true
-            });
-        };
-        DaleOfMerchants.prototype.onCunningNeighbourDiscard = function () {
+        DaleOfMerchants.prototype.onCunningNeighbour = function () {
             this.bgaPerformAction('actCunningNeighbour', {
                 place_on_deck: false
             });

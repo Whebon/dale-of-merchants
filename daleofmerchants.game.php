@@ -396,13 +396,13 @@ class DaleOfMerchants extends DaleTableBasic
 
         //the active player receives the notification with the private arguments
         $private_player_id = $args["player_id"];
-        $this->notifyPlayer($private_player_id, $type, $private_message != null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+        $this->notifyPlayer($private_player_id, $type, $private_message != null ? $private_message.$suffix : '', array_merge($args, $args["_private"]));
 
         //(optional) the involved opponent also receives the notification with the private arguments
         $private_opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : null;
         if ($private_opponent_id) {
             $private_opponent_id = $args["opponent_id"];
-            $this->notifyPlayer($private_opponent_id, $type, $private_message != null ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+            $this->notifyPlayer($private_opponent_id, $type, $private_message != null ? $private_message.$suffix : '', array_merge($args, $args["_private"]));
         }
 
         //all players receive the notification without the private arguments. (the player and opponent will ignore this on the client-side)
@@ -3364,12 +3364,6 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
-            case CT_CUNNINGNEIGHBOUR:
-                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->setGameStateValue("opponent_id", $opponent_id);
-                $this->beginResolvingCard($technique_card_id);
-                $this->gamestate->nextState("trCunningNeighbour");
-                break;
             case CT_DEPRECATED_CHEER:
                 $this->beginResolvingCard($technique_card_id);
                 $this->setGameStateValue("active_player_id", $player_id);
@@ -4117,6 +4111,14 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->effects->insertModification($passive_card_id, CT_BOLDHAGGLER, $value);
                 break;
+            case CT_CUNNINGNEIGHBOUR:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->effects->insertModification($passive_card_id, CT_CUNNINGNEIGHBOUR);
+                if ($this->cards->countCardsInLocation(HAND.$opponent_id) > 0) {
+                    $this->gamestate->nextState("trCunningNeighbour"); return;
+                }
+                break;
             case CT_REFRESHINGDRINK:
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
@@ -4436,12 +4438,16 @@ class DaleOfMerchants extends DaleTableBasic
             )
         ));
         if ($place_on_deck) {
-            $this->fullyResolveCard($player_id, null, DECK.$player_id);
+            throw new BgaUserException("Cunning Neighbour: unable to place Cunning Neighbour on top of a deck since the 10th anniversary rule change");
         }
-        else {
-            $this->fullyResolveCard($player_id);
-        }
-        
+        $this->gamestate->nextState("trSamePlayer");
+        // 10th anniversary: cunning neighbour is a passive now ($place_on_deck is always false)
+        // if ($place_on_deck) {
+        //     $this->fullyResolveCard($player_id, null, DECK.$player_id);
+        // }
+        // else {
+        //     $this->fullyResolveCard($player_id);
+        // }
     }
     
     function actDeprecatedCheer($card_id) {
@@ -5462,7 +5468,7 @@ class DaleOfMerchants extends DaleTableBasic
             "_private" => array(
                 "cards" => $cards
             )
-        ), '');
+        ));
     }
 
     function stDeprecatedCheer() {
