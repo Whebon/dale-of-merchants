@@ -2417,6 +2417,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->addChameleonBindings($chameleons_json, $funds_card_ids);
         $this->checkAction("actPurchase");
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
+        $market_card = $this->cards->getCard($market_card_id);
 
         //Get information about the funds
         $player_id = $this->getActivePlayerId();
@@ -2435,11 +2436,12 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Apply CT_Bribe
         $bribes = 0;
-        foreach ($funds_cards as $fund_card) {
-            $type_id = $this->getTypeId($fund_card);
+        $potential_bribe_cards = array_merge([$market_card], $funds_cards);
+        foreach ($potential_bribe_cards as $potential_bribe_card) {
+            $type_id = $this->getTypeId($potential_bribe_card);
             if ($type_id == CT_BRIBE) {
                 $bribes += 1;
-                $this->effects->insertGlobal($fund_card["id"], CT_BRIBE);
+                $this->effects->insertGlobal($potential_bribe_card["id"], CT_BRIBE);
             }
         }
         if ($bribes > 0) {
@@ -2473,8 +2475,6 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Get information about the market card
-        //$market_card_id = $this->getGameStateValue("selectedCard");
-        $market_card = $this->cards->getCard($market_card_id);
         if ($market_card['location'] != MARKET && $market_card['location'] != DISCARD.MARKET) {
             $invalid_location = $market_card['location'];
             throw new BgaVisibleSystemException("Cards cannot be purchased from '$invalid_location'");
