@@ -276,6 +276,7 @@ class DaleOfMerchants extends Gamegui
 			dojo.setStyle(this.myLimbo.wrap!, 'min-width', 3*Images.CARD_WIDTH_S+'px'); //overrides the #daleofmerchants-mylimbo-wrap style
 			dojo.connect( this.myLimbo, 'onClick', this, 'onSelectLimboCard' );
 			dojo.connect( this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard' );
+			dojo.connect( this.myLimbo.orderedSelection, 'onUnselect', this, 'onUnselectLimboCard' );
 		}
 
 		//initialize the schedules
@@ -1409,12 +1410,26 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'pompousProfessional':
-				const pompousProfessional_args = args as { animalfolk_id: number, animalfolk_name: number };
-				const pompousProfessional_mode = 'clickAnimalfolk'+pompousProfessional_args.animalfolk_id as `clickAnimalfolk${number}`;
-				const pompousProfessional_label = _("Choose a '")+pompousProfessional_args.animalfolk_name+("' card to take");
-				this.myLimbo.setSelectionMode(pompousProfessional_mode, undefined, 'daleofmerchants-wrap-technique', pompousProfessional_label);
-				if (this.myLimbo.getAllClickableCardIds().length == 0) {
-					this.addActionButton("pompous-professional-fizzle-button", _("Skip"), "onPompousProfessionalFizzle", undefined, false, 'gray');
+				if (this.myLimbo.count() == 0) {
+					//onUpdateActionButtons will be called again by a notification
+					this.setMainTitle(_("Pompous Professional: waiting..."));
+					return;
+				}
+				this.removeActionButtons();
+				const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: number };
+				const pompousProfessional_is_taking_card = this.myLimbo.getAllItems().some(
+					(item) => new DaleCard(item.id).effective_animalfolk_id == pompousProfessional_args.animalfolk_id
+				);
+				if (pompousProfessional_is_taking_card) {
+					const pompousProfessional_label = _("Choose a '")+pompousProfessional_args.animalfolk_name+("' card to take");
+					this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
+					this.addActionButton("confirm-button", _("Confirm"), "onPompousProfessionalTakeAndDiscard");
+					this.restoreMainTitle();
+				}
+				else {
+					this.setMainTitle(_("No '")+pompousProfessional_args.animalfolk_name+_("' found. You may choose the order to discard the cards"));
+					this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Discard cards"));
+					this.addActionButton("confirm-button", _("Discard"), "onPompousProfessionalDiscard");
 				}
 				break;
 			case 'client_burglaryOpponentId':
@@ -1818,12 +1833,24 @@ class DaleOfMerchants extends Gamegui
 		return super.format_string_recursive(log, args)
 	}
 
+	private previousMainTitle: string = '';
+
+	/**
+	 * Restore the previous `pagemaintitletext` that was overwritten by `setMainTitle`
+	 */
+	restoreMainTitle() {
+		if (this.previousMainTitle) {
+			this.setMainTitle(this.previousMainTitle);
+		}
+	}
+
 	/**
 	 * Update the state prompt message displayed
 	 * Code copied from https://studio.boardgamearena.com/doc/BGA_Studio_Cookbook
 	 * @param text new string to display at the main title
 	 */
 	setMainTitle(text: string) {
+		this.previousMainTitle = $('pagemaintitletext')!.innerHTML;
 		$('pagemaintitletext')!.innerHTML = text;
 	}
 
@@ -2133,6 +2160,28 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 		return stallCards;
+	}
+
+	/**
+	 * Ensures that the first item in the limbo selection of 'pompousProfessional' is of the correct animalfolk_id
+	 * @returns true if no cards needed to be unselected
+	 */
+	validatePompousProfessionalSelection(): boolean {
+		const pompousProfessional_args = (this.gamedatas.gamestate.args as { animalfolk_id: number });
+		const pompousProfessional_is_taking_card = this.myLimbo.getAllItems().some(
+			(item) => new DaleCard(item.id).effective_animalfolk_id == pompousProfessional_args.animalfolk_id
+		);
+		if (pompousProfessional_is_taking_card) {
+			if (this.myLimbo.orderedSelection.getSize() == 0) {
+				return true;
+			}
+			const pompousProfessional_card = new DaleCard(this.myLimbo.orderedSelection.get().pop()!);
+			if (pompousProfessional_card.effective_animalfolk_id != pompousProfessional_args.animalfolk_id) {
+				this.myLimbo.unselectAll();
+				return false;
+			}
+		}
+		return true;
 	}
 
 	
@@ -2579,15 +2628,29 @@ class DaleOfMerchants extends Gamegui
 				})
 				break;
 			case 'pompousProfessional':
-				this.bgaPerformAction('actPompousProfessional', {
-					card_id: card.id
-				})
+				const pompousProfessional_isValid = this.validatePompousProfessionalSelection();
+				if (!pompousProfessional_isValid) {
+					const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: number };
+					this.showMessage(_("Please choose a '")+pompousProfessional_args.animalfolk_name+_("' card"), 'error');
+					return;
+				}
 				break;
 			case 'delicacy':
 				this.onDelicacy(card.id);
 				break;
 			case 'umbrella':
 				this.onUmbrella(card.id);
+				break;
+		}
+	}
+
+	onUnselectLimboCard(card_id: number) {
+		console.warn("onUnselectLimboCard: "+card_id);
+		const card = new DaleCard(card_id);
+
+		switch(this.gamedatas.gamestate.name) {
+			case 'pompousProfessional':
+				this.validatePompousProfessionalSelection();
 				break;
 		}
 	}
@@ -4091,12 +4154,35 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
-	onPompousProfessionalFizzle() {
+	onPompousProfessionalTakeAndDiscard() {
+		const card_ids = this.arrayToNumberList(this.myLimbo.orderedSelection.get());
+		if (card_ids.length == 0) {
+			const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: number };
+			this.showMessage(_("Please choose a '")+pompousProfessional_args.animalfolk_name+_("' card"), 'error');
+			return;
+		}
 		this.bgaPerformAction('actPompousProfessional', {
-			card_id: -1
+			card_ids: card_ids,
+			is_taking_card: true
 		});
-		this.removeActionButtons();
 	}
+
+	onPompousProfessionalDiscard() {
+		const card_ids = this.arrayToNumberList(this.myLimbo.orderedSelection.get());
+		this.bgaPerformAction('actPompousProfessional', {
+			card_ids: card_ids,
+			is_taking_card: false
+		});
+	}
+
+
+	//TODO: safely remove this
+	// onPompousProfessionalFizzle() {
+	// 	this.bgaPerformAction('actPompousProfessional', {
+	// 		card_id: -1
+	// 	});
+	// 	this.removeActionButtons();
+	// }
 
 	onBurglary(value: number) {
 		const args = this.mainClientState.args as ClientTechniqueChoice['client_burglaryValue'];
@@ -4174,62 +4260,63 @@ class DaleOfMerchants extends Gamegui
 		
 		//[notif_type, duration, has_private_arguments]
 		const notifs: ([keyof NotifTypes, number, boolean?])[] = [
-			['deckSelectionResult', 			500],
-			['delay', 							500],
-			['startGame', 						500],
-			['scheduleTechnique', 				1],
-			['scheduleTechniqueDelay', 			500, true],
-			['resolveTechnique', 				500],
-			['cancelTechnique', 				500],
-			['scheduleToHand',					500],
-			['buildStack', 						500],
-			['rearrangeMarket', 				500],
-			['fillEmptyMarketSlots', 			1],
-			['marketSlideRight', 				500],
-			['marketToHand', 					500],
-			['swapHandStall', 					1],
-			['swapHandMarket', 					1],
-			['instant_marketDiscardToHand', 	1],
-			['marketDiscardToHand', 			500],
-			['instant_discardToHand', 			1],
-			['discardToHand', 					500],
-			['discardToHandMultiple', 			500],
-			['draw', 							500, true],
-			['drawMultiple', 					500, true],
-			['handToLimbo', 					500, true],
-			['instant_limboToHand',				1, true],
-			['limboToHand', 					500, true],
-			['instant_playerHandToOpponentHand',1, true],
-			['instant_opponentHandToPlayerHand',1, true],
-			['playerHandToOpponentHand', 		500, true],
-			['opponentHandToPlayerHand', 		500, true],
-			['obtainNewJunkInHand', 			500],
-			['ditch', 							500],
-			['ditchMultiple', 					500],
-			['discard', 						500],
-			['discardMultiple', 				750],
-			['placeOnDeckMultiple', 			500, true],
-			['reshuffleDeck', 					1500],
-			['wilyFellow', 						500],
-			['whirligigShuffle', 				1750],
-			['whirligigTakeBack', 				500, true],
-			['cunningNeighbourWatch', 			500],
-			['cunningNeighbourReturn', 			500],
-			['ditchFromDiscard', 				500],
-			['ditchFromDeck', 					500],
-			['ditchFromMarketDeck', 			500],
-			['ditchFromMarketBoard', 			500],
-			['instant_deckToDeck', 				1],
-			['deckToDeck', 						500],
-			['instant_discardToDeck', 			1],
-			['discardToDeck', 					500],
-			['deckToDiscard', 					500],
-			['rollDie', 						1000],
-			['selectBlindfold', 				1, true],
-			['addEffect', 						1],
-			['expireEffects', 					1],
-			['message', 						1],
-			['debugClient', 					1],
+			['deckSelectionResult', 				500],
+			['delay', 								500],
+			['startGame', 							500],
+			['scheduleTechnique', 					1],
+			['scheduleTechniqueDelay', 				500, true],
+			['resolveTechnique', 					500],
+			['cancelTechnique', 					500],
+			['scheduleToHand',						500],
+			['buildStack', 							500],
+			['rearrangeMarket', 					500],
+			['fillEmptyMarketSlots', 				1],
+			['marketSlideRight', 					500],
+			['marketToHand', 						500],
+			['swapHandStall', 						1],
+			['swapHandMarket', 						1],
+			['instant_marketDiscardToHand', 		1],
+			['marketDiscardToHand', 				500],
+			['instant_discardToHand', 				1],
+			['discardToHand', 						500],
+			['discardToHandMultiple', 				500],
+			['draw', 								500, true],
+			['drawMultiple', 						500, true],
+			['handToLimbo', 						500, true],
+			['instant_limboToHand',					1, true],
+			['limboToHand', 						500, true],
+			['instant_playerHandToOpponentHand',	1, true],
+			['instant_opponentHandToPlayerHand',	1, true],
+			['playerHandToOpponentHand', 			500, true],
+			['opponentHandToPlayerHand', 			500, true],
+			['obtainNewJunkInHand', 				500],
+			['ditch', 								500],
+			['ditchMultiple', 						500],
+			['discard', 							500],
+			['discardMultiple', 					750],
+			['placeOnDeckMultiple', 				500, true],
+			['reshuffleDeck', 						1500],
+			['wilyFellow', 							500],
+			['whirligigShuffle', 					1750],
+			['whirligigTakeBack', 					500, true],
+			['cunningNeighbourWatch', 				500],
+			['cunningNeighbourReturn', 				500],
+			['ditchFromDiscard', 					500],
+			['ditchFromDeck', 						500],
+			['ditchFromMarketDeck', 				500],
+			['ditchFromMarketBoard', 				500],
+			['instant_deckToDeck', 					1],
+			['deckToDeck', 							500],
+			['instant_discardToDeck', 				1],
+			['discardToDeck', 						500],
+			['deckToDiscard', 						500],
+			['rollDie', 							1000],
+			['updateActionButtons',	1],
+			['selectBlindfold', 					1, true],
+			['addEffect', 							1],
+			['expireEffects', 						1],
+			['message', 							1],
+			['debugClient', 						1],
 		];
 
 		notifs.forEach((notif) => {
@@ -4649,8 +4736,10 @@ class DaleOfMerchants extends Gamegui
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile);
-		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+		if (!notif.args.from_limbo) {
+			//update the hand sizes
+			this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+		}
 	}
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
@@ -4665,8 +4754,10 @@ class DaleOfMerchants extends Gamegui
 			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
 			delay += 75; //delay indicates that ordering matters
 		}
-		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
+		if (!notif.args.from_limbo) {
+			//update the hand sizes
+			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
+		}
 	}
 
 	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
@@ -5071,6 +5162,11 @@ class DaleOfMerchants extends Gamegui
 		if (parent) {
 			new DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
 		}
+	}
+
+	notif_updateActionButtons(notif: NotifAs<'updateActionButtons'>){
+		this.removeActionButtons();
+		this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
 	}
 
 	notif_selectBlindfold(notif: NotifAs<'selectBlindfold'>) {

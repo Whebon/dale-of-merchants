@@ -715,9 +715,13 @@ interface GameStates {
 		'action': 'stPompousProfessional',
 		'possibleactions': {
 			'actPompousProfessional': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'is_taking_card',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
 			}],
 		},
 		'transitions': {

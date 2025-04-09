@@ -295,6 +295,10 @@ declare global {
 		'rearrangeMarket': {
 			card_ids: number[]
 		}
+		'updateActionButtons': {
+			animalfolk_id: number,
+			is_taking_card: boolean
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */

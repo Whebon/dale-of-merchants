@@ -4895,24 +4895,18 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actPompousProfessional($card_id) {
+    function actPompousProfessional($card_ids, $is_taking_card) {
         $this->checkAction("actPompousProfessional");
+        $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
         $animalfolk_id = $this->getGameStateValue("animalfolk_id");
         $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
 
-        if ($card_id == -1) {
-            //confirm the player can indeed not draw any card of the chosen animalfolk
-            foreach ($dbcards as $dbcard) {
-                if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
-                    throw new BgaUserException(_("You must take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
-                }
-            }
-        }
-        else {
+        if ($is_taking_card) {
             //take the selected card
+            $card_id = array_pop($card_ids);
             if (!isset($dbcards[$card_id])) {
-                throw new BgaUserException(_("The selected card was is not in limbo"));
+                throw new BgaUserException(_("The selected card is not in limbo"));
             }
             $dbcard = $dbcards[$card_id];
             unset($dbcards[$card_id]);
@@ -4929,18 +4923,42 @@ class DaleOfMerchants extends DaleTableBasic
                 )
             ));
         }
+        else {
+            //otherwise, confirm the player can indeed not draw any card of the chosen animalfolk
+            foreach ($dbcards as $dbcard) {
+                if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
+                    throw new BgaUserException(_("You must take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                }
+            }
+        }
 
-        //shuffle the other cards back into the deck
-        $this->placeOnDeckMultiple(
+        //discard, with with optional order
+        $ordered_dbcards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
+        foreach ($ordered_dbcards as $ordered_card_id => $card) {
+            unset($dbcards[$ordered_card_id]);
+        }
+        $this->discardMultiple(
+            clienttranslate('Pompous Professional: ${player_name} discards ${nbr} cards'),
             $player_id, 
-            clienttranslate('Pompous Professional: ${player_name} shuffles ${nbr} cards back into their deck'),
-            $this->toCardIds($dbcards),
+            $this->toCardIds($ordered_dbcards), 
+            $ordered_dbcards,
             $dbcards,
-            null,
             true
         );
-        $this->cards->shuffle(DECK.$player_id);
         $this->fullyResolveCard($player_id);
+
+        //TODO: safely remove this (10th anniversary rule change)
+        // //shuffle the other cards back into the deck
+        // $this->placeOnDeckMultiple(
+        //     $player_id, 
+        //     clienttranslate('Pompous Professional: ${player_name} shuffles ${nbr} cards back into their deck'),
+        //     $this->toCardIds($dbcards),
+        //     $dbcards,
+        //     null,
+        //     true
+        // );
+        // $this->cards->shuffle(DECK.$player_id);
+        // $this->fullyResolveCard($player_id);
     }
 
     function actDelicacy($card_id) {
@@ -5682,6 +5700,24 @@ class DaleOfMerchants extends DaleTableBasic
                 "card_name" => $this->getCardName($dbcard)
             ));
         }
+
+        //check if a card can be taken
+        $is_taking_card = false;
+        $animalfolk_id = $this->getGameStateValue("animalfolk_id");
+        $animalfolk_name = $this->getAnimalfolkDisplayedName($animalfolk_id);
+        foreach ($dbcards as $dbcard) {
+            if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
+                $is_taking_card = true;
+                break;
+            }
+        }
+
+        //let the client know limbo is now filled so it can properly call onUpdateActionButton
+        $this->notifyAllPlayers('updateActionButtons', $is_taking_card ? '' : 
+            clienttranslate('Pompous Professional: ${player_name} fails to find a card of type \'${animalfolk_name}\''), array(
+                "animalfolk_name" => $animalfolk_name,
+                "player_name" => $this->getActivePlayerName(),
+        ));
     }
 
     function stDelicacy() {

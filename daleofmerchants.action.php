@@ -420,10 +420,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+		/** @var bool $is_taking_card */
+		$is_taking_card = self::getArg('is_taking_card', AT_bool, true);
 
-		$this->game->actPompousProfessional( $card_id );
+		$this->game->actPompousProfessional( $card_ids, $is_taking_card );
 		self::ajaxResponse();
 	}
 
