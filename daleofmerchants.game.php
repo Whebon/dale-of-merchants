@@ -3793,7 +3793,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $cards[$card_id];
                 $printed_value = $this->card_types[$card['type_arg']]['value'];
                 if ($value == $printed_value) {
-                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} correctly guessed ${value} and takes a ${card_name} from ${opponent_name}\'s hand'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} correctly guessed ${value} and takes a ${card_name} from ${opponent_name}\'s hand'), array(
                         'player_name' => $this->getActivePlayerName(),
                         'opponent_name' => $this->getPlayerNameById($opponent_id),
                         'value' => $value,
@@ -3812,12 +3812,24 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 else {
-                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} guessed ${value}, but the actual value was ${printed_valued} (${card_name})'), array(
+                    //notify about the incorrect guess
+                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} guessed ${value}, but the actual value was ${printed_valued} (${card_name})'), array(
                         'player_name' => $this->getActivePlayerName(),
                         'value' => $value,
                         'printed_valued' => $printed_value,
                         'card_name' => $this->getCardName($card)
                     ));
+                    //discard the card from the opponent's hand
+                    $this->cards->moveCardOnTop($card["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('discard', clienttranslate('Sabotage: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                        "player_id" => $opponent_id,
+                        "discard_id" => $opponent_id,
+                        "from_limbo" => false,
+                        "card" => $card,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "opponent_name" => $this->getPlayerNameById($opponent_id),
+                        "card_name" => $this->getCardName($card)
+                    )); 
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
