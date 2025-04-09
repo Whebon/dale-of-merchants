@@ -1855,6 +1855,18 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    /**
+     * Returns the effective name of the card that is currently being resolved
+     */
+    function getCurrentResolvingCardName() {
+        $technique_card_id = $this->getGameStateValue("resolvingCard");
+        $technique_card = $this->cards->getCard($technique_card_id);
+        if ($technique_card_id == -1) {
+            throw new Error("Trying to 'fullyResolveCard' without 'beginResolvingCard'");
+        }
+        return $this->getCardName($technique_card);
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Building functions
 ////////////
@@ -2686,6 +2698,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_DUPLICATEENTRY:
                 case CT_CULTURALPRESERVATION:
                 case CT_NIGHTSHIFT:
+                case CT_RUMOURS:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
@@ -2701,7 +2714,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $opponent_id => $opponent) {
                         if ($opponent_id != $player_id && (isset($counts[DECK.$opponent_id]) || isset($counts[DISCARD.$opponent_id]))) {
-                            throw new BgaVisibleSystemException("Unable to fizzle CT_RUTHLESSCOMPETITION. There exists a non-empty opponent deck/discard");
+                            throw new BgaVisibleSystemException("Unable to fizzle. There exists a non-empty opponent deck/discard");
                         }
                     }
                     break;
@@ -3434,6 +3447,19 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trCharity");
+                break;
+            case CT_RUMOURS:
+                $this->beginResolvingCard($technique_card_id);
+                $players = $this->loadPlayersBasicInfos();
+                $counts = $this->cards->countCardsInLocations();
+                $player_ids = [];
+                foreach ($players as $player_id => $player) {
+                    if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id])) {
+                        $player_ids[] = $player_id;
+                    }
+                }
+                $this->setGameStateValuePlayerIds($player_ids);
+                $this->gamestate->nextState("trRumours");
                 break;
             case CT_DEPRECATED_TASTERS:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
@@ -4479,38 +4505,48 @@ class DaleOfMerchants extends DaleTableBasic
         );
         $this->nextStateChangeActivePlayerFromMultiActive("trFullyResolve", $player_id);
     }
+
     
-    function actCharity($card_ids, $player_ids) {
-        $this->checkAction("actCharity");
-        $player_id = $this->getActivePlayerId();
+    /**
+     * General purpose action for techniques to partially fulfill giving cards to the players. Updates `setGameStateValuePlayerIds`. Fully resolves the current technique if the fulfillment is complete.
+     * Usages: actCharity and actRumours
+     * @param mixed $card_ids card ids to give to players. These cards must be present in the active player's limbo
+     * @param mixed $player_ids card ids to give to players. Must be a subset of the ids stored in `setGameStateValuePlayerIds`
+     */
+    function actGiveCardsFromLimboToPlayers($card_ids, $player_ids) {
+        $this->checkAction("actGiveCardsFromLimboToPlayers");
         $card_ids = $this->numberListToArray($card_ids);
         $player_ids = $this->numberListToArray($player_ids);
+        $player_id = $this->getActivePlayerId();
+        $resolving_card_name = $this->getCurrentResolvingCardName();
         if (count($card_ids) != count($player_ids)) {
-            throw new BgaVisibleSystemException("Charity: count(card_ids) != count(player_ids)");
+            throw new BgaVisibleSystemException($resolving_card_name.": count(card_ids) != count(player_ids)");
         }
         $remaining_player_ids = $this->getGameStateValuePlayerIds($player_ids);
         for ($i = 0; $i < count($card_ids); $i++) {
             //get the player that will receive the card
             $other_player_id = $player_ids[$i];
             if (!in_array($other_player_id, $remaining_player_ids)) {
-                throw new BgaVisibleSystemException("Charity: provided player_id is not authorized to receive a card");
+                throw new BgaVisibleSystemException($resolving_card_name.": provided player_id is not authorized to receive a card");
             }
             //give the card
             $card_id = $card_ids[$i];
             $card = $this->cards->getCardFromLocation($card_id, LIMBO.$player_id);
             $this->cards->moveCard($card_id, HAND.$other_player_id);
             if ($other_player_id == $player_id) {
-                $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Charity: ${player_name} gives a card to themselves'), array(
+                $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('${resolving_card_name}: ${player_name} gives a card to themselves'), array(
+                    "resolving_card_name" => $resolving_card_name,
                     "player_id" => $player_id,
                     "player_name" => $this->getPlayerNameById($player_id),
                     "_private" => array(
                         "card" => $card,
                         "card_name" => $this->getCardName($card)
                     )
-                ), clienttranslate('Charity: ${player_name} gives a ${card_name} to themselves'));
+                ), clienttranslate('${resolving_card_name}: ${player_name} gives a ${card_name} to themselves'));
             }
             else {
-                $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('Charity: ${player_name} gives a card to ${opponent_name}'), array(
+                $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('${resolving_card_name}: ${player_name} gives a card to ${opponent_name}'), array(
+                    "resolving_card_name" => $resolving_card_name,
                     "player_id" => $player_id,
                     "opponent_id" => $other_player_id,
                     "player_name" => $this->getPlayerNameById($player_id),
@@ -4520,8 +4556,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "card_name" => $this->getCardName($card)
                     ),
                     "from_limbo" => true
-                ), clienttranslate('Charity: ${player_name} gives a ${card_name} to ${opponent_name}')
-                );
+                ), clienttranslate('${resolving_card_name}: ${player_name} gives a ${card_name} to ${opponent_name}'));
             }
         }
         //update the remaining player_ids
@@ -5585,6 +5620,24 @@ class DaleOfMerchants extends DaleTableBasic
                     ),
                     "to_limbo" => true
                 ), clienttranslate('Charity: ${player_name} takes a ${card_name} from ${opponent_name}'));
+            }
+        }
+    }
+
+    function stRumours() {
+        $player_id = $this->getActivePlayerId();
+        $player_ids = $this->getGameStateValuePlayerIds();
+        foreach ($player_ids as $other_player_id) {
+            $nbr = $this->draw(
+                clienttranslate('Rumours: ${player_name} looks at a card from ${opponent_name}\'s deck'), 
+                1, 
+                true, 
+                $other_player_id, 
+                $player_id,
+                clienttranslate('Rumours: ${player_name} looks at ${opponent_name}\'s ${card_name}')
+            );
+            if ($nbr == 0) {
+                throw new BgaVisibleSystemException("Rumours: expected all players from 'getGameStateValuePlayerIds' to have a card in their deck/discard");
             }
         }
     }

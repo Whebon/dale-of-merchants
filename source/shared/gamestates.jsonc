@@ -152,7 +152,8 @@
 			"trDeprecatedWhirligig": 7400,
 			"trPompousProfessional": 75,
 			"trDelicacy": 76,
-			"trUmbrella": 77
+			"trUmbrella": 77,
+			"trRumours": 78
 		}
 	},
 
@@ -436,7 +437,7 @@
 		"action": "stCharity",
 		"args": "argPlayerIds",
 		"possibleactions": {
-			"actCharity": [
+			"actGiveCardsFromLimboToPlayers": [
 				{"name": "card_ids", "type": "AT_numberlist"},
 				{"name": "player_ids", "type": "AT_numberlist"}
 			]
@@ -638,6 +639,22 @@
 		"possibleactions": {
 			"actUmbrella": [
 				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"78": {
+		"name": "rumours",
+		"description": "Rumours: ${actplayer} must give back all drawn cards",
+		"descriptionmyturn": "Rumours: ${you} must choose a card and a player",
+		"type": "activeplayer",
+		"action": "stRumours",
+		"args": "argPlayerIds",
+		"possibleactions": {
+			"actGiveCardsFromLimboToPlayers": [
+				{"name": "card_ids", "type": "AT_numberlist"},
+				{"name": "player_ids", "type": "AT_numberlist"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

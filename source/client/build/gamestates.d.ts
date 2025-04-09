@@ -180,6 +180,7 @@ interface GameStates {
 			'trPompousProfessional': 75,
 			'trDelicacy': 76,
 			'trUmbrella': 77,
+			'trRumours': 78,
 		},
 	},
 	31: {
@@ -528,7 +529,7 @@ interface GameStates {
 		'action': 'stCharity',
 		'args': 'argPlayerIds',
 		'possibleactions': {
-			'actCharity': [{
+			'actGiveCardsFromLimboToPlayers': [{
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
@@ -753,6 +754,28 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	78: {
+		'name': 'rumours',
+		'description': 'Rumours: ${actplayer} must give back all drawn cards',
+		'descriptionmyturn': 'Rumours: ${you} must choose a card and a player',
+		'type': 'activeplayer',
+		'action': 'stRumours',
+		'args': 'argPlayerIds',
+		'possibleactions': {
+			'actGiveCardsFromLimboToPlayers': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'player_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

@@ -40,6 +40,7 @@ if (false) {
 	$game->stPompousProfessional();
 	$game->stDelicacy();
 	$game->stUmbrella();
+	$game->stRumours();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -128,6 +129,7 @@ $machinestates = array(
 			'trPompousProfessional' => 75,
 			'trDelicacy' => 76,
 			'trUmbrella' => 77,
+			'trRumours' => 78,
 		),
 	),
 	31 => array(
@@ -334,7 +336,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stCharity',
 		'args' => 'argPlayerIds',
-		'possibleactions' => ['actCharity'],
+		'possibleactions' => ['actGiveCardsFromLimboToPlayers'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
@@ -472,6 +474,18 @@ $machinestates = array(
 		'action' => 'stUmbrella',
 		'args' => 'argOpponentName',
 		'possibleactions' => ['actUmbrella'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	78 => array(
+		'name' => 'rumours',
+		'description' => clienttranslate('Rumours: ${actplayer} must give back all drawn cards'),
+		'descriptionmyturn' => clienttranslate('Rumours: ${you} must choose a card and a player'),
+		'type' => 'activeplayer',
+		'action' => 'stRumours',
+		'args' => 'argPlayerIds',
+		'possibleactions' => ['actGiveCardsFromLimboToPlayers'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

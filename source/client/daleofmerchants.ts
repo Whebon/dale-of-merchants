@@ -642,6 +642,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Opponent's hand"));
 				break;
 			case 'charity':
+			case 'rumours':
 				this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				break;
 			case 'deprecated_tasters':
@@ -974,6 +975,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'charity':
+			case 'rumours':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'deprecated_tasters':
@@ -1331,10 +1333,11 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'charity':
+			case 'rumours':
 				const charity_args = args as { player_ids: number[] };
 				this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
 				this.max_opponents = 1; //ensure that no opponent is selected by default
-				this.addActionButton("confirm-button", _("Confirm"), "onCharity"); //confirm the opponent and the card
+				this.addActionButton("confirm-button", _("Confirm"), "onGiveCardsFromLimboToPlayers"); //confirm the opponent and the card
 				break;
 			case 'client_deprecated_tasters':
 				this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
@@ -3048,6 +3051,7 @@ class DaleOfMerchants extends Gamegui
 				});
 				break;
 			case DaleCard.CT_NIGHTSHIFT:
+			case DaleCard.CT_RUMOURS:
 				for (let player_id of this.gamedatas.playerorder) {
 					if (this.playerDiscards[player_id]!.size + this.playerDecks[player_id]!.size > 0) {
 						fizzle = false;
@@ -3872,7 +3876,7 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onCharity() {
+	onGiveCardsFromLimboToPlayers() {
 		//get the selected card and opponent
 		const card_id = this.myLimbo.orderedSelection.get()[0];
 		if (!card_id) {
@@ -3893,7 +3897,7 @@ class DaleOfMerchants extends Gamegui
 		if (items.length == 2) {
 			//automatically give the last card
 			if (args.player_ids.length != 2) {
-				throw new Error(`Charity: unable to give ${items.length} cards to ${args.player_ids.length} players`)
+				throw new Error(`Unable to give ${items.length} cards to ${args.player_ids.length} players`)
 			}
 			for (let item of items) {
 				if (item.id != card_id) {
@@ -3906,13 +3910,13 @@ class DaleOfMerchants extends Gamegui
 				}
 			}
 		}
-		this.bgaPerformAction('actCharity', {
+		this.bgaPerformAction('actGiveCardsFromLimboToPlayers', {
 			card_ids: this.arrayToNumberList(card_ids),
 			player_ids: this.arrayToNumberList(player_ids)
 		});
 		const index = args.player_ids.indexOf(player_id);
 		if (index == -1) {
-			throw new Error(`Charity: player ${player_id} is not authorized to receive a card`);
+			throw new Error(`Player ${player_id} is not authorized to receive a card`);
 		}
 		else {
 			args.player_ids.splice(index, 1);

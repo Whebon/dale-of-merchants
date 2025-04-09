@@ -4210,6 +4210,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Opponent's hand"));
                     break;
                 case 'charity':
+                case 'rumours':
                     this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     break;
                 case 'deprecated_tasters':
@@ -4513,6 +4514,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'charity':
+                case 'rumours':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'deprecated_tasters':
@@ -4871,10 +4873,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'charity':
+                case 'rumours':
                     var charity_args = args;
                     this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
                     this.max_opponents = 1;
-                    this.addActionButton("confirm-button", _("Confirm"), "onCharity");
+                    this.addActionButton("confirm-button", _("Confirm"), "onGiveCardsFromLimboToPlayers");
                     break;
                 case 'client_deprecated_tasters':
                     this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
@@ -6305,6 +6308,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     });
                     break;
                 case DaleCard_9.DaleCard.CT_NIGHTSHIFT:
+                case DaleCard_9.DaleCard.CT_RUMOURS:
                     for (var _g = 0, _h = this.gamedatas.playerorder; _g < _h.length; _g++) {
                         var player_id = _h[_g];
                         if (this.playerDiscards[player_id].size + this.playerDecks[player_id].size > 0) {
@@ -7069,7 +7073,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 reverse_direction: reverse_direction
             });
         };
-        DaleOfMerchants.prototype.onCharity = function () {
+        DaleOfMerchants.prototype.onGiveCardsFromLimboToPlayers = function () {
             var card_id = this.myLimbo.orderedSelection.get()[0];
             if (!card_id) {
                 this.showMessage(_("Please choose a card to give"), 'error');
@@ -7086,7 +7090,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var player_ids = [player_id];
             if (items.length == 2) {
                 if (args.player_ids.length != 2) {
-                    throw new Error("Charity: unable to give ".concat(items.length, " cards to ").concat(args.player_ids.length, " players"));
+                    throw new Error("Unable to give ".concat(items.length, " cards to ").concat(args.player_ids.length, " players"));
                 }
                 for (var _i = 0, items_3 = items; _i < items_3.length; _i++) {
                     var item = items_3[_i];
@@ -7101,13 +7105,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 }
             }
-            this.bgaPerformAction('actCharity', {
+            this.bgaPerformAction('actGiveCardsFromLimboToPlayers', {
                 card_ids: this.arrayToNumberList(card_ids),
                 player_ids: this.arrayToNumberList(player_ids)
             });
             var index = args.player_ids.indexOf(player_id);
             if (index == -1) {
-                throw new Error("Charity: player ".concat(player_id, " is not authorized to receive a card"));
+                throw new Error("Player ".concat(player_id, " is not authorized to receive a card"));
             }
             else {
                 args.player_ids.splice(index, 1);

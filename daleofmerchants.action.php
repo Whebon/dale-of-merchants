@@ -300,7 +300,7 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actCharity()
+	public function actGiveCardsFromLimboToPlayers()
 	{
 		self::setAjaxMode();
 
@@ -309,7 +309,7 @@ class action_daleofmerchants extends APP_GameAction
 		/** @var string $player_ids */
 		$player_ids = self::getArg('player_ids', AT_numberlist, true);
 
-		$this->game->actCharity( $card_ids, $player_ids );
+		$this->game->actGiveCardsFromLimboToPlayers( $card_ids, $player_ids );
 		self::ajaxResponse();
 	}
 
