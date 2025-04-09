@@ -2723,6 +2723,9 @@ class DaleOfMerchants extends DaleTableBasic
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
                         if (isset($counts[HAND.$other_player_id])) {
+                            if ($other_player_id == $player_id && $counts[HAND.$player_id] == 1) {
+                                continue;
+                            }
                             throw new BgaVisibleSystemException("Unable to fizzle CT_CHARITY. There exists at least 1 card in player hands.");
                         }
                     }
@@ -3445,6 +3448,9 @@ class DaleOfMerchants extends DaleTableBasic
                         $player_ids[] = $player_id;
                     }
                 }
+                if (count($player_ids) == 0) {
+                    throw new BgaSystemException("Charity has no effect and should have fizzled instead");
+                }
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trCharity");
                 break;
@@ -3457,6 +3463,9 @@ class DaleOfMerchants extends DaleTableBasic
                     if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id])) {
                         $player_ids[] = $player_id;
                     }
+                }
+                if (count($player_ids) == 0) {
+                    throw new BgaSystemException("Rumours has no effect and should have fizzled instead");
                 }
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trRumours");

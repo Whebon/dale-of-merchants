@@ -3148,6 +3148,24 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_raffle', card.id);
 				}
 				break;
+			case DaleCard.CT_CHARITY:
+				let charity_valid_players = 0;
+				for (let player_id in this.gamedatas.players) {
+					let grasp_hand_size = this.playerHandSizes[player_id]!.getValue();
+					if (+player_id == this.player_id) {
+						grasp_hand_size -= 1; //this card itself doesn't count
+					}
+					if (grasp_hand_size > 0) {
+						charity_valid_players += 1;
+					}
+				}
+				if (charity_valid_players == 0) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
 			case DaleCard.CT_DEPRECATED_TASTERS:
 				const deprecated_tasters_nbr = this.market!.getCards().length;
 				fizzle = deprecated_tasters_nbr == 0;

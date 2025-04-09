@@ -6390,6 +6390,24 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_raffle', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_CHARITY:
+                    var charity_valid_players = 0;
+                    for (var player_id in this.gamedatas.players) {
+                        var grasp_hand_size = this.playerHandSizes[player_id].getValue();
+                        if (+player_id == this.player_id) {
+                            grasp_hand_size -= 1;
+                        }
+                        if (grasp_hand_size > 0) {
+                            charity_valid_players += 1;
+                        }
+                    }
+                    if (charity_valid_players == 0) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
                 case DaleCard_9.DaleCard.CT_DEPRECATED_TASTERS:
                     var deprecated_tasters_nbr = this.market.getCards().length;
                     fizzle = deprecated_tasters_nbr == 0;
