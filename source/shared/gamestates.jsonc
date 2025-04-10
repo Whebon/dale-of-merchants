@@ -153,7 +153,8 @@
 			"trPompousProfessional": 75,
 			"trDelicacy": 76,
 			"trUmbrella": 77,
-			"trRumours": 78
+			"trRumours": 78,
+			"trWheelbarrow": 79
 		}
 	},
 
@@ -656,6 +657,21 @@
 			"actGiveCardsFromLimboToPlayers": [
 				{"name": "card_ids", "type": "AT_numberlist"},
 				{"name": "player_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"79": {
+		"name": "wheelbarrow",
+		"description": "Wheelbarrow: ${actplayer} must choose to ditch or store ${card_name}",
+		"descriptionmyturn": "Wheelbarrow: ${you} must choose to ditch or store ${card_name}",
+		"type": "activeplayer",
+		"action": "stWheelbarrow",
+		"args": "argCardName",
+		"possibleactions": {
+			"actWheelbarrow": [
+				{"name": "is_ditching", "type": "AT_bool"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

@@ -801,6 +801,9 @@ class DaleOfMerchants extends Gamegui
 					this.myDiscard.openPopin();
 				}
 				break;
+			case 'wheelbarrow':
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1092,6 +1095,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_barricade':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'wheelbarrow':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1612,6 +1618,14 @@ class DaleOfMerchants extends Gamegui
 			case 'client_barricade':
 				this.addActionButton("confirm-button", _("Confirm"), "onBarricade");
 				this.addActionButtonCancelClient();
+				break;
+			case 'wheelbarrow':
+				this.addActionButton("wheelbarrow-ditch-button", _("Ditch"), "onWheelbarrowDitch");
+				this.addActionButton("wheelbarrow-store-button", _("Store"), "onWheelbarrowStore");
+				// const wheelbarrow_ditch = $("wheelbarrow-ditch-button");
+				// const wheelbarrow_or = document.createElement("span");
+				// wheelbarrow_or.textContent = _(" or");
+				// wheelbarrow_ditch?.parentNode?.insertBefore(wheelbarrow_or, wheelbarrow_ditch.nextSibling);
 				break;
 		}
 		//(~actionbuttons)
@@ -3160,6 +3174,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_MAGNET:
+			case DaleCard.CT_WHEELBARROW:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -4365,6 +4380,18 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onWheelbarrowDitch() {
+		this.bgaPerformAction('actWheelbarrow', {
+			is_ditching: true
+		});
+	}
+
+	onWheelbarrowStore() {
+		this.bgaPerformAction('actWheelbarrow', {
+			is_ditching: false
+		});
+	}
+
 	//(~on)
 
 
@@ -4575,10 +4602,11 @@ class DaleOfMerchants extends Gamegui
 	notif_handToStoredCards(notif: NotifAs<'handToStoredCards'>) {
 		if (notif.args.player_id == this.player_id) {
 			//animate from my hand
+			const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 			const card_id = +notif.args.card.id;
-			if ($(this.myHand.control_name+'_item_' + card_id)) {
-				this.myStoredCards.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_'+card_id)
-				this.myHand.removeFromStockByIdNoAnimation(+card_id);
+			if ($(stock.control_name+'_item_' + card_id)) {
+				this.myStoredCards.addDaleCardToStock(DaleCard.of(notif.args.card), stock.control_name+'_item_'+card_id)
+				stock.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
 				throw new Error(`Unable to store card ${card_id} from hand, because it does not exist in the hand`);
@@ -4590,7 +4618,9 @@ class DaleOfMerchants extends Gamegui
 			storedCards.addDaleCardToStock(DaleCard.of(notif.args.card), 'overall_player_board_'+notif.args.player_id)
 		}
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+		if (!notif.args.from_limbo) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+		}
 	}
 
 	notif_deckToStoredCards(notif: NotifAs<'deckToStoredCards'>) {

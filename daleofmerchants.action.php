@@ -451,6 +451,17 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actWheelbarrow()
+	{
+		self::setAjaxMode();
+
+		/** @var bool $is_ditching */
+		$is_ditching = self::getArg('is_ditching', AT_bool, true);
+
+		$this->game->actWheelbarrow( $is_ditching );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

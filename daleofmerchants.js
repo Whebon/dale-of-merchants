@@ -4353,6 +4353,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myDiscard.openPopin();
                     }
                     break;
+                case 'wheelbarrow':
+                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4641,6 +4644,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_barricade':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'wheelbarrow':
+                    this.myLimbo.setSelectionMode('none');
                     break;
             }
         };
@@ -5157,6 +5163,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_barricade':
                     this.addActionButton("confirm-button", _("Confirm"), "onBarricade");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'wheelbarrow':
+                    this.addActionButton("wheelbarrow-ditch-button", _("Ditch"), "onWheelbarrowDitch");
+                    this.addActionButton("wheelbarrow-store-button", _("Store"), "onWheelbarrowStore");
                     break;
             }
         };
@@ -6417,6 +6427,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_MAGNET:
+                case DaleCard_9.DaleCard.CT_WHEELBARROW:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -7519,6 +7530,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.myDiscard.orderedSelection.get()
             });
         };
+        DaleOfMerchants.prototype.onWheelbarrowDitch = function () {
+            this.bgaPerformAction('actWheelbarrow', {
+                is_ditching: true
+            });
+        };
+        DaleOfMerchants.prototype.onWheelbarrowStore = function () {
+            this.bgaPerformAction('actWheelbarrow', {
+                is_ditching: false
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -7677,10 +7698,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_handToStoredCards = function (notif) {
             if (notif.args.player_id == this.player_id) {
+                var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
                 var card_id = +notif.args.card.id;
-                if ($(this.myHand.control_name + '_item_' + card_id)) {
-                    this.myStoredCards.addDaleCardToStock(DaleCard_9.DaleCard.of(notif.args.card), this.myHand.control_name + '_item_' + card_id);
-                    this.myHand.removeFromStockByIdNoAnimation(+card_id);
+                if ($(stock.control_name + '_item_' + card_id)) {
+                    this.myStoredCards.addDaleCardToStock(DaleCard_9.DaleCard.of(notif.args.card), stock.control_name + '_item_' + card_id);
+                    stock.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
                     throw new Error("Unable to store card ".concat(card_id, " from hand, because it does not exist in the hand"));
@@ -7690,7 +7712,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var storedCards = this.playerStoredCards[notif.args.player_id];
                 storedCards.addDaleCardToStock(DaleCard_9.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
             }
-            this.playerHandSizes[notif.args.player_id].incValue(-1);
+            if (!notif.args.from_limbo) {
+                this.playerHandSizes[notif.args.player_id].incValue(-1);
+            }
         };
         DaleOfMerchants.prototype.notif_deckToStoredCards = function (notif) {
             var deck = this.playerDecks[notif.args.player_id];

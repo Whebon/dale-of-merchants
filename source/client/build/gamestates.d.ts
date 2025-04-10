@@ -181,6 +181,7 @@ interface GameStates {
 			'trDelicacy': 76,
 			'trUmbrella': 77,
 			'trRumours': 78,
+			'trWheelbarrow': 79,
 		},
 	},
 	31: {
@@ -780,6 +781,24 @@ interface GameStates {
 				'name': 'player_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	79: {
+		'name': 'wheelbarrow',
+		'description': 'Wheelbarrow: ${actplayer} must choose to ditch or store ${card_name}',
+		'descriptionmyturn': 'Wheelbarrow: ${you} must choose to ditch or store ${card_name}',
+		'type': 'activeplayer',
+		'action': 'stWheelbarrow',
+		'args': 'argCardName',
+		'possibleactions': {
+			'actWheelbarrow': [{
+				'name': 'is_ditching',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
 			}],
 		},
 		'transitions': {

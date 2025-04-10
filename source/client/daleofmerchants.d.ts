@@ -44,6 +44,7 @@ declare global {
 		'handToStoredCards': {
 			player_id: number
 			card: DbCard
+			from_limbo?: boolean
 		}
 		'deckToStoredCards': {
 			player_id: number

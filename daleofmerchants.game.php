@@ -2699,11 +2699,11 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_SAFETYPRECAUTION. You have cards in your stall");
                     }
                     break;
-                case CT_MAGNET:
                 case CT_DUPLICATEENTRY:
                 case CT_CULTURALPRESERVATION:
                 case CT_NIGHTSHIFT:
                 case CT_RUMOURS:
+                case CT_WHEELBARROW:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
@@ -2742,6 +2742,7 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_NATURALSURVIVOR. There exists a card in the hand AND the deck.");
                     }
                     break;
+                case CT_MAGNET:
                 case CT_VORACIOUSCONSUMER:
                 case CT_POMPOUSPROFESSIONAL:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
@@ -4028,6 +4029,20 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_WHEELBARROW:
+                $this->beginResolvingCard($technique_card_id);
+                //force a reshuffle, so we can already look at the top card of the deck
+                if ($this->cards->countCardsInLocation(DECK.$player_id) == 0) {
+                    $this->onLocationExhausted(DECK.$player_id);
+                }
+                //set the name of the card for the client description
+                $dbcard = $this->cards->getCardOnTop(DECK.$player_id);
+                if ($dbcard == null) {
+                    throw new BgaVisibleSystemException("Wheelbarrow: the deck is empty. This card should have fizzled instead");
+                }
+                $card_id = $this->setGameStateValue("card_id", $dbcard["id"]);
+                $this->gamestate->nextState("trWheelbarrow");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5148,6 +5163,33 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    function actWheelbarrow($is_ditching) {
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("Wheelbarrow expected exactly 1 card in limbo");
+        }
+        $dbcard = reset($dbcards);
+        if ($is_ditching) {
+            $this->ditch(
+                clienttranslate('Wheelbarrow: ${player_name} ditches a ${card_name}'),
+                $dbcard,
+                true
+            );
+        }
+        else {
+            $this->cards->moveCard($dbcard["id"], STORED_CARDS.$player_id);
+            $this->notifyAllPlayers('handToStoredCards', clienttranslate('Wheelbarrow: ${player_name} stores a ${card_name}'), array(
+                "player_name" => $this->getActivePlayerName(),
+                "player_id" => $player_id,
+                "card_name" => $this->getCardName($dbcard),
+                "card" => $dbcard,
+                "from_limbo" => true
+            ));
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -5368,6 +5410,22 @@ class DaleOfMerchants extends DaleTableBasic
         return array(
             'animalfolk_id' => $animalfolk_id,
             'animalfolk_name' => $animalfolk_name
+        );
+    }
+
+    function argCardName() {
+        //get the card name stored in "card_id"
+        $card_id = $this->getGameStateValue("card_id");
+        if ($card_id == -1) {
+            //should not happen. but if it does, let's see if we can improvise our way out
+            $card_name = $this->_("card");
+        }
+        else {
+            $dbcard = $this->cards->getCard($card_id);
+            $card_name = $this->getCardName($dbcard);
+        }
+        return array(
+            'card_name' => $card_name
         );
     }
 
@@ -5850,6 +5908,10 @@ class DaleOfMerchants extends DaleTableBasic
             //umbrella has no effect
             $this->fullyResolveCard($player_id);
         }
+    }
+
+    function stWheelbarrow() {
+        $this->draw('', 1, true);
     }
 
 

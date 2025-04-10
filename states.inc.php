@@ -41,6 +41,7 @@ if (false) {
 	$game->stDelicacy();
 	$game->stUmbrella();
 	$game->stRumours();
+	$game->stWheelbarrow();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -130,6 +131,7 @@ $machinestates = array(
 			'trDelicacy' => 76,
 			'trUmbrella' => 77,
 			'trRumours' => 78,
+			'trWheelbarrow' => 79,
 		),
 	),
 	31 => array(
@@ -486,6 +488,18 @@ $machinestates = array(
 		'action' => 'stRumours',
 		'args' => 'argPlayerIds',
 		'possibleactions' => ['actGiveCardsFromLimboToPlayers'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	79 => array(
+		'name' => 'wheelbarrow',
+		'description' => clienttranslate('Wheelbarrow: ${actplayer} must choose to ditch or store ${card_name}'),
+		'descriptionmyturn' => clienttranslate('Wheelbarrow: ${you} must choose to ditch or store ${card_name}'),
+		'type' => 'activeplayer',
+		'action' => 'stWheelbarrow',
+		'args' => 'argCardName',
+		'possibleactions' => ['actWheelbarrow'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
