@@ -224,18 +224,18 @@ if (!defined('ANIMALFOLK_MACAWS')) {
     define('ANIMALFOLK_LEMURS', 15);
     define('ANIMALFOLK_MAGPIES', 16);
     define('ANIMALFOLK_ECHIDNAS', 17);
-    define('ANIMALFOLK_HARES', 17);
-    define('ANIMALFOLK_TREEKANGAROOS', 18);
+    define('ANIMALFOLK_HARES', 18);
+    define('ANIMALFOLK_TREEKANGAROOS', 19);
 
     //DoMC
-    define('ANIMALFOLK_PENGUINS', 19);
-    define('ANIMALFOLK_TUATARAS', 20);
-    define('ANIMALFOLK_WOODTURTLES', 21);
-    define('ANIMALFOLK_TASMANIANDEVILS', 22);
-    define('ANIMALFOLK_PANGOLINS', 23);
-    define('ANIMALFOLK_GULLS', 24);
-    define('ANIMALFOLK_MONGOOSES', 25);
-    define('ANIMALFOLK_BATS', 26);
+    define('ANIMALFOLK_PENGUINS', 20);
+    define('ANIMALFOLK_TUATARAS', 21);
+    define('ANIMALFOLK_WOODTURTLES', 22);
+    define('ANIMALFOLK_TASMANIANDEVILS', 23);
+    define('ANIMALFOLK_PANGOLINS', 24);
+    define('ANIMALFOLK_GULLS', 25);
+    define('ANIMALFOLK_MONGOOSES', 26);
+    define('ANIMALFOLK_BATS', 27);
 }
 
 //define dice results

@@ -557,7 +557,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 var unavailable = (animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS ||
                     animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS ||
-                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_ECHIDNAS);
+                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_BATS);
                 if (unavailable) {
                     card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
@@ -623,16 +623,16 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
         DaleDeckSelection.ANIMALFOLK_LEMURS = 15;
         DaleDeckSelection.ANIMALFOLK_MAGPIES = 16;
         DaleDeckSelection.ANIMALFOLK_ECHIDNAS = 17;
-        DaleDeckSelection.ANIMALFOLK_HARES = 17;
-        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 18;
-        DaleDeckSelection.ANIMALFOLK_PENGUINS = 19;
-        DaleDeckSelection.ANIMALFOLK_TUATARAS = 20;
-        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 21;
-        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 22;
-        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 23;
-        DaleDeckSelection.ANIMALFOLK_GULLS = 24;
-        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 25;
-        DaleDeckSelection.ANIMALFOLK_BATS = 26;
+        DaleDeckSelection.ANIMALFOLK_HARES = 18;
+        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 19;
+        DaleDeckSelection.ANIMALFOLK_PENGUINS = 20;
+        DaleDeckSelection.ANIMALFOLK_TUATARAS = 21;
+        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 22;
+        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 23;
+        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 24;
+        DaleDeckSelection.ANIMALFOLK_GULLS = 25;
+        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 26;
+        DaleDeckSelection.ANIMALFOLK_BATS = 27;
         return DaleDeckSelection;
     }());
     exports.DaleDeckSelection = DaleDeckSelection;
@@ -3953,7 +3953,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.playerStoredCards[player_id].addDaleCardToStock(DaleCard_9.DaleCard.of(card));
                     wrap.classList.remove("daleofmerchants-hidden");
                 }
-                if (DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS in gamedatas.animalfolkIds) {
+                if (gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS)) {
                     wrap.classList.remove("daleofmerchants-hidden");
                 }
             }

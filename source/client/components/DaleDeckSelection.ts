@@ -44,18 +44,18 @@ export class DaleDeckSelection {
     static readonly ANIMALFOLK_LEMURS: number = 15;
     static readonly ANIMALFOLK_MAGPIES: number = 16;
     static readonly ANIMALFOLK_ECHIDNAS: number = 17;
-    static readonly ANIMALFOLK_HARES: number = 17;
-    static readonly ANIMALFOLK_TREEKANGAROOS: number = 18;
+    static readonly ANIMALFOLK_HARES: number = 18;
+    static readonly ANIMALFOLK_TREEKANGAROOS: number = 19;
 
     //DoMC
-    static readonly ANIMALFOLK_PENGUINS: number = 19;
-    static readonly ANIMALFOLK_TUATARAS: number = 20;
-    static readonly ANIMALFOLK_WOODTURTLES: number = 21;
-    static readonly ANIMALFOLK_TASMANIANDEVILS: number = 22;
-    static readonly ANIMALFOLK_PANGOLINS: number = 23;
-    static readonly ANIMALFOLK_GULLS: number = 24;
-    static readonly ANIMALFOLK_MONGOOSES: number = 25;
-    static readonly ANIMALFOLK_BATS: number = 26;
+    static readonly ANIMALFOLK_PENGUINS: number = 20;
+    static readonly ANIMALFOLK_TUATARAS: number = 21;
+    static readonly ANIMALFOLK_WOODTURTLES: number = 22;
+    static readonly ANIMALFOLK_TASMANIANDEVILS: number = 23;
+    static readonly ANIMALFOLK_PANGOLINS: number = 24;
+    static readonly ANIMALFOLK_GULLS: number = 25;
+    static readonly ANIMALFOLK_MONGOOSES: number = 26;
+    static readonly ANIMALFOLK_BATS: number = 27;
 
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
@@ -94,7 +94,7 @@ export class DaleDeckSelection {
                 animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS || 
                 animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS || 
                 animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS || 
-                animalfolk_id > DaleDeckSelection.ANIMALFOLK_ECHIDNAS //TODO: increase this
+                animalfolk_id > DaleDeckSelection.ANIMALFOLK_BATS //TODO: reduce this
             );
             if (unavailable) {
                 card_div.classList.add("daleofmerchants-deck-selection-unavailable");

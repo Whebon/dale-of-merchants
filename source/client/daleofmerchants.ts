@@ -320,7 +320,7 @@ class DaleOfMerchants extends Gamegui
 				this.playerStoredCards[player_id]!.addDaleCardToStock(DaleCard.of(card));
 				wrap.classList.remove("daleofmerchants-hidden"); //show this section if at least 1 card exists
 			}
-			if (DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS in gamedatas.animalfolkIds) {
+			if (gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS)) {
 				wrap.classList.remove("daleofmerchants-hidden"); //always show this section if tree kangaroos are in play
 			}
 		}
