@@ -3871,13 +3871,21 @@ class DaleOfMerchants extends DaleTableBasic
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Periscope cannot target the active player");
                 }
-                $card_name = trim($args['card_name'], '"');
-                $type_id = $this->nameToTypeId($card_name);
-                $players = $this->loadPlayersBasicInfos();
-                $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${card_name}"'), array(
-                    "player_name" => $this->getPlayerNameById($player_id),
-                    "card_name" => $this->card_types[$type_id]['name'],
+                $named_animalfolk_id = intval($args['animalfolk_id']);
+                $named_value = intval($args['value']);
+                $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${animalfolk_name} ${value}"'), array(
+                    "animalfolk_name" => $this->getAnimalfolkDisplayedName($named_animalfolk_id),
+                    "value" => $named_value,
+                    "player_name" => $this->getPlayerNameById($player_id)
                 ));
+                //TODO: safely remove this
+                // $card_name = trim($args['card_name'], '"');
+                // $type_id = $this->nameToTypeId($card_name);
+                // $players = $this->loadPlayersBasicInfos();
+                // $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${card_name}"'), array(
+                //     "player_name" => $this->getPlayerNameById($player_id),
+                //     "card_name" => $this->card_types[$type_id]['name'],
+                // ));
                 // $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} discards 2 cards from ${opponent_name}\'s deck'), array(
                 //     "player_name" => $this->getPlayerNameById($player_id),
                 //     "opponent_name" => $this->getPlayerNameById($opponent_id),
@@ -3893,7 +3901,7 @@ class DaleOfMerchants extends DaleTableBasic
                             "card" => $dbcard,
                             "card_name" => $this->getCardName($dbcard)
                         ));
-                        if ($this->getTypeId($dbcard) == $type_id) {
+                        if ($this->getValue($dbcard) == $named_value && $this->getAnimalfolk($dbcard) == $named_animalfolk_id) {
                             $this->cards->moveCard($dbcard["id"], HAND.$player_id);
                             $this->notifyAllPlayers('discardToHand', clienttranslate('Periscope: ${player_name} takes a ${card_name} from ${opponent_name}\'s discard pile'), array(
                                 "player_id" => $player_id,

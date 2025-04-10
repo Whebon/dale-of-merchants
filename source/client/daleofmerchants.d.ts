@@ -389,7 +389,7 @@ declare global {
 		'client_graspValue': { opponent_id: number, value: number }
 		'client_suddenNap': { opponent_id: number },
 		'client_periscopeOpponentId': {},
-		'client_periscopeName': { opponent_id: number, card_name: string }
+		'client_periscopeValue': { opponent_id: number, animalfolk_id: number, value: number  }
 		'client_carefreeSwapper': { card_id: number },
 		'client_velocipede': { stall_player_id: number, stall_card_id: number }
 		'client_matchingColours': { card_id: number, stall_player_id: number, stall_card_id: number }
@@ -439,7 +439,8 @@ declare global {
 		'client_replacementFizzle': { technique_card_id: number, ditch_card_id: number, ditch_card_name: string }
 		'client_burglaryValue': { technique_card_id: number, opponent_id: number, opponent_name: string }
 		'client_graspValue': { technique_card_id: number, opponent_id: number, opponent_name: string },
-		'client_periscopeName': { technique_card_id: number, opponent_id: number, opponent_name: string },
+		'client_periscopeAnimalfolkId': { technique_card_id: number, opponent_id: number, opponent_name: string },
+		'client_periscopeValue': { technique_card_id: number, opponent_id: number, opponent_name: string, animalfolk_id: number }
 	}
 
 	//

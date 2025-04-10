@@ -1496,7 +1496,7 @@ class DaleOfMerchants extends Gamegui
 				const periscopeOpponentId_args = (this.mainClientState.args as ClientGameStates['client_periscopeOpponentId']);
 				//add a button for each opponent
 				this.addActionButtonsOpponent((opponent_id: number) => {
-					this.mainClientState.enter('client_periscopeName', {
+					this.mainClientState.enter('client_periscopeAnimalfolkId', {
 						technique_card_id: periscopeOpponentId_args.technique_card_id,
 						opponent_id: opponent_id,
 						opponent_name: this.gamedatas.players[opponent_id]!.name!
@@ -1514,8 +1514,19 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_periscopeName':
-				this.addCardNameInputField($("pagemaintitletext")! as HTMLElement, "Confirm", this.onPeriscope.bind(this));
+			case 'client_periscopeAnimalfolkId':
+				for (let animalfolk_id of this.gamedatas.animalfolkIds) {
+					const callback = () => this.onPeriscopeAnimalfolkId(animalfolk_id);
+					this.addActionButton("animalfolk-button-"+animalfolk_id, this.getAnimalfolkName(animalfolk_id), callback.bind(this));
+				}
+				//this.addCardNameInputField($("pagemaintitletext")! as HTMLElement, "Confirm", this.onPeriscopeAnimalfolkId.bind(this));
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_periscopeValue':
+				for (let value of [1, 2, 3, 4, 5]) {
+					const callback = () => this.onPeriscopeValue(value);
+					this.addActionButton("animalfolk-button-"+value, value.toString(), callback.bind(this));
+				}
 				this.addActionButtonCancelClient();
 				break;
 			case 'delicacy':
@@ -3371,7 +3382,7 @@ class DaleOfMerchants extends Gamegui
 						if (periscope_opponent_id === undefined) {
 							throw new Error("Invariant Error: burglary_opponent_id should have been defined");
 						}
-						this.mainClientState.enter('client_periscopeName', {
+						this.mainClientState.enter('client_periscopeAnimalfolkId', {
 							technique_card_id: card.id,
 							opponent_id: periscope_opponent_id,
 							opponent_name: this.gamedatas.players[periscope_opponent_id]!.name!
@@ -4224,11 +4235,22 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onPeriscope(card_name: string) {
-		const args = this.mainClientState.args as ClientTechniqueChoice['client_periscopeName'];
-		this.playTechniqueCard<'client_periscopeName'>({
+	onPeriscopeAnimalfolkId(animalfolk_id: number) {
+		const args = this.mainClientState.args as ClientGameStates['client_periscopeAnimalfolkId'];
+		this.mainClientState.enter('client_periscopeValue', {
+			technique_card_id: args.technique_card_id,
 			opponent_id: args.opponent_id,
-			card_name: card_name
+			opponent_name: args.opponent_name,
+			animalfolk_id: animalfolk_id
+		})
+	}
+
+	onPeriscopeValue(value: number) {
+		const args = this.mainClientState.args as ClientGameStates['client_periscopeValue'];
+		this.playTechniqueCard<'client_periscopeValue'>({
+			opponent_id: args.opponent_id,
+			animalfolk_id: args.animalfolk_id,
+			value: value
 		})
 	}
 	

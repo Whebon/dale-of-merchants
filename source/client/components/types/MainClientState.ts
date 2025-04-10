@@ -191,8 +191,10 @@ export class MainClientState {
                 return _("${card_name}: ${you} must guess the value of a card from ${opponent_name}\'s hand");
             case 'client_periscopeOpponentId':
                 return _("${card_name}: ${you} must choose an opponent");
-            case 'client_periscopeName':
-                return _("${card_name}: ${you} must name a card");
+            case 'client_periscopeAnimalfolkId':
+                return _("${card_name}: ${you} must choose an animalfolk set");
+            case 'client_periscopeValue':
+                return _("${card_name}: ${you} must choose a value");
             case 'client_suddenNap':
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_carefreeSwapper':

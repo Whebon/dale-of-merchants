@@ -3468,8 +3468,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must guess the value of a card from ${opponent_name}\'s hand");
                     case 'client_periscopeOpponentId':
                         return _("${card_name}: ${you} must choose an opponent");
-                    case 'client_periscopeName':
-                        return _("${card_name}: ${you} must name a card");
+                    case 'client_periscopeAnimalfolkId':
+                        return _("${card_name}: ${you} must choose an animalfolk set");
+                    case 'client_periscopeValue':
+                        return _("${card_name}: ${you} must choose a value");
                     case 'client_suddenNap':
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_carefreeSwapper':
@@ -5034,7 +5036,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_periscopeOpponentId':
                     var periscopeOpponentId_args_1 = this.mainClientState.args;
                     this.addActionButtonsOpponent(function (opponent_id) {
-                        _this.mainClientState.enter('client_periscopeName', {
+                        _this.mainClientState.enter('client_periscopeAnimalfolkId', {
                             technique_card_id: periscopeOpponentId_args_1.technique_card_id,
                             opponent_id: opponent_id,
                             opponent_name: _this.gamedatas.players[opponent_id].name
@@ -5051,8 +5053,28 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_periscopeName':
-                    this.addCardNameInputField($("pagemaintitletext"), "Confirm", this.onPeriscope.bind(this));
+                case 'client_periscopeAnimalfolkId':
+                    var _loop_9 = function (animalfolk_id) {
+                        var callback = function () { return _this.onPeriscopeAnimalfolkId(animalfolk_id); };
+                        this_7.addActionButton("animalfolk-button-" + animalfolk_id, this_7.getAnimalfolkName(animalfolk_id), callback.bind(this_7));
+                    };
+                    var this_7 = this;
+                    for (var _j = 0, _k = this.gamedatas.animalfolkIds; _j < _k.length; _j++) {
+                        var animalfolk_id = _k[_j];
+                        _loop_9(animalfolk_id);
+                    }
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_periscopeValue':
+                    var _loop_10 = function (value) {
+                        var callback = function () { return _this.onPeriscopeValue(value); };
+                        this_8.addActionButton("animalfolk-button-" + value, value.toString(), callback.bind(this_8));
+                    };
+                    var this_8 = this;
+                    for (var _l = 0, _m = [1, 2, 3, 4, 5]; _l < _m.length; _l++) {
+                        var value = _m[_l];
+                        _loop_10(value);
+                    }
                     this.addActionButtonCancelClient();
                     break;
                 case 'delicacy':
@@ -5412,18 +5434,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler) {
-            var _loop_9 = function (opponent_id) {
-                if (opponent_id != this_7.player_id) {
-                    var name_1 = this_7.gamedatas.players[opponent_id].name;
-                    var color = this_7.gamedatas.players[opponent_id].color;
+            var _loop_11 = function (opponent_id) {
+                if (opponent_id != this_9.player_id) {
+                    var name_1 = this_9.gamedatas.players[opponent_id].name;
+                    var color = this_9.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
-                    this_7.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
+                    this_9.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
                 }
             };
-            var this_7 = this;
+            var this_9 = this;
             for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
                 var opponent_id = _a[_i];
-                _loop_9(opponent_id);
+                _loop_11(opponent_id);
             }
         };
         DaleOfMerchants.prototype.addActionButtonsOpponentSelection = function (maxSize, player_ids) {
@@ -6610,7 +6632,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             if (periscope_opponent_id === undefined) {
                                 throw new Error("Invariant Error: burglary_opponent_id should have been defined");
                             }
-                            this.mainClientState.enter('client_periscopeName', {
+                            this.mainClientState.enter('client_periscopeAnimalfolkId', {
                                 technique_card_id: card.id,
                                 opponent_id: periscope_opponent_id,
                                 opponent_name: this.gamedatas.players[periscope_opponent_id].name
@@ -7365,11 +7387,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id
             });
         };
-        DaleOfMerchants.prototype.onPeriscope = function (card_name) {
+        DaleOfMerchants.prototype.onPeriscopeAnimalfolkId = function (animalfolk_id) {
+            var args = this.mainClientState.args;
+            this.mainClientState.enter('client_periscopeValue', {
+                technique_card_id: args.technique_card_id,
+                opponent_id: args.opponent_id,
+                opponent_name: args.opponent_name,
+                animalfolk_id: animalfolk_id
+            });
+        };
+        DaleOfMerchants.prototype.onPeriscopeValue = function (value) {
             var args = this.mainClientState.args;
             this.playTechniqueCard({
                 opponent_id: args.opponent_id,
-                card_name: card_name
+                animalfolk_id: args.animalfolk_id,
+                value: value
             });
         };
         DaleOfMerchants.prototype.onCarefreeSwapper = function (card_id) {
