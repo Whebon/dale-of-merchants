@@ -310,7 +310,7 @@ class DaleOfMerchants extends Gamegui
 		for (let player_id in gamedatas.storedCards) {
 			const container = $('daleofmerchants-stored-cards-'+player_id)!
 			const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!
-			dojo.setStyle(wrap, 'min-width', `${1.25*Images.CARD_WIDTH_S}px`);
+			dojo.setStyle(wrap, 'min-width', `${1.5*Images.CARD_WIDTH_S}px`);
 			this.playerStoredCards[player_id] = new DaleStock();
 			this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
 			this.playerStoredCards[player_id].setSelectionMode('none');
@@ -791,6 +791,9 @@ class DaleOfMerchants extends Gamegui
 				//this.myHand.setWhitelist(this.getMatchingColoursHandTargets(client_matchingColours_args.technique_card_id));
 				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap"));
 				break;
+			case 'client_cleverGuardian':
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>store</strong>"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1076,6 +1079,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_matchingColours':
 				this.myHand.setSelectionMode('none');
 				TargetingLine.remove();
+				break;
+			case 'client_cleverGuardian':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1588,6 +1594,9 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_matchingColours':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_cleverGuardian':
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -2622,6 +2631,11 @@ class DaleOfMerchants extends Gamegui
 					)
 				}
 				break;
+			case 'client_cleverGuardian':
+				this.playTechniqueCard<'client_cleverGuardian'>({
+					card_id: card!.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null")
 		}
@@ -3452,6 +3466,14 @@ class DaleOfMerchants extends Gamegui
 				}
 				else {
 					this.clientScheduleTechnique('client_matchingColours', card.id);
+				}
+				break;
+			case DaleCard.CT_CLEVERGUARDIAN:
+				if (this.myHand.count() == 1) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_cleverGuardian', card.id);
 				}
 				break;
 			default:
@@ -4550,7 +4572,6 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_storedCardsToHand(notif: NotifAs<'storedCardsToHand'>) {
-		let nbr_cards = 0;
 		if (notif.args.player_id == this.player_id) {
 			//animate from my hand
 			this.myStoredCards
@@ -4563,7 +4584,6 @@ class DaleOfMerchants extends Gamegui
 				else {
 					throw new Error(`storedCardsToHand failed. Stored card ${card_id} does not exist among the stored cards.`);
 				}
-				nbr_cards += 1;
 			}
 		}
 		else {
@@ -4574,7 +4594,8 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(nbr_cards);
+		const nbr = Object.keys(notif.args.cards).length;
+		this.playerHandSizes[notif.args.player_id]!.incValue(nbr);
 	}
 
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {

@@ -2808,6 +2808,12 @@ class DaleOfMerchants extends DaleTableBasic
                         }
                     }
                     break;
+                case CT_CLEVERGUARDIAN:
+                    $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+                    if ($handsize >= 2) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_CLEVERGUARDIAN. There exists a card in the hand.");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -4008,6 +4014,18 @@ class DaleOfMerchants extends DaleTableBasic
                     "stall_card_id" => $stall_card_id
                 ));
                 $this->delay500ms(); //swapHandStall has no delay (this is the only technique that swaps another card)
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_CLEVERGUARDIAN:
+                $card_id = intval($args["card_id"]);
+                $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->cards->moveCard($card_id, STORED_CARDS.$player_id);
+                $this->notifyAllPlayers('handToStoredCards', clienttranslate('Clever Guardian: ${player_name} stores a ${card_name}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "player_id" => $player_id,
+                    "card_name" => $this->getCardName($dbcard),
+                    "card" => $dbcard
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -5416,7 +5434,7 @@ class DaleOfMerchants extends DaleTableBasic
         $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
         if (count($storedCards) > 0) {
             $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
-            $this->notifyAllPlayers('storedCardsToHand', clienttranslate('${player_name} places ${nbr} stored cards into their hand'), array(
+            $this->notifyAllPlayers('storedCardsToHand', clienttranslate('${player_name} places ${nbr} stored card(s) into their hand'), array(
                 "player_name" => $this->getPlayerNameById($player_id),
                 "player_id" => $player_id,
                 "nbr" => count($storedCards),

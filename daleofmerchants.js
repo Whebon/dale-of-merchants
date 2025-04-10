@@ -3943,7 +3943,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var player_id in gamedatas.storedCards) {
                 var container = $('daleofmerchants-stored-cards-' + player_id);
                 var wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
-                dojo.setStyle(wrap, 'min-width', "".concat(1.25 * Images_9.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_9.Images.CARD_WIDTH_S, "px"));
                 this.playerStoredCards[player_id] = new DaleStock_1.DaleStock();
                 this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
                 this.playerStoredCards[player_id].setSelectionMode('none');
@@ -4334,6 +4334,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_matchingColours':
                     this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap"));
                     break;
+                case 'client_cleverGuardian':
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>store</strong>"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4616,6 +4619,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_matchingColours':
                     this.myHand.setSelectionMode('none');
                     TargetingLine_1.TargetingLine.remove();
+                    break;
+                case 'client_cleverGuardian':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -5124,6 +5130,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_matchingColours':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_cleverGuardian':
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -5931,6 +5940,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         new TargetingLine_1.TargetingLine(card, client_matchingColours_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onMatchingColours(source_id, target_id); });
                     }
                     break;
+                case 'client_cleverGuardian':
+                    this.playTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -6701,6 +6715,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else {
                         this.clientScheduleTechnique('client_matchingColours', card.id);
+                    }
+                    break;
+                case DaleCard_9.DaleCard.CT_CLEVERGUARDIAN:
+                    if (this.myHand.count() == 1) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_cleverGuardian', card.id);
                     }
                     break;
                 default:
@@ -7639,7 +7661,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             deck.pop();
         };
         DaleOfMerchants.prototype.notif_storedCardsToHand = function (notif) {
-            var nbr_cards = 0;
             if (notif.args.player_id == this.player_id) {
                 this.myStoredCards;
                 for (var card_id in notif.args.cards) {
@@ -7651,7 +7672,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     else {
                         throw new Error("storedCardsToHand failed. Stored card ".concat(card_id, " does not exist among the stored cards."));
                     }
-                    nbr_cards += 1;
                 }
             }
             else {
@@ -7660,7 +7680,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     storedCards.removeFromStockById(+card_id, 'overall_player_board_' + notif.args.player_id);
                 }
             }
-            this.playerHandSizes[notif.args.player_id].incValue(nbr_cards);
+            var nbr = Object.keys(notif.args.cards).length;
+            this.playerHandSizes[notif.args.player_id].incValue(nbr);
         };
         DaleOfMerchants.prototype.notif_resolveTechnique = function (notif) {
             console.warn(this.playerSchedules);
