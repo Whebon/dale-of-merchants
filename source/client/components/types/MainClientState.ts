@@ -91,6 +91,12 @@ export class MainClientState {
                 return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
             case 'client_calculations':
                 return _("${card_name}: ${you} may rearrange any cards in the market");
+            case 'client_barricade':
+                if((this._args as ClientGameStates['client_barricade']).nbr_junk == 0) {
+                    return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
+                } else {
+                    return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
+                }
             
             //Generic technique states
             case 'client_fizzle':
@@ -203,6 +209,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card from any stall to swap with");
             case 'client_matchingColours':
                 return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");
+            case 'client_cleverGuardian':
+                return _("${card_name}: ${you} must choose a card to <stronger>store</stronger>");
         }
         return "MISSING DESCRIPTION";
     }

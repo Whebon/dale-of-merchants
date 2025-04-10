@@ -3369,6 +3369,13 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
                         return _("${card_name}: ${you} may rearrange any cards in the market");
+                    case 'client_barricade':
+                        if (this._args.nbr_junk == 0) {
+                            return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
+                        }
+                        else {
+                            return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
+                        }
                     case 'client_fizzle':
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
                     case 'client_triggerFizzle':
@@ -3480,6 +3487,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card from any stall to swap with");
                     case 'client_matchingColours':
                         return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");
+                    case 'client_cleverGuardian':
+                        return _("${card_name}: ${you} must choose a card to <stronger>store</stronger>");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4337,6 +4346,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_cleverGuardian':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>store</strong>"));
                     break;
+                case 'client_barricade':
+                    var client_barricade_args = this.mainClientState.args;
+                    this.myDiscard.setSelectionMode('multipleJunk', 'hand', "daleofmerchants-wrap-technique", client_barricade_args.nbr_junk);
+                    if (client_barricade_args.nbr_junk > 0) {
+                        this.myDiscard.openPopin();
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4622,6 +4638,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_cleverGuardian':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_barricade':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -5133,6 +5152,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_cleverGuardian':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_barricade':
+                    this.addActionButton("confirm-button", _("Confirm"), "onBarricade");
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -6788,6 +6811,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_REFRESHINGDRINK:
                     this.mainClientState.enterOnStack('client_refreshingDrink', { passive_card_id: card.id });
                     break;
+                case DaleCard_9.DaleCard.CT_BARRICADE:
+                    var barricadeJunk = 0;
+                    for (var _i = 0, _a = this.myDiscard.getCards(); _i < _a.length; _i++) {
+                        var card_5 = _a[_i];
+                        if (card_5.isJunk() && barricadeJunk < 2) {
+                            barricadeJunk++;
+                        }
+                    }
+                    this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
+                    break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
                     break;
@@ -6799,16 +6832,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var count_nostalgic_items = 0;
             for (var _i = 0, card_ids_4 = card_ids; _i < card_ids_4.length; _i++) {
                 var card_id = card_ids_4[_i];
-                var card_5 = new DaleCard_9.DaleCard(card_id);
-                if (card_5.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
+                var card_6 = new DaleCard_9.DaleCard(card_id);
+                if (card_6.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
                 }
             }
             if (count_nostalgic_items > 0) {
                 for (var _a = 0, _b = this.myDiscard.orderedSelection.get(); _a < _b.length; _a++) {
                     var card_id = _b[_a];
-                    var card_6 = new DaleCard_9.DaleCard(card_id);
-                    if (card_6.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
+                    var card_7 = new DaleCard_9.DaleCard(card_id);
+                    if (card_7.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
                         count_nostalgic_items++;
                     }
                 }
@@ -7480,6 +7513,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 }
             }
+        };
+        DaleOfMerchants.prototype.onBarricade = function () {
+            this.playPassiveCard({
+                card_ids: this.myDiscard.orderedSelection.get()
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

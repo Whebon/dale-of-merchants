@@ -418,6 +418,7 @@ declare global {
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_refreshingDrink': { card_id: number }
+		'client_barricade': { card_ids: number[] }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
@@ -457,7 +458,8 @@ declare global {
 		'client_burglaryValue': { technique_card_id: number, opponent_id: number, opponent_name: string }
 		'client_graspValue': { technique_card_id: number, opponent_id: number, opponent_name: string },
 		'client_periscopeAnimalfolkId': { technique_card_id: number, opponent_id: number, opponent_name: string },
-		'client_periscopeValue': { technique_card_id: number, opponent_id: number, opponent_name: string, animalfolk_id: number }
+		'client_periscopeValue': { technique_card_id: number, opponent_id: number, opponent_name: string, animalfolk_id: number },
+		'client_barricade': { passive_card_id: number, nbr_junk: number }
 	}
 
 	//

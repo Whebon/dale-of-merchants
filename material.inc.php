@@ -2003,9 +2003,9 @@ $this->card_types = array(
         'type_displayed' => clienttranslate("Passive"),
         'is_technique' => false,
         'has_plus' => false,
-        'has_ability' => false,
-        'playable' => false,
-        'trigger' => null,
+        'has_ability' => true,
+        'playable' => true,
+        'trigger' => "onCleanUp",
         'value' => 2,
         'nbr' => 3,
         'animalfolk_displayed' => clienttranslate("Tree-kangaroos"),
@@ -2792,5 +2792,6 @@ $this->card_types = array(
         'animalfolk_id' => 27
     )
   );
+  
   
   

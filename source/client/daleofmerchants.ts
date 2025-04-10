@@ -794,6 +794,13 @@ class DaleOfMerchants extends Gamegui
 			case 'client_cleverGuardian':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>store</strong>"));
 				break;
+			case 'client_barricade':
+				const client_barricade_args = (this.mainClientState.args as ClientGameStates['client_barricade']);
+				this.myDiscard.setSelectionMode('multipleJunk', 'hand', "daleofmerchants-wrap-technique", client_barricade_args.nbr_junk);
+				if (client_barricade_args.nbr_junk > 0) {
+					this.myDiscard.openPopin();
+				}
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1082,6 +1089,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_cleverGuardian':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_barricade':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1597,6 +1607,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_cleverGuardian':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_barricade':
+				this.addActionButton("confirm-button", _("Confirm"), "onBarricade");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -3544,6 +3558,15 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_REFRESHINGDRINK:
 				this.mainClientState.enterOnStack('client_refreshingDrink', {passive_card_id: card.id});
 				break;
+			case DaleCard.CT_BARRICADE:
+				let barricadeJunk = 0;
+				for (let card of this.myDiscard.getCards()) {
+					if (card.isJunk() && barricadeJunk < 2) {
+						barricadeJunk++;
+					}
+				}
+				this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
+				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;
@@ -4334,6 +4357,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			}
 		}
+	}
+
+	onBarricade() {
+		this.playPassiveCard<'client_barricade'>({
+			card_ids: this.myDiscard.orderedSelection.get()
+		})
 	}
 
 	//(~on)

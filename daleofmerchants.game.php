@@ -4247,6 +4247,23 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->refillMarket(false);
                 $this->effects->insertModification($passive_card_id, CT_BARGAINSEEKER);
                 break;
+            case CT_BARRICADE:
+                $card_ids = $args["card_ids"];
+                $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$player_id);
+                foreach ($dbcards as $dbcard) {
+                    if (!$this->isJunk($dbcard)) {
+                        throw new BgaVisibleSystemException("CT_BARRICADE cannot be used to take non-junk cards");
+                    }
+                }
+                $this->cards->moveCards($card_ids, HAND.$player_id);
+                $this->notifyAllPlayers('discardToHandMultiple', clienttranslate('Barricade: ${player_name} takes ${nbr} junk cards from their discard pile'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "nbr" => count($dbcards),
+                    "cards" => $dbcards
+                ));
+                $this->effects->insertModification($passive_card_id, CT_BARRICADE);
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
