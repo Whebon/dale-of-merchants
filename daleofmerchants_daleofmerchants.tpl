@@ -56,6 +56,12 @@
                 <h3 class="daleofmerchants-component-name"> {SCHEDULE} </h3>
                 <div id="daleofmerchants-schedule-{PLAYER_ID}"></div>
             </div>
+            <!-- only needed for the tree kangaroos -->
+            <div id="daleofmerchants-stored-cards-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-stored-cards daleofmerchants-hidden">
+                <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
+                <h3 class="daleofmerchants-component-name"> {STORED_CARDS} </h3>
+                <div id="daleofmerchants-stored-cards-{PLAYER_ID}"></div>
+            </div>
         </div>
         <div id="daleofmerchants-stall-wrap-portrait-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
             <h3 class="daleofmerchants-component-name"> {STALL} </h3>

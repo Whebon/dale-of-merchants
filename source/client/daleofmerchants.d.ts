@@ -41,6 +41,18 @@ declare global {
 			card: DbCard
 			to_limbo?: boolean
 		}
+		'handToStoredCards': {
+			player_id: number
+			card: DbCard
+		}
+		'deckToStoredCards': {
+			player_id: number
+			card: DbCard
+		}
+		'storedCardsToHand': {
+			player_id: number
+			cards: {[card_id: number]: DbCard}
+		}
 		'cancelTechnique': {
 			player_id: number
 			card: DbCard
@@ -321,6 +333,10 @@ declare global {
 		}
 
 		'schedules': {
+			[player_id: number]: {[card_id: number]: DbCard}
+		}
+
+		'storedCards': {
 			[player_id: number]: {[card_id: number]: DbCard}
 		}
 

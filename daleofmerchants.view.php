@@ -49,7 +49,8 @@ class view_daleofmerchants_daleofmerchants extends game_view
                 "PLAYER_ID" => $current_player,
                 "PLAYER_NAME_POSSESSIVE" => $this->_("Your"),
                 "PLAYER_COLOR" => $players[$current_player]['player_color'],
-                "SCHEDULE" => "Schedule"
+                "SCHEDULE" => "Schedule",
+                "STORED_CARDS" => "Stored Cards"
             ));
         }
 
@@ -60,7 +61,8 @@ class view_daleofmerchants_daleofmerchants extends game_view
                     "PLAYER_ID" => $player['player_id'],
                     "PLAYER_NAME_POSSESSIVE" => $player['player_name']."'s",
                     "PLAYER_COLOR" => $player['player_color'],
-                    "SCHEDULE" => "Schedule"
+                    "SCHEDULE" => "Schedule",
+                    "STORED_CARDS" => "Stored Cards"
                 ));
             }
         }

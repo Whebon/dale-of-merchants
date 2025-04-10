@@ -3757,6 +3757,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             _this.playerDiscards = {};
             _this.playerStalls = {};
             _this.playerSchedules = {};
+            _this.playerStoredCards = {};
             _this.allDecks = { 'mark': _this.marketDeck };
             _this.market = null;
             _this.myHand = new DaleStock_1.DaleStock();
@@ -3799,6 +3800,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         Object.defineProperty(DaleOfMerchants.prototype, "mySchedule", {
             get: function () {
                 return this.playerSchedules[this.player_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleOfMerchants.prototype, "myStoredCards", {
+            get: function () {
+                return this.playerStoredCards[this.player_id];
             },
             enumerable: false,
             configurable: true
@@ -3931,6 +3939,23 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!this.isSpectator) {
                 dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
                 dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
+            }
+            for (var player_id in gamedatas.storedCards) {
+                var container = $('daleofmerchants-stored-cards-' + player_id);
+                var wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
+                dojo.setStyle(wrap, 'min-width', "".concat(1.25 * Images_9.Images.CARD_WIDTH_S, "px"));
+                this.playerStoredCards[player_id] = new DaleStock_1.DaleStock();
+                this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
+                this.playerStoredCards[player_id].setSelectionMode('none');
+                this.playerStoredCards[player_id].centerItems = true;
+                for (var card_id in gamedatas.storedCards[player_id]) {
+                    var card = gamedatas.storedCards[+player_id][+card_id];
+                    this.playerStoredCards[player_id].addDaleCardToStock(DaleCard_9.DaleCard.of(card));
+                    wrap.classList.remove("daleofmerchants-hidden");
+                }
+                if (DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS in gamedatas.animalfolkIds) {
+                    wrap.classList.remove("daleofmerchants-hidden");
+                }
             }
             console.warn("DbEffects:");
             for (var i in gamedatas.effects) {
@@ -7446,6 +7471,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['resolveTechnique', 500],
                 ['cancelTechnique', 500],
                 ['scheduleToHand', 500],
+                ['handToStoredCards', 500],
+                ['deckToStoredCards', 500],
+                ['storedCardsToHand', 500],
                 ['buildStack', 500],
                 ['rearrangeMarket', 500],
                 ['fillEmptyMarketSlots', 1],
@@ -7586,6 +7614,53 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(1);
             }
+        };
+        DaleOfMerchants.prototype.notif_handToStoredCards = function (notif) {
+            if (notif.args.player_id == this.player_id) {
+                var card_id = +notif.args.card.id;
+                if ($(this.myHand.control_name + '_item_' + card_id)) {
+                    this.myStoredCards.addDaleCardToStock(DaleCard_9.DaleCard.of(notif.args.card), this.myHand.control_name + '_item_' + card_id);
+                    this.myHand.removeFromStockByIdNoAnimation(+card_id);
+                }
+                else {
+                    throw new Error("Unable to store card ".concat(card_id, " from hand, because it does not exist in the hand"));
+                }
+            }
+            else {
+                var storedCards = this.playerStoredCards[notif.args.player_id];
+                storedCards.addDaleCardToStock(DaleCard_9.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
+            }
+            this.playerHandSizes[notif.args.player_id].incValue(-1);
+        };
+        DaleOfMerchants.prototype.notif_deckToStoredCards = function (notif) {
+            var deck = this.playerDecks[notif.args.player_id];
+            var storedCards = this.playerStoredCards[notif.args.player_id];
+            storedCards.addDaleCardToStock(DaleCard_9.DaleCard.of(notif.args.card), deck.placeholderHTML);
+            deck.pop();
+        };
+        DaleOfMerchants.prototype.notif_storedCardsToHand = function (notif) {
+            var nbr_cards = 0;
+            if (notif.args.player_id == this.player_id) {
+                this.myStoredCards;
+                for (var card_id in notif.args.cards) {
+                    var dbcard = notif.args.cards[card_id];
+                    if ($(this.myStoredCards.control_name + '_item_' + card_id)) {
+                        this.myHand.addDaleCardToStock(DaleCard_9.DaleCard.of(dbcard), this.myStoredCards.control_name + '_item_' + card_id);
+                        this.myStoredCards.removeFromStockByIdNoAnimation(+card_id);
+                    }
+                    else {
+                        throw new Error("storedCardsToHand failed. Stored card ".concat(card_id, " does not exist among the stored cards."));
+                    }
+                    nbr_cards += 1;
+                }
+            }
+            else {
+                var storedCards = this.playerStoredCards[notif.args.player_id];
+                for (var card_id in notif.args.cards) {
+                    storedCards.removeFromStockById(+card_id, 'overall_player_board_' + notif.args.player_id);
+                }
+            }
+            this.playerHandSizes[notif.args.player_id].incValue(nbr_cards);
         };
         DaleOfMerchants.prototype.notif_resolveTechnique = function (notif) {
             console.warn(this.playerSchedules);

@@ -13,6 +13,7 @@ if (!defined('HAND')) {
     define('STALL', 'stal');
     define('JUNKRESERVE', 'junk');
     define('SCHEDULE', 'sche');
+    define('STORED_CARDS', 'stor');
     define('LIMBO', 'limb');
 
     //global variables

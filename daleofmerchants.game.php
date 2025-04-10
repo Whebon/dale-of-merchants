@@ -186,6 +186,11 @@ class DaleOfMerchants extends DaleTableBasic
             $result['schedules'][$player_id] = $this->cards->getCardsInLocation(SCHEDULE.$player_id, null, 'location_arg');
         }
 
+        //get stored cards
+        foreach ( $players as $player_id => $player ) {
+            $result['storedCards'][$player_id] = $this->cards->getCardsInLocation(STORED_CARDS.$player_id, null, 'location_arg');
+        }
+
         //other
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
         $result['hand'] = $this->cards->getCardsInLocation(HAND.$current_player_id);
@@ -5407,6 +5412,18 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stTurnStart() {
         $player_id = $this->getActivePlayerId();
+        //obtain stored cards
+        $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
+        if (count($storedCards) > 0) {
+            $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
+            $this->notifyAllPlayers('storedCardsToHand', clienttranslate('${player_name} places ${nbr} stored cards into their hand'), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "player_id" => $player_id,
+                "nbr" => count($storedCards),
+                "cards" => $storedCards
+            ));
+        }
+        //trigger cards on turn start
         $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
         $triggeredCards = array();
         foreach ($dbcards as $dbcard) {

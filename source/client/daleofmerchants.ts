@@ -69,6 +69,9 @@ class DaleOfMerchants extends Gamegui
 	/** A schedule for each player */
 	playerSchedules: Record<number, DaleStock> = {};
 
+	/** A "stored cards" location for each player */
+	playerStoredCards: Record<number, DaleStock> = {};
+
 	/** A hidden draw pile for each player AND the market */
 	allDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
 
@@ -92,9 +95,14 @@ class DaleOfMerchants extends Gamegui
 		return this.playerStalls[this.player_id]!;
 	}
 
-	/** Current player's schedule (this client's discard pile) */
+	/** Current player's schedule (this client's schedule) */
 	get mySchedule(): DaleStock {
 		return this.playerSchedules[this.player_id]!;
+	}
+
+	/** Current player's schedule (this client's stored cards) */
+	get myStoredCards(): DaleStock {
+		return this.playerStoredCards[this.player_id]!;
 	}
 
 	/** Ordered pile of known cards representing the market discard deck. */
@@ -296,6 +304,25 @@ class DaleOfMerchants extends Gamegui
 		if (!this.isSpectator) {
 			dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
 			dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
+		}
+
+		//initialize the stored cards
+		for (let player_id in gamedatas.storedCards) {
+			const container = $('daleofmerchants-stored-cards-'+player_id)!
+			const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!
+			dojo.setStyle(wrap, 'min-width', `${1.25*Images.CARD_WIDTH_S}px`);
+			this.playerStoredCards[player_id] = new DaleStock();
+			this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
+			this.playerStoredCards[player_id].setSelectionMode('none');
+			this.playerStoredCards[player_id].centerItems = true;
+			for (let card_id in gamedatas.storedCards[player_id]) {
+				const card = gamedatas.storedCards[+player_id]![+card_id]!;
+				this.playerStoredCards[player_id]!.addDaleCardToStock(DaleCard.of(card));
+				wrap.classList.remove("daleofmerchants-hidden"); //show this section if at least 1 card exists
+			}
+			if (DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS in gamedatas.animalfolkIds) {
+				wrap.classList.remove("daleofmerchants-hidden"); //always show this section if tree kangaroos are in play
+			}
 		}
 
 		//display any effects on the client-side
@@ -4308,6 +4335,9 @@ class DaleOfMerchants extends Gamegui
 			['resolveTechnique', 					500],
 			['cancelTechnique', 					500],
 			['scheduleToHand',						500],
+			['handToStoredCards', 					500],
+			['deckToStoredCards', 					500],
+			['storedCardsToHand',					500],
 			['buildStack', 							500],
 			['rearrangeMarket', 					500],
 			['fillEmptyMarketSlots', 				1],
@@ -4489,6 +4519,62 @@ class DaleOfMerchants extends Gamegui
 		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(1);
 		}
+	}
+
+	notif_handToStoredCards(notif: NotifAs<'handToStoredCards'>) {
+		if (notif.args.player_id == this.player_id) {
+			//animate from my hand
+			const card_id = +notif.args.card.id;
+			if ($(this.myHand.control_name+'_item_' + card_id)) {
+				this.myStoredCards.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_'+card_id)
+				this.myHand.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				throw new Error(`Unable to store card ${card_id} from hand, because it does not exist in the hand`);
+			}
+		}
+		else {
+			//animate from player board
+			const storedCards = this.playerStoredCards[notif.args.player_id]!;
+			storedCards.addDaleCardToStock(DaleCard.of(notif.args.card), 'overall_player_board_'+notif.args.player_id)
+		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+	}
+
+	notif_deckToStoredCards(notif: NotifAs<'deckToStoredCards'>) {
+		const deck = this.playerDecks[notif.args.player_id]!;
+		const storedCards = this.playerStoredCards[notif.args.player_id]!;
+		storedCards.addDaleCardToStock(DaleCard.of(notif.args.card), deck.placeholderHTML);
+		deck.pop();
+	}
+
+	notif_storedCardsToHand(notif: NotifAs<'storedCardsToHand'>) {
+		let nbr_cards = 0;
+		if (notif.args.player_id == this.player_id) {
+			//animate from my hand
+			this.myStoredCards
+			for (let card_id in notif.args.cards) {
+				const dbcard = notif.args.cards[card_id]!
+				if ($(this.myStoredCards.control_name+'_item_' + card_id)) {
+					this.myHand.addDaleCardToStock(DaleCard.of(dbcard), this.myStoredCards.control_name+'_item_' + card_id)
+					this.myStoredCards.removeFromStockByIdNoAnimation(+card_id);
+				}
+				else {
+					throw new Error(`storedCardsToHand failed. Stored card ${card_id} does not exist among the stored cards.`);
+				}
+				nbr_cards += 1;
+			}
+		}
+		else {
+			//animate from player board
+			const storedCards = this.playerStoredCards[notif.args.player_id]!;
+			for (let card_id in notif.args.cards) {
+				storedCards.removeFromStockById(+card_id, 'overall_player_board_'+notif.args.player_id);
+			}
+		}
+		//update the hand sizes
+		this.playerHandSizes[notif.args.player_id]!.incValue(nbr_cards);
 	}
 
 	notif_resolveTechnique(notif: NotifAs<'resolveTechnique'>) {
