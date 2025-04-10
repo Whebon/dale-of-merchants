@@ -182,6 +182,7 @@ interface GameStates {
 			'trUmbrella': 77,
 			'trRumours': 78,
 			'trWheelbarrow': 79,
+			'trVigilance': 80,
 		},
 	},
 	31: {
@@ -799,6 +800,23 @@ interface GameStates {
 				'name': 'is_ditching',
 				'type': 'AT_bool',
 				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	80: {
+		'name': 'vigilance',
+		'description': 'Vigilance: ${actplayer} must search their deck for a card',
+		'descriptionmyturn': 'Vigilance: ${you} must search your deck for a card',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContent',
+		'possibleactions': {
+			'actVigilance': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

@@ -804,6 +804,11 @@ class DaleOfMerchants extends Gamegui
 			case 'wheelbarrow':
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
 				break;
+			case 'vigilance':
+				const vigilance_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(vigilance_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('single');
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1098,6 +1103,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'wheelbarrow':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'vigilance':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2484,6 +2493,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break
+			case 'vigilance':
+				this.bgaPerformAction('actVigilance', {
+					card_id: card.id
+				})
+				break
 		}
 	}
 
@@ -3175,6 +3189,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_MAGNET:
 			case DaleCard.CT_WHEELBARROW:
+			case DaleCard.CT_VIGILANCE:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);

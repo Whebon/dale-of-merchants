@@ -132,6 +132,7 @@ $machinestates = array(
 			'trUmbrella' => 77,
 			'trRumours' => 78,
 			'trWheelbarrow' => 79,
+			'trVigilance' => 80,
 		),
 	),
 	31 => array(
@@ -500,6 +501,17 @@ $machinestates = array(
 		'action' => 'stWheelbarrow',
 		'args' => 'argCardName',
 		'possibleactions' => ['actWheelbarrow'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	80 => array(
+		'name' => 'vigilance',
+		'description' => clienttranslate('Vigilance: ${actplayer} must search their deck for a card'),
+		'descriptionmyturn' => clienttranslate('Vigilance: ${you} must search your deck for a card'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContent',
+		'possibleactions' => ['actVigilance'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

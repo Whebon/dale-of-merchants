@@ -4356,6 +4356,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'wheelbarrow':
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
                     break;
+                case 'vigilance':
+                    var vigilance_args = args.args;
+                    this.myDeck.setContent(vigilance_args._private.cards.map(DaleCard_9.DaleCard.of));
+                    this.myDeck.setSelectionMode('single');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4647,6 +4652,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'wheelbarrow':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'vigilance':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
                     break;
             }
         };
@@ -5817,6 +5826,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
+                case 'vigilance':
+                    this.bgaPerformAction('actVigilance', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUnselectHandCard = function (card_id) {
@@ -6428,6 +6442,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_9.DaleCard.CT_MAGNET:
                 case DaleCard_9.DaleCard.CT_WHEELBARROW:
+                case DaleCard_9.DaleCard.CT_VIGILANCE:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);

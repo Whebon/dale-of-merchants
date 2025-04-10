@@ -2699,11 +2699,8 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_SAFETYPRECAUTION. You have cards in your stall");
                     }
                     break;
-                case CT_DUPLICATEENTRY:
-                case CT_CULTURALPRESERVATION:
                 case CT_NIGHTSHIFT:
                 case CT_RUMOURS:
-                case CT_WHEELBARROW:
                     $players = $this->loadPlayersBasicInfos();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
@@ -2743,6 +2740,10 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_MAGNET:
+                case CT_WHEELBARROW:
+                case CT_VIGILANCE:
+                case CT_DUPLICATEENTRY:
+                case CT_CULTURALPRESERVATION:
                 case CT_VORACIOUSCONSUMER:
                 case CT_POMPOUSPROFESSIONAL:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
@@ -4043,6 +4044,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $card_id = $this->setGameStateValue("card_id", $dbcard["id"]);
                 $this->gamestate->nextState("trWheelbarrow");
                 break;
+            case CT_VIGILANCE:
+                $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 1);
+                $this->gamestate->nextState("trVigilance");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5187,6 +5193,22 @@ class DaleOfMerchants extends DaleTableBasic
                 "from_limbo" => true
             ));
         }
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actVigilance($card_id) {
+        $this->checkAction("actVigilance");
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->getCardFromLocation($card_id, DECK.$player_id);
+        $this->cards->moveCard($card_id, STORED_CARDS.$player_id);
+        $this->notifyAllPlayers('deckToStoredCards', clienttranslate('Vigilance: ${player_name} stores a ${card_name} from their deck'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "player_id" => $player_id,
+            "card" => $dbcard,
+            "card_name" => $this->getCardName($dbcard)
+        ));
+        $this->cards->shuffle(DECK.$player_id);
         $this->fullyResolveCard($player_id);
     }
 
