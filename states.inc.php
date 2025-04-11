@@ -42,6 +42,7 @@ if (false) {
 	$game->stUmbrella();
 	$game->stRumours();
 	$game->stWheelbarrow();
+	$game->stTacticalMeasurement();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -133,6 +134,7 @@ $machinestates = array(
 			'trRumours' => 78,
 			'trWheelbarrow' => 79,
 			'trVigilance' => 80,
+			'trTacticalMeasurement' => 81,
 		),
 	),
 	31 => array(
@@ -512,6 +514,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actVigilance'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	81 => array(
+		'name' => 'tacticalMeasurement',
+		'description' => clienttranslate('Tactical Measurement: ${actplayer} must place 2 cards on their deck'),
+		'descriptionmyturn' => clienttranslate('Tactical Measurement: ${you} must place 2 cards on your deck'),
+		'type' => 'activeplayer',
+		'action' => 'stTacticalMeasurement',
+		'possibleactions' => ['actTacticalMeasurement'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

@@ -24,12 +24,13 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'single':			   		a single card can be selected
  * 'singleAnimalfolk':			a single animalfolk card can be selected
  * 'multiple':             		multiple cards can be selected
+ * 'multiple2':					multiple cards can be selected, but no more than 2
  * 'multiple3':					multiple cards can be selected, but no more than 3
  * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnFinish' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -244,6 +245,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'multiple':
 				this.orderedSelection.setMaxSize(Infinity);
 				break;
+			case 'multiple2':
+				this.orderedSelection.setMaxSize(2);
+				break
 			case 'multiple3':
 				this.orderedSelection.setMaxSize(3);
 				break;
@@ -325,6 +329,8 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'singleAnimalfolk':
 				return card.isAnimalfolk();
 			case 'multiple':
+				return true;
+			case 'multiple2':
 				return true;
 			case 'multiple3':
 				return true;

@@ -183,6 +183,7 @@ interface GameStates {
 			'trRumours': 78,
 			'trWheelbarrow': 79,
 			'trVigilance': 80,
+			'trTacticalMeasurement': 81,
 		},
 	},
 	31: {
@@ -817,6 +818,23 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	81: {
+		'name': 'tacticalMeasurement',
+		'description': 'Tactical Measurement: ${actplayer} must place 2 cards on their deck',
+		'descriptionmyturn': 'Tactical Measurement: ${you} must place 2 cards on your deck',
+		'type': 'activeplayer',
+		'action': 'stTacticalMeasurement',
+		'possibleactions': {
+			'actTacticalMeasurement': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

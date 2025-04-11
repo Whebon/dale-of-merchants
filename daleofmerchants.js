@@ -1731,6 +1731,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'multiple':
                     this.orderedSelection.setMaxSize(Infinity);
                     break;
+                case 'multiple2':
+                    this.orderedSelection.setMaxSize(2);
+                    break;
                 case 'multiple3':
                     this.orderedSelection.setMaxSize(3);
                     break;
@@ -1803,6 +1806,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'singleAnimalfolk':
                     return card.isAnimalfolk();
                 case 'multiple':
+                    return true;
+                case 'multiple2':
                     return true;
                 case 'multiple3':
                     return true;
@@ -4361,6 +4366,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setContent(vigilance_args._private.cards.map(DaleCard_9.DaleCard.of));
                     this.myDeck.setSelectionMode('single');
                     break;
+                case 'tacticalMeasurement':
+                    this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4656,6 +4664,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'vigilance':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'sliceOfLife':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -5176,6 +5187,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'wheelbarrow':
                     this.addActionButton("wheelbarrow-ditch-button", _("Ditch"), "onWheelbarrowDitch");
                     this.addActionButton("wheelbarrow-store-button", _("Store"), "onWheelbarrowStore");
+                    break;
+                case 'tacticalMeasurement':
+                    this.addActionButton("confirm-button", _("Confirm"), "onTacticalMeasurement");
                     break;
             }
         };
@@ -7554,6 +7568,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onWheelbarrowStore = function () {
             this.bgaPerformAction('actWheelbarrow', {
                 is_ditching: false
+            });
+        };
+        DaleOfMerchants.prototype.onTacticalMeasurement = function () {
+            this.bgaPerformAction('actTacticalMeasurement', {
+                card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get())
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

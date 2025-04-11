@@ -809,6 +809,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setContent(vigilance_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('single');
 				break;
+			case 'tacticalMeasurement':
+				this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1107,6 +1110,9 @@ class DaleOfMerchants extends Gamegui
 			case 'vigilance':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				break;
+			case 'sliceOfLife':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1635,6 +1641,9 @@ class DaleOfMerchants extends Gamegui
 				// const wheelbarrow_or = document.createElement("span");
 				// wheelbarrow_or.textContent = _(" or");
 				// wheelbarrow_ditch?.parentNode?.insertBefore(wheelbarrow_or, wheelbarrow_ditch.nextSibling);
+				break;
+			case 'tacticalMeasurement':
+				this.addActionButton("confirm-button", _("Confirm"), "onTacticalMeasurement");
 				break;
 		}
 		//(~actionbuttons)
@@ -4406,6 +4415,12 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actWheelbarrow', {
 			is_ditching: false
 		});
+	}
+
+	onTacticalMeasurement() {
+		this.bgaPerformAction('actTacticalMeasurement', {
+			card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get())
+		})
 	}
 
 	//(~on)

@@ -4299,6 +4299,10 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->effects->insertModification($passive_card_id, CT_BARRICADE);
                 break;
+            case CT_TACTICALMEASUREMENT:
+                $this->effects->insertModification($passive_card_id, CT_TACTICALMEASUREMENT);
+                $this->gamestate->nextState("trTacticalMeasurement"); return;
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
@@ -5226,6 +5230,27 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actTacticalMeasurement($card_ids) {
+        $this->checkAction("actTacticalMeasurement");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        $nbr = count($dbcards);
+        if ($nbr > 2) {
+            throw new BgaVisibleSystemException("Tactical Measurement: you may place at most 2 cards on top of your deck");
+        }
+        if ($nbr < 2 && $nbr != $this->cards->countCardsInLocation(HAND.$player_id)) {
+            throw new BgaUserException("Tactical Measurement: please select exacly 2 cards");
+        }
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Tactical Measurement: ${player_name} places ${nbr} cards on top of their deck'),
+            $card_ids,
+            $dbcards
+        );
+        $this->gamestate->nextState("trSamePlayer");
+    }
+
 
     //(~acts)
 
@@ -5948,6 +5973,10 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stWheelbarrow() {
         $this->draw('', 1, true);
+    }
+
+    function stTacticalMeasurement() {
+        $this->draw(clienttranslate('Tactical Measurement: ${player_name} draws ${nbr} cards'), 2);
     }
 
 
