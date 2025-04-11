@@ -6443,6 +6443,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_MAGNET:
                 case DaleCard_9.DaleCard.CT_WHEELBARROW:
                 case DaleCard_9.DaleCard.CT_VIGILANCE:
+                case DaleCard_9.DaleCard.CT_SUPPLYDEPOT:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -7642,6 +7643,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.deckSelection.setResult(notif.args.animalfolk_id);
             if (!this.gamedatas.animalfolkIds.includes(notif.args.animalfolk_id)) {
                 this.gamedatas.animalfolkIds.push(notif.args.animalfolk_id);
+            }
+            if (notif.args.animalfolk_id == DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS) {
+                for (var player_id in this.gamedatas.players) {
+                    var wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
+                    wrap.classList.remove("daleofmerchants-hidden");
+                }
             }
         };
         DaleOfMerchants.prototype.notif_startGame = function (notif) {

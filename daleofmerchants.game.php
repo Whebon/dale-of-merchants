@@ -2742,6 +2742,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_MAGNET:
                 case CT_WHEELBARROW:
                 case CT_VIGILANCE:
+                case CT_SUPPLYDEPOT:
                 case CT_DUPLICATEENTRY:
                 case CT_CULTURALPRESERVATION:
                 case CT_VORACIOUSCONSUMER:
@@ -4048,6 +4049,19 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->reshuffleDeckForSearch($player_id, 1);
                 $this->gamestate->nextState("trVigilance");
+                break;
+            case CT_SUPPLYDEPOT:
+                $dbcards = $this->cards->pickCardsForLocation(2, DECK.$player_id, STORED_CARDS.$player_id);
+                foreach ($dbcards as $dbcard) {
+                    $this->notifyAllPlayers('deckToStoredCards', clienttranslate('Supply Depot: ${player_name} stores a ${card_name} from their deck'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "player_id" => $player_id,
+                        "card" => $dbcard,
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

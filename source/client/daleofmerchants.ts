@@ -3190,6 +3190,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_MAGNET:
 			case DaleCard.CT_WHEELBARROW:
 			case DaleCard.CT_VIGILANCE:
+			case DaleCard.CT_SUPPLYDEPOT:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -4527,6 +4528,13 @@ class DaleOfMerchants extends Gamegui
 		this.deckSelection!.setResult(notif.args.animalfolk_id);
 		if (!this.gamedatas.animalfolkIds.includes(notif.args.animalfolk_id)) {
 			this.gamedatas.animalfolkIds.push(notif.args.animalfolk_id);
+		}
+		//show the storedCards if tree kangaroos are in play
+		if (notif.args.animalfolk_id == DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS) {
+			for (let player_id in this.gamedatas.players) {
+				const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!
+				wrap.classList.remove("daleofmerchants-hidden"); //always show this section if tree kangaroos are in play
+			}
 		}
 	}
 
