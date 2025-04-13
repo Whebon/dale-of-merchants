@@ -3501,6 +3501,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
                     case 'client_goodwillpresents':
                         return _("${card_name}: ${you} must choose 1-2 players");
+                    case 'client_alternativePlan':
+                        return _("${card_name}: ${you} must ditch a card from your discard pile");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4382,6 +4384,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_meddlingMarketeer':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
                     break;
+                case 'client_alternativePlan':
+                    this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -4683,6 +4688,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'sliceOfLife':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'client_alternativePlan':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -5218,6 +5226,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonsOpponentSelection(2, this.gamedatas.playerorder.map(Number));
                     this.addActionButton("confirm-button", '', "onGoodwillPresents");
                     this.updateConfirmOpponentsButton();
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_alternativePlan':
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -5829,6 +5840,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_siesta':
                     this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
+                case 'client_alternativePlan':
+                    this.playTechniqueCard({
                         card_id: card.id
                     });
                     break;
@@ -6829,6 +6845,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_9.DaleCard.CT_GOODWILLPRESENTS:
                     this.clientScheduleTechnique('client_goodwillpresents', card.id);
+                    break;
+                case DaleCard_9.DaleCard.CT_ALTERNATIVEPLAN:
+                    if (this.myDiscard.size == 0) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_alternativePlan', card.id);
+                    }
+                    break;
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

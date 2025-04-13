@@ -2691,6 +2691,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_TIRELESSTINKERER:
                 case CT_HISTORYLESSON:
+                case CT_ALTERNATIVEPLAN:
                     $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
                     if ($nbr > 0) {
                         throw new BgaVisibleSystemException("Unable to fizzle. The player's discard pile contains card(s).");
@@ -4092,6 +4093,15 @@ class DaleOfMerchants extends DaleTableBasic
                         "nbr" => 1,
                     ));
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_ALTERNATIVEPLAN:
+                $card_id = intval($args["card_id"]);
+                $dbcard = $this->cards->getCardFromLocation($card_id, DISCARD.$player_id);
+                $this->ditchFromDiscard(
+                    clienttranslate('Alternative Plan: ${player_name} ditches a ${card_name}'),
+                    $card_id
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

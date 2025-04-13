@@ -818,6 +818,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_meddlingMarketeer':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
 				break;
+			case 'client_alternativePlan':
+				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1122,6 +1125,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'sliceOfLife':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_alternativePlan':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1665,6 +1671,9 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponentSelection(2, this.gamedatas.playerorder.map(Number));
 				this.addActionButton("confirm-button", '', "onGoodwillPresents");
 				this.updateConfirmOpponentsButton();
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_alternativePlan':
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -2482,6 +2491,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_siesta':
 				this.resolveTechniqueCard<'client_siesta'>({
+					card_id: card!.id
+				})
+				break;
+			case 'client_alternativePlan':
+				this.playTechniqueCard<'client_alternativePlan'>({
 					card_id: card!.id
 				})
 				break;
@@ -3563,6 +3577,15 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_GOODWILLPRESENTS:
 				this.clientScheduleTechnique('client_goodwillpresents', card.id);
+				break;
+			case DaleCard.CT_ALTERNATIVEPLAN:
+				if (this.myDiscard.size == 0) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_alternativePlan', card.id);
+				}
+				break;
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

@@ -420,6 +420,7 @@ declare global {
 		'client_matchingColours': { card_id: number, stall_player_id: number, stall_card_id: number }
 		'client_cleverGuardian': { card_id: number }
 		'client_goodwillpresents': { opponent_ids: number[] }
+		'client_alternativePlan': { card_id: number }
 	}
 
 	interface ClientPassiveChoice {
