@@ -298,6 +298,13 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			nbr: number
 		}
+		'obtainNewJunkInDiscard': {
+			player_id: number
+			player_name: string
+			cards: {[card_id: number]: DbCard}
+			nbr: number
+			from_player_id?: number //by default, this is the same as player_id
+		}
 		'buildStack': {
 			player_id: number 
             player_name: string
@@ -412,6 +419,7 @@ declare global {
 		'client_velocipede': { stall_player_id: number, stall_card_id: number }
 		'client_matchingColours': { card_id: number, stall_player_id: number, stall_card_id: number }
 		'client_cleverGuardian': { card_id: number }
+		'client_goodwillpresents': { opponent_ids: number[] }
 	}
 
 	interface ClientPassiveChoice {

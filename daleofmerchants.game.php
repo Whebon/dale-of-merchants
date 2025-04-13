@@ -4071,6 +4071,29 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trMeddlingMarketeer");
                 break;
+            case CT_GOODWILLPRESENTS:
+                $opponent_ids = $args["opponent_ids"];
+                if (count($opponent_ids) == 0) {
+                    throw new BgaUserException("Goodwill presents cannot have 0 targets");
+                }
+                if (count($opponent_ids) > 2) {
+                    throw new BgaUserException("Goodwill presents cannot have more than 2 targets");
+                }
+                foreach ($opponent_ids as $opponent_id) {
+                    $junk_cards = $this->cards->getJunk();
+                    $junk_id = key($junk_cards);
+                    $this->cards->moveCardOnTop($junk_id, DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('obtainNewJunkInDiscard', clienttranslate('Goodwill Presents: ${player_name} gives a ${opponent_name} a Junk'), array(
+                        "from_player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "player_id" => $opponent_id,
+                        "opponent_name" => $this->getPlayerNameById($opponent_id),
+                        "cards" => $junk_cards,
+                        "nbr" => 1,
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

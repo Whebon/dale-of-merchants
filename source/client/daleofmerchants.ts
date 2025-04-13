@@ -1661,6 +1661,12 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm"), "onMeddlingMarketeerDeck");
 				this.addActionButton("undo-button", _("Undo"), "onMeddlingMarketeerUndo", undefined, false, "gray");
 				break;
+			case 'client_goodwillpresents':
+				this.addActionButtonsOpponentSelection(2, this.gamedatas.playerorder.map(Number));
+				this.addActionButton("confirm-button", '', "onGoodwillPresents");
+				this.updateConfirmOpponentsButton();
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2171,9 +2177,11 @@ class DaleOfMerchants extends Gamegui
 
 	/**
 	 * Add selection button to select up to `maxSize` opponents
+	 * @param maxSize (optional) if provided, set a maximum number of opponents that can be selected
 	 * @param player_ids (optional) if provided, make a button for exactly these players (even the current_player)
+	 * @param auto_select (optional) default false - if `true`, automatically select the maximum number of opponents
 	 */
-	addActionButtonsOpponentSelection(maxSize?: number, player_ids?: number[]) {
+	addActionButtonsOpponentSelection(maxSize?: number, player_ids?: number[], auto_select = false) {
 		this.opponent_ids = [];
 		this.max_opponents = maxSize ?? this.gamedatas.playerorder.length;
 		for(let opponent_id of this.gamedatas.playerorder) {
@@ -2182,8 +2190,8 @@ class DaleOfMerchants extends Gamegui
 				const color = this.gamedatas.players[opponent_id]!.color;
 				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
 				this.addActionButton("opponent-selection-button-"+opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
-				if (this.opponent_ids.length < this.max_opponents) {
-					this.opponent_ids.push(opponent_id);
+				if (auto_select && this.opponent_ids.length < this.max_opponents) {
+					this.opponent_ids.push(+opponent_id);
 					$("opponent-selection-button-"+opponent_id)?.classList.add("daleofmerchants-bga-button-selected");
 				}
 			}
@@ -3553,6 +3561,9 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_cleverGuardian', card.id);
 				}
 				break;
+			case DaleCard.CT_GOODWILLPRESENTS:
+				this.clientScheduleTechnique('client_goodwillpresents', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -4495,6 +4506,16 @@ class DaleOfMerchants extends Gamegui
 		this.mainClientState.leave();
 	}
 
+	onGoodwillPresents() {
+		if (this.opponent_ids.length == 0) {
+			this.showMessage(_("Please select at least 1 player"), 'error');
+			return;
+		}
+		this.playTechniqueCard<'client_goodwillpresents'>({
+			opponent_ids: this.opponent_ids
+		})
+	}
+
 	//(~on)
 
 
@@ -4541,6 +4562,7 @@ class DaleOfMerchants extends Gamegui
 			['playerHandToOpponentHand', 			500, true],
 			['opponentHandToPlayerHand', 			500, true],
 			['obtainNewJunkInHand', 				500],
+			['obtainNewJunkInDiscard',				500],
 			['ditch', 								500],
 			['ditchMultiple', 						500],
 			['discard', 							500],
@@ -5011,6 +5033,14 @@ class DaleOfMerchants extends Gamegui
 		//update the hand sizes
 		const nbr = Object.keys(notif.args.cards).length;
 		this.playerHandSizes[notif.args.player_id]!.incValue(nbr);
+	}
+
+	notif_obtainNewJunkInDiscard(notif: NotifAs<'obtainNewJunkInDiscard'>) {
+		const from_player_id = notif.args.from_player_id ?? notif.args.player_id;
+		for (let i in notif.args.cards) {
+			const card = notif.args.cards[i]!;
+			this.overallPlayerBoardToPile(card, from_player_id, this.playerDiscards[notif.args.player_id]!);
+		}
 	}
 
 	notif_ditch(notif: NotifAs<'ditch'>) {

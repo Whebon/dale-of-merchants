@@ -213,6 +213,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card to <stronger>store</stronger>");
             case 'client_meddlingMarketeer':
                 return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
+            case 'client_goodwillpresents':
+                return _("${card_name}: ${you} must choose 1-2 players");
         }
         return "MISSING DESCRIPTION";
     }
