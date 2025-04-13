@@ -812,6 +812,12 @@ class DaleOfMerchants extends Gamegui
 			case 'tacticalMeasurement':
 				this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards"));
 				break;
+			case 'meddlingMarketeer':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to discard"));
+				break;
+			case 'client_meddlingMarketeer':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1113,6 +1119,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'sliceOfLife':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'sliceOfLife':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1645,6 +1654,13 @@ class DaleOfMerchants extends Gamegui
 			case 'tacticalMeasurement':
 				this.addActionButton("confirm-button", _("Confirm"), "onTacticalMeasurement");
 				break;
+			case 'meddlingMarketeer':
+				this.addActionButton("confirm-button", _("Discard Selected"), "onMeddlingMarketeerDiscard");
+				break;
+			case 'client_meddlingMarketeer':
+				this.addActionButton("confirm-button", _("Confirm"), "onMeddlingMarketeerDeck");
+				this.addActionButton("undo-button", _("Undo"), "onMeddlingMarketeerUndo", undefined, false, "gray");
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -1968,7 +1984,7 @@ class DaleOfMerchants extends Gamegui
 	 * @param pile pile to move to
 	 * @param delay
 	*/
-	stockToPile(card: DbCard, stock: DaleStock, pile: Pile, delay: number = 0) {
+	stockToPile(card: DbCard | DaleCard, stock: DaleStock, pile: Pile, delay: number = 0, ignore_card_not_found: boolean = false) {
 		const card_id = card.id;
 		const item_name = stock.control_name + '_item_' + card_id;
 		if ($(item_name)) {
@@ -1976,7 +1992,12 @@ class DaleOfMerchants extends Gamegui
 			stock.removeFromStockByIdNoAnimation(+card_id);
 		}
 		else {
-			throw new Error(`Card ${card_id} does not exist in `+stock.control_name);
+			if (ignore_card_not_found) {
+				console.warn(`Card ${card_id} does not exist in `+stock.control_name+", likely because the client already executed the action in a client state");
+			}
+			else {
+				throw new Error(`Card ${card_id} does not exist in `+stock.control_name);
+			}
 		}
 	}
 
@@ -1998,10 +2019,11 @@ class DaleOfMerchants extends Gamegui
 	 * @param player_id owner of the stock
 	 * @param pile pile to move to
 	 * @param delay
+	 * @param ignore_card_not_found (optional) - if true, ignore this function if the card is not found in the given stock
 	*/
-	playerStockToPile(card: DbCard, stock: DaleStock, player_id: number, pile: Pile, delay: number = 0) {
+	playerStockToPile(card: DbCard, stock: DaleStock, player_id: number, pile: Pile, delay: number = 0, ignore_card_not_found: boolean = false) {
 		if (+player_id == this.player_id) {
-			this.stockToPile(card, stock, pile, delay);
+			this.stockToPile(card, stock, pile, delay, ignore_card_not_found);
 		}
 		else {
 			this.overallPlayerBoardToPile(card, player_id, pile);
@@ -2027,7 +2049,7 @@ class DaleOfMerchants extends Gamegui
 	 * @param stock stock to move to
 	 * @param location_arg (optional) the card needs to be retrieved from a specific location of the pile
 	*/
-	pileToStock(card: DbCard, pile: Pile, stock: DaleStock, location_arg?: number) {
+	pileToStock(card: DbCard | DaleCard, pile: Pile, stock: DaleStock, location_arg?: number) {
 		if (location_arg !== undefined) {
 			//remove from index
 			if (pile.removeAt(location_arg-1).id != +card.id) {
@@ -3200,6 +3222,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_WHEELBARROW:
 			case DaleCard.CT_VIGILANCE:
 			case DaleCard.CT_SUPPLYDEPOT:
+			case DaleCard.CT_MEDDLINGMARKETEER:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -4423,6 +4446,55 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onMeddlingMarketeerDiscard() {
+		//move cards to the discard pile
+		const card_ids = this.myLimbo.orderedSelection.get();
+		const nbr_card_remaining = this.myLimbo.count() - card_ids.length;
+		let delay = 0;
+		for (let card_id of card_ids) {
+			this.stockToPile(new DaleCard(card_id), this.myLimbo, this.myDiscard, delay);
+			delay += 75;
+		}
+		if (nbr_card_remaining >= 1) {
+			//let the player choose the order to place the other cards on top of their deck
+			this.mainClientState.enterOnStack('client_meddlingMarketeer', {
+				discard_card_ids: card_ids,
+				card_name: "Meddling Marketeer"
+			});
+		}
+		else {
+			//skip the 2nd client state, no cards are placed on top of the deck
+			this.bgaPerformAction('actMeddlingMarketeer', {
+				discard_card_ids: this.arrayToNumberList(card_ids),
+				deck_card_ids: this.arrayToNumberList([])
+			});
+		}
+	}
+
+	onMeddlingMarketeerUndo() {
+		//return discarded cards to limbo
+		const args = (this.mainClientState.args as ClientGameStates['client_meddlingMarketeer']);
+		for (const _ in args.discard_card_ids) {
+			//this is used over "pileToStock" to be independent of the order of args.discard_card_ids
+			const card = this.myDiscard.pop();
+			this.myLimbo.addDaleCardToStock(card, this.myDiscard.placeholderHTML);
+			if (!args.discard_card_ids.includes(card.id)) {
+				throw new Error(`Expected card ${card.id} within the top ${args.discard_card_ids.length} cards of the discard pile`);
+			}
+		}
+		this.mainClientState.leave();
+	}
+
+	onMeddlingMarketeerDeck() {
+		const args = (this.mainClientState.args as ClientGameStates['client_meddlingMarketeer']);
+		const deck_card_ids = this.myLimbo.orderedSelection.get();
+		this.bgaPerformAction('actMeddlingMarketeer', {
+			discard_card_ids: this.arrayToNumberList(args.discard_card_ids),
+			deck_card_ids: this.arrayToNumberList(deck_card_ids)
+		});
+		this.mainClientState.leave();
+	}
+
 	//(~on)
 
 
@@ -4995,7 +5067,7 @@ class DaleOfMerchants extends Gamegui
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
-			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay);
+			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
 			delay += 75; //delay indicates that ordering matters
 		}
 		if (!notif.args.from_limbo) {

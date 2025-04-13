@@ -208,8 +208,9 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 			nbr: number,
-			discard_id?: number //by default, this is the same as player_id
-			from_limbo?: boolean
+			discard_id?: number, //by default, this is the same as player_id
+			from_limbo?: boolean,
+			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
 		}
 		'placeOnDeckMultiple': {
 			player_id: number
@@ -460,7 +461,8 @@ declare global {
 		'client_graspValue': { technique_card_id: number, opponent_id: number, opponent_name: string },
 		'client_periscopeAnimalfolkId': { technique_card_id: number, opponent_id: number, opponent_name: string },
 		'client_periscopeValue': { technique_card_id: number, opponent_id: number, opponent_name: string, animalfolk_id: number },
-		'client_barricade': { passive_card_id: number, nbr_junk: number }
+		'client_barricade': { passive_card_id: number, nbr_junk: number },
+		'client_meddlingMarketeer': { discard_card_ids: number[], card_name: string }
 	}
 
 	//

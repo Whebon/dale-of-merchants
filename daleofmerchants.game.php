@@ -679,8 +679,9 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $cards array with exactly the same keys as $card_ids
      * @param array $unordered_cards (optional) - if provided, first discard this collection of unordered cards
      * @param bool $from_limbo (optional) - default false. If `false`, discard from hand. If `true`, discard from limbo.
+     * @param bool $ignore_card_not_found (optional) - default false. If `true`, the client will ignore "card not found" errors
      */
-    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false) {
+    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, bool $ignore_card_not_found = false) {
         //1: move the unordered cards to the discard pile (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
@@ -693,7 +694,8 @@ class DaleOfMerchants extends DaleTableBasic
                 'card_ids' => $unordered_card_ids,
                 'cards' => $unordered_cards,
                 'nbr' => $nbr_unordered_cards,
-                'from_limbo' => $from_limbo
+                'from_limbo' => $from_limbo,
+                'ignore_card_not_found' => $ignore_card_not_found
             ));
         }
         
@@ -706,7 +708,8 @@ class DaleOfMerchants extends DaleTableBasic
                 'card_ids' => $card_ids,
                 'cards' => $cards,
                 'nbr' => count($cards),
-                'from_limbo' => $from_limbo
+                'from_limbo' => $from_limbo,
+                'ignore_card_not_found' => $ignore_card_not_found
             ));
         }
 
@@ -2747,6 +2750,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_CULTURALPRESERVATION:
                 case CT_VORACIOUSCONSUMER:
                 case CT_POMPOUSPROFESSIONAL:
+                case CT_MEDDLINGMARKETEER:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -4063,6 +4067,10 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_MEDDLINGMARKETEER:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trMeddlingMarketeer");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5251,6 +5259,57 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trSamePlayer");
     }
 
+    function actMeddlingMarketeer($discard_card_ids, $deck_card_ids) {
+        $this->checkAction("actMeddlingMarketeer");
+        $player_id = $this->getActivePlayerId();
+        $discard_card_ids = $this->numberListToArray($discard_card_ids);
+        $deck_card_ids = $this->numberListToArray($deck_card_ids);
+        $discard_cards = array();
+        $deck_cards = array();
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+
+        //get the cards to discard
+        foreach ($discard_card_ids as $discard_card_id) {
+            if (!isset($non_selected_cards[$discard_card_id])) {
+                throw new BgaUserException("Error while discarding: card "+$discard_card_id+" is not found in limbo");
+            }
+            $discard_cards[$discard_card_id] = $non_selected_cards[$discard_card_id];
+            unset($non_selected_cards[$discard_card_id]);
+        }
+
+        //get the cards to place on top of the deck
+        foreach ($deck_card_ids as $deck_card_id) {
+            if (!isset($non_selected_cards[$deck_card_id])) {
+                throw new BgaUserException("Error while placing card on top of the deck: card "+$discard_card_id+" is not found in limbo");
+            }
+            $deck_cards[$deck_card_id] = $non_selected_cards[$deck_card_id];
+            unset($non_selected_cards[$deck_card_id]);
+        }
+
+        //1. discard cards
+        $this->discardMultiple(
+            clienttranslate('Meddling Marketeer: ${player_name} discards ${nbr} cards'), 
+            $player_id, 
+            $discard_card_ids,
+            $discard_cards,
+            null, //only cards that were specifically selected are discarded
+            true,
+            true
+        );
+
+        //2. place the rest on top of the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Meddling Marketeer: ${player_name} places ${nbr} cards on top of their deck'),
+            $deck_card_ids, 
+            $deck_cards, 
+            $non_selected_cards,
+            true
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -5669,7 +5728,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stSpyglass() {
-        $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 card'), 3, true);
+        $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 cards'), 3, true);
         if ($nbr == 0) {
             //skyglass has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
@@ -5677,7 +5736,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stSpecialOffer() {
-        $nbr = $this->draw(clienttranslate('Special Offer: ${player_name} draws 3 card'), 3, true, MARKET);
+        $nbr = $this->draw(clienttranslate('Special Offer: ${player_name} draws 3 cards'), 3, true, MARKET);
         if ($nbr == 0) {
             //special offer has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
@@ -5737,7 +5796,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stDangerousTest() {
-        $nbr = $this->draw(clienttranslate('Dangerous Test: ${player_name} draws 3 card'), 3, false);
+        $nbr = $this->draw(clienttranslate('Dangerous Test: ${player_name} draws 3 cards'), 3, false);
         if ($nbr == 0) {
             //dangerous test has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
@@ -5977,6 +6036,10 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stTacticalMeasurement() {
         $this->draw(clienttranslate('Tactical Measurement: ${player_name} draws ${nbr} cards'), 2);
+    }
+
+    function stMeddlingMarketeer() {
+        $this->draw(clienttranslate('Meddling Marketeer: ${player_name} draws 3 cards'), 3, true);
     }
 
 

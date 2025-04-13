@@ -1055,7 +1055,10 @@ export class DaleCard {
      * converts a DbCard (from the database table) to a DaleCard (typescript representation of a card)
      * @returns DaleCard
      */
-    public static of(card: DbCard) {
+    public static of(card: DbCard | DaleCard) {
+        if (card instanceof DaleCard) {
+            return card
+        }
         return new DaleCard(card.id, card.type_arg)
     }
 

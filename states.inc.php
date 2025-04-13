@@ -43,6 +43,7 @@ if (false) {
 	$game->stRumours();
 	$game->stWheelbarrow();
 	$game->stTacticalMeasurement();
+	$game->stMeddlingMarketeer();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -135,6 +136,7 @@ $machinestates = array(
 			'trWheelbarrow' => 79,
 			'trVigilance' => 80,
 			'trTacticalMeasurement' => 81,
+			'trMeddlingMarketeer' => 82,
 		),
 	),
 	31 => array(
@@ -525,6 +527,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stTacticalMeasurement',
 		'possibleactions' => ['actTacticalMeasurement'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	82 => array(
+		'name' => 'meddlingMarketeer',
+		'description' => clienttranslate('Meddling Marketeer: ${actplayer} may discard any number of cards'),
+		'descriptionmyturn' => clienttranslate('Meddling Marketeer: ${you} may discard any number of cards'),
+		'type' => 'activeplayer',
+		'action' => 'stMeddlingMarketeer',
+		'possibleactions' => ['actMeddlingMarketeer'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

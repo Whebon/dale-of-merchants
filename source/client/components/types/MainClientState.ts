@@ -211,6 +211,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");
             case 'client_cleverGuardian':
                 return _("${card_name}: ${you} must choose a card to <stronger>store</stronger>");
+            case 'client_meddlingMarketeer':
+                return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
         }
         return "MISSING DESCRIPTION";
     }

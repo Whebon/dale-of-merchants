@@ -184,6 +184,7 @@ interface GameStates {
 			'trWheelbarrow': 79,
 			'trVigilance': 80,
 			'trTacticalMeasurement': 81,
+			'trMeddlingMarketeer': 82,
 		},
 	},
 	31: {
@@ -833,6 +834,27 @@ interface GameStates {
 		'possibleactions': {
 			'actTacticalMeasurement': [{
 				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	82: {
+		'name': 'meddlingMarketeer',
+		'description': 'Meddling Marketeer: ${actplayer} may discard any number of cards',
+		'descriptionmyturn': 'Meddling Marketeer: ${you} may discard any number of cards',
+		'type': 'activeplayer',
+		'action': 'stMeddlingMarketeer',
+		'possibleactions': {
+			'actMeddlingMarketeer': [{
+				'name': 'discard_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],
