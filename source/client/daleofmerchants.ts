@@ -821,6 +821,15 @@ class DaleOfMerchants extends Gamegui
 			case 'client_alternativePlan':
 				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
+			case 'anchor':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('noneCantViewContent');
+				}
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
+				break;
+			case 'client_anchor':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1126,8 +1135,24 @@ class DaleOfMerchants extends Gamegui
 			case 'sliceOfLife':
 				this.myLimbo.setSelectionMode('none');
 				break;
+			case 'meddlingMarketeer':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_meddlingMarketeer':
+				this.myLimbo.setSelectionMode('none');
+				break;
 			case 'client_alternativePlan':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'anchor':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				this.myLimbo.setSelectionMode('none');
+				TargetingLine.remove();
+				break;
+			case 'client_anchor':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1675,6 +1700,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_alternativePlan':
 				this.addActionButtonCancelClient();
+				break;
+			case 'client_anchor':
+				this.addActionButton("confirm-button", _("Confirm"), "onAnchorDeck");
+				this.addActionButton("undo-button", _("Undo"), "onAnchorUndo", undefined, false, "gray");
 				break;
 		}
 		//(~actionbuttons)
@@ -2788,6 +2817,27 @@ class DaleOfMerchants extends Gamegui
 			case 'umbrella':
 				this.onUmbrella(card.id);
 				break;
+			case 'anchor':
+				const anchor_targets = [];
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					const target = discard.topCardHTML ?? discard.placeholderHTML
+					target.dataset['target_id'] = player_id;
+					anchor_targets.push(target);
+				}
+				const label = _("Place '") + card.name + _("' on a discard pile");
+				this.setMainTitle(label);
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
+				new TargetingLine(
+					card,
+					anchor_targets,
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
+					(source_id: number) => this.onAnchorCancelTargetingLine(),
+					(source_id: number, target_id: number) => this.onAnchor(source_id, target_id)
+				)
+				this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
+				break;
 		}
 	}
 
@@ -3245,6 +3295,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_VIGILANCE:
 			case DaleCard.CT_SUPPLYDEPOT:
 			case DaleCard.CT_MEDDLINGMARKETEER:
+			case DaleCard.CT_ANCHOR:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -4483,13 +4534,13 @@ class DaleOfMerchants extends Gamegui
 	onMeddlingMarketeerDiscard() {
 		//move cards to the discard pile
 		const card_ids = this.myLimbo.orderedSelection.get();
-		const nbr_card_remaining = this.myLimbo.count() - card_ids.length;
+		const nbr_cards_remaining = this.myLimbo.count() - card_ids.length;
 		let delay = 0;
 		for (let card_id of card_ids) {
 			this.stockToPile(new DaleCard(card_id), this.myLimbo, this.myDiscard, delay);
 			delay += 75;
 		}
-		if (nbr_card_remaining >= 1) {
+		if (nbr_cards_remaining >= 1) {
 			//let the player choose the order to place the other cards on top of their deck
 			this.mainClientState.enterOnStack('client_meddlingMarketeer', {
 				discard_card_ids: card_ids,
@@ -4537,6 +4588,61 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCard<'client_goodwillpresents'>({
 			opponent_ids: this.opponent_ids
 		})
+	}
+
+	onAnchor(card_id: number, opponent_id: number) {
+		const nbr_cards_remaining = this.myLimbo.count() - 1;
+		this.stockToPile(new DaleCard(card_id), this.myLimbo, this.playerDiscards[opponent_id]!);
+		if (nbr_cards_remaining >= 1) {
+			this.mainClientState.enterOnStack('client_anchor', {
+				opponent_id: opponent_id,
+				opponent_name: this.gamedatas.players[opponent_id]!.name!,
+				discard_card_id: card_id,
+				card_name: "Anchor"
+			});
+		}
+		else {
+			//skip the 2nd client state, no cards are placed on top of the deck
+			this.bgaPerformAction('actAnchor', {
+				opponent_id: opponent_id,
+				discard_card_id: card_id,
+				deck_card_ids: this.arrayToNumberList([])
+			});
+		}
+	}
+
+	onAnchorCancelTargetingLine() {
+		//undo the targeting line
+		for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+			discard.setSelectionMode('none');
+		}
+		this.myLimbo.setSelectionMode('none');
+		TargetingLine.remove();
+		this.restoreServerGameState();
+	}
+
+	onAnchorUndo() {
+		//undo the discard
+		const args = (this.mainClientState.args as ClientGameStates['client_anchor']);
+		console.log(args);
+		const discardPile = this.playerDiscards[args.opponent_id]!;
+		const card = discardPile.pop();
+		if (args.discard_card_id != card.id) {
+			throw new Error(`Expected card ${card.id} on top of ${args.opponent_name}\'s discard pile`);
+		}
+		this.myLimbo.addDaleCardToStock(card, discardPile.placeholderHTML);
+		this.mainClientState.leave();
+	}
+
+	onAnchorDeck() {
+		const args = (this.mainClientState.args as ClientGameStates['client_anchor']);
+		const deck_card_ids = this.myLimbo.orderedSelection.get();
+		this.bgaPerformAction('actAnchor', {
+			opponent_id: args.opponent_id,
+			discard_card_id: args.discard_card_id,
+			deck_card_ids: this.arrayToNumberList(deck_card_ids)
+		});
+		this.mainClientState.leave();
 	}
 
 	//(~on)
@@ -5104,7 +5210,7 @@ class DaleOfMerchants extends Gamegui
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-		this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile);
+		this.playerStockToPile(notif.args.card, stock, notif.args.player_id, discardPile, 0, notif.args.ignore_card_not_found);
 		if (!notif.args.from_limbo) {
 			//update the hand sizes
 			this.playerHandSizes[notif.args.player_id]!.incValue(-1);

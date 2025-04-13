@@ -44,6 +44,7 @@ if (false) {
 	$game->stWheelbarrow();
 	$game->stTacticalMeasurement();
 	$game->stMeddlingMarketeer();
+	$game->stAnchor();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -137,6 +138,7 @@ $machinestates = array(
 			'trVigilance' => 80,
 			'trTacticalMeasurement' => 81,
 			'trMeddlingMarketeer' => 82,
+			'trAnchor' => 83,
 		),
 	),
 	31 => array(
@@ -538,6 +540,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stMeddlingMarketeer',
 		'possibleactions' => ['actMeddlingMarketeer'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	83 => array(
+		'name' => 'anchor',
+		'description' => clienttranslate('Anchor: ${actplayer} must place a card on any player\'s discard pile'),
+		'descriptionmyturn' => clienttranslate('Anchor: ${you} must place a card on any player\'s discard pile'),
+		'type' => 'activeplayer',
+		'action' => 'stAnchor',
+		'possibleactions' => ['actAnchor'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

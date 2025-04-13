@@ -201,7 +201,8 @@ declare global {
 			player_id: number 
 			card: DbCard
 			discard_id?: number //by default, this is the same as player_id
-			from_limbo?: boolean
+			from_limbo?: boolean,
+			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
 		}
 		'discardMultiple': {
 			player_id: number 
@@ -472,6 +473,7 @@ declare global {
 		'client_periscopeValue': { technique_card_id: number, opponent_id: number, opponent_name: string, animalfolk_id: number },
 		'client_barricade': { passive_card_id: number, nbr_junk: number },
 		'client_meddlingMarketeer': { discard_card_ids: number[], card_name: string }
+		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string }
 	}
 
 	//

@@ -2752,6 +2752,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_VORACIOUSCONSUMER:
                 case CT_POMPOUSPROFESSIONAL:
                 case CT_MEDDLINGMARKETEER:
+                case CT_ANCHOR:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -3850,7 +3851,7 @@ class DaleOfMerchants extends DaleTableBasic
                     //discard the card from the opponent's hand
                     $this->cards->moveCardOnTop($card["id"], DISCARD.$opponent_id);
                     $this->notifyAllPlayers('discard', clienttranslate('Sabotage: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
-                        "player_id" => $opponent_id,
+                        "player_id" => $player_id,
                         "discard_id" => $opponent_id,
                         "from_limbo" => false,
                         "card" => $card,
@@ -4103,6 +4104,10 @@ class DaleOfMerchants extends DaleTableBasic
                     $card_id
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_ANCHOR:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trAnchor");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -5343,6 +5348,55 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actAnchor($opponent_id, $discard_card_id, $deck_card_ids) {
+        $this->checkAction("actAnchor");
+        $player_id = $this->getActivePlayerId();
+        $deck_card_ids = $this->numberListToArray($deck_card_ids);
+        $deck_cards = array();
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+
+        //get the card to discard
+        if (!isset($non_selected_cards[$discard_card_id])) {
+            throw new BgaUserException("Error while discarding: card "+$discard_card_id+" is not found in limbo");
+        }
+        $discard_card = $non_selected_cards[$discard_card_id];
+        unset($non_selected_cards[$discard_card_id]);
+
+        //get the cards to place on top of the deck
+        foreach ($deck_card_ids as $deck_card_id) {
+            if (!isset($non_selected_cards[$deck_card_id])) {
+                throw new BgaUserException("Error while placing card on top of the deck: card "+$discard_card_id+" is not found in limbo");
+            }
+            $deck_cards[$deck_card_id] = $non_selected_cards[$deck_card_id];
+            unset($non_selected_cards[$deck_card_id]);
+        }
+
+        //1. discard cards
+        $this->cards->moveCardOnTop($discard_card_id, DISCARD.$opponent_id);
+        $this->notifyAllPlayers('discard', clienttranslate('Anchor: ${player_name} places their ${card_name} on ${opponent_name}\'s discard pile'), array(
+            "player_id" => $player_id,
+            "discard_id" => $opponent_id,
+            "from_limbo" => true,
+            "card" => $discard_card,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "opponent_name" => $this->getPlayerNameById($opponent_id),
+            "card_name" => $this->getCardName($discard_card),
+            "ignore_card_not_found" => true
+        ));
+
+        //2. place the rest on top of the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Anchor: ${player_name} places ${nbr} cards on top of their deck'),
+            $deck_card_ids, 
+            $deck_cards, 
+            $non_selected_cards,
+            true
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -6073,6 +6127,10 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stMeddlingMarketeer() {
         $this->draw(clienttranslate('Meddling Marketeer: ${player_name} draws 3 cards'), 3, true);
+    }
+    
+    function stAnchor() {
+        $this->draw(clienttranslate('Anchor: ${player_name} draws 3 cards'), 3, true);
     }
 
 

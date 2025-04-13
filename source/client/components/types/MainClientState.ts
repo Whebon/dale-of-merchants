@@ -217,6 +217,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose 1-2 players");
             case 'client_alternativePlan':
                 return _("${card_name}: ${you} must ditch a card from your discard pile");
+            case 'client_anchor':
+                return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
         }
         return "MISSING DESCRIPTION";
     }

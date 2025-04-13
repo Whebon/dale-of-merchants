@@ -185,6 +185,7 @@ interface GameStates {
 			'trVigilance': 80,
 			'trTacticalMeasurement': 81,
 			'trMeddlingMarketeer': 82,
+			'trAnchor': 83,
 		},
 	},
 	31: {
@@ -853,6 +854,31 @@ interface GameStates {
 				'name': 'discard_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}, {
+				'name': 'deck_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	83: {
+		'name': 'anchor',
+		'description': 'Anchor: ${actplayer} must place a card on any player\\\'s discard pile',
+		'descriptionmyturn': 'Anchor: ${you} must place a card on any player\\\'s discard pile',
+		'type': 'activeplayer',
+		'action': 'stAnchor',
+		'possibleactions': {
+			'actAnchor': [{
+				'name': 'opponent_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'discard_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}, {
 				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
