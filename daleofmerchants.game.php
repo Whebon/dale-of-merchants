@@ -1230,6 +1230,60 @@ class DaleOfMerchants extends DaleTableBasic
         return $this->card_types[$dbcard["type_arg"]]['animalfolk_id'] != 0;
     }
 
+    /**
+     * Get the number of coins owned by the specified `$player_id`
+     */
+    function getCoins(mixed $player_id) {
+        return self::getUniqueValueFromDB("SELECT player_coins FROM player WHERE player_id='$player_id'") ?? 0;
+    }
+
+    /**
+     * The specified `$player_id` takes the specified `$nbr` of coins from the bank.
+     * Also notifies the players.
+     */
+    function addCoins(mixed $player_id, int $nbr) {
+        if ($nbr == 0) {
+            return;
+        }
+        if ($nbr < 0) {
+            throw new BgaVisibleSystemException("Unable to add a negative amount of coins");
+        }
+        $sql = "UPDATE player SET player_coins=player_coins+$nbr WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
+        $this->notifyAllPlayers('addCoins', clienttranslate('${player_name} takes ${nbr} ${coin_icon} from the bank'), array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'nbr' => $nbr,
+            'coin_icon' => ""
+        ));
+    }
+
+    /**
+     * Checks if `$player_id` has at least `$nbr` of coins, then spends it.
+     * Also notifies the players.
+     */
+    function spendCoins(mixed $player_id, int $nbr) {
+        if ($nbr == 0) {
+            return;
+        }
+        if ($nbr < 0) {
+            throw new BgaVisibleSystemException("Unable to spend a negative amount of coins");
+        }
+        $coins = $this->getCoins($player_id);
+        if ($coins < $nbr) {
+            throw new BgaUserException($this->_("Insufficient coins")." ($coins / $nbr)");
+        }
+        $sql = "UPDATE player SET player_coins=player_coins-$nbr WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
+        $this->notifyAllPlayers('addCoins', clienttranslate('${player_name} spends ${positive_nbr} ${coin_icon}'), array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'positive_nbr' => $nbr,
+            'nbr' => -$nbr,
+            'coin_icon' => ""
+        ));
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Dice functions
@@ -2506,6 +2560,17 @@ class DaleOfMerchants extends DaleTableBasic
             $total_value += $optional_value;
             throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
         }
+
+        //TODO: safely remove this (automatically spend coins)
+        // //Check if funds are sufficient
+        // if ($total_value + $optional_value < $cost) {
+        //     $coins = $this->getCoins($player_id);
+        //     if ($total_value + $optional_value + $coins < $cost) {
+        //         $total_value += $optional_value + $coins;
+        //         throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
+        //     }
+        //     $this->spendCoins($player_id, $cost - $total_value - $optional_value);
+        // }
 
         //Check for overpaying
         if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {

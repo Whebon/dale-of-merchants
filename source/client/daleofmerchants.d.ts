@@ -322,6 +322,10 @@ declare global {
 			animalfolk_id: number,
 			is_taking_card: boolean
 		}
+		'addCoins': {
+			player_id: number,
+			nbr: number
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */

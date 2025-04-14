@@ -83,14 +83,6 @@ export class DaleIcons {
         return this.getIcon(4, 2);
     }
 
-    public static getNaturalSurvivorIcon(): HTMLElement {
-        return this.getIcon(4, 2); //TODO
-    }
-
-    public static getHistoryLessonIcon(): HTMLElement {
-        return this.getIcon(4, 2); //TODO
-    }
-
     /////////////////////////////
     ////////    ROW 5    ////////
     /////////////////////////////
@@ -113,11 +105,23 @@ export class DaleIcons {
     ////////    DO NOT EXIST YET    ////////
     ////////////////////////////////////////
 
+    public static getNaturalSurvivorIcon(): HTMLElement {
+        return this.getIcon(4, 2); //TODO
+    }
+
+    public static getHistoryLessonIcon(): HTMLElement {
+        return this.getIcon(4, 2); //TODO
+    }
+
     public static getCardIcon(): HTMLElement {
-        return this.getIcon(0, 6); //TODO
+        return this.getIcon(0, 5); //TODO
     }
 
     public static getCardsIcon(): HTMLElement {
-        return this.getIcon(0, 6); //TODO
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getCoinIcon(): HTMLElement {
+        return this.getIcon(4, 1); //TODO
     }
 }

@@ -2031,6 +2031,12 @@ class DaleOfMerchants extends Gamegui
 				args['die_icon'] = `<span class="daleofmerchants-log-span">${iconTpl}</span>`;
 			}
 
+			//parse coin icon
+			if ('coin_icon' in args) {
+				const iconTpl = DaleIcons.getCoinIcon();
+				args['coin_icon'] = `<span class="daleofmerchants-log-span">${iconTpl.outerHTML}</span>`;
+			}
+
 			//parse ocelot die
 			if (log.includes('${ocelot}')) {
 				args['ocelot'] = 'OCELOT_DIE_ICON';
@@ -4860,7 +4866,8 @@ class DaleOfMerchants extends Gamegui
 			['discardToDeck', 						500],
 			['deckToDiscard', 						500],
 			['rollDie', 							1000],
-			['updateActionButtons',	1],
+			['updateActionButtons',					1],
+			['addCoins',							1],
 			['selectBlindfold', 					1, true],
 			['addEffect', 							1],
 			['expireEffects', 						1],
@@ -5797,6 +5804,12 @@ class DaleOfMerchants extends Gamegui
 	notif_updateActionButtons(notif: NotifAs<'updateActionButtons'>){
 		this.removeActionButtons();
 		this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+	}
+
+	notif_addCoins(notif: NotifAs<'addCoins'>) {
+		//TODO: implement 'notif_addCoins'
+		this.showMessage(_("TODO: implement 'notif_addCoins'"), 'info');
+		return;
 	}
 
 	notif_selectBlindfold(notif: NotifAs<'selectBlindfold'>) {

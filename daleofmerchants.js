@@ -67,23 +67,26 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCheeseIcon = function () {
             return this.getIcon(4, 2);
         };
-        DaleIcons.getNaturalSurvivorIcon = function () {
-            return this.getIcon(4, 2);
-        };
-        DaleIcons.getHistoryLessonIcon = function () {
-            return this.getIcon(4, 2);
-        };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
         };
         DaleIcons.getCostModificationIcon = function (index) {
             return this.getIcon(6, index);
         };
+        DaleIcons.getNaturalSurvivorIcon = function () {
+            return this.getIcon(4, 2);
+        };
+        DaleIcons.getHistoryLessonIcon = function () {
+            return this.getIcon(4, 2);
+        };
         DaleIcons.getCardIcon = function () {
-            return this.getIcon(0, 6);
+            return this.getIcon(0, 5);
         };
         DaleIcons.getCardsIcon = function () {
-            return this.getIcon(0, 6);
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getCoinIcon = function () {
+            return this.getIcon(4, 1);
         };
         DaleIcons.ROWS = 7;
         DaleIcons.COLUMNS = 6;
@@ -5569,6 +5572,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var iconTpl = DaleDie_2.DaleDie.getIconTpl(args['die_icon']);
                     args['die_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl, "</span>");
                 }
+                if ('coin_icon' in args) {
+                    var iconTpl = DaleIcons_5.DaleIcons.getCoinIcon();
+                    args['coin_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl.outerHTML, "</span>");
+                }
                 if (log.includes('${ocelot}')) {
                     args['ocelot'] = 'OCELOT_DIE_ICON';
                 }
@@ -8009,6 +8016,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['deckToDiscard', 500],
                 ['rollDie', 1000],
                 ['updateActionButtons', 1],
+                ['addCoins', 1],
                 ['selectBlindfold', 1, true],
                 ['addEffect', 1],
                 ['expireEffects', 1],
@@ -8761,6 +8769,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_updateActionButtons = function (notif) {
             this.removeActionButtons();
             this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+        };
+        DaleOfMerchants.prototype.notif_addCoins = function (notif) {
+            this.showMessage(_("TODO: implement 'notif_addCoins'"), 'info');
+            return;
         };
         DaleOfMerchants.prototype.notif_selectBlindfold = function (notif) {
             console.warn("notif_selectBlindfold");
