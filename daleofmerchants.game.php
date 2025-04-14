@@ -447,7 +447,7 @@ class DaleOfMerchants extends DaleTableBasic
         //2: move the ordered cards on top of the deck
         if ($cards) {
             $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
-            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array (
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array_merge( array (
                 'player_id' => $this->getActivePlayerId(),
                 'player_name' => $this->getActivePlayerName(),
                 "_private" => array(
@@ -457,16 +457,16 @@ class DaleOfMerchants extends DaleTableBasic
                 'deck_player_id' => $deck_player_id,
                 'nbr' => count($cards),
                 'from_limbo' => $from_limbo
-            ));
+            ), $msg_args));
         }
 
         //only send a single message to the players
-        $this->notifyAllPlayers('message', $msg, array (
+        $this->notifyAllPlayers('message', $msg, array_merge( array (
             'player_id' => $this->getActivePlayerId(),
             'player_name' => $this->getActivePlayerName(),
             'opponent_name' => $this->getPlayerNameById($deck_player_id),
             'nbr' => count($cards) + $nbr_unordered_cards,
-        ));
+        ), $msg_args));
     }
 
     /**
@@ -2831,6 +2831,8 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_MANUFACTUREDJOY. There exists a card in deck, discard OR hand");
                     }
                     break;
+                case CT_SHAKYENTERPRISE:
+                    break; //this card may always fizzle!
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -4122,6 +4124,38 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->reshuffleDeckForSearch($player_id, 1);
                 $this->gamestate->nextState("trManufacturedJoy");
                 break;
+            case CT_SHAKYENTERPRISE:
+                $this->beginResolvingCard($technique_card_id);
+                $card_ids = $args["card_ids"];
+                //verify that the cards come from the top 3 of the discard pile
+                $top3_dbcards = $this->cards->getCardsOnTop(3, DISCARD.$player_id);
+                if (count($card_ids) < 1 || count($card_ids) > 3) {
+                    throw new BgaUserException("Shaky Enterprise: please select 1-3 cards"); //0 cards should be a fizzle instead
+                }
+                foreach ($card_ids as $card_id) {
+                    $within_top3 = false;
+                    foreach ($top3_dbcards as $i => $top3_dbcard) { //$i in [0, 1, 2]
+                        if ($card_id == $top3_dbcard["id"]) {
+                            $within_top3 = true;
+                            break;
+                        }
+                    }
+                    if (!$within_top3) {
+                        throw new BgaUserException("Shaky Enterprise: please only select cards within the top 3 cards of the discard pile");
+                    }
+                }
+                //move the cards to limbo
+                $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$player_id);
+                $this->cards->moveCards($card_ids, LIMBO.$player_id);
+                $this->notifyAllPlayers('discardToHandMultiple', clienttranslate('Shaky Enterprise: ${player_name} takes ${nbr} cards from their discard pile'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "nbr" => count($dbcards),
+                    "cards" => $dbcards,
+                    "to_limbo" => true
+                ));
+                $this->gamestate->nextState("trShakyEnterprise");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5397,6 +5431,7 @@ class DaleOfMerchants extends DaleTableBasic
         $deck_card_ids = $this->numberListToArray($deck_card_ids);
         $deck_cards = array();
         $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $resolving_card_name = $this->getCurrentResolvingCardName();
 
         //get the card to discard
         if (!isset($non_selected_cards[$discard_card_id])) {
@@ -5416,7 +5451,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //1. discard cards
         $this->cards->moveCardOnTop($discard_card_id, DISCARD.$opponent_id);
-        $this->notifyAllPlayers('discard', clienttranslate('Anchor: ${player_name} places their ${card_name} on ${opponent_name}\'s discard pile'), array(
+        $this->notifyAllPlayers('discard', clienttranslate('${resolving_card_name}: ${player_name} places their ${card_name} on ${opponent_name}\'s discard pile'), array(
             "player_id" => $player_id,
             "discard_id" => $opponent_id,
             "from_limbo" => true,
@@ -5424,17 +5459,19 @@ class DaleOfMerchants extends DaleTableBasic
             "player_name" => $this->getPlayerNameById($player_id),
             "opponent_name" => $this->getPlayerNameById($opponent_id),
             "card_name" => $this->getCardName($discard_card),
-            "ignore_card_not_found" => true
+            "ignore_card_not_found" => true,
+            "resolving_card_name" => $resolving_card_name
         ));
 
         //2. place the rest on top of the deck
         $this->placeOnDeckMultiple(
             $player_id, 
-            clienttranslate('Anchor: ${player_name} places ${nbr} cards on top of their deck'),
+            clienttranslate('${resolving_card_name}: ${player_name} places ${nbr} cards on top of their deck'),
             $deck_card_ids, 
             $deck_cards, 
             $non_selected_cards,
-            true
+            true,
+            array("resolving_card_name" => $resolving_card_name)
         );
 
         $this->fullyResolveCard($player_id);

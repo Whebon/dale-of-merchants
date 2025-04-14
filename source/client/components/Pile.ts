@@ -11,16 +11,17 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 declare function $(text: string | Element): HTMLElement;
 
 /**
- * 'none':                  content popin can be viewed, but no cards can be selected
- * 'noneCantViewContent':   content popin can cannot be viewed, and no cards can be selected
- * 'single':                a single card can be selected from the popin
- * 'singleAnimalfolk'       a single animalfolk card can be selected from the popin
- * 'multiple':              multiple cards (up to the selectionMax) can be selected from the popin
- * 'multipleJunk':          up to 3 junk cards can be selected from the popin
- * 'multipleFromTop         multiple cards (up to the selectionMax) can be selected from the popin, but they must be adjacent and the top card must be included
- * 'top':                   content popin can cannot be viewed, and only the top card of the pile can be selected.
+ * 'none':                      content popin can be viewed, but no cards can be selected
+ * 'noneCantViewContent':       content popin can cannot be viewed, and no cards can be selected
+ * 'single':                    a single card can be selected from the popin
+ * 'singleAnimalfolk'           a single animalfolk card can be selected from the popin
+ * 'multiple':                  multiple cards (up to the selectionMax) can be selected from the popin
+ * 'multipleJunk':              up to 3 junk cards can be selected from the popin
+ * 'multipleFromTopWithGaps':   multiple cards (up to the selectionMax) can be selected from the popin, up to 'selectionMax' cards deep
+ * 'multipleFromTopNoGaps':     multiple cards (up to the selectionMax) can be selected from the popin, but they must be adjacent and the top card must be included
+ * 'top':                       content popin can cannot be viewed, and only the top card of the pile can be selected.
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTop' | 'top';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'top';
 
 /**
  * A component to display a set of cards in a pile.
@@ -99,7 +100,7 @@ export class Pile implements DaleLocation {
      */
     protected updateHTML() {
         let topCard = this.peek(true);
-        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTop') && this.orderedSelection.getMaxSize() > 0) {
+        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps') && this.orderedSelection.getMaxSize() > 0) {
             if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                 this.containerHTML.classList.add("daleofmerchants-blinking");
             }
@@ -428,35 +429,51 @@ export class Pile implements DaleLocation {
                 this.orderedSelection.toggle(card.id);
                 this.updateHTML();
                 break;
-            case 'multipleFromTop':
-                const multipleFromTop_nbr = this.orderedSelection.getMaxSize();
-                let multipleFromTop_index = -1;
-                for (let i = Math.max(0, this.cards.length-multipleFromTop_nbr); i < this.cards.length; i++) {
+            case 'multipleFromTopWithGaps':
+                const multipleFromTopWithGaps_nbr = this.orderedSelection.getMaxSize();
+                let multipleFromTopWithGaps_index = -1;
+                for (let i = Math.max(0, this.cards.length-multipleFromTopWithGaps_nbr); i < this.cards.length; i++) {
                     if (this.cards[i]!.id == card.id) {
-                        multipleFromTop_index = i;
+                        multipleFromTopWithGaps_index = i;
                         break;
                     }
                 }
-                if (multipleFromTop_index == -1) {
-                    this.page.showMessage(_("This card is not within the top cards of the pile")+` (top ${multipleFromTop_nbr})`, 'error');
+                if (multipleFromTopWithGaps_index == -1) {
+                    this.page.showMessage(_("This card is not within the top cards of the pile")+` (top ${multipleFromTopWithGaps_nbr})`, 'error');
+                    return;
+                }
+                this.orderedSelection.toggle(card.id);
+                this.updateHTML();
+                break;
+            case 'multipleFromTopNoGaps':
+                const multipleFromTopNoGaps_nbr = this.orderedSelection.getMaxSize();
+                let multipleFromTopNoGaps_index = -1;
+                for (let i = Math.max(0, this.cards.length-multipleFromTopNoGaps_nbr); i < this.cards.length; i++) {
+                    if (this.cards[i]!.id == card.id) {
+                        multipleFromTopNoGaps_index = i;
+                        break;
+                    }
+                }
+                if (multipleFromTopNoGaps_index == -1) {
+                    this.page.showMessage(_("This card is not within the top cards of the pile")+` (top ${multipleFromTopNoGaps_nbr})`, 'error');
                     return;
                 }
                 if (this.orderedSelection.includes(card.id)) {
                     //deselect everything below. if nothing was deselected, deselect self
                     let deselect_self = true;
-                    for (let i = Math.max(0, this.cards.length-multipleFromTop_nbr); i < multipleFromTop_index; i++) {
+                    for (let i = Math.max(0, this.cards.length-multipleFromTopNoGaps_nbr); i < multipleFromTopNoGaps_index; i++) {
                         if (this.orderedSelection.includes(this.cards[i]!.id)) {
                             deselect_self = false;
                         }
                         this.orderedSelection.unselectItem(this.cards[i]!.id);
                     }
                     if (deselect_self) {
-                        this.orderedSelection.unselectItem(this.cards[multipleFromTop_index]!.id);
+                        this.orderedSelection.unselectItem(this.cards[multipleFromTopNoGaps_index]!.id);
                     }
                 }
                 else {
                     //select this and everything above
-                    for (let i = multipleFromTop_index; i < this.cards.length; i++) {
+                    for (let i = multipleFromTopNoGaps_index; i < this.cards.length; i++) {
                         this.orderedSelection.selectItem(this.cards[i]!.id);
                     }
                 }
@@ -525,7 +542,8 @@ export class Pile implements DaleLocation {
                 return; //don't update html!
             case 'multiple':
             case 'multipleJunk':
-            case 'multipleFromTop':
+            case 'multipleFromTopWithGaps':
+            case 'multipleFromTopNoGaps':
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                 }
@@ -561,7 +579,8 @@ export class Pile implements DaleLocation {
 				return this.orderedSelection.getMaxSize() > 0;
             case 'multipleJunk':
                 return card.isJunk();
-            case 'multipleFromTop':
+            case 'multipleFromTopWithGaps':
+            case 'multipleFromTopNoGaps':
                 const multipleFromTop_nbr = this.orderedSelection.getMaxSize();
                 for (let i = Math.max(0, this.cards.length-multipleFromTop_nbr); i < this.cards.length; i++) {
                     const topCard = this.cards[i]!;

@@ -381,7 +381,6 @@ declare global {
 	interface ClientTechniqueChoice {
 		'client_fizzle': { fizzle: boolean }
 		'client_choicelessTechniqueCard': { choiceless: boolean }
-		'client_choicelessTechniqueCardWithServerState': { choiceless: boolean }
 		'client_selectOpponentTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }
@@ -423,6 +422,7 @@ declare global {
 		'client_cleverGuardian': { card_id: number }
 		'client_goodwillpresents': { opponent_ids: number[] }
 		'client_alternativePlan': { card_id: number }
+		'client_shakyEnterprise': { card_ids: number[] }
 	}
 
 	interface ClientPassiveChoice {

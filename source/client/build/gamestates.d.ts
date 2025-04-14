@@ -187,6 +187,7 @@ interface GameStates {
 			'trMeddlingMarketeer': 82,
 			'trAnchor': 83,
 			'trManufacturedJoy': 84,
+			'trShakyEnterprise': 85,
 		},
 	},
 	31: {
@@ -909,6 +910,30 @@ interface GameStates {
 				'name': 'opponent_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	85: {
+		'name': 'shakyEnterprise',
+		'description': 'Shaky Enterprise: ${actplayer} must place a card on any player\\\'s discard pile',
+		'descriptionmyturn': 'Shaky Enterprise: ${you} must place a card on any player\\\'s discard pile',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actAnchor': [{
+				'name': 'opponent_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'discard_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'deck_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

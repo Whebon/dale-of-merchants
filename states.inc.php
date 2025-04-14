@@ -140,6 +140,7 @@ $machinestates = array(
 			'trMeddlingMarketeer' => 82,
 			'trAnchor' => 83,
 			'trManufacturedJoy' => 84,
+			'trShakyEnterprise' => 85,
 		),
 	),
 	31 => array(
@@ -563,6 +564,16 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actManufacturedJoy'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	85 => array(
+		'name' => 'shakyEnterprise',
+		'description' => clienttranslate('Shaky Enterprise: ${actplayer} must place a card on any player\'s discard pile'),
+		'descriptionmyturn' => clienttranslate('Shaky Enterprise: ${you} must place a card on any player\'s discard pile'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actAnchor'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

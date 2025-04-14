@@ -2072,7 +2072,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.updateHTML = function () {
             var _a;
             var topCard = this.peek(true);
-            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTop') && this.orderedSelection.getMaxSize() > 0) {
+            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps') && this.orderedSelection.getMaxSize() > 0) {
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                 }
@@ -2325,33 +2325,49 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     this.orderedSelection.toggle(card.id);
                     this.updateHTML();
                     break;
-                case 'multipleFromTop':
-                    var multipleFromTop_nbr = this.orderedSelection.getMaxSize();
-                    var multipleFromTop_index = -1;
-                    for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < this.cards.length; i++) {
+                case 'multipleFromTopWithGaps':
+                    var multipleFromTopWithGaps_nbr = this.orderedSelection.getMaxSize();
+                    var multipleFromTopWithGaps_index = -1;
+                    for (var i = Math.max(0, this.cards.length - multipleFromTopWithGaps_nbr); i < this.cards.length; i++) {
                         if (this.cards[i].id == card.id) {
-                            multipleFromTop_index = i;
+                            multipleFromTopWithGaps_index = i;
                             break;
                         }
                     }
-                    if (multipleFromTop_index == -1) {
-                        this.page.showMessage(_("This card is not within the top cards of the pile") + " (top ".concat(multipleFromTop_nbr, ")"), 'error');
+                    if (multipleFromTopWithGaps_index == -1) {
+                        this.page.showMessage(_("This card is not within the top cards of the pile") + " (top ".concat(multipleFromTopWithGaps_nbr, ")"), 'error');
+                        return;
+                    }
+                    this.orderedSelection.toggle(card.id);
+                    this.updateHTML();
+                    break;
+                case 'multipleFromTopNoGaps':
+                    var multipleFromTopNoGaps_nbr = this.orderedSelection.getMaxSize();
+                    var multipleFromTopNoGaps_index = -1;
+                    for (var i = Math.max(0, this.cards.length - multipleFromTopNoGaps_nbr); i < this.cards.length; i++) {
+                        if (this.cards[i].id == card.id) {
+                            multipleFromTopNoGaps_index = i;
+                            break;
+                        }
+                    }
+                    if (multipleFromTopNoGaps_index == -1) {
+                        this.page.showMessage(_("This card is not within the top cards of the pile") + " (top ".concat(multipleFromTopNoGaps_nbr, ")"), 'error');
                         return;
                     }
                     if (this.orderedSelection.includes(card.id)) {
                         var deselect_self = true;
-                        for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < multipleFromTop_index; i++) {
+                        for (var i = Math.max(0, this.cards.length - multipleFromTopNoGaps_nbr); i < multipleFromTopNoGaps_index; i++) {
                             if (this.orderedSelection.includes(this.cards[i].id)) {
                                 deselect_self = false;
                             }
                             this.orderedSelection.unselectItem(this.cards[i].id);
                         }
                         if (deselect_self) {
-                            this.orderedSelection.unselectItem(this.cards[multipleFromTop_index].id);
+                            this.orderedSelection.unselectItem(this.cards[multipleFromTopNoGaps_index].id);
                         }
                     }
                     else {
-                        for (var i = multipleFromTop_index; i < this.cards.length; i++) {
+                        for (var i = multipleFromTopNoGaps_index; i < this.cards.length; i++) {
                             this.orderedSelection.selectItem(this.cards[i].id);
                         }
                     }
@@ -2396,7 +2412,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return;
                 case 'multiple':
                 case 'multipleJunk':
-                case 'multipleFromTop':
+                case 'multipleFromTopWithGaps':
+                case 'multipleFromTopNoGaps':
                     if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                         this.containerHTML.classList.add("daleofmerchants-blinking");
                     }
@@ -2427,7 +2444,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return this.orderedSelection.getMaxSize() > 0;
                 case 'multipleJunk':
                     return card.isJunk();
-                case 'multipleFromTop':
+                case 'multipleFromTopWithGaps':
+                case 'multipleFromTopNoGaps':
                     var multipleFromTop_nbr = this.orderedSelection.getMaxSize();
                     for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < this.cards.length; i++) {
                         var topCard = this.cards[i];
@@ -3515,6 +3533,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
                     case 'client_manufacturedJoy':
                         return _("${card_name}: ${you} must place a card on any player\'s discard pile");
+                    case 'client_shakyEnterprise':
+                        return _("${card_name}: ${you} must take any of the top 3 cards of your discard pile");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4313,7 +4333,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('single');
                     break;
                 case 'client_historyLesson':
-                    this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+                    this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+                    this.myDiscard.openPopin();
                     break;
                 case 'culturalPreservation':
                     var culturalPreservation_args = args.args;
@@ -4400,6 +4421,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'anchor':
+                case 'shakyEnterprise':
                     for (var _x = 0, _y = Object.entries(this.playerDiscards); _x < _y.length; _x++) {
                         var _z = _y[_x], player_id = _z[0], discard = _z[1];
                         discard.setSelectionMode('noneCantViewContent');
@@ -4427,6 +4449,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         discard.setSelectionMode('noneCantViewContent');
                     }
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
+                    break;
+                case 'client_shakyEnterprise':
+                    this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'hand', 'daleofmerchants-wrap-technique', 3);
+                    this.myDiscard.openPopin();
                     break;
             }
         };
@@ -4740,6 +4766,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'anchor':
+                case 'shakyEnterprise':
                     for (var _r = 0, _s = Object.entries(this.playerDiscards); _r < _s.length; _r++) {
                         var _t = _s[_r], player_id = _t[0], discard = _t[1];
                         discard.setSelectionMode('none');
@@ -4764,6 +4791,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (this.mainClientState.name == 'client_manufacturedJoy') {
                         this.mainClientState.leaveAndDontReturn();
                     }
+                    break;
+                case 'client_shakyEnterprise':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -5313,6 +5343,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (client_manufacturedJoy_args.draw_card_id != -1) {
                         this.addActionButton("undo-button", _("Undo"), "onManufacturedJoyUndo", undefined, false, "gray");
                     }
+                    break;
+                case 'client_shakyEnterprise':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onShakyEnterprise");
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -6217,6 +6251,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onUmbrella(card.id);
                     break;
                 case 'anchor':
+                case 'shakyEnterprise':
                     var anchor_targets = [];
                     for (var _d = 0, _e = Object.entries(this.playerDiscards); _d < _e.length; _d++) {
                         var _f = _e[_d], player_id = _f[0], discard = _f[1];
@@ -6983,6 +7018,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
+                    break;
+                case DaleCard_9.DaleCard.CT_SHAKYENTERPRISE:
+                    fizzle = this.myDiscard.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_shakyEnterprise', card.id);
                     }
                     break;
                 default:
@@ -7892,6 +7936,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id
             });
             this.mainClientState.leave();
+        };
+        DaleOfMerchants.prototype.onShakyEnterprise = function () {
+            var card_ids = this.myDiscard.orderedSelection.get();
+            if (card_ids.length == 0) {
+                var args = this.mainClientState.args;
+                this.mainClientState.enter('client_fizzle', { technique_card_id: args.technique_card_id });
+            }
+            else {
+                this.playTechniqueCardWithServerState({
+                    card_ids: this.myDiscard.orderedSelection.get()
+                });
+            }
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

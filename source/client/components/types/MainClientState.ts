@@ -221,6 +221,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
             case 'client_manufacturedJoy':
                 return _("${card_name}: ${you} must place a card on any player\'s discard pile");
+            case 'client_shakyEnterprise':
+                return _("${card_name}: ${you} must take any of the top 3 cards of your discard pile");
         }
         return "MISSING DESCRIPTION";
     }

@@ -717,7 +717,8 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('single');
 				break;
 			case 'client_historyLesson':
-				this.myDiscard.setSelectionMode('multipleFromTop', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+				this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+				this.myDiscard.openPopin();
 				break;
 			case 'culturalPreservation':
 				const culturalPreservation_args = args.args as { _private: { cards: DbCard[] } };
@@ -822,6 +823,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'anchor':
+			case 'shakyEnterprise':
 				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 					discard.setSelectionMode('noneCantViewContent');
 				}
@@ -848,6 +850,10 @@ class DaleOfMerchants extends Gamegui
 					discard.setSelectionMode('noneCantViewContent');
 				}
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
+				break;
+			case 'client_shakyEnterprise':
+				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'hand', 'daleofmerchants-wrap-technique', 3);
+				this.myDiscard.openPopin();
 				break;
 		}
 		//(~enteringstate)
@@ -1164,6 +1170,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'anchor':
+			case 'shakyEnterprise':
 				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 					discard.setSelectionMode('none');
 				}
@@ -1187,6 +1194,9 @@ class DaleOfMerchants extends Gamegui
 				if (this.mainClientState.name == 'client_manufacturedJoy') {
 					this.mainClientState.leaveAndDontReturn();
 				}
+				break;
+			case 'client_shakyEnterprise':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1744,6 +1754,10 @@ class DaleOfMerchants extends Gamegui
 				if (client_manufacturedJoy_args.draw_card_id != -1) {
 					this.addActionButton("undo-button", _("Undo"), "onManufacturedJoyUndo", undefined, false, "gray");
 				}
+				break;
+			case 'client_shakyEnterprise':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onShakyEnterprise");
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2890,6 +2904,7 @@ class DaleOfMerchants extends Gamegui
 				this.onUmbrella(card.id);
 				break;
 			case 'anchor':
+			case 'shakyEnterprise':
 				const anchor_targets = [];
 				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 					const target = discard.topCardHTML ?? discard.placeholderHTML
@@ -3716,6 +3731,16 @@ class DaleOfMerchants extends Gamegui
 				}
 				else {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
+				break;
+			case DaleCard.CT_SHAKYENTERPRISE:
+				fizzle = this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					//client_shakyEnterprise lets a client select any of the top 3 cards of the discard pile
+					this.clientScheduleTechnique('client_shakyEnterprise', card.id);
 				}
 				break;
 			default:
@@ -4750,6 +4775,21 @@ class DaleOfMerchants extends Gamegui
 			opponent_id: opponent_id
 		});
 		this.mainClientState.leave();
+	}
+
+	onShakyEnterprise() {
+		const card_ids = this.myDiscard.orderedSelection.get();
+		if (card_ids.length == 0) {
+			//let the player confirm the fizzle
+			const args = this.mainClientState.args as ClientGameStates['client_shakyEnterprise']
+			this.mainClientState.enter('client_fizzle', { technique_card_id: args.technique_card_id });
+		}
+		else {
+			//play as technique
+			this.playTechniqueCardWithServerState<'client_shakyEnterprise'>({
+				card_ids: this.myDiscard.orderedSelection.get()
+			})
+		}
 	}
 
 	//(~on)
