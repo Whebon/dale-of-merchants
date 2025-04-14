@@ -5431,7 +5431,9 @@ class DaleOfMerchants extends Gamegui
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		}
 	}
 	
 	notif_discardToHandMultiple(notif: NotifAs<'discardToHandMultiple'>) {
@@ -5447,7 +5449,9 @@ class DaleOfMerchants extends Gamegui
 			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
 		}
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
+		}
 	}
 
 	notif_draw(notif: NotifAs<'draw'>) {

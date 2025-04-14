@@ -8472,7 +8472,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
-            this.playerHandSizes[notif.args.player_id].incValue(1);
+            if (stock === this.myHand) {
+                this.playerHandSizes[notif.args.player_id].incValue(1);
+            }
         };
         DaleOfMerchants.prototype.notif_discardToHandMultiple = function (notif) {
             var _a;
@@ -8488,7 +8490,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card = dbcards_desc_1[_i];
                 this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
             }
-            this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
+            if (stock === this.myHand) {
+                this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
+            }
         };
         DaleOfMerchants.prototype.notif_draw = function (notif) {
             var _a;
