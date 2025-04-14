@@ -158,7 +158,8 @@
 			"trVigilance": 80,
 			"trTacticalMeasurement": 81,
 			"trMeddlingMarketeer": 82,
-			"trAnchor": 83
+			"trAnchor": 83,
+			"trManufacturedJoy": 84
 		}
 	},
 
@@ -736,6 +737,22 @@
 				{"name": "opponent_id", "type": "AT_int"},
 				{"name": "discard_card_id", "type": "AT_int"},
 				{"name": "deck_card_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"84": {
+		"name": "manufacturedJoy",
+		"description": "Manufactured Joy: ${actplayer} must search their deck for a card",
+		"descriptionmyturn": "Manufactured Joy: ${you} must search your deck for a card",
+		"type": "activeplayer",
+		"args": "argMyDeckContent",
+		"possibleactions": {
+			"actManufacturedJoy": [
+				{"name": "draw_card_id", "type": "AT_int"},
+				{"name": "discard_card_id", "type": "AT_int"},
+				{"name": "opponent_id", "type": "AT_int"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

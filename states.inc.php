@@ -139,6 +139,7 @@ $machinestates = array(
 			'trTacticalMeasurement' => 81,
 			'trMeddlingMarketeer' => 82,
 			'trAnchor' => 83,
+			'trManufacturedJoy' => 84,
 		),
 	),
 	31 => array(
@@ -551,6 +552,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stAnchor',
 		'possibleactions' => ['actAnchor'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	84 => array(
+		'name' => 'manufacturedJoy',
+		'description' => clienttranslate('Manufactured Joy: ${actplayer} must search their deck for a card'),
+		'descriptionmyturn' => clienttranslate('Manufactured Joy: ${you} must search your deck for a card'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContent',
+		'possibleactions' => ['actManufacturedJoy'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

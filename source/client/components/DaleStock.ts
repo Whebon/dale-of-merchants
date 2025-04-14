@@ -385,6 +385,20 @@ export class DaleStock extends Stock implements DaleLocation {
 		}
 	}
 
+	/**
+	 * @param card_id 
+	 * @returns `true` if the stock contains the specified `card_id`
+	 */
+	public containsCardId(card_id: number) {
+		for(let i in this.items){
+			const item = this.items[i]!;
+			if (card_id == item.id) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/////////////////////////////////////////////////
 	//////////    Base stock methods    /////////////
 	/////////////////////////////////////////////////

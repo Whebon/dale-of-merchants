@@ -52,7 +52,6 @@ export class ChameleonArgs {
                 return;
             }
         }
-        console.trace();
         throw new Error(`Card ${target.id} is not a valid chameleon target`);
     }
 

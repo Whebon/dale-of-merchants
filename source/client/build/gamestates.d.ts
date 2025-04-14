@@ -186,6 +186,7 @@ interface GameStates {
 			'trTacticalMeasurement': 81,
 			'trMeddlingMarketeer': 82,
 			'trAnchor': 83,
+			'trManufacturedJoy': 84,
 		},
 	},
 	31: {
@@ -883,6 +884,31 @@ interface GameStates {
 				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	84: {
+		'name': 'manufacturedJoy',
+		'description': 'Manufactured Joy: ${actplayer} must search their deck for a card',
+		'descriptionmyturn': 'Manufactured Joy: ${you} must search your deck for a card',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContent',
+		'possibleactions': {
+			'actManufacturedJoy': [{
+				'name': 'draw_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'discard_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'opponent_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

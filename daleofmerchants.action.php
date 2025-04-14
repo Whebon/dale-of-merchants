@@ -512,6 +512,21 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actManufacturedJoy()
+	{
+		self::setAjaxMode();
+
+		/** @var int $draw_card_id */
+		$draw_card_id = self::getArg('draw_card_id', AT_int, true);
+		/** @var int $discard_card_id */
+		$discard_card_id = self::getArg('discard_card_id', AT_int, true);
+		/** @var int $opponent_id */
+		$opponent_id = self::getArg('opponent_id', AT_int, true);
+
+		$this->game->actManufacturedJoy( $draw_card_id, $discard_card_id, $opponent_id );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

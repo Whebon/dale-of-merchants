@@ -250,6 +250,7 @@ declare global {
 			}
 			deck_player_id?: number | 'mark'
 			to_limbo?: boolean
+			ignore_if_already_handled?: boolean //this is useful for clients that already executed the action in a client state
 		}
 		'drawMultiple': {
 			player_id: number 
@@ -473,7 +474,8 @@ declare global {
 		'client_periscopeValue': { technique_card_id: number, opponent_id: number, opponent_name: string, animalfolk_id: number },
 		'client_barricade': { passive_card_id: number, nbr_junk: number },
 		'client_meddlingMarketeer': { discard_card_ids: number[], card_name: string }
-		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string }
+		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string },
+		'client_manufacturedJoy': { draw_card_id: number, card_name: string }
 	}
 
 	//

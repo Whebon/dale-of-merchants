@@ -830,6 +830,25 @@ class DaleOfMerchants extends Gamegui
 			case 'client_anchor':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
 				break;
+			case 'manufacturedJoy':
+				const manufacturedJoy_args = args.args as { _private: { cards: DbCard[] } };
+				if (manufacturedJoy_args._private.cards.length == 0) {
+					//no "enterOnStack", since we never want to return to this state
+					this.mainClientState.enter('client_manufacturedJoy', {
+						draw_card_id: -1,
+						card_name: "Manufactured Joy"
+					});
+					return;
+				}
+				this.myDeck.setContent(manufacturedJoy_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('single');
+				break;
+			case 'client_manufacturedJoy':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('noneCantViewContent');
+				}
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1153,6 +1172,21 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_anchor':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'manufacturedJoy':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
+				break;
+			case 'client_manufacturedJoy':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				this.myHand.setSelectionMode('none');
+				TargetingLine.remove();
+				//edge case: in replay, on an empty deck, 'manufacturedJoy' -> 'client_manufacturedJoy', without leaving the client state
+				if (this.mainClientState.name == 'client_manufacturedJoy') {
+					this.mainClientState.leaveAndDontReturn();
+				}
 				break;
 		}
 		//(~leavingstate)
@@ -1704,6 +1738,12 @@ class DaleOfMerchants extends Gamegui
 			case 'client_anchor':
 				this.addActionButton("confirm-button", _("Confirm"), "onAnchorDeck");
 				this.addActionButton("undo-button", _("Undo"), "onAnchorUndo", undefined, false, "gray");
+				break;
+			case 'client_manufacturedJoy':
+				const client_manufacturedJoy_args = (args as { draw_card_id: number });
+				if (client_manufacturedJoy_args.draw_card_id != -1) {
+					this.addActionButton("undo-button", _("Undo"), "onManufacturedJoyUndo", undefined, false, "gray");
+				}
 				break;
 		}
 		//(~actionbuttons)
@@ -2580,6 +2620,16 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break
+			case 'manufacturedJoy':
+				this.mainClientState.enterOnStack('client_manufacturedJoy', {
+					draw_card_id: card.id,
+					card_name: "Manufactured Joy"
+				});
+				//draw the card on the client-side (it is very important that this happens after switching states, otherwise the div will be detached)
+				this.myHand.addDaleCardToStock(card, this.myDeck.placeholderHTML);
+				this.myDeck.pop();
+				this.myHandSize.incValue(1);
+				break
 		}
 	}
 
@@ -2760,8 +2810,30 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'client_manufacturedJoy':
+				const client_manufacturedJoy_targets = [];
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					const target = discard.topCardHTML ?? discard.placeholderHTML
+					target.dataset['target_id'] = player_id;
+					client_manufacturedJoy_targets.push(target);
+				}
+				const client_manufacturedJoy_label = _("Place '") + card.name + _("' on a discard pile");
+				this.setMainTitle(client_manufacturedJoy_label);
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_manufacturedJoy_label);
+				new TargetingLine(
+					card,
+					client_manufacturedJoy_targets,
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
+					(source_id: number) => this.onManufacturedJoyCancelTargetingLine(),
+					(source_id: number, target_id: number) => this.onManufacturedJoy(source_id, target_id)
+				)
+				this.removeActionButtons();
+				this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, 'gray');
+				break;
 			case null:
-				throw new Error("gamestate.name is null")
+				throw new Error("gamestate.name is null");
 		}
 	}
 
@@ -2824,9 +2896,9 @@ class DaleOfMerchants extends Gamegui
 					target.dataset['target_id'] = player_id;
 					anchor_targets.push(target);
 				}
-				const label = _("Place '") + card.name + _("' on a discard pile");
-				this.setMainTitle(label);
-				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
+				const anchor_label = _("Place '") + card.name + _("' on a discard pile");
+				this.setMainTitle(anchor_label);
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', anchor_label);
 				new TargetingLine(
 					card,
 					anchor_targets,
@@ -3637,6 +3709,14 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_alternativePlan', card.id);
 				}
 				break;
+			case DaleCard.CT_MANUFACTUREDJOY:
+				fizzle = (this.myDiscard.size + this.myDeck.size + this.myHand.count()) <= 1;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -4366,7 +4446,6 @@ class DaleOfMerchants extends Gamegui
 
 	onFashionHintSwapSkip() {
 		console.warn("onFashionHintSwapSkip");
-		console.trace();
 		this.bgaPerformAction('actFashionHint', {
 			card_id: -1
 		});
@@ -4612,7 +4691,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onAnchorCancelTargetingLine() {
-		//undo the targeting line
+		//cancel the targeting line
 		for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 			discard.setSelectionMode('none');
 		}
@@ -4624,7 +4703,6 @@ class DaleOfMerchants extends Gamegui
 	onAnchorUndo() {
 		//undo the discard
 		const args = (this.mainClientState.args as ClientGameStates['client_anchor']);
-		console.log(args);
 		const discardPile = this.playerDiscards[args.opponent_id]!;
 		const card = discardPile.pop();
 		if (args.discard_card_id != card.id) {
@@ -4641,6 +4719,35 @@ class DaleOfMerchants extends Gamegui
 			opponent_id: args.opponent_id,
 			discard_card_id: args.discard_card_id,
 			deck_card_ids: this.arrayToNumberList(deck_card_ids)
+		});
+		this.mainClientState.leave();
+	}
+
+	onManufacturedJoyUndo() {
+		//undo the draw
+		const args = (this.mainClientState.args as ClientGameStates['client_manufacturedJoy']);
+		this.stockToPile(new DaleCard(args.draw_card_id), this.myHand, this.myDeck);
+		this.myHandSize.incValue(-1);
+		this.mainClientState.leave();
+	}
+
+	onManufacturedJoyCancelTargetingLine() {
+		//cancel the targeting line
+		for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+			discard.setSelectionMode('none');
+		}
+		this.myLimbo.setSelectionMode('none');
+		TargetingLine.remove();
+		this.mainClientState.enter(); //re-enter the client state
+	}
+
+	onManufacturedJoy(card_id: number, opponent_id: number) {
+		//commit the draw and the discard
+		const args = (this.mainClientState.args as ClientGameStates['client_manufacturedJoy']);
+		this.bgaPerformAction('actManufacturedJoy', {
+			draw_card_id: args.draw_card_id,
+			discard_card_id: card_id,
+			opponent_id: opponent_id
 		});
 		this.mainClientState.leave();
 	}
@@ -5308,8 +5415,12 @@ class DaleOfMerchants extends Gamegui
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		if (notif.args._private) {
-			//you drew the cards
+			//you drew the card
 			let card = notif.args._private.card
+			if (notif.args.ignore_if_already_handled && stock.containsCardId(+card.id)) {
+				console.warn("Card "+card.id+" is already in this player's hand");
+				return;
+			}
 			stock.addDaleCardToStock(DaleCard.of(card), deck.placeholderHTML);
 			deck.pop();
 		}

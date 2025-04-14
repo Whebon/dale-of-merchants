@@ -548,8 +548,9 @@ class DaleOfMerchants extends DaleTableBasic
      * @param bool $to_limbo (optional) default false. If true, the cards are placed in limbo. If false, the cards are placed in hand.
      * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
      * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
+     * @param bool $ignore_if_already_handled (optional) default `false`. If `true`, the client will ignore the notification if the card is already in their hand
      */
-    function drawCardId(string $msg, int $card_id, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null) {
+    function drawCardId(string $msg, int $card_id, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, bool $ignore_if_already_handled = false) {
         if ($from_player_id == null) {
             $from_player_id = $this->getActivePlayerId();
         }
@@ -567,7 +568,8 @@ class DaleOfMerchants extends DaleTableBasic
                 "card" => $card
             ),
             "deck_player_id" => $from_player_id,
-            "to_limbo" => $to_limbo
+            "to_limbo" => $to_limbo,
+            "ignore_if_already_handled" => $ignore_if_already_handled
         ));
         $this->cards->shuffle(DECK.$from_player_id);
     }
@@ -2823,6 +2825,12 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_CLEVERGUARDIAN. There exists a card in the hand.");
                     }
                     break;
+                case CT_MANUFACTUREDJOY:
+                    $counts = $this->cards->countCardsInLocations();
+                    if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id]) || $counts[HAND.$player_id] >= 2) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_MANUFACTUREDJOY. There exists a card in deck, discard OR hand");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 2) {
@@ -4109,6 +4117,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trAnchor");
                 break;
+            case CT_MANUFACTUREDJOY:
+                $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 1);
+                $this->gamestate->nextState("trManufacturedJoy");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4550,6 +4563,36 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actMagnet");
         $player_id = $this->getActivePlayerId();
         $this->drawCardId(clienttranslate('Magnet: ${player_name} draws a card from their deck'), $card_id);
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actManufacturedJoy($draw_card_id, $discard_card_id, $opponent_id) {
+        $this->checkAction("actManufacturedJoy");
+        $player_id = $this->getActivePlayerId();
+
+        //draw a card
+        if ($this->cards->countCardsInLocation(DECK.$player_id) > 0) {
+            $this->drawCardId(
+                clienttranslate('Manufactured Joy: ${player_name} draws a card from their deck'), 
+                $draw_card_id,
+                false, 
+                null, 
+                null,
+                true
+            );
+        }
+
+        //discard a card
+        $discard_card = $this->cards->getCardFromLocation($discard_card_id, HAND.$player_id);
+        $this->cards->moveCardOnTop($discard_card_id, DISCARD.$opponent_id);
+        $this->notifyAllPlayers('discard', clienttranslate('Manufactured Joy: ${player_name} discards ${card_name}'), array(
+            "player_id" => $player_id,
+            "discard_id" => $opponent_id,
+            "card" => $discard_card,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($discard_card)
+        ));
+
         $this->fullyResolveCard($player_id);
     }
 
