@@ -58,6 +58,10 @@ export class DaleIcons {
     public static getBuildIcon(): HTMLElement {
         return this.getIcon(3, 1);
     }
+    
+    public static getCoinIcon(): HTMLElement {
+        return this.getIcon(3, 3);
+    }
 
     public static getHandIcon(): HTMLElement {
         return this.getIcon(3, 4);
@@ -119,9 +123,5 @@ export class DaleIcons {
 
     public static getCardsIcon(): HTMLElement {
         return this.getIcon(0, 5); //TODO
-    }
-
-    public static getCoinIcon(): HTMLElement {
-        return this.getIcon(4, 1); //TODO
     }
 }

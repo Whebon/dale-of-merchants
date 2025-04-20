@@ -21,6 +21,11 @@ import { Stall } from './components/Stall';
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
 
+	/** @gameSpecific */
+	interface Player {
+		'coins': number
+	}
+
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		'delay': {}

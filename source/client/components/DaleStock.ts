@@ -279,6 +279,28 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	/**
+	 * @returns all cards in this stock represented as DaleCard
+	 */
+	public getAllDaleCards(): DaleCard[] {
+		const cards = [];
+		for (let item of this.items) {
+			cards.push(new DaleCard(item.id));
+		}
+		return cards;
+	}
+
+	/**
+	 * @returns all selected cards in this stock represented as DaleCard
+	 */
+	public getSelectedDaleCards(): DaleCard[] {
+		const cards = [];
+		for (let card_id of this.orderedSelection.get()) {
+			cards.push(new DaleCard(card_id));
+		}
+		return cards;
+	}
+
+	/**
 	 * @returns all `card_ids` can be clicked in the current selection mode
 	 */
 	public getAllClickableCardIds(): number[] {

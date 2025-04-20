@@ -34,6 +34,7 @@ import { DbEffect } from './components/types/DbEffect';
 import { DaleDeckSelection } from './components/DaleDeckSelection'
 import { DaleDie } from './components/DaleDie';
 import { DaleIcons } from './components/DaleIcons';
+import { CoinManager } from './components/CoinManager';
 import { PrivateNotification } from './components/types/PrivateNotification'
 
 /** The root for all of your game code. */
@@ -105,6 +106,9 @@ class DaleOfMerchants extends Gamegui
 		return this.playerStoredCards[this.player_id]!;
 	}
 
+	/** Manages everything related to coins and spending */
+	coinManager: CoinManager = new CoinManager();
+
 	/** Ordered pile of known cards representing the market discard deck. */
 	market: MarketBoard | null = null;
 
@@ -172,9 +176,26 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 
+		//initialize the coin counters
+		this.coinManager.init(this);
+
 		//initialize the player boards
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
+
+			//TODO: safely remove this
+			// const coins_wrap = $('daleofmerchants-coins-wrap-'+player_id)!;
+			// const coins_span = document.createElement('span'); 
+			// const coins_icon = DaleIcons.getCoinIcon();
+			// coins_span.classList.add("daleofmerchants-coins-counter");
+			// coins_icon.id = 'daleofmerchants-coins-icon-'+player_id;
+			// coins_wrap.append(coins_span);
+			// coins_wrap.append(coins_icon);
+			// coins_span.innerText = '0';
+			// this.playerCoins[player_id] = new ebg.counter();
+			// this.playerCoins[player_id].create(coins_span);
+			// this.playerCoins[player_id].setValue(gamedatas.players[player_id]!.coins);
+			// this.addTooltip('daleofmerchants-coins-icon-'+player_id, _("Number of coins"), '');
 
 			//handsize per player
 			const handsize_span = document.createElement('span'); 
@@ -320,9 +341,6 @@ class DaleOfMerchants extends Gamegui
 				this.playerStoredCards[player_id]!.addDaleCardToStock(DaleCard.of(card));
 				wrap.classList.remove("daleofmerchants-hidden"); //show this section if at least 1 card exists
 			}
-			if (gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS)) {
-				wrap.classList.remove("daleofmerchants-hidden"); //always show this section if tree kangaroos are in play
-			}
 		}
 
 		//display any effects on the client-side
@@ -332,10 +350,30 @@ class DaleOfMerchants extends Gamegui
 			DaleCard.addEffect(new DbEffect(effect));
 		}
 
+		this.showAnimalfolkSpecificGameComponents();
+
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
 
 		console.warn( "Ending game setup" );
+	}
+
+	/**
+	 * Should be called on refresh and on game start
+	 */
+	showAnimalfolkSpecificGameComponents() {
+		for (let player_id in this.gamedatas.players) {
+			//show the storedCards if tree kangaroos are in play
+			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS)) {
+				const stored_cards_wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!;
+				stored_cards_wrap.classList.remove("daleofmerchants-hidden");
+			}
+			//show coins if coin-based animalfolk are in play
+			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TUATARAS)) {
+				const coins_wrap = $('daleofmerchants-coins-wrap-'+player_id)!;
+				coins_wrap.classList.remove("daleofmerchants-hidden");
+			}
+		}
 	}
 
 	///////////////////////////////////////////////////
@@ -394,6 +432,8 @@ class DaleOfMerchants extends Gamegui
 				this.mainClientState.enter();
 				break;
 			case 'client_purchase':
+				this.coinManager.setSelectionMode('implicit', 'daleofmerchants-wrap-purchase', _("Coins in this purchase"));
+				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), (this.mainClientState.args as ClientGameStates['client_purchase']).cost)
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.setPurchaseSelectionModes(this.mainClientState.args as ClientGameStates['client_purchase']);
@@ -887,6 +927,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
+				this.coinManager.setSelectionMode('none');
 				this.market!.unselectAll();
 				this.market!.setSelectionMode(0);
 				this.marketDiscard.unselectTopCard();
@@ -2980,6 +3021,8 @@ class DaleOfMerchants extends Gamegui
 
 	onFundsSelectionChanged() {
 		//TODO: pandas
+		const args = this.mainClientState.args as ClientGameStates['client_purchase'];
+		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost);
 	}
 
 	onPurchase() {
@@ -4921,13 +4964,6 @@ class DaleOfMerchants extends Gamegui
 		if (!this.gamedatas.animalfolkIds.includes(notif.args.animalfolk_id)) {
 			this.gamedatas.animalfolkIds.push(notif.args.animalfolk_id);
 		}
-		//show the storedCards if tree kangaroos are in play
-		if (notif.args.animalfolk_id == DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS) {
-			for (let player_id in this.gamedatas.players) {
-				const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!
-				wrap.classList.remove("daleofmerchants-hidden"); //always show this section if tree kangaroos are in play
-			}
-		}
 	}
 
 	notif_startGame(notif: NotifAs<'startGame'>) {
@@ -4937,6 +4973,7 @@ class DaleOfMerchants extends Gamegui
 		for (let player_id in this.gamedatas.players) {
 			this.playerDecks[+player_id]!.pushHiddenCards(10);
 		}
+		this.showAnimalfolkSpecificGameComponents();
 		this.market!.onResize();
 	}
 
@@ -5807,9 +5844,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_addCoins(notif: NotifAs<'addCoins'>) {
-		//TODO: implement 'notif_addCoins'
-		this.showMessage(_("TODO: implement 'notif_addCoins'"), 'info');
-		return;
+		this.coinManager.playerCoins[notif.args.player_id]!.incValue(notif.args.nbr);
+		//this.playerCoins[notif.args.player_id]!.incValue(notif.args.nbr);
 	}
 
 	notif_selectBlindfold(notif: NotifAs<'selectBlindfold'>) {

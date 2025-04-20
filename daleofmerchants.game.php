@@ -151,7 +151,7 @@ class DaleOfMerchants extends DaleTableBasic
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $players = $this->loadPlayersBasicInfos();
-        $sql = "SELECT player_id id, player_score score FROM player ";
+        $sql = "SELECT player_id id, player_score score, player_coins coins FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
 
         //count the cards in each hand, but don't send the content (that information is hidden)
@@ -2557,24 +2557,12 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Check if funds are sufficient
         if ($total_value + $optional_value < $cost) {
-            $total_value += $optional_value;
-            throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
-        }
-
-        //TODO: safely remove this (automatically spend coins)
-        // //Check if funds are sufficient
-        // if ($total_value + $optional_value < $cost) {
-        //     $coins = $this->getCoins($player_id);
-        //     if ($total_value + $optional_value + $coins < $cost) {
-        //         $total_value += $optional_value + $coins;
-        //         throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
-        //     }
-        //     $this->spendCoins($player_id, $cost - $total_value - $optional_value);
-        // }
-
-        //Check for overpaying
-        if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
-            throw new BgaUserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
+            $coins = $this->getCoins($player_id);
+            if ($total_value + $optional_value + $coins < $cost) {
+                $total_value += $optional_value + $coins;
+                throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
+            }
+            $this->spendCoins($player_id, $cost - $total_value - $optional_value);
         }
 
         //Apply CT_ESSENTIALPURCHASE

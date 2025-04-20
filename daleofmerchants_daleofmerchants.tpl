@@ -43,6 +43,23 @@
 
     <!-- BEGIN stall -->
     <div class="whiteblock">
+        <span id="daleofmerchants-token-area-{PLAYER_ID}" class="daleofmerchants-token-area">
+            <!-- only needed for the coins -->
+            <span id="daleofmerchants-coins-wrap-{PLAYER_ID}" class="daleofmerchants-coins-wrap daleofmerchants-wrap-default daleofmerchants-hidden" >
+                <span class="daleofmerchants-label daleofmerchants-spending" >
+                    Label
+                </span>
+                <span class="daleofmerchants-coins-to-spend-counter daleofmerchants-spending" style="font-size: x-large;">
+                    0
+                </span>
+                <span class="daleofmerchants-spending" style="font-size: x-large;">
+                    /
+                </span>
+                <span class="daleofmerchants-coins-counter" style="font-size: x-large;">
+                    0
+                </span>
+            </span>
+        </span>
         <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
         <div class="daleofmerchants-horizontal-flex">
             <div id="deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
