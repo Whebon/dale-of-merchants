@@ -89,28 +89,6 @@ class DaleEffects {
         return $this->insert(EC_GLOBAL, $card_id, $type_id, $arg, null);
     }
 
-    //TODO: safely delete this
-    // /**
-    //  * Update the card effect's target
-    //  * @param int $card_id the card that caused the effect
-    //  * @param int $type_id the type of effect
-    //  * @param int $target new value for the target
-    //  */
-    // function updateTarget(int $card_id, int $type_id, int $target) {
-    //     $sql = "UPDATE effect SET target=$target WHERE card_id=$card_id AND type_id=$type_id";
-    //     $this->game->DbQuery($sql);
-    //     $found = false;
-    //     foreach ($this->cache as $index => $row) {
-    //         if ($row["card_id"] == $card_id && $row["type_id"] == $type_id) {
-    //             $this->cache[$index]["target"] = $target;
-    //             $found = true;
-    //         }
-    //     }
-    //     if ($found == false) {
-    //         throw new BgaVisibleSystemException("Card id $card_id has no active effect with type_id $type_id, so the effect cannot be updated");
-    //     }
-    // }
-
     //////////////////////////////////////
     ///////     Public Getters     ///////
     //////////////////////////////////////
@@ -285,6 +263,31 @@ class DaleEffects {
     }
 
     /**
+     * Update the arg of the effect with the given card_id and type_id
+     * @param int $card_id the card that caused the effect
+     * @param int $type_id the type of effect
+     * @param int $arg new value for the arg
+     */
+    function updateArg(int $card_id, int $type_id, int $arg) {
+        $sql = "UPDATE effect SET arg=$arg WHERE card_id=$card_id AND type_id=$type_id";
+        $this->game->DbQuery($sql);
+        $found = false;
+        foreach ($this->cache as $index => $row) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id) {
+                if ($found) {
+                    throw new BgaVisibleSystemException("updateArg found multiple effects of the same card_id $card_id and type_id $type_id. Is this intended...?");
+                }
+                $this->cache[$index]["arg"] = $arg;
+                $this->game->notifyAllPlayers('updateEffect', '', array("effect" => $this->cache[$index]));
+                $found = true;
+            }
+        }
+        if ($found == false) {
+            throw new BgaVisibleSystemException("Card id $card_id has no active effect with type_id $type_id, so the effect cannot be updated");
+        }
+    }
+
+    /**
      * Return the last chameleon copy effect that affects the specified card_id
      * @return array|null
      */
@@ -349,6 +352,28 @@ class DaleEffects {
     /////////////////////////////////////////////////
     ///////     Expiry-related functions      ///////
     /////////////////////////////////////////////////
+
+    /**
+     * Expire a specific EC_MODIFICATION effects that applies to the specified `$card_id`
+     */
+    function expireSingleModification(int $card_id, int $type_id) {
+        //for the clients
+        $expired_effects = [];
+        foreach ($this->cache as $row) {
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["effect_class"] == EC_MODIFICATION) {
+                $expired_effects[] = $row;
+            }
+        }
+        if (count($expired_effects) != 1) {
+            $count = count($expired_effects);
+            throw new BgaVisibleSystemException("expireSingleModification expected 1 effect, but found $count effects of type_id $type_id.");
+        }
+        $this->notifyExpireEffects($expired_effects);
+        //for the db
+        $sql = "DELETE FROM effect WHERE card_id = $card_id AND type_id = $type_id AND effect_class = ".EC_MODIFICATION;
+        $this->game->DbQuery($sql);
+        $this->loadFromDb();
+    }
 
     /**
      * Expire all EC_MODIFICATION effects that apply to the specified `$card_id`
@@ -454,31 +479,4 @@ class DaleEffects {
             'effects' => $expired_effects
         ));
     }
-
-    //TODO: safely delete this
-    // /**
-    //  * Delete and return the chameleon binding effects for the specified card
-    //  * @param int $card_id
-    //  */
-    // function unbindChameleon(int $card_id) {
-    //     $chameleon_type_ids = implode(",", array(CT_FLEXIBLESHOPKEEPER, CT_REFLECTION, CT_GOODOLDTIMES, CT_TRENDSETTING, CT_SEEINGDOUBLES));
-    //     $sql = "DELETE FROM effect WHERE card_id = $card_id AND target >= 0 AND type_id IN ($chameleon_type_ids)";
-    //     $deleted_rows = array();
-    //     foreach ($this->cache as $row) {
-    //         if ($row["card_id"] == $card_id) {
-    //             $deleted_rows[] = $row;
-    //         }
-    //     }
-    //     $this->game->DbQuery($sql);
-    //     $this->loadFromDb();
-    //     return $deleted_rows;
-    // }
-    // /**
-    //  * Expire all effects with EXPIRES_ON_END_OF_TURN
-    //  */
-    // function expireEndOfTurn() {
-    //     $sql = "DELETE FROM effect WHERE expires = ".EXPIRES_ON_END_OF_TURN;
-    //     $this->game->DbQuery($sql);
-    //     $this->loadFromDb();
-    // }
 }

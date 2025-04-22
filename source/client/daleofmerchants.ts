@@ -321,6 +321,11 @@ class DaleOfMerchants extends Gamegui
 				const card = gamedatas.schedules[+player_id]![+card_id]!;
 				this.playerSchedules[player_id]!.addDaleCardToStock(DaleCard.of(card));
 			}
+			for (let card_id in gamedatas.schedulesCooldown[player_id]) {
+				const card = gamedatas.schedulesCooldown[+player_id]![+card_id]!;
+				this.playerSchedules[player_id]!.addDaleCardToStock(DaleCard.of(card));
+				DaleCard.scheduleCooldownCardIds.add(+card.id);
+			}
 		}
 		if (!this.isSpectator) {
 			dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
@@ -4909,11 +4914,14 @@ class DaleOfMerchants extends Gamegui
 			['discardToDeck', 						500],
 			['deckToDiscard', 						500],
 			['rollDie', 							1000],
+			['avidFinancierTakeCoin', 				500],
 			['updateActionButtons',					1],
-			['addCoins',							1],
+			['gainCoins',							1],
 			['selectBlindfold', 					1, true],
 			['addEffect', 							1],
+			['updateEffect', 						1],
 			['expireEffects', 						1],
+			['setScheduleCooldown', 				1],
 			['message', 							1],
 			['debugClient', 						1],
 		];
@@ -5843,9 +5851,31 @@ class DaleOfMerchants extends Gamegui
 		this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
 	}
 
-	notif_addCoins(notif: NotifAs<'addCoins'>) {
+	notif_gainCoins(notif: NotifAs<'gainCoins'>) {
 		this.coinManager.playerCoins[notif.args.player_id]!.incValue(notif.args.nbr);
-		//this.playerCoins[notif.args.player_id]!.incValue(notif.args.nbr);
+	}
+
+	notif_avidFinancierTakeCoin(notif: NotifAs<'avidFinancierTakeCoin'>) {
+		const card = new DaleCard(notif.args.card_id);
+		const coin = card.div.querySelector(".daleofmerchants-avid-financier-coin-icon") as HTMLElement | undefined;
+		if (coin) {
+			//animation
+			const to = $("daleofmerchants-coins-icon-"+notif.args.player_id)! as HTMLElement;
+			const animSlide = this.slideToObject(coin, to, 500);
+			const onEnd = (node: HTMLElement) => {
+				node.remove();
+			}
+			const animCallback = dojo.animateProperty({ node: coin, duration: 0, onEnd: onEnd });
+			const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
+			setTimeout(() => {this.coinManager.playerCoins[notif.args.player_id]!.incValue(1);}, 500);
+			anim.play();
+			
+		}
+		else {
+			//no animation
+			console.warn("avidFinancierTakeCoin animation FAILED");
+			this.coinManager.playerCoins[notif.args.player_id]!.incValue(1);
+		}
 	}
 
 	notif_selectBlindfold(notif: NotifAs<'selectBlindfold'>) {
@@ -5860,11 +5890,28 @@ class DaleOfMerchants extends Gamegui
 		DaleCard.addEffect(effect);
 	}
 
+	notif_updateEffect(notif: NotifAs<'updateEffect'>) {
+		console.warn("notif_updateEffect");
+		const effect = new DbEffect(notif.args.effect);
+		DaleCard.updateEffect(effect);
+	}
+
 	notif_expireEffects(notif: NotifAs<'expireEffects'>){
 		console.warn("notif_expireEffects");
 		const effects = notif.args.effects.map(effect => new DbEffect(effect));
 		console.warn(effects);
 		DaleCard.expireEffects(effects);
+	}
+
+	notif_setScheduleCooldown(notif: NotifAs<'setScheduleCooldown'>) {
+		for (const card_id in notif.args.cards) {
+			if (notif.args.status) {
+				DaleCard.scheduleCooldownCardIds.add(+card_id);
+			}
+			else {
+				DaleCard.scheduleCooldownCardIds.delete(+card_id);
+			}
+		}
 	}
 
 	notif_message(notif: NotifAs<'message'>) {

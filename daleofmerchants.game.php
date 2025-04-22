@@ -184,6 +184,7 @@ class DaleOfMerchants extends DaleTableBasic
         //get schedules
         foreach ( $players as $player_id => $player ) {
             $result['schedules'][$player_id] = $this->cards->getCardsInLocation(SCHEDULE.$player_id, null, 'location_arg');
+            $result['schedulesCooldown'][$player_id] = $this->cards->getCardsInLocation(SCHEDULE_COOLDOWN.$player_id, null, 'location_arg');
         }
 
         //get stored cards
@@ -1238,8 +1239,10 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * The specified `$player_id` takes the specified `$nbr` of coins from the bank.
-     * Also notifies the players.
+     * The specified `$player_id` adds `$nbr` of coins
+     * Does NOT notify players.
+     * @param mixed $player_id player that receives the coin
+     * @param int $nbr number of coins to take from the bank
      */
     function addCoins(mixed $player_id, int $nbr) {
         if ($nbr == 0) {
@@ -1250,7 +1253,19 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $sql = "UPDATE player SET player_coins=player_coins+$nbr WHERE player_id='$player_id'";
         $this->DbQuery($sql);
-        $this->notifyAllPlayers('addCoins', clienttranslate('${player_name} takes ${nbr} ${coin_icon} from the bank'), array(
+    }
+
+    /**
+     * The specified `$player_id` takes the specified `$nbr` of coins from the bank.
+     * Also notifies the players.
+     * @param mixed $player_id player that receives the coin
+     * @param int $nbr number of coins to take from the bank
+     * @param string $msg_prefix (optional) - source of this effect
+     */
+    function gainCoins(mixed $player_id, int $nbr, string $msg_prefix = null) {
+        $this->addCoins($player_id, $nbr);
+        $msg = clienttranslate('${player_name} takes ${nbr} ${coin_icon} from the bank');
+        $this->notifyAllPlayers('gainCoins', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'nbr' => $nbr,
@@ -1261,8 +1276,11 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Checks if `$player_id` has at least `$nbr` of coins, then spends it.
      * Also notifies the players.
+     * @param mixed $player_id player that spends coins
+     * @param int $nbr number of coins to spend
+     * @param string $msg_prefix (optional) - source of this effect
      */
-    function spendCoins(mixed $player_id, int $nbr) {
+    function spendCoins(mixed $player_id, int $nbr, string $msg_prefix = null) {
         if ($nbr == 0) {
             return;
         }
@@ -1275,7 +1293,10 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $sql = "UPDATE player SET player_coins=player_coins-$nbr WHERE player_id='$player_id'";
         $this->DbQuery($sql);
-        $this->notifyAllPlayers('addCoins', clienttranslate('${player_name} spends ${positive_nbr} ${coin_icon}'), array(
+
+        //notify players
+        $msg = clienttranslate('${player_name} spends ${positive_nbr} ${coin_icon}');
+        $this->notifyAllPlayers('gainCoins', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'positive_nbr' => $nbr,
@@ -1855,6 +1876,42 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Resolves a trigger effect, but keep the card in the schedule. Moves the triggered technique from the SCHEDULE to SCHEDULE_COOLDOWN. 
+     * @param mixed $player_id id of the owner of the scheduled card
+     * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
+     */
+    function partiallyResolveCard(mixed $player_id, array $technique_card = null) {
+        //get the resolving card
+        if ($technique_card != null) {
+            $technique_card_id = $technique_card["id"];
+        }
+        else {
+            $technique_card_id = $this->getGameStateValue("resolvingCard");
+            $technique_card = $this->cards->getCard($technique_card_id);
+            if ($technique_card_id == -1) {
+                throw new Error("Trying to 'partiallyResolveCard' without 'beginResolvingCard'");
+            }
+            $this->setGameStateValue("resolvingCard", -1);
+        }
+
+        //ensure that the card is already in the schedule
+        $location = substr($technique_card["location"], 0, 4);
+        if ($location != SCHEDULE) {
+            throw new BgaVisibleSystemException("partiallyResolveCard requires card $technique_card_id to be in the schedule, but it was found in '$location' instead");
+        }
+
+        //set this card on a cooldown
+        $this->cards->moveCard($technique_card_id, SCHEDULE_COOLDOWN.$player_id);
+        $this->notifyAllPlayers('setScheduleCooldown', '', array(
+            'player_id' => $player_id,
+            'cards' => array($technique_card_id => $technique_card),
+            'status' => true
+        ));
+
+        $this->gamestate->nextState("trSamePlayer");
+    }
+
+    /**
      * Discard the resolving card, notify all players and transition to the next state. 
      * @param mixed $player_id id of the owner of the scheduled card
      * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
@@ -1926,9 +1983,25 @@ class DaleOfMerchants extends DaleTableBasic
         $technique_card_id = $this->getGameStateValue("resolvingCard");
         $technique_card = $this->cards->getCard($technique_card_id);
         if ($technique_card_id == -1) {
-            throw new Error("Trying to 'fullyResolveCard' without 'beginResolvingCard'");
+            throw new Error("Trying to 'getCurrentResolvingCardName' without 'beginResolvingCard'");
         }
         return $this->getCardName($technique_card);
+    }
+
+    /**
+     * To be called at the end of each trigger event. Ensures that cards in the schedule can be re-triggered during the next trigger event.
+     */
+    function removeScheduleCooldown() {
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(SCHEDULE_COOLDOWN.$player_id);
+        if (count($dbcards)) {
+            $this->cards->moveAllCardsInLocation(SCHEDULE_COOLDOWN.$player_id, SCHEDULE.$player_id);
+            $this->notifyAllPlayers('setScheduleCooldown', '', array(
+                'player_id' => $player_id,
+                'cards' => $dbcards,
+                'status' => false
+            ));
+        }
     }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -4209,6 +4282,10 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->gamestate->nextState("trShakyEnterprise");
                 break;
+            case CT_AVIDFINANCIER:
+                $this->effects->insertModification($technique_card_id, CT_AVIDFINANCIER, 2);
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4327,6 +4404,26 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_LOSTSHIPMENTS:
                 $this->effects->expireGlobal($technique_card_id, CT_LOSTSHIPMENTS);
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_AVIDFINANCIER:
+                $coins_on_card = $this->effects->getArg($technique_card_id, CT_AVIDFINANCIER);
+                $coins_on_card -= 1;
+                //$this->gainCoins($player_id, 1, "Avid Financier");
+                $this->addCoins($player_id, 1);
+                $this->notifyAllPlayers('avidFinancierTakeCoin', clienttranslate('Avid Financier: ${player_name} gains 1 ${coin_icon}'), array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_id' => $technique_card_id,
+                    'coin_icon' => "",
+                ));
+                if ($coins_on_card > 0) {
+                    $this->effects->updateArg($technique_card_id, CT_AVIDFINANCIER, $coins_on_card);
+                    $this->partiallyResolveCard($player_id, $technique_card);
+                }
+                else {
+                    $this->effects->expireSingleModification($technique_card_id, CT_AVIDFINANCIER);
+                    $this->fullyResolveCard($player_id, $technique_card);
+                }
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -5865,6 +5962,7 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         if (count($triggeredCards) == 0) {
+            $this->removeScheduleCooldown();
             $this->gamestate->nextState("trSkipTurnStart");
         }
     }

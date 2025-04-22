@@ -46,6 +46,11 @@ declare global {
 			card: DbCard
 			to_limbo?: boolean
 		}
+		'setScheduleCooldown': {
+			player_id: number
+			cards: {[card_id: number]: DbCard}
+			status: boolean
+		}
 		'handToStoredCards': {
 			player_id: number
 			card: DbCard
@@ -70,6 +75,9 @@ declare global {
 			to_suffix: number | 'mark'
 		}
 		'addEffect': {
+			effect: RawDbEffect;
+		}
+		'updateEffect': {
 			effect: RawDbEffect;
 		}
 		'expireEffects': {
@@ -327,9 +335,13 @@ declare global {
 			animalfolk_id: number,
 			is_taking_card: boolean
 		}
-		'addCoins': {
+		'gainCoins': {
 			player_id: number,
-			nbr: number
+			nbr: number,
+		}
+		'avidFinancierTakeCoin': {
+			player_id: number,
+			card_id: number
 		}
 	}
 
@@ -353,6 +365,9 @@ declare global {
 		}
 
 		'schedules': {
+			[player_id: number]: {[card_id: number]: DbCard}
+		}
+		'schedulesCooldown': {
 			[player_id: number]: {[card_id: number]: DbCard}
 		}
 

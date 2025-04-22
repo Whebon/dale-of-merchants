@@ -334,7 +334,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickRetainSelection':
 				return true;
 			case 'clickOnTurnStart':
-				return card.trigger == 'onTurnStart';
+				return card.trigger == 'onTurnStart' && !card.inScheduleCooldown();
 			case 'clickOnFinish':
 				return card.trigger == 'onFinish';
 			case 'clickAnimalfolk':

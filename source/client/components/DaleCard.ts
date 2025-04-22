@@ -8,6 +8,7 @@ import { DaleTrigger } from './types/DaleTrigger';
 import { ChameleonChain } from './types/ChameleonChain'
 import { DaleDie } from './DaleDie';
 import { AbstractOrderedSelection } from './AbstractOrderedSelection';
+import { DaleDeckSelection } from './DaleDeckSelection';
 
 /**
  * HTML data attribute representing a card div's location
@@ -33,6 +34,8 @@ export class DaleCard {
 
     private static readonly cardIdToChameleonChain: Map<number, ChameleonChain> = new Map<number, ChameleonChain>();
     private static readonly cardIdToChameleonChainLocal: Map<number, ChameleonChain> = new Map<number, ChameleonChain>();
+
+    private static readonly cardIdToOverlay: Map<number, HTMLElement> = new Map<number, HTMLElement>();
 
     static page: Gamegui | undefined;
     static readonly tooltips: Map<number, dijit.Tooltip> = new Map<number, dijit.Tooltip>();
@@ -293,6 +296,33 @@ export class DaleCard {
             }
         }
 
+        switch(effect.type_id) {
+            case DaleCard.CT_AVIDFINANCIER:
+                const avid_financier_card = DaleCard.divs.get(effect.card_id)!;
+                const avid_financier_coin_container = document.createElement("div");
+                avid_financier_coin_container.classList.add("daleofmerchants-avid-financier-coin-container");
+                avid_financier_card.append(avid_financier_coin_container);
+                for (let i = 0; i < effect.arg!; i++) {
+                    const avid_financier_coin = DaleIcons.getCoinIcon();
+                    avid_financier_coin.classList.add("daleofmerchants-avid-financier-coin-icon");
+                    avid_financier_coin_container.append(avid_financier_coin);
+                    //animate
+                    const source = 'overall_player_board_' + this.page!.player_id;
+                    this.page!.placeOnObject(avid_financier_coin, source);
+                    const duration = 500;
+                    const delay = 250*i;
+                    const animSlide = this.page!.slideToObject(avid_financier_coin, avid_financier_card, duration, delay);
+                    const onEnd = (node: HTMLElement) => {
+                        dojo.setStyle(node, 'left', '');
+                        dojo.setStyle(node, 'top', '');
+                    }
+                    const animCallback = dojo.animateProperty({ node: avid_financier_coin, duration: 0, onEnd: onEnd });
+                    const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
+                    anim.play();
+                }
+                break;
+        }
+
         //update card affected divs
         if (effect.effect_class == DaleCard.EC_GLOBAL) {
             for (let card_id of Array.from(DaleCard.divs.keys())) {
@@ -346,6 +376,17 @@ export class DaleCard {
                     }
                 }
             }
+
+            switch(effect.type_id) {
+                case DaleCard.CT_AVIDFINANCIER:
+                    for (let i = 0; i < effect.arg!; i++) {
+                        const avid_financier_card = DaleCard.divs.get(effect.card_id)!;
+                        avid_financier_card.querySelectorAll(".daleofmerchants-avid-financier-coin-icon").forEach( icon => {
+                            icon.remove();
+                        })
+                    }
+                    break;
+            }
         }
         
         affected_card_ids = includes_global_effect ? Array.from(DaleCard.divs.keys()) : affected_card_ids;
@@ -353,6 +394,23 @@ export class DaleCard {
             DaleCard.updateHTML(card_id);
         });
     }
+
+    /**
+     * Update an existing effect
+     * @param effect 
+     */
+    public static updateEffect(effect: DbEffect) {
+        switch (effect.type_id) {
+            case DaleCard.CT_AVIDFINANCIER:
+                console.warn("updateEffect ignored, this is already handled by 'avidFinancierTakeCoin'")
+                break;
+            default:
+                DaleCard.expireEffects([effect]);
+                DaleCard.addEffect(effect);
+                break;
+        }
+    }
+
 
     //TODO: safely remove this
     // /**
@@ -762,6 +820,22 @@ export class DaleCard {
 
     public static isPlayable(type_id: number): boolean {
         return DaleCard.cardTypes[type_id]!.playable
+    }
+
+    /////////////////////////////////////////////////////
+    //////////        Schedule Cooldown        //////////
+    /////////////////////////////////////////////////////
+
+    /**
+     * A list of all cards that are on schedule cooldown. They are unable to re-trigger during the current trigger event
+     */
+    public static readonly scheduleCooldownCardIds: Set<number> = new Set();
+    
+    /**
+     * @returns `true` if this card is on "cooldown", meaning that it cannot trigger again during the current trigger event
+     */
+    public inScheduleCooldown(): boolean {
+        return DaleCard.scheduleCooldownCardIds.has(this.id);
     }
 
     /////////////////////////////////////////////////////////

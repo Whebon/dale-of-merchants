@@ -13,6 +13,7 @@ if (!defined('HAND')) {
     define('STALL', 'stal');
     define('JUNKRESERVE', 'junk');
     define('SCHEDULE', 'sche');
+    define('SCHEDULE_COOLDOWN', 'cool');
     define('STORED_CARDS', 'stor');
     define('LIMBO', 'limb');
 
@@ -137,7 +138,7 @@ class DaleDeck extends Deck {
      */
     function isOuterLocation($location) {
         $prefix = substr($location, 0, 4);
-        return $prefix != HAND && $prefix != LIMBO && $prefix != SCHEDULE;
+        return $prefix != HAND && $prefix != LIMBO && $prefix != SCHEDULE && $prefix != SCHEDULE_COOLDOWN;
     }
 
     /**

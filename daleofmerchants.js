@@ -849,6 +849,31 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     }
                 }
             }
+            switch (effect.type_id) {
+                case DaleCard.CT_AVIDFINANCIER:
+                    var avid_financier_card = DaleCard.divs.get(effect.card_id);
+                    var avid_financier_coin_container = document.createElement("div");
+                    avid_financier_coin_container.classList.add("daleofmerchants-avid-financier-coin-container");
+                    avid_financier_card.append(avid_financier_coin_container);
+                    for (var i = 0; i < effect.arg; i++) {
+                        var avid_financier_coin = DaleIcons_2.DaleIcons.getCoinIcon();
+                        avid_financier_coin.classList.add("daleofmerchants-avid-financier-coin-icon");
+                        avid_financier_coin_container.append(avid_financier_coin);
+                        var source = 'overall_player_board_' + this.page.player_id;
+                        this.page.placeOnObject(avid_financier_coin, source);
+                        var duration = 500;
+                        var delay = 250 * i;
+                        var animSlide = this.page.slideToObject(avid_financier_coin, avid_financier_card, duration, delay);
+                        var onEnd = function (node) {
+                            dojo.setStyle(node, 'left', '');
+                            dojo.setStyle(node, 'top', '');
+                        };
+                        var animCallback = dojo.animateProperty({ node: avid_financier_coin, duration: 0, onEnd: onEnd });
+                        var anim = dojo.fx.chain([animSlide, animCallback]);
+                        anim.play();
+                    }
+                    break;
+            }
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
                 for (var _i = 0, _a = Array.from(DaleCard.divs.keys()); _i < _a.length; _i++) {
                     var card_id = _a[_i];
@@ -895,6 +920,16 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                         }
                     }
                 }
+                switch (effect.type_id) {
+                    case DaleCard.CT_AVIDFINANCIER:
+                        for (var i = 0; i < effect.arg; i++) {
+                            var avid_financier_card = DaleCard.divs.get(effect.card_id);
+                            avid_financier_card.querySelectorAll(".daleofmerchants-avid-financier-coin-icon").forEach(function (icon) {
+                                icon.remove();
+                            });
+                        }
+                        break;
+                }
             };
             for (var _i = 0, effects_1 = effects; _i < effects_1.length; _i++) {
                 var effect = effects_1[_i];
@@ -904,6 +939,17 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             affected_card_ids.forEach(function (card_id) {
                 DaleCard.updateHTML(card_id);
             });
+        };
+        DaleCard.updateEffect = function (effect) {
+            switch (effect.type_id) {
+                case DaleCard.CT_AVIDFINANCIER:
+                    console.warn("updateEffect ignored, this is already handled by 'avidFinancierTakeCoin'");
+                    break;
+                default:
+                    DaleCard.expireEffects([effect]);
+                    DaleCard.addEffect(effect);
+                    break;
+            }
         };
         DaleCard.prototype.isPassiveUsed = function (argNonNull) {
             if (argNonNull === void 0) { argNonNull = false; }
@@ -1204,6 +1250,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.isPlayable = function (type_id) {
             return DaleCard.cardTypes[type_id].playable;
         };
+        DaleCard.prototype.inScheduleCooldown = function () {
+            return DaleCard.scheduleCooldownCardIds.has(this.id);
+        };
         DaleCard.prototype.getTooltipContent = function () {
             var cardType = DaleCard.cardTypes[this.effective_type_id];
             var animalfolkWithBull = cardType.animalfolk_displayed ? " • " + cardType.animalfolk_displayed : "";
@@ -1405,6 +1454,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.cardIdtoTypeId = new Map();
         DaleCard.cardIdToChameleonChain = new Map();
         DaleCard.cardIdToChameleonChainLocal = new Map();
+        DaleCard.cardIdToOverlay = new Map();
         DaleCard.tooltips = new Map();
         DaleCard.divs = new Map();
         DaleCard.effects = [];
@@ -1583,6 +1633,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DEPRECATED_CHEER = 170;
         DaleCard.CT_DEPRECATED_TASTERS = 171;
         DaleCard.CT_DEPRECATED_DARINGADVENTURER = 172;
+        DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());
     exports.DaleCard = DaleCard;
@@ -1810,7 +1861,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickRetainSelection':
                     return true;
                 case 'clickOnTurnStart':
-                    return card.trigger == 'onTurnStart';
+                    return card.trigger == 'onTurnStart' && !card.inScheduleCooldown();
                 case 'clickOnFinish':
                     return card.trigger == 'onFinish';
                 case 'clickAnimalfolk':
@@ -4133,6 +4184,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 for (var card_id in gamedatas.schedules[player_id]) {
                     var card = gamedatas.schedules[+player_id][+card_id];
                     this.playerSchedules[player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(card));
+                }
+                for (var card_id in gamedatas.schedulesCooldown[player_id]) {
+                    var card = gamedatas.schedulesCooldown[+player_id][+card_id];
+                    this.playerSchedules[player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(card));
+                    DaleCard_10.DaleCard.scheduleCooldownCardIds.add(+card.id);
                 }
             }
             if (!this.isSpectator) {
@@ -8171,11 +8227,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['discardToDeck', 500],
                 ['deckToDiscard', 500],
                 ['rollDie', 1000],
+                ['avidFinancierTakeCoin', 500],
                 ['updateActionButtons', 1],
-                ['addCoins', 1],
+                ['gainCoins', 1],
                 ['selectBlindfold', 1, true],
                 ['addEffect', 1],
+                ['updateEffect', 1],
                 ['expireEffects', 1],
+                ['setScheduleCooldown', 1],
                 ['message', 1],
                 ['debugClient', 1],
             ];
@@ -8921,8 +8980,28 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.removeActionButtons();
             this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
         };
-        DaleOfMerchants.prototype.notif_addCoins = function (notif) {
+        DaleOfMerchants.prototype.notif_gainCoins = function (notif) {
             this.coinManager.playerCoins[notif.args.player_id].incValue(notif.args.nbr);
+        };
+        DaleOfMerchants.prototype.notif_avidFinancierTakeCoin = function (notif) {
+            var _this = this;
+            var card = new DaleCard_10.DaleCard(notif.args.card_id);
+            var coin = card.div.querySelector(".daleofmerchants-avid-financier-coin-icon");
+            if (coin) {
+                var to = $("daleofmerchants-coins-icon-" + notif.args.player_id);
+                var animSlide = this.slideToObject(coin, to, 500);
+                var onEnd = function (node) {
+                    node.remove();
+                };
+                var animCallback = dojo.animateProperty({ node: coin, duration: 0, onEnd: onEnd });
+                var anim = dojo.fx.chain([animSlide, animCallback]);
+                setTimeout(function () { _this.coinManager.playerCoins[notif.args.player_id].incValue(1); }, 500);
+                anim.play();
+            }
+            else {
+                console.warn("avidFinancierTakeCoin animation FAILED");
+                this.coinManager.playerCoins[notif.args.player_id].incValue(1);
+            }
         };
         DaleOfMerchants.prototype.notif_selectBlindfold = function (notif) {
             console.warn("notif_selectBlindfold");
@@ -8933,11 +9012,26 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn(effect);
             DaleCard_10.DaleCard.addEffect(effect);
         };
+        DaleOfMerchants.prototype.notif_updateEffect = function (notif) {
+            console.warn("notif_updateEffect");
+            var effect = new DbEffect_2.DbEffect(notif.args.effect);
+            DaleCard_10.DaleCard.updateEffect(effect);
+        };
         DaleOfMerchants.prototype.notif_expireEffects = function (notif) {
             console.warn("notif_expireEffects");
             var effects = notif.args.effects.map(function (effect) { return new DbEffect_2.DbEffect(effect); });
             console.warn(effects);
             DaleCard_10.DaleCard.expireEffects(effects);
+        };
+        DaleOfMerchants.prototype.notif_setScheduleCooldown = function (notif) {
+            for (var card_id in notif.args.cards) {
+                if (notif.args.status) {
+                    DaleCard_10.DaleCard.scheduleCooldownCardIds.add(+card_id);
+                }
+                else {
+                    DaleCard_10.DaleCard.scheduleCooldownCardIds.delete(+card_id);
+                }
+            }
         };
         DaleOfMerchants.prototype.notif_message = function (notif) {
             return;
