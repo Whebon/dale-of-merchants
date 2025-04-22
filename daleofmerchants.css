@@ -498,7 +498,7 @@
 }
 
 .daleofmerchants-hidden {
-  display: none;
+  display: none !important;
 }
 
 .daleofmerchants-card-tooltip {
