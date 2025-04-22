@@ -282,6 +282,7 @@ export class DaleCard {
         if (effect.chameleon_target_id != null) {
             const target_card_id = effect.chameleon_target_id!;
             const target_type_id = effect.arg!;
+            const target = new DaleCard(target_card_id, target_type_id); //important: register this card in the cardIdtoTypeId map
             let chain = DaleCard.cardIdToChameleonChain.get(effect.card_id);
             if (chain) {
                 chain.push(target_card_id, target_type_id);

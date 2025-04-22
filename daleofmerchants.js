@@ -837,6 +837,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (effect.chameleon_target_id != null) {
                 var target_card_id = effect.chameleon_target_id;
                 var target_type_id = effect.arg;
+                var target = new DaleCard(target_card_id, target_type_id);
                 var chain = DaleCard.cardIdToChameleonChain.get(effect.card_id);
                 if (chain) {
                     chain.push(target_card_id, target_type_id);
