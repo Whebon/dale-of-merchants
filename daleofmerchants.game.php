@@ -1305,6 +1305,88 @@ class DaleOfMerchants extends DaleTableBasic
         ));
     }
 
+    /**
+     * Helper function for "spend" abilities. Spends the given `$cost` using a combination of cards from hand and coins.
+     * Also notifies the players about how the spend cost was paid.
+     * @param mixed $player_id the player that needs to to pay the spend cost
+     * @param array $args requires `"spend_coins"` and `"spend_card_ids"` to get the chosen funds from
+     * @param int $cost number of coins to spend
+     * @param string $msg_prefix (optional) - source of this effect
+     */
+    function spend(mixed $player_id, array $args, int $cost, string $msg_prefix = null) {
+        //Extract the arguments
+        $spend_coins = $args["spend_coins"];
+        $spend_card_ids = $args["spend_card_ids"];
+        if ($spend_coins === null || $spend_card_ids === null) {
+            throw new BgaVisibleSystemException("Actions with spend abilities must include 'spend_coins' and 'spend_card_ids' arguments");
+        }
+
+        //Spend coins (explicitly)
+        if ($spend_coins > $cost) {
+            throw new BgaUserException($this->_("All coins must be necessary for a purchase. Please reduce the number of coins"));
+        }
+        $this->spendCoins($player_id, $spend_coins, $msg_prefix);
+        $cost -= $spend_coins;
+
+        //Spend cards
+        $spend_cards = $this->cards->getCardsFromLocation($spend_card_ids, HAND.$player_id);
+        $this->verifyCost($player_id, $spend_cards, $cost, false);
+
+        //Discard cards
+        if (count($spend_card_ids) > 0) {
+            $this->cards->moveCardsOnTop($spend_card_ids, DISCARD.$player_id);
+            $msg = clienttranslate('${player_name} spends ${nbr} card(s)');
+            $this->notifyAllPlayers('discardMultiple', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $spend_card_ids,
+                'cards' => $spend_cards,
+                'nbr' => count($spend_cards)
+            ));
+        }
+    }
+
+    /**
+     * Verifies that `$player_id` can use `$funds_cards` to pay for `$cost` without overpaying. 
+     * If the player is underpaying, this funcion tries to implicitly adding coins when needed. 
+     * If any extra coins were spent by this functions, all players are notified about this.
+     * @param mixed $player_id player that needs to to pay the cost
+     * @param array $funds_cards the funds that are used to pay the cost
+     * @param int $cost the cost that needs to be paid (explicitly paid coins should already be subtracted!)
+     * @param bool $is_purchase if `false`, this is a regular spend ability. if `true`, apply additional cost rules for purchases. 
+     */
+    function verifyCost(mixed $player_id, array $funds_cards, int $cost, bool $is_purchase) {
+        $optional_value = 0;
+        if ($is_purchase) {
+            //Apply CT_RIGOROUSCHRONICLER
+            $optional_value = 2*$this->countTypeId($funds_cards, CT_RIGOROUSCHRONICLER);
+        }
+
+        //Calculate the value of the cards
+        $total_value = 0;
+        $lowest_value = 1000;
+        foreach ($funds_cards as $card) {
+            $value = $this->getValue($card);
+            $lowest_value = min($lowest_value, $value);
+            $total_value += $value;
+        }
+
+        //Check if funds are sufficient, if not, try to implicily add extra coins to cover the cost
+        if ($total_value + $optional_value < $cost) {
+            $coins = $this->getCoins($player_id);
+            if ($total_value + $optional_value + $coins < $cost) {
+                $total_value += $optional_value + $coins;
+                throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
+            }
+            $this->spendCoins($player_id, $cost - $total_value - $optional_value);
+        }
+
+        //Check for overpaying
+        if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
+            throw new BgaUserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
+        }
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Dice functions
@@ -2553,19 +2635,10 @@ class DaleOfMerchants extends DaleTableBasic
     function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $args) {
         $this->addChameleonBindings($chameleons_json, $funds_card_ids);
         $this->checkAction("actPurchase");
-        $funds_card_ids = $this->numberListToArray($funds_card_ids);
-        $market_card = $this->cards->getCard($market_card_id);
-
-        //Get information about the funds
         $player_id = $this->getActivePlayerId();
+        $funds_card_ids = $this->numberListToArray($funds_card_ids);
         $funds_cards = $this->cards->getCardsFromLocation($funds_card_ids, HAND.$player_id);
-        $total_value = 0;
-        $lowest_value = 1000;
-        foreach ($funds_cards as $card) {
-            $value = $this->getValue($card);
-            $lowest_value = min($lowest_value, $value);
-            $total_value += $value;
-        }
+        $market_card = $this->cards->getCard($market_card_id);
         $this->incStat(1, "actions_purchase", $player_id);
 
         //Check for CT_ROYALPRIVILEGE (before chameleons expire)
@@ -2625,23 +2698,8 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $cost = $this->getCost($market_card);
 
-        //Apply CT_RIGOROUSCHRONICLER
-        $optional_value = 2*$this->countTypeId($funds_cards, CT_RIGOROUSCHRONICLER);
-
-        //Check if funds are sufficient
-        if ($total_value + $optional_value < $cost) {
-            $coins = $this->getCoins($player_id);
-            if ($total_value + $optional_value + $coins < $cost) {
-                $total_value += $optional_value + $coins;
-                throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
-            }
-            $this->spendCoins($player_id, $cost - $total_value - $optional_value);
-        }
-
-        //Check for overpaying
-        if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
-            throw new BgaUserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
-        }
+        //Verify the cost
+        $this->verifyCost($player_id, $funds_cards, $cost, true);
 
         //Apply CT_ESSENTIALPURCHASE
         if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
@@ -2678,14 +2736,16 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Discard the funds
-        $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
-        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_ids' => $funds_card_ids,
-            'cards' => $funds_cards,
-            'nbr' => count($funds_cards)
-        ));
+        if (count($funds_card_ids) > 0) {
+            $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
+            $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $funds_card_ids,
+                'cards' => $funds_cards,
+                'nbr' => count($funds_cards)
+            ));
+        }
 
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
@@ -4550,6 +4610,11 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_TACTICALMEASUREMENT:
                 $this->effects->insertModification($passive_card_id, CT_TACTICALMEASUREMENT);
                 $this->gamestate->nextState("trTacticalMeasurement"); return;
+                break;
+            case CT_GREED:
+                $this->spend($player_id, $args, 1, "Greed");
+                $this->draw(clienttranslate('Greed: ${player_name} draws 1 card'), 1);
+                $this->effects->insertModification($passive_card_id, CT_GREED);
                 break;
             default:
                 $name = $this->getCardName($passive_card);

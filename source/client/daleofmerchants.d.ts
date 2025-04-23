@@ -17,6 +17,7 @@ import { Pile } from './components/Pile';
 import { DaleStock } from './components/DaleStock';
 import { MarketBoard } from './components/MarketBoard';
 import { Stall } from './components/Stall';
+import { DaleWrapClass } from './components/types/DaleWrapClass';
 
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
@@ -447,6 +448,7 @@ declare global {
 		'client_goodwillpresents': { opponent_ids: number[] }
 		'client_alternativePlan': { card_id: number }
 		'client_shakyEnterprise': { card_ids: number[] }
+		'client_spend' : { spend_card_ids: number[], spend_coins: number }
 	}
 
 	interface ClientPassiveChoice {
@@ -500,6 +502,7 @@ declare global {
 		'client_meddlingMarketeer': { discard_card_ids: number[], card_name: string }
 		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string },
 		'client_manufacturedJoy': { draw_card_id: number, card_name: string }
+		'client_spend' : { technique_card_id: number, cost: number, next: keyof ClientGameStates | 'playPassiveCard' | 'playTechniqueCardWithServerState' | 'playTechniqueCard', wrap_class?: DaleWrapClass }
 	}
 
 	//

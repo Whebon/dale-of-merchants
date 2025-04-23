@@ -900,6 +900,14 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'hand', 'daleofmerchants-wrap-technique', 3);
 				this.myDiscard.openPopin();
 				break;
+			case 'client_spend':
+				const client_spend_args = (this.mainClientState.args as ClientGameStates['client_spend']);
+				const client_spend_wrap_class = client_spend_args.wrap_class ?? 'daleofmerchants-wrap-purchase';
+				const client_spend_icon_type = client_spend_wrap_class == 'daleofmerchants-wrap-purchase' ? 'pileYellow' : 'pileBlue';
+				this.coinManager.setSelectionMode('implicit', client_spend_wrap_class, _("Coins included"));
+				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost)
+				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1243,6 +1251,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_shakyEnterprise':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_spend':
+				this.coinManager.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1803,6 +1815,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_shakyEnterprise':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onShakyEnterprise");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_spend':
+				this.addActionButton("confirm-button", _("Confirm"), "onSpend");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -2721,6 +2737,9 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case 'client_spend':
+				this.onSpendSelectionChanged();
+				break;
 		}
 	}
 
@@ -2898,6 +2917,9 @@ class DaleOfMerchants extends Gamegui
 				this.removeActionButtons();
 				this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, 'gray');
 				break;
+			case 'client_spend':
+				this.onSpendSelectionChanged();
+				break;
 			case null:
 				throw new Error("gamestate.name is null");
 		}
@@ -3025,8 +3047,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onFundsSelectionChanged() {
-		//TODO: pandas
 		const args = this.mainClientState.args as ClientGameStates['client_purchase'];
+		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost);
+	}
+
+	onSpendSelectionChanged() {
+		const args = this.mainClientState.args as ClientGameStates['client_spend'];
 		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost);
 	}
 
@@ -3139,6 +3165,7 @@ class DaleOfMerchants extends Gamegui
 	 * Use a passive for its ability
 	 */
 	playPassiveCard<K extends keyof ClientPassiveChoice>(args: ClientPassiveChoice[K]) {
+		console.log(args);
 		this.bgaPerformAction('actUsePassiveAbility', {
 			card_id: (this.mainClientState.args as ClientGameStates[K]).passive_card_id, 
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
@@ -3873,6 +3900,12 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
+				break;
+			case DaleCard.CT_GREED:
+				this.mainClientState.enterOnStack('client_spend', { passive_card_id: card.id, 
+					cost: 1, 
+					next: 'playPassiveCard'
+				} as unknown as ClientGameStates['client_spend']);
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
@@ -4846,6 +4879,63 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	onSpend() {
+		const args = this.mainClientState.args as ClientGameStates['client_spend'];
+		const spend_card_ids = this.myHand.orderedSelection.get();
+		const spend_coins = this.coinManager.getCoinsToSpend();
+		if (spend_coins > this.coinManager.myCoins.getValue()) {
+			this.showMessage(_("Not enough coins"), 'error');
+			return;
+		}
+
+		//verifyCost on the client side
+		let lowest_value = 1000;
+		let total_value = spend_coins;
+        for (const card_id of spend_card_ids) {
+			const value = new DaleCard(card_id).effective_value;
+            total_value += value
+			lowest_value = Math.min(lowest_value, value);
+        }
+		if (total_value < args.cost) {
+			this.showMessage(_("Insufficient funds")+` (${total_value}/${args.cost})`, 'error');
+			return;
+		}
+		if (total_value - lowest_value >= args.cost) {
+			this.showMessage(_("Please remove unnecessary cards"), 'error');
+			return;
+		}
+
+		//go the the next state or action
+		switch (args.next) {
+			case 'playPassiveCard':
+				this.playPassiveCard<'client_choicelessPassiveCard'>({
+					spend_coins: spend_coins,
+					spend_card_ids: spend_card_ids
+				})
+				break;
+			case 'playTechniqueCard':
+				this.playTechniqueCard<'client_spend'>({
+					spend_coins: spend_coins,
+					spend_card_ids: spend_card_ids
+				})
+				break;
+			case 'playTechniqueCardWithServerState':
+				this.playTechniqueCardWithServerState<'client_spend'>({
+					spend_coins: spend_coins,
+					spend_card_ids: spend_card_ids
+				})
+				break;
+			default:
+				this.mainClientState.enter(args.next, { 
+					technique_card_id: args.technique_card_id, 
+					passive_card_id: args.technique_card_id,
+					spend_coins: spend_coins,
+					spend_card_ids: spend_card_ids
+				});
+				break;
+		}
+	}
+
 	//(~on)
 
 
@@ -5419,6 +5509,7 @@ class DaleOfMerchants extends Gamegui
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
 		console.warn("discardMultiple");
 		console.warn(notif.args);
+		this.coinManager.setSelectionMode('none'); //workaround for when the user selected 0 coins, but 'implicit' coin selection is still turned on
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -5852,7 +5943,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_gainCoins(notif: NotifAs<'gainCoins'>) {
-		this.coinManager.playerCoins[notif.args.player_id]!.incValue(notif.args.nbr);
+		this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
 	}
 
 	notif_avidFinancierTakeCoin(notif: NotifAs<'avidFinancierTakeCoin'>) {
@@ -5867,14 +5958,14 @@ class DaleOfMerchants extends Gamegui
 			}
 			const animCallback = dojo.animateProperty({ node: coin, duration: 0, onEnd: onEnd });
 			const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
-			setTimeout(() => {this.coinManager.playerCoins[notif.args.player_id]!.incValue(1);}, 500);
+			setTimeout(() => {this.coinManager.addCoins(+notif.args.player_id, 1);}, 500);
 			anim.play();
 			
 		}
 		else {
 			//no animation
 			console.warn("avidFinancierTakeCoin animation FAILED");
-			this.coinManager.playerCoins[notif.args.player_id]!.incValue(1);
+			this.coinManager.addCoins(+notif.args.player_id, 1);
 		}
 	}
 

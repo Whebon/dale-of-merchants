@@ -25,7 +25,7 @@ export class CoinManager {
     }
     
 	/** A coin counter for each player  */
-	playerCoins: Record<number, Counter> = {};
+	private playerCoins: Record<number, Counter> = {};
 
 	/** A coin counter for this player  */
     get myCoins(): Counter {
@@ -113,13 +113,13 @@ export class CoinManager {
      */
     private setCoinsToSpend(amount: number): void {
         if (amount <= 0) {
-            this.coinsToSpendSpan!.innerText = '0';
+            this.wrap?.classList.add("daleofmerchants-wrap-default"); //practical hide
+            this.coinsToSpendSpan!.innerHTML = '0';
             return;
         }
-        this.coinsToSpendSpan!.innerText = amount.toString();
+        this.wrap?.classList.remove("daleofmerchants-wrap-default"); //practical show
+        this.coinsToSpendSpan!.innerHTML = amount.toString();
         dojo.setStyle(this.coinsToSpendSpan!, 'color', amount >  this.myCoins.getValue() ? 'red' : 'black');
-        // const boundedAmount = Math.min(amount, this.myCoins.getValue());
-        // this.coinsToSpendSpan!.innerText = boundedAmount.toString();
     }
 
     private onClickWrap() {
@@ -143,6 +143,9 @@ export class CoinManager {
      * @param actionLabelText text to display on the label
     */
     setSelectionMode(mode: CoinSelectionMode, wrapClass: DaleWrapClass = "daleofmerchants-wrap-default", actionLabelText?: string) {
+        if (mode == this.selectionMode) {
+            return;
+        }
         this.selectionMode = mode;
         if (mode != 'none' && this.myCoins?.getValue() == 0) {
             this.setSelectionMode('none', "daleofmerchants-wrap-default");
@@ -158,6 +161,15 @@ export class CoinManager {
                 this.wrap?.classList.remove("daleofmerchants-clickable");
                 break;  
         }
-        
+    }
+
+    /**
+     * Increment the coin counter, and disable all selection modes
+     * @param player_id owner of the coin counter
+     * @param nbr amount of coins (may be negative)
+    */
+    public addCoins(player_id: number, nbr: number) {
+        this.playerCoins[player_id]!.incValue(nbr);
+        this.setSelectionMode('none');
     }
 }

@@ -109,6 +109,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may play this card as a technique");
             case 'client_choicelessTriggerTechniqueCard':
                 return _("${card_name}: ${you} must resolve this technique");
+            case 'client_spend':
+                return _("${card_name}: ${you} must <stronger>spend</stronger> ${cost}");
 
             //Specific technique states
             case 'client_swiftBroker':
@@ -346,14 +348,19 @@ export class MainClientState {
     public setPassiveSelected(enable: boolean) {
         if ('passive_card_id' in this._args) {
             const div = new DaleCard(this._args.passive_card_id).div;
+            const cancelOnCardClick = this._name != 'client_spend';
             if (div) {
                 if (enable) {
                     div.classList.add("daleofmerchants-passive-selected");
-                    div.addEventListener('click', this.leaveThis);
+                    if (cancelOnCardClick) {
+                        div.addEventListener('click', this.leaveThis);
+                    }
                 }
                 else {
                     div.classList.remove("daleofmerchants-passive-selected");
-                    div.removeEventListener('click', this.leaveThis);
+                    if (cancelOnCardClick) {
+                        div.removeEventListener('click', this.leaveThis);
+                    }
                 }
             }
         }
