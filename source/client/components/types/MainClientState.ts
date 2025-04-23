@@ -39,6 +39,25 @@ export class MainClientState {
         return this._args;
     }
 
+    public getArgs<K extends keyof ClientGameStates>(): ClientGameStates[K] {
+        return this._args as ClientGameStates[K];
+    }
+
+    /**
+     * Returns only the `spend_coins` and `spend_card_ids` args from the current client state.
+     */
+    public getSpendArgs<K extends keyof ClientGameStates>(): ClientTechniqueChoice['client_spend'] {
+        if (!('spend_coins' in this._args && 'spend_card_ids' in this._args)) {
+            console.warn(this._stack);
+            console.warn(this._args);
+            throw new Error(`getSpendArgs requires state '${this._name}' to have keys 'spend_coins' and 'spend_card_ids'`)
+        }
+        return {
+            spend_coins: this._args.spend_coins as number,
+            spend_card_ids: this._args.spend_card_ids as number[]
+        }
+    }
+
     private get _descriptionmyturn() {
         switch(this._name) {
             //Main client states
@@ -225,6 +244,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must place a card on any player\'s discard pile");
             case 'client_shakyEnterprise':
                 return _("${card_name}: ${you} must take any of the top 3 cards of your discard pile");
+            case 'client_cache':
+                return _("${card_name}: ${you} must take 1 card from your discard pile");
         }
         return "MISSING DESCRIPTION";
     }
@@ -346,6 +367,7 @@ export class MainClientState {
      * (de)select the current passive card
      */
     public setPassiveSelected(enable: boolean) {
+        console.warn("setPassiveSelected", this._args);
         if ('passive_card_id' in this._args) {
             const div = new DaleCard(this._args.passive_card_id).div;
             const cancelOnCardClick = this._name != 'client_spend';

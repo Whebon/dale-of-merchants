@@ -91,8 +91,9 @@ export class CoinManager {
      * Set the coins to spend to the remaining amount
      * @param funds cards that will be used to spend
      * @param total total amount that needs to be spend
+     * @param is_purchase if `false`, this is a regular spend ability. if `true`, apply additional cost rules for purchases.  
      */
-    public setCoinsToSpendImplicitly(funds: DaleCard[], total: number): void {
+    public setCoinsToSpendImplicitly(funds: DaleCard[], total: number, is_purchase: boolean = false): void {
         console.warn("setCoinsToSpendImplicitly");
         if (this.selectionMode != 'implicit') {
             return;
@@ -100,7 +101,7 @@ export class CoinManager {
         let remaining = total;
         for (const card of funds) {
             remaining -= card.effective_value;
-            if (card.effective_type_id == DaleCard.CT_RIGOROUSCHRONICLER) {
+            if (is_purchase && card.effective_type_id == DaleCard.CT_RIGOROUSCHRONICLER) {
                 remaining -= 2; //always use CT_RIGOROUSCHRONICLER over coins
             }
         }

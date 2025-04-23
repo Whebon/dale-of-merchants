@@ -438,7 +438,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_purchase':
 				this.coinManager.setSelectionMode('implicit', 'daleofmerchants-wrap-purchase', _("Coins in this purchase"));
-				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), (this.mainClientState.args as ClientGameStates['client_purchase']).cost)
+				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), (this.mainClientState.args as ClientGameStates['client_purchase']).cost, true)
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.setPurchaseSelectionModes(this.mainClientState.args as ClientGameStates['client_purchase']);
@@ -908,6 +908,9 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost)
 				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
 				break;
+			case 'client_cache':
+				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1255,6 +1258,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spend':
 				this.coinManager.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_cache':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1819,6 +1825,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_spend':
 				this.addActionButton("confirm-button", _("Confirm"), "onSpend");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_cache':
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -2650,6 +2659,12 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'client_cache':
+				this.playTechniqueCard<'client_cache'>({
+					card_id: card!.id,
+					...this.mainClientState.getSpendArgs()
+				})
+				break;
 		}
 	}
 
@@ -3048,7 +3063,7 @@ class DaleOfMerchants extends Gamegui
 
 	onFundsSelectionChanged() {
 		const args = this.mainClientState.args as ClientGameStates['client_purchase'];
-		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost);
+		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost, true);
 	}
 
 	onSpendSelectionChanged() {
@@ -3823,6 +3838,18 @@ class DaleOfMerchants extends Gamegui
 				else {
 					//client_shakyEnterprise lets a client select any of the top 3 cards of the discard pile
 					this.clientScheduleTechnique('client_shakyEnterprise', card.id);
+				}
+				break;
+			case DaleCard.CT_CACHE:
+				fizzle = this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_spend', card.id, {
+						cost: 2,
+						next: 'client_cache'
+					});
 				}
 				break;
 			default:
@@ -4929,7 +4956,6 @@ class DaleOfMerchants extends Gamegui
 			default:
 				this.mainClientState.enter(args.next, { 
 					technique_card_id: args.technique_card_id, 
-					passive_card_id: args.technique_card_id,
 					spend_coins: spend_coins,
 					spend_card_ids: spend_card_ids
 				});

@@ -3010,12 +3010,6 @@ class DaleOfMerchants extends DaleTableBasic
                         }
                     }
                     break;
-                case CT_CLEVERGUARDIAN:
-                    $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                    if ($handsize >= 2) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_CLEVERGUARDIAN. There exists a card in the hand.");
-                    }
-                    break;
                 case CT_MANUFACTUREDJOY:
                     $counts = $this->cards->countCardsInLocations();
                     if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id]) || $counts[HAND.$player_id] >= 2) {
@@ -3024,13 +3018,20 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_SHAKYENTERPRISE:
                     break; //this card may always fizzle!
-                default:
-                    $cards = $this->cards->getCardsInLocation(HAND.$player_id);
-                    if (count($cards) >= 2) {
+                case CT_ROTTENFOOD:
+                case CT_DEPRECATED_WHIRLIGIG:
+                case CT_BLINDFOLD:
+                case CT_RAREARTEFACT:
+                case CT_SWANK:
+                case CT_CLEVERGUARDIAN:
+                    $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+                    if ($handsize >= 2) {
                         $name = $this->getCardName($technique_card);
                         throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has other cards in their hand.");
                     }
                     break;
+                default:
+                    break; //by default, there is no fizzle verification. TODO: issue #126
             } //(~fizzle technique)
             $this->scheduleCard($player_id, $technique_card);
             $this->fullyResolveCard($player_id, $technique_card);
@@ -4367,6 +4368,19 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 $this->gainCoins($player_id, 1, $this->_("Golden Opportunity"));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_CACHE:
+                $this->spend($player_id, $args, 2, $this->_("Cache"));
+                $card_id = $args["card_id"];
+                $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('discardToHand', clienttranslate('Cache: ${player_name} takes their ${card_name} from their discard pile'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->getCardName($dbcard),
+                    "card" => $dbcard
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

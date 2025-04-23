@@ -449,6 +449,7 @@ declare global {
 		'client_alternativePlan': { card_id: number }
 		'client_shakyEnterprise': { card_ids: number[] }
 		'client_spend' : { spend_card_ids: number[], spend_coins: number }
+		'client_cache': { card_id: number }
 	}
 
 	interface ClientPassiveChoice {
