@@ -3946,6 +3946,14 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                 this.actionLabel.innerHTML = actionLabelText !== null && actionLabelText !== void 0 ? actionLabelText : this.defaultActionLabelText;
             }
         };
+        CoinManager.prototype.getMaximumSpendValue = function (funds) {
+            var max_value = this.myCoins.getValue();
+            for (var _i = 0, funds_1 = funds; _i < funds_1.length; _i++) {
+                var card = funds_1[_i];
+                max_value += card.effective_value;
+            }
+            return max_value;
+        };
         CoinManager.prototype.getCoinsToSpend = function () {
             return +this.coinsToSpendSpan.innerText;
         };
@@ -3956,8 +3964,8 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                 return;
             }
             var remaining = total;
-            for (var _i = 0, funds_1 = funds; _i < funds_1.length; _i++) {
-                var card = funds_1[_i];
+            for (var _i = 0, funds_2 = funds; _i < funds_2.length; _i++) {
+                var card = funds_2[_i];
                 remaining -= card.effective_value;
                 if (is_purchase && card.effective_type_id == DaleCard_9.DaleCard.CT_RIGOROUSCHRONICLER) {
                     remaining -= 2;
@@ -6735,6 +6743,23 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id }, args));
             }
         };
+        DaleOfMerchants.prototype.clientScheduleSpendTechnique = function (next, technique_card_id, cost) {
+            var other_hand_cards = this.myHand.getAllDaleCards().filter(function (card) { return card.id != technique_card_id; });
+            var max_value = this.coinManager.getMaximumSpendValue(other_hand_cards);
+            console.log("cost", cost, "max_value", max_value);
+            if (cost > max_value) {
+                this.clientScheduleTechnique('client_fizzle', technique_card_id, {
+                    cost: cost,
+                    next: next
+                });
+            }
+            else {
+                this.clientScheduleTechnique('client_spend', technique_card_id, {
+                    cost: cost,
+                    next: next
+                });
+            }
+        };
         DaleOfMerchants.prototype.resolveTechniqueCardWithServerState = function (args) {
             var card_id = this.mainClientState.args.technique_card_id;
             this.bgaPerformAction('actFullyResolveTechniqueCard', {
@@ -6753,10 +6778,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
             this.mainClientState.leave();
         };
-        DaleOfMerchants.prototype.clientTriggerTechnique = function (stateName, technique_card_id) {
+        DaleOfMerchants.prototype.clientTriggerTechnique = function (stateName, technique_card_id, args) {
+            if (args === void 0) { args = {}; }
             if (this.checkLock(true)) {
+                if (stateName == 'client_spend') {
+                    throw new Error("clientTriggerTechnique is not supported for client_spend");
+                }
                 if ($(this.mySchedule.control_name + '_item_' + technique_card_id)) {
-                    this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+                    this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id }, args));
                 }
                 else {
                     throw new Error("Cannot trigger and resolve the technique card. Card ".concat(technique_card_id, " does not exist in my schedule"));
@@ -7330,10 +7359,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_spend', card.id, {
-                            cost: 2,
-                            next: 'client_cache'
-                        });
+                        this.clientScheduleSpendTechnique('client_cache', card.id, 2);
                     }
                     break;
                 default:
@@ -8301,6 +8327,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'playTechniqueCardWithServerState':
                     this.playTechniqueCardWithServerState({
+                        spend_coins: spend_coins,
+                        spend_card_ids: spend_card_ids
+                    });
+                    break;
+                case 'resolveTechniqueCard':
+                    this.resolveTechniqueCard({
                         spend_coins: spend_coins,
                         spend_card_ids: spend_card_ids
                     });

@@ -400,6 +400,7 @@ declare global {
 		'client_shoppingJourney': { card_id: number }
 		'client_houseCleaningDitch': { card_id?: number }
 		'client_siesta': { card_id?: number }
+		'client_spend' : { spend_card_ids: number[], spend_coins: number } //for finish cards
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
@@ -466,6 +467,10 @@ declare global {
 	type TechniqueClientStates = { [K in keyof ClientTechniqueChoice]: { technique_card_id: number } }
 	type PassiveClientStates = { [K in keyof ClientPassiveChoice]: { passive_card_id: number } }
 
+	//possible follow-up states after a 'client_spend'. Note that choiceless states are not allowed, use one of the included functions 
+	type ClientSpendNext = 'playPassiveCard' | 'playTechniqueCardWithServerState' | 'playTechniqueCard' | 'resolveTechniqueCard' |
+		Exclude<keyof ClientGameStates, 'client_choicelessPassiveCard' | 'client_choicelessTechniqueCard' | 'client_choicelessTriggerTechniqueCard'> 
+
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameStates extends TriggerTechniqueClientStates, TechniqueClientStates, PassiveClientStates {
 		'chameleon_autobind': {}
@@ -503,7 +508,7 @@ declare global {
 		'client_meddlingMarketeer': { discard_card_ids: number[], card_name: string }
 		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string },
 		'client_manufacturedJoy': { draw_card_id: number, card_name: string }
-		'client_spend' : { technique_card_id: number, cost: number, next: keyof ClientGameStates | 'playPassiveCard' | 'playTechniqueCardWithServerState' | 'playTechniqueCard', wrap_class?: DaleWrapClass }
+		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 	}
 
 	//

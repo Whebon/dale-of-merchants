@@ -3234,10 +3234,34 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	/**
+	 * Locally schedule a technique with a 'spend' ability, then open the related client technique choice state.
+	 * Fizzle the technique if there is no way to cover the cost.
+	 */
+	clientScheduleSpendTechnique(next: ClientSpendNext, technique_card_id: number, cost: number) {
+		const other_hand_cards = this.myHand.getAllDaleCards().filter(card => card.id != technique_card_id);
+		const max_value = this.coinManager.getMaximumSpendValue(other_hand_cards);
+		console.log("cost", cost, "max_value", max_value);
+		if (cost > max_value) {
+			this.clientScheduleTechnique('client_fizzle', technique_card_id, {
+				cost: cost,
+				next: next
+			});
+		}
+		else {
+			this.clientScheduleTechnique('client_spend', technique_card_id, {
+				cost: cost,
+				next: next
+			});
+		}
+	}
+
+
+	/**
 	 * Resolve a trigger technique card that is already locally inside your schedule for an open-information choice. Then proceed to an hidden-information server choice state.
 	 * @param args result of the open-infomation choice to send to the server
 	 */
 	resolveTechniqueCardWithServerState<K extends keyof ClientTriggerTechniqueChoice>(args: ClientTriggerTechniqueChoice[K]) {
+		//is this function even needed...?
 		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
 		this.bgaPerformAction('actFullyResolveTechniqueCard', {
 			card_id: card_id,
@@ -3264,10 +3288,13 @@ class DaleOfMerchants extends Gamegui
 	/**
 	 * Trigger and resolve an already scheduled technique
 	 */
-	clientTriggerTechnique<K extends keyof ClientTriggerTechniqueChoice>(stateName: K, technique_card_id: number) {
+	clientTriggerTechnique<K extends keyof ClientTriggerTechniqueChoice>(stateName: K, technique_card_id: number, args: any = {}) {
 		if (this.checkLock(true)) {
+			if (stateName == 'client_spend') {
+				throw new Error(`clientTriggerTechnique is not supported for client_spend`);
+			}
 			if ($(this.mySchedule.control_name+'_item_' + technique_card_id)) {
-				this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id });
+				this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id, ...args });
 			}
 			else {
 				throw new Error(`Cannot trigger and resolve the technique card. Card ${technique_card_id} does not exist in my schedule`);
@@ -3846,10 +3873,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_spend', card.id, {
-						cost: 2,
-						next: 'client_cache'
-					});
+					this.clientScheduleSpendTechnique('client_cache', card.id, 2);
 				}
 				break;
 			default:
@@ -4949,6 +4973,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'playTechniqueCardWithServerState':
 				this.playTechniqueCardWithServerState<'client_spend'>({
+					spend_coins: spend_coins,
+					spend_card_ids: spend_card_ids
+				})
+				break;
+			case 'resolveTechniqueCard':
+				this.resolveTechniqueCard<'client_spend'>({
 					spend_coins: spend_coins,
 					spend_card_ids: spend_card_ids
 				})

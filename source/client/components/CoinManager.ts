@@ -80,12 +80,22 @@ export class CoinManager {
     }
 
     /**
+     * Returns the maximum amount of value this player is able to spend using cards and coins
+     */
+    public getMaximumSpendValue(funds: DaleCard[]): number {
+        let max_value = this.myCoins.getValue();
+        for (const card of funds) {
+            max_value += card.effective_value;
+        }
+        return max_value;
+    }
+
+    /**
      * Get the coins to spend
      */
     public getCoinsToSpend(): number {
         return +this.coinsToSpendSpan!.innerText;
     }
-
     
     /**
      * Set the coins to spend to the remaining amount
