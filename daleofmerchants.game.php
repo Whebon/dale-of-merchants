@@ -2390,7 +2390,7 @@ class DaleOfMerchants extends DaleTableBasic
     function actEnableDebugMode() {
         $debugMode = $this->getGameStateValue("debugMode", 1);
         if ($debugMode) {
-            throw new BgaUserException(_("Debug mode is already enabled for this game!"));
+            throw new BgaUserException($this->_("Debug mode is already enabled for this game!"));
         }
         $player_id = $this->getCurrentPlayerId();
         $player_ids = $this->getGameStateValuePlayerIds();
@@ -2402,7 +2402,7 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         else {
-            throw new BgaUserException(_("Waiting for other players to enable debug mode..."));
+            throw new BgaUserException($this->_("Waiting for other players to enable debug mode..."));
         }
         if (count($player_ids) == $this->getPlayersNumber()) {
             $this->setGameStateValue("debugMode", 1);
@@ -2415,7 +2415,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function actSpawn($card_name) {
         if (!$this->getGameStateValue("debugMode")) {
-            throw new BgaUserException(_("Debug mode is disabled"));
+            throw new BgaUserException($this->_("Debug mode is disabled"));
         }
         $this->spawn($card_name);
     }
@@ -4351,6 +4351,24 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertModification($technique_card_id, CT_AVIDFINANCIER, 2);
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_GOLDENOPPORTUNITY:
+                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+                if ($handsize > 0) {
+                    if (!array_key_exists("card_id", $args)) {
+                        throw new BgaVisibleSystemException("Golden Opportunity: the player did not select a card to ditch");
+                    }
+                    $card_id = $args["card_id"];
+                    $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                    $this->ditch(clienttranslate('Golden Opportunity: ${player_name} ditches a ${card_name}'), $card);
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Golden Opportunity: ${player_name} has no cards to ditch'), array(
+                        "player_name" => $this->getActivePlayerName()
+                    ));
+                }
+                $this->gainCoins($player_id, 1, $this->_("Golden Opportunity"));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4473,7 +4491,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_AVIDFINANCIER:
                 $coins_on_card = $this->effects->getArg($technique_card_id, CT_AVIDFINANCIER);
                 $coins_on_card -= 1;
-                //$this->gainCoins($player_id, 1, "Avid Financier");
+                //$this->gainCoins($player_id, 1, $this->_("Avid Financier"));
                 $this->addCoins($player_id, 1);
                 $this->notifyAllPlayers('avidFinancierTakeCoin', clienttranslate('Avid Financier: ${player_name} gains 1 ${coin_icon}'), array(
                     'player_id' => $player_id,
@@ -5357,12 +5375,12 @@ class DaleOfMerchants extends DaleTableBasic
             //take the selected card
             $card_id = array_pop($card_ids);
             if (!isset($dbcards[$card_id])) {
-                throw new BgaUserException(_("The selected card is not in limbo"));
+                throw new BgaUserException($this->_("The selected card is not in limbo"));
             }
             $dbcard = $dbcards[$card_id];
             unset($dbcards[$card_id]);
             if ($animalfolk_id != $this->getAnimalfolk($dbcard)) {
-                throw new BgaUserException(_("You can only take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                throw new BgaUserException($this->_("You can only take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
             }
             $this->cards->moveCard($card_id, HAND.$player_id);
             $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Pompous Professional: ${player_name} places a ${card_name} into their hand'), array(
@@ -5378,7 +5396,7 @@ class DaleOfMerchants extends DaleTableBasic
             //otherwise, confirm the player can indeed not draw any card of the chosen animalfolk
             foreach ($dbcards as $dbcard) {
                 if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
-                    throw new BgaUserException(_("You must take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                    throw new BgaUserException($this->_("You must take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
                 }
             }
         }

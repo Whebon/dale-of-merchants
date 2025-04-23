@@ -3299,6 +3299,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_SHATTEREDRELIC:
 			case DaleCard.CT_FORTUNATEUPGRADE:
+			case DaleCard.CT_GOLDENOPPORTUNITY:
 				if (this.myHand.count() == 1) {
 					//the hand only consists of the shatteredRelic itself
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
