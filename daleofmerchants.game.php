@@ -2638,6 +2638,11 @@ class DaleOfMerchants extends DaleTableBasic
             $this->spendCoins($player_id, $cost - $total_value - $optional_value);
         }
 
+        //Check for overpaying
+        if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
+            throw new BgaUserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
+        }
+
         //Apply CT_ESSENTIALPURCHASE
         if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
             $essential_purchase_ids = $args["essential_purchase_ids"];
