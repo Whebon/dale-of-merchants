@@ -290,6 +290,28 @@ export class DaleStock extends Stock implements DaleLocation {
 	}
 
 	/**
+	 * @returns sum of effective values of the selected cards in this stock
+	 */
+	public getSelectedValue(): number {
+		let value = 0;
+		for (let card_id of this.orderedSelection.get()) {
+			value += new DaleCard(card_id).effective_value;
+		}
+		return value;
+	}
+
+	/**
+	 * @returns sum of effective values of all cards in this stock
+	 */
+	public getTotalValue(): number {
+		let value = 0;
+		for (let card of this.getAllDaleCards()) {
+			value += card.effective_value;
+		}
+		return value;
+	}
+
+	/**
 	 * @returns all selected cards in this stock represented as DaleCard
 	 */
 	public getSelectedDaleCards(): DaleCard[] {

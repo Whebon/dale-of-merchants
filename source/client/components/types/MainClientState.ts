@@ -130,6 +130,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must resolve this technique");
             case 'client_spend':
                 return _("${card_name}: ${you} must <stronger>spend</stronger> ${cost}");
+            case 'client_spendx':
+                return _("${card_name}: ${you} must <stronger>spend</stronger> ${cost_displayed}");
 
             //Specific technique states
             case 'client_swiftBroker':
@@ -370,7 +372,7 @@ export class MainClientState {
         console.warn("setPassiveSelected", this._args);
         if ('passive_card_id' in this._args) {
             const div = new DaleCard(this._args.passive_card_id).div;
-            const cancelOnCardClick = this._name != 'client_spend';
+            const cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx');
             if (div) {
                 if (enable) {
                     div.classList.add("daleofmerchants-passive-selected");

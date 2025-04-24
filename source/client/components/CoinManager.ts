@@ -61,7 +61,7 @@ export class CoinManager {
             //spending UI
             this.coinsToSpendSpan = this.wrap.querySelector('.daleofmerchants-coins-to-spend-counter')! as HTMLElement;
             this.setCoinsToSpend(0);
-            this.wrap.addEventListener('click', this.onClickWrap.bind(this));
+            this.actionLabel.addEventListener('click', this.onClickWrap.bind(this));
         }
     }
 
@@ -124,7 +124,9 @@ export class CoinManager {
      */
     private setCoinsToSpend(amount: number): void {
         if (amount <= 0) {
-            this.wrap?.classList.add("daleofmerchants-wrap-default"); //practical hide
+            if (this.selectionMode != 'explicit') {
+                this.wrap?.classList.add("daleofmerchants-wrap-default"); //practical hide
+            }
             this.coinsToSpendSpan!.innerHTML = '0';
             return;
         }
@@ -144,6 +146,7 @@ export class CoinManager {
                 else {
                     this.setCoinsToSpend(this.getCoinsToSpend() + 1);
                 }
+                (this.page as any).onClickCoinManager();
                 break;
         }
     }
@@ -166,10 +169,10 @@ export class CoinManager {
         this.setWrapClass(wrapClass, actionLabelText);
         switch(this.selectionMode) {
             case 'explicit':
-                this.wrap?.classList.add("daleofmerchants-clickable");
+                this.actionLabel?.classList.add("daleofmerchants-clickable");
                 break;
             case 'none':
-                this.wrap?.classList.remove("daleofmerchants-clickable");
+                this.actionLabel?.classList.remove("daleofmerchants-clickable");
                 break;  
         }
     }

@@ -401,6 +401,7 @@ declare global {
 		'client_houseCleaningDitch': { card_id?: number }
 		'client_siesta': { card_id?: number }
 		'client_spend' : { spend_card_ids: number[], spend_coins: number } //for finish cards
+		'client_spendx' : { spend_card_ids: number[], spend_coins: number } //for finish cards
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
@@ -450,6 +451,7 @@ declare global {
 		'client_alternativePlan': { card_id: number }
 		'client_shakyEnterprise': { card_ids: number[] }
 		'client_spend' : { spend_card_ids: number[], spend_coins: number }
+		'client_spendx' : { spend_card_ids: number[], spend_coins: number }
 		'client_cache': { card_id: number }
 	}
 
@@ -509,6 +511,7 @@ declare global {
 		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string },
 		'client_manufacturedJoy': { draw_card_id: number, card_name: string }
 		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, wrap_class?: DaleWrapClass }
+		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 	}
 
 	//

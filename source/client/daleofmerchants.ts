@@ -908,6 +908,13 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost)
 				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
 				break;
+			case 'client_spendx':
+				const client_spendx_args = (this.mainClientState.args as ClientGameStates['client_spend']);
+				const client_spendx_wrap_class = client_spendx_args.wrap_class ?? 'daleofmerchants-wrap-purchase';
+				const client_spendx_icon_type = client_spendx_wrap_class == 'daleofmerchants-wrap-purchase' ? 'pileYellow' : 'pileBlue';
+				this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
+				this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
+				break;
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
 				break;
@@ -1256,6 +1263,10 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'client_spend':
+				this.coinManager.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_spendx':
 				this.coinManager.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
@@ -1825,6 +1836,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_spend':
 				this.addActionButton("confirm-button", _("Confirm"), "onSpend");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_spendx':
+				this.addActionButton("confirm-button", _("Confirm"), "onSpend");
+				this.updateSpendXButton();
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_cache':
@@ -2476,6 +2492,21 @@ class DaleOfMerchants extends Gamegui
 		return true;
 	}
 
+	updateSpendXButton() {
+		const confirm_button = $("confirm-button");
+		if (confirm_button) {
+			const args = this.mainClientState.args as ClientGameStates['client_spendx'];
+			let value = this.coinManager.getCoinsToSpend() + this.myHand.getSelectedValue();
+			if (value < args.cost_min) {
+				value = args.cost_min;
+			} 
+			else if (value > args.cost_max) {
+				value = args.cost_max;
+			}
+			(confirm_button as HTMLElement).innerText = _("Confirm")+` (x = ${value})`;
+		}
+	}
+
 	
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -2755,6 +2786,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spend':
 				this.onSpendSelectionChanged();
 				break;
+			case 'client_spendx':
+				this.onSpendXSelectionChanged();
+				break;
 		}
 	}
 
@@ -2935,6 +2969,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spend':
 				this.onSpendSelectionChanged();
 				break;
+			case 'client_spendx':
+				this.onSpendXSelectionChanged();
+				break;
 			case null:
 				throw new Error("gamestate.name is null");
 		}
@@ -3067,8 +3104,14 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSpendSelectionChanged() {
+		console.warn("onSpendSelectionChanged");
 		const args = this.mainClientState.args as ClientGameStates['client_spend'];
 		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost);
+	}
+
+	onSpendXSelectionChanged() {
+		console.warn("onSpendXSelectionChanged");
+		this.updateSpendXButton();
 	}
 
 	onPurchase() {
@@ -3236,20 +3279,31 @@ class DaleOfMerchants extends Gamegui
 	/**
 	 * Locally schedule a technique with a 'spend' ability, then open the related client technique choice state.
 	 * Fizzle the technique if there is no way to cover the cost.
+	 * @param next next state to goto after the spend cost is selected
+	 * @param technique_card_id
+	 * @param cost cost to pay
+	 * @param max_cost (optional) - if provided, the spend ability a range [`cost`, `max_cost`]
 	 */
-	clientScheduleSpendTechnique(next: ClientSpendNext, technique_card_id: number, cost: number) {
+	clientScheduleSpendTechnique(next: ClientSpendNext, technique_card_id: number, cost: number, cost_max?: number) {
 		const other_hand_cards = this.myHand.getAllDaleCards().filter(card => card.id != technique_card_id);
 		const max_value = this.coinManager.getMaximumSpendValue(other_hand_cards);
-		console.log("cost", cost, "max_value", max_value);
 		if (cost > max_value) {
 			this.clientScheduleTechnique('client_fizzle', technique_card_id, {
 				cost: cost,
 				next: next
 			});
 		}
-		else {
+		else if (cost_max === undefined) {
 			this.clientScheduleTechnique('client_spend', technique_card_id, {
 				cost: cost,
+				next: next
+			});
+		}
+		else {
+			this.clientScheduleTechnique('client_spendx', technique_card_id, {
+				cost_min: cost,
+				cost_max: cost_max,
+				cost_displayed: (cost_max == Infinity) ? `${cost}+` : `${cost} - ${cost_max}`,
 				next: next
 			});
 		}
@@ -3879,6 +3933,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_DISPLAYOFPOWER:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
 				break;
+			case DaleCard.CT_SAFEPROFITS:
+				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, 10);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -3964,6 +4021,14 @@ class DaleOfMerchants extends Gamegui
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
+				break;
+		}
+	}
+
+	onClickCoinManager() {
+		switch (this.mainClientState.name) {
+			case 'client_spendx':
+				this.updateSpendXButton();
 				break;
 		}
 	}
@@ -4935,12 +5000,28 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSpend() {
-		const args = this.mainClientState.args as ClientGameStates['client_spend'];
+		//get args
+		const args = this.mainClientState.args as ClientGameStates['client_spend'] | ClientGameStates['client_spendx'];
 		const spend_card_ids = this.myHand.orderedSelection.get();
 		const spend_coins = this.coinManager.getCoinsToSpend();
 		if (spend_coins > this.coinManager.myCoins.getValue()) {
 			this.showMessage(_("Not enough coins"), 'error');
 			return;
+		}
+
+		//get cost range
+		let cost_min = 0, cost_max = 0;
+		switch(this.mainClientState.name) {
+			case 'client_spend':
+				cost_min = (args as ClientGameStates['client_spend']).cost;
+				cost_max = (args as ClientGameStates['client_spend']).cost;
+				break;
+			case 'client_spendx':
+				cost_min = (args as ClientGameStates['client_spendx']).cost_min;
+				cost_max = (args as ClientGameStates['client_spendx']).cost_max;
+				break;
+			default:
+				throw new Error("onSpend called during an unexpected client state: "+this.mainClientState.name);
 		}
 
 		//verifyCost on the client side
@@ -4951,15 +5032,19 @@ class DaleOfMerchants extends Gamegui
             total_value += value
 			lowest_value = Math.min(lowest_value, value);
         }
-		if (total_value < args.cost) {
-			this.showMessage(_("Insufficient funds")+` (${total_value}/${args.cost})`, 'error');
+		if (total_value < cost_min) {
+			this.showMessage(_("Insufficient funds")+` (${total_value}/${cost_min})`, 'error');
 			return;
 		}
-		if (total_value - lowest_value >= args.cost) {
+		if (total_value - lowest_value >= cost_max) {
 			this.showMessage(_("Please remove unnecessary cards"), 'error');
 			return;
 		}
-
+		if (total_value > cost_max && this.coinManager.getCoinsToSpend() > 0) {
+			this.showMessage(_("Please remove unnecessary coins"), 'error');
+			return;
+		}
+		
 		//go the the next state or action
 		switch (args.next) {
 			case 'playPassiveCard':

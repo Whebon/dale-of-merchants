@@ -1265,7 +1265,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function gainCoins(mixed $player_id, int $nbr, string $msg_prefix = null) {
         $this->addCoins($player_id, $nbr);
-        $msg = clienttranslate('${player_name} takes ${nbr} ${coin_icon} from the bank');
+        $msg = clienttranslate('${player_name} gains ${nbr} ${coin_icon}');
         $this->notifyAllPlayers('gainCoins', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
@@ -1307,6 +1307,60 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Helper function for "spend X" abilities. Spends the given combination of cards from hand and coins. 
+     * Also notifies the players about how the spend cost was paid.
+     * @param mixed $player_id the player that needs to to pay the spend cost
+     * @param array $args requires `"spend_coins"` and `"spend_card_ids"` to get the chosen funds from
+     * @param int $cost_min mimum value of `$x`
+     * @param int $cost_max maximum value of `$x`
+     * @param string $msg_prefix (optional) - source of this effect
+     * @return int $x
+     */
+    function spendX(mixed $player_id, array $args, int $cost_min, int $cost_max, string $msg_prefix = null): int {
+        //Extract the arguments
+        $spend_coins = (int)$args["spend_coins"];
+        $spend_card_ids = $args["spend_card_ids"];
+        if ($spend_coins === null || $spend_card_ids === null) {
+            throw new BgaVisibleSystemException("Actions with spend abilities must include 'spend_coins' and 'spend_card_ids' arguments");
+        }
+
+        //Spend coins (explicitly)
+        $this->spendCoins($player_id, $spend_coins, $msg_prefix);
+        $cost_min -= $spend_coins;
+        $cost_max -= $spend_coins;
+
+        //Spend cards
+        $spend_cards = $this->cards->getCardsFromLocation($spend_card_ids, HAND.$player_id);
+        $x_without_coins = $this->verifyCost($player_id, $spend_cards, $cost_min, $cost_max, false);
+    
+        //Check for overpaying coins
+        if ($x_without_coins > $cost_max) {
+            $x_without_coins = $cost_max;
+            if ($spend_coins > 0) {
+                throw new BgaUserException($this->_("Unable to overpay with coins. Please reduce the number of included coins."));
+            }
+        }
+
+        //Discard cards
+        if (count($spend_card_ids) > 0) {
+            $this->cards->moveCardsOnTop($spend_card_ids, DISCARD.$player_id);
+            $msg = clienttranslate('${player_name} spends ${nbr} card(s)');
+            $this->notifyAllPlayers('discardMultiple', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $spend_card_ids,
+                'cards' => $spend_cards,
+                'nbr' => count($spend_cards)
+            ));
+        }
+
+        //Notify the player about the value of x
+        $x = $x_without_coins + $spend_coins;
+        $this->notifyAllPlayers('message', ($msg_prefix ? $msg_prefix.": " : "")."x = ".$x, array());
+        return $x;
+    }
+
+    /**
      * Helper function for "spend" abilities. Spends the given `$cost` using a combination of cards from hand and coins.
      * Also notifies the players about how the spend cost was paid.
      * @param mixed $player_id the player that needs to to pay the spend cost
@@ -1331,7 +1385,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Spend cards
         $spend_cards = $this->cards->getCardsFromLocation($spend_card_ids, HAND.$player_id);
-        $this->verifyCost($player_id, $spend_cards, $cost, false);
+        $this->verifyCost($player_id, $spend_cards, $cost, null, false);
 
         //Discard cards
         if (count($spend_card_ids) > 0) {
@@ -1354,9 +1408,11 @@ class DaleOfMerchants extends DaleTableBasic
      * @param mixed $player_id player that needs to to pay the cost
      * @param array $funds_cards the funds that are used to pay the cost
      * @param int $cost the cost that needs to be paid (explicitly paid coins should already be subtracted!)
-     * @param bool $is_purchase if `false`, this is a regular spend ability. if `true`, apply additional cost rules for purchases. 
+     * @param ?int $cost_max (optional) by default, this is the same as `$cost`. overpaying is allowed up to the maximum.
+     * @param bool $is_purchase (optional) if `true`, apply additional cost rules for purchases. 
+     * @return int $value spent to cover the costs
      */
-    function verifyCost(mixed $player_id, array $funds_cards, int $cost, bool $is_purchase) {
+    function verifyCost(mixed $player_id, array $funds_cards, int $cost, ?int $cost_max = null, bool $is_purchase = false): int {
         $optional_value = 0;
         if ($is_purchase) {
             //Apply CT_RIGOROUSCHRONICLER
@@ -1379,13 +1435,19 @@ class DaleOfMerchants extends DaleTableBasic
                 $total_value += $optional_value + $coins;
                 throw new BgaUserException($this->_("Insufficient funds")." ($total_value / $cost)");
             }
-            $this->spendCoins($player_id, $cost - $total_value - $optional_value);
+            $remaining = $cost - $total_value - $optional_value;
+            $this->spendCoins($player_id, $remaining);
+            $total_value += $remaining;
         }
 
         //Check for overpaying
-        if (($total_value - $lowest_value) >= $cost && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
+        if ($cost_max === null) {
+            $cost_max = $cost;
+        }
+        if (($total_value - $lowest_value) >= $cost_max && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
             throw new BgaUserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
         }
+        return $total_value;
     }
 
 
@@ -2700,7 +2762,7 @@ class DaleOfMerchants extends DaleTableBasic
         $cost = $this->getCost($market_card);
 
         //Verify the cost
-        $this->verifyCost($player_id, $funds_cards, $cost, true);
+        $this->verifyCost($player_id, $funds_cards, $cost, null, true);
 
         //Apply CT_ESSENTIALPURCHASE
         if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
@@ -4390,6 +4452,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->notifyAllPlayers('message', clienttranslate('Display of Power: ${player_name} increases their hand size by 2'), array(
                     'player_name' => $this->getActivePlayerName()
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SAFEPROFITS:
+                $x = $this->spendX($player_id, $args, 1, 10, $this->_("Safe Profits"));
+                $this->gainCoins($player_id, ($x+1)/2, $this->_("Safe Profits"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
