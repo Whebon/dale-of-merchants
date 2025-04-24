@@ -817,7 +817,8 @@ class DaleOfMerchants extends DaleTableBasic
         $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
         //$cookies = $this->countTypeId($hand_cards, CT_COOKIES); //old cookies effect
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
-        return 5 + $bribes + $sofas;
+        $displayofpowers = 2 * $this->effects->countGlobalEffects(CT_DISPLAYOFPOWER);
+        return 5 + $bribes + $sofas + $displayofpowers;
     }
 
     /**
@@ -4380,6 +4381,14 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_name" => $this->getPlayerNameById($player_id),
                     "card_name" => $this->getCardName($dbcard),
                     "card" => $dbcard
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_DISPLAYOFPOWER:
+                $this->spend($player_id, $args, 2, $this->_("Display of Power"));
+                $this->effects->insertGlobal($technique_card_id, CT_DISPLAYOFPOWER);
+                $this->notifyAllPlayers('message', clienttranslate('Display of Power: ${player_name} increases their hand size by 2'), array(
+                    'player_name' => $this->getActivePlayerName()
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;

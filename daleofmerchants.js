@@ -7362,6 +7362,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleSpendTechnique('client_cache', card.id, 2);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_DISPLAYOFPOWER:
+                    this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;

@@ -3876,6 +3876,9 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleSpendTechnique('client_cache', card.id, 2);
 				}
 				break;
+			case DaleCard.CT_DISPLAYOFPOWER:
+				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
