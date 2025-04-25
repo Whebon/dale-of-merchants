@@ -5365,9 +5365,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_houseCleaningDitch':
                     this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_shoppingJourney':
+                    this.addActionButtonCancelClient();
                     break;
                 case 'client_siesta':
-                    this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, 'gray');
+                    this.addActionButtonCancelClient();
                     break;
                 case 'client_ruthlessCompetition':
                     this.addActionButtonCancelClient();
@@ -6854,7 +6858,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     throw new Error("clientTriggerTechnique is not supported for client_spend");
                 }
                 if ($(this.mySchedule.control_name + '_item_' + technique_card_id)) {
-                    this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id }, args));
+                    this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id, is_trigger: true }, args));
                 }
                 else {
                     throw new Error("Cannot trigger and resolve the technique card. Card ".concat(technique_card_id, " does not exist in my schedule"));
@@ -7587,7 +7591,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.chameleonArgs = undefined;
             }
             console.warn(this.mainClientState.args);
-            if ('technique_card_id' in this.mainClientState.args) {
+            if ('technique_card_id' in this.mainClientState.args && !('is_trigger' in this.mainClientState.args)) {
                 var card_id = this.mainClientState.args.technique_card_id;
                 var card = new DaleCard_10.DaleCard(card_id);
                 var type_id = card.effective_type_id;
@@ -7880,9 +7884,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onHouseCleaningSkip = function () {
-            this.resolveTechniqueCard({});
-        };
-        DaleOfMerchants.prototype.onSiestaSkip = function () {
             this.resolveTechniqueCard({});
         };
         DaleOfMerchants.prototype.onNightShift = function (card_id, player_id) {

@@ -4549,9 +4549,10 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 else {
-                    $this->notifyAllPlayers('message', clienttranslate('Siesta: ${player_name} does not take a card from their discard pile'), array(
-                        'player_name' => $this->getActivePlayerName()
-                    ));
+                    throw new BgaUserException($this->_("You MUST take a card from your discard pile"));
+                    // $this->notifyAllPlayers('message', clienttranslate('Siesta: ${player_name} does not take a card from their discard pile'), array(
+                    //     'player_name' => $this->getActivePlayerName()
+                    // ));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
