@@ -3579,7 +3579,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_houseCleaningDitch':
                         return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
                     case 'client_siesta':
-                        return _("${card_name}: ${you} may take a card from your discard pile");
+                        return _("${card_name}: ${you} must take a card from your discard pile");
                     case 'client_ruthlessCompetition':
                         return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
                     case 'client_raffle':
