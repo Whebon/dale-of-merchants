@@ -753,9 +753,6 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', naturalSurvivor_args.die_value);
 				this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
 				break;
-			case 'client_refreshingDrink':
-				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
-				break;
 			case 'duplicateEntry':
 				const duplicateEntry_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard.of));
@@ -1149,9 +1146,6 @@ class DaleOfMerchants extends Gamegui
 			case 'naturalSurvivor':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
-				this.myHand.setSelectionMode('none');
-				break;
-			case 'client_refreshingDrink':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'duplicateEntry':
@@ -1598,9 +1592,6 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'naturalSurvivor':
 				this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
-				break;
-			case 'client_refreshingDrink':
-				this.addActionButtonCancelClient();
 				break;
 			case 'duplicateEntry':
 				this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
@@ -2894,11 +2885,6 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
-			case 'client_refreshingDrink':
-				this.playPassiveCard<'client_refreshingDrink'>({
-					card_id: card!.id
-				})
-				break;
 			case 'sliceOfLife':
 				this.bgaPerformAction('actSliceOfLife', {
 					card_id: card.id
@@ -4006,9 +3992,6 @@ class DaleOfMerchants extends Gamegui
 				else {
 					this.mainClientState.enterOnStack('client_selectOpponentPassive', {passive_card_id: card.id});
 				}
-				break;
-			case DaleCard.CT_REFRESHINGDRINK:
-				this.mainClientState.enterOnStack('client_refreshingDrink', {passive_card_id: card.id});
 				break;
 			case DaleCard.CT_BARRICADE:
 				let barricadeJunk = 0;

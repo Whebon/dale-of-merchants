@@ -460,7 +460,6 @@ declare global {
 		'client_selectOpponentPassive': { opponent_id: number }
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
-		'client_refreshingDrink': { card_id: number }
 		'client_barricade': { card_ids: number[] }
 	}
 

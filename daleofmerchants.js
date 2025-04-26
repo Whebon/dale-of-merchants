@@ -3592,8 +3592,6 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
                     case 'client_riskyBusiness':
                         return _("${card_name}: ${you} must guess the top card's value from the supply");
-                    case 'client_refreshingDrink':
-                        return _("${card_name}: ${you} must choose a card to discard");
                     case 'client_historyLesson':
                         return _("${card_name}: ${you} may select up to 3 cards from the top of your discard pile");
                     case 'client_replacement':
@@ -4601,9 +4599,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', naturalSurvivor_args.die_value);
                     this.myHand.setSelectionMode('multiple', 'naturalSurvivor', 'daleofmerchants-wrap-technique', undefined, undefined, naturalSurvivor_args.die_value);
                     break;
-                case 'client_refreshingDrink':
-                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
-                    break;
                 case 'duplicateEntry':
                     var duplicateEntry_args = args.args;
                     this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard_10.DaleCard.of));
@@ -4977,9 +4972,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'naturalSurvivor':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
-                    this.myHand.setSelectionMode('none');
-                    break;
-                case 'client_refreshingDrink':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'duplicateEntry':
@@ -5426,9 +5418,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'naturalSurvivor':
                     this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
-                    break;
-                case 'client_refreshingDrink':
-                    this.addActionButtonCancelClient();
                     break;
                 case 'duplicateEntry':
                     this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
@@ -6488,11 +6477,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'client_refreshingDrink':
-                    this.playPassiveCard({
-                        card_id: card.id
-                    });
-                    break;
                 case 'sliceOfLife':
                     this.bgaPerformAction('actSliceOfLife', {
                         card_id: card.id
@@ -7500,9 +7484,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     else {
                         this.mainClientState.enterOnStack('client_selectOpponentPassive', { passive_card_id: card.id });
                     }
-                    break;
-                case DaleCard_10.DaleCard.CT_REFRESHINGDRINK:
-                    this.mainClientState.enterOnStack('client_refreshingDrink', { passive_card_id: card.id });
                     break;
                 case DaleCard_10.DaleCard.CT_BARRICADE:
                     var barricadeJunk = 0;

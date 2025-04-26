@@ -198,8 +198,6 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
             case 'client_riskyBusiness':
                 return _("${card_name}: ${you} must guess the top card's value from the supply");
-            case 'client_refreshingDrink':
-                return _("${card_name}: ${you} must choose a card to discard");
             case 'client_historyLesson':
                 return _("${card_name}: ${you} may select up to 3 cards from the top of your discard pile");
             case 'client_replacement':

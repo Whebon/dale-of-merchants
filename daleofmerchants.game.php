@@ -4666,18 +4666,6 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->gamestate->nextState("trCunningNeighbour"); return;
                 }
                 break;
-            case CT_REFRESHINGDRINK:
-                $card_id = $args["card_id"];
-                $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
-                $this->notifyAllPlayers('discard', clienttranslate('Refreshing Drink: ${player_name} discards their ${card_name}'), array(
-                    "player_id" => $player_id,
-                    "card" => $card,
-                    "player_name" => $this->getPlayerNameById($player_id),
-                    "card_name" => $this->getCardName($card)
-                ));
-                $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
-                break;
             case CT_SLICEOFLIFE:
                 if ($this->gamestate->state()['name'] == 'postCleanUpPhase') {
                     $this->setGameStateValue("isPostCleanUpPhase", 1);
