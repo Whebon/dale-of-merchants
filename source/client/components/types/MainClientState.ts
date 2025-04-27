@@ -110,6 +110,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
             case 'client_calculations':
                 return _("${card_name}: ${you} may rearrange any cards in the market");
+            case 'client_sliceoflife':
+                return _("${card_name}: ${you} must choose 2 cards to discard");
             case 'client_barricade':
                 if((this._args as ClientGameStates['client_barricade']).nbr_junk == 0) {
                     return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
@@ -329,8 +331,9 @@ export class MainClientState {
      * Push a copy of the current client state on the stack, then replace the current client state
      * @param name name of the client state
      * @param args (optional) if provided, pass arguments to the client state
+     * `disable_cancel_on_click` only affects passive cards and disables the feature that clicking that passive card cancels the passive client state
      */
-    public enterOnStack<K extends keyof ClientGameStates>(name: K, args?: ClientGameStates[K]) {
+    public enterOnStack<K extends keyof ClientGameStates>(name: K, args?: ClientGameStates[K] & { disable_cancel_on_click?: true }) {
         if (this._page.checkLock()) {
             if (this._page.gamedatas.gamestate.name == this._name) {
                 this._stack.push(new PreviousState(this._name, this._args));
@@ -370,7 +373,7 @@ export class MainClientState {
         console.warn("setPassiveSelected", this._args);
         if ('passive_card_id' in this._args) {
             const div = new DaleCard(this._args.passive_card_id).div;
-            const cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx');
+            const cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx' && !('disable_cancel_on_click' in this._args));
             if (div) {
                 if (enable) {
                     div.classList.add("daleofmerchants-passive-selected");

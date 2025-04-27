@@ -768,6 +768,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
 				this.myDeck.openPopin();
 				break;
+			case 'client_sliceoflife':
+				this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to discard"));
+				break;
 			case 'refreshingDrink':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
 				break;
@@ -1159,6 +1162,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
+			case 'client_sliceoflife':
+				this.myHand.setSelectionMode('none');
+				break;
 			case 'refreshingDrink':
 				this.myHand.setSelectionMode('none');
 				break;
@@ -1212,11 +1218,8 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
-			case 'refreshingDrink':
+			case 'tacticalMeasurement':
 				this.myHand.setSelectionMode('none');
-				break;
-			case 'refreshingDrink':
-				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'meddlingMarketeer':
 				this.myLimbo.setSelectionMode('none');
@@ -1602,6 +1605,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'culturalPreservation':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
+				break;
+			case 'client_sliceoflife':
+				this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
+				this.addActionButtonCancelClient();
 				break;
 			case 'client_replacement':
 				this.addActionButtonCancelClient();
@@ -3985,6 +3992,13 @@ class DaleOfMerchants extends Gamegui
 					card_id_last: client_calculations_card_ids[0]!
 				});
 				break;
+			case DaleCard.CT_SLICEOFLIFE:
+				if (this.myHand.count() < 2) {
+					this.showMessage(_("Not enough cards to discard"), 'error');
+					return;
+				}
+				this.mainClientState.enterOnStack('client_sliceoflife', { passive_card_id: card.id, disable_cancel_on_click: true });
+				break;
 			case DaleCard.CT_CUNNINGNEIGHBOUR:
 				if (this.unique_opponent_id) {
 					this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
@@ -4639,6 +4653,17 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actCulturalPreservation', {
 			card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
 		});
+	}
+
+	onSliceOfLife() {
+		const card_ids = this.myHand.orderedSelection.get();
+		if (card_ids.length != 2) {
+			this.showMessage(_("Please select exactly ")+2+_(" cards from your hand"), 'error');
+			return;
+		}
+		this.playPassiveCard<'client_sliceoflife'>({
+			card_ids: card_ids
+		})
 	}
 
 	onReplacementFizzle() {

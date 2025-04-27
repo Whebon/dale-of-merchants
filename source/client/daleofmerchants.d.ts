@@ -461,6 +461,7 @@ declare global {
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_barricade': { card_ids: number[] }
+		'client_sliceoflife': { card_ids: number[] }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice

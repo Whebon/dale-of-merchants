@@ -3552,6 +3552,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
                         return _("${card_name}: ${you} may rearrange any cards in the market");
+                    case 'client_sliceoflife':
+                        return _("${card_name}: ${you} must choose 2 cards to discard");
                     case 'client_barricade':
                         if (this._args.nbr_junk == 0) {
                             return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
@@ -3777,7 +3779,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             console.warn("setPassiveSelected", this._args);
             if ('passive_card_id' in this._args) {
                 var div = new DaleCard_7.DaleCard(this._args.passive_card_id).div;
-                var cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx');
+                var cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx' && !('disable_cancel_on_click' in this._args));
                 if (div) {
                     if (enable) {
                         div.classList.add("daleofmerchants-passive-selected");
@@ -4662,6 +4664,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
                     this.myDeck.openPopin();
                     break;
+                case 'client_sliceoflife':
+                    this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to discard"));
+                    break;
                 case 'refreshingDrink':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
                     break;
@@ -5033,6 +5038,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
+                case 'client_sliceoflife':
+                    this.myHand.setSelectionMode('none');
+                    break;
                 case 'refreshingDrink':
                     this.myHand.setSelectionMode('none');
                     break;
@@ -5086,11 +5094,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
-                case 'refreshingDrink':
+                case 'tacticalMeasurement':
                     this.myHand.setSelectionMode('none');
-                    break;
-                case 'refreshingDrink':
-                    this.myLimbo.setSelectionMode('none');
                     break;
                 case 'meddlingMarketeer':
                     this.myLimbo.setSelectionMode('none');
@@ -5476,6 +5481,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'culturalPreservation':
                     this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
+                    break;
+                case 'client_sliceoflife':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
+                    this.addActionButtonCancelClient();
                     break;
                 case 'client_replacement':
                     this.addActionButtonCancelClient();
@@ -7525,6 +7534,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id_last: client_calculations_card_ids[0]
                     });
                     break;
+                case DaleCard_10.DaleCard.CT_SLICEOFLIFE:
+                    if (this.myHand.count() < 2) {
+                        this.showMessage(_("Not enough cards to discard"), 'error');
+                        return;
+                    }
+                    this.mainClientState.enterOnStack('client_sliceoflife', { passive_card_id: card.id, disable_cancel_on_click: true });
+                    break;
                 case DaleCard_10.DaleCard.CT_CUNNINGNEIGHBOUR:
                     if (this.unique_opponent_id) {
                         this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
@@ -8103,6 +8119,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onCulturalPreservation = function () {
             this.bgaPerformAction('actCulturalPreservation', {
                 card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
+            });
+        };
+        DaleOfMerchants.prototype.onSliceOfLife = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            if (card_ids.length != 2) {
+                this.showMessage(_("Please select exactly ") + 2 + _(" cards from your hand"), 'error');
+                return;
+            }
+            this.playPassiveCard({
+                card_ids: card_ids
             });
         };
         DaleOfMerchants.prototype.onReplacementFizzle = function () {

@@ -4667,10 +4667,24 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
                 $this->gamestate->nextState("trRefreshingDrink"); return;
                 break;
+            case CT_SLICEOFLIFE:
+                $card_ids = $args["card_ids"];
+                if (count($card_ids) != 2) {
+                    throw new BgaUserException($this->_("You must discard exactly 2 cards"));
+                }
+                $this->discardMultiple(
+                    clienttranslate('Slice of Life: ${player_name} discards 2 cards'),
+                    $player_id,
+                    $card_ids,
+                    $this->cards->getCardsFromLocation($card_ids, HAND.$player_id)
+                );
+                $this->draw(clienttranslate('Slice of Life: ${player_name} draws 2 cards'), 2);
+                $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
+                break;
             case CT_BARGAINSEEKER:
                 $rightmostcards = $this->cards->getCardsInLocation(MARKET, 0);
                 if (count($rightmostcards) != 1) {
-                    throw new BgaUserException("Unable to ditch the rightmost card in the market");
+                    throw new BgaUserException($this->_("Unable to ditch the rightmost card in the market"));
                 }
                 $this->ditchFromMarketBoard(
                     clienttranslate('Bargain Seeker: ${player_name} ditches the rightmost card from the market'),
