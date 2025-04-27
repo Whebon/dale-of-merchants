@@ -1,5 +1,5 @@
 export class DaleIcons {
-    private static readonly ROWS = 7;
+    private static readonly ROWS = 10;
     private static readonly COLUMNS = 6;
     
     private static readonly ICON_WIDTH = 150;
@@ -22,6 +22,15 @@ export class DaleIcons {
         `)
         return icon;
     }
+
+    ///////////////////////////////
+    ////////    ALIASES    ////////
+    ///////////////////////////////
+
+    public static getNaturalSurvivorIcon(): HTMLElement {
+        return this.getHandIcon();
+    }
+
 
     /////////////////////////////
     ////////    ROW 0    ////////
@@ -58,10 +67,6 @@ export class DaleIcons {
     public static getBuildIcon(): HTMLElement {
         return this.getIcon(3, 1);
     }
-    
-    public static getCoinIcon(): HTMLElement {
-        return this.getIcon(3, 3);
-    }
 
     public static getHandIcon(): HTMLElement {
         return this.getIcon(3, 4);
@@ -87,6 +92,10 @@ export class DaleIcons {
         return this.getIcon(4, 2);
     }
 
+    public static getHistoryLessonIcon(): HTMLElement {
+        return this.getIcon(4, 3);
+    }
+
     /////////////////////////////
     ////////    ROW 5    ////////
     /////////////////////////////
@@ -101,59 +110,87 @@ export class DaleIcons {
     /////////////////////////////
 
     public static getCostModificationIcon(index: number): HTMLElement {
+        if (index >= 4) {
+            throw new Error("CostModificationIcon "+index+" does not exist");
+        }
         return this.getIcon(6, index);
     }
 
-
-    ////////////////////////////////////////
-    ////////    DO NOT EXIST YET    ////////
-    ////////////////////////////////////////
-
-    public static getNaturalSurvivorIcon(): HTMLElement {
-        return this.getIcon(4, 2); //TODO
+        
+    public static getCoinIcon(): HTMLElement {
+        return this.getIcon(6, 4);
     }
 
-    public static getHistoryLessonIcon(): HTMLElement {
-        return this.getIcon(4, 2); //TODO
-    }
+
+    /////////////////////////////
+    ////////    ROW 7    ////////
+    /////////////////////////////
 
     public static getCardIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(7, 0);
     }
 
-    public static getCardsIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+    public static getCards2Icon(): HTMLElement {
+        return this.getIcon(7, 1);
     }
 
-    ///////////////////////////////////////////////////////
-    ////////    DO NOT EXIST YET (for tooltips)    ////////
-    ///////////////////////////////////////////////////////
+    public static getCards3Icon(): HTMLElement {
+        return this.getIcon(7, 2);
+    }
 
     public static getCometIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(7, 0);
     }
 
     public static getPlanetIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(7, 1);
     }
 
     public static getStarsIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(7, 2);
     }
 
+    /////////////////////////////
+    ////////    ROW 8    ////////
+    /////////////////////////////
+
     public static getDawnIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(8, 0);
     }
 
     public static getDayIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(8, 1);
     }
 
     public static getNightIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(8, 2);
     }
 
     public static getClockIcon(): HTMLElement {
-        return this.getIcon(0, 5); //TODO
+        return this.getIcon(8, 3);
+    }
+
+    /////////////////////////////
+    ////////    ROW 9    ////////
+    /////////////////////////////
+
+    public static get3DDieOcelotIcon(): HTMLElement {
+        return this.getIcon(8, 0);
+    }
+
+    public static get3DDiePolecatIcon(): HTMLElement {
+        return this.getIcon(8, 1);
+    }
+
+    public static get3DDieHareIcon(): HTMLElement {
+        return this.getIcon(8, 2);
+    }
+
+    public static get3DDiePangolin1Icon(): HTMLElement {
+        return this.getIcon(8, 3);
+    }
+
+    public static get3DDiePangolin2Icon(): HTMLElement {
+        return this.getIcon(8, 4);
     }
 }

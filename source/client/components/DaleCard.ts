@@ -909,10 +909,10 @@ export class DaleCard {
      */
     private format_string(text: string): string {
         if (text.includes('CARDS3')) {
-            text = text.replaceAll('CARDS3', `<span class="daleofmerchants-log-span">${DaleIcons.getCardsIcon().outerHTML}</span>`);
+            text = text.replaceAll('CARDS3', `<span class="daleofmerchants-log-span">${DaleIcons.getCards3Icon().outerHTML}</span>`);
         }
         if (text.includes('CARDS2')) {
-            text = text.replaceAll('CARDS2', `<span class="daleofmerchants-log-span">${DaleIcons.getCardsIcon().outerHTML}</span>`);
+            text = text.replaceAll('CARDS2', `<span class="daleofmerchants-log-span">${DaleIcons.getCards2Icon().outerHTML}</span>`);
         }
         if (text.includes('CARD')) {
             text = text.replaceAll('CARD', `<span class="daleofmerchants-log-span">${DaleIcons.getCardIcon().outerHTML}</span>`);

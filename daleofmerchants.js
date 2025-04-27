@@ -37,6 +37,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
             return icon;
         };
+        DaleIcons.getNaturalSurvivorIcon = function () {
+            return this.getHandIcon();
+        };
         DaleIcons.getBluePileIcon = function (index) {
             return this.getIcon(0, index);
         };
@@ -51,9 +54,6 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         };
         DaleIcons.getBuildIcon = function () {
             return this.getIcon(3, 1);
-        };
-        DaleIcons.getCoinIcon = function () {
-            return this.getIcon(3, 3);
         };
         DaleIcons.getHandIcon = function () {
             return this.getIcon(3, 4);
@@ -70,46 +70,67 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCheeseIcon = function () {
             return this.getIcon(4, 2);
         };
+        DaleIcons.getHistoryLessonIcon = function () {
+            return this.getIcon(4, 3);
+        };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
         };
         DaleIcons.getCostModificationIcon = function (index) {
+            if (index >= 4) {
+                throw new Error("CostModificationIcon " + index + " does not exist");
+            }
             return this.getIcon(6, index);
         };
-        DaleIcons.getNaturalSurvivorIcon = function () {
-            return this.getIcon(4, 2);
-        };
-        DaleIcons.getHistoryLessonIcon = function () {
-            return this.getIcon(4, 2);
+        DaleIcons.getCoinIcon = function () {
+            return this.getIcon(6, 4);
         };
         DaleIcons.getCardIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(7, 0);
         };
-        DaleIcons.getCardsIcon = function () {
-            return this.getIcon(0, 5);
+        DaleIcons.getCards2Icon = function () {
+            return this.getIcon(7, 1);
+        };
+        DaleIcons.getCards3Icon = function () {
+            return this.getIcon(7, 2);
         };
         DaleIcons.getCometIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(7, 0);
         };
         DaleIcons.getPlanetIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(7, 1);
         };
         DaleIcons.getStarsIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(7, 2);
         };
         DaleIcons.getDawnIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(8, 0);
         };
         DaleIcons.getDayIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(8, 1);
         };
         DaleIcons.getNightIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(8, 2);
         };
         DaleIcons.getClockIcon = function () {
-            return this.getIcon(0, 5);
+            return this.getIcon(8, 3);
         };
-        DaleIcons.ROWS = 7;
+        DaleIcons.get3DDieOcelotIcon = function () {
+            return this.getIcon(8, 0);
+        };
+        DaleIcons.get3DDiePolecatIcon = function () {
+            return this.getIcon(8, 1);
+        };
+        DaleIcons.get3DDieHareIcon = function () {
+            return this.getIcon(8, 2);
+        };
+        DaleIcons.get3DDiePangolin1Icon = function () {
+            return this.getIcon(8, 3);
+        };
+        DaleIcons.get3DDiePangolin2Icon = function () {
+            return this.getIcon(8, 4);
+        };
+        DaleIcons.ROWS = 10;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
         DaleIcons.ICON_HEIGHT = 150;
@@ -1324,10 +1345,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.format_string = function (text) {
             if (text.includes('CARDS3')) {
-                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardsIcon().outerHTML, "</span>"));
+                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCards3Icon().outerHTML, "</span>"));
             }
             if (text.includes('CARDS2')) {
-                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardsIcon().outerHTML, "</span>"));
+                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCards2Icon().outerHTML, "</span>"));
             }
             if (text.includes('CARD')) {
                 text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardIcon().outerHTML, "</span>"));
