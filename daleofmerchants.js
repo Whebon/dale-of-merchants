@@ -4653,7 +4653,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('single');
                     break;
                 case 'client_historyLesson':
-                    this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+                    this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
                     this.myDiscard.openPopin();
                     break;
                 case 'culturalPreservation':

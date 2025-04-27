@@ -3901,14 +3901,9 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 else {
-                    while ($nbr > 0) {
-                        $nbr -= 1;
-                        $dbcard = $this->cards->getCardOnTop(DISCARD.$player_id);
-                        $card_id = $dbcard["id"];
-                        if (!in_array($card_id, $card_ids)) {
-                            throw new BgaVisibleSystemException("Since card $card_id is on top, it must be selected");
-                        }
-                        $this->cards->moveCardOnTop($card_id, DECK.$player_id);
+                    $dbcards = $this->cards->removeCardsFromTop($card_ids, 3, DISCARD.$player_id);
+                    foreach($dbcards as $dbcard) {
+                        $this->cards->moveCardOnTop($dbcard["id"], DECK.$player_id);
                         $this->notifyAllPlayers('discardToDeck', clienttranslate('History Lesson: ${player_name} shuffles their ${card_name} into their deck'), array(
                             "player_id" => $player_id,
                             "player_name" => $this->getPlayerNameById($player_id),
@@ -3916,6 +3911,22 @@ class DaleOfMerchants extends DaleTableBasic
                             "card" => $dbcard
                         ));
                     }
+                    // TODO: safely delete this (10th anniversary rule change)
+                    // while ($nbr > 0) {
+                    //     $nbr -= 1;
+                    //     $dbcard = $this->cards->getCardOnTop(DISCARD.$player_id);
+                    //     $card_id = $dbcard["id"];
+                    //     if (!in_array($card_id, $card_ids)) {
+                    //         throw new BgaVisibleSystemException("Since card $card_id is on top, it must be selected");
+                    //     }
+                    //     $this->cards->moveCardOnTop($card_id, DECK.$player_id);
+                    //     $this->notifyAllPlayers('discardToDeck', clienttranslate('History Lesson: ${player_name} shuffles their ${card_name} into their deck'), array(
+                    //         "player_id" => $player_id,
+                    //         "player_name" => $this->getPlayerNameById($player_id),
+                    //         "card_name" => $this->getCardName($dbcard),
+                    //         "card" => $dbcard
+                    //     ));
+                    // }
                     $this->cards->shuffle(DECK.$player_id);
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
@@ -4382,25 +4393,8 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SHAKYENTERPRISE:
                 $this->beginResolvingCard($technique_card_id);
                 $card_ids = $args["card_ids"];
-                //verify that the cards come from the top 3 of the discard pile
-                $top3_dbcards = $this->cards->getCardsOnTop(3, DISCARD.$player_id);
-                if (count($card_ids) < 1 || count($card_ids) > 3) {
-                    throw new BgaUserException("Shaky Enterprise: please select 1-3 cards"); //0 cards should be a fizzle instead
-                }
-                foreach ($card_ids as $card_id) {
-                    $within_top3 = false;
-                    foreach ($top3_dbcards as $i => $top3_dbcard) { //$i in [0, 1, 2]
-                        if ($card_id == $top3_dbcard["id"]) {
-                            $within_top3 = true;
-                            break;
-                        }
-                    }
-                    if (!$within_top3) {
-                        throw new BgaUserException("Shaky Enterprise: please only select cards within the top 3 cards of the discard pile");
-                    }
-                }
                 //move the cards to limbo
-                $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$player_id);
+                $dbcards = $this->cards->removeCardsFromTop($card_ids, 3, DISCARD.$player_id);
                 $this->cards->moveCards($card_ids, LIMBO.$player_id);
                 $this->notifyAllPlayers('discardToHandMultiple', clienttranslate('Shaky Enterprise: ${player_name} takes ${nbr} cards from their discard pile'), array(
                     "player_id" => $player_id,

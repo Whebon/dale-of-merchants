@@ -227,6 +227,34 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * Get cards from the top of the provided location WITHIN the top $nbr of cards on that pile.
+     * Verifies that the cards come from the top $nbr of the discard pile
+     * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
+     * @param array $card_ids cards to get from the top of the given pile
+     * @param array $nbr maximum depth to look within the top of the given pile
+     * @param string $location pile
+     */
+    function removeCardsFromTop(array $card_ids, int $nbr, string $location) {
+        if (count($card_ids) < 1 || count($card_ids) > $nbr) {
+            throw new BgaUserException("Please select the expected number of cards"."(1-".$nbr.")"); //0 cards should be a fizzle instead
+        }
+        $top3_dbcards = $this->getCardsOnTop($nbr, $location);
+        foreach ($card_ids as $card_id) {
+            $within_top3 = false;
+            foreach ($top3_dbcards as $i => $top3_dbcard) { //$i in [0, 1, 2, ..., $nbr]
+                if ($card_id == $top3_dbcard["id"]) {
+                    $within_top3 = true;
+                    break;
+                }
+            }
+            if (!$within_top3) {
+                throw new BgaUserException("Please only select cards within the top ".$nbr." cards of the discard pile");
+            }
+        }
+        return $this->removeCardsFromPile($card_ids, $location);
+    }
+
+    /**
      * Get a specified number of unassigned junk cards
      * @return array associative array of $nbr free junk cards from the db
     */
