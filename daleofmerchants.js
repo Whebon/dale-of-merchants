@@ -95,13 +95,13 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             return this.getIcon(7, 2);
         };
         DaleIcons.getCometIcon = function () {
-            return this.getIcon(7, 0);
+            return this.getIcon(7, 3);
         };
         DaleIcons.getPlanetIcon = function () {
-            return this.getIcon(7, 1);
+            return this.getIcon(7, 4);
         };
         DaleIcons.getStarsIcon = function () {
-            return this.getIcon(7, 2);
+            return this.getIcon(7, 5);
         };
         DaleIcons.getDawnIcon = function () {
             return this.getIcon(8, 0);
@@ -116,19 +116,19 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             return this.getIcon(8, 3);
         };
         DaleIcons.get3DDieOcelotIcon = function () {
-            return this.getIcon(8, 0);
+            return this.getIcon(9, 0);
         };
         DaleIcons.get3DDiePolecatIcon = function () {
-            return this.getIcon(8, 1);
+            return this.getIcon(9, 1);
         };
         DaleIcons.get3DDieHareIcon = function () {
-            return this.getIcon(8, 2);
+            return this.getIcon(9, 2);
         };
         DaleIcons.get3DDiePangolin1Icon = function () {
-            return this.getIcon(8, 3);
+            return this.getIcon(9, 3);
         };
         DaleIcons.get3DDiePangolin2Icon = function () {
-            return this.getIcon(8, 4);
+            return this.getIcon(9, 4);
         };
         DaleIcons.ROWS = 10;
         DaleIcons.COLUMNS = 6;
@@ -682,7 +682,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
     }());
     exports.DaleDeckSelection = DaleDeckSelection;
 });
-define("components/DaleDie", ["require", "exports", "components/DaleDeckSelection"], function (require, exports, DaleDeckSelection_1) {
+define("components/DaleDie", ["require", "exports", "components/DaleDeckSelection", "components/DaleIcons"], function (require, exports, DaleDeckSelection_1, DaleIcons_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleDie = void 0;
@@ -809,6 +809,34 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
             }
             return "<i class=\"daleofmerchants-die-side daleofmerchants-icon\" style=\"background-position: -".concat(col, "00% -").concat(row, "00%;\"></i>");
         };
+        DaleDie.getAllFacesTpl = function (die) {
+            switch (die) {
+                case 'ocelot':
+                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3), "\n                </span>");
+                case 'polecat':
+                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3), "\n                </span>");
+                case 'hare':
+                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_STARS), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_STARS), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET_REROLL), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_COMET), "\n                </span>");
+                case 'pangolin1':
+                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_DISCARD), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DISCARD), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_HAND), "\n                </span>");
+                case 'pangolin2':
+                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_DISCARD2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DISCARD2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_HAND2), "\n                </span>");
+            }
+        };
+        DaleDie.get3DDieTpl = function (die) {
+            switch (die) {
+                case 'ocelot':
+                    return "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.get3DDieOcelotIcon().outerHTML, "</span>");
+                case 'polecat':
+                    return "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.get3DDiePolecatIcon().outerHTML, "</span>");
+                case 'hare':
+                    return "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.get3DDieHareIcon().outerHTML, "</span>");
+                case 'pangolin1':
+                    return "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>");
+                case 'pangolin2':
+                    return "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>");
+            }
+        };
         DaleDie.DIE_OCELOT_0 = 1;
         DaleDie.DIE_OCELOT_1 = 2;
         DaleDie.DIE_OCELOT_2 = 3;
@@ -830,7 +858,7 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
     }());
     exports.DaleDie = DaleDie;
 });
-define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/DbEffect", "components/types/ChameleonChain", "components/DaleDie", "components/AbstractOrderedSelection"], function (require, exports, DaleIcons_2, Images_2, DbEffect_1, ChameleonChain_1, DaleDie_1, AbstractOrderedSelection_2) {
+define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/DbEffect", "components/types/ChameleonChain", "components/DaleDie", "components/AbstractOrderedSelection"], function (require, exports, DaleIcons_3, Images_2, DbEffect_1, ChameleonChain_1, DaleDie_1, AbstractOrderedSelection_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = exports.OrderedSelection = void 0;
@@ -899,7 +927,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     avid_financier_coin_container.classList.add("daleofmerchants-avid-financier-coin-container");
                     avid_financier_card.append(avid_financier_coin_container);
                     for (var i = 0; i < effect.arg; i++) {
-                        var avid_financier_coin = DaleIcons_2.DaleIcons.getCoinIcon();
+                        var avid_financier_coin = DaleIcons_3.DaleIcons.getCoinIcon();
                         avid_financier_coin.classList.add("daleofmerchants-avid-financier-coin-icon");
                         avid_financier_coin_container.append(avid_financier_coin);
                         var source = 'overall_player_board_' + this.page.player_id;
@@ -1319,7 +1347,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (effective_value != cardType.value) {
                 effective_value = "(<span class=daleofmerchants-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }
-            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n        </div>");
+            var legend = this.getLegend(cardType.text);
+            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(this.format_string(cardType.text)).concat(reminderText, "</div>\n            <br style=\"line-height: 10px\" />\n            ").concat(legend ? '<hr>' + legend : '', "\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -1345,28 +1374,28 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.format_string = function (text) {
             if (text.includes('CARDS3')) {
-                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCards3Icon().outerHTML, "</span>"));
+                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCards3Icon().outerHTML, "</span>"));
             }
             if (text.includes('CARDS2')) {
-                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCards2Icon().outerHTML, "</span>"));
+                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCards2Icon().outerHTML, "</span>"));
             }
             if (text.includes('CARD')) {
-                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardIcon().outerHTML, "</span>"));
+                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCardIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_OCELOT')) {
-                text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_0), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n            </span>"));
+                text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDieOcelotIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_POLECAT')) {
-                text = text.replaceAll('DIE_POLECAT', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_POLECAT_3), "\n            </span>"));
+                text = text.replaceAll('DIE_POLECAT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDiePolecatIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_HARE')) {
-                text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_STARS), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_PLANET_REROLL), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_COMET), "\n            </span>"));
+                text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDieHareIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_PANGOLIN1')) {
-                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND), "\n            </span>"));
+                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_PANGOLIN2')) {
-                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DISCARD2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_DECK2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_HAND2), "\n            </span>"));
+                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
             }
             if (text.includes('SOURCE')) {
                 text = text.replaceAll('SOURCE', "<span style=\"color: var(--pangolin1); font-weight: bold;\">".concat(_("source"), "</span>"));
@@ -1375,30 +1404,50 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
             }
             if (text.includes('COMET')) {
-                text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCometIcon().outerHTML, "</span>"));
+                text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCometIcon().outerHTML, "</span>"));
             }
             if (text.includes('PLANET')) {
-                text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
+                text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
             }
             if (text.includes('STARS')) {
-                text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getStarsIcon().outerHTML, "</span>"));
+                text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getStarsIcon().outerHTML, "</span>"));
             }
             if (text.includes('COIN')) {
-                text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCoinIcon().outerHTML, "</span>"));
+                text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCoinIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAWN')) {
-                text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getDawnIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDawnIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAY')) {
-                text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getDayIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDayIcon().outerHTML, "</span>"));
             }
             if (text.includes('NIGHT')) {
-                text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getNightIcon().outerHTML, "</span>"));
+                text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getNightIcon().outerHTML, "</span>"));
             }
             if (text.includes('CLOCK')) {
-                text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getClockIcon().outerHTML, "</span>"));
+                text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getClockIcon().outerHTML, "</span>"));
             }
             return text;
+        };
+        DaleCard.prototype.getLegend = function (text) {
+            var legend = '';
+            if (text.includes('DIE_OCELOT')) {
+                legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('ocelot'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('ocelot'), "<br>");
+            }
+            if (text.includes('DIE_POLECAT')) {
+                legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('polecat'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('polecat'), "<br>");
+            }
+            if (text.includes('DIE_HARE')) {
+                legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('hare'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('hare'), "<br>");
+            }
+            if (text.includes('DIE_PANGOLIN1')) {
+                legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin1'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin1'), "<br>");
+            }
+            if (text.includes('DIE_PANGOLIN2')) {
+                legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin2'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin2'), "<br>");
+            }
+            console.log(legend);
+            return legend;
         };
         DaleCard.prototype.updateChameleonOverlay = function (temp_div, fade) {
             if (fade === void 0) { fade = true; }
@@ -1417,7 +1466,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 }
             }
             if (this.isBoundChameleon()) {
-                var chameleon_icon = DaleIcons_2.DaleIcons.getChameleonIcon();
+                var chameleon_icon = DaleIcons_3.DaleIcons.getChameleonIcon();
                 chameleon_icon.classList.add("daleofmerchants-chameleon-icon");
                 var new_overlay = document.createElement("div");
                 new_overlay.classList.add("daleofmerchants-card");
@@ -2821,7 +2870,7 @@ define("components/CardSlot", ["require", "exports", "components/Images"], funct
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/types/DaleWrapClass", "components/DaleIcons"], function (require, exports, DaleCard_5, Images_6, CardSlot_1, DaleWrapClass_3, DaleIcons_3) {
+define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/types/DaleWrapClass", "components/DaleIcons"], function (require, exports, DaleCard_5, Images_6, CardSlot_1, DaleWrapClass_3, DaleIcons_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -2845,7 +2894,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                 slotDiv.classList.add("daleofmerchants-placeholder-market");
                 stackContainer.appendChild(slotDiv);
                 if (pos > 0) {
-                    stackContainer.appendChild(DaleIcons_3.DaleIcons.getCostModificationIcon(pos - 1));
+                    stackContainer.appendChild(DaleIcons_4.DaleIcons.getCostModificationIcon(pos - 1));
                 }
                 this.container.appendChild(stackContainer);
                 this.slots.unshift(new CardSlot_1.CardSlot(this, pos, slotDiv));
@@ -3132,7 +3181,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_7, CardSlot_2, DaleIcons_4) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_7, CardSlot_2, DaleIcons_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -3193,7 +3242,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 stackIndexDiv.classList.add("daleofmerchants-stack-index");
                 stackIndexDiv.innerText = String(this.slots.length + 1);
                 placeholder.append(stackIndexDiv);
-                placeholder.appendChild(DaleIcons_4.DaleIcons.getBuildIcon());
+                placeholder.appendChild(DaleIcons_5.DaleIcons.getBuildIcon());
                 stackContainer.appendChild(placeholder);
                 this.container.appendChild(stackContainer);
                 this.stackContainers.push(stackContainer);
@@ -3973,7 +4022,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_5, DaleWrapClass_4, DaleCard_9) {
+define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_6, DaleWrapClass_4, DaleCard_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CoinManager = void 0;
@@ -4005,7 +4054,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
             for (var player_id in page.gamedatas.players) {
                 var coins_wrap = $('daleofmerchants-coins-wrap-' + player_id);
                 var coins_span = coins_wrap.querySelector('.daleofmerchants-coins-counter');
-                var coins_icon = DaleIcons_5.DaleIcons.getCoinIcon();
+                var coins_icon = DaleIcons_6.DaleIcons.getCoinIcon();
                 coins_icon.id = 'daleofmerchants-coins-icon-' + player_id;
                 coins_wrap.append(coins_icon);
                 this.playerCoins[player_id] = new ebg.counter();
@@ -4122,7 +4171,7 @@ define("components/types/PrivateNotification", ["require", "exports"], function 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_9, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_6, CoinManager_1) {
+define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_9, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_7, CoinManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DaleOfMerchants = (function (_super) {
@@ -4223,7 +4272,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
                 var handsize_span = document.createElement('span');
-                var handsize_icon = DaleIcons_6.DaleIcons.getHandIcon();
+                var handsize_icon = DaleIcons_7.DaleIcons.getHandIcon();
                 var player_board_div = (_c = $('player_board_' + player_id)) === null || _c === void 0 ? void 0 : _c.querySelector(".player_score");
                 handsize_icon.id = 'daleofmerchants-myhandsize-icon-' + player_id;
                 player_board_div.prepend(handsize_icon);
@@ -5960,7 +6009,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     args['die_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl, "</span>");
                 }
                 if ('coin_icon' in args) {
-                    var iconTpl = DaleIcons_6.DaleIcons.getCoinIcon();
+                    var iconTpl = DaleIcons_7.DaleIcons.getCoinIcon();
                     args['coin_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl.outerHTML, "</span>");
                 }
                 if (log.includes('${ocelot}')) {

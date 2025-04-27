@@ -865,6 +865,7 @@ export class DaleCard {
         if (effective_value != cardType.value) {
             effective_value =  `(<span class=daleofmerchants-original-value>${cardType.value}</span>) ${effective_value}`;
         }
+        const legend = this.getLegend(cardType.text);
         return `<div class="daleofmerchants-card-tooltip">
             <h3>${chameleonName}${cardType.name}</h3>
             <hr>
@@ -872,6 +873,7 @@ export class DaleCard {
             <br><br>
             <div class="daleofmerchants-card-tooltip-text">${this.format_string(cardType.text)}${reminderText}</div>
             <br style="line-height: 10px" />
+            ${legend ? '<hr>'+legend : ''}
         </div>`
 	}
 
@@ -918,54 +920,19 @@ export class DaleCard {
             text = text.replaceAll('CARD', `<span class="daleofmerchants-log-span">${DaleIcons.getCardIcon().outerHTML}</span>`);
         }
         if (text.includes('DIE_OCELOT')) {
-            text = text.replaceAll('DIE_OCELOT', `<span class="daleofmerchants-log-span">
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
-            </span>`);
+            text = text.replaceAll('DIE_OCELOT', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDieOcelotIcon().outerHTML}</span>`);
         }
         if (text.includes('DIE_POLECAT')) {
-            text = text.replaceAll('DIE_POLECAT', `<span class="daleofmerchants-log-span">
-                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3)}
-            </span>`);
+            text = text.replaceAll('DIE_POLECAT', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePolecatIcon().outerHTML}</span>`);
         }
         if (text.includes('DIE_HARE')) {
-            text = text.replaceAll('DIE_HARE', `<span class="daleofmerchants-log-span">
-                ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_PLANET_REROLL)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_COMET)}
-            </span>`);
+            text = text.replaceAll('DIE_HARE', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDieHareIcon().outerHTML}</span>`);
         }
         if (text.includes('DIE_PANGOLIN1')) {
-            text = text.replaceAll('DIE_PANGOLIN1', `<span class="daleofmerchants-log-span">
-                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_HAND)}
-            </span>`);
+            text = text.replaceAll('DIE_PANGOLIN1', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolin1Icon().outerHTML}</span>`);
         }
         if (text.includes('DIE_PANGOLIN2')) {
-            text = text.replaceAll('DIE_PANGOLIN2', `<span class="daleofmerchants-log-span">
-                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
-                ${DaleDie.getIconTpl(DaleDie.DIE_HAND2)}
-            </span>`);
+            text = text.replaceAll('DIE_PANGOLIN2', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolin2Icon().outerHTML}</span>`);
         }
         if (text.includes('SOURCE')) {
             text = text.replaceAll('SOURCE', `<span style="color: var(--pangolin1); font-weight: bold;">${_("source")}</span>`);
@@ -998,6 +965,31 @@ export class DaleCard {
             text = text.replaceAll('CLOCK', `<span class="daleofmerchants-log-span">${DaleIcons.getClockIcon().outerHTML}</span>`);
         }
         return text;
+    }
+
+    /**
+     * @param text text with keywords
+     * @returns legend explaining the keywords from the `text`
+     */
+    private getLegend(text: string) {
+        let legend = '';
+        if (text.includes('DIE_OCELOT')) {
+            legend += `${DaleDie.get3DDieTpl('ocelot')} <strong>:</strong> ${DaleDie.getAllFacesTpl('ocelot')}<br>`
+        }
+        if (text.includes('DIE_POLECAT')) {
+            legend += `${DaleDie.get3DDieTpl('polecat')} <strong>:</strong> ${DaleDie.getAllFacesTpl('polecat')}<br>`
+        }
+        if (text.includes('DIE_HARE')) {
+            legend += `${DaleDie.get3DDieTpl('hare')} <strong>:</strong> ${DaleDie.getAllFacesTpl('hare')}<br>`
+        }
+        if (text.includes('DIE_PANGOLIN1')) {
+            legend += `${DaleDie.get3DDieTpl('pangolin1')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin1')}<br>`
+        }
+        if (text.includes('DIE_PANGOLIN2')) {
+            legend += `${DaleDie.get3DDieTpl('pangolin2')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin2')}<br>`
+        }
+        console.log(legend);
+        return legend;
     }
 
     /**

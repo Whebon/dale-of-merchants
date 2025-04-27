@@ -1,4 +1,5 @@
 import { DaleDeckSelection } from "./DaleDeckSelection";
+import { DaleIcons } from "./DaleIcons";
 
 type DieType = 'ocelot' | 'polecat' | 'hare' | 'pangolin1' | 'pangolin2';
 
@@ -121,6 +122,9 @@ export class DaleDie {
     //     return spin360;
     // }
 
+    /**
+     * @returns an icon tpl of the given die face
+     */
     public static getIconTpl(die_icon: number): string {
         var col, row;
         switch(die_icon) {
@@ -199,5 +203,74 @@ export class DaleDie {
                 break;
         }
         return `<i class="daleofmerchants-die-side daleofmerchants-icon" style="background-position: -${col}00% -${row}00%;"></i>`
+    }
+
+    /**
+     * @param die die type
+     * @returns an span tpl of 6 faces
+     */
+    public static getAllFacesTpl(die: DieType): string {
+        switch(die) {
+            case 'ocelot':
+                return `<span class="daleofmerchants-log-span">
+                    ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_1)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_3)}
+                </span>`
+            case 'polecat':
+                return `<span class="daleofmerchants-log-span">
+                    ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3)}
+                </span>`;
+            case 'hare':
+                return `<span class="daleofmerchants-log-span">
+                    ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_PLANET_REROLL)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_COMET)}
+                </span>`;
+            case 'pangolin1':
+                return `<span class="daleofmerchants-log-span">
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_HAND)}
+                </span>`;
+            case 'pangolin2':
+                return `<span class="daleofmerchants-log-span">
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_HAND2)}
+                </span>`;
+        }
+    }
+
+    public static get3DDieTpl(die: DieType): string {
+        switch (die) {
+            case 'ocelot':
+                return `<span class="daleofmerchants-log-span">${DaleIcons.get3DDieOcelotIcon().outerHTML}</span>`
+            case 'polecat':
+                return `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePolecatIcon().outerHTML}</span>`
+            case 'hare':
+                return `<span class="daleofmerchants-log-span">${DaleIcons.get3DDieHareIcon().outerHTML}</span>`
+            case 'pangolin1':
+                return `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolin1Icon().outerHTML}</span>`
+            case 'pangolin2':
+                return `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolin2Icon().outerHTML}</span>`
+        }
     }
 }

@@ -120,6 +120,7 @@
   height: 0px;
   left: 50%;
   top: 50%;
+  border-radius: 3px;
   background-image: url("img/icons.png");
   transform: translate(-50%, -50%);
   z-index: 500;

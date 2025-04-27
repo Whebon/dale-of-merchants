@@ -147,6 +147,7 @@
 	height: 0px; //a more specific selector should override this
 	left: 50%; //a more specific selector should override this
 	top: 50%; //a more specific selector should override this
+	border-radius: 3px;
 	background-image: url('img/icons.png');
     transform: translate(-50%, -50%);
 	z-index: 500;

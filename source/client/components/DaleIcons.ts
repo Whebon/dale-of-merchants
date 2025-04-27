@@ -139,15 +139,15 @@ export class DaleIcons {
     }
 
     public static getCometIcon(): HTMLElement {
-        return this.getIcon(7, 0);
+        return this.getIcon(7, 3);
     }
 
     public static getPlanetIcon(): HTMLElement {
-        return this.getIcon(7, 1);
+        return this.getIcon(7, 4);
     }
 
     public static getStarsIcon(): HTMLElement {
-        return this.getIcon(7, 2);
+        return this.getIcon(7, 5);
     }
 
     /////////////////////////////
@@ -175,22 +175,22 @@ export class DaleIcons {
     /////////////////////////////
 
     public static get3DDieOcelotIcon(): HTMLElement {
-        return this.getIcon(8, 0);
+        return this.getIcon(9, 0);
     }
 
     public static get3DDiePolecatIcon(): HTMLElement {
-        return this.getIcon(8, 1);
+        return this.getIcon(9, 1);
     }
 
     public static get3DDieHareIcon(): HTMLElement {
-        return this.getIcon(8, 2);
+        return this.getIcon(9, 2);
     }
 
     public static get3DDiePangolin1Icon(): HTMLElement {
-        return this.getIcon(8, 3);
+        return this.getIcon(9, 3);
     }
 
     public static get3DDiePangolin2Icon(): HTMLElement {
-        return this.getIcon(8, 4);
+        return this.getIcon(9, 4);
     }
 }
