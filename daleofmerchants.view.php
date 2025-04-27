@@ -41,8 +41,7 @@ class view_daleofmerchants_daleofmerchants extends game_view
         $template = $this->getGameName() . "_" . $this->getGameName();
 
         // Your stall and schedule
-        global $g_user;
-        $current_player = $g_user->get_id();
+        $current_player = $this->getCurrentPlayerId();
         $this->page->begin_block($template, "stall");
         if (isset($players[$current_player])) {
             $this->page->insert_block("stall", array (
