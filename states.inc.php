@@ -399,8 +399,8 @@ $machinestates = array(
 	),
 	69 => array(
 		'name' => 'culturalPreservation',
-		'description' => clienttranslate('Cultural Preservation: ${actplayer} may search their deck for up to 3 cards'),
-		'descriptionmyturn' => clienttranslate('Cultural Preservation: ${you} may search your deck for up to 3 cards'),
+		'description' => clienttranslate('Cultural Preservation: ${actplayer} must search their deck for 3 cards'),
+		'descriptionmyturn' => clienttranslate('Cultural Preservation: ${you} must search your deck for 3 cards'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actCulturalPreservation'],
@@ -410,8 +410,8 @@ $machinestates = array(
 	),
 	70 => array(
 		'name' => 'refreshingDrink',
-		'description' => clienttranslate('Slice of Life: ${actplayer} must discard a card'),
-		'descriptionmyturn' => clienttranslate('Slice of Life: ${you} must discard a card'),
+		'description' => clienttranslate('Refreshing Drink: ${actplayer} must discard a card'),
+		'descriptionmyturn' => clienttranslate('Refreshing Drink: ${you} must discard a card'),
 		'type' => 'activeplayer',
 		'action' => 'stRefreshingDrink',
 		'possibleactions' => ['actRefreshingDrink'],

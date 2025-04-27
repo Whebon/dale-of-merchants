@@ -5245,10 +5245,10 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actCulturalPreservation");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
-        if (count($card_ids) == 0) {
-            $this->notifyAllPlayers('message', clienttranslate('Cultural Preservation: ${player_name} selected 0 cards'), array(
-                "player_name" => $this->getActivePlayerName()
-            ));
+        //New 10th anniversary rule: you must select 3 cards
+        $nbr = min(3, $this->cards->countCardsInLocation(DECK.$player_id));
+        if (count($card_ids) != $nbr) {
+            throw new BgaUserException($this->_("You must choose exactly ").$nbr.$this->_(" cards from your deck"));
         }
         else {
             //1. draw a card

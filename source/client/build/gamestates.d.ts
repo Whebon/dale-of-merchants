@@ -629,8 +629,8 @@ interface GameStates {
 	},
 	69: {
 		'name': 'culturalPreservation',
-		'description': 'Cultural Preservation: ${actplayer} may search their deck for up to 3 cards',
-		'descriptionmyturn': 'Cultural Preservation: ${you} may search your deck for up to 3 cards',
+		'description': 'Cultural Preservation: ${actplayer} must search their deck for 3 cards',
+		'descriptionmyturn': 'Cultural Preservation: ${you} must search your deck for 3 cards',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContent',
 		'possibleactions': {
@@ -646,8 +646,8 @@ interface GameStates {
 	},
 	70: {
 		'name': 'refreshingDrink',
-		'description': 'Slice of Life: ${actplayer} must discard a card',
-		'descriptionmyturn': 'Slice of Life: ${you} must discard a card',
+		'description': 'Refreshing Drink: ${actplayer} must discard a card',
+		'descriptionmyturn': 'Refreshing Drink: ${you} must discard a card',
 		'type': 'activeplayer',
 		'action': 'stRefreshingDrink',
 		'possibleactions': {
