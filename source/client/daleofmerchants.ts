@@ -6237,11 +6237,7 @@ class DaleOfMerchants extends Gamegui
 		const words: string[] = [];
 		for (let i in this.gamedatas.cardTypes) {
 			const cardType = this.gamedatas.cardTypes[i]!;
-			if (cardType.type_id > 4 &&
-				//cardType.animalfolk_id <= DaleDeckSelection.ANIMALFOLK_CHAMELEONS && 
-				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_OWLS && 
-				cardType.animalfolk_id != DaleDeckSelection.ANIMALFOLK_BEAVERS
-			) {
+			if (cardType.type_id > 4) {
 				const cardName = cardType.name.toLowerCase();
 				const cardNameExt = cardType.animalfolk_displayed.length > 0 ? ` (${cardType.animalfolk_displayed.toLowerCase()} ${cardType.value})` : "";
 				words.push(cardName);

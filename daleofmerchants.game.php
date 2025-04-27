@@ -201,6 +201,7 @@ class DaleOfMerchants extends DaleTableBasic
         $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
         $result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
         $result['debugMode'] = $this->getGameStateValue("debugMode") == '1';
+        $result['disabledAnimalfolkIds'] = $this->DISABLED_ANIMALFOLK_IDS;
   
         return $result;
     }
@@ -2615,11 +2616,7 @@ class DaleOfMerchants extends DaleTableBasic
         };
         foreach ($this->card_types as $type_id => $card) {
             //spawn filter
-            if ($type_id <= 4 || 
-                //$card['animalfolk_id'] > ANIMALFOLK_CHAMELEONS ||
-				$card['animalfolk_id'] == ANIMALFOLK_OWLS ||
-				$card['animalfolk_id'] == ANIMALFOLK_BEAVERS
-            ) {
+            if ($type_id <= 4) {
                 continue;
             }
             if ($f($card['name']) == $f($prefix)) {
@@ -2680,6 +2677,18 @@ class DaleOfMerchants extends DaleTableBasic
     function actSubmitPreference($animalfolk_ids) {
         $this->checkAction("actSubmitPreference");
         $animalfolk_ids = $this->numberListToArray($animalfolk_ids);
+        //check if the selected animalfolks are not disabled
+        foreach ($animalfolk_ids as $animalfolk_id) {
+            //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_BATS are not the last anymore)
+            if ($animalfolk_id < ANIMALFOLK_MACAWS || $animalfolk_id > ANIMALFOLK_BATS) {
+                throw new BgaSystemException($animalfolk_id+" is not a valid animalfolk_id");
+            }
+            if (in_array($animalfolk_id, $this->DISABLED_ANIMALFOLK_IDS)) {
+                throw new BgaSystemException("The vote includes a disabled animalfolk: ".$animalfolk_id);
+            }
+        }
+
+        //submit the preference
         $player_id = $this->getCurrentPlayerId();
         $this->deckSelection->submitPreference($player_id, $animalfolk_ids);
         if (count($animalfolk_ids) > 0) {

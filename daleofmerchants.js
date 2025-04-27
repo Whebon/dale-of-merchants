@@ -578,10 +578,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                     tooltip.close();
                 });
                 this_1.tooltips.push(tooltip);
-                var unavailable = (animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS ||
-                    animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS ||
-                    animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS ||
-                    animalfolk_id > DaleDeckSelection.ANIMALFOLK_BATS);
+                var unavailable = page.gamedatas.disabledAnimalfolkIds.includes(animalfolk_id);
                 if (unavailable) {
                     card_div.classList.add("daleofmerchants-deck-selection-unavailable");
                 }
@@ -589,7 +586,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 var card_id = animalfolk_id;
                 card_div.addEventListener('click', function () {
                     if (unavailable) {
-                        page.showMessage(_("This animalfolk does not exist"), 'error');
+                        page.showMessage(_("This animalfolk is unavailable"), 'error');
                         return;
                     }
                     if (page.isCurrentPlayerActive()) {
@@ -598,11 +595,14 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 });
             };
             var this_1 = this;
-            for (var animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
+            for (var animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
                 _loop_1(animalfolk_id);
             }
-            this.cardContainer.appendChild($("deck-" + DaleDeckSelection.ANIMALFOLK_OWLS));
-            this.cardContainer.appendChild($("deck-" + DaleDeckSelection.ANIMALFOLK_BEAVERS));
+            for (var _i = 0, _a = page.gamedatas.disabledAnimalfolkIds; _i < _a.length; _i++) {
+                var disabled_animalfolk_id = _a[_i];
+                console.log("deck-" + disabled_animalfolk_id);
+                this.cardContainer.appendChild($("deck-" + disabled_animalfolk_id));
+            }
         }
         DaleDeckSelection.prototype.getTooltipContent = function (animalfolk_id) {
             return "TODO: TOOLTIP";
@@ -9426,9 +9426,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var words = [];
             for (var i in this.gamedatas.cardTypes) {
                 var cardType = this.gamedatas.cardTypes[i];
-                if (cardType.type_id > 4 &&
-                    cardType.animalfolk_id != DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_OWLS &&
-                    cardType.animalfolk_id != DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_BEAVERS) {
+                if (cardType.type_id > 4) {
                     var cardName = cardType.name.toLowerCase();
                     var cardNameExt = cardType.animalfolk_displayed.length > 0 ? " (".concat(cardType.animalfolk_displayed.toLowerCase(), " ").concat(cardType.value, ")") : "";
                     words.push(cardName);

@@ -387,6 +387,7 @@ declare global {
 
 		'debugMode': boolean
 		'inDeckSelection': boolean
+		'disabledAnimalfolkIds': number[]
 		'animalfolkIds': number[]
 	}
 

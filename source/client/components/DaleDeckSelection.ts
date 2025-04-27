@@ -70,7 +70,7 @@ export class DaleDeckSelection {
 
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1)
-        for (let animalfolk_id = 1; animalfolk_id < 27; animalfolk_id++) {
+        for (let animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;
@@ -90,12 +90,7 @@ export class DaleDeckSelection {
             this.tooltips.push(tooltip);
 
             //disable some animalfolk
-            const unavailable = (
-                animalfolk_id < DaleDeckSelection.ANIMALFOLK_MACAWS || 
-                animalfolk_id == DaleDeckSelection.ANIMALFOLK_OWLS || 
-                animalfolk_id == DaleDeckSelection.ANIMALFOLK_BEAVERS || 
-                animalfolk_id > DaleDeckSelection.ANIMALFOLK_BATS //TODO: reduce this
-            );
+            const unavailable = page.gamedatas.disabledAnimalfolkIds.includes(animalfolk_id);
             if (unavailable) {
                 card_div.classList.add("daleofmerchants-deck-selection-unavailable");
             }
@@ -105,7 +100,7 @@ export class DaleDeckSelection {
             const card_id = animalfolk_id;
             card_div.addEventListener('click', () => {
                 if (unavailable) {
-                    page.showMessage(_("This animalfolk does not exist"), 'error');
+                    page.showMessage(_("This animalfolk is unavailable"), 'error');
                     return;
                 }
                 if (page.isCurrentPlayerActive()) {
@@ -114,9 +109,11 @@ export class DaleDeckSelection {
             })
         }
 
-        //move owls and beavers to the back
-        this.cardContainer.appendChild($("deck-"+DaleDeckSelection.ANIMALFOLK_OWLS)!);
-        this.cardContainer.appendChild($("deck-"+DaleDeckSelection.ANIMALFOLK_BEAVERS)!);
+        //move disabled animalfolk to the back
+        for (const disabled_animalfolk_id of page.gamedatas.disabledAnimalfolkIds) {
+            console.log("deck-"+disabled_animalfolk_id);
+            this.cardContainer.appendChild($("deck-"+disabled_animalfolk_id)!);
+        }
     }
 
     private getTooltipContent(animalfolk_id: number): string {

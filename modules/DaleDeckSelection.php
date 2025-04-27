@@ -52,8 +52,9 @@ class DaleDeckSelection {
         $animalfolk_ids = $this->getPreferences();
         $n = $this->game->getPlayersNumber();
         while(count($animalfolk_ids) < $n + 1) {
-            $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_ECHIDNAS); //TODO: random animalfolks are restricted to DoM1
-            if ($random_id == ANIMALFOLK_OWLS || $random_id == ANIMALFOLK_BEAVERS) {
+            //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_BATS are not the last anymore)
+            $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_BATS);
+            if (in_array($random_id, $this->game->DISABLED_ANIMALFOLK_IDS)) {
                 continue;
             }
             if (!in_array($random_id, $animalfolk_ids)) {
@@ -61,6 +62,7 @@ class DaleDeckSelection {
             }
         }
         foreach ($animalfolk_ids as $animalfolk_id) {
+            //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_BATS are not the last anymore)
             if ($animalfolk_id < ANIMALFOLK_MACAWS || $animalfolk_id > ANIMALFOLK_BATS) {
                 throw new BgaSystemException($animalfolk_id+" is not a valid animalfolk_id");
             }

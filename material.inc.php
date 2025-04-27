@@ -19,7 +19,7 @@
  *
  */
 
- //define all Card Types (CT)
+//define all Card Types (CT)
 if (!defined('CT_CARDBACK')) {
     define('CT_CARDBACK', 0);
     define('CT_JUNK', 1);
@@ -269,6 +269,25 @@ if (!defined('TRIGGER_ONTURNSTART')) {
     define('TRIGGER_ONBUILD', 'onBuild');
     define('TRIGGER_ONFINISH', 'onFinish');
 }
+
+//disable these animalfolks in the deck selection (and random selection)
+$this->DISABLED_ANIMALFOLK_IDS = array(
+    ANIMALFOLK_CHAMELEONS,      //... chameleons ...
+    ANIMALFOLK_PANDAS,          //effect not finalized
+    ANIMALFOLK_OCELOTS,         //effect not finalized
+    ANIMALFOLK_ECHIDNAS,        //effect not finalized
+    //ANIMALFOLK_LEMURS,        //effect not finalized (but the text is correct)
+    ANIMALFOLK_DESERTMONITORS,  //not implemented (only CT_DUPLICATEENTRY remains)
+    ANIMALFOLK_HARES,           //not implemented
+    ANIMALFOLK_PENGUINS,        //not implemented
+    ANIMALFOLK_WOODTURTLES,     //not implemented
+    ANIMALFOLK_TASMANIANDEVILS, //not implemented
+    ANIMALFOLK_PANGOLINS,       //not implemented
+    ANIMALFOLK_MONGOOSES,       //not implemented
+    ANIMALFOLK_BATS,            //not implemented
+    ANIMALFOLK_OWLS,            //not implemented
+    ANIMALFOLK_BEAVERS          //not implemented
+);
 
 $this->card_types = array(
     0 => array(
