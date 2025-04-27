@@ -172,7 +172,7 @@ interface GameStates {
 			'trNaturalSurvivor': 67,
 			'trDuplicateEntry': 68,
 			'trCulturalPreservation': 69,
-			'trSliceOfLife': 70,
+			'trRefreshingDrink': 70,
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
 			'trFashionHint': 73,
@@ -328,7 +328,7 @@ interface GameStates {
 		'transitions': {
 			'trNextPlayer': 41,
 			'trPassiveAbility': 41,
-			'trSliceOfLife': 70,
+			'trRefreshingDrink': 70,
 		},
 	},
 	52: {
@@ -645,13 +645,13 @@ interface GameStates {
 		},
 	},
 	70: {
-		'name': 'sliceOfLife',
+		'name': 'refreshingDrink',
 		'description': 'Slice of Life: ${actplayer} must discard a card',
 		'descriptionmyturn': 'Slice of Life: ${you} must discard a card',
 		'type': 'activeplayer',
-		'action': 'stSliceOfLife',
+		'action': 'stRefreshingDrink',
 		'possibleactions': {
-			'actSliceOfLife': [{
+			'actRefreshingDrink': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

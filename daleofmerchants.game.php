@@ -4666,12 +4666,12 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->gamestate->nextState("trCunningNeighbour"); return;
                 }
                 break;
-            case CT_SLICEOFLIFE:
+            case CT_REFRESHINGDRINK:
                 if ($this->gamestate->state()['name'] == 'postCleanUpPhase') {
                     $this->setGameStateValue("isPostCleanUpPhase", 1);
                 }
-                $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
-                $this->gamestate->nextState("trSliceOfLife"); return;
+                $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
+                $this->gamestate->nextState("trRefreshingDrink"); return;
                 break;
             case CT_BARGAINSEEKER:
                 $rightmostcards = $this->cards->getCardsInLocation(MARKET, 0);
@@ -5282,8 +5282,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actSliceOfLife($card_id) {
-        $this->checkAction("actSliceOfLife");
+    function actRefreshingDrink($card_id) {
+        $this->checkAction("actRefreshingDrink");
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
@@ -6416,7 +6416,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function stSliceOfLife() {
+    function stRefreshingDrink() {
         $this->draw(clienttranslate('Slice of Life: ${player_name} draws a card'));
     }
 

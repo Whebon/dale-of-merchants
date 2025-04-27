@@ -35,7 +35,7 @@ if (false) {
 	$game->stCunningNeighbour();
 	$game->stCharity();
 	$game->stDaringAdventurer();
-	$game->stSliceOfLife();
+	$game->stRefreshingDrink();
 	$game->stDelightfulSurprise();
 	$game->stPompousProfessional();
 	$game->stDelicacy();
@@ -125,7 +125,7 @@ $machinestates = array(
 			'trNaturalSurvivor' => 67,
 			'trDuplicateEntry' => 68,
 			'trCulturalPreservation' => 69,
-			'trSliceOfLife' => 70,
+			'trRefreshingDrink' => 70,
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
 			'trFashionHint' => 73,
@@ -210,7 +210,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trNextPlayer' => 41,
 			'trPassiveAbility' => 41,
-			'trSliceOfLife' => 70,
+			'trRefreshingDrink' => 70,
 		),
 	),
 	52 => array(
@@ -409,12 +409,12 @@ $machinestates = array(
 		),
 	),
 	70 => array(
-		'name' => 'sliceOfLife',
+		'name' => 'refreshingDrink',
 		'description' => clienttranslate('Slice of Life: ${actplayer} must discard a card'),
 		'descriptionmyturn' => clienttranslate('Slice of Life: ${you} must discard a card'),
 		'type' => 'activeplayer',
-		'action' => 'stSliceOfLife',
-		'possibleactions' => ['actSliceOfLife'],
+		'action' => 'stRefreshingDrink',
+		'possibleactions' => ['actRefreshingDrink'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trCleanUpPhase' => 41,

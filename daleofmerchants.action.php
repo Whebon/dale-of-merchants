@@ -372,14 +372,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actSliceOfLife()
+	public function actRefreshingDrink()
 	{
 		self::setAjaxMode();
 
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 
-		$this->game->actSliceOfLife( $card_id );
+		$this->game->actRefreshingDrink( $card_id );
 		self::ajaxResponse();
 	}
 

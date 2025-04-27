@@ -768,7 +768,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
 				this.myDeck.openPopin();
 				break;
-			case 'sliceOfLife':
+			case 'refreshingDrink':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
 				break;
 			case 'delightfulSurprise':
@@ -1159,7 +1159,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
-			case 'sliceOfLife':
+			case 'refreshingDrink':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'delightfulSurprise':
@@ -1212,10 +1212,10 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
-			case 'sliceOfLife':
+			case 'refreshingDrink':
 				this.myHand.setSelectionMode('none');
 				break;
-			case 'sliceOfLife':
+			case 'refreshingDrink':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'meddlingMarketeer':
@@ -2885,8 +2885,8 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
-			case 'sliceOfLife':
-				this.bgaPerformAction('actSliceOfLife', {
+			case 'refreshingDrink':
+				this.bgaPerformAction('actRefreshingDrink', {
 					card_id: card.id
 				})
 				break;

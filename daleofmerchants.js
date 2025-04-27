@@ -4662,7 +4662,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
                     this.myDeck.openPopin();
                     break;
-                case 'sliceOfLife':
+                case 'refreshingDrink':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
                     break;
                 case 'delightfulSurprise':
@@ -5033,7 +5033,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
-                case 'sliceOfLife':
+                case 'refreshingDrink':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'delightfulSurprise':
@@ -5086,10 +5086,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
-                case 'sliceOfLife':
+                case 'refreshingDrink':
                     this.myHand.setSelectionMode('none');
                     break;
-                case 'sliceOfLife':
+                case 'refreshingDrink':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'meddlingMarketeer':
@@ -6525,8 +6525,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'sliceOfLife':
-                    this.bgaPerformAction('actSliceOfLife', {
+                case 'refreshingDrink':
+                    this.bgaPerformAction('actRefreshingDrink', {
                         card_id: card.id
                     });
                     break;
