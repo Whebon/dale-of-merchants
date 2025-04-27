@@ -124,4 +124,36 @@ export class DaleIcons {
     public static getCardsIcon(): HTMLElement {
         return this.getIcon(0, 5); //TODO
     }
+
+    ///////////////////////////////////////////////////////
+    ////////    DO NOT EXIST YET (for tooltips)    ////////
+    ///////////////////////////////////////////////////////
+
+    public static getCometIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getPlanetIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getStarsIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getDawnIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getDayIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getNightIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
+
+    public static getClockIcon(): HTMLElement {
+        return this.getIcon(0, 5); //TODO
+    }
 }

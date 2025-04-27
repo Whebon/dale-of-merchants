@@ -1,6 +1,26 @@
 import pandas as pd
-import math
 import numbers
+
+def format_emojis(text: str):
+    return text.replace("–", "-") \
+                .replace("🃏🃏🃏", "CARDS3") \
+                .replace("🃏🃏", "CARDS2") \
+                .replace("🃏", "CARD") \
+                .replace("🐱", "DIE_OCELOT") \
+                .replace("💈", "DIE_POLECAT") \
+                .replace("🐰", "DIE_HARE") \
+                .replace("❇️", "DIE_PANGOLIN1") \
+                .replace("✳️", "DIE_PANGOLIN2") \
+                .replace("[source]", "SOURCE") \
+                .replace("[destination]", "DESTINATION") \
+                .replace("☄️", "COMET") \
+                .replace("🪐", "PLANET") \
+                .replace("✨", "STARS") \
+                .replace("🟡", "COIN") \
+                .replace("🌅", "DAWN") \
+                .replace("☀️", "DAY") \
+                .replace("🌙", "NIGHT") \
+                .replace("🕰️", "CLOCK")
 
 def type_displayed(row):
     if (row['is_technique'] == "X"):
@@ -39,7 +59,7 @@ def string_literal(str):
     return f"\"{str}\""
 
 # Load the Excel file
-file_path = 'material.xlsx'
+file_path = 'material_10thanniversary.xlsx'
 df = pd.read_excel(file_path)
 
 # Initialize the card types dictionary
@@ -52,7 +72,7 @@ for index, row in df.iterrows():
     card_types[type_id] = {
         'type_id': int(row['type_id']),
         'name': f"clienttranslate(\"{row['name']}\")",
-        'text': f"clienttranslate(\"{row['text']}\")",
+        'text': f"clienttranslate(\"{format_emojis(row['text'])}\")",
         'type_displayed': type_displayed(row),
         'is_technique': is_technique(row),
         'has_plus': has_plus(row),

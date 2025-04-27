@@ -88,6 +88,27 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCardsIcon = function () {
             return this.getIcon(0, 5);
         };
+        DaleIcons.getCometIcon = function () {
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getPlanetIcon = function () {
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getStarsIcon = function () {
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getDawnIcon = function () {
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getDayIcon = function () {
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getNightIcon = function () {
+            return this.getIcon(0, 5);
+        };
+        DaleIcons.getClockIcon = function () {
+            return this.getIcon(0, 5);
+        };
         DaleIcons.ROWS = 7;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
@@ -1302,6 +1323,15 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             DaleCard.tooltips.set(this.id, tooltip);
         };
         DaleCard.prototype.format_string = function (text) {
+            if (text.includes('CARDS3')) {
+                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardsIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('CARDS2')) {
+                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardsIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('CARD')) {
+                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardIcon().outerHTML, "</span>"));
+            }
             if (text.includes('DIE_OCELOT')) {
                 text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">\n                ".concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_0), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_1), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_2), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n                ").concat(DaleDie_1.DaleDie.getIconTpl(DaleDie_1.DaleDie.DIE_OCELOT_3), "\n            </span>"));
             }
@@ -1323,11 +1353,29 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DESTINATION')) {
                 text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
             }
-            if (text.includes('CARDS')) {
-                text = text.replaceAll('CARDS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardsIcon().outerHTML, "</span>"));
+            if (text.includes('COMET')) {
+                text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCometIcon().outerHTML, "</span>"));
             }
-            if (text.includes('CARD')) {
-                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCardIcon().outerHTML, "</span>"));
+            if (text.includes('PLANET')) {
+                text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('STARS')) {
+                text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getStarsIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('COIN')) {
+                text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getCoinIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('DAWN')) {
+                text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getDawnIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('DAY')) {
+                text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getDayIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('NIGHT')) {
+                text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getNightIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('CLOCK')) {
+                text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_2.DaleIcons.getClockIcon().outerHTML, "</span>"));
             }
             return text;
         };

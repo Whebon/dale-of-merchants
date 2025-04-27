@@ -908,6 +908,15 @@ export class DaleCard {
      * Formats keywords in tooltip texts
      */
     private format_string(text: string): string {
+        if (text.includes('CARDS3')) {
+            text = text.replaceAll('CARDS3', `<span class="daleofmerchants-log-span">${DaleIcons.getCardsIcon().outerHTML}</span>`);
+        }
+        if (text.includes('CARDS2')) {
+            text = text.replaceAll('CARDS2', `<span class="daleofmerchants-log-span">${DaleIcons.getCardsIcon().outerHTML}</span>`);
+        }
+        if (text.includes('CARD')) {
+            text = text.replaceAll('CARD', `<span class="daleofmerchants-log-span">${DaleIcons.getCardIcon().outerHTML}</span>`);
+        }
         if (text.includes('DIE_OCELOT')) {
             text = text.replaceAll('DIE_OCELOT', `<span class="daleofmerchants-log-span">
                 ${DaleDie.getIconTpl(DaleDie.DIE_OCELOT_0)}
@@ -964,11 +973,29 @@ export class DaleCard {
         if (text.includes('DESTINATION')) {
             text = text.replaceAll('DESTINATION', `<span style="color: var(--pangolin2); font-weight: bold;">${_("destination")}</span>`);
         }
-        if (text.includes('CARDS')) {
-            text = text.replaceAll('CARDS', `<span class="daleofmerchants-log-span">${DaleIcons.getCardsIcon().outerHTML}</span>`);
+        if (text.includes('COMET')) {
+            text = text.replaceAll('COMET', `<span class="daleofmerchants-log-span">${DaleIcons.getCometIcon().outerHTML}</span>`);
         }
-        if (text.includes('CARD')) {
-            text = text.replaceAll('CARD', `<span class="daleofmerchants-log-span">${DaleIcons.getCardIcon().outerHTML}</span>`);
+        if (text.includes('PLANET')) {
+            text = text.replaceAll('PLANET', `<span class="daleofmerchants-log-span">${DaleIcons.getPlanetIcon().outerHTML}</span>`);
+        }
+        if (text.includes('STARS')) {
+            text = text.replaceAll('STARS', `<span class="daleofmerchants-log-span">${DaleIcons.getStarsIcon().outerHTML}</span>`);
+        }
+        if (text.includes('COIN')) {
+            text = text.replaceAll('COIN', `<span class="daleofmerchants-log-span">${DaleIcons.getCoinIcon().outerHTML}</span>`);
+        }
+        if (text.includes('DAWN')) {
+            text = text.replaceAll('DAWN', `<span class="daleofmerchants-log-span">${DaleIcons.getDawnIcon().outerHTML}</span>`);
+        }
+        if (text.includes('DAY')) {
+            text = text.replaceAll('DAY', `<span class="daleofmerchants-log-span">${DaleIcons.getDayIcon().outerHTML}</span>`);
+        }
+        if (text.includes('NIGHT')) {
+            text = text.replaceAll('NIGHT', `<span class="daleofmerchants-log-span">${DaleIcons.getNightIcon().outerHTML}</span>`);
+        }
+        if (text.includes('CLOCK')) {
+            text = text.replaceAll('CLOCK', `<span class="daleofmerchants-log-span">${DaleIcons.getClockIcon().outerHTML}</span>`);
         }
         return text;
     }
