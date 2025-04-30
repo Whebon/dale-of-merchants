@@ -2745,6 +2745,9 @@ class DaleOfMerchants extends DaleTableBasic
             }
             $pos = 0;
             foreach ($calculations_card_ids as $calculations_card_id) {
+                if ($calculations_card_id == $market_card_id) {
+                    $market_card["location_arg"] = $pos; //update the cost
+                }
                 $this->cards->moveCard($calculations_card_id, MARKET, $pos);
                 $pos += 1;
             }
