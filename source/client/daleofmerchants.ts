@@ -932,6 +932,10 @@ class DaleOfMerchants extends Gamegui
 					this.myDiscard.updateHTMLPublic();
 				}
 				break;
+			case 'charmStove':
+				this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
+				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Choose cards to <strong>spend</strong>"), 'build');
+				break;
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
 				break;
@@ -1287,6 +1291,11 @@ class DaleOfMerchants extends Gamegui
 			case 'client_stove':
 				this.coinManager.setSelectionMode('none');
 				this.myHand.orderedSelection.secondaryToPrimary();
+				break;
+			case 'charmStove':
+				this.myLimbo.setSelectionMode('none');
+				this.coinManager.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('none');
@@ -1872,6 +1881,11 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm"), "onStove");
 				this.updateStoveButton();
 				this.addActionButtonCancelClient();
+				break;
+			case 'charmStove':
+				this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Card drawn by Charm"));
+				this.addActionButton("confirm-button", _("Confirm"), "onCharmStove");
+				this.updateStoveButton();
 				break;
 			case 'client_cache':
 				this.addActionButtonCancelClient();
@@ -2835,6 +2849,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_stove':
 				this.updateStoveButton();
 				break;
+			case 'charmStove':
+				this.updateStoveButton();
+				break;
 		}
 	}
 
@@ -3014,6 +3031,9 @@ class DaleOfMerchants extends Gamegui
 				this.onSpendXSelectionChanged();
 				break;
 			case 'client_stove':
+				this.updateStoveButton();
+				break;
+			case 'charmStove':
 				this.updateStoveButton();
 				break;
 			case null:
@@ -4082,6 +4102,9 @@ class DaleOfMerchants extends Gamegui
 				this.updateStoveButton();
 				break;
 		}
+		if (this.gamedatas.gamestate.name == 'charmStove') {
+			this.updateStoveButton();
+		}
 	}
 
 	onBuildSelectionChanged(card?: DaleCard){
@@ -4111,6 +4134,15 @@ class DaleOfMerchants extends Gamegui
 			this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", count_nostalgic_items);
 		}
 		
+	}
+
+	onCharmStove() {
+		const spend_card_ids = this.myHand.orderedSelection.get();
+		const spend_coins = this.coinManager.getCoinsToSpend();
+		this.bgaPerformAction('actCharmStove', {
+			spend_card_ids: this.arrayToNumberList(spend_card_ids),
+			spend_coins: spend_coins
+		});
 	}
 
 	onStove() {
@@ -5517,6 +5549,20 @@ class DaleOfMerchants extends Gamegui
 						}
 						else {
 							throw new Error(`Cannot build a stack. Card ${card.id} does not exist in hand.`);
+						}
+					}
+					else {
+						stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
+					}
+					break;
+				case 'limb':
+					if (notif.args.player_id == this.player_id) {
+						if ($(this.myLimbo.control_name+'_item_' + card.id)) {
+							stall.insertCard(card, notif.args.stack_index, undefined, this.myLimbo.control_name+'_item_' + card.id)
+							this.myLimbo.removeFromStockByIdNoAnimation(+card.id);
+						}
+						else {
+							throw new Error(`Cannot build a stack. Card ${card.id} does not exist in limbo.`);
 						}
 					}
 					else {

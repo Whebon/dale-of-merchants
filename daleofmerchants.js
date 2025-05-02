@@ -4908,6 +4908,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myDiscard.updateHTMLPublic();
                     }
                     break;
+                case 'charmStove':
+                    this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
+                    this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Choose cards to <strong>spend</strong>"), 'build');
+                    break;
                 case 'client_cache':
                     this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
                     break;
@@ -5261,6 +5265,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_stove':
                     this.coinManager.setSelectionMode('none');
                     this.myHand.orderedSelection.secondaryToPrimary();
+                    break;
+                case 'charmStove':
+                    this.myLimbo.setSelectionMode('none');
+                    this.coinManager.setSelectionMode('none');
+                    this.myHand.setSelectionMode('none');
                     break;
                 case 'client_cache':
                     this.myDiscard.setSelectionMode('none');
@@ -5836,6 +5845,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Confirm"), "onStove");
                     this.updateStoveButton();
                     this.addActionButtonCancelClient();
+                    break;
+                case 'charmStove':
+                    this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Card drawn by Charm"));
+                    this.addActionButton("confirm-button", _("Confirm"), "onCharmStove");
+                    this.updateStoveButton();
                     break;
                 case 'client_cache':
                     this.addActionButtonCancelClient();
@@ -6581,6 +6595,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_stove':
                     this.updateStoveButton();
                     break;
+                case 'charmStove':
+                    this.updateStoveButton();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onSelectHandCard = function (card_id) {
@@ -6736,6 +6753,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onSpendXSelectionChanged();
                     break;
                 case 'client_stove':
+                    this.updateStoveButton();
+                    break;
+                case 'charmStove':
                     this.updateStoveButton();
                     break;
                 case null:
@@ -7720,6 +7740,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.updateStoveButton();
                     break;
             }
+            if (this.gamedatas.gamestate.name == 'charmStove') {
+                this.updateStoveButton();
+            }
         };
         DaleOfMerchants.prototype.onBuildSelectionChanged = function (card) {
             console.warn("onBuildSelectionChanged");
@@ -7748,6 +7771,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", count_nostalgic_items);
             }
+        };
+        DaleOfMerchants.prototype.onCharmStove = function () {
+            var spend_card_ids = this.myHand.orderedSelection.get();
+            var spend_coins = this.coinManager.getCoinsToSpend();
+            this.bgaPerformAction('actCharmStove', {
+                spend_card_ids: this.arrayToNumberList(spend_card_ids),
+                spend_coins: spend_coins
+            });
         };
         DaleOfMerchants.prototype.onStove = function () {
             var spend_card_ids = this.myHand.orderedSelection.get();
@@ -8946,6 +8977,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             }
                             else {
                                 throw new Error("Cannot build a stack. Card ".concat(card.id, " does not exist in hand."));
+                            }
+                        }
+                        else {
+                            stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_' + notif.args.player_id);
+                        }
+                        break;
+                    case 'limb':
+                        if (notif.args.player_id == this.player_id) {
+                            if ($(this.myLimbo.control_name + '_item_' + card.id)) {
+                                stall.insertCard(card, notif.args.stack_index, undefined, this.myLimbo.control_name + '_item_' + card.id);
+                                this.myLimbo.removeFromStockByIdNoAnimation(+card.id);
+                            }
+                            else {
+                                throw new Error("Cannot build a stack. Card ".concat(card.id, " does not exist in limbo."));
                             }
                         }
                         else {

@@ -192,6 +192,7 @@ interface GameStates {
 			'trAnchor': 83,
 			'trManufacturedJoy': 84,
 			'trShakyEnterprise': 85,
+			'trCharmStove': 86,
 		},
 	},
 	31: {
@@ -942,6 +943,28 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	86: {
+		'name': 'charmStove',
+		'description': 'Stove: ${actplayer} may spend x to change the Stove\\\'s value',
+		'descriptionmyturn': 'Stove: ${you} may spend x to change the Stove\\\'s value',
+		'type': 'activeplayer',
+		'action': 'stCharmStove',
+		'possibleactions': {
+			'actCharmStove': [{
+				'name': 'spend_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'spend_coins',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+			'trGameEnd': 98,
 		},
 	},
 	98: {

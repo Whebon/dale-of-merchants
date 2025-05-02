@@ -3474,6 +3474,12 @@ class DaleOfMerchants extends DaleTableBasic
                             throw new BgaUserException("Charm is unable to find a buildable target for the drawn chameleon card");
                         }
                     }
+                    //check for the stove interaction
+                    if ($this->getTypeId($dbcard) == CT_STOVE) {
+                        $this->cards->moveCardOnTop($dbcard["id"], DECK.MARKET); //place the card back on top
+                        $this->gamestate->nextState("trCharmStove"); //stCharmStove will draw it to limbo
+                        return;
+                    }
                     //build with a regular card
                     $transition = $this->build($stack_index, $dbcards, null, DECK);
                     $this->gamestate->nextState($transition);
@@ -5816,6 +5822,55 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actCharmStove($spend_card_ids, $spend_coins) {
+        $this->checkAction("actCharmStove");
+        $spend_card_ids = $this->numberListToArray($spend_card_ids);
+        $player_id = $this->getActivePlayerId();
+        $stack_index = $this->cards->getNextStackIndex($player_id);
+
+        //get the stove from limbo
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("Expected exactly 1 card in limbo, but found ".count($dbcards));
+        }
+        $dbcard = reset($dbcards);
+        
+        //Apply CT_STOVE
+        $stove_spend_args = array(
+            "spend_card_ids" => $spend_card_ids,
+            "spend_coins" => $spend_coins,
+        );
+        $x = $this->spendX($player_id, $stove_spend_args, 0, 1000, $this->_("Stove"));
+        if ($x > 0) {
+            $stove_value = (int)(($x + 1)/2);
+            $this->effects->insertModification($dbcard["id"], CT_STOVE, $stove_value);
+            $this->notifyAllPlayers('message', clienttranslate('Stove: ${player_name} changes its value to ${stove_value}'), array(
+                "player_name" => $this->getActivePlayerName(),
+                "stove_value" => $stove_value
+            ));
+        }
+
+        //Build from limbo
+        if ($x > 0) {
+            //Modified stove (mandatory)
+            $transition = $this->build($stack_index, $dbcards, null, LIMBO);
+            $this->gamestate->nextState($transition);
+        }
+        else {
+            //Unmodified stove (optional)
+            try {
+                $transition = $this->build($stack_index, $dbcards, null, LIMBO);
+                $this->gamestate->nextState($transition);
+            }
+            catch(BgaUserException $e) {
+                //building failed: ditch the card instead
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
+                $this->ditch(clienttranslate('Charm: ${player_name} ditches ${card_name}'), $dbcard, true);
+                $this->fullyResolveCard($player_id);
+            }
+        }
+    }
+
 
     //(~acts)
 
@@ -6568,6 +6623,10 @@ class DaleOfMerchants extends DaleTableBasic
     
     function stAnchor() {
         $this->draw(clienttranslate('Anchor: ${player_name} draws 3 cards'), 3, true);
+    }
+
+    function stCharmStove() {
+        $this->draw('', 1, true, MARKET); //draws the top card of the market (which should be a CT_STOVE at this point)
     }
 
 

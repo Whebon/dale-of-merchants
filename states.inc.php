@@ -45,6 +45,7 @@ if (false) {
 	$game->stTacticalMeasurement();
 	$game->stMeddlingMarketeer();
 	$game->stAnchor();
+	$game->stCharmStove();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -141,6 +142,7 @@ $machinestates = array(
 			'trAnchor' => 83,
 			'trManufacturedJoy' => 84,
 			'trShakyEnterprise' => 85,
+			'trCharmStove' => 86,
 		),
 	),
 	31 => array(
@@ -576,6 +578,18 @@ $machinestates = array(
 		'possibleactions' => ['actAnchor'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	86 => array(
+		'name' => 'charmStove',
+		'description' => clienttranslate('Stove: ${actplayer} may spend x to change the Stove\'s value'),
+		'descriptionmyturn' => clienttranslate('Stove: ${you} may spend x to change the Stove\'s value'),
+		'type' => 'activeplayer',
+		'action' => 'stCharmStove',
+		'possibleactions' => ['actCharmStove'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trGameEnd' => 98,
 		),
 	),
 	98 => array(
