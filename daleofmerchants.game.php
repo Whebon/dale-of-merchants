@@ -1357,7 +1357,9 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Notify the player about the value of x
         $x = $x_without_coins + $spend_coins;
-        $this->notifyAllPlayers('message', ($msg_prefix ? $msg_prefix.": " : "")."x = ".$x, array());
+        if ($x > 0) {
+            $this->notifyAllPlayers('message', ($msg_prefix ? $msg_prefix.": " : "")."x = ".$x, array());
+        }
         return $x;
     }
 
@@ -5817,7 +5819,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     //(~acts)
 
-    function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard) {
+    function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard, $args) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
         $this->checkAction("actBuild");
         $stack_card_ids = $this->numberListToArray($stack_card_ids);
@@ -5828,9 +5830,6 @@ class DaleOfMerchants extends DaleTableBasic
         $stack_cards = $this->cards->getCardsFromLocation($stack_card_ids, HAND.$player_id);
         $stack_index = $this->cards->getNextStackIndex($player_id);
         $this->incStat(1, "actions_build", $player_id);
-
-        //die(print_r($this->effects->cache));
-        //die("type id ".$this->getTypeId($stack_cards[46]));
 
         //Get information about the stack cards from discard (CT_NOSTALGICITEM)
         $stack_cards_from_discard = null;
@@ -5844,6 +5843,26 @@ class DaleOfMerchants extends DaleTableBasic
             }
             if ($nbr_from_discard > $nbr_nostalgic_item) {
                 throw new BgaUserException($this->_("You cannot include cards from your discard pile."));
+            }
+        }
+
+        //Apply CT_STOVE
+        if (isset($args["stove_spend_args"])) {
+            foreach ($args["stove_spend_args"] as $stove_card_id => $stove_spend_args) {
+                foreach ($stove_spend_args["spend_card_ids"] as $spend_card_id) {
+                    if (in_array($spend_card_id, $stack_card_ids)) {
+                        throw new BgaUserException($this->_("Unable to spend and build the same card"));
+                    }
+                }
+                $x = $this->spendX($player_id, $stove_spend_args, 0, 1000, $this->_("Stove"));
+                if ($x > 0) {
+                    $stove_value = (int)(($x + 1)/2);
+                    $this->effects->insertModification($stove_card_id, CT_STOVE, $stove_value);
+                    $this->notifyAllPlayers('message', clienttranslate('Stove: ${player_name} changes its value to ${stove_value}'), array(
+                        "player_name" => $this->getActivePlayerName(),
+                        "stove_value" => $stove_value
+                    ));
+                }
             }
         }
 

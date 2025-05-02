@@ -135,6 +135,10 @@ interface GameStates {
 				'name': 'stack_card_ids_from_discard',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
 			}],
 			'actInventoryAction': [{
 				'name': 'ids',

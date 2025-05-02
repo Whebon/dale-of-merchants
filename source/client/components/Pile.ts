@@ -19,9 +19,10 @@ declare function $(text: string | Element): HTMLElement;
  * 'multipleJunk':              up to 3 junk cards can be selected from the popin
  * 'multipleFromTopWithGaps':   multiple cards (up to the selectionMax) can be selected from the popin, up to 'selectionMax' cards deep
  * 'multipleFromTopNoGaps':     multiple cards (up to the selectionMax) can be selected from the popin, but they must be adjacent and the top card must be included
+ * 'multipleProgrammatic':      multiple cards can be selected programmatically, but NOT by the player
  * 'top':                       content popin can cannot be viewed, and only the top card of the pile can be selected.
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'top';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'top';
 
 /**
  * A component to display a set of cards in a pile.
@@ -96,11 +97,18 @@ export class Pile implements DaleLocation {
     }
 
     /**
+     * Public updateHTML call
+     */
+    public updateHTMLPublic() {
+        this.updateHTML();
+    }
+
+    /**
      * Attach the current topCard to the topCardHTML
      */
     protected updateHTML() {
         let topCard = this.peek(true);
-        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps') && this.orderedSelection.getMaxSize() > 0) {
+        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps' || this.selectionMode == 'multipleProgrammatic') && this.orderedSelection.getMaxSize() > 0) {
             if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                 this.containerHTML.classList.add("daleofmerchants-blinking");
             }
@@ -544,6 +552,7 @@ export class Pile implements DaleLocation {
             case 'multipleJunk':
             case 'multipleFromTopWithGaps':
             case 'multipleFromTopNoGaps':
+            case 'multipleProgrammatic':
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                 }

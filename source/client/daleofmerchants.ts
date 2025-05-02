@@ -915,6 +915,23 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
 				this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
 				break;
+			case 'client_stove':
+				const client_stove_args = (this.mainClientState.args as ClientGameStates['client_stove']);	
+				this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
+				this.myHand.unselectAll();
+				this.myHand.setSelectionMode('multipleExceptSecondary', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Choose cards to <strong>spend</strong>"), 'build');
+				for (let card_id of client_stove_args.stack_card_ids!.slice().reverse()) {
+					this.myHand.selectItem(card_id, true);
+				}
+				const client_stove_discard_nbr = client_stove_args.stack_card_ids_from_discard?.length ?? 0;
+				if (client_stove_discard_nbr > 0) {
+					this.myDiscard.setSelectionMode('multipleProgrammatic', 'build', 'daleofmerchants-wrap-build', )
+					for (let card_id of client_stove_args.stack_card_ids_from_discard!.slice().reverse()) {
+						this.myDiscard.selectItem(card_id);
+					}
+					this.myDiscard.updateHTMLPublic();
+				}
+				break;
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
 				break;
@@ -1266,6 +1283,10 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spendx':
 				this.coinManager.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_stove':
+				this.coinManager.setSelectionMode('none');
+				this.myHand.orderedSelection.secondaryToPrimary();
 				break;
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('none');
@@ -1845,6 +1866,11 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spendx':
 				this.addActionButton("confirm-button", _("Confirm"), "onSpend");
 				this.updateSpendXButton();
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_stove':
+				this.addActionButton("confirm-button", _("Confirm"), "onStove");
+				this.updateStoveButton();
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_cache':
@@ -2511,6 +2537,19 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	updateStoveButton() {
+		const confirm_button = $("confirm-button");
+		if (confirm_button) {
+			let value = this.coinManager.getCoinsToSpend() + this.myHand.getSelectedValue();
+			if (value != 0) {
+				(confirm_button as HTMLElement).innerText = _("Confirm")+` (x = ${value})`;
+			}
+			else {
+				(confirm_button as HTMLElement).innerText = _("Skip");
+			}
+		}	
+	}
+
 	
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -2793,6 +2832,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spendx':
 				this.onSpendXSelectionChanged();
 				break;
+			case 'client_stove':
+				this.updateStoveButton();
+				break;
 		}
 	}
 
@@ -2970,6 +3012,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_spendx':
 				this.onSpendXSelectionChanged();
+				break;
+			case 'client_stove':
+				this.updateStoveButton();
 				break;
 			case null:
 				throw new Error("gamestate.name is null");
@@ -4033,6 +4078,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spendx':
 				this.updateSpendXButton();
 				break;
+			case 'client_stove':
+				this.updateStoveButton();
+				break;
 		}
 	}
 
@@ -4065,14 +4113,58 @@ class DaleOfMerchants extends Gamegui
 		
 	}
 
-	onBuild() {
-		if(this.checkAction('actBuild')) {
-			this.bgaPerformAction('actBuild', {
-				stack_card_ids: this.arrayToNumberList(this.myHand.orderedSelection.get()),
-				stack_card_ids_from_discard: this.arrayToNumberList(this.myDiscard.orderedSelection.get()),
-				chameleons_json: DaleCard.getLocalChameleonsJSON()
-			});
+	onStove() {
+		const spend_card_ids = this.myHand.orderedSelection.get();
+		const spend_coins = this.coinManager.getCoinsToSpend();
+		const args = this.mainClientState.args as ClientGameStates['client_stove'];
+		const stove_card_id = (args as ClientGameStates['client_stove']).passive_card_id;
+		args.optionalArgs.stove_spend_args![stove_card_id]! = {
+			spend_card_ids: spend_card_ids,
+			spend_coins: spend_coins
 		}
+		this.onBuild();
+	}
+
+	onBuild() {
+		const args = this.mainClientState.args as ClientGameStates['client_build'];
+		console.warn("onBuild", args);
+		switch (this.gamedatas.gamestate.name) {
+			case 'client_stove':
+				break; //already set by onStove()
+			case 'client_build':
+			case 'winterIsComing':
+				args.stack_card_ids = this.myHand.orderedSelection.get();
+				args.stack_card_ids_from_discard = this.myDiscard.orderedSelection.get();
+				args.optionalArgs = {stove_spend_args: {}};
+				for (const card_id of [...args.stack_card_ids, ...args.stack_card_ids_from_discard]) {
+					if (new DaleCard(card_id).effective_type_id == DaleCard.CT_STOVE) {
+						args.optionalArgs.stove_spend_args[card_id] = undefined;
+					}
+				}
+				break;
+		}
+		if (args.stack_card_ids === undefined || args.stack_card_ids_from_discard == undefined) {
+			throw new Error("onBuild: stack_card_ids and stack_card_ids_from_discard are undefined");
+		}
+		for (const card_id of Object.keys(args.optionalArgs.stove_spend_args)) {
+			if (args.optionalArgs.stove_spend_args[+card_id] === undefined) {
+				this.mainClientState.setPassiveSelected(false);
+				this.mainClientState.enterOnStack('client_stove', {...args, passive_card_id: +card_id});
+				this.myStall.selectLeftPlaceholder();
+				return;
+			}
+		}
+		this.bgaPerformAction('actBuild', {
+			stack_card_ids: this.arrayToNumberList(args.stack_card_ids),
+			stack_card_ids_from_discard: this.arrayToNumberList(args.stack_card_ids_from_discard),
+			chameleons_json: DaleCard.getLocalChameleonsJSON(),
+			args: JSON.stringify(args.optionalArgs)
+		}).then(() => {
+			//if the build is successful, nicely close the stack of client states
+			while (this.gamedatas.gamestate.name != 'client_build') {
+				this.mainClientState.leave(); //see issue #97.2 and #97.3
+			}
+		});
 	}
 	
 	onWinterIsComingSkip() {
@@ -4181,7 +4273,8 @@ class DaleOfMerchants extends Gamegui
 			case 'client_build':
 			case 'client_inventory':
 				this.mainClientState.enter('client_build', {
-					stack_index_plus_1: this.myStall!.getNumberOfStacks()+1
+					stack_index_plus_1: this.myStall!.getNumberOfStacks()+1,
+					optionalArgs: { stove_spend_args: {} }
 				});
 				break;
 		}
@@ -5061,6 +5154,10 @@ class DaleOfMerchants extends Gamegui
 		}
 		
 		//go the the next state or action
+		if (typeof args.next === 'function') {
+			args.next(spend_card_ids, spend_coins);
+			return;
+		}
 		switch (args.next) {
 			case 'playPassiveCard':
 				this.playPassiveCard<'client_choicelessPassiveCard'>({

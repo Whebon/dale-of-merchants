@@ -126,8 +126,10 @@ class action_daleofmerchants extends APP_GameAction
 		$stack_card_ids = self::getArg('stack_card_ids', AT_numberlist, true);
 		/** @var string $stack_card_ids_from_discard */
 		$stack_card_ids_from_discard = self::getArg('stack_card_ids_from_discard', AT_numberlist, true);
+		/** @var string $args */
+		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actBuild( $chameleons_json, $stack_card_ids, $stack_card_ids_from_discard );
+		$this->game->actBuild( $chameleons_json, $stack_card_ids, $stack_card_ids_from_discard, $args );
 		self::ajaxResponse();
 	}
 

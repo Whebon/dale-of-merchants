@@ -463,6 +463,7 @@ declare global {
 		'client_calculations': {} //choice sent as purchase args
 		'client_barricade': { card_ids: number[] }
 		'client_sliceoflife': { card_ids: number[] }
+		'client_stove': {} //choice sent as build args
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
@@ -472,7 +473,8 @@ declare global {
 
 	//possible follow-up states after a 'client_spend'. Note that choiceless states are not allowed, use one of the included functions 
 	type ClientSpendNext = 'playPassiveCard' | 'playTechniqueCardWithServerState' | 'playTechniqueCard' | 'resolveTechniqueCard' |
-		Exclude<keyof ClientGameStates, 'client_choicelessPassiveCard' | 'client_choicelessTechniqueCard' | 'client_choicelessTriggerTechniqueCard'> 
+		Exclude<keyof ClientGameStates, 'client_choicelessPassiveCard' | 'client_choicelessTechniqueCard' | 'client_choicelessTriggerTechniqueCard'> |
+		((spend_card_ids: number[], spend_coins: number) => void)
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameStates extends TriggerTechniqueClientStates, TechniqueClientStates, PassiveClientStates {
@@ -496,7 +498,16 @@ declare global {
 			}
 		}
 		'client_technique': {}
-		'client_build': { stack_index_plus_1: number }
+		'client_build': { 
+			stack_index_plus_1: number,
+			stack_card_ids?: number[],
+			stack_card_ids_from_discard?: number[],
+			optionalArgs: {
+				stove_spend_args: {
+					[card_id: number]: ClientTechniqueChoice['client_spend'] | undefined
+				}
+			}
+		 }
 		'client_inventory': {}
 		'client_essentialPurchase': ClientGameStates['client_purchase']
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
@@ -513,6 +524,7 @@ declare global {
 		'client_manufacturedJoy': { draw_card_id: number, card_name: string }
 		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, wrap_class?: DaleWrapClass }
+		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
 	}
 
 	//

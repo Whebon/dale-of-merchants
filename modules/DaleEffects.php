@@ -177,6 +177,9 @@ class DaleEffects {
                     case CT_RAREARTEFACT:
                         $value *= $row["arg"];
                         break;
+                    case CT_STOVE:
+                        $value = $row["arg"];
+                        break;
                 }
             }
         }

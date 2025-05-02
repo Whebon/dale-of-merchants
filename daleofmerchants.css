@@ -950,6 +950,15 @@ body {
   background-color: var(--daleofmerchants-wrap-purchase-a);
   background-blend-mode: overlay;
 }
+.daleofmerchants-wrap-purchase .daleofmerchants-card.daleofmerchants-selected:has(.daleofmerchants-build-icon) {
+  outline: 3px solid var(--daleofmerchants-wrap-build);
+  background-color: var(--daleofmerchants-wrap-build-a);
+  background-blend-mode: overlay;
+}
+.daleofmerchants-wrap-purchase .daleofmerchants-card.daleofmerchants-selected:has(.daleofmerchants-build-icon) .daleofmerchants-card.daleofmerchants-chameleon-overlay {
+  background-color: var(--daleofmerchants-wrap-build-a);
+  background-blend-mode: overlay;
+}
 .daleofmerchants-wrap-purchase .daleofmerchants-clickable:hover {
   box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-purchase);
 }

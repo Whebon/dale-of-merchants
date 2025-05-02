@@ -983,6 +983,16 @@ body {
 			background-color: var(--daleofmerchants-wrap-purchase-a);
 			background-blend-mode: overlay;
 		}
+		//hard-coded case: build icon overrides the purchase color
+		&:has(.daleofmerchants-build-icon) {
+			outline: 3px solid var(--daleofmerchants-wrap-build);
+			background-color: var(--daleofmerchants-wrap-build-a);
+			background-blend-mode: overlay;
+			.daleofmerchants-card.daleofmerchants-chameleon-overlay {
+				background-color: var(--daleofmerchants-wrap-build-a);
+				background-blend-mode: overlay;
+			}
+		}
 	}
 	.daleofmerchants-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-purchase);

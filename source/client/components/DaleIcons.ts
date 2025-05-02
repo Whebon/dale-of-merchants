@@ -65,7 +65,9 @@ export class DaleIcons {
     }
 
     public static getBuildIcon(): HTMLElement {
-        return this.getIcon(3, 1);
+        const icon = this.getIcon(3, 1);
+        icon.classList.add("daleofmerchants-build-icon");
+        return icon;
     }
 
     public static getHandIcon(): HTMLElement {
