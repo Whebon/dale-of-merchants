@@ -410,6 +410,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                 case 'historyLesson':
                     icon = DaleIcons_1.DaleIcons.getHistoryLessonIcon();
                     break;
+                case 'resourcefulAlly':
+                    icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.max(4 - index, 0));
+                    break;
             }
             if (icon) {
                 if (secondary) {
@@ -1460,7 +1463,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DIE_PANGOLIN2')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin2'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin2'), "<br>");
             }
-            console.log(legend);
             return legend;
         };
         DaleCard.prototype.updateChameleonOverlay = function (temp_div, fade) {
@@ -2328,6 +2330,23 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var z_index = Images_4.Images.Z_INDEX_SLIDING_CARD + this._slidingCards.length;
             var style = slidingElement.getAttribute('style');
             slidingElement.setAttribute('style', style + "z-index: ".concat(z_index, ";"));
+        };
+        Pile.prototype.moveToTop = function (card) {
+            if (this.cards.length == 0) {
+                throw new Error("moveToTop failed: empty pile");
+            }
+            if (this.cards[this.cards.length - 1].id == card.id) {
+                return;
+            }
+            for (var index = 0; index < this.cards.length - 1; index++) {
+                if (this.cards[index].id == card.id) {
+                    this.removeAt(index);
+                    this.push(card);
+                    return;
+                }
+            }
+            console.warn(card);
+            throw new Error("moveToTop failed: card not found");
         };
         Pile.prototype.removeAt = function (index) {
             if (index == undefined) {
@@ -4915,6 +4934,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_cache':
                     this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
                     break;
+                case 'resourcefulAlly':
+                    this.myDiscard.setSelectionMode('multiple', 'resourcefulAlly', 'daleofmerchants-wrap-technique', 2);
+                    this.myDiscard.openPopin();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5272,6 +5295,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_cache':
+                    this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'resourcefulAlly':
                     this.myDiscard.setSelectionMode('none');
                     break;
             }
@@ -5853,6 +5879,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_cache':
                     this.addActionButtonCancelClient();
+                    break;
+                case 'resourcefulAlly':
+                    this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
                     break;
             }
         };
@@ -7643,6 +7672,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_SAFEPROFITS:
                     this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, 10);
                     break;
+                case DaleCard_10.DaleCard.CT_RESOURCEFULALLY:
+                    this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -8726,6 +8758,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
             }
         };
+        DaleOfMerchants.prototype.onResourcefulAlly = function () {
+            this.bgaPerformAction('actResourcefulAlly', {
+                card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -9532,7 +9569,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _a;
             var discard = this.playerDiscards[notif.args.player_id];
             var deck = this.playerDecks[(_a = notif.args.opponent_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
-            discard.pop(deck.placeholderHTML, function () { return deck.pushHiddenCards(1); });
+            discard.moveToTop(DaleCard_10.DaleCard.of(notif.args.card));
+            if (notif.args.to_bottom && deck.placeholderHTML && deck.topCardHTML) {
+                var cover_1 = deck.topCardHTML.cloneNode(true);
+                deck.placeholderHTML.appendChild(cover_1);
+                dojo.setStyle(cover_1, 'z-index', Images_9.Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD.toString());
+                dojo.setStyle(cover_1, 'box-shadow', "0px 0px");
+                discard.pop(deck.placeholderHTML, function () {
+                    deck.pushHiddenCards(1);
+                    cover_1.remove();
+                });
+            }
+            else {
+                discard.pop(deck.placeholderHTML, function () { return deck.pushHiddenCards(1); });
+            }
         };
         DaleOfMerchants.prototype.notif_deckToDiscard = function (notif) {
             var _a;

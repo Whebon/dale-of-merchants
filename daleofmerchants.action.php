@@ -542,6 +542,17 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actResourcefulAlly()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actResourcefulAlly( $card_ids );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

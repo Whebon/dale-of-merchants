@@ -95,6 +95,9 @@ export abstract class AbstractOrderedSelection {
             case 'historyLesson':
                 icon = DaleIcons.getHistoryLessonIcon();
                 break;
+            case 'resourcefulAlly':
+                icon = DaleIcons.getBluePileIcon(Math.max(4-index, 0)); //reverse pileBlue
+                break;
         }
         if (icon) {
             if (secondary) {

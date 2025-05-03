@@ -4473,6 +4473,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gainCoins($player_id, ($x+1)/2, $this->_("Safe Profits"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_RESOURCEFULALLY:
+                $this->beginResolvingCard($technique_card_id);
+                $this->spend($player_id, $args, 2, $this->_("Resourceful Ally"));
+                $this->gamestate->nextState("trResourcefulAlly");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5871,6 +5876,29 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    function actResourcefulAlly($card_ids) {
+        $this->checkAction("actResourcefulAlly");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+        $nbr = min(2, $this->cards->countCardInLocation(DISCARD.$player_id));
+        if (count($card_ids) != $nbr) {
+            throw new BgaUserException($this->_("Please select exactly ").$nbr.$this->_(" cards"));
+        }
+        $dbcards = $this->cards->getCardsFromLocation($card_ids, DISCARD.$player_id);
+        foreach ($card_ids as $card_id) {
+            $dbcard = $dbcards[$card_id]; //because order matters!
+            $this->cards->moveCardOnBottom($dbcard["id"], DECK.$player_id);
+            $this->notifyAllPlayers('discardToDeck', clienttranslate('Resourceful Ally: ${player_name} places their ${card_name} on the bottom their deck'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "card_name" => $this->getCardName($dbcard),
+                "card" => $dbcard,
+                "to_bottom" => true
+            ));
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -6126,6 +6154,15 @@ class DaleOfMerchants extends DaleTableBasic
             'card_name' => $card_name
         );
     }
+
+    function argResourcefulAlly() {
+        $player_id = $this->getActivePlayerId();
+        return array(
+            'nbr' => min(2, $this->cards->countCardInLocation(DISCARD.$player_id))
+        );
+    }
+
+    //(~arg)
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions

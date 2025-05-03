@@ -199,6 +199,31 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * Move 1 card on the bottom of the provided location
+     * @param mixed $card_id string or int representing the card id of the card to move
+     * @param string $location location to put the card
+     * @param bool $expire_chameleon if true, expire the chameleon target that was on top of this pile
+     */
+    function moveCardOnBottom($card_id, string $location, bool $expire_chameleon_target = true) {
+        if ($expire_chameleon_target) {
+            $this->expireChameleonTargetInDiscard($location);
+        }
+
+        //shift cards
+        $bottom_location_arg = $this->getExtremePosition(false, $location);
+        $sql = "UPDATE ".$this->table." ";
+        $sql .= "SET card_location_arg=card_location_arg+1 ";
+        self::DbQuery( $sql );
+
+        //move the card to the bottom
+        $this->moveCard($card_id, $location, $bottom_location_arg);
+
+        if ($this->isOuterLocation($location)) {
+            $this->effects->expireModifications($card_id);
+        }
+    }
+
+    /**
      * Move 1 card on top of the provided location
      * @param mixed $card_id string or int representing the card id of the card to move
      * @param string $location location to put the card

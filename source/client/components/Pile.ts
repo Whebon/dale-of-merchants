@@ -144,6 +144,28 @@ export class Pile implements DaleLocation {
     }
 
     /**
+     * Remove a card from the pile and instantly place it on the the top. Animations are not supported.
+     * @param index (optional) - default pop. index in range [0, this.cards.length-1]
+     */
+    public moveToTop(card: DaleCard) {
+        if (this.cards.length == 0) {
+            throw new Error("moveToTop failed: empty pile");
+        }
+        if (this.cards[this.cards.length-1]!.id == card.id) {
+            return; //card is already on top
+        }
+        for (let index = 0; index < this.cards.length - 1; index++) {
+            if (this.cards[index]!.id == card.id) {
+                this.removeAt(index);
+                this.push(card);
+                return;
+            }
+        }
+        console.warn(card);
+        throw new Error("moveToTop failed: card not found");
+    }
+
+    /**
      * Remove a card from the pile at an specific index. Animations are not supported.
      * @param index (optional) - default pop. index in range [0, this.cards.length-1]
      */

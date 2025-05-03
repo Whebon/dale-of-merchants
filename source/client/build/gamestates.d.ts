@@ -193,6 +193,7 @@ interface GameStates {
 			'trManufacturedJoy': 84,
 			'trShakyEnterprise': 85,
 			'trCharmStove': 86,
+			'trResourcefulAlly': 87,
 		},
 	},
 	31: {
@@ -965,6 +966,23 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 30,
 			'trGameEnd': 98,
+		},
+	},
+	87: {
+		'name': 'resourcefulAlly',
+		'description': 'Resourceful Ally: ${actplayer} must place ${nbr} cards from your discard on the bottom of their deck',
+		'descriptionmyturn': 'Resourceful Ally: ${you} must place ${nbr} cards from your discard on the bottom of your deck',
+		'type': 'activeplayer',
+		'args': 'argResourcefulAlly',
+		'possibleactions': {
+			'actResourcefulAlly': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	98: {

@@ -991,7 +991,6 @@ export class DaleCard {
         if (text.includes('DIE_PANGOLIN2')) {
             legend += `${DaleDie.get3DDieTpl('pangolin2')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin2')}<br>`
         }
-        console.log(legend);
         return legend;
     }
 

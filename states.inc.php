@@ -143,6 +143,7 @@ $machinestates = array(
 			'trManufacturedJoy' => 84,
 			'trShakyEnterprise' => 85,
 			'trCharmStove' => 86,
+			'trResourcefulAlly' => 87,
 		),
 	),
 	31 => array(
@@ -590,6 +591,17 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trGameEnd' => 98,
+		),
+	),
+	87 => array(
+		'name' => 'resourcefulAlly',
+		'description' => clienttranslate('Resourceful Ally: ${actplayer} must place ${nbr} cards from your discard on the bottom of their deck'),
+		'descriptionmyturn' => clienttranslate('Resourceful Ally: ${you} must place ${nbr} cards from your discard on the bottom of your deck'),
+		'type' => 'activeplayer',
+		'args' => 'argResourcefulAlly',
+		'possibleactions' => ['actResourcefulAlly'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	98 => array(

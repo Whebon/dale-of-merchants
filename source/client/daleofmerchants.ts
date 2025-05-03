@@ -939,6 +939,10 @@ class DaleOfMerchants extends Gamegui
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
 				break;
+			case 'resourcefulAlly':
+				this.myDiscard.setSelectionMode('multiple', 'resourcefulAlly', 'daleofmerchants-wrap-technique', 2);
+				this.myDiscard.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1298,6 +1302,9 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_cache':
+				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'resourcefulAlly':
 				this.myDiscard.setSelectionMode('none');
 				break;
 		}
@@ -1889,6 +1896,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_cache':
 				this.addActionButtonCancelClient();
+				break;
+			case 'resourcefulAlly':
+				this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
 				break;
 		}
 		//(~actionbuttons)
@@ -4000,6 +4010,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SAFEPROFITS:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, 10);
 				break;
+			case DaleCard.CT_RESOURCEFULALLY:
+				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -5225,6 +5238,12 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	onResourcefulAlly() {
+		this.bgaPerformAction('actResourcefulAlly', {
+			card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
+		})
+	}
+
 	//(~on)
 
 
@@ -6221,7 +6240,22 @@ class DaleOfMerchants extends Gamegui
 	notif_discardToDeck(notif: NotifAs<'discardToDeck'>) {
 		const discard = this.playerDiscards[notif.args.player_id]!;
 		const deck = this.playerDecks[notif.args.opponent_id ?? notif.args.player_id]!;
-		discard.pop(deck.placeholderHTML, () => deck.pushHiddenCards(1));
+		discard.moveToTop(DaleCard.of(notif.args.card));
+		if (notif.args.to_bottom && deck.placeholderHTML && deck.topCardHTML) {
+			//slide the card underneath the stack
+			const cover = deck.topCardHTML.cloneNode(true) as HTMLElement;
+			deck.placeholderHTML.appendChild(cover);
+			dojo.setStyle(cover, 'z-index', Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD.toString());
+			dojo.setStyle(cover, 'box-shadow', "0px 0px");
+			discard.pop(deck.placeholderHTML, () => {
+				deck.pushHiddenCards(1);
+				cover.remove();
+			});
+		}
+		else {
+			//slide the card on top of the stack
+			discard.pop(deck.placeholderHTML, () => deck.pushHiddenCards(1));
+		}
 	}
 
 	notif_deckToDiscard(notif: NotifAs<'deckToDiscard'>) {

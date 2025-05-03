@@ -150,6 +150,7 @@ declare global {
 			card: DbCard
 			player_id: number,
 			opponent_id?: number, //by default the same as the player_id
+			to_bottom?: boolean
 		}
 		'instant_deckToDeck': {}
 		'deckToDeck': {
