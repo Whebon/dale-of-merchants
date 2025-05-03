@@ -4013,6 +4013,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_RESOURCEFULALLY:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
 				break;
+			case DaleCard.CT_ICETRADE:
+				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;

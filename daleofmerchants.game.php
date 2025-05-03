@@ -4478,6 +4478,18 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->spend($player_id, $args, 2, $this->_("Resourceful Ally"));
                 $this->gamestate->nextState("trResourcefulAlly");
                 break;
+            case CT_ICETRADE:
+                $x = $this->spendX($player_id, $args, 1, 1000, $this->_("Ice Trade"));
+                $nbr = $this->draw(
+                    clienttranslate('Ice Trade: ${player_name} draws 1 card from the supply'), 
+                    1, 
+                    false, 
+                    MARKET, 
+                    $player_id,
+                    clienttranslate('Ice Trade: ${player_name} draws a ${card_name} from the supply')
+                );
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
