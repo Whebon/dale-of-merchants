@@ -4495,6 +4495,15 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->spend($player_id, $args, 1, $this->_("Traveling Equipment"));
                 $this->gamestate->nextState("trTravelingEquipment");
                 break;
+            case CT_FISHING:
+                $this->spend($player_id, $args, 1, $this->_("Fishing"));
+                if ($this->cards->countCardInLocation(DISCARD.$player_id) == 0) {
+                    $this->fullyResolveCard($player_id, $technique_card); //fizzle
+                    return;
+                }
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trFishing");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5901,10 +5910,9 @@ class DaleOfMerchants extends DaleTableBasic
         if (count($card_ids) != $nbr) {
             throw new BgaUserException($this->_("Please select exactly ").$nbr.$this->_(" cards"));
         }
-        $dbcards = $this->cards->getCardsFromLocation($card_ids, DISCARD.$player_id);
         foreach ($card_ids as $card_id) {
-            $dbcard = $dbcards[$card_id]; //because order matters!
-            $this->cards->moveCardOnBottom($dbcard["id"], DECK.$player_id);
+            $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+            $this->cards->moveCardOnBottom($card_id, DECK.$player_id);
             $this->notifyAllPlayers('discardToDeck', clienttranslate('Resourceful Ally: ${player_name} places their ${card_name} on the bottom their deck'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameById($player_id),
@@ -5945,6 +5953,29 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
 
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actFishing($card_ids) {
+        $this->checkAction("actFishing");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        if (count($card_ids) == 0) {
+            throw new BgaUserException($this->_("Please select at least 1 card"));
+        }
+        if (count($card_ids) > 3) {
+            throw new BgaUserException($this->_("Please select at most 3 cards"));
+        }
+        foreach ($card_ids as $card_id) {
+            $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+            $this->cards->moveCardOnTop($card_id, DECK.$player_id);
+            $this->notifyAllPlayers('discardToDeck', clienttranslate('Fishing: ${player_name} places their ${card_name} on top of their deck'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "card_name" => $this->getCardName($dbcard),
+                "card" => $dbcard
+            ));
+        }
         $this->fullyResolveCard($player_id);
     }
 

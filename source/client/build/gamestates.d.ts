@@ -195,6 +195,7 @@ interface GameStates {
 			'trCharmStove': 86,
 			'trResourcefulAlly': 87,
 			'trTravelingEquipment': 88,
+			'trFishing': 89,
 		},
 	},
 	31: {
@@ -1001,6 +1002,22 @@ interface GameStates {
 				'name': 'discard_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	89: {
+		'name': 'fishing',
+		'description': 'Fishing: ${actplayer} must place 1-3 cards from your discard on your deck',
+		'descriptionmyturn': 'Fishing: ${you} must place 1-3 cards from your discard on your deck',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actFishing': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

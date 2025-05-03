@@ -118,7 +118,7 @@ class DaleDeck extends Deck {
     /**
      * Get cards from a specific "pile" location where cards are ordered. Decrements the indices of cards on the right by 1
      * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
-     * @param mixed $card_ids multiple card ids to get
+     * @param mixed $card_id card id to get
      * @param string $location location to remove the card from
      * @return array dbcard
      */
@@ -213,6 +213,7 @@ class DaleDeck extends Deck {
         $bottom_location_arg = $this->getExtremePosition(false, $location);
         $sql = "UPDATE ".$this->table." ";
         $sql .= "SET card_location_arg=card_location_arg+1 ";
+        $sql .= "WHERE card_location='".addslashes( $location )."' ";
         self::DbQuery( $sql );
 
         //move the card to the bottom

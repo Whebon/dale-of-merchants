@@ -949,6 +949,10 @@ class DaleOfMerchants extends Gamegui
 					.replace('ICON2', `<span class="daleofmerchants-log-span">${DaleIcons.getTravelingEquipmentDiscardIcon().outerHTML}</span>`);
 				this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
 				break;
+			case 'fishing':
+				this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
+				this.myDiscard.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1315,6 +1319,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'travelingEquipment':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'fishing':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1911,6 +1918,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'travelingEquipment':
 				this.addActionButton("confirm-button", _("Confirm"), "onTravelingEquipment");
+				break;
+			case 'fishing':
+				this.addActionButton("confirm-button", _("Confirm"), "onFishing");
 				break;
 		}
 		//(~actionbuttons)
@@ -4029,12 +4039,15 @@ class DaleOfMerchants extends Gamegui
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, 10);
 				break;
 			case DaleCard.CT_RESOURCEFULALLY:
-				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
+				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
 				break;
 			case DaleCard.CT_ICETRADE:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
 				break;
 			case DaleCard.CT_TRAVELINGEQUIPMENT:
+				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+				break;
+			case DaleCard.CT_FISHING:
 				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
 				break;
 			default:
@@ -5305,6 +5318,13 @@ class DaleOfMerchants extends Gamegui
 			}
 			//this.myHand.unselectAll(); //important: do not unselectAll() at this point, it will get stuck in an infinite loop due to the -1 trick
 		}
+	}
+
+	onFishing() {
+		this.bgaPerformAction('actFishing', {
+			card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
+		})
+		.then(() => this.myDiscard.setSelectionMode('none')); //fixes the zindex for the discardToDeck animation
 	}
 
 	//(~on)

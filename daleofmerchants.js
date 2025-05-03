@@ -4953,6 +4953,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         .replace('ICON2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_7.DaleIcons.getTravelingEquipmentDiscardIcon().outerHTML, "</span>"));
                     this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
                     break;
+                case 'fishing':
+                    this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
+                    this.myDiscard.openPopin();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5317,6 +5321,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'travelingEquipment':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'fishing':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -5903,6 +5910,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'travelingEquipment':
                     this.addActionButton("confirm-button", _("Confirm"), "onTravelingEquipment");
+                    break;
+                case 'fishing':
+                    this.addActionButton("confirm-button", _("Confirm"), "onFishing");
                     break;
             }
         };
@@ -7700,12 +7710,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, 10);
                     break;
                 case DaleCard_10.DaleCard.CT_RESOURCEFULALLY:
-                    this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
+                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
                     break;
                 case DaleCard_10.DaleCard.CT_ICETRADE:
                     this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
                     break;
                 case DaleCard_10.DaleCard.CT_TRAVELINGEQUIPMENT:
+                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+                    break;
+                case DaleCard_10.DaleCard.CT_FISHING:
                     this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
                     break;
                 default:
@@ -8830,6 +8843,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     });
                 }
             }
+        };
+        DaleOfMerchants.prototype.onFishing = function () {
+            var _this = this;
+            this.bgaPerformAction('actFishing', {
+                card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
+            })
+                .then(function () { return _this.myDiscard.setSelectionMode('none'); });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

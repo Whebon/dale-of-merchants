@@ -146,6 +146,7 @@ $machinestates = array(
 			'trCharmStove' => 86,
 			'trResourcefulAlly' => 87,
 			'trTravelingEquipment' => 88,
+			'trFishing' => 89,
 		),
 	),
 	31 => array(
@@ -613,6 +614,16 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stTravelingEquipment',
 		'possibleactions' => ['actTravelingEquipment'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	89 => array(
+		'name' => 'fishing',
+		'description' => clienttranslate('Fishing: ${actplayer} must place 1-3 cards from your discard on your deck'),
+		'descriptionmyturn' => clienttranslate('Fishing: ${you} must place 1-3 cards from your discard on your deck'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actFishing'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
