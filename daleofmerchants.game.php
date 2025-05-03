@@ -4490,6 +4490,11 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_TRAVELINGEQUIPMENT:
+                $this->beginResolvingCard($technique_card_id);
+                $this->spend($player_id, $args, 1, $this->_("Traveling Equipment"));
+                $this->gamestate->nextState("trTravelingEquipment");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -5911,6 +5916,38 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actTravelingEquipment($ditch_card_id, $discard_card_id) {
+        $this->checkAction("actTravelingEquipment");
+        $player_id = $this->getActivePlayerId();
+        $handsize = $this->cards->countCardsInLocation(HAND.$player_id);
+        if ($ditch_card_id == -1 && $discard_card_id == -1) {
+            throw new BgaVisibleSystemException("actTravelingEquipment does not allow a full fizzle");
+        }
+        if (($ditch_card_id == -1 || $discard_card_id == -1) && $handsize > 2) {
+            throw new BgaUserException($this->_("Please select a card to ditch and a card to discard"));
+        }
+
+        //ditch a card
+        if ($ditch_card_id != -1) {
+            $ditch_dbcard = $this->cards->getCardFromLocation($ditch_card_id, HAND.$player_id);
+            $this->ditch(clienttranslate('Traveling Equipment: ${player_name} ditches their ${card_name}'), $ditch_dbcard);
+        }
+
+        //discard a card
+        if ($discard_card_id != -1) {
+            $discard_dbcard = $this->cards->getCardFromLocation($discard_card_id, HAND.$player_id);
+            $this->cards->moveCardOnTop($discard_card_id, DISCARD.$player_id);
+            $this->notifyAllPlayers('discard', clienttranslate('Traveling Equipment: ${player_name} discards their ${card_name}'), array(
+                "player_id" => $player_id,
+                "card" => $discard_dbcard,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "card_name" => $this->getCardName($discard_dbcard)
+            ));
+        }
+
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -6676,6 +6713,14 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stCharmStove() {
         $this->draw('', 1, true, MARKET); //draws the top card of the market (which should be a CT_STOVE at this point)
+    }
+
+    function stTravelingEquipment() {
+        $nbr = $this->draw(clienttranslate('Traveling Equipment: ${player_name} draws 2 cards'), 2);
+        if ($nbr == 0) {
+            //traveling equipment has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
+        }
     }
 
 

@@ -46,6 +46,7 @@ if (false) {
 	$game->stMeddlingMarketeer();
 	$game->stAnchor();
 	$game->stCharmStove();
+	$game->stTravelingEquipment();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -144,6 +145,7 @@ $machinestates = array(
 			'trShakyEnterprise' => 85,
 			'trCharmStove' => 86,
 			'trResourcefulAlly' => 87,
+			'trTravelingEquipment' => 88,
 		),
 	),
 	31 => array(
@@ -600,6 +602,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argResourcefulAlly',
 		'possibleactions' => ['actResourcefulAlly'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	88 => array(
+		'name' => 'travelingEquipment',
+		'description' => clienttranslate('Traveling Equipment: ${actplayer} must choose cards to ditch and discard'),
+		'descriptionmyturn' => clienttranslate('Traveling Equipment: ${you} must choose cards to ditch and discard'),
+		'type' => 'activeplayer',
+		'action' => 'stTravelingEquipment',
+		'possibleactions' => ['actTravelingEquipment'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

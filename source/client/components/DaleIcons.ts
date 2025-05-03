@@ -31,6 +31,14 @@ export class DaleIcons {
         return this.getHandIcon();
     }
 
+    public static getTravelingEquipmentDitchIcon(): HTMLElement {
+        return this.getDitchIcon();
+    }
+
+    public static getTravelingEquipmentDiscardIcon(): HTMLElement {
+        return this.getDiscardIcon();
+    }
+
 
     /////////////////////////////
     ////////    ROW 0    ////////

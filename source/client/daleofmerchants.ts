@@ -943,6 +943,12 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('multiple', 'resourcefulAlly', 'daleofmerchants-wrap-technique', 2);
 				this.myDiscard.openPopin();
 				break;
+			case 'travelingEquipment':
+				const travelingEquipment_label = _("Choose cards to <strong>ditch</strong> (ICON1) and discard (ICON2)")
+					.replace('ICON1', `<span class="daleofmerchants-log-span">${DaleIcons.getTravelingEquipmentDitchIcon().outerHTML}</span>`)
+					.replace('ICON2', `<span class="daleofmerchants-log-span">${DaleIcons.getTravelingEquipmentDiscardIcon().outerHTML}</span>`);
+				this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1306,6 +1312,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'resourcefulAlly':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'travelingEquipment':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1899,6 +1908,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'resourcefulAlly':
 				this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
+				break;
+			case 'travelingEquipment':
+				this.addActionButton("confirm-button", _("Confirm"), "onTravelingEquipment");
 				break;
 		}
 		//(~actionbuttons)
@@ -2861,6 +2873,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'charmStove':
 				this.updateStoveButton();
+				break;
+			case 'travelingEquipment':
+				if (this.myHand.count() == 1 && card_id != -1) {
+					this.myHand.orderedSelection.toggle(-1); //quick and dirty -1 trick
+					this.myHand.selectItem(card_id);
+				}
 				break;
 		}
 	}
@@ -4015,6 +4033,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_ICETRADE:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
+				break;
+			case DaleCard.CT_TRAVELINGEQUIPMENT:
+				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -5245,6 +5266,45 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actResourcefulAlly', {
 			card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
 		})
+	}
+
+	onTravelingEquipment() {
+		if (this.myHand.count() > 1) {
+			//default case
+			const card_ids = this.myHand.orderedSelection.get(); //warning: get() does a reverse()
+			if (card_ids.length < 2) {
+				this.showMessage(_("Please choose 1 card to ditch and 1 card to discard"), 'error');
+				return;
+			}
+			const ditch_card_id = card_ids[1]!; //we undo the reverse() here
+			const discard_card_id = card_ids[0]!;
+			this.bgaPerformAction('actTravelingEquipment', {
+				ditch_card_id: ditch_card_id,
+				discard_card_id: discard_card_id
+			})
+			this.myHand.unselectAll();
+		}
+		else {
+			//special case: the hand only contains 1 card (uses a quick and dirty -1 trick: to discard a card, '-1' is included in the selection)
+			const only_card_id = this.myHand.getAllItems()[0]!.id;
+			if (this.myHand.orderedSelection.getSize() == 0) {
+				this.showMessage(_("Please choose whether to ditch or discard the card in your hand"), 'error');
+				return;
+			}
+			else if (this.myHand.orderedSelection.includes(-1)) {
+				this.bgaPerformAction('actTravelingEquipment', {
+					ditch_card_id: -1,
+					discard_card_id: only_card_id
+				})
+			}
+			else {
+				this.bgaPerformAction('actTravelingEquipment', {
+					ditch_card_id: only_card_id,
+					discard_card_id: -1
+				})
+			}
+			//this.myHand.unselectAll(); //important: do not unselectAll() at this point, it will get stuck in an infinite loop due to the -1 trick
+		}
 	}
 
 	//(~on)

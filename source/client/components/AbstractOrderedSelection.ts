@@ -98,6 +98,9 @@ export abstract class AbstractOrderedSelection {
             case 'resourcefulAlly':
                 icon = DaleIcons.getBluePileIcon(Math.max(4-index, 0)); //reverse pileBlue
                 break;
+            case 'travelingEquipment':
+                icon = index == 0 ? DaleIcons.getTravelingEquipmentDitchIcon() : DaleIcons.getTravelingEquipmentDiscardIcon();
+                break;
         }
         if (icon) {
             if (secondary) {

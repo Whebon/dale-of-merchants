@@ -553,6 +553,19 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actTravelingEquipment()
+	{
+		self::setAjaxMode();
+
+		/** @var int $ditch_card_id */
+		$ditch_card_id = self::getArg('ditch_card_id', AT_int, true);
+		/** @var int $discard_card_id */
+		$discard_card_id = self::getArg('discard_card_id', AT_int, true);
+
+		$this->game->actTravelingEquipment( $ditch_card_id, $discard_card_id );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

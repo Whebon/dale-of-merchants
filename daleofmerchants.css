@@ -50,17 +50,6 @@
   outline: 3px solid red;
 }
 
-.daleofmerchants-action-label {
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, -10px);
-  border-radius: 0 0 10px 10px;
-  padding: 3px 6px;
-  color: white;
-  min-width: 20%;
-  text-align: center;
-}
-
 @keyframes high-priority {
   from {
     opacity: 1;
@@ -1090,6 +1079,11 @@ body {
   display: inline-block;
   margin-bottom: 20px;
   transition: color 0.5s, color 0.5s, width 0.5s;
+}
+.daleofmerchants-arc-stock .daleofmerchants-label .daleofmerchants-log-span .daleofmerchants-icon {
+  z-index: 1;
+  width: 20px;
+  height: 20px;
 }
 .daleofmerchants-arc-stock .daleofmerchants-card {
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);

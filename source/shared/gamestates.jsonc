@@ -163,7 +163,8 @@
 			"trManufacturedJoy": 84,
 			"trShakyEnterprise": 85,
 			"trCharmStove": 86,
-			"trResourcefulAlly": 87
+			"trResourcefulAlly": 87,
+			"trTravelingEquipment": 88
 		}
 	},
 
@@ -801,6 +802,21 @@
 		"possibleactions": {
 			"actResourcefulAlly": [
 				{"name": "card_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"88": {
+		"name": "travelingEquipment",
+		"description": "Traveling Equipment: ${actplayer} must choose cards to ditch and discard",
+		"descriptionmyturn": "Traveling Equipment: ${you} must choose cards to ditch and discard",
+		"type": "activeplayer",
+		"action": "stTravelingEquipment",
+		"possibleactions": {
+			"actTravelingEquipment": [
+				{"name": "ditch_card_id", "type": "AT_int"},
+				{"name": "discard_card_id", "type": "AT_int"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

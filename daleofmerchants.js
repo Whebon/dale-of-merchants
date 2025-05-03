@@ -49,6 +49,12 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getNaturalSurvivorIcon = function () {
             return this.getHandIcon();
         };
+        DaleIcons.getTravelingEquipmentDitchIcon = function () {
+            return this.getDitchIcon();
+        };
+        DaleIcons.getTravelingEquipmentDiscardIcon = function () {
+            return this.getDiscardIcon();
+        };
         DaleIcons.getBluePileIcon = function (index) {
             return this.getIcon(0, index);
         };
@@ -412,6 +418,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'resourcefulAlly':
                     icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.max(4 - index, 0));
+                    break;
+                case 'travelingEquipment':
+                    icon = index == 0 ? DaleIcons_1.DaleIcons.getTravelingEquipmentDitchIcon() : DaleIcons_1.DaleIcons.getTravelingEquipmentDiscardIcon();
                     break;
             }
             if (icon) {
@@ -4938,6 +4947,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('multiple', 'resourcefulAlly', 'daleofmerchants-wrap-technique', 2);
                     this.myDiscard.openPopin();
                     break;
+                case 'travelingEquipment':
+                    var travelingEquipment_label = _("Choose cards to <strong>ditch</strong> (ICON1) and discard (ICON2)")
+                        .replace('ICON1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_7.DaleIcons.getTravelingEquipmentDitchIcon().outerHTML, "</span>"))
+                        .replace('ICON2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_7.DaleIcons.getTravelingEquipmentDiscardIcon().outerHTML, "</span>"));
+                    this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5299,6 +5314,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'resourcefulAlly':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'travelingEquipment':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -5882,6 +5900,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'resourcefulAlly':
                     this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
+                    break;
+                case 'travelingEquipment':
+                    this.addActionButton("confirm-button", _("Confirm"), "onTravelingEquipment");
                     break;
             }
         };
@@ -6626,6 +6647,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'charmStove':
                     this.updateStoveButton();
+                    break;
+                case 'travelingEquipment':
+                    if (this.myHand.count() == 1 && card_id != -1) {
+                        this.myHand.orderedSelection.toggle(-1);
+                        this.myHand.selectItem(card_id);
+                    }
                     break;
             }
         };
@@ -7677,6 +7704,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_ICETRADE:
                     this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
+                    break;
+                case DaleCard_10.DaleCard.CT_TRAVELINGEQUIPMENT:
+                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -8765,6 +8795,41 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.bgaPerformAction('actResourcefulAlly', {
                 card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
             });
+        };
+        DaleOfMerchants.prototype.onTravelingEquipment = function () {
+            if (this.myHand.count() > 1) {
+                var card_ids = this.myHand.orderedSelection.get();
+                if (card_ids.length < 2) {
+                    this.showMessage(_("Please choose 1 card to ditch and 1 card to discard"), 'error');
+                    return;
+                }
+                var ditch_card_id = card_ids[1];
+                var discard_card_id = card_ids[0];
+                this.bgaPerformAction('actTravelingEquipment', {
+                    ditch_card_id: ditch_card_id,
+                    discard_card_id: discard_card_id
+                });
+                this.myHand.unselectAll();
+            }
+            else {
+                var only_card_id = this.myHand.getAllItems()[0].id;
+                if (this.myHand.orderedSelection.getSize() == 0) {
+                    this.showMessage(_("Please choose whether to ditch or discard the card in your hand"), 'error');
+                    return;
+                }
+                else if (this.myHand.orderedSelection.includes(-1)) {
+                    this.bgaPerformAction('actTravelingEquipment', {
+                        ditch_card_id: -1,
+                        discard_card_id: only_card_id
+                    });
+                }
+                else {
+                    this.bgaPerformAction('actTravelingEquipment', {
+                        ditch_card_id: only_card_id,
+                        discard_card_id: -1
+                    });
+                }
+            }
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

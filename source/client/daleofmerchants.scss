@@ -59,16 +59,17 @@
 	outline: 3px solid red;
 }
 
-.daleofmerchants-action-label {
-	position: absolute;
-	left: 50%;
-	transform: translate(-50%, -10px);
-	border-radius: 0 0 10px 10px;
-	padding: 3px 6px;
-	color: white;
-	min-width: 20%;
-	text-align: center;
-}
+//TODO: safely remove this
+// .daleofmerchants-action-label {
+// 	position: absolute;
+// 	left: 50%;
+// 	transform: translate(-50%, -10px);
+// 	border-radius: 0 0 10px 10px;
+// 	padding: 3px 6px;
+// 	color: white;
+// 	min-width: 20%;
+// 	text-align: center;
+// }
 
 
 @keyframes high-priority {
@@ -1116,6 +1117,11 @@ body {
 		display: inline-block;
 		margin-bottom: 20px;
 		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "daleofmerchants-hidden-transitioning"
+		.daleofmerchants-log-span .daleofmerchants-icon {
+			z-index: 1;
+			width: 20px;
+			height: 20px;
+		}
 	}
 
 	.daleofmerchants-card {

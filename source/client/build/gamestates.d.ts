@@ -194,6 +194,7 @@ interface GameStates {
 			'trShakyEnterprise': 85,
 			'trCharmStove': 86,
 			'trResourcefulAlly': 87,
+			'trTravelingEquipment': 88,
 		},
 	},
 	31: {
@@ -979,6 +980,27 @@ interface GameStates {
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	88: {
+		'name': 'travelingEquipment',
+		'description': 'Traveling Equipment: ${actplayer} must choose cards to ditch and discard',
+		'descriptionmyturn': 'Traveling Equipment: ${you} must choose cards to ditch and discard',
+		'type': 'activeplayer',
+		'action': 'stTravelingEquipment',
+		'possibleactions': {
+			'actTravelingEquipment': [{
+				'name': 'ditch_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'discard_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {
