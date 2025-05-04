@@ -4545,6 +4545,9 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 $this->gamestate->nextState("trInsight");
                 break;
+            case CT_PERFECTMOVE:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4736,6 +4739,14 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_INSIGHT:
                 $this->spend($player_id, $args, 2, $this->_("Insight"));
                 $this->draw(clienttranslate('Insight: ${player_name} draws ${nbr} cards'), 2);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_PERFECTMOVE:
+                $this->spend($player_id, $args, 3, $this->_("Perfect Move"));
+                $this->effects->insertGlobal(0, CT_FLASHYSHOW); //CT_PERFECTMOVE == CT_FLASHYSHOW
+                $this->notifyAllPlayers('message', clienttranslate('Perfect Move: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
