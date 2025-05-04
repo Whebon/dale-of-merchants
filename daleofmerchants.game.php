@@ -1345,7 +1345,9 @@ class DaleOfMerchants extends DaleTableBasic
         //Discard cards
         if (count($spend_card_ids) > 0) {
             $this->cards->moveCardsOnTop($spend_card_ids, DISCARD.$player_id);
-            $msg = clienttranslate('${player_name} spends ${nbr} card(s)');
+            $msg = count($spend_cards) == 1 ? 
+                clienttranslate('${player_name} spends 1 card') : 
+                clienttranslate('${player_name} spends ${nbr} cards');
             $this->notifyAllPlayers('discardMultiple', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
@@ -1393,7 +1395,9 @@ class DaleOfMerchants extends DaleTableBasic
         //Discard cards
         if (count($spend_card_ids) > 0) {
             $this->cards->moveCardsOnTop($spend_card_ids, DISCARD.$player_id);
-            $msg = clienttranslate('${player_name} spends ${nbr} card(s)');
+            $msg = count($spend_cards) == 1 ? 
+                clienttranslate('${player_name} spends 1 card') : 
+                clienttranslate('${player_name} spends ${nbr} cards');
             $this->notifyAllPlayers('discardMultiple', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
@@ -4514,6 +4518,9 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_IMPULSIVEVISIONARY:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_COLLECTORSDESIRE:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4657,6 +4664,35 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_IMPULSIVEVISIONARY:
                 $this->spend($player_id, $args, 1, $this->_("Impulsive Visionary"));
                 $this->draw(clienttranslate('Impulsive Visionary: ${player_name} draws a card'));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_COLLECTORSDESIRE:
+                $this->spend($player_id, $args, 2, $this->_("Collector's Desire"));
+                //Find the leftmost card
+                $marketcards = $this->cards->getCardsInLocation(MARKET);
+                if (count($marketcards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Collector\'s Desire: ${player_name} is unable to take a card from the market'), array(
+                        "player_name" => $this->getPlayerNameById($player_id),
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $leftmostcard = reset($marketcards);
+                foreach($marketcards as $marketcard) {
+                    if ($marketcard["location_arg"] > $leftmostcard["location_arg"]) {
+                        $leftmostcard = $marketcard;
+                    }
+                }
+                //Place the card into the player's hand
+                $this->cards->moveCard($leftmostcard["id"], HAND.$player_id);
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Collector\'s Desire: ${player_name} places a ${card_name} into their hand'), array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_name' => $this->getCardName($leftmostcard),
+                    'market_card_id' => $leftmostcard["id"],
+                    'pos' => $leftmostcard["location_arg"],
+                ));
+                //$this->refillMarket(true); //not needed: this is done by fullyResolveCard
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

@@ -3222,6 +3222,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_IMPULSIVEVISIONARY:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
 				break;
+			case DaleCard.CT_COLLECTORSDESIRE:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				break;
