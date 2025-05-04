@@ -6994,6 +6994,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_GROUNDBREAKINGIDEA:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
+                case DaleCard_10.DaleCard.CT_INSPIRATION:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     break;

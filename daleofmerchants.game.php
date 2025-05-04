@@ -4538,6 +4538,9 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_INSPIRATION:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4720,6 +4723,11 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trGroundbreakingIdea");
+                break;
+            case CT_INSPIRATION:
+                $this->spend($player_id, $args, 2, $this->_("Inspiration"));
+                $this->draw(clienttranslate('Inspiration: ${player_name} draws ${nbr} cards'), 2);
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
