@@ -4511,6 +4511,8 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_IMPULSIVEVISIONARY:
+                $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -4651,6 +4653,11 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->effects->expireSingleModification($technique_card_id, CT_AVIDFINANCIER);
                     $this->fullyResolveCard($player_id, $technique_card);
                 }
+                break;
+            case CT_IMPULSIVEVISIONARY:
+                $this->spend($player_id, $args, 1, $this->_("Impulsive Visionary"));
+                $this->draw(clienttranslate('Impulsive Visionary: ${player_name} draws a card'));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

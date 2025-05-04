@@ -448,6 +448,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
+				this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'client_build':
 				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
@@ -907,6 +908,9 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setSelectionMode('implicit', client_spend_wrap_class, _("Coins included"));
 				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost)
 				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
+				if ('passive_card_id' in this.mainClientState.args) {
+					this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+				}
 				break;
 			case 'client_spendx':
 				const client_spendx_args = (this.mainClientState.args as ClientGameStates['client_spend']);
@@ -914,6 +918,9 @@ class DaleOfMerchants extends Gamegui
 				const client_spendx_icon_type = client_spendx_wrap_class == 'daleofmerchants-wrap-purchase' ? 'pileYellow' : 'pileBlue';
 				this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
 				this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
+				if ('passive_card_id' in this.mainClientState.args) {
+					this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+				}
 				break;
 			case 'client_stove':
 				const client_stove_args = (this.mainClientState.args as ClientGameStates['client_stove']);	
@@ -1000,6 +1007,7 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
+				this.mySchedule.setSelectionMode('none');
 				break;
 			case 'client_build':
 				this.market!.setSelectionMode(0);
@@ -1297,10 +1305,12 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spend':
 				this.coinManager.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
+				this.mySchedule.setSelectionMode('none');
 				break;
 			case 'client_spendx':
 				this.coinManager.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
+				this.mySchedule.setSelectionMode('none');
 				break;
 			case 'client_stove':
 				this.coinManager.setSelectionMode('none');
@@ -2727,11 +2737,6 @@ class DaleOfMerchants extends Gamegui
 				break;
 		}
 	}
-	
-	onScheduleSelectionChanged() {
-		//should not be possible at the moment
-		console.warn("You click on a card in the... schedule...?");
-	}
 
 	onUnselectPileCard(pile: Pile, card_id: number) {
 		console.warn("onUnselectPileCard");
@@ -3175,6 +3180,17 @@ class DaleOfMerchants extends Gamegui
 			case 'turnStart':
 				this.onTurnStartTriggerTechnique(card_id);
 				break;
+			case 'client_technique':
+				this.onFinish(card_id);
+				break;
+			case 'client_spend':
+			case 'client_spendx':
+				const finish_card_id = (this.mainClientState.args as any).passive_card_id;
+				this.mainClientState.leave();
+				if (card_id != finish_card_id) {
+					this.onFinish(card_id);
+				}
+				break;
 		}
 	}
 
@@ -3193,6 +3209,18 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SIESTA:
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
+				break;
+			default:
+				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+				break;
+		}
+	}
+
+	onFinish(card_id: number) {
+		const card = new DaleCard(card_id);
+		switch(card.effective_type_id) {
+			case DaleCard.CT_IMPULSIVEVISIONARY:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -3384,7 +3412,7 @@ class DaleOfMerchants extends Gamegui
 	 * @param next next state to goto after the spend cost is selected
 	 * @param technique_card_id
 	 * @param cost cost to pay
-	 * @param max_cost (optional) - if provided, the spend ability a range [`cost`, `max_cost`]
+	 * @param max_cost (optional) - if provided, the spend ability has a range [`cost`, `max_cost`]
 	 */
 	clientScheduleSpendTechnique(next: ClientSpendNext, technique_card_id: number, cost: number, cost_max?: number) {
 		const other_hand_cards = this.myHand.getAllDaleCards().filter(card => card.id != technique_card_id);
@@ -3403,6 +3431,39 @@ class DaleOfMerchants extends Gamegui
 		}
 		else {
 			this.clientScheduleTechnique('client_spendx', technique_card_id, {
+				cost_min: cost,
+				cost_max: cost_max,
+				cost_displayed: (cost_max == Infinity) ? `${cost}+` : `${cost} - ${cost_max}`,
+				next: next
+			});
+		}
+	}
+
+	/**
+	 * Finish a technique using the 'spend' client states.
+	 * Show a bga error if there is no way to cover the cost.
+	 * @param next next state to goto after the spend cost is selected
+	 * @param technique_card_id
+	 * @param cost cost to pay
+	 * @param max_cost (optional) - if provided, the spend ability has a range [`cost`, `max_cost`]
+	 */
+	clientFinishTechnique(next: ClientSpendNext, technique_card_id: number, cost: number, cost_max?: number) {
+		const other_hand_cards = this.myHand.getAllDaleCards().filter(card => card.id != technique_card_id);
+		const max_value = this.coinManager.getMaximumSpendValue(other_hand_cards);
+		if (cost > max_value) {
+			this.showMessage(_("Not enough funds to finish this card"), 'error');
+			return;
+		}
+		else if (cost_max === undefined) {
+			this.clientTriggerTechnique('client_spend', technique_card_id, {
+				passive_card_id: technique_card_id, //for the blue outline
+				cost: cost,
+				next: next
+			});
+		}
+		else {
+			this.clientTriggerTechnique('client_spendx', technique_card_id, {
+				passive_card_id: technique_card_id, //for the blue outline
 				cost_min: cost,
 				cost_max: cost_max,
 				cost_displayed: (cost_max == Infinity) ? `${cost}+` : `${cost} - ${cost_max}`,
@@ -3446,9 +3507,6 @@ class DaleOfMerchants extends Gamegui
 	 */
 	clientTriggerTechnique<K extends keyof ClientTriggerTechniqueChoice>(stateName: K, technique_card_id: number, args: any = {}) {
 		if (this.checkLock(true)) {
-			if (stateName == 'client_spend') {
-				throw new Error(`clientTriggerTechnique is not supported for client_spend`);
-			}
 			if ($(this.mySchedule.control_name+'_item_' + technique_card_id)) {
 				this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id, is_trigger: true, ...args });
 			}

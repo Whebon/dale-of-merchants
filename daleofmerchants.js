@@ -4522,6 +4522,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.setLeftPlaceholderClickable(true);
+                    this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'client_build':
                     this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
@@ -4914,6 +4915,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.coinManager.setSelectionMode('implicit', client_spend_wrap_class, _("Coins included"));
                     this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost);
                     this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
+                    if ('passive_card_id' in this.mainClientState.args) {
+                        this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+                    }
                     break;
                 case 'client_spendx':
                     var client_spendx_args = this.mainClientState.args;
@@ -4921,6 +4925,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var client_spendx_icon_type = client_spendx_wrap_class == 'daleofmerchants-wrap-purchase' ? 'pileYellow' : 'pileBlue';
                     this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
                     this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
+                    if ('passive_card_id' in this.mainClientState.args) {
+                        this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+                    }
                     break;
                 case 'client_stove':
                     var client_stove_args = this.mainClientState.args;
@@ -5001,6 +5008,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode('none');
                     this.myStall.setLeftPlaceholderClickable(false);
+                    this.mySchedule.setSelectionMode('none');
                     break;
                 case 'client_build':
                     this.market.setSelectionMode(0);
@@ -5304,10 +5312,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_spend':
                     this.coinManager.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
+                    this.mySchedule.setSelectionMode('none');
                     break;
                 case 'client_spendx':
                     this.coinManager.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
+                    this.mySchedule.setSelectionMode('none');
                     break;
                 case 'client_stove':
                     this.coinManager.setSelectionMode('none');
@@ -6519,9 +6529,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
             }
         };
-        DaleOfMerchants.prototype.onScheduleSelectionChanged = function () {
-            console.warn("You click on a card in the... schedule...?");
-        };
         DaleOfMerchants.prototype.onUnselectPileCard = function (pile, card_id) {
             console.warn("onUnselectPileCard");
             switch (this.gamedatas.gamestate.name) {
@@ -6912,6 +6919,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'turnStart':
                     this.onTurnStartTriggerTechnique(card_id);
                     break;
+                case 'client_technique':
+                    this.onFinish(card_id);
+                    break;
+                case 'client_spend':
+                case 'client_spendx':
+                    var finish_card_id = this.mainClientState.args.passive_card_id;
+                    this.mainClientState.leave();
+                    if (card_id != finish_card_id) {
+                        this.onFinish(card_id);
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.onTurnStartTriggerTechnique = function (card_id) {
@@ -6929,6 +6947,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_SIESTA:
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
+                    break;
+                default:
+                    this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+                    break;
+            }
+        };
+        DaleOfMerchants.prototype.onFinish = function (card_id) {
+            var card = new DaleCard_10.DaleCard(card_id);
+            switch (card.effective_type_id) {
+                case DaleCard_10.DaleCard.CT_IMPULSIVEVISIONARY:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -7106,6 +7135,30 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 });
             }
         };
+        DaleOfMerchants.prototype.clientFinishTechnique = function (next, technique_card_id, cost, cost_max) {
+            var other_hand_cards = this.myHand.getAllDaleCards().filter(function (card) { return card.id != technique_card_id; });
+            var max_value = this.coinManager.getMaximumSpendValue(other_hand_cards);
+            if (cost > max_value) {
+                this.showMessage(_("Not enough funds to finish this card"), 'error');
+                return;
+            }
+            else if (cost_max === undefined) {
+                this.clientTriggerTechnique('client_spend', technique_card_id, {
+                    passive_card_id: technique_card_id,
+                    cost: cost,
+                    next: next
+                });
+            }
+            else {
+                this.clientTriggerTechnique('client_spendx', technique_card_id, {
+                    passive_card_id: technique_card_id,
+                    cost_min: cost,
+                    cost_max: cost_max,
+                    cost_displayed: (cost_max == Infinity) ? "".concat(cost, "+") : "".concat(cost, " - ").concat(cost_max),
+                    next: next
+                });
+            }
+        };
         DaleOfMerchants.prototype.resolveTechniqueCardWithServerState = function (args) {
             var card_id = this.mainClientState.args.technique_card_id;
             this.bgaPerformAction('actFullyResolveTechniqueCard', {
@@ -7127,9 +7180,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.clientTriggerTechnique = function (stateName, technique_card_id, args) {
             if (args === void 0) { args = {}; }
             if (this.checkLock(true)) {
-                if (stateName == 'client_spend') {
-                    throw new Error("clientTriggerTechnique is not supported for client_spend");
-                }
                 if ($(this.mySchedule.control_name + '_item_' + technique_card_id)) {
                     this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id, is_trigger: true }, args));
                 }
