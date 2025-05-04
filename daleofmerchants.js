@@ -6568,6 +6568,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.onSelectMyDiscardPileCard = function (pile, card) {
+            var _this = this;
             console.warn("onSelectMyDiscardPileCard");
             switch (this.gamedatas.gamestate.name) {
                 case 'client_build':
@@ -6601,7 +6602,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'groundbreakingIdea':
                     this.bgaPerformAction('actGroundbreakingIdea', {
                         card_id: card.id
-                    });
+                    })
+                        .then(function () { return _this.myDiscard.setSelectionMode('none'); });
                     break;
             }
         };

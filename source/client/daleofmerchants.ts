@@ -2814,6 +2814,7 @@ class DaleOfMerchants extends Gamegui
 				this.bgaPerformAction('actGroundbreakingIdea', {
 					card_id: card.id
 				})
+				.then(() => this.myDiscard.setSelectionMode('none')); //fixes the zindex for the discardToDeck animation
 				break;
 		}
 	}
