@@ -147,6 +147,7 @@ $machinestates = array(
 			'trResourcefulAlly' => 87,
 			'trTravelingEquipment' => 88,
 			'trFishing' => 89,
+			'trGroundbreakingIdea' => 90,
 		),
 	),
 	31 => array(
@@ -624,6 +625,16 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Fishing: ${you} must place 1-3 cards from your discard on your deck'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actFishing'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	90 => array(
+		'name' => 'groundbreakingIdea',
+		'description' => clienttranslate('Groundbreaking Idea: ${actplayer} must place a card from their discard on their deck'),
+		'descriptionmyturn' => clienttranslate('Groundbreaking Idea: ${you} must place a card from your discard on your deck'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actGroundbreakingIdea'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

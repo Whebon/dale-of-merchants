@@ -196,6 +196,7 @@ interface GameStates {
 			'trResourcefulAlly': 87,
 			'trTravelingEquipment': 88,
 			'trFishing': 89,
+			'trGroundbreakingIdea': 90,
 		},
 	},
 	31: {
@@ -1018,6 +1019,22 @@ interface GameStates {
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	90: {
+		'name': 'groundbreakingIdea',
+		'description': 'Groundbreaking Idea: ${actplayer} must place a card from their discard on their deck',
+		'descriptionmyturn': 'Groundbreaking Idea: ${you} must place a card from your discard on your deck',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actGroundbreakingIdea': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

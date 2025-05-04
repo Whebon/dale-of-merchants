@@ -960,6 +960,12 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
 				this.myDiscard.openPopin();
 				break;
+			case 'client_groundbreakingIdea':
+				this.myDiscard.setSelectionMode('single');
+				break;
+			case 'groundbreakingIdea':
+				this.myDiscard.setSelectionMode('single');
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1331,6 +1337,12 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'fishing':
+				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_groundbreakingIdea':
+				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'groundbreakingIdea':
 				this.myDiscard.setSelectionMode('none');
 				break;
 		}
@@ -1931,6 +1943,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'fishing':
 				this.addActionButton("confirm-button", _("Confirm"), "onFishing");
+				break;
+			case 'client_groundbreakingIdea':
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -2790,6 +2805,16 @@ class DaleOfMerchants extends Gamegui
 					...this.mainClientState.getSpendArgs()
 				})
 				break;
+			case 'client_groundbreakingIdea':
+				this.playTechniqueCard<'client_groundbreakingIdea'>({
+					card_id: card!.id
+				})
+				break;
+			case 'groundbreakingIdea':
+				this.bgaPerformAction('actGroundbreakingIdea', {
+					card_id: card.id
+				})
+				break;
 		}
 	}
 
@@ -3223,6 +3248,9 @@ class DaleOfMerchants extends Gamegui
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
 				break;
 			case DaleCard.CT_COLLECTORSDESIRE:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				break;
+			case DaleCard.CT_GROUNDBREAKINGIDEA:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
 				break;
 			default:
@@ -4110,6 +4138,14 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_FISHING:
 				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+				break;
+			case DaleCard.CT_GROUNDBREAKINGIDEA:
+				if (this.myDiscard.size > 0) {
+					this.clientScheduleTechnique('client_groundbreakingIdea', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

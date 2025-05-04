@@ -3818,6 +3818,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take any of the top 3 cards of your discard pile");
                     case 'client_cache':
                         return _("${card_name}: ${you} must take 1 card from your discard pile");
+                    case 'client_groundbreakingIdea':
+                        return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4969,6 +4971,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
                     this.myDiscard.openPopin();
                     break;
+                case 'client_groundbreakingIdea':
+                    this.myDiscard.setSelectionMode('single');
+                    break;
+                case 'groundbreakingIdea':
+                    this.myDiscard.setSelectionMode('single');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5338,6 +5346,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'fishing':
+                    this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'client_groundbreakingIdea':
+                    this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'groundbreakingIdea':
                     this.myDiscard.setSelectionMode('none');
                     break;
             }
@@ -5928,6 +5942,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'fishing':
                     this.addActionButton("confirm-button", _("Confirm"), "onFishing");
+                    break;
+                case 'client_groundbreakingIdea':
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -6576,6 +6593,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_cache':
                     this.playTechniqueCard(__assign({ card_id: card.id }, this.mainClientState.getSpendArgs()));
                     break;
+                case 'client_groundbreakingIdea':
+                    this.playTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
+                case 'groundbreakingIdea':
+                    this.bgaPerformAction('actGroundbreakingIdea', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         DaleOfMerchants.prototype.onSelectMarketPileCard = function (pile, card) {
@@ -6960,6 +6987,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
                     break;
                 case DaleCard_10.DaleCard.CT_COLLECTORSDESIRE:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    break;
+                case DaleCard_10.DaleCard.CT_GROUNDBREAKINGIDEA:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
                 default:
@@ -7778,6 +7808,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_FISHING:
                     this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+                    break;
+                case DaleCard_10.DaleCard.CT_GROUNDBREAKINGIDEA:
+                    if (this.myDiscard.size > 0) {
+                        this.clientScheduleTechnique('client_groundbreakingIdea', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

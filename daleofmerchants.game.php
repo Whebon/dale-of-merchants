@@ -4521,6 +4521,23 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_COLLECTORSDESIRE:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_GROUNDBREAKINGIDEA:
+                if (isset($args["card_id"])) {
+                    //ditch a card
+                    $card_id = intval($args["card_id"]);
+                    $this->ditchFromDiscard(
+                        clienttranslate('Groundbreaking Idea: ${player_name} ditches a ${card_name}'),
+                        $card_id
+                    );
+                }
+                else {
+                    //skip ditching a card
+                    if ($this->cards->countCardInLocation(DISCARD.$player_id) > 0) {
+                        throw new BgaUserException($this->_("Please select a card to ditch"));
+                    }
+                }
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4694,6 +4711,15 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 //$this->refillMarket(true); //not needed: this is done by fullyResolveCard
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_GROUNDBREAKINGIDEA:
+                $this->spend($player_id, $args, 2, $this->_("Groundbreaking Idea"));
+                if ($this->cards->countCardInLocation(DISCARD.$player_id) == 0) {
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trGroundbreakingIdea");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -6027,6 +6053,20 @@ class DaleOfMerchants extends DaleTableBasic
                 "card" => $dbcard
             ));
         }
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actGroundbreakingIdea($card_id) {
+        $this->checkAction("actGroundbreakingIdea");
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+        $this->cards->moveCardOnTop($card_id, DECK.$player_id);
+        $this->notifyAllPlayers('discardToDeck', clienttranslate('Groundbreaking Idea: ${player_name} places their ${card_name} on top of their deck'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "card" => $dbcard
+        ));
         $this->fullyResolveCard($player_id);
     }
 
