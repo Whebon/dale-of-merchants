@@ -7907,7 +7907,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args.optionalArgs)
             }).then(function () {
-                while (_this.gamedatas.gamestate.name != 'client_build') {
+                while (_this.gamedatas.gamestate.name != 'client_build' && _this.gamedatas.gamestate.name != 'winterIsComing') {
                     _this.mainClientState.leave();
                 }
             });

@@ -4243,7 +4243,7 @@ class DaleOfMerchants extends Gamegui
 			args: JSON.stringify(args.optionalArgs)
 		}).then(() => {
 			//if the build is successful, nicely close the stack of client states
-			while (this.gamedatas.gamestate.name != 'client_build') {
+			while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'winterIsComing') {
 				this.mainClientState.leave(); //see issue #97.2 and #97.3
 			}
 		});
