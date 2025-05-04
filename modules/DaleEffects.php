@@ -180,6 +180,11 @@ class DaleEffects {
                     case CT_STOVE:
                         $value = $row["arg"];
                         break;
+                    case CT_PRACTICALVALUES:
+                        if ($value >= 1 && $value <= 5) {
+                            $value = 6 - $value;
+                        }
+                        break;
                 }
             }
         }

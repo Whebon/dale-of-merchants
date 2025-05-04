@@ -4504,6 +4504,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trFishing");
                 break;
+            case CT_PRACTICALVALUES:
+                $this->effects->insertGlobal(0, CT_PRACTICALVALUES);
+                $this->notifyAllPlayers('message', clienttranslate('Practical Values: each card valued 1 is valued 5, each 2 is 4, and vice versa, for this turn'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

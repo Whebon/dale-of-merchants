@@ -1137,6 +1137,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                             case DaleCard.CT_STOVE:
                                 value = effect.arg;
                                 break;
+                            case DaleCard.CT_PRACTICALVALUES:
+                                if (value >= 1 && value <= 5) {
+                                    value = 6 - value;
+                                }
+                                break;
                         }
                     }
                 }
