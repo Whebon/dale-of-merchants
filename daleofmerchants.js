@@ -4977,6 +4977,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'groundbreakingIdea':
                     this.myDiscard.setSelectionMode('single');
                     break;
+                case 'insight':
+                    this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5353,6 +5356,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'groundbreakingIdea':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'insight':
+                    this.myLimbo.setSelectionMode('none');
                     break;
             }
         };
@@ -5945,6 +5951,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_groundbreakingIdea':
                     this.addActionButtonCancelClient();
+                    break;
+                case 'insight':
+                    this.addActionButton("confirm-button", _("Confirm"), "onInsight");
                     break;
             }
         };
@@ -6995,6 +7004,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
                 case DaleCard_10.DaleCard.CT_INSPIRATION:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    break;
+                case DaleCard_10.DaleCard.CT_INSIGHT:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
                 default:
@@ -8951,6 +8963,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
             })
                 .then(function () { return _this.myDiscard.setSelectionMode('none'); });
+        };
+        DaleOfMerchants.prototype.onInsight = function () {
+            this.bgaPerformAction('actInsight', {
+                card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

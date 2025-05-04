@@ -4541,6 +4541,10 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_INSPIRATION:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_INSIGHT:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                $this->gamestate->nextState("trInsight");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4727,6 +4731,11 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_INSPIRATION:
                 $this->spend($player_id, $args, 2, $this->_("Inspiration"));
                 $this->draw(clienttranslate('Inspiration: ${player_name} draws ${nbr} cards'), 2);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_INSIGHT:
+                $this->spend($player_id, $args, 2, $this->_("Insight"));
+                $this->draw(clienttranslate('Insight: ${player_name} draws ${nbr} cards'), 2);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -6078,6 +6087,32 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actInsight($card_ids) {
+        $this->checkAction("actInsight");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+
+        //get the non-selected cards and selected cards to discard
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+
+        //place cards on top of the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Insight: ${player_name} places ${nbr} cards back on top of their deck'),
+            $card_ids, 
+            $selected_cards, 
+            $non_selected_cards,
+            true
+        );
+
+        //since it is a finish technique, do not fully resolve it
+        $this->gamestate->nextState("trSamePlayer");
+    }
+
 
     //(~acts)
 
@@ -6853,6 +6888,13 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    function stInsight() {
+        $nbr = $this->draw(clienttranslate('Insight: ${player_name} looks at the top ${nbr} cards of their deck'), 2, true);
+        if ($nbr == 0) {
+            //insight has no effect (but since it is a finish technique, do not fully resolve it)
+            $this->gamestate->nextState("trSamePlayer");
+        }
+    }
 
     //(~st)
 

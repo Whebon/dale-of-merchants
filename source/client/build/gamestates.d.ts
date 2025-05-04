@@ -197,6 +197,7 @@ interface GameStates {
 			'trTravelingEquipment': 88,
 			'trFishing': 89,
 			'trGroundbreakingIdea': 90,
+			'trInsight': 91,
 		},
 	},
 	31: {
@@ -1035,6 +1036,23 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	91: {
+		'name': 'insight',
+		'description': 'Insight: ${actplayer} must choose the order to place all cards back on top of their deck',
+		'descriptionmyturn': 'Insight: ${you} must choose the order to place all cards back on top of your deck',
+		'type': 'activeplayer',
+		'action': 'stInsight',
+		'possibleactions': {
+			'actInsight': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

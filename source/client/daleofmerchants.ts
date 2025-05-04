@@ -966,6 +966,9 @@ class DaleOfMerchants extends Gamegui
 			case 'groundbreakingIdea':
 				this.myDiscard.setSelectionMode('single');
 				break;
+			case 'insight':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"))
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1344,6 +1347,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'groundbreakingIdea':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'insight':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -1946,6 +1952,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_groundbreakingIdea':
 				this.addActionButtonCancelClient();
+				break;
+			case 'insight':
+				this.addActionButton("confirm-button", _("Confirm"), "onInsight");
 				break;
 		}
 		//(~actionbuttons)
@@ -3255,6 +3264,9 @@ class DaleOfMerchants extends Gamegui
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
 				break;
 			case DaleCard.CT_INSPIRATION:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				break;
+			case DaleCard.CT_INSIGHT:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
 				break;
 			default:
@@ -5426,6 +5438,12 @@ class DaleOfMerchants extends Gamegui
 			card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
 		})
 		.then(() => this.myDiscard.setSelectionMode('none')); //fixes the zindex for the discardToDeck animation
+	}
+
+	onInsight() {
+		this.bgaPerformAction('actInsight', {
+			card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
+		});
 	}
 
 	//(~on)

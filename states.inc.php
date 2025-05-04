@@ -47,6 +47,7 @@ if (false) {
 	$game->stAnchor();
 	$game->stCharmStove();
 	$game->stTravelingEquipment();
+	$game->stInsight();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -148,6 +149,7 @@ $machinestates = array(
 			'trTravelingEquipment' => 88,
 			'trFishing' => 89,
 			'trGroundbreakingIdea' => 90,
+			'trInsight' => 91,
 		),
 	),
 	31 => array(
@@ -635,6 +637,17 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Groundbreaking Idea: ${you} must place a card from your discard on your deck'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actGroundbreakingIdea'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	91 => array(
+		'name' => 'insight',
+		'description' => clienttranslate('Insight: ${actplayer} must choose the order to place all cards back on top of their deck'),
+		'descriptionmyturn' => clienttranslate('Insight: ${you} must choose the order to place all cards back on top of your deck'),
+		'type' => 'activeplayer',
+		'action' => 'stInsight',
+		'possibleactions' => ['actInsight'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
