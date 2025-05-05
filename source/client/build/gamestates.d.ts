@@ -199,6 +199,8 @@ interface GameStates {
 			'trGroundbreakingIdea': 90,
 			'trInsight': 91,
 			'trBadOmen': 92,
+			'trCelestialGuidanceMarket': 93,
+			'trCelestialGuidanceDiscard': 94,
 		},
 	},
 	31: {
@@ -1075,6 +1077,38 @@ interface GameStates {
 				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	93: {
+		'name': 'celestialGuidanceMarket',
+		'description': 'Celestial Guidance: ${actplayer} must take a card from the market',
+		'descriptionmyturn': 'Celestial Guidance: ${you} must take a card from the market',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actCelestialGuidanceMarket': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	94: {
+		'name': 'celestialGuidanceDiscard',
+		'description': 'Celestial Guidance: ${actplayer} must take a card from their discard pile',
+		'descriptionmyturn': 'Celestial Guidance: ${you} must take a card from your discard pile',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actCelestialGuidanceDiscard': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

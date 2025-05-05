@@ -2907,6 +2907,9 @@ class DaleOfMerchants extends DaleTableBasic
         //Fizzle
         if (array_key_exists("fizzle", $args)) {
             switch($technique_type_id) {
+                case CT_CELESTIALGUIDANCE:
+                    throw new BgaVisibleSystemException("This card can never fizzle.");
+                    break;
                 case CT_PREPAIDGOOD:
                 case CT_GIFTVOUCHER:
                 case CT_DEPRECATED_TASTERS:
@@ -4574,6 +4577,45 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_CELESTIALGUIDANCE:
+                $value = $this->rollDie(
+                    clienttranslate('Celestial Guidance: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_HARES,
+                    $technique_card
+                );
+                switch($value) {
+                    case DIE_COMET:
+                        if ($this->cards->countCardsInLocation(MARKET) == 0) {
+                            $this->notifyAllPlayers('message', clienttranslate('Celestial Guidance: ${player_name} does not take a card, because the market is empty'), array(
+                                "player_name" => $this->getActivePlayerName()
+                            ));
+                            $this->fullyResolveCard($player_id, $technique_card);
+                            return;
+                        }
+                        $this->beginResolvingCard($technique_card_id);
+                        $this->gamestate->nextState("trCelestialGuidanceMarket");
+                        break;
+                    case DIE_PLANET:
+                        if ($this->cards->countCardsInLocation(DISCARD.$player_id) == 0) {
+                            $this->notifyAllPlayers('message', clienttranslate('Celestial Guidance: ${player_name} does not take a card, because their discard is empty'), array(
+                                "player_name" => $this->getActivePlayerName()
+                            ));
+                            $this->fullyResolveCard($player_id, $technique_card);
+                            return;
+                        }
+                        $this->beginResolvingCard($technique_card_id);
+                        $this->gamestate->nextState("trCelestialGuidanceDiscard");
+                        break;
+                    case DIE_STARS:
+                        $this->notifyAllPlayers('message', clienttranslate('Celestial Guidance: ${player_name} does not take a card'), array(
+                            "player_name" => $this->getActivePlayerName()
+                        ));
+                        $this->fullyResolveCard($player_id, $technique_card);
+                        break;
+                    default:
+                        throw new BgaVisibleSystemException("Unexpected ANIMALFOLK_HARES die roll: ".$value);
+                }
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -6238,6 +6280,35 @@ class DaleOfMerchants extends DaleTableBasic
             $non_selected_cards,
             true
         );
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actCelestialGuidanceMarket($card_id) {
+        $this->checkAction("actCelestialGuidanceMarket");
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->getCardFromLocation($card_id, MARKET);
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Celestial Guidance: ${player_name} places a ${card_name} into their hand'), array(
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($dbcard),
+            'market_card_id' => $card_id,
+            'pos' => $dbcard["location_arg"],
+        ));
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actCelestialGuidanceDiscard($card_id) {
+        $this->checkAction("actCelestialGuidanceDiscard");
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('discardToHand', clienttranslate('Celestial Guidance: ${player_name} takes their ${card_name} from their discard pile'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "card" => $dbcard
+        ));
         $this->fullyResolveCard($player_id);
     }
 

@@ -4993,10 +4993,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.openPopin();
                     break;
                 case 'client_groundbreakingIdea':
-                    this.myDiscard.setSelectionMode('single');
+                    this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'groundbreakingIdea':
-                    this.myDiscard.setSelectionMode('single');
+                    this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'insight':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
@@ -5006,6 +5006,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_badOmen':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+                    break;
+                case 'celestialGuidanceMarket':
+                    this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
+                    break;
+                case 'celestialGuidanceDiscard':
+                    this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
             }
         };
@@ -5392,6 +5398,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_badOmen':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'celestialGuidanceMarket':
+                    this.market.setSelectionMode(0);
+                    break;
+                case 'celestialGuidanceDiscard':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -6598,6 +6610,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.market.setSelected(pos);
                     }
                     break;
+                case 'celestialGuidanceMarket':
+                    this.bgaPerformAction('actCelestialGuidanceMarket', {
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUnselectPileCard = function (pile, card_id) {
@@ -6658,6 +6675,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     })
                         .then(function () { return _this.myDiscard.setSelectionMode('none'); });
+                    break;
+                case 'celestialGuidanceDiscard':
+                    this.bgaPerformAction('actCelestialGuidanceDiscard', {
+                        card_id: card.id
+                    });
                     break;
             }
         };

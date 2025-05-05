@@ -961,10 +961,10 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.openPopin();
 				break;
 			case 'client_groundbreakingIdea':
-				this.myDiscard.setSelectionMode('single');
+				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'groundbreakingIdea':
-				this.myDiscard.setSelectionMode('single');
+				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'insight':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"))
@@ -974,6 +974,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_badOmen':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+				break;
+			case 'celestialGuidanceMarket':
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
+				break;
+			case 'celestialGuidanceDiscard':
+				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
 		}
 		//(~enteringstate)
@@ -1362,6 +1368,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_badOmen':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'celestialGuidanceMarket':
+				this.market!.setSelectionMode(0);
+				break;
+			case 'celestialGuidanceDiscard':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2783,6 +2795,11 @@ class DaleOfMerchants extends Gamegui
 					this.market!.setSelected(pos);
 				}
 				break;
+			case 'celestialGuidanceMarket':
+				this.bgaPerformAction('actCelestialGuidanceMarket', {
+					card_id: card.id
+				})
+				break;
 		}
 	}
 
@@ -2848,6 +2865,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				.then(() => this.myDiscard.setSelectionMode('none')); //fixes the zindex for the discardToDeck animation
+				break;
+			case 'celestialGuidanceDiscard':
+				this.bgaPerformAction('actCelestialGuidanceDiscard', {
+					card_id: card.id
+				})
 				break;
 		}
 	}

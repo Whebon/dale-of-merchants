@@ -152,6 +152,8 @@ $machinestates = array(
 			'trGroundbreakingIdea' => 90,
 			'trInsight' => 91,
 			'trBadOmen' => 92,
+			'trCelestialGuidanceMarket' => 93,
+			'trCelestialGuidanceDiscard' => 94,
 		),
 	),
 	31 => array(
@@ -661,6 +663,26 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stBadOmen',
 		'possibleactions' => ['actBadOmen'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	93 => array(
+		'name' => 'celestialGuidanceMarket',
+		'description' => clienttranslate('Celestial Guidance: ${actplayer} must take a card from the market'),
+		'descriptionmyturn' => clienttranslate('Celestial Guidance: ${you} must take a card from the market'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actCelestialGuidanceMarket'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	94 => array(
+		'name' => 'celestialGuidanceDiscard',
+		'description' => clienttranslate('Celestial Guidance: ${actplayer} must take a card from their discard pile'),
+		'descriptionmyturn' => clienttranslate('Celestial Guidance: ${you} must take a card from your discard pile'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actCelestialGuidanceDiscard'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
