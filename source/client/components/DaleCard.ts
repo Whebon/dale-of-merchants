@@ -855,7 +855,6 @@ export class DaleCard {
         const cardType = DaleCard.cardTypes[this.effective_type_id]!;
         const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
         let chameleonName = "";
-        let reminderText = "";
         if (this.isBoundChameleon()) {
             let type_ids = [this.original_type_id];
             let chain = ChameleonChain.concat(DaleCard.cardIdToChameleonChain.get(this.id), DaleCard.cardIdToChameleonChainLocal.get(this.id));
@@ -865,9 +864,6 @@ export class DaleCard {
             for(let type_id of type_ids) {
                 chameleonName += `<span class=daleofmerchants-chameleon-name>${DaleCard.cardTypes[type_id]!.name}</span><br>`;
             }
-        }
-        if (this.isChameleon()) {
-            reminderText += _("<br><br>A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.")
         }
         let effective_value: string | number = this.effective_value;
         if (effective_value != cardType.value) {
@@ -879,9 +875,8 @@ export class DaleCard {
             <hr>
             ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="daleofmerchants-card-tooltip-text">${this.format_string(cardType.text)}${reminderText}</div>
-            <br style="line-height: 10px" />
-            ${legend ? '<hr>'+legend : ''}
+            <div class="daleofmerchants-card-tooltip-text">${this.format_string(cardType.text)}</div>
+            <div style="color:gray" class="daleofmerchants-card-tooltip-text">${legend ? '<hr>'+legend : '<br style="line-height: 10px" />'}</div>
         </div>`
 	}
 
@@ -982,19 +977,40 @@ export class DaleCard {
     private getLegend(text: string) {
         let legend = '';
         if (text.includes('DIE_OCELOT')) {
-            legend += `${DaleDie.get3DDieTpl('ocelot')} <strong>:</strong> ${DaleDie.getAllFacesTpl('ocelot')}<br>`
+            legend += `${DaleDie.get3DDieTpl('ocelot')} <strong>:</strong> ${DaleDie.getAllFacesTpl('ocelot')}<br style="line-height: 10px" />`
         }
         if (text.includes('DIE_POLECAT')) {
-            legend += `${DaleDie.get3DDieTpl('polecat')} <strong>:</strong> ${DaleDie.getAllFacesTpl('polecat')}<br>`
+            legend += `${DaleDie.get3DDieTpl('polecat')} <strong>:</strong> ${DaleDie.getAllFacesTpl('polecat')}<br style="line-height: 10px" />`
         }
         if (text.includes('DIE_HARE')) {
-            legend += `${DaleDie.get3DDieTpl('hare')} <strong>:</strong> ${DaleDie.getAllFacesTpl('hare')}<br>`
+            legend += `${DaleDie.get3DDieTpl('hare')} <strong>:</strong> ${DaleDie.getAllFacesTpl('hare')}<br style="line-height: 10px" />`
         }
         if (text.includes('DIE_PANGOLIN1')) {
-            legend += `${DaleDie.get3DDieTpl('pangolin1')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin1')}<br>`
+            legend += `${DaleDie.get3DDieTpl('pangolin1')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin1')}<br style="line-height: 10px" />`
         }
         if (text.includes('DIE_PANGOLIN2')) {
-            legend += `${DaleDie.get3DDieTpl('pangolin2')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin2')}<br>`
+            legend += `${DaleDie.get3DDieTpl('pangolin2')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin2')}<br style="line-height: 10px" />`
+        }
+        if (text.includes(_('Toss')) || text.includes(_('toss'))) {
+            legend += '<strong> ' + _('Toss') + ' : </strong> ' + 
+            _('Tossed animalfolk cards are placed in the bin. Tossed junk cards are removed from the game.')
+            +'<br><br style="line-height: 10px" />';
+        }
+        if (text.includes(_('Finish'))) {
+            legend += '<strong> ' + _('Finish') + ' : </strong> ' + 
+            _('Resolve any effects in the card text that precede finish. During your action phase, you may spend the amount listed after finish to continue resolving the card.')
+            +'<br><br style="line-height: 10px" />';
+        }
+        if (text.includes(_('Spend')) || text.includes(_('Finish'))) {
+            legend += '<strong> ' + _('Spend') + ' : </strong> ' + 
+            this.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
+            +'<br><br style="line-height: 10px" />';
+        }
+        if (this.isChameleon()) {
+            legend += '<strong> ' + _('Copy') + ' : </strong> ' + 
+            _('During your action phase, this card may become an identical copy of one valid card for all purposes of play.')
+            //_('A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.')
+            +'<br><br style="line-height: 10px" />';
         }
         return legend;
     }
