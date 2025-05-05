@@ -249,14 +249,13 @@ if (!defined('DIE_STARS')) {
     define('DIE_POLECAT_3', 7);
     define('DIE_STARS', 8);
     define('DIE_PLANET', 9);
-    define('DIE_PLANET_REROLL', 10);
-    define('DIE_COMET', 11);
-    define('DIE_DECK', 12);
-    define('DIE_DISCARD', 13);
-    define('DIE_HAND', 14);
-    define('DIE_DECK2', 15);
-    define('DIE_DISCARD2', 16);
-    define('DIE_HAND2', 17);
+    define('DIE_COMET', 10);
+    define('DIE_DECK', 11);
+    define('DIE_DISCARD', 12);
+    define('DIE_HAND', 13);
+    define('DIE_DECK2', 14);
+    define('DIE_DISCARD2', 15);
+    define('DIE_HAND2', 16);
 }
 
 //define triggers
@@ -1914,10 +1913,10 @@ $this->card_types = array(
         'type_id' => 108,
         'name' => clienttranslate("Arcane Scholar"),
         'text' => clienttranslate("Roll DIE_HARE. Take the top CARD of [COMET: your discard] [PLANET: your deck] [STARS: nowhere]."),
-        'type_displayed' => clienttranslate("Technique"),
-        'is_technique' => true,
-        'has_plus' => true,
-        'has_ability' => false,
+        'type_displayed' => clienttranslate("Passive"),
+        'is_technique' => false,
+        'has_plus' => false,
+        'has_ability' => true,
         'playable' => true,
         'trigger' => null,
         'value' => 1,

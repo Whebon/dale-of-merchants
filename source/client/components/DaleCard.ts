@@ -993,7 +993,7 @@ export class DaleCard {
         }
         if (text.includes(_('Store')) || text.includes(_('store'))) {
             legend += '<strong> ' + _('Store') + ' : </strong> ' + 
-            _('At the start of your next turn, place stored cards into your hand')
+            _('At the start of your next turn, place stored cards into your hand.')
             +'<br><br style="line-height: 10px" />';
         }
         if (text.includes(_('Toss')) || text.includes(_('toss'))) {

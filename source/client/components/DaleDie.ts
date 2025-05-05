@@ -20,16 +20,15 @@ export class DaleDie {
 
     static readonly DIE_STARS: number = 8;
     static readonly DIE_PLANET: number = 9;
-    static readonly DIE_PLANET_REROLL: number = 10;
-    static readonly DIE_COMET: number = 11;
+    static readonly DIE_COMET: number = 10;
 
-    static readonly DIE_DECK: number = 12;
-    static readonly DIE_DISCARD: number = 13;
-    static readonly DIE_HAND: number = 14;
+    static readonly DIE_DECK: number = 11;
+    static readonly DIE_DISCARD: number = 12;
+    static readonly DIE_HAND: number = 13;
 
-    static readonly DIE_DECK2: number = 15;
-    static readonly DIE_DISCARD2: number = 16;
-    static readonly DIE_HAND2: number = 17;
+    static readonly DIE_DECK2: number = 14;
+    static readonly DIE_DISCARD2: number = 15;
+    static readonly DIE_HAND2: number = 16;
 
     //TODO: safely remove this
     // private static results: Record<DieType, string[]> = {
@@ -167,10 +166,6 @@ export class DaleDie {
                 row = 2;
                 col = 2;
                 break;
-            case DaleDie.DIE_PLANET_REROLL:
-                row = 2;
-                col = 4;
-                break;
             case DaleDie.DIE_COMET:
                 row = 2;
                 col = 5;
@@ -235,7 +230,7 @@ export class DaleDie {
                     ${DaleDie.getIconTpl(DaleDie.DIE_STARS)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
-                    ${DaleDie.getIconTpl(DaleDie.DIE_PLANET_REROLL)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_PLANET)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_COMET)}
                 </span>`;
             case 'pangolin1':

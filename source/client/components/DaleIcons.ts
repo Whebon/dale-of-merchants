@@ -28,7 +28,7 @@ export class DaleIcons {
     ///////////////////////////////
 
     public static getNaturalSurvivorIcon(): HTMLElement {
-        return this.getHandIcon();
+        return this.getHandIcon(); //TODO: should be a 'deck' icon (these cards are moved from the hand to the deck)
     }
 
     public static getTravelingEquipmentDitchIcon(): HTMLElement {

@@ -797,10 +797,6 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
                     row = 2;
                     col = 2;
                     break;
-                case DaleDie.DIE_PLANET_REROLL:
-                    row = 2;
-                    col = 4;
-                    break;
                 case DaleDie.DIE_COMET:
                     row = 2;
                     col = 5;
@@ -839,7 +835,7 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
                 case 'polecat':
                     return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_1), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_2), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_POLECAT_3), "\n                </span>");
                 case 'hare':
-                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_STARS), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_STARS), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET_REROLL), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_COMET), "\n                </span>");
+                    return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_STARS), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_STARS), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_PLANET), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_COMET), "\n                </span>");
                 case 'pangolin1':
                     return "<span class=\"daleofmerchants-log-span\">\n                    ".concat(DaleDie.getIconTpl(DaleDie.DIE_DISCARD), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DISCARD), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_DECK), "\n                    ").concat(DaleDie.getIconTpl(DaleDie.DIE_HAND), "\n                </span>");
                 case 'pangolin2':
@@ -869,14 +865,13 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
         DaleDie.DIE_POLECAT_3 = 7;
         DaleDie.DIE_STARS = 8;
         DaleDie.DIE_PLANET = 9;
-        DaleDie.DIE_PLANET_REROLL = 10;
-        DaleDie.DIE_COMET = 11;
-        DaleDie.DIE_DECK = 12;
-        DaleDie.DIE_DISCARD = 13;
-        DaleDie.DIE_HAND = 14;
-        DaleDie.DIE_DECK2 = 15;
-        DaleDie.DIE_DISCARD2 = 16;
-        DaleDie.DIE_HAND2 = 17;
+        DaleDie.DIE_COMET = 10;
+        DaleDie.DIE_DECK = 11;
+        DaleDie.DIE_DISCARD = 12;
+        DaleDie.DIE_HAND = 13;
+        DaleDie.DIE_DECK2 = 14;
+        DaleDie.DIE_DISCARD2 = 15;
+        DaleDie.DIE_HAND2 = 16;
         return DaleDie;
     }());
     exports.DaleDie = DaleDie;
@@ -1475,7 +1470,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             if (text.includes(_('Store')) || text.includes(_('store'))) {
                 legend += '<strong> ' + _('Store') + ' : </strong> ' +
-                    _('At the start of your next turn, place stored cards into your hand')
+                    _('At the start of your next turn, place stored cards into your hand.')
                     + '<br><br style="line-height: 10px" />';
             }
             if (text.includes(_('Toss')) || text.includes(_('toss'))) {

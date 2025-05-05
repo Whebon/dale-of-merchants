@@ -1539,14 +1539,10 @@ class DaleOfMerchants extends DaleTableBasic
                         break;
                     case 2:
                     case 3:
+                    case 4:
                         $die_value = DIE_PLANET;
                         $die_label = clienttranslate('planet');
                         $die_icon = DIE_PLANET;
-                        break;
-                    case 4:
-                        $die_value = DIE_PLANET_REROLL;
-                        $die_label = clienttranslate('planet (reroll)');
-                        $die_icon = DIE_PLANET_REROLL;
                         break;
                     case 5:
                         $die_value = DIE_COMET;
@@ -4876,6 +4872,43 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->spend($player_id, $args, 1, "Greed");
                 $this->draw(clienttranslate('Greed: ${player_name} draws 1 card'), 1);
                 $this->effects->insertModification($passive_card_id, CT_GREED);
+                break;
+            case CT_ARCANESCHOLAR:
+                $value = $this->rollDie(
+                    clienttranslate('Arcane Scholar: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_HARES,
+                    $passive_card
+                );
+                switch($value) {
+                    case DIE_COMET:
+                        $recovered_card = $this->cards->getCardOnTop(DISCARD.$player_id);
+                        if ($recovered_card != null) {
+                            $this->cards->moveCard($recovered_card["id"], HAND.$player_id);
+                            $this->notifyAllPlayers('discardToHand', clienttranslate('Arcane Scholar: ${player_name} places their ${card_name} from their discard into their hand'), array(
+                                "player_id" => $player_id,
+                                "player_name" => $this->getPlayerNameById($player_id),
+                                "card_name" => $this->getCardName($recovered_card),
+                                "card" => $recovered_card
+                            ));
+                        }
+                        else {
+                            $this->notifyAllPlayers('message', clienttranslate('Arcane Scholar: ${player_name} does not take a card because their discard is empty'), array(
+                                "player_name" => $this->getActivePlayerName()
+                            ));
+                        }
+                        break;
+                    case DIE_PLANET:
+                        $this->draw(clienttranslate('Arcane Scholar: ${player_name} draws a card from their deck'), 1);
+                        break;
+                    case DIE_STARS:
+                        $this->notifyAllPlayers('message', clienttranslate('Arcane Scholar: ${player_name} does not take a card'), array(
+                            "player_name" => $this->getActivePlayerName()
+                        ));
+                        break;
+                    default:
+                        throw new BgaVisibleSystemException("Unexpected ANIMALFOLK_HARES die roll: ".$value);
+                }
+                $this->effects->insertModification($passive_card_id, CT_ARCANESCHOLAR);
                 break;
             default:
                 $name = $this->getCardName($passive_card);
