@@ -5003,6 +5003,22 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->effects->insertModification($passive_card_id, CT_BAROMETER, $value);
                 break;
+            case CT_CALENDAR:
+                $topCard = $this->cards->getCardOnTop(DISCARD.$player_id);
+                if (!$topCard) {
+                    throw new BgaUserException($this->_("Your discard is empty"));
+                }
+                $this->cards->moveCardOnTop($topCard["id"], DECK.$player_id);
+                $this->notifyAllPlayers('discardToDeck', clienttranslate('Calendar: ${player_name} shuffles their ${card_name} into their deck'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "card_name" => $this->getCardName($topCard),
+                    "card" => $topCard,
+                    "to_bottom" => true //looks like it gets shoved in the middle
+                ));
+                $this->cards->shuffle(DECK.$player_id);
+                $this->effects->insertModification($passive_card_id, CT_CALENDAR);
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
