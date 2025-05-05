@@ -9561,24 +9561,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.notif_placeOnDeckMultiple = function (notif) {
-            var _a, _b;
+            var _a;
             console.warn("placeOnDeckMultiple");
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (notif.args._private) {
-                for (var _i = 0, _c = notif.args._private.card_ids; _i < _c.length; _i++) {
-                    var id = _c[_i];
+                for (var _i = 0, _b = notif.args._private.card_ids; _i < _b.length; _i++) {
+                    var id = _b[_i];
                     var card = notif.args._private.cards[id];
                     var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
                     this.stockToPile(card, stock, deck);
                 }
             }
-            else if (notif.args.deck_player_id != notif.args.player_id) {
+            else {
                 for (var i = 0; i < notif.args.nbr; i++) {
                     this.allDecks[notif.args.deck_player_id].push(new DaleCard_10.DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
                 }
-            }
-            else {
-                this.allDecks[(_b = notif.args.deck_player_id) !== null && _b !== void 0 ? _b : notif.args.player_id].pushHiddenCards(notif.args.nbr);
             }
             if (stock === this.myHand) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);

@@ -6143,15 +6143,11 @@ class DaleOfMerchants extends Gamegui
 				this.stockToPile(card, stock, deck);
 			}
 		}
-		else if (notif.args.deck_player_id != notif.args.player_id)  {
+		else  {
 			//animate cards to deck
 			for (let i = 0; i < notif.args.nbr; i++) {
 				this.allDecks[notif.args.deck_player_id!]!.push(new DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
 			}
-		}
-		else {
-			//increase deck size
-			this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
 		}
 		//update the hand sizes
 		if (stock === this.myHand) {
