@@ -4549,6 +4549,31 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trBadOmen");
                 break;
+            case CT_FESTIVAL:
+                $value = $this->rollDie(
+                    clienttranslate('Festival: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_HARES,
+                    $technique_card
+                );
+                switch($value) {
+                    case DIE_COMET:
+                        $this->draw(clienttranslate('Festival: ${player_name} draws a card from the supply'), 1, false, MARKET, $player_id, 
+                            clienttranslate('Festival: ${player_name} draws a ${card_name} from the supply')
+                        );
+                        break;
+                    case DIE_PLANET:
+                        $this->draw(clienttranslate('Festival: ${player_name} draws a card from their deck'), 1);
+                        break;
+                    case DIE_STARS:
+                        $this->notifyAllPlayers('message', clienttranslate('Festival: ${player_name} does not draw a card'), array(
+                            "player_name" => $this->getActivePlayerName()
+                        ));
+                        break;
+                    default:
+                        throw new BgaVisibleSystemException("Unexpected ANIMALFOLK_HARES die roll: ".$value);
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
