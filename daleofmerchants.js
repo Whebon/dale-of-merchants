@@ -1137,6 +1137,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                     value = 6 - value;
                                 }
                                 break;
+                            case DaleCard.CT_BAROMETER:
+                                value = effect.arg;
+                                break;
                         }
                     }
                 }

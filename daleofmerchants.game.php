@@ -4910,6 +4910,27 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->effects->insertModification($passive_card_id, CT_ARCANESCHOLAR);
                 break;
+            case CT_BAROMETER:
+                $dbcards = $this->cards->pickCardsForLocation(1, DECK.MARKET, 'barometer');
+                if (count($dbcards) == 0) {
+                    throw new BgaUserException($this->_("The market deck is empty"));
+                }
+                $dbcard = $dbcards[0];
+                $value = $this->getOriginalValue($dbcard);
+                //ditch the card
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
+                $this->notifyAllPlayers('ditchFromMarketDeck', clienttranslate('Barometer: ${player_name} ditches ${card_name}'), array (
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_name' => $this->getCardName($dbcard),
+                    'card' => $dbcard
+                ));
+                //update the value
+                $this->notifyAllPlayers('message', clienttranslate('Barometer: ${player_name} changes this card\'s value to ${value}'), array(
+                    "player_name" => $this->getActivePlayerName(),
+                    "value" => $value
+                ));
+                $this->effects->insertModification($passive_card_id, CT_BAROMETER, $value);
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");

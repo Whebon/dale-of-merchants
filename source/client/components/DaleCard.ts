@@ -567,6 +567,9 @@ export class DaleCard {
                             value = 6 - value;
                         }
                         break;
+                    case DaleCard.CT_BAROMETER:
+                        value = effect.arg!;
+                        break;
                 }
             }
         }

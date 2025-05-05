@@ -185,6 +185,9 @@ class DaleEffects {
                             $value = 6 - $value;
                         }
                         break;
+                    case CT_BAROMETER:
+                        $value = $row["arg"];
+                        break;
                 }
             }
         }
