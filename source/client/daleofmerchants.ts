@@ -969,6 +969,12 @@ class DaleOfMerchants extends Gamegui
 			case 'insight':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"))
 				break;
+			case 'badOmen':
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				break;
+			case 'client_badOmen':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1349,6 +1355,12 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'insight':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'badOmen':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_badOmen':
 				this.myLimbo.setSelectionMode('none');
 				break;
 		}
@@ -1956,6 +1968,13 @@ class DaleOfMerchants extends Gamegui
 			case 'insight':
 				this.addActionButton("confirm-button", _("Confirm"), "onInsight");
 				break;
+			case 'badOmen':
+				this.addActionButton("skip-button", _("Skip"), "onBadOmenSkip", undefined, false, 'gray');
+				break;
+			case 'client_badOmen':
+				this.addActionButton("confirm-button", _("Confirm"), "onBadOmenDeck");
+				this.addActionButton("undo-button", _("Undo"), "onBadOmenUndo", undefined, false, "gray");
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2336,9 +2355,14 @@ class DaleOfMerchants extends Gamegui
 	 * @param card card to remove from hand
 	 * @param stock player-specific stock. this should be a stock that each client has only 1 of (e.g. hand or limbo). 
 	 * @param player_id owner of the hand
+	 * @param ignore_card_not_found (optional) - if true, ignore this function if the card is not found in the given stock
 	*/
-	playerStockRemove(card: DbCard, stock: DaleStock, player_id: number){
+	playerStockRemove(card: DbCard, stock: DaleStock, player_id: number, ignore_card_not_found: boolean = false){
 		if (+player_id == this.player_id) {
+			if (ignore_card_not_found && !stock.containsCardId(+card.id)) {
+				console.warn(`Card ${card.id} does not exist in `+stock.control_name+", likely because the client already removed the card in a client state");
+				return;
+			}
 			stock.removeFromStockById(+card.id);
 		}
 	}
@@ -3193,6 +3217,19 @@ class DaleOfMerchants extends Gamegui
 				)
 				this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
 				break;
+			case 'badOmen':
+				if (card.isAnimalfolk()) {
+					this.stockToPile(card, this.myLimbo, this.marketDiscard);
+				}
+				else {
+					//warning: if specialty/trap cards exist, this should go somewhere else
+					this.myLimbo.removeFromStockById(card.id);
+				}
+				this.mainClientState.enterOnStack('client_badOmen', {
+					ditch_card_id: card.id,
+					card_name: "Bad Omen"
+				});
+				break;
 		}
 	}
 
@@ -3771,6 +3808,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SUPPLYDEPOT:
 			case DaleCard.CT_MEDDLINGMARKETEER:
 			case DaleCard.CT_ANCHOR:
+			case DaleCard.CT_BADOMEN:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -5449,6 +5487,43 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
+	onBadOmenSkip() {
+		this.mainClientState.enterOnStack('client_badOmen', {
+			ditch_card_id: -1,
+			card_name: "Bad Omen"
+		});
+	}
+
+	onBadOmenUndo() {
+		const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
+		if (args.ditch_card_id != -1) {
+			//undo the ditch
+			if (new DaleCard(args.ditch_card_id).isAnimalfolk()) {
+				const card = this.marketDiscard.pop();
+				if (args.ditch_card_id != card.id) {
+					throw new Error(`Expected card ${card.id} on top of the bin`);
+				}
+				this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
+			}
+			else {
+				//warning: if specialty/trap cards exist, this come from somewhere else
+				this.myLimbo.addDaleCardToStock(new DaleCard(args.ditch_card_id), 'overall_player_board_'+this.player_id);
+			}
+
+		}
+		this.mainClientState.leave();
+	}
+
+	onBadOmenDeck() {
+		const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
+		const deck_card_ids = this.myLimbo.orderedSelection.get();
+		this.bgaPerformAction('actBadOmen', {
+			ditch_card_id: args.ditch_card_id,
+			deck_card_ids: this.arrayToNumberList(deck_card_ids)
+		});
+		this.mainClientState.leave();
+	}
+
 	//(~on)
 
 
@@ -5496,6 +5571,7 @@ class DaleOfMerchants extends Gamegui
 			['opponentHandToPlayerHand', 			500, true],
 			['obtainNewJunkInHand', 				500],
 			['obtainNewJunkInDiscard',				500],
+			['instant_ditch', 						1],
 			['ditch', 								500],
 			['ditchMultiple', 						500],
 			['discard', 							500],
@@ -5988,13 +6064,17 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	notif_instant_ditch(notif: NotifAs<'ditch'>) {
+		this.notif_ditch(notif);
+	}
+
 	notif_ditch(notif: NotifAs<'ditch'>) {
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (DaleCard.of(notif.args.card).isAnimalfolk()) {
-			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard);
+			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard, 0, notif.args.ignore_card_not_found);
 		}
 		else {
-			this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
+			this.playerStockRemove(notif.args.card, stock, notif.args.player_id, notif.args.ignore_card_not_found);
 		}
 		//update the hand sizes
 		if (stock === this.myHand) {

@@ -198,6 +198,7 @@ interface GameStates {
 			'trFishing': 89,
 			'trGroundbreakingIdea': 90,
 			'trInsight': 91,
+			'trBadOmen': 92,
 		},
 	},
 	31: {
@@ -1051,6 +1052,27 @@ interface GameStates {
 		'possibleactions': {
 			'actInsight': [{
 				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	92: {
+		'name': 'badOmen',
+		'description': 'Bad Omen: ${actplayer} may ditch a card',
+		'descriptionmyturn': 'Bad Omen: ${you} may ditch a card',
+		'type': 'activeplayer',
+		'action': 'stBadOmen',
+		'possibleactions': {
+			'actBadOmen': [{
+				'name': 'ditch_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'deck_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}],

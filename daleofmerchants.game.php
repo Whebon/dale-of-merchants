@@ -587,7 +587,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
-        $this->notifyAllPlayers('ditch', $msg, array_merge(array(
+        $this->notifyAllPlayers(isset($msg_args['instant_ditch']) ? 'instant_ditch' : 'ditch', $msg, array_merge(array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "card_name" => $this->getCardName($dbcard),
@@ -3023,6 +3023,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_POMPOUSPROFESSIONAL:
                 case CT_MEDDLINGMARKETEER:
                 case CT_ANCHOR:
+                case CT_BADOMEN:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -4543,6 +4544,10 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_PERFECTMOVE:
                 $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_BADOMEN:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trBadOmen");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -6178,6 +6183,39 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trSamePlayer");
     }
 
+    function actBadOmen($ditch_card_id, $deck_card_ids) {
+        $this->checkAction("actBadOmen");
+        $player_id = $this->getActivePlayerId();
+        $deck_card_ids = $this->numberListToArray($deck_card_ids);
+
+        //ditch a card
+        if ($ditch_card_id != -1) {
+            $ditch_card = $this->cards->getCardFromLocation($ditch_card_id, LIMBO.$player_id);
+            $this->ditch(clienttranslate('Bad Omen: ${player_name} ditches their ${card_name}'), $ditch_card, true, array(
+                "instant_ditch" => true,
+                "ignore_card_not_found" => true
+            ));
+        }
+
+        //get the non-selected cards and selected cards to discard
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($deck_card_ids, LIMBO.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+
+        //place the other cards on top of the deck
+        $this->placeOnDeckMultiple(
+            $player_id, 
+            clienttranslate('Bad Omen: ${player_name} places ${nbr} cards back on top of their deck'),
+            $deck_card_ids, 
+            $selected_cards, 
+            $non_selected_cards,
+            true
+        );
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -6958,6 +6996,14 @@ class DaleOfMerchants extends DaleTableBasic
         if ($nbr == 0) {
             //insight has no effect (but since it is a finish technique, do not fully resolve it)
             $this->gamestate->nextState("trSamePlayer");
+        }
+    }
+
+    function stBadOmen() {
+        $nbr = $this->draw(clienttranslate('Bad Omen: ${player_name} draws 3 cards'), 3, true);
+        if ($nbr == 0) {
+            //bad omen has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 

@@ -3839,6 +3839,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take 1 card from your discard pile");
                     case 'client_groundbreakingIdea':
                         return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                    case 'client_badOmen':
+                        return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4999,6 +5001,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'insight':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
                     break;
+                case 'badOmen':
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    break;
+                case 'client_badOmen':
+                    this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5377,6 +5385,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'insight':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'badOmen':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'client_badOmen':
                     this.myLimbo.setSelectionMode('none');
                     break;
             }
@@ -5974,6 +5988,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'insight':
                     this.addActionButton("confirm-button", _("Confirm"), "onInsight");
                     break;
+                case 'badOmen':
+                    this.addActionButton("skip-button", _("Skip"), "onBadOmenSkip", undefined, false, 'gray');
+                    break;
+                case 'client_badOmen':
+                    this.addActionButton("confirm-button", _("Confirm"), "onBadOmenDeck");
+                    this.addActionButton("undo-button", _("Undo"), "onBadOmenUndo", undefined, false, "gray");
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -6256,8 +6277,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.overallPlayerBoardToPile(card, player_id, pile);
             }
         };
-        DaleOfMerchants.prototype.playerStockRemove = function (card, stock, player_id) {
+        DaleOfMerchants.prototype.playerStockRemove = function (card, stock, player_id, ignore_card_not_found) {
+            if (ignore_card_not_found === void 0) { ignore_card_not_found = false; }
             if (+player_id == this.player_id) {
+                if (ignore_card_not_found && !stock.containsCardId(+card.id)) {
+                    console.warn("Card ".concat(card.id, " does not exist in ") + stock.control_name + ", likely because the client already removed the card in a client state");
+                    return;
+                }
                 stock.removeFromStockById(+card.id);
             }
         };
@@ -6958,6 +6984,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     new TargetingLine_1.TargetingLine(card, anchor_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onAnchorCancelTargetingLine(); }, function (source_id, target_id) { return _this.onAnchor(source_id, target_id); });
                     this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
                     break;
+                case 'badOmen':
+                    if (card.isAnimalfolk()) {
+                        this.stockToPile(card, this.myLimbo, this.marketDiscard);
+                    }
+                    else {
+                        this.myLimbo.removeFromStockById(card.id);
+                    }
+                    this.mainClientState.enterOnStack('client_badOmen', {
+                        ditch_card_id: card.id,
+                        card_name: "Bad Omen"
+                    });
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUnselectLimboCard = function (card_id) {
@@ -7461,6 +7499,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_SUPPLYDEPOT:
                 case DaleCard_10.DaleCard.CT_MEDDLINGMARKETEER:
                 case DaleCard_10.DaleCard.CT_ANCHOR:
+                case DaleCard_10.DaleCard.CT_BADOMEN:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -8991,6 +9030,37 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
             });
         };
+        DaleOfMerchants.prototype.onBadOmenSkip = function () {
+            this.mainClientState.enterOnStack('client_badOmen', {
+                ditch_card_id: -1,
+                card_name: "Bad Omen"
+            });
+        };
+        DaleOfMerchants.prototype.onBadOmenUndo = function () {
+            var args = this.mainClientState.args;
+            if (args.ditch_card_id != -1) {
+                if (new DaleCard_10.DaleCard(args.ditch_card_id).isAnimalfolk()) {
+                    var card = this.marketDiscard.pop();
+                    if (args.ditch_card_id != card.id) {
+                        throw new Error("Expected card ".concat(card.id, " on top of the bin"));
+                    }
+                    this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
+                }
+                else {
+                    this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(args.ditch_card_id), 'overall_player_board_' + this.player_id);
+                }
+            }
+            this.mainClientState.leave();
+        };
+        DaleOfMerchants.prototype.onBadOmenDeck = function () {
+            var args = this.mainClientState.args;
+            var deck_card_ids = this.myLimbo.orderedSelection.get();
+            this.bgaPerformAction('actBadOmen', {
+                ditch_card_id: args.ditch_card_id,
+                deck_card_ids: this.arrayToNumberList(deck_card_ids)
+            });
+            this.mainClientState.leave();
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -9029,6 +9099,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['opponentHandToPlayerHand', 500, true],
                 ['obtainNewJunkInHand', 500],
                 ['obtainNewJunkInDiscard', 500],
+                ['instant_ditch', 1],
                 ['ditch', 500],
                 ['ditchMultiple', 500],
                 ['discard', 500],
@@ -9426,13 +9497,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.overallPlayerBoardToPile(card, from_player_id, this.playerDiscards[notif.args.player_id]);
             }
         };
+        DaleOfMerchants.prototype.notif_instant_ditch = function (notif) {
+            this.notif_ditch(notif);
+        };
         DaleOfMerchants.prototype.notif_ditch = function (notif) {
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (DaleCard_10.DaleCard.of(notif.args.card).isAnimalfolk()) {
-                this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard);
+                this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard, 0, notif.args.ignore_card_not_found);
             }
             else {
-                this.playerStockRemove(notif.args.card, stock, notif.args.player_id);
+                this.playerStockRemove(notif.args.card, stock, notif.args.player_id, notif.args.ignore_card_not_found);
             }
             if (stock === this.myHand) {
                 this.playerHandSizes[notif.args.player_id].incValue(-1);

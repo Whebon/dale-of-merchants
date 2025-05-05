@@ -599,6 +599,19 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actBadOmen()
+	{
+		self::setAjaxMode();
+
+		/** @var int $ditch_card_id */
+		$ditch_card_id = self::getArg('ditch_card_id', AT_int, true);
+		/** @var string $deck_card_ids */
+		$deck_card_ids = self::getArg('deck_card_ids', AT_numberlist, true);
+
+		$this->game->actBadOmen( $ditch_card_id, $deck_card_ids );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

@@ -48,6 +48,7 @@ if (false) {
 	$game->stCharmStove();
 	$game->stTravelingEquipment();
 	$game->stInsight();
+	$game->stBadOmen();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
 	$game->stDeprecatedWhirligig();
@@ -150,6 +151,7 @@ $machinestates = array(
 			'trFishing' => 89,
 			'trGroundbreakingIdea' => 90,
 			'trInsight' => 91,
+			'trBadOmen' => 92,
 		),
 	),
 	31 => array(
@@ -648,6 +650,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stInsight',
 		'possibleactions' => ['actInsight'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	92 => array(
+		'name' => 'badOmen',
+		'description' => clienttranslate('Bad Omen: ${actplayer} may ditch a card'),
+		'descriptionmyturn' => clienttranslate('Bad Omen: ${you} may ditch a card'),
+		'type' => 'activeplayer',
+		'action' => 'stBadOmen',
+		'possibleactions' => ['actBadOmen'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

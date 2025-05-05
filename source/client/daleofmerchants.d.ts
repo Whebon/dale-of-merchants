@@ -201,10 +201,12 @@ declare global {
 			card: DbCard
 			market_card_id: number
 		}
+		'instant_ditch': {}
 		'ditch': {
 			player_id: number 
 			card: DbCard
 			from_limbo?: boolean //by default, ditch from hand. if specified, ditch from limbo instead
+			ignore_card_not_found?: boolean
 		}
 		'ditchMultiple': {
 			player_id: number 
@@ -527,6 +529,7 @@ declare global {
 		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
+		'client_badOmen': { ditch_card_id: number, card_name: string }
 	}
 
 	//
