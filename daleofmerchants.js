@@ -1473,6 +1473,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DIE_PANGOLIN2')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin2'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin2'), "<br style=\"line-height: 10px\" />");
             }
+            if (text.includes(_('Store')) || text.includes(_('store'))) {
+                legend += '<strong> ' + _('Store') + ' : </strong> ' +
+                    _('At the start of your next turn, place stored cards into your hand')
+                    + '<br><br style="line-height: 10px" />';
+            }
             if (text.includes(_('Toss')) || text.includes(_('toss'))) {
                 legend += '<strong> ' + _('Toss') + ' : </strong> ' +
                     _('Tossed animalfolk cards are placed in the bin. Tossed junk cards are removed from the game.')
