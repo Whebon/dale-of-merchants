@@ -589,7 +589,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'daleofmerchants-wrap-technique');
 				break;
-			case 'client_deprecated_whirligig':
+			case 'client_accident':
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_blindfold':
@@ -1118,7 +1118,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('none');
 				break;
-			case 'client_deprecated_whirligig':
+			case 'client_accident':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_blindfold':
@@ -1503,18 +1503,18 @@ class DaleOfMerchants extends Gamegui
 			case 'client_newSeason':
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_deprecated_whirligig':
+			case 'client_accident':
 				if (this.unique_opponent_id) {
-					this.addActionButton("confirm-button", _("Discard all"), "onDeprecatedWhirligig"); //only confirm discard order
+					this.addActionButton("confirm-button", _("Discard all"), "onAccident"); //only confirm discard order
 				}
 				else {
 					this.addActionButtonsOpponentSelection(1);
-					this.addActionButton("confirm-button", _("Confirm"), "onDeprecatedWhirligig"); //confirm opponent and discard order
+					this.addActionButton("confirm-button", _("Confirm"), "onAccident"); //confirm opponent and discard order
 				}
 				this.addActionButtonCancelClient();
 				break;
-			case 'deprecated_whirligig':
-				this.addActionButton("whirligig-button", _("Next"), "onDeprecatedWhirligigDoneLooking");
+			case 'accident':
+				this.addActionButton("whirligig-button", _("Next"), "onAccidentDoneLooking");
 				break;
 			case 'client_whirligig':
 				this.addActionButtonsOpponent(this.onWhirligig.bind(this));
@@ -3803,13 +3803,13 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_newSeason', card.id);
 				}
 				break;
-			case DaleCard.CT_DEPRECATED_WHIRLIGIG:
+			case DaleCard.CT_ACCIDENT:
 				fizzle = this.myHand.count() == 1;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_deprecated_whirligig', card.id);
+					this.clientScheduleTechnique('client_accident', card.id);
 				}
 				break;
 			case DaleCard.CT_WHIRLIGIG:
@@ -4672,7 +4672,7 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onDeprecatedWhirligig() {
+	onAccident() {
 		var opponent_id;
 		if (this.unique_opponent_id) {
 			opponent_id = this.unique_opponent_id;
@@ -4683,14 +4683,14 @@ class DaleOfMerchants extends Gamegui
 		else {
 			throw new Error("'addActionButtonsOpponentSelection' did not work as expected");
 		}
-		this.playTechniqueCard<'client_deprecated_whirligig'> ({
+		this.playTechniqueCard<'client_accident'> ({
 			opponent_id: opponent_id,
 			card_ids: this.myHand.orderedSelection.get()
 		})
 	}
 
-	onDeprecatedWhirligigDoneLooking() {
-		this.bgaPerformAction('actDeprecatedWhirligig', {});
+	onAccidentDoneLooking() {
+		this.bgaPerformAction('actAccident', {});
 	}
 
 	onWhirligig(opponent_id: number) {
@@ -5648,8 +5648,8 @@ class DaleOfMerchants extends Gamegui
 			['placeOnDeckMultiple', 				500, true],
 			['reshuffleDeck', 						1500],
 			['wilyFellow', 							500],
-			['whirligigShuffle', 					1750],
-			['whirligigTakeBack', 					500, true],
+			['accidentShuffle', 					1750],
+			['accidentTakeBack', 					500, true],
 			['cunningNeighbourWatch', 				500, true],
 			['cunningNeighbourReturn', 				500, true],
 			['ditchFromDiscard', 					500],
@@ -6448,12 +6448,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	
-	notif_whirligigShuffle(notif: NotifAs<'whirligigShuffle'>) {
-		console.warn("whirligigShuffle");
+	notif_accidentShuffle(notif: NotifAs<'accidentShuffle'>) {
+		console.warn("accidentShuffle");
 		const player_nbr = notif.args.player_nbr;
 		const opponent_nbr = notif.args.opponent_nbr;
 		if (!this.isSpectator) {
-			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
+			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Accident"));
 			const nbr = notif.args.opponent_nbr + notif.args.player_nbr
 			const hand_card_ids = this.myHand.getAllItems().map(item=>item.id).reverse();
 			for (let i = 1; i <= nbr; i++) {
@@ -6485,7 +6485,7 @@ class DaleOfMerchants extends Gamegui
 				}
 			}
 			if (notif.args.opponent_nbr != 0 || notif.args.player_nbr != 0) {
-				console.warn(`'whirligigShuffle' failed:
+				console.warn(`'accidentShuffle' failed:
 					notif.args.opponent_nbr == ${notif.args.opponent_nbr}
 					notif.args.player_nbr == ${notif.args.player_nbr}
 				`)
@@ -6500,14 +6500,14 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_whirligigTakeBack(notif: NotifAs<'whirligigTakeBack'>) {
-		console.warn("notif_whirligigTakeBack");
+	notif_accidentTakeBack(notif: NotifAs<'accidentTakeBack'>) {
+		console.warn("notif_accidentTakeBack");
 		if (!this.isSpectator) {
 			const limbo_card_ids = this.myLimbo.getAllItems().map(item=>item.id).sort(() => Math.random() - 0.5);
 			if (notif.args._private) {
 				const cards = Object.values(notif.args._private.cards);
 				if (cards.length != notif.args.nbr) {
-					throw new Error(`whirligigTakeBack failed: expected ${notif.args.nbr} cards, got ${cards.length} cards`)
+					throw new Error(`accidentTakeBack failed: expected ${notif.args.nbr} cards, got ${cards.length} cards`)
 				}
 				for (let card of cards) {
 					//to hand

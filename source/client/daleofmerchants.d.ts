@@ -103,13 +103,13 @@ declare global {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
-		'whirligigShuffle': {
+		'accidentShuffle': {
 			player_id: number,
 			player_nbr: number,
 			opponent_id: number,
 			opponent_nbr: number
 		}
-		'whirligigTakeBack': {
+		'accidentTakeBack': {
 			player_id: number,
 			nbr: number,
 			_private: {
@@ -437,7 +437,7 @@ declare global {
 		'client_dirtyExchange': { opponent_id: number }
 		'client_treasureHunter': { card_id: number }
 		'client_newSeason': { card_id: number }
-		'client_deprecated_whirligig': { card_ids: number[], opponent_id: number }
+		'client_accident': { card_ids: number[], opponent_id: number }
 		'client_whirligig': {opponent_id: number }
 		'client_gamble': { opponent_id: number }
 		'client_blindfold': { card_id: number, opponent_id: number }

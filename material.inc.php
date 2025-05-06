@@ -190,9 +190,8 @@ if (!defined('CT_CARDBACK')) {
     define('CT_CAPTURE', 166);
     define('CT_PROVOCATION', 167);
     define('CT_DEPRECATED_MARKETDISCOVERY', 168);
-    define('CT_DEPRECATED_WHIRLIGIG', 169);
-    define('CT_DEPRECATED_CHEER', 170);
-    define('CT_DEPRECATED_TASTERS', 171);
+    define('CT_DEPRECATED_CHEER', 169);
+    define('CT_DEPRECATED_TASTERS', 170);  
 }
 
 //define all animalfolk

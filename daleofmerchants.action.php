@@ -418,6 +418,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actAccident()
+	{
+		self::setAjaxMode();
+
+		$this->game->actAccident(  );
+		self::ajaxResponse();
+	}
+
 	public function actPompousProfessional()
 	{
 		self::setAjaxMode();
@@ -664,14 +672,6 @@ class action_daleofmerchants extends APP_GameAction
 		$card_id = self::getArg('card_id', AT_int, true);
 
 		$this->game->actDeprecatedTasters( $card_id );
-		self::ajaxResponse();
-	}
-
-	public function actDeprecatedWhirligig()
-	{
-		self::setAjaxMode();
-
-		$this->game->actDeprecatedWhirligig(  );
 		self::ajaxResponse();
 	}
 }

@@ -3148,7 +3148,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_SHAKYENTERPRISE:
                     break; //this card may always fizzle!
                 case CT_ROTTENFOOD:
-                case CT_DEPRECATED_WHIRLIGIG:
+                case CT_ACCIDENT:
                 case CT_BLINDFOLD:
                 case CT_RAREARTEFACT:
                 case CT_SWANK:
@@ -3429,7 +3429,7 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_DEPRECATED_WHIRLIGIG:
+            case CT_ACCIDENT:
                 //get args
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $card_ids = $args["card_ids"];
@@ -3451,7 +3451,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->setGameStateValue("die_value", $nbr); //not actually a die value, but we will use this state to store the number of cards for the player
                 $this->beginResolvingCard($technique_card_id);
-                $this->gamestate->nextState("trDeprecatedWhirligig");
+                $this->gamestate->nextState("trAccident");
                 break;
             case CT_WHIRLIGIG:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
@@ -5754,8 +5754,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actDeprecatedWhirligig() {
-        $this->checkAction("actDeprecatedWhirligig");
+    function actAccident() {
+        $this->checkAction("actAccident");
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
 
@@ -5764,8 +5764,8 @@ class DaleOfMerchants extends DaleTableBasic
         $opponent_cards = $this->cards->getCardsInLocation(HAND.$opponent_id) + $player_cards; //all the cards!
         $this->cards->moveAllCardsInLocation(HAND.$player_id, 'whirligig');
         $this->cards->moveAllCardsInLocation(HAND.$opponent_id, 'whirligig');
-        $this->notifyAllPlayers('whirligigShuffle', 
-            clienttranslate('Whirligig: shuffling ${player_nbr} cards from ${player_name}\'s deck with ${opponent_nbr} cards from ${opponent_name}\'s hand'), array(
+        $this->notifyAllPlayers('accidentShuffle', 
+            clienttranslate('Accident: shuffling ${player_nbr} cards from ${player_name}\'s deck with ${opponent_nbr} cards from ${opponent_name}\'s hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
             "player_nbr" => count($player_cards),
@@ -5786,7 +5786,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->cards->moveCards($this->toCardIds($opponent_cards), HAND.$opponent_id);
 
         //notify: give cards to the player
-        $this->notifyAllPlayersWithPrivateArguments('whirligigTakeBack', clienttranslate('Whirligig: ${player_name} takes back ${nbr} cards'), array(
+        $this->notifyAllPlayersWithPrivateArguments('accidentTakeBack', clienttranslate('Accident: ${player_name} takes back ${nbr} cards'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "nbr" => count($player_cards),
@@ -5795,7 +5795,7 @@ class DaleOfMerchants extends DaleTableBasic
             )
         ));
         //notify: give cards to the opponent
-        $this->notifyAllPlayersWithPrivateArguments('whirligigTakeBack', clienttranslate('Whirligig: ${player_name} takes back ${nbr} cards'), array(
+        $this->notifyAllPlayersWithPrivateArguments('accidentTakeBack', clienttranslate('Accident: ${player_name} takes back ${nbr} cards'), array(
             "player_id" => $opponent_id,
             "player_name" => $this->getPlayerNameById($opponent_id),
             "nbr" => count($opponent_cards),
@@ -7221,7 +7221,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function stDeprecatedWhirligig() {
+    function stAccident() {
         $nbr = $this->getGameStateValue("die_value");
         $this->draw(clienttranslate('Whirligig: ${player_name} draws ${nbr} cards'), $nbr);
     }

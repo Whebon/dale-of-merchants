@@ -37,6 +37,7 @@ if (false) {
 	$game->stDaringAdventurer();
 	$game->stRefreshingDrink();
 	$game->stDelightfulSurprise();
+	$game->stAccident();
 	$game->stPompousProfessional();
 	$game->stDelicacy();
 	$game->stUmbrella();
@@ -51,7 +52,6 @@ if (false) {
 	$game->stBadOmen();
 	$game->stFinalStatistics();
 	$game->stDeprecatedCheer();
-	$game->stDeprecatedWhirligig();
 }
 
 $machinestates = array(
@@ -133,7 +133,7 @@ $machinestates = array(
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
 			'trFashionHint' => 73,
-			'trDeprecatedWhirligig' => 7400,
+			'trAccident' => 74,
 			'trPompousProfessional' => 75,
 			'trDelicacy' => 76,
 			'trUmbrella' => 77,
@@ -467,6 +467,17 @@ $machinestates = array(
 			'trSamePlayer' => 30,
 		),
 	),
+	74 => array(
+		'name' => 'accident',
+		'description' => clienttranslate('Accident: ${actplayer} may look at their drawn cards'),
+		'descriptionmyturn' => clienttranslate('Accident: ${you} may look at your drawn cards'),
+		'type' => 'activeplayer',
+		'action' => 'stAccident',
+		'possibleactions' => ['actAccident'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
 	75 => array(
 		'name' => 'pompousProfessional',
 		'description' => clienttranslate('Pompous Professional: ${actplayer} must choose a \'${animalfolk_name}\' card to place in their hand'),
@@ -736,17 +747,6 @@ $machinestates = array(
 		'possibleactions' => ['actDeprecatedTasters'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
-		),
-	),
-	7400 => array(
-		'name' => 'deprecated_whirligig',
-		'description' => clienttranslate('Whirligig: ${actplayer} may look at their drawn cards'),
-		'descriptionmyturn' => clienttranslate('Whirligig: ${you} may look at your drawn cards'),
-		'type' => 'activeplayer',
-		'action' => 'stDeprecatedWhirligig',
-		'possibleactions' => ['actDeprecatedWhirligig'],
-		'transitions' => array(
-			'trSamePlayer' => 30,
 		),
 	),
 );
