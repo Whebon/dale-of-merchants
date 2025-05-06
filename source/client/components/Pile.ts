@@ -21,8 +21,9 @@ declare function $(text: string | Element): HTMLElement;
  * 'multipleFromTopNoGaps':     multiple cards (up to the selectionMax) can be selected from the popin, but they must be adjacent and the top card must be included
  * 'multipleProgrammatic':      multiple cards can be selected programmatically, but NOT by the player
  * 'top':                       content popin can cannot be viewed, and only the top card of the pile can be selected.
+ * 'topIncludingEmpty':         content popin can cannot be viewed, and only the top card (or the empty pile) can be selected.
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'top';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'top' | 'topIncludingEmpty';
 
 /**
  * A component to display a set of cards in a pile.
@@ -82,11 +83,21 @@ export class Pile implements DaleLocation {
         this.updateHTML();
         dojo.connect(this.orderedSelection, 'onSelect', this, 'onSelectPileCard');
         dojo.connect(this.orderedSelection, 'onUnselect', this, 'onUnselectPileCard');
-        //dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
+        dojo.connect(this.placeholderHTML, 'onclick', this, "onClickPlaceholder");
 	}
 
     public get size() {
         return this.cards.length;
+    }
+
+    /**
+     * @return owner of this pile
+     */
+    public getPlayerId() {
+        if (this.player_id === undefined) {
+            throw new Error(`Pile ${this.pile_container_id} has no player_id`);
+        }
+        return this.player_id;
     }
 
     /**
@@ -131,6 +142,12 @@ export class Pile implements DaleLocation {
                 dojo.connect(this.topCardHTML, 'onclick', this, "onClickTopCard");
             }
             this.previousTopCard = topCard;
+        }
+        if (this.selectionMode == 'topIncludingEmpty') {
+            this.placeholderHTML.classList.add("daleofmerchants-clickable");
+        }
+        else {
+            this.placeholderHTML.classList.remove("daleofmerchants-clickable");
         }
     }
 
@@ -415,14 +432,31 @@ export class Pile implements DaleLocation {
      * User clicked on the top card of the pile. Show the popin.
      */
     public onClickTopCard() {
-        if (this.selectionMode == 'top') {
-            (this.page as any).onSelectPileCard(this, this.peek()!.id);
-            return;
+        switch(this.selectionMode) {
+            case 'top':
+            case 'topIncludingEmpty':
+                (this.page as any).onSelectPileCard(this, this.peek()!.id);
+                break;
+            case 'noneCantViewContent':
+                break;
+            default:
+                this.openPopin();
+                break;
         }
-        if (this.selectionMode == 'noneCantViewContent') {
-            return;
+    }
+
+    /**
+     * User clicked on this pile
+     */
+    public onClickPlaceholder() {
+        if (this.size != 0) {
+            return; //already handled by onClickCard
         }
-        this.openPopin();
+        switch (this.selectionMode) {
+            case 'topIncludingEmpty':
+                (this.page as any).onSelectPileCard(this, undefined);
+                break;
+        }
     }
 
     public onUnselectPileCard(card_id: number) {

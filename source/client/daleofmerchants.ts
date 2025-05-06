@@ -981,6 +981,19 @@ class DaleOfMerchants extends Gamegui
 			case 'celestialGuidanceDiscard':
 				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
+			case 'fumblingDreamer':
+				const fumblingDreamer_args = args.args as {die_value1: number, die_value2: number};
+				if (fumblingDreamer_args.die_value1 == DaleDie.DIE_DISCARD) {
+					for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+						discard.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+					}
+				}
+				if (fumblingDreamer_args.die_value1 == DaleDie.DIE_DECK) {
+					for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+						deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+					}
+				}
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1374,6 +1387,14 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'celestialGuidanceDiscard':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'fumblingDreamer':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
 				break;
 		}
 		//(~leavingstate)
@@ -2821,9 +2842,9 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onSelectPileCard(pile: Pile, card_id: number) {
+	onSelectPileCard(pile: Pile, card_id?: number) {
 		console.warn("onSelectPileCard");
-		const card = new DaleCard(card_id);
+		const card = card_id === undefined ? undefined : new DaleCard(card_id);
 		if (pile === this.myDiscard) {
 			this.onSelectMyDiscardPileCard(pile, card);
 		}
@@ -2835,11 +2856,11 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onSelectMyDiscardPileCard(pile: Pile, card: DaleCard) {
+	onSelectMyDiscardPileCard(pile: Pile, card?: DaleCard) {
 		console.warn("onSelectMyDiscardPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
-				if (this.verifyChameleon(card, pile)) {
+				if (this.verifyChameleon(card!, pile)) {
 					this.onBuildSelectionChanged();
 				}
 				break;
@@ -2871,19 +2892,24 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'groundbreakingIdea':
 				this.bgaPerformAction('actGroundbreakingIdea', {
-					card_id: card.id
+					card_id: card!.id
 				})
 				.then(() => this.myDiscard.setSelectionMode('none')); //fixes the zindex for the discardToDeck animation
 				break;
 			case 'celestialGuidanceDiscard':
 				this.bgaPerformAction('actCelestialGuidanceDiscard', {
-					card_id: card.id
+					card_id: card!.id
+				})
+				break;
+			case 'fumblingDreamer':
+				this.bgaPerformAction('actFumblingDreamer', {
+					opponent_id: pile.getPlayerId()
 				})
 				break;
 		}
 	}
 
-	onSelectMarketPileCard(pile: Pile, card: DaleCard) {
+	onSelectMarketPileCard(pile: Pile, card?: DaleCard) {
 		console.warn("onSelectMarketPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
@@ -2908,40 +2934,45 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onOtherPileSelectionChanged(pile: Pile, card: DaleCard) {
+	onOtherPileSelectionChanged(pile: Pile, card?: DaleCard) {
 		console.warn("onOtherPileSelectionChanged");
 		switch(this.gamedatas.gamestate.name) {
 			case 'magnet':
 				this.bgaPerformAction('actMagnet', {
-					card_id: card.id
+					card_id: card!.id
 				})
 				break
 			case 'deprecated_cheer':
 				this.bgaPerformAction('actDeprecatedCheer', {
-					card_id: card.id
+					card_id: card!.id
 				})
 				this.myDeck.setSelectionMode('none');
 				break
 			case 'duplicateEntry':
 				this.bgaPerformAction('actDuplicateEntry', {
-					card_id: card.id
+					card_id: card!.id
 				})
 				break
 			case 'vigilance':
 				this.bgaPerformAction('actVigilance', {
-					card_id: card.id
+					card_id: card!.id
 				})
 				break
 			case 'manufacturedJoy':
 				this.mainClientState.enterOnStack('client_manufacturedJoy', {
-					draw_card_id: card.id,
+					draw_card_id: card!.id,
 					card_name: "Manufactured Joy"
 				});
 				//draw the card on the client-side (it is very important that this happens after switching states, otherwise the div will be detached)
-				this.myHand.addDaleCardToStock(card, this.myDeck.placeholderHTML);
+				this.myHand.addDaleCardToStock(card!, this.myDeck.placeholderHTML);
 				this.myDeck.pop();
 				this.myHandSize.incValue(1);
-				break
+				break;
+			case 'fumblingDreamer':
+				this.bgaPerformAction('actFumblingDreamer', {
+					opponent_id: pile.getPlayerId()
+				})
+				break;
 		}
 	}
 
