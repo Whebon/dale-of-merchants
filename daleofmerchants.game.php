@@ -234,6 +234,17 @@ class DaleOfMerchants extends DaleTableBasic
 ////////////    
 
     /**
+     * Validates that the parameter is a known player
+     */
+    function validatePlayerId($player_id) {
+        $players = $this->loadPlayersBasicInfos();
+        if (!isset($players[$player_id])) {
+            throw new BgaUserException($player_id._(" is not a valid player id"));
+        }
+        return $player_id;
+    }
+
+    /**
      * @return array notification args for private messages representing a single `$dbcard`
      */
     function getPrivateCardArgs($dbcard): array {
@@ -1501,6 +1512,8 @@ class DaleOfMerchants extends DaleTableBasic
             $d6_1 = rand(0, 5);
             $d6_2 = rand(0, 5);
         } while($unique_results && $map[$d6_1] == $map[$d6_2]);
+        $d6_1 = 5;
+        $d6_2 = 5;
         $value_1 = $this->rollDie('', ANIMALFOLK_PANGOLINS, $dbcard, $msg_args, $d6_1);
         $value_2 = $this->rollDie($msg, ANIMALFOLK_PANGOLINS+1, $dbcard, array_merge($msg_args, array("die_icon_source" => $value_1)), $d6_2);
         $this->setGameStateValue("die_value", $value_1);
@@ -3368,6 +3381,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ROTTENFOOD:
                 $opponent_id = $args["opponent_id"];
                 $card_id = $args["card_id"];
+                $this->validatePlayerId($opponent_id);
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Rotten food cannot be used to place cards on top of your own deck");
@@ -3382,12 +3396,14 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DIRTYEXCHANGE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDirtyExchange");
                 break;
             case CT_SABOTAGE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSabotage");
@@ -3432,6 +3448,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ACCIDENT:
                 //get args
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $card_ids = $args["card_ids"];
                 //get the non-selected cards and selected cards
                 $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
@@ -3455,6 +3472,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_WHIRLIGIG:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $nbr = $this->rollDie(
                     clienttranslate('Whirligig: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_OCELOTS,
@@ -3549,6 +3567,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_GAMBLE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $nbr = $this->rollDie(
                     clienttranslate('Gamble: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_OCELOTS,
@@ -3602,6 +3621,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_BLINDFOLD:
                 $this->beginResolvingCard($technique_card_id);
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 $this->addChameleonBindings($chameleons_json, $card_id); //the opponent will be notified of this, but that's ok I guess (see issue #92)
@@ -4153,6 +4173,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_GRASP:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $value = $args["value"];
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Grasp cannot target the active player");
@@ -4212,6 +4233,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_SUDDENNAP:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($cards) == 0) {
                     $this->notifyAllPlayers('message', clienttranslate('Sudden Nap: ${player_name} tried to ditch a card from ${opponent_name}, but their hand was empty'), array(
@@ -4236,6 +4258,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_PERISCOPE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Periscope cannot target the active player");
                 }
@@ -4309,6 +4332,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DELICACY:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Delicacy must be used on ANOTHER player");
                 }
@@ -4318,6 +4342,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_UMBRELLA:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Umbrella must be used on ANOTHER player");
                 }
@@ -4673,6 +4698,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trFumblingDreamer");
                 break;
+            case CT_LOOSEMARBLES:
+                $this->rollPangolinDice(
+                    clienttranslate('Loose Marbles: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
+                    $technique_card
+                );
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trLooseMarbles");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -4935,6 +4968,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_CUNNINGNEIGHBOUR:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->effects->insertModification($passive_card_id, CT_CUNNINGNEIGHBOUR);
                 if ($this->cards->countCardsInLocation(HAND.$opponent_id) > 0) {
@@ -6511,11 +6545,28 @@ class DaleOfMerchants extends DaleTableBasic
 
     function actFumblingDreamer($opponent_id) {
         $this->checkAction("actFumblingDreamer");
+        $this->validatePlayerId($opponent_id);
         $player_id = $this->getActivePlayerId();
         $this->_actPangolinDice($opponent_id, $opponent_id,
             clienttranslate('Fumbling Dreamer: ${player_name} moves a ${card_name} from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
             clienttranslate('Fumbling Dreamer: ${player_name} moves a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
             clienttranslate('Fumbling Dreamer: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+        );
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actLooseMarbles($source_id, $destination_id) {
+        $this->checkAction("actLooseMarbles");
+        $this->validatePlayerId($source_id);
+        $this->validatePlayerId($destination_id);
+        if ($source_id == $destination_id) {
+            throw new BgaUserException($this->_("Loose Marbles: the source and destination cannot be the same"));
+        }
+        $player_id = $this->getActivePlayerId();
+        $this->_actPangolinDice($source_id, $destination_id,
+            clienttranslate('Loose Marbles: ${card_name} moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Loose Marbles: a card moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Loose Marbles: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
         );
         $this->fullyResolveCard($player_id);
     }

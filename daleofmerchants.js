@@ -3983,7 +3983,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
     }());
     exports.MainClientState = MainClientState;
 });
-define("components/TargetingLine", ["require", "exports", "components/DaleCard", "components/Images"], function (require, exports, DaleCard_8, Images_8) {
+define("components/TargetingLine", ["require", "exports", "components/DaleCard"], function (require, exports, DaleCard_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TargetingLine = void 0;
@@ -3998,8 +3998,11 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             this.sourceClass = sourceClass;
             this.targetClass = targetClass;
             var thiz = this;
-            var source_id = source.id;
-            if (pile) {
+            var source_id = source instanceof DaleCard_8.DaleCard ? source.id : 0;
+            if (!(source instanceof DaleCard_8.DaleCard)) {
+                this.cardDiv = source;
+            }
+            else if (pile) {
                 this.pile = pile;
                 this.pile.closePopin();
                 this.cardDiv = source.toDiv();
@@ -4035,7 +4038,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
             }
             this.updateLine = function (evt) {
                 var _a, _b;
-                if (!document.body.contains(thiz.cardDiv)) {
+                if (!document.body.contains(thiz.cardDiv) && source instanceof DaleCard_8.DaleCard) {
                     if (!DaleCard_8.DaleCard.divs.has(source.id)) {
                         return;
                     }
@@ -4052,8 +4055,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                 (_b = thiz.prevTargetHover) === null || _b === void 0 ? void 0 : _b.classList.add("daleofmerchants-line-target", thiz.targetClass);
                 thiz.prevTargetHover = undefined;
                 thiz.prevTargetSnap = undefined;
-                var x1 = sourceRect.left + window.scrollX + Images_8.Images.CARD_WIDTH_S / 2;
-                var y1 = sourceRect.top + window.scrollY + Images_8.Images.CARD_HEIGHT_S / 2;
+                var x1 = sourceRect.left + window.scrollX + sourceRect.width / 2;
+                var y1 = sourceRect.top + window.scrollY + sourceRect.height / 2;
                 var x2 = evt.pageX;
                 var y2 = evt.pageY;
                 var _loop_5 = function (targetCard) {
@@ -4067,8 +4070,8 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard",
                                 var targetRect = currTarget.getBoundingClientRect();
                                 targetCard.classList.add("daleofmerchants-line-source", thiz.sourceClass);
                                 targetCard.classList.remove("daleofmerchants-line-target", thiz.targetClass);
-                                x2 = targetRect.left + window.scrollX + Images_8.Images.CARD_WIDTH_S / 2;
-                                y2 = targetRect.top + window.scrollY + Images_8.Images.CARD_HEIGHT_S / 2;
+                                x2 = targetRect.left + window.scrollX + targetRect.width / 2;
+                                y2 = targetRect.top + window.scrollY + targetRect.height / 2;
                                 thiz.line.setAttribute("x2", String(x2));
                                 thiz.line.setAttribute("y2", String(y2));
                             }
@@ -4284,7 +4287,19 @@ define("components/types/PrivateNotification", ["require", "exports"], function 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_9, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_7, CoinManager_1) {
+define("components/types/TranslatableStrings", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.TranslatableStrings = void 0;
+    var TranslatableStrings = (function () {
+        function TranslatableStrings() {
+        }
+        TranslatableStrings.please_select_a_different_player = _("Please select a different player");
+        return TranslatableStrings;
+    }());
+    exports.TranslatableStrings = TranslatableStrings;
+});
+define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_7, CoinManager_1, TranslatableStrings_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DaleOfMerchants = (function (_super) {
@@ -4464,7 +4479,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card));
                 }
                 this.myLimbo.setSelectionMode('none');
-                dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_9.Images.CARD_WIDTH_S + 'px');
+                dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_8.Images.CARD_WIDTH_S + 'px');
                 dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
                 dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
                 dojo.connect(this.myLimbo.orderedSelection, 'onUnselect', this, 'onUnselectLimboCard');
@@ -4472,7 +4487,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var player_id in gamedatas.schedules) {
                 var container = $('daleofmerchants-schedule-' + player_id);
                 var wrap = $('daleofmerchants-schedule-wrap-' + player_id);
-                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_9.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_8.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
                 this.playerSchedules[player_id].setSelectionMode('none');
@@ -4494,7 +4509,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var player_id in gamedatas.storedCards) {
                 var container = $('daleofmerchants-stored-cards-' + player_id);
                 var wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
-                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_9.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
                 this.playerStoredCards[player_id] = new DaleStock_1.DaleStock();
                 this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
                 this.playerStoredCards[player_id].setSelectionMode('none');
@@ -5462,6 +5477,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         deck.setSelectionMode('none');
                     }
                     break;
+                case 'looseMarbles':
+                    for (var _3 = 0, _4 = Object.entries(this.playerDiscards); _3 < _4.length; _3++) {
+                        var _5 = _4[_3], player_id = _5[0], discard = _5[1];
+                        discard.setSelectionMode('none');
+                    }
+                    for (var _6 = 0, _7 = Object.entries(this.playerDecks); _6 < _7.length; _6++) {
+                        var _8 = _7[_6], player_id = _8[0], deck = _8[1];
+                        deck.setSelectionMode('none');
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -6066,6 +6091,30 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'fumblingDreamer':
                     this.addActionButtonsOpponent(this.onFumblingDreamer.bind(this), true);
+                    break;
+                case 'looseMarbles':
+                    var looseMarbles_args = args;
+                    if (looseMarbles_args.die_value1 == DaleDie_2.DaleDie.DIE_DISCARD) {
+                        for (var _o = 0, _p = Object.entries(this.playerDiscards); _o < _p.length; _o++) {
+                            var _q = _p[_o], player_id = _q[0], discard = _q[1];
+                            discard.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                        }
+                    }
+                    if (looseMarbles_args.die_value1 == DaleDie_2.DaleDie.DIE_DECK) {
+                        for (var _r = 0, _s = Object.entries(this.playerDecks); _r < _s.length; _r++) {
+                            var _t = _s[_r], player_id = _t[0], deck = _t[1];
+                            deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                        }
+                    }
+                    if (looseMarbles_args.die_value1 == DaleDie_2.DaleDie.DIE_HAND) {
+                        this.addActionButtonsOpponent((function (opponent_id) {
+                            _this.onLooseMarblesBegin(opponent_id);
+                        }).bind(this), true);
+                    }
+                    else if (looseMarbles_args.die_value2 == DaleDie_2.DaleDie.DIE_HAND2) {
+                        var looseMarbles_fail_message_1 = _("Please select the top card of a pile first");
+                        this.addActionButtonsOpponent((function (opponent_id) { return _this.showMessage(looseMarbles_fail_message_1, "error"); }).bind(this), true);
+                    }
                     break;
             }
         };
@@ -6747,9 +6796,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     });
                     break;
                 case 'fumblingDreamer':
-                    this.bgaPerformAction('actFumblingDreamer', {
-                        opponent_id: pile.getPlayerId()
-                    });
+                    this.onFumblingDreamer(pile.getPlayerId());
+                    break;
+                case 'looseMarbles':
+                    this.onLooseMarblesBegin(pile.getPlayerId(), pile);
                     break;
             }
         };
@@ -6811,9 +6861,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHandSize.incValue(1);
                     break;
                 case 'fumblingDreamer':
-                    this.bgaPerformAction('actFumblingDreamer', {
-                        opponent_id: pile.getPlayerId()
-                    });
+                    this.onFumblingDreamer(pile.getPlayerId());
+                    break;
+                case 'looseMarbles':
+                    this.onLooseMarblesBegin(pile.getPlayerId(), pile);
                     break;
             }
         };
@@ -9163,6 +9214,82 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id,
             });
         };
+        DaleOfMerchants.prototype.onLooseMarblesBegin = function (opponent_id, pile) {
+            var _this = this;
+            var _a, _b, _c;
+            if (TargetingLine_1.TargetingLine.exists()) {
+                return;
+            }
+            this.onLeavingState(this.gamedatas.gamestate.name);
+            var source;
+            if (pile) {
+                pile.setSelectionMode('noneCantViewContent');
+                source = (_a = pile.topCardHTML) !== null && _a !== void 0 ? _a : pile.placeholderHTML;
+                this.removeActionButtons();
+            }
+            else {
+                source = $("opponent-selection-button-" + opponent_id);
+            }
+            var looseMarbles_args = this.gamedatas.gamestate.args;
+            var targets = [];
+            switch (looseMarbles_args.die_value2) {
+                case DaleDie_2.DaleDie.DIE_DISCARD2:
+                    for (var _i = 0, _d = Object.entries(this.playerDiscards); _i < _d.length; _i++) {
+                        var _e = _d[_i], player_id = _e[0], discard = _e[1];
+                        discard.setSelectionMode('noneCantViewContent');
+                        var target = (_b = discard.topCardHTML) !== null && _b !== void 0 ? _b : discard.placeholderHTML;
+                        if (+player_id != opponent_id) {
+                            target.dataset['target_id'] = player_id;
+                            targets.push(target);
+                        }
+                    }
+                    break;
+                case DaleDie_2.DaleDie.DIE_DECK2:
+                    for (var _f = 0, _g = Object.entries(this.playerDecks); _f < _g.length; _f++) {
+                        var _h = _g[_f], player_id = _h[0], deck = _h[1];
+                        deck.setSelectionMode('noneCantViewContent');
+                        var target = (_c = deck.topCardHTML) !== null && _c !== void 0 ? _c : deck.placeholderHTML;
+                        if (+player_id != opponent_id) {
+                            target.dataset['target_id'] = player_id;
+                            targets.push(target);
+                        }
+                    }
+                    break;
+                case DaleDie_2.DaleDie.DIE_HAND2:
+                    if (looseMarbles_args.die_value1 != DaleDie_2.DaleDie.DIE_HAND) {
+                        this.addActionButtonsOpponent((function (button_opponent_id) {
+                            if (button_opponent_id == opponent_id) {
+                                _this.showMessage(TranslatableStrings_1.TranslatableStrings.please_select_a_different_player, 'error');
+                            }
+                        }).bind(this), true);
+                    }
+                    for (var _j = 0, _k = Object.entries(this.playerHandSizes); _j < _k.length; _j++) {
+                        var _l = _k[_j], player_id = _l[0], _ = _l[1];
+                        var target = $("opponent-selection-button-" + player_id);
+                        target.childNodes.forEach(function (node) { return dojo.setStyle(node, 'pointer-events', 'none'); });
+                        if (+player_id != opponent_id) {
+                            target.dataset['target_id'] = player_id;
+                            targets.push(target);
+                        }
+                    }
+                    break;
+                default:
+                    throw new Error("Unexpected destination die roll: " + looseMarbles_args.die_value2);
+            }
+            new TargetingLine_1.TargetingLine(source, targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) {
+                _this.onLeavingState(_this.gamedatas.gamestate.name);
+                _this.removeActionButtons();
+                _this.onUpdateActionButtons(_this.gamedatas.gamestate.name, _this.gamedatas.gamestate.args);
+            }, function (source_id, target_id) {
+                _this.onLooseMarbles(opponent_id, target_id);
+            });
+        };
+        DaleOfMerchants.prototype.onLooseMarbles = function (source_id, destination_id) {
+            this.bgaPerformAction('actLooseMarbles', {
+                source_id: source_id,
+                destination_id: destination_id
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -9992,7 +10119,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (notif.args.to_bottom && deck.placeholderHTML && deck.topCardHTML) {
                 var cover_1 = deck.topCardHTML.cloneNode(true);
                 deck.placeholderHTML.appendChild(cover_1);
-                dojo.setStyle(cover_1, 'z-index', Images_9.Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD.toString());
+                dojo.setStyle(cover_1, 'z-index', Images_8.Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD.toString());
                 dojo.setStyle(cover_1, 'box-shadow', "0px 0px");
                 discard.pop(deck.placeholderHTML, function () {
                     deck.pushHiddenCards(1);

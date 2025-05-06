@@ -155,6 +155,7 @@ $machinestates = array(
 			'trCelestialGuidanceMarket' => 93,
 			'trCelestialGuidanceDiscard' => 94,
 			'trFumblingDreamer' => 95,
+			'trLooseMarbles' => 96,
 		),
 	),
 	31 => array(
@@ -706,6 +707,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argPangolinDice',
 		'possibleactions' => ['actFumblingDreamer'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	96 => array(
+		'name' => 'looseMarbles',
+		'description' => clienttranslate('Loose Marbles: ${actplayer} must move a card from a ${die_label_source} (${die_icon_source}) to another player\'s ${die_label} (${die_icon})'),
+		'descriptionmyturn' => clienttranslate('Loose Marbles: ${you} must move a card from a ${die_label_source} (${die_icon_source}) to another player\'s ${die_label} (${die_icon})'),
+		'type' => 'activeplayer',
+		'args' => 'argPangolinDice',
+		'possibleactions' => ['actLooseMarbles'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

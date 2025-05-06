@@ -41,7 +41,7 @@ export class TargetingLine {
      * @param onTarget callback function when a target is clicked
      * @param pile (optional) if provided, create a dummy source representing a card inside a pile
     */
-    constructor(source: DaleCard, targets: (DaleCard | HTMLElement)[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: number) => void, onTarget: (source_id: number, target_id: number) => void, pile?: Pile) {
+    constructor(source: DaleCard | HTMLElement, targets: (DaleCard | HTMLElement)[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: number) => void, onTarget: (source_id: number, target_id: number) => void, pile?: Pile) {
         TargetingLine.targetingLines.push(this);
         this.svg = $("daleofmerchants-svg-container")!.querySelector("svg")!;
         this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -52,8 +52,11 @@ export class TargetingLine {
         const thiz = this;
 
         //setup source
-        const source_id = source.id;
-        if (pile) {
+        let source_id = source instanceof DaleCard ? source.id : 0;
+        if (!(source instanceof DaleCard)) {
+            this.cardDiv = source;
+        }
+        else if (pile) {
             this.pile = pile;
             this.pile.closePopin();
             this.cardDiv = source.toDiv();
@@ -87,7 +90,7 @@ export class TargetingLine {
 
         //setup line
         this.updateLine = function(this: Window, evt: MouseEvent) {
-            if (!document.body.contains(thiz.cardDiv)) {
+            if (!document.body.contains(thiz.cardDiv) && source instanceof DaleCard) {
                 //the source is lost (this sometimes happens in 'fashionHint')
                 if (!DaleCard.divs.has(source.id)) {
                     return;
@@ -105,8 +108,8 @@ export class TargetingLine {
             thiz.prevTargetHover?.classList.add("daleofmerchants-line-target", thiz.targetClass);
             thiz.prevTargetHover = undefined;
             thiz.prevTargetSnap = undefined;
-            const x1 = sourceRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
-            const y1 = sourceRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
+            const x1 = sourceRect.left + window.scrollX + sourceRect.width/2; //+ Images.CARD_WIDTH_S/2;
+            const y1 = sourceRect.top + window.scrollY + sourceRect.height/2; //+ Images.CARD_HEIGHT_S/2;
             let x2 = evt.pageX;
             let y2 = evt.pageY;
             for (let targetCard of thiz.targetDivs) {
@@ -120,8 +123,8 @@ export class TargetingLine {
                             const targetRect = currTarget.getBoundingClientRect();
                             targetCard.classList.add("daleofmerchants-line-source", thiz.sourceClass);
                             targetCard.classList.remove("daleofmerchants-line-target", thiz.targetClass);
-                            x2 = targetRect.left + window.scrollX + Images.CARD_WIDTH_S/2;
-                            y2 = targetRect.top + window.scrollY + Images.CARD_HEIGHT_S/2;
+                            x2 = targetRect.left + window.scrollX + targetRect.width/2; //+ Images.CARD_WIDTH_S/2;
+                            y2 = targetRect.top + window.scrollY + targetRect.height/2; //+ Images.CARD_HEIGHT_S/2;
                             thiz.line.setAttribute("x2", String(x2));
                             thiz.line.setAttribute("y2", String(y2));
                         }

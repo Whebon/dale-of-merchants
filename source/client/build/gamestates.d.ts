@@ -202,6 +202,7 @@ interface GameStates {
 			'trCelestialGuidanceMarket': 93,
 			'trCelestialGuidanceDiscard': 94,
 			'trFumblingDreamer': 95,
+			'trLooseMarbles': 96,
 		},
 	},
 	31: {
@@ -1138,6 +1139,27 @@ interface GameStates {
 		'possibleactions': {
 			'actFumblingDreamer': [{
 				'name': 'opponent_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	96: {
+		'name': 'looseMarbles',
+		'description': 'Loose Marbles: ${actplayer} must move a card from a ${die_label_source} (${die_icon_source}) to another player\\\'s ${die_label} (${die_icon})',
+		'descriptionmyturn': 'Loose Marbles: ${you} must move a card from a ${die_label_source} (${die_icon_source}) to another player\\\'s ${die_label} (${die_icon})',
+		'type': 'activeplayer',
+		'args': 'argPangolinDice',
+		'possibleactions': {
+			'actLooseMarbles': [{
+				'name': 'source_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'destination_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],

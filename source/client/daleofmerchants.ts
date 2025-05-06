@@ -36,6 +36,7 @@ import { DaleDie } from './components/DaleDie';
 import { DaleIcons } from './components/DaleIcons';
 import { CoinManager } from './components/CoinManager';
 import { PrivateNotification } from './components/types/PrivateNotification'
+import { TranslatableStrings } from './components/types/TranslatableStrings'
 
 /** The root for all of your game code. */
 class DaleOfMerchants extends Gamegui
@@ -1396,6 +1397,14 @@ class DaleOfMerchants extends Gamegui
 					deck.setSelectionMode('none');
 				}
 				break;
+			case 'looseMarbles':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -2010,6 +2019,28 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'fumblingDreamer':
 				this.addActionButtonsOpponent(this.onFumblingDreamer.bind(this), true);
+				break;
+			case 'looseMarbles':
+				const looseMarbles_args = args as {die_value1: number, die_value2: number};
+				if (looseMarbles_args.die_value1 == DaleDie.DIE_DISCARD) {
+					for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+						discard.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+					}
+				}
+				if (looseMarbles_args.die_value1 == DaleDie.DIE_DECK) {
+					for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+						deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+					}
+				}
+				if (looseMarbles_args.die_value1 == DaleDie.DIE_HAND) {
+					this.addActionButtonsOpponent(((opponent_id: number) => {
+						this.onLooseMarblesBegin(opponent_id);
+					}).bind(this), true);
+				}
+				else if (looseMarbles_args.die_value2 == DaleDie.DIE_HAND2) {
+					const looseMarbles_fail_message = _("Please select the top card of a pile first");
+					this.addActionButtonsOpponent(((opponent_id: number) => this.showMessage(looseMarbles_fail_message, "error")).bind(this), true);
+				}
 				break;
 		}
 		//(~actionbuttons)
@@ -2902,9 +2933,10 @@ class DaleOfMerchants extends Gamegui
 				})
 				break;
 			case 'fumblingDreamer':
-				this.bgaPerformAction('actFumblingDreamer', {
-					opponent_id: pile.getPlayerId()
-				})
+				this.onFumblingDreamer(pile.getPlayerId());
+				break;
+			case 'looseMarbles':
+				this.onLooseMarblesBegin(pile.getPlayerId(), pile);
 				break;
 		}
 	}
@@ -2969,9 +3001,10 @@ class DaleOfMerchants extends Gamegui
 				this.myHandSize.incValue(1);
 				break;
 			case 'fumblingDreamer':
-				this.bgaPerformAction('actFumblingDreamer', {
-					opponent_id: pile.getPlayerId()
-				})
+				this.onFumblingDreamer(pile.getPlayerId());
+				break;
+			case 'looseMarbles':
+				this.onLooseMarblesBegin(pile.getPlayerId(), pile);
 				break;
 		}
 	}
@@ -5589,6 +5622,95 @@ class DaleOfMerchants extends Gamegui
 	onFumblingDreamer(opponent_id: number) {
 		this.bgaPerformAction('actFumblingDreamer', {
 			opponent_id: opponent_id,
+		});
+	}
+
+	onLooseMarblesBegin(opponent_id: number, pile?: Pile) {
+		if (TargetingLine.exists()) {
+			return;
+		}
+		
+		//remove the current selection modes
+		this.onLeavingState(this.gamedatas.gamestate.name);
+
+		//get the source (this should happen after "onLeavingState")
+		let source: HTMLElement;
+		if (pile) {
+			pile.setSelectionMode('noneCantViewContent');
+			source = pile.topCardHTML ?? pile.placeholderHTML;
+			this.removeActionButtons();
+		}
+		else {
+			source = $("opponent-selection-button-"+opponent_id)! as HTMLElement //source is a button
+		}
+
+		//get the targets
+		const looseMarbles_args = this.gamedatas.gamestate.args as {die_value1: number, die_value2: number};
+		const targets: (DaleCard | HTMLElement)[] = [];
+		switch (looseMarbles_args.die_value2) {
+			case DaleDie.DIE_DISCARD2:
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('noneCantViewContent');
+					const target = discard.topCardHTML ?? discard.placeholderHTML
+					if (+player_id != opponent_id) {
+						target.dataset['target_id'] = player_id;
+						targets.push(target);
+					}
+				}
+				break;
+			case DaleDie.DIE_DECK2:
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('noneCantViewContent');
+					const target = deck.topCardHTML ?? deck.placeholderHTML
+					if (+player_id != opponent_id) {
+						target.dataset['target_id'] = player_id;
+						targets.push(target);
+					}
+				}
+				break;
+			case DaleDie.DIE_HAND2:
+				if (looseMarbles_args.die_value1 != DaleDie.DIE_HAND) {
+					this.addActionButtonsOpponent(((button_opponent_id: number) => {
+						if (button_opponent_id == opponent_id) {
+							this.showMessage(TranslatableStrings.please_select_a_different_player, 'error');
+						}
+					}).bind(this), true);
+				}
+				for (const [player_id, _] of Object.entries(this.playerHandSizes)) {
+					const target = $("opponent-selection-button-"+player_id)! as HTMLElement;
+					target.childNodes.forEach((node) => dojo.setStyle(node as HTMLElement, 'pointer-events','none'));
+					if (+player_id != opponent_id) {
+						target.dataset['target_id'] = player_id;
+						targets.push(target);
+					}
+				}
+				break;
+			default:
+				throw new Error("Unexpected destination die roll: "+looseMarbles_args.die_value2);
+		}
+
+		//create the targeting line
+		new TargetingLine(
+			source,
+			targets,
+			"daleofmerchants-line-source-technique",
+			"daleofmerchants-line-target-technique",
+			"daleofmerchants-line-technique",
+			(source_id: number) => {
+				this.onLeavingState(this.gamedatas.gamestate.name);
+				this.removeActionButtons();
+				this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+			},
+			(source_id: number, target_id: number) => {
+				this.onLooseMarbles(opponent_id, target_id);
+			}
+		)
+	}
+
+	onLooseMarbles(source_id: number, destination_id: number) {
+		this.bgaPerformAction('actLooseMarbles', {
+			source_id: source_id,
+			destination_id: destination_id
 		});
 	}
 
