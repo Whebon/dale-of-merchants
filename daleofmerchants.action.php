@@ -634,6 +634,17 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actFumblingDreamer()
+	{
+		self::setAjaxMode();
+
+		/** @var int $opponent_id */
+		$opponent_id = self::getArg('opponent_id', AT_int, true);
+
+		$this->game->actFumblingDreamer( $opponent_id );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

@@ -54,7 +54,8 @@ class DaleOfMerchants extends DaleTableBasic
             "active_player_id" => 22,
             "die_value" => 23,
             "debugMode" => 24,
-            "animalfolk_id" => 25
+            "animalfolk_id" => 25,
+            "die_value2" => 26
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -117,6 +118,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("die_value", -1);
         $this->setGameStateInitialValue("debugMode", 0);
         $this->setGameStateInitialValue("animalfolk_id", 0);
+        $this->setGameStateInitialValue("die_value2", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -230,6 +232,25 @@ class DaleOfMerchants extends DaleTableBasic
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+    /**
+     * @return array notification args for private messages representing a single `$dbcard`
+     */
+    function getPrivateCardArgs($dbcard): array {
+        return array(
+            "_private" => $this->getPublicCardArgs($dbcard)
+        );
+    }
+
+    /**
+     * @return array notification args representing a single `$dbcard`
+     */
+    function getPublicCardArgs($dbcard): array {
+        return array(
+            "card" => $dbcard,
+            "card_name" => $this->getCardName($dbcard)
+        );
+    }
 
     /**
      * set the `"player_id_1"`, `"player_id_2"`, `"player_id_3"` and `"player_id_4"` game state labels
@@ -1467,15 +1488,42 @@ class DaleOfMerchants extends DaleTableBasic
     */
 
     /**
+     * Roll both pangolin dice and store the results in "die_value" and "die_value2" respectively
+     * @param string $msg log message to display, should include `"${die_icon_source}"` and `"${die_icon}"` for the first and second icon respectively
+     * @param array $dbcard the card to land the die on (for the client)
+     * @param bool $unique_results (optional) keep rerolling the dice until the results are different
+     * @param array $msg_args (optional) additional args
+     * @return array result of the 2 dice rolls
+     */
+    function rollPangolinDice(string $msg, array $dbcard, bool $unique_results = false, array $msg_args = array()) {
+        $map = array(0 => DIE_DISCARD, 1 => DIE_DISCARD, 2 => DIE_DECK, 3 => DIE_DECK, 4 => DIE_DECK, 5 => DIE_HAND);
+        do {
+            $d6_1 = rand(0, 5);
+            $d6_2 = rand(0, 5);
+        } while($unique_results && $map[$d6_1] == $map[$d6_2]);
+        $value_1 = $this->rollDie('', ANIMALFOLK_PANGOLINS, $dbcard, $msg_args, $d6_1);
+        $value_2 = $this->rollDie($msg, ANIMALFOLK_PANGOLINS+1, $dbcard, array_merge($msg_args, array("die_icon_source" => $value_1)), $d6_2);
+        $this->setGameStateValue("die_value", $value_1);
+        $this->setGameStateValue("die_value2", $value_2);
+        return [$value_1, $value_2];
+    }
+
+    /**
      * Roll the die of the given `animalfolk_id`
      * @param string $msg log message to display
      * @param int $animalfolk_id die type
      * @param array $dbcard the card to land the die on (for the client)
      * @param array $msg_args (optional) additional args
+     * @param int $d6 (optional) by default randomize a value in range [0, 5]. Otherwise, use the value provided by $d6
      * @return int result of the die roll
      */
-    function rollDie(string $msg, int $animalfolk_id, array $dbcard, array $msg_args = array()) {
-        $d6 = rand(0, 5);
+    function rollDie(string $msg, int $animalfolk_id, array $dbcard, array $msg_args = array(), $d6 = null) {
+        if ($d6 === null) {
+            $d6 = rand(0, 5);
+        }
+        if ($d6 < 0 || $d6 > 5) {
+            throw new BgaVisibleSystemException("Invalid die roll: ".$d6);
+        }
         $die_value = null;
         $die_label = null;
         $die_icon = null;
@@ -1555,16 +1603,16 @@ class DaleOfMerchants extends DaleTableBasic
                 switch($d6) {
                     case 0:
                     case 1:
-                        $die_value = DIE_DECK;
-                        $die_label = clienttranslate('deck');
-                        $die_icon = DIE_DECK;
+                        $die_value = DIE_DISCARD;
+                        $die_label = clienttranslate('discard');
+                        $die_icon = DIE_DISCARD;
                         break;
                     case 2:
                     case 3:
                     case 4:
-                        $die_value = DIE_DISCARD;
-                        $die_label = clienttranslate('discard');
-                        $die_icon = DIE_DISCARD;
+                        $die_value = DIE_DECK;
+                        $die_label = clienttranslate('deck');
+                        $die_icon = DIE_DECK;
                         break;
                     case 5:
                         $die_value = DIE_HAND;
@@ -1577,16 +1625,16 @@ class DaleOfMerchants extends DaleTableBasic
                 switch($d6) {
                     case 0:
                     case 1:
-                        $die_value = DIE_DECK2;
-                        $die_label = clienttranslate('deck');
-                        $die_icon = DIE_DECK2;
+                        $die_value = DIE_DISCARD2;
+                        $die_label = clienttranslate('discard');
+                        $die_icon = DIE_DISCARD2;
                         break;
                     case 2:
                     case 3:
                     case 4:
-                        $die_value = DIE_DISCARD2;
-                        $die_label = clienttranslate('discard');
-                        $die_icon = DIE_DISCARD2;
+                        $die_value = DIE_DECK2;
+                        $die_label = clienttranslate('deck');
+                        $die_icon = DIE_DECK2;
                         break;
                     case 5:
                         $die_value = DIE_HAND2;
@@ -4616,6 +4664,15 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unexpected ANIMALFOLK_HARES die roll: ".$value);
                 }
                 break;
+            case CT_FUMBLINGDREAMER:
+                $this->rollPangolinDice(
+                    clienttranslate('Fumbling Dreamer: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
+                    $technique_card,
+                    true
+                );
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trFumblingDreamer");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -6328,6 +6385,141 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    /**
+     * Helper function for pangolin actions. Moves a card from a source to a destination according to the dice game state variables.
+     * Messages may include: `${die_label_source}`, `${die_label}`, `${die_icon_source}`, `${die_label}`, `${player_name}`, `${opponent_name}`
+     * @param mixed $source_id player_id of the owner of the source
+     * @param mixed $destination_id player_id of the owner of the destination
+     * @param mixed $message message describing the action INCLUDING the name of the moved card (`${card_name}`
+     * @param mixed $message_without_card_name message describing the action EXCLUDING the name of the moved card (`${card_name}`
+     * @param mixed $message_empty_source message descibing that the action failed because the source is empty
+     */
+    function _actPangolinDice($source_id, $destination_id, $message, $message_without_card_name, $message_empty_source) {
+        //_actPangolinDice(2371803,2371802,'move ${card_name}','move <CARD_NAME_HIDDEN>','fail')
+        $args = array_merge(
+            $this->argPangolinDice(), //includes 'die_value1' and 'die_value2'
+            array(
+                "player_name" => $this->getPlayerNameById($source_id),
+                "opponent_name" => $this->getPlayerNameById($destination_id)
+            )
+        );
+
+        if ($args['die_value1'] == DIE_DISCARD) {
+            //Move from discard
+            $dbcard = $this->cards->getCardOnTop(DISCARD.$source_id);
+            if ($dbcard === null) {
+                $this->notifyAllPlayers('message', $message_empty_source, $args);
+            }
+            else if ($args['die_value2'] == DIE_DISCARD2) {
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$destination_id);
+                $this->notifyAllPlayers('discardToDiscard', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
+                    "from_player_id" => $source_id,
+                    "to_player_id" => $destination_id
+                )));
+            }
+            else if ($args['die_value2'] == DIE_DECK2) {
+                $this->cards->moveCardOnTop($dbcard["id"], DECK.$destination_id);
+                $this->notifyAllPlayers('discardToDeck', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
+                    "player_id" => $source_id,
+                    "opponent_id" => $destination_id
+                )));
+            }
+            else if ($args['die_value2'] == DIE_HAND2) {
+                $this->cards->moveCard($dbcard["id"], HAND.$destination_id);
+                $this->notifyAllPlayers('discardToHand', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
+                    "discard_id" => $source_id,
+                    "player_id" => $destination_id
+                )));
+            }
+            else {
+                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args['die_value2']);
+            }
+        }
+        else if ($args['die_value1'] == DIE_DECK) {
+            //Move from deck
+            $dbcard = $this->cards->getCardOnTop(DECK.$source_id);
+            if ($dbcard === null) {
+                $this->notifyAllPlayers('message', $message_empty_source, $args);
+            }
+            else if ($args['die_value2'] == DIE_DISCARD2) {
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$destination_id);
+                $this->notifyAllPlayers('deckToDiscard', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
+                    "opponent_id" => $source_id,
+                    "player_id" => $destination_id
+                )));
+            }
+            else if ($args['die_value2'] == DIE_DECK2) {
+                $this->cards->moveCardOnTop($dbcard["id"], DECK.$destination_id);
+                $this->notifyAllPlayers('deckToDeck', $message_without_card_name, array_merge($args, array(
+                    "from_player_id" => $source_id,
+                    "to_player_id" => $destination_id,
+                    "nbr" => 1,
+                    "card_name" => $this->getCardName($dbcard)
+                )));
+            }
+            else if ($args['die_value2'] == DIE_HAND2) {
+                $this->cards->moveCard($dbcard["id"], HAND.$destination_id);
+                $this->notifyAllPlayersWithPrivateArguments('draw', $message_without_card_name, array_merge($args, $this->getPrivateCardArgs($dbcard), array(
+                    "deck_player_id" => $source_id,
+                    "player_id" => $destination_id
+                )), $message);
+            }
+            else {
+                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args['die_value2']);
+            }
+        }
+        else if ($args['die_value1'] == DIE_HAND) {
+            //Move from hand
+            $dbcards = $this->cards->getCardsInLocation(HAND.$source_id);
+            $dbcard = null;
+            if (count($dbcards) > 0) {
+                $card_id = array_rand($dbcards);
+                $dbcard = $dbcards[$card_id];
+            }
+            if ($dbcard === null) {
+                $this->notifyAllPlayers('message', $message_empty_source, $args);
+            }
+            else if ($args['die_value2'] == DIE_DISCARD2) {
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$destination_id);
+                $this->notifyAllPlayers('discard', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
+                    "player_id" => $source_id,
+                    "discard_id" => $destination_id
+                )));
+            }
+            else if ($args['die_value2'] == DIE_DECK2) {
+                $this->cards->moveCardOnTop($dbcard["id"], DECK.$destination_id);
+                $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', $message_without_card_name, array_merge($args, $this->getPrivateCardArgs($dbcard), array(
+                    "player_id" => $source_id,
+                    "deck_player_id" => $destination_id
+                )), $message);
+            }
+            else if ($args['die_value2'] == DIE_HAND2) {
+                $this->cards->moveCard($dbcard["id"], HAND.$destination_id);
+                $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', $message_without_card_name, array_merge($args, $this->getPrivateCardArgs($dbcard), array(
+                    "opponent_id" => $source_id,
+                    "player_id" => $destination_id
+                )), $message);
+            }
+            else {
+                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args['die_value2']);
+            }
+        }
+        else {
+            throw new BgaVisibleSystemException("Unexpected source die roll: ".$args['die_value1']);
+        }
+    }
+
+    function actFumblingDreamer($opponent_id) {
+        $this->checkAction("actFumblingDreamer");
+        $player_id = $this->getActivePlayerId();
+        $this->_actPangolinDice($opponent_id, $opponent_id,
+            clienttranslate('Fumbling Dreamer: ${player_name} moves a ${card_name} from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
+            clienttranslate('Fumbling Dreamer: ${player_name} moves a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
+            clienttranslate('Fumbling Dreamer: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+        );
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -6532,6 +6724,47 @@ class DaleOfMerchants extends DaleTableBasic
     function argDie() {
         return array(
             'die_value' => $this->getGameStateValue("die_value")
+        );
+    }
+
+    function argPangolinDice() {
+        $die_value1 = (int)$this->getGameStateValue("die_value");
+        switch ($die_value1) {
+            case DIE_DISCARD:
+                $die_label_source = $this->_("discard");
+                break;
+            case DIE_DECK:
+                $die_label_source = $this->_("deck");
+                break;
+            case DIE_HAND:
+                $die_label_source = $this->_("hand");
+                break;
+            default:
+                $die_label_source = "MISSING LABEL";
+                break;
+        }
+        $die_value2 = (int)$this->getGameStateValue("die_value2");
+        switch ($die_value2) {
+            case DIE_DISCARD2:
+                $die_label = $this->_("discard");
+                break;
+            case DIE_DECK2:
+                $die_label = $this->_("deck");
+                break;
+            case DIE_HAND2:
+                $die_label = $this->_("hand");
+                break;
+            default:
+                $die_label = "MISSING LABEL";
+                break;
+        }
+        return array(
+            'die_label_source' => $die_label_source,
+            'die_label' => $die_label,
+            'die_icon_source' => $die_value1,
+            'die_icon' => $die_value2,
+            'die_value1' => $die_value1,
+            'die_value2' => $die_value2
         );
     }
 

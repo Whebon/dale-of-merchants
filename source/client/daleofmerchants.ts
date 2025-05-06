@@ -1987,6 +1987,9 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm"), "onBadOmenDeck");
 				this.addActionButton("undo-button", _("Undo"), "onBadOmenUndo", undefined, false, "gray");
 				break;
+			case 'fumblingDreamer':
+				this.addActionButtonsOpponent(this.onFumblingDreamer.bind(this), true);
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2254,6 +2257,12 @@ class DaleOfMerchants extends Gamegui
 			}
 
 			//parse die icon
+			if ('die_icon_source' in args) {
+				const iconTpl = DaleDie.getIconTpl(args['die_icon_source']);
+				args['die_icon_source'] = `<span class="daleofmerchants-log-span">${iconTpl}</span>`;
+			}
+
+			//parse die icon
 			if ('die_icon' in args) {
 				const iconTpl = DaleDie.getIconTpl(args['die_icon']);
 				args['die_icon'] = `<span class="daleofmerchants-log-span">${iconTpl}</span>`;
@@ -2491,9 +2500,9 @@ class DaleOfMerchants extends Gamegui
 	/**
 	 * Add selection buttons to select a single opponent
 	 */
-	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void) {
+	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void, include_player: boolean = false) {
 		for(let opponent_id of this.gamedatas.playerorder) {
-			if (opponent_id != this.player_id) {
+			if (include_player || opponent_id != this.player_id) {
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
 				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
@@ -5545,6 +5554,12 @@ class DaleOfMerchants extends Gamegui
 		});
 		this.mainClientState.leave();
 	}
+	
+	onFumblingDreamer(opponent_id: number) {
+		this.bgaPerformAction('actFumblingDreamer', {
+			opponent_id: opponent_id,
+		});
+	}
 
 	//(~on)
 
@@ -5598,6 +5613,7 @@ class DaleOfMerchants extends Gamegui
 			['ditchMultiple', 						500],
 			['discard', 							500],
 			['discardMultiple', 					750],
+			['placeOnDeck',							500, true],
 			['placeOnDeckMultiple', 				500, true],
 			['reshuffleDeck', 						1500],
 			['wilyFellow', 							500],
@@ -5614,6 +5630,7 @@ class DaleOfMerchants extends Gamegui
 			['instant_discardToDeck', 				1],
 			['discardToDeck', 						500],
 			['deckToDiscard', 						500],
+			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
 			['updateActionButtons',					1],
@@ -6154,6 +6171,25 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	notif_placeOnDeck(notif: NotifAs<'placeOnDeck'>) {
+		console.warn("placeOnDeck");
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+		if (notif.args._private) {
+			//you GIVE the card
+			const card = notif.args._private.card;
+			const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!;
+			this.stockToPile(card, stock, deck);
+		}
+		else  {
+			//animate card to deck
+			this.allDecks[notif.args.deck_player_id!]!.push(new DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
+		}
+		//update the hand sizes
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+		}
+	}
+
 	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
 		console.warn("placeOnDeckMultiple");
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -6561,6 +6597,16 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	notif_discardToDiscard(notif: NotifAs<'discardToDiscard'>) {
+		const discard1 = this.playerDiscards[notif.args.from_player_id]!;
+		const discard2 = this.playerDiscards[notif.args.to_player_id]!;
+		const topCard = discard1.pop();
+		discard2.push(topCard, discard1.placeholderHTML);
+		if (topCard.id != +notif.args.card.id) {
+			throw new Error(`Mismatch at the top of the discard pile: client found card ${topCard.id}, but server expected card ${notif.args.card.id}`);
+		}
+	}
+
 	notif_deckToDiscard(notif: NotifAs<'deckToDiscard'>) {
 		const discard = this.playerDiscards[notif.args.player_id]!;
 		const deck = this.playerDecks[notif.args.opponent_id ?? notif.args.player_id]!;
@@ -6570,6 +6616,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_rollDie(notif: NotifAs<'rollDie'>) {
+		console.warn("notif_rollDie", notif.args);
 		const card = DaleCard.of(notif.args.card);
 		const parent = DaleCard.divs.get(card.id); //only show die rolls of visible cards
 		if (parent) {

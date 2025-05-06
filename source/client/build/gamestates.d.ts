@@ -201,6 +201,7 @@ interface GameStates {
 			'trBadOmen': 92,
 			'trCelestialGuidanceMarket': 93,
 			'trCelestialGuidanceDiscard': 94,
+			'trFumblingDreamer': 95,
 		},
 	},
 	31: {
@@ -1107,6 +1108,23 @@ interface GameStates {
 		'possibleactions': {
 			'actCelestialGuidanceDiscard': [{
 				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	95: {
+		'name': 'fumblingDreamer',
+		'description': 'Fumbling Dreamer: ${actplayer} must choose a player to move a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})',
+		'descriptionmyturn': 'Fumbling Dreamer: ${you} must choose a player to move a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})',
+		'type': 'activeplayer',
+		'args': 'argPangolinDice',
+		'possibleactions': {
+			'actFumblingDreamer': [{
+				'name': 'opponent_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],

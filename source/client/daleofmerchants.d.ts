@@ -158,6 +158,11 @@ declare global {
 			from_player_id: number,
 			to_player_id: number,
 		}
+		'discardToDiscard': {
+			card: DbCard
+			from_player_id: number,
+			to_player_id: number
+		}
 		'deckToDiscard': {
 			card: DbCard
 			player_id: number,
@@ -229,6 +234,14 @@ declare global {
 			discard_id?: number, //by default, this is the same as player_id
 			from_limbo?: boolean,
 			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
+		}
+		'placeOnDeck': {
+			player_id: number
+			_private?: {
+				card: DbCard
+			}
+			deck_player_id: number | 'mark'
+			from_limbo?: boolean
 		}
 		'placeOnDeckMultiple': {
 			player_id: number

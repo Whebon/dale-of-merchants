@@ -154,6 +154,7 @@ $machinestates = array(
 			'trBadOmen' => 92,
 			'trCelestialGuidanceMarket' => 93,
 			'trCelestialGuidanceDiscard' => 94,
+			'trFumblingDreamer' => 95,
 		),
 	),
 	31 => array(
@@ -683,6 +684,17 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Celestial Guidance: ${you} must take a card from your discard pile'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actCelestialGuidanceDiscard'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	95 => array(
+		'name' => 'fumblingDreamer',
+		'description' => clienttranslate('Fumbling Dreamer: ${actplayer} must choose a player to move a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
+		'descriptionmyturn' => clienttranslate('Fumbling Dreamer: ${you} must choose a player to move a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
+		'type' => 'activeplayer',
+		'args' => 'argPangolinDice',
+		'possibleactions' => ['actFumblingDreamer'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

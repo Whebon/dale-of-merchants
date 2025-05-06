@@ -22,12 +22,12 @@ export class DaleDie {
     static readonly DIE_PLANET: number = 9;
     static readonly DIE_COMET: number = 10;
 
-    static readonly DIE_DECK: number = 11;
-    static readonly DIE_DISCARD: number = 12;
+    static readonly DIE_DISCARD: number = 11;
+    static readonly DIE_DECK: number = 12;
     static readonly DIE_HAND: number = 13;
 
-    static readonly DIE_DECK2: number = 14;
-    static readonly DIE_DISCARD2: number = 15;
+    static readonly DIE_DISCARD2: number = 14;
+    static readonly DIE_DECK2: number = 15;
     static readonly DIE_HAND2: number = 16;
 
     //TODO: safely remove this
@@ -54,7 +54,7 @@ export class DaleDie {
             case DaleDeckSelection.ANIMALFOLK_PANGOLINS:
                 this.type = 'pangolin1';
                 break;
-            case DaleDeckSelection.ANIMALFOLK_PANGOLINS+3:
+            case DaleDeckSelection.ANIMALFOLK_PANGOLINS+1:
                 this.type = 'pangolin2';
                 break;
             default:
@@ -63,6 +63,7 @@ export class DaleDie {
         this.parent = parentHTML;
         this.container = document.createElement('div');
         this.container.classList.add("daleofmerchants-die-container");
+        this.container.dataset['die_type'] = this.type;
         this.container.innerHTML = `
             <div class="daleofmerchants-die" type="${this.type}" side="1">
                 <div class="daleofmerchants-die-side daleofmerchants-die-side-1"></div>
@@ -89,7 +90,12 @@ export class DaleDie {
         if (resultLabel) {
             resultLabel.classList.remove('daleofmerchants-die-reveal');
             resultLabel.classList.add('daleofmerchants-die-hide');
-            resultLabel.innerHTML = `Rolled ${name_displayed}`;
+            if (this.type != 'pangolin1' && this.type != 'pangolin2') {
+                resultLabel.innerHTML = `Rolled ${name_displayed}`;
+            }
+            else {
+                resultLabel.innerHTML = name_displayed;
+            }
             setTimeout(() => {
               resultLabel.classList.add('daleofmerchants-die-reveal');
               resultLabel.classList.remove('daleofmerchants-die-hide');
@@ -97,10 +103,12 @@ export class DaleDie {
         }
 
         //fade out the die after 1500ms
-        const thiz = this;
-        setTimeout((() => {
-            dojo.fadeOut({node: thiz.container, onEnd: function (node: HTMLElement) { dojo.destroy(node);}}).play();
-        }), 1500)
+        if (this.type != 'pangolin1' && this.type != 'pangolin2') {
+            const thiz = this;
+            setTimeout((() => {
+                dojo.fadeOut({node: thiz.container, onEnd: function (node: HTMLElement) { dojo.destroy(node);}}).play();
+            }), 1500)
+        }
     }
 
     //TODO: safely remove this
@@ -181,7 +189,7 @@ export class DaleDie {
                 break;
             case DaleDie.DIE_HAND:
                 row = 3;
-                col = 6;
+                col = 5;
                 break;
             //pangolins2 (row = 4)
             case DaleDie.DIE_DISCARD2:
@@ -194,7 +202,7 @@ export class DaleDie {
                 break;
             case DaleDie.DIE_HAND2:
                 row = 4;
-                col = 6;
+                col = 5;
                 break;
         }
         return `<i class="daleofmerchants-die-side daleofmerchants-icon" style="background-position: -${col}00% -${row}00%;"></i>`

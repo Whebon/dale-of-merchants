@@ -715,6 +715,12 @@
     z-index: 700;
     transform: translateX(-50%);
 	min-width: 100%;
+	&[data-die_type="pangolin1"] {
+		left: 20%;
+	}
+	&[data-die_type="pangolin2"] {
+		left: 80%;
+	}
 }
 
 .daleofmerchants-die {
@@ -722,7 +728,6 @@
 	height: var(--die-size);
 	transform-style: preserve-3d;
 	transition: transform 1s ease-out;
-	cursor: pointer;
 	margin: auto;
 }
 
@@ -874,6 +879,7 @@
 .daleofmerchants-die-result {
 	margin-top: 20px;
 	display: inline-block;
+	white-space: nowrap;
 	position: relative;
 		color: white;
 		font-weight: bold;

@@ -250,11 +250,11 @@ if (!defined('DIE_STARS')) {
     define('DIE_STARS', 8);
     define('DIE_PLANET', 9);
     define('DIE_COMET', 10);
-    define('DIE_DECK', 11);
-    define('DIE_DISCARD', 12);
+    define('DIE_DISCARD', 11);
+    define('DIE_DECK', 12);
     define('DIE_HAND', 13);
-    define('DIE_DECK2', 14);
-    define('DIE_DISCARD2', 15);
+    define('DIE_DISCARD2', 14);
+    define('DIE_DECK2', 15);
     define('DIE_HAND2', 16);
 }
 
