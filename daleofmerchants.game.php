@@ -1512,8 +1512,6 @@ class DaleOfMerchants extends DaleTableBasic
             $d6_1 = rand(0, 5);
             $d6_2 = rand(0, 5);
         } while($unique_results && $map[$d6_1] == $map[$d6_2]);
-        $d6_1 = 5;
-        $d6_2 = 2;
         $value_1 = $this->rollDie('', ANIMALFOLK_PANGOLINS, $dbcard, $msg_args, $d6_1);
         $value_2 = $this->rollDie($msg, ANIMALFOLK_PANGOLINS+1, $dbcard, array_merge($msg_args, array("die_icon_source" => $value_1)), $d6_2);
         $this->setGameStateValue("die_value", $value_1);
