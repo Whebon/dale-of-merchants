@@ -94,6 +94,10 @@ declare global {
 			player_id: number
 			card_id: number
 		}
+		'shuffleDiscard': {
+			player_id: number
+			discardPile: {[card_id: number]: DbCard}
+		}
 		'reshuffleDeck': { 
 			market: boolean
 			player_id: number

@@ -156,6 +156,7 @@ $machinestates = array(
 			'trCelestialGuidanceDiscard' => 94,
 			'trFumblingDreamer' => 95,
 			'trLooseMarbles' => 96,
+			'trAnotherFineMess' => 97,
 		),
 	),
 	31 => array(
@@ -718,6 +719,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argPangolinDice',
 		'possibleactions' => ['actLooseMarbles'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	97 => array(
+		'name' => 'anotherFineMess',
+		'description' => clienttranslate('Another Fine Mess: ${actplayer} must move cards from a ${die_label_source} (${die_icon_source}) to another player\'s ${die_label} (${die_icon})'),
+		'descriptionmyturn' => clienttranslate('Another Fine Mess: ${you} must move cards from a ${die_label_source} (${die_icon_source}) to another player\'s ${die_label} (${die_icon})'),
+		'type' => 'activeplayer',
+		'args' => 'argPangolinDice',
+		'possibleactions' => ['actAnotherFineMess'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

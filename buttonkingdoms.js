@@ -5478,7 +5478,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'looseMarbles':
-                case 'anotherFineMess':
                     for (var _3 = 0, _4 = Object.entries(this.playerDiscards); _3 < _4.length; _3++) {
                         var _5 = _4[_3], player_id = _5[0], discard = _5[1];
                         discard.setSelectionMode('none');
@@ -6094,7 +6093,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonsOpponent(this.onFumblingDreamer.bind(this), true);
                     break;
                 case 'looseMarbles':
-                case 'anotherFineMess':
                     var looseMarbles_args = args;
                     if (looseMarbles_args.die_value1 == DaleDie_2.DaleDie.DIE_DISCARD) {
                         for (var _o = 0, _p = Object.entries(this.playerDiscards); _o < _p.length; _o++) {
@@ -6109,10 +6107,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     if (looseMarbles_args.die_value1 == DaleDie_2.DaleDie.DIE_HAND) {
-                        var looseMarbles_hand_label = this.gamedatas.gamestate.name == 'anotherFineMess' ?
-                            _("Click on your name in the top bar to move random cards from your hand") :
-                            _("Click on your name in the top bar to move a random card from your hand");
-                        this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', looseMarbles_hand_label);
                         this.addActionButtonsOpponent((function (opponent_id) {
                             _this.onLooseMarblesBegin(opponent_id);
                         }).bind(this), true);
@@ -6805,7 +6799,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onFumblingDreamer(pile.getPlayerId());
                     break;
                 case 'looseMarbles':
-                case 'anotherFineMess':
                     this.onLooseMarblesBegin(pile.getPlayerId(), pile);
                     break;
             }
@@ -6871,7 +6864,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onFumblingDreamer(pile.getPlayerId());
                     break;
                 case 'looseMarbles':
-                case 'anotherFineMess':
                     this.onLooseMarblesBegin(pile.getPlayerId(), pile);
                     break;
             }
@@ -9293,24 +9285,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onLooseMarbles = function (source_id, destination_id) {
-            switch (this.gamedatas.gamestate.name) {
-                case 'looseMarbles':
-                    console.warn("actLooseMarbles");
-                    this.bgaPerformAction('actLooseMarbles', {
-                        source_id: source_id,
-                        destination_id: destination_id
-                    });
-                    break;
-                case 'anotherFineMess':
-                    console.warn("actAnotherFineMess");
-                    this.bgaPerformAction('actAnotherFineMess', {
-                        source_id: source_id,
-                        destination_id: destination_id
-                    });
-                    break;
-                default:
-                    throw new Error("'onLooseMarbles' was called in an unexpected gamestate: '".concat(this.gamedatas.gamestate.name, "'"));
-            }
+            this.bgaPerformAction('actLooseMarbles', {
+                source_id: source_id,
+                destination_id: destination_id
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

@@ -666,6 +666,19 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actAnotherFineMess()
+	{
+		self::setAjaxMode();
+
+		/** @var int $source_id */
+		$source_id = self::getArg('source_id', AT_int, true);
+		/** @var int $destination_id */
+		$destination_id = self::getArg('destination_id', AT_int, true);
+
+		$this->game->actAnotherFineMess( $source_id, $destination_id );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

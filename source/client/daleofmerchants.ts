@@ -1398,6 +1398,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'looseMarbles':
+			case 'anotherFineMess':
 				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 					discard.setSelectionMode('none');
 				}
@@ -2021,6 +2022,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponent(this.onFumblingDreamer.bind(this), true);
 				break;
 			case 'looseMarbles':
+			case 'anotherFineMess':
 				const looseMarbles_args = args as {die_value1: number, die_value2: number};
 				if (looseMarbles_args.die_value1 == DaleDie.DIE_DISCARD) {
 					for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
@@ -2033,6 +2035,10 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				if (looseMarbles_args.die_value1 == DaleDie.DIE_HAND) {
+					const looseMarbles_hand_label = this.gamedatas.gamestate.name == 'anotherFineMess' ? 
+						_("Click on your name in the top bar to move random cards from your hand") :
+						_("Click on your name in the top bar to move a random card from your hand") ;
+					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', looseMarbles_hand_label);
 					this.addActionButtonsOpponent(((opponent_id: number) => {
 						this.onLooseMarblesBegin(opponent_id);
 					}).bind(this), true);
@@ -2936,6 +2942,7 @@ class DaleOfMerchants extends Gamegui
 				this.onFumblingDreamer(pile.getPlayerId());
 				break;
 			case 'looseMarbles':
+			case 'anotherFineMess':
 				this.onLooseMarblesBegin(pile.getPlayerId(), pile);
 				break;
 		}
@@ -3004,6 +3011,7 @@ class DaleOfMerchants extends Gamegui
 				this.onFumblingDreamer(pile.getPlayerId());
 				break;
 			case 'looseMarbles':
+			case 'anotherFineMess':
 				this.onLooseMarblesBegin(pile.getPlayerId(), pile);
 				break;
 		}
@@ -5708,10 +5716,24 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onLooseMarbles(source_id: number, destination_id: number) {
-		this.bgaPerformAction('actLooseMarbles', {
-			source_id: source_id,
-			destination_id: destination_id
-		});
+		switch(this.gamedatas.gamestate.name) {
+			case 'looseMarbles':
+				console.warn("actLooseMarbles");
+				this.bgaPerformAction('actLooseMarbles', {
+					source_id: source_id,
+					destination_id: destination_id
+				});
+				break;
+			case 'anotherFineMess':
+				console.warn("actAnotherFineMess");
+				this.bgaPerformAction('actAnotherFineMess', {
+					source_id: source_id,
+					destination_id: destination_id
+				});
+				break;
+			default:
+				throw new Error(`'onLooseMarbles' was called in an unexpected gamestate: '${this.gamedatas.gamestate.name}'`);
+		}
 	}
 
 	//(~on)
@@ -5768,6 +5790,7 @@ class DaleOfMerchants extends Gamegui
 			['discardMultiple', 					750],
 			['placeOnDeck',							500, true],
 			['placeOnDeckMultiple', 				500, true],
+			['shuffleDiscard',						500],
 			['reshuffleDeck', 						1500],
 			['wilyFellow', 							500],
 			['accidentShuffle', 					1750],
@@ -6458,6 +6481,19 @@ class DaleOfMerchants extends Gamegui
 		//update the hand sizes
 		if (stock === this.myHand) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
+		}
+	}
+
+	notif_shuffleDiscard(notif: NotifAs<'shuffleDiscard'>) {
+		const discard = this.playerDiscards[notif.args.player_id]!;
+		//pop old cards
+		while(discard.size > 0) {
+			discard.pop();
+		}
+		//push new cards
+		for (let i in notif.args.discardPile) {
+			const card = notif.args.discardPile[+i]!;
+			discard.push(DaleCard.of(card));
 		}
 	}
 

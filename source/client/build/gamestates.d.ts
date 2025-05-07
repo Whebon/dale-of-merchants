@@ -203,6 +203,7 @@ interface GameStates {
 			'trCelestialGuidanceDiscard': 94,
 			'trFumblingDreamer': 95,
 			'trLooseMarbles': 96,
+			'trAnotherFineMess': 97,
 		},
 	},
 	31: {
@@ -1155,6 +1156,27 @@ interface GameStates {
 		'args': 'argPangolinDice',
 		'possibleactions': {
 			'actLooseMarbles': [{
+				'name': 'source_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'destination_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	97: {
+		'name': 'anotherFineMess',
+		'description': 'Another Fine Mess: ${actplayer} must move cards from a ${die_label_source} (${die_icon_source}) to another player\\\'s ${die_label} (${die_icon})',
+		'descriptionmyturn': 'Another Fine Mess: ${you} must move cards from a ${die_label_source} (${die_icon_source}) to another player\\\'s ${die_label} (${die_icon})',
+		'type': 'activeplayer',
+		'args': 'argPangolinDice',
+		'possibleactions': {
+			'actAnotherFineMess': [{
 				'name': 'source_id',
 				'type': 'AT_int',
 				'typescriptType': number,

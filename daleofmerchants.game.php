@@ -1512,6 +1512,8 @@ class DaleOfMerchants extends DaleTableBasic
             $d6_1 = rand(0, 5);
             $d6_2 = rand(0, 5);
         } while($unique_results && $map[$d6_1] == $map[$d6_2]);
+        $d6_1 = 5;
+        $d6_2 = 2;
         $value_1 = $this->rollDie('', ANIMALFOLK_PANGOLINS, $dbcard, $msg_args, $d6_1);
         $value_2 = $this->rollDie($msg, ANIMALFOLK_PANGOLINS+1, $dbcard, array_merge($msg_args, array("die_icon_source" => $value_1)), $d6_2);
         $this->setGameStateValue("die_value", $value_1);
@@ -4704,6 +4706,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trLooseMarbles");
                 break;
+            case CT_ANOTHERFINEMESS:
+                $this->rollPangolinDice(
+                    clienttranslate('Another Fine Mess: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
+                    $technique_card
+                );
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trAnotherFineMess");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -6425,15 +6435,18 @@ class DaleOfMerchants extends DaleTableBasic
      * @param mixed $message message describing the action INCLUDING the name of the moved card (`${card_name}`
      * @param mixed $message_without_card_name message describing the action EXCLUDING the name of the moved card (`${card_name}`
      * @param mixed $message_empty_source message descibing that the action failed because the source is empty
+     * @param array $msg_args (optional) - additional args to display in the messages
+     * @return ?array $dbcard that was moved
      */
-    function _actPangolinDice($source_id, $destination_id, $message, $message_without_card_name, $message_empty_source) {
+    function _actPangolinDice($source_id, $destination_id, $message, $message_without_card_name, $message_empty_source, $msg_args = array()) {
         //_actPangolinDice(2371803,2371802,'move ${card_name}','move <CARD_NAME_HIDDEN>','fail')
         $args = array_merge(
             $this->argPangolinDice(), //includes 'die_value1' and 'die_value2'
             array(
                 "player_name" => $this->getPlayerNameById($source_id),
                 "opponent_name" => $this->getPlayerNameById($destination_id)
-            )
+            ),
+            $msg_args //important: has the power to override 'die_value1' and 'die_value2'
         );
 
         if ($args['die_value1'] == DIE_DISCARD) {
@@ -6539,6 +6552,7 @@ class DaleOfMerchants extends DaleTableBasic
         else {
             throw new BgaVisibleSystemException("Unexpected source die roll: ".$args['die_value1']);
         }
+        return $dbcard;
     }
 
     function actFumblingDreamer($opponent_id) {
@@ -6546,7 +6560,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->validatePlayerId($opponent_id);
         $player_id = $this->getActivePlayerId();
         $this->_actPangolinDice($opponent_id, $opponent_id,
-            clienttranslate('Fumbling Dreamer: ${player_name} moves a ${card_name} from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
+            clienttranslate('Fumbling Dreamer: ${player_name} moves a "${card_name}" from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
             clienttranslate('Fumbling Dreamer: ${player_name} moves a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
             clienttranslate('Fumbling Dreamer: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
         );
@@ -6558,14 +6572,102 @@ class DaleOfMerchants extends DaleTableBasic
         $this->validatePlayerId($source_id);
         $this->validatePlayerId($destination_id);
         if ($source_id == $destination_id) {
-            throw new BgaUserException($this->_("Loose Marbles: the source and destination cannot be the same"));
+            throw new BgaUserException($this->_("The source and destination cannot be the same"));
         }
         $player_id = $this->getActivePlayerId();
         $this->_actPangolinDice($source_id, $destination_id,
-            clienttranslate('Loose Marbles: ${card_name} moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Loose Marbles: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
             clienttranslate('Loose Marbles: a card moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
             clienttranslate('Loose Marbles: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
         );
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actAnotherFineMess($source_id, $destination_id) {
+        $this->checkAction("actAnotherFineMess");
+        $this->validatePlayerId($source_id);
+        $this->validatePlayerId($destination_id);
+        if ($source_id == $destination_id) {
+            throw new BgaUserException($this->_("The source and destination cannot be the same"));
+        }
+        $player_id = $this->getActivePlayerId();
+        $dice = $this->argPangolinDice();
+        //move first card
+        $first_card = $this->_actPangolinDice($source_id, $destination_id,
+            clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Another Fine Mess: 2 cards move from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Another Fine Mess: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+        );
+        if ($first_card) {
+            //move second card
+            $this->_actPangolinDice($source_id, $destination_id,
+                clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+                '', //already covered by "2 cards move"
+                clienttranslate('Another Fine Mess: moving a second card back is skipped because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+            );
+            //shuffle
+            switch ($dice["die_value2"]) {
+                case DIE_DISCARD2:
+                    $this->cards->shuffle(DISCARD.$destination_id);
+                    $this->notifyAllPlayers('shuffleDiscard', clienttranslate('Another Fine Mess: ${player_name} shuffles their discard before moving cards back'), array(
+                        "player_name" => $this->getPlayerNameById($destination_id),
+                        "player_id" => $destination_id,
+                        "discardPile" => $this->cards->getCardsInLocation(DISCARD.$destination_id, null, 'location_arg')
+                    ));
+                    break;
+                case DIE_DECK2:
+                    $this->cards->shuffle(DECK.$destination_id);
+                    $this->notifyAllPlayers('message', clienttranslate('Another Fine Mess: ${player_name} shuffles their deck before moving cards back'), array(
+                        "player_name" => $this->getPlayerNameById($destination_id),
+                        "player_id" => $destination_id
+                    ));
+                    $this->delay500ms();
+                    break;
+                case DIE_HAND2:
+                    break;
+                default:
+                    throw new BgaVisibleSystemException("Another Fine Mess: error during shuffling, unexpected destination: ".$dice["die_value2"]);
+            }
+        }
+        //swap the dice values
+        $die_value1 = $dice["die_value1"];
+        switch($dice["die_value2"]) {
+            case DIE_DISCARD2:
+                $dice["die_value1"] = DIE_DISCARD;
+                break;
+            case DIE_DECK2:
+                $dice["die_value1"] = DIE_DECK;
+                break;
+            case DIE_HAND2:
+                $dice["die_value1"] = DIE_HAND;
+                break;
+        }
+        switch($die_value1) {
+            case DIE_DISCARD:
+                $dice["die_value2"] = DIE_DISCARD2;
+                break;
+            case DIE_DECK:
+                $dice["die_value2"] = DIE_DECK2;
+                break;
+            case DIE_HAND:
+                $dice["die_value2"] = DIE_HAND2;
+                break;
+        }
+        //move 2 cards back (note that the icons in the strings are reversed)
+        $first_card_back = $this->_actPangolinDice($destination_id, $source_id,
+            clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+            clienttranslate('Another Fine Mess: 2 cards move from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+            '', //if this location is really empty, this message is already covered by "nothing happens" on the first card
+            $dice
+        );
+        if ($first_card_back) {
+            $this->_actPangolinDice($destination_id, $source_id,
+            clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+            '', //already covered by "2 cards move"
+            clienttranslate('Another Fine Mess: moving a second card back is skipped because ${player_name}\'s ${die_label} (${die_icon}) is empty'),
+            $dice
+        );
+        }
         $this->fullyResolveCard($player_id);
     }
 
