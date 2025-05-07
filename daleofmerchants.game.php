@@ -6609,7 +6609,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->_actPangolinDice($source_id, $destination_id,
                 clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
                 '', //already covered by "2 cards move"
-                clienttranslate('Another Fine Mess: moving a second card back is skipped because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+                clienttranslate('Another Fine Mess: moving a second card is skipped because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
             );
             //shuffle
             switch ($dice["die_value2"]) {
