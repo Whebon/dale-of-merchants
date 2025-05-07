@@ -234,7 +234,17 @@ class DaleOfMerchants extends DaleTableBasic
 ////////////    
 
     /**
-     * Validates that the parameter is a known player
+     * Validates that the parameter is a registered opponent (and NOT the current player)
+     */
+    function validateOpponentId($opponent_id) {
+        if ($opponent_id == $this->getActivePlayerId()) {
+            throw new BgaUserException($this->_("Please select another player, not yourself"));
+        }
+        return $this->validatePlayerId($opponent_id);
+    }
+
+    /**
+     * Validates that the parameter is a registered player
      */
     function validatePlayerId($player_id) {
         $players = $this->loadPlayersBasicInfos();
@@ -3387,11 +3397,8 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ROTTENFOOD:
                 $opponent_id = $args["opponent_id"];
                 $card_id = $args["card_id"];
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                if ($opponent_id == $player_id) {
-                    throw new BgaVisibleSystemException("Rotten food cannot be used to place cards on top of your own deck");
-                }
                 $this->placeOnDeckMultiple(
                     $opponent_id, 
                     clienttranslate('Rotten food: ${player_name} places a card on top of ${opponent_name}\'s deck'),
@@ -3402,14 +3409,14 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DIRTYEXCHANGE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDirtyExchange");
                 break;
             case CT_SABOTAGE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSabotage");
@@ -3454,7 +3461,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ACCIDENT:
                 //get args
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $card_ids = $args["card_ids"];
                 //get the non-selected cards and selected cards
                 $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
@@ -3478,7 +3485,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_WHIRLIGIG:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $nbr = $this->rollDie(
                     clienttranslate('Whirligig: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_OCELOTS,
@@ -3573,7 +3580,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_GAMBLE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $nbr = $this->rollDie(
                     clienttranslate('Gamble: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_OCELOTS,
@@ -3627,7 +3634,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_BLINDFOLD:
                 $this->beginResolvingCard($technique_card_id);
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 $this->addChameleonBindings($chameleons_json, $card_id); //the opponent will be notified of this, but that's ok I guess (see issue #92)
@@ -4179,7 +4186,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_GRASP:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $value = $args["value"];
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Grasp cannot target the active player");
@@ -4239,7 +4246,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_SUDDENNAP:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($cards) == 0) {
                     $this->notifyAllPlayers('message', clienttranslate('Sudden Nap: ${player_name} tried to ditch a card from ${opponent_name}, but their hand was empty'), array(
@@ -4264,7 +4271,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_PERISCOPE:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Periscope cannot target the active player");
                 }
@@ -4338,7 +4345,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DELICACY:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Delicacy must be used on ANOTHER player");
                 }
@@ -4348,7 +4355,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_UMBRELLA:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Umbrella must be used on ANOTHER player");
                 }
@@ -5010,7 +5017,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_CUNNINGNEIGHBOUR:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
-                $this->validatePlayerId($opponent_id);
+                $this->validateOpponentId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->effects->insertModification($passive_card_id, CT_CUNNINGNEIGHBOUR);
                 if ($this->cards->countCardsInLocation(HAND.$opponent_id) > 0) {
