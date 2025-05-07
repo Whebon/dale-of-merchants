@@ -126,6 +126,8 @@ export class MainClientState {
                 return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
             case 'client_selectOpponentTechnique':
                 return _("${card_name}: ${you} must choose an opponent"); //e.g. sabotage
+            case 'client_selectPlayerTechnique':
+                return _("${card_name}: ${you} must choose a player"); //e.g. fresh start
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
             case 'client_choicelessTriggerTechniqueCard':

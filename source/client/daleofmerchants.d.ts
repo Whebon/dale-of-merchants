@@ -430,6 +430,7 @@ declare global {
 		'client_fizzle': { fizzle: boolean }
 		'client_choicelessTechniqueCard': { choiceless: boolean }
 		'client_selectOpponentTechnique': { opponent_id: number }
+		'client_selectPlayerTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }
 		'client_acorn': { stall_player_id: number, stall_card_id: number }

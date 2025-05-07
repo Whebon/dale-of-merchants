@@ -4720,6 +4720,34 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trAnotherFineMess");
                 break;
+            case CT_FRESHSTART:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
+                //shuffle discard into deck
+                $count = $this->cards->countCardInLocation(DISCARD.$opponent_id);
+                if ($count > 0) {
+                    $this->cards->moveAllCardsInLocation(DISCARD.$opponent_id, DECK.$opponent_id);
+                    $this->cards->shuffle(DECK.$opponent_id);
+                    $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Fresh Start: ${player_name} shuffles their discard into their deck'), array(
+                        "market" => false,
+                        "player_id" => $opponent_id,
+                        "player_name" => $this->getPlayerNameById($opponent_id)
+                    ));
+                }
+                else {
+                    $this->cards->shuffle(DECK.$opponent_id);
+                    $this->notifyAllPlayers('message', clienttranslate('Fresh Start: ${player_name} shuffles their deck'), array(
+                        "player_name" => $this->getPlayerNameById($opponent_id)
+                    ));
+                }
+                //draw a card
+                $this->draw(
+                    clienttranslate('Fresh Start: ${player_name} draws a card from ${opponent_name}\'s deck'), 
+                    1, false, $opponent_id, $player_id,
+                    clienttranslate('Fresh Start: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+                );
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

@@ -1502,6 +1502,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponent(this.onSelectOpponentTechnique.bind(this));
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_selectPlayerTechnique':
+				this.addActionButtonsOpponent(this.onSelectPlayerTechnique.bind(this), true);
+				this.addActionButtonCancelClient();
+				break;
 			case 'client_selectOpponentPassive':
 				this.addActionButtonsOpponent(this.onSelectOpponentPassive.bind(this));
 				this.addActionButtonCancelClient();
@@ -3816,6 +3820,9 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_selectOpponentTechnique', card.id);
 				}
 				break;
+			case DaleCard.CT_FRESHSTART:
+				this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+				break;
 			case DaleCard.CT_TREASUREHUNTER:
 				fizzle = true;
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
@@ -4697,6 +4704,12 @@ class DaleOfMerchants extends Gamegui
 
 	onSelectOpponentTechnique(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_selectOpponentTechnique'>({
+			opponent_id: opponent_id
+		})
+	}
+
+	onSelectPlayerTechnique(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_selectPlayerTechnique'>({
 			opponent_id: opponent_id
 		})
 	}

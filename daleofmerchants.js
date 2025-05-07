@@ -3744,6 +3744,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: Are you sure you want to resolve this technique without any effects?");
                     case 'client_selectOpponentTechnique':
                         return _("${card_name}: ${you} must choose an opponent");
+                    case 'client_selectPlayerTechnique':
+                        return _("${card_name}: ${you} must choose a player");
                     case 'client_choicelessTechniqueCard':
                         return _("${card_name}: ${you} may play this card as a technique");
                     case 'client_choicelessTriggerTechniqueCard':
@@ -5576,6 +5578,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_selectOpponentTechnique':
                     this.addActionButtonsOpponent(this.onSelectOpponentTechnique.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_selectPlayerTechnique':
+                    this.addActionButtonsOpponent(this.onSelectPlayerTechnique.bind(this), true);
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_selectOpponentPassive':
@@ -7558,6 +7564,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_selectOpponentTechnique', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_FRESHSTART:
+                    this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+                    break;
                 case DaleCard_10.DaleCard.CT_TREASUREHUNTER:
                     fizzle = true;
                     for (var _i = 0, _a = Object.entries(this.playerDiscards); _i < _a.length; _i++) {
@@ -8402,6 +8411,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onSelectOpponentTechnique = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
+            });
+        };
+        DaleOfMerchants.prototype.onSelectPlayerTechnique = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
             });
