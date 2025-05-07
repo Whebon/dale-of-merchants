@@ -2726,6 +2726,14 @@ class DaleOfMerchants extends DaleTableBasic
         die("player_name = ".$this->getPlayerNameById($player_id));
     }
 
+    function debugNotificationOrder() {
+        $player_id = $this->getActivePlayerId();
+        $this->notifyAllPlayers('message', clienttranslate('1: all'), array());
+        $this->notifyPlayer($player_id, 'message', clienttranslate('2: player'), array());
+        $this->notifyAllPlayers('message', clienttranslate('3: all'), array());
+        $this->notifyPlayer($player_id, 'message', clienttranslate('4: player'), array());
+    }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
 //////////// 
