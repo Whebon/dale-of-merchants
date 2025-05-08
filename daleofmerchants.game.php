@@ -2191,6 +2191,7 @@ class DaleOfMerchants extends DaleTableBasic
         else {
             $this->gamestate->nextState("trNextPlayer");
         }
+        $this->notifyPlayer($player_id, 'message', '', array()); //workaround for issue #129
     }
 
     /**
@@ -2742,6 +2743,22 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyPlayer($player_id, 'message', clienttranslate('2: player'), array());
         $this->notifyAllPlayers('message', clienttranslate('3: all'), array());
         $this->notifyPlayer($player_id, 'message', clienttranslate('4: player'), array());
+    }
+
+    function debugUpdatingGameSituation() {
+        $player_id = $this->getActivePlayerId();
+        $this->notifyAllPlayers('delay', '1: public', array());
+        $this->notifyAllPlayers('delay', '2: public', array());
+        $this->notifyAllPlayers('delay', '3: public', array());
+        $this->notifyPlayer($player_id, 'delay', '4: private', array());
+        $this->notifyAllPlayers('delay', '5: public', array());
+        $this->notifyAllPlayers('delay', '6: public', array());
+        $this->notifyAllPlayers('delay', '7: public', array());
+        $this->notifyPlayer($player_id, 'delay', '8: private', array()); //after this notification, "Updating game situation..." disappears
+        $this->notifyAllPlayers('delay', '9: public', array());
+        $this->notifyAllPlayers('delay', '10: public', array());
+        $this->notifyAllPlayers('delay', '11: public', array());
+        //$this->notifyPlayer($player_id, 'message', '12: private', array()); //placing another private notification here extends "Updating game situation..." 
     }
 
 //////////////////////////////////////////////////////////////////////////////
