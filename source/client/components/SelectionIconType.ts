@@ -1,1 +1,1 @@
-export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | 'cheese' | 'numbers' | 'hand' | 'naturalSurvivor' | 'historyLesson' | 'resourcefulAlly' | 'travelingEquipment' | undefined;
+export type SelectionIconType = 'pileBlue' | 'pileYellow' | 'pileRed' | 'ditch' | 'build' | 'spyglass' | 'cheese' | 'numbers' | 'hand' | 'naturalSurvivor' | 'duplicateEntry' | 'historyLesson' | 'resourcefulAlly' | 'travelingEquipment' | undefined;

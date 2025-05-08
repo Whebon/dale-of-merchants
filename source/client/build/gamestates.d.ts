@@ -629,19 +629,19 @@ interface GameStates {
 	},
 	68: {
 		'name': 'duplicateEntry',
-		'description': 'Duplicate Entry: ${actplayer} may ditch a card from their deck',
-		'descriptionmyturn': 'Duplicate Entry: ${you} may ditch a card from your deck',
+		'description': 'Duplicate Entry: ${actplayer} must search your deck for 2 cards',
+		'descriptionmyturn': 'Duplicate Entry: ${you} must search your deck for 2 cards',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContent',
 		'possibleactions': {
 			'actDuplicateEntry': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {
-			'trSamePlayer': 30,
+			'trBadOmen': 92,
 		},
 	},
 	69: {
@@ -1081,10 +1081,11 @@ interface GameStates {
 	},
 	92: {
 		'name': 'badOmen',
-		'description': 'Bad Omen: ${actplayer} may ditch a card',
-		'descriptionmyturn': 'Bad Omen: ${you} may ditch a card',
+		'description': '${resolving_card_name}: ${actplayer} may ditch a card',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may ditch a card',
 		'type': 'activeplayer',
 		'action': 'stBadOmen',
+		'args': 'argResolvingCardName',
 		'possibleactions': {
 			'actBadOmen': [{
 				'name': 'ditch_card_id',

@@ -539,9 +539,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
      * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
      * @param string $private_message (optional) by default, send the public message - if provided, send a special private message
+     * @param array $msg_args (optional) - additional args to display in the `$msg`
      * @return int how much cards were actually drawn (`<= $nbr`)
      */
-    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, string $private_message = null) {
+    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, string $private_message = null, array $msg_args = array()) {
         if ($from_player_id == null) {
             $from_player_id = $this->getActivePlayerId();
         }
@@ -552,7 +553,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($nbr == 1) {
             $card = $this->cards->pickCardForLocation(DECK.$from_player_id, $to_location);
             if ($card) {
-                $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array(
+                $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array_merge(array(
                     "player_id" => $to_player_id,
                     "player_name" => $this->getPlayerNameById($to_player_id),
                     "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameById($from_player_id),
@@ -563,7 +564,7 @@ class DaleOfMerchants extends DaleTableBasic
                     ),
                     "deck_player_id" => $from_player_id,
                     "to_limbo" => $to_limbo
-                ), $private_message);
+                ), $msg_args), $private_message);
                 return 1;
             }
             return 0;
@@ -572,7 +573,7 @@ class DaleOfMerchants extends DaleTableBasic
             $cards = $this->cards->pickCardsForLocation($nbr, DECK.$from_player_id, $to_location);
             $actual_nbr = count($cards);
             if ($actual_nbr > 0)
-            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array(
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array_merge(array(
                 "player_id" => $to_player_id,
                 "player_name" => $this->getPlayerNameById($to_player_id),
                 "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameById($from_player_id),
@@ -582,7 +583,7 @@ class DaleOfMerchants extends DaleTableBasic
                 ),
                 "deck_player_id" => $from_player_id,
                 "to_limbo" => $to_limbo
-            ), $private_message);
+            ), $msg_args), $private_message);
             return $actual_nbr;
         }
     }
@@ -604,7 +605,8 @@ class DaleOfMerchants extends DaleTableBasic
             $to_player_id = $this->getActivePlayerId();
         }
         $card = $this->cards->getCardFromLocation($card_id, DECK.$from_player_id);
-        $this->cards->moveCard($card_id, HAND.$to_player_id);
+        $location = $to_limbo ? LIMBO.$to_player_id : HAND.$to_player_id;
+        $this->cards->moveCard($card_id, $location);
         $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array(
             "player_id" => $to_player_id,
             "player_name" => $this->getPlayerNameById($to_player_id),
@@ -2706,9 +2708,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function getResolvingCard(){
         $resolvingCard = $this->getGameStateValue("resolvingCard");
-        $card = $this->cards->getCard($resolvingCard);
-        $name = $this->getCardName($card);
-        $this->clientConsoleLog("Currently resolving a $name (card $resolvingCard)");
+        return $this->cards->getCard($resolvingCard);
     }
 
     /**
@@ -4014,7 +4014,12 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_DUPLICATEENTRY:
                 $this->beginResolvingCard($technique_card_id);
                 $this->reshuffleDeckForSearch($player_id, 1);
-                $this->gamestate->nextState("trDuplicateEntry");
+                if ($this->cards->countCardInLocation(DECK.$player_id) > 2) {
+                    $this->gamestate->nextState("trDuplicateEntry"); //let the player choose 2 cards
+                }
+                else {
+                    $this->gamestate->nextState("trBadOmen"); //exactly the same as badOmen
+                }
                 break;
             case CT_HISTORYLESSON:
                 $card_ids = $args["card_ids"];
@@ -5735,13 +5740,22 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actDuplicateEntry($card_id) {
+    function actDuplicateEntry($card_ids) {
         $this->checkAction("actDuplicateEntry");
         $player_id = $this->getActivePlayerId();
-        if ($card_id != -1) {
-            $this->ditchFromDeck(clienttranslate('Duplicate Entry: ${player_name} ditches ${card_name} from their deck'), $card_id);
+        $card_ids = $this->numberListToArray($card_ids);
+        if (count($card_ids) != 2) {
+            //otherwise, this game state should have be skipped. CT_DUPLICATEENTRY should have moved to badOmen immediately.
+            throw new BgaUserException("Duplicate Entry expects exactly 2 cards");
         }
-        $this->fullyResolveCard($player_id);
+        foreach ($card_ids as $card_id) {
+            $this->drawCardId('', $card_id, true);
+        }
+        $this->notifyAllPlayers('message', clienttranslate('Duplicate Entry: ${player_name} sets 2 cards aside'), array(
+            "player_name" => $this->getPlayerNameById($player_id)
+        ));
+        $this->gamestate->nextState("trBadOmen");
+        $this->notifyPlayer($player_id, 'message', '', array()); //workaround for issue #129
     }
 
     function actCulturalPreservation($card_ids) {
@@ -6461,11 +6475,13 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actBadOmen");
         $player_id = $this->getActivePlayerId();
         $deck_card_ids = $this->numberListToArray($deck_card_ids);
+        $resolving_card_name = $this->getCurrentResolvingCardName();
 
         //ditch a card
         if ($ditch_card_id != -1) {
             $ditch_card = $this->cards->getCardFromLocation($ditch_card_id, LIMBO.$player_id);
-            $this->ditch(clienttranslate('Bad Omen: ${player_name} ditches their ${card_name}'), $ditch_card, true, array(
+            $this->ditch(clienttranslate('${resolving_card_name}: ${player_name} ditches their ${card_name}'), $ditch_card, true, array(
+                "resolving_card_name" => $resolving_card_name,
                 "instant_ditch" => true,
                 "ignore_card_not_found" => true
             ));
@@ -6481,11 +6497,12 @@ class DaleOfMerchants extends DaleTableBasic
         //place the other cards on top of the deck
         $this->placeOnDeckMultiple(
             $player_id, 
-            clienttranslate('Bad Omen: ${player_name} places ${nbr} cards back on top of their deck'),
+            clienttranslate('${resolving_card_name}: ${player_name} places ${nbr} cards back on top of their deck'),
             $deck_card_ids, 
             $selected_cards, 
             $non_selected_cards,
-            true
+            true,
+            array("resolving_card_name" => $resolving_card_name)
         );
         $this->fullyResolveCard($player_id);
     }
@@ -7092,6 +7109,13 @@ class DaleOfMerchants extends DaleTableBasic
         );
     }
 
+    function argResolvingCardName() {
+        $resolving_card_name = $this->getCurrentResolvingCardName();
+        return array(
+            'resolving_card_name' => $resolving_card_name
+        );
+    }
+
     function argResourcefulAlly() {
         $player_id = $this->getActivePlayerId();
         return array(
@@ -7620,11 +7644,46 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stBadOmen() {
-        $nbr = $this->draw(clienttranslate('Bad Omen: ${player_name} draws 3 cards'), 3, true);
-        if ($nbr == 0) {
-            //bad omen has no effect
-            $this->fullyResolveCard($this->getActivePlayerId());
+        $dbcard = $this->getResolvingCard();
+        $type_id = (int)$this->getTypeId($dbcard);
+        switch ($type_id) {
+            case CT_BADOMEN:
+                $nbr = $this->draw(clienttranslate('Bad Omen: ${player_name} draws ${nbr} cards'), 3, true);
+                if ($nbr == 0) {
+                    //bad omen has no effect
+                    $this->fullyResolveCard($this->getActivePlayerId());
+                }
+                break;
+            case CT_DUPLICATEENTRY:
+                $player_id = $this->getActivePlayerId();
+                $nbr = $this->cards->countCardsInLocation(LIMBO.$player_id);
+                if ($nbr == 0) {
+                    $nbr = $this->draw(clienttranslate('Duplicate Entry: ${player_name} draws ${nbr} cards'), 2, true);
+                    if ($nbr == 0) {
+                        //duplicate entry has no effect
+                        $this->fullyResolveCard($this->getActivePlayerId());
+                    }
+                }
+                break;
+            default:
+                throw new BgaVisibleSystemException("stBadOmen: unexpected resolving card with type_id = ".$type_id);
         }
+
+        //TODO safely delete this
+        // $player_id = $this->getActivePlayerId();
+        // $nbr = $this->cards->countCardsInLocation(LIMBO.$player_id);
+        // if ($nbr > 0) {
+        //     //there are already cards in limbo
+        //     return;
+        // }
+        // //if no cards are in limbo, attempt to draw 3 cards
+        // $nbr = $this->draw(clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} cards'), 3, true, $player_id, $player_id, null, array(
+        //     "resolving_card_name" => $this->getCurrentResolvingCardName()
+        // ));
+        // if ($nbr == 0) {
+        //     //bad omen has no effect
+        //     $this->fullyResolveCard($this->getActivePlayerId());
+        // }
     }
 
     //(~st)

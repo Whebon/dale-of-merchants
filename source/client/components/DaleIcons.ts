@@ -27,6 +27,10 @@ export class DaleIcons {
     ////////    ALIASES    ////////
     ///////////////////////////////
 
+    public static getDuplicateEntry(): HTMLElement {
+        return this.getHandIcon(); //TODO: should be a 'put aside' icon (these cards are moved to limbo)
+    }
+
     public static getNaturalSurvivorIcon(): HTMLElement {
         return this.getHandIcon(); //TODO: should be a 'deck' icon (these cards are moved from the hand to the deck)
     }

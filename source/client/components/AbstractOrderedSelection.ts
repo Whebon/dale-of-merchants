@@ -92,6 +92,9 @@ export abstract class AbstractOrderedSelection {
             case 'naturalSurvivor':
                 icon = DaleIcons.getNaturalSurvivorIcon();
                 break;
+            case 'duplicateEntry':
+                icon = DaleIcons.getDuplicateEntry();
+                break;
             case 'historyLesson':
                 icon = DaleIcons.getHistoryLessonIcon();
                 break;

@@ -758,7 +758,10 @@ class DaleOfMerchants extends Gamegui
 			case 'duplicateEntry':
 				const duplicateEntry_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard.of));
-				this.myDeck.setSelectionMode('single');
+				this.myDeck.setSelectionMode('multiple', 'duplicateEntry', 'daleofmerchants-wrap-technique', 2);
+				this.myDeck.openPopin();
+				//early setup for badOmen
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>")); 
 				break;
 			case 'client_historyLesson':
 				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
@@ -1766,7 +1769,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
 				break;
 			case 'duplicateEntry':
-				this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
+				this.addActionButton("confirm-button", _("Confirm"), "onDuplicateEntry");
 				break;
 			case 'client_historyLesson':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
@@ -3041,11 +3044,6 @@ class DaleOfMerchants extends Gamegui
 				})
 				this.myDeck.setSelectionMode('none');
 				break
-			case 'duplicateEntry':
-				this.bgaPerformAction('actDuplicateEntry', {
-					card_id: card!.id
-				})
-				break
 			case 'vigilance':
 				this.bgaPerformAction('actVigilance', {
 					card_id: card!.id
@@ -3391,9 +3389,10 @@ class DaleOfMerchants extends Gamegui
 					//warning: if specialty/trap cards exist, this should go somewhere else
 					this.myLimbo.removeFromStockById(card.id);
 				}
+				const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 				this.mainClientState.enterOnStack('client_badOmen', {
 					ditch_card_id: card.id,
-					card_name: "Bad Omen"
+					card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
 				});
 				break;
 		}
@@ -5158,9 +5157,9 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
-	onDuplicateEntrySkip() {
+	onDuplicateEntry() {
 		this.bgaPerformAction('actDuplicateEntry', {
-			card_id: -1
+			card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
 		});
 	}
 
@@ -5680,9 +5679,10 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onBadOmenSkip() {
+		const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 		this.mainClientState.enterOnStack('client_badOmen', {
 			ditch_card_id: -1,
-			card_name: "Bad Omen"
+			card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
 		});
 	}
 

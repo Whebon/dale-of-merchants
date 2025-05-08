@@ -356,10 +356,10 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
 
-		$this->game->actDuplicateEntry( $card_id );
+		$this->game->actDuplicateEntry( $card_ids );
 		self::ajaxResponse();
 	}
 

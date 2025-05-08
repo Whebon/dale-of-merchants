@@ -46,6 +46,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
             return icon;
         };
+        DaleIcons.getDuplicateEntry = function () {
+            return this.getHandIcon();
+        };
         DaleIcons.getNaturalSurvivorIcon = function () {
             return this.getHandIcon();
         };
@@ -412,6 +415,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'naturalSurvivor':
                     icon = DaleIcons_1.DaleIcons.getNaturalSurvivorIcon();
+                    break;
+                case 'duplicateEntry':
+                    icon = DaleIcons_1.DaleIcons.getDuplicateEntry();
                     break;
                 case 'historyLesson':
                     icon = DaleIcons_1.DaleIcons.getHistoryLessonIcon();
@@ -4855,7 +4861,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'duplicateEntry':
                     var duplicateEntry_args = args.args;
                     this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard_10.DaleCard.of));
-                    this.myDeck.setSelectionMode('single');
+                    this.myDeck.setSelectionMode('multiple', 'duplicateEntry', 'daleofmerchants-wrap-technique', 2);
+                    this.myDeck.openPopin();
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'client_historyLesson':
                     this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
@@ -5851,7 +5859,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Confirm"), "onNaturalSurvivor");
                     break;
                 case 'duplicateEntry':
-                    this.addActionButton("skip-button", _("Skip"), "onDuplicateEntrySkip", undefined, false, 'gray');
+                    this.addActionButton("confirm-button", _("Confirm"), "onDuplicateEntry");
                     break;
                 case 'client_historyLesson':
                     this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
@@ -6902,11 +6910,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     });
                     this.myDeck.setSelectionMode('none');
                     break;
-                case 'duplicateEntry':
-                    this.bgaPerformAction('actDuplicateEntry', {
-                        card_id: card.id
-                    });
-                    break;
                 case 'vigilance':
                     this.bgaPerformAction('actVigilance', {
                         card_id: card.id
@@ -7144,7 +7147,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onSelectLimboCard = function (card_id) {
             var _this = this;
-            var _a, _b;
+            var _a, _b, _c;
             console.warn("onSelectLimboCard: " + card_id);
             var card = new DaleCard_10.DaleCard(card_id);
             switch (this.gamedatas.gamestate.name) {
@@ -7157,8 +7160,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (!TargetingLine_1.TargetingLine.exists()) {
                         var nightShift_args = this.gamedatas.gamestate.args;
                         var nightShift_targets = [];
-                        for (var _i = 0, _c = nightShift_args.player_ids; _i < _c.length; _i++) {
-                            var player_id = _c[_i];
+                        for (var _i = 0, _d = nightShift_args.player_ids; _i < _d.length; _i++) {
+                            var player_id = _d[_i];
                             var deck = this.playerDecks[player_id];
                             var target = (_a = deck.topCardHTML) !== null && _a !== void 0 ? _a : deck.placeholderHTML;
                             target.dataset['target_id'] = String(player_id);
@@ -7191,8 +7194,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'anchor':
                 case 'shakyEnterprise':
                     var anchor_targets = [];
-                    for (var _d = 0, _e = Object.entries(this.playerDiscards); _d < _e.length; _d++) {
-                        var _f = _e[_d], player_id = _f[0], discard = _f[1];
+                    for (var _e = 0, _f = Object.entries(this.playerDiscards); _e < _f.length; _e++) {
+                        var _g = _f[_e], player_id = _g[0], discard = _g[1];
                         var target = (_b = discard.topCardHTML) !== null && _b !== void 0 ? _b : discard.placeholderHTML;
                         target.dataset['target_id'] = player_id;
                         anchor_targets.push(target);
@@ -7210,9 +7213,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     else {
                         this.myLimbo.removeFromStockById(card.id);
                     }
+                    var badOmen_args = this.gamedatas.gamestate.args;
                     this.mainClientState.enterOnStack('client_badOmen', {
                         ditch_card_id: card.id,
-                        card_name: "Bad Omen"
+                        card_name: (_c = badOmen_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME"
                     });
                     break;
             }
@@ -8823,9 +8827,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 deck_card_ids: this.arrayToNumberList(deck_card_ids)
             });
         };
-        DaleOfMerchants.prototype.onDuplicateEntrySkip = function () {
+        DaleOfMerchants.prototype.onDuplicateEntry = function () {
             this.bgaPerformAction('actDuplicateEntry', {
-                card_id: -1
+                card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
             });
         };
         DaleOfMerchants.prototype.onHistoryLesson = function () {
@@ -9275,9 +9279,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onBadOmenSkip = function () {
+            var _a;
+            var badOmen_args = this.gamedatas.gamestate.args;
             this.mainClientState.enterOnStack('client_badOmen', {
                 ditch_card_id: -1,
-                card_name: "Bad Omen"
+                card_name: (_a = badOmen_args.resolving_card_name) !== null && _a !== void 0 ? _a : "MISSING CARD NAME"
             });
         };
         DaleOfMerchants.prototype.onBadOmenUndo = function () {

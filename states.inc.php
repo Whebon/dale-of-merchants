@@ -405,13 +405,13 @@ $machinestates = array(
 	),
 	68 => array(
 		'name' => 'duplicateEntry',
-		'description' => clienttranslate('Duplicate Entry: ${actplayer} may ditch a card from their deck'),
-		'descriptionmyturn' => clienttranslate('Duplicate Entry: ${you} may ditch a card from your deck'),
+		'description' => clienttranslate('Duplicate Entry: ${actplayer} must search your deck for 2 cards'),
+		'descriptionmyturn' => clienttranslate('Duplicate Entry: ${you} must search your deck for 2 cards'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actDuplicateEntry'],
 		'transitions' => array(
-			'trSamePlayer' => 30,
+			'trBadOmen' => 92,
 		),
 	),
 	69 => array(
@@ -673,10 +673,11 @@ $machinestates = array(
 	),
 	92 => array(
 		'name' => 'badOmen',
-		'description' => clienttranslate('Bad Omen: ${actplayer} may ditch a card'),
-		'descriptionmyturn' => clienttranslate('Bad Omen: ${you} may ditch a card'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may ditch a card'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may ditch a card'),
 		'type' => 'activeplayer',
 		'action' => 'stBadOmen',
+		'args' => 'argResolvingCardName',
 		'possibleactions' => ['actBadOmen'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
