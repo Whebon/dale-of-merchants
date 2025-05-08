@@ -6641,7 +6641,7 @@ class DaleOfMerchants extends DaleTableBasic
         );
         if ($first_card) {
             //move second card
-            $this->_actPangolinDice($source_id, $destination_id,
+            $second_card = $this->_actPangolinDice($source_id, $destination_id,
                 clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
                 '', //already covered by "2 cards move"
                 clienttranslate('Another Fine Mess: moving a second card is skipped because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
@@ -6669,45 +6669,45 @@ class DaleOfMerchants extends DaleTableBasic
                 default:
                     throw new BgaVisibleSystemException("Another Fine Mess: error during shuffling, unexpected destination: ".$dice["die_value2"]);
             }
-        }
-        //swap the dice values
-        $die_value1 = $dice["die_value1"];
-        switch($dice["die_value2"]) {
-            case DIE_DISCARD2:
-                $dice["die_value1"] = DIE_DISCARD;
-                break;
-            case DIE_DECK2:
-                $dice["die_value1"] = DIE_DECK;
-                break;
-            case DIE_HAND2:
-                $dice["die_value1"] = DIE_HAND;
-                break;
-        }
-        switch($die_value1) {
-            case DIE_DISCARD:
-                $dice["die_value2"] = DIE_DISCARD2;
-                break;
-            case DIE_DECK:
-                $dice["die_value2"] = DIE_DECK2;
-                break;
-            case DIE_HAND:
-                $dice["die_value2"] = DIE_HAND2;
-                break;
-        }
-        //move 2 cards back (note that the icons in the strings are reversed)
-        $first_card_back = $this->_actPangolinDice($destination_id, $source_id,
-            clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
-            clienttranslate('Another Fine Mess: 2 cards move from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
-            '', //if this location is really empty, this message is already covered by "nothing happens" on the first card
-            $dice
-        );
-        if ($first_card_back) {
+            //swap the dice values
+            $die_value1 = $dice["die_value1"];
+            switch($dice["die_value2"]) {
+                case DIE_DISCARD2:
+                    $dice["die_value1"] = DIE_DISCARD;
+                    break;
+                case DIE_DECK2:
+                    $dice["die_value1"] = DIE_DECK;
+                    break;
+                case DIE_HAND2:
+                    $dice["die_value1"] = DIE_HAND;
+                    break;
+            }
+            switch($die_value1) {
+                case DIE_DISCARD:
+                    $dice["die_value2"] = DIE_DISCARD2;
+                    break;
+                case DIE_DECK:
+                    $dice["die_value2"] = DIE_DECK2;
+                    break;
+                case DIE_HAND:
+                    $dice["die_value2"] = DIE_HAND2;
+                    break;
+            }
+            //move 2 cards back (note that the icons in the strings are reversed)
             $this->_actPangolinDice($destination_id, $source_id,
-            clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
-            '', //already covered by "2 cards move"
-            clienttranslate('Another Fine Mess: moving a second card back is skipped because ${player_name}\'s ${die_label} (${die_icon}) is empty'),
-            $dice
-        );
+                clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                clienttranslate('Another Fine Mess: 2 cards move from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                '', //impossible, because $first_card moved here
+                $dice
+            );
+            if ($second_card) {
+                $this->_actPangolinDice($destination_id, $source_id,
+                    clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                    '', //already covered by "2 cards move"
+                    '', //impossible, because $second_card moved here
+                    $dice
+                );
+            }
         }
         $this->fullyResolveCard($player_id);
     }
