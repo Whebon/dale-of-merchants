@@ -157,6 +157,7 @@ $machinestates = array(
 			'trFumblingDreamer' => 95,
 			'trLooseMarbles' => 96,
 			'trAnotherFineMess' => 97,
+			'trCoffeeGrinder' => 101,
 		),
 	),
 	31 => array(
@@ -350,7 +351,7 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Cunning Neighbour: ${you} are looking at ${opponent_name}\'s hand'),
 		'type' => 'activeplayer',
 		'action' => 'stCunningNeighbour',
-		'args' => 'argOpponentName',
+		'args' => 'argOpponentNameAndPassiveCardId',
 		'possibleactions' => ['actCunningNeighbour'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
@@ -750,6 +751,17 @@ $machinestates = array(
 		'action' => 'stGameEnd',
 		'args' => 'argGameEnd',
 		'updateGameProgression' => true,
+	),
+	101 => array(
+		'name' => 'coffeeGrinder',
+		'description' => clienttranslate('Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Coffee Grinder: ${you} may discard another card from ${opponent_name}\'s deck'),
+		'type' => 'activeplayer',
+		'args' => 'argOpponentNameAndPassiveCardId',
+		'possibleactions' => ['actCoffeeGrinder'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
 	),
 	6300 => array(
 		'name' => 'deprecated_cheer',

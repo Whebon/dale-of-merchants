@@ -204,6 +204,7 @@ interface GameStates {
 			'trFumblingDreamer': 95,
 			'trLooseMarbles': 96,
 			'trAnotherFineMess': 97,
+			'trCoffeeGrinder': 101,
 		},
 	},
 	31: {
@@ -532,7 +533,7 @@ interface GameStates {
 		'descriptionmyturn': 'Cunning Neighbour: ${you} are looking at ${opponent_name}\\\'s hand',
 		'type': 'activeplayer',
 		'action': 'stCunningNeighbour',
-		'args': 'argOpponentName',
+		'args': 'argOpponentNameAndPassiveCardId',
 		'possibleactions': {
 			'actCunningNeighbour': [{
 				'name': 'place_on_deck',
@@ -1207,6 +1208,23 @@ interface GameStates {
 		'args': 'argGameEnd',
 		'updateGameProgression': true,
 		'argsType': object,
+	},
+	101: {
+		'name': 'coffeeGrinder',
+		'description': 'Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Coffee Grinder: ${you} may discard another card from ${opponent_name}\\\'s deck',
+		'type': 'activeplayer',
+		'args': 'argOpponentNameAndPassiveCardId',
+		'possibleactions': {
+			'actCoffeeGrinder': [{
+				'name': 'skip',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
 	},
 	6300: {
 		'name': 'deprecated_cheer',

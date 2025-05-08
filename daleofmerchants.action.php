@@ -679,6 +679,17 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actCoffeeGrinder()
+	{
+		self::setAjaxMode();
+
+		/** @var bool $skip */
+		$skip = self::getArg('skip', AT_bool, true);
+
+		$this->game->actCoffeeGrinder( $skip );
+		self::ajaxResponse();
+	}
+
 	public function actDeprecatedCheer()
 	{
 		self::setAjaxMode();

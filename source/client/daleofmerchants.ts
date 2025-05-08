@@ -995,6 +995,14 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case 'client_selectPlayerPassive':
+				const client_selectPlayerPassive_args = this.mainClientState.args as ClientGameStates['client_selectPlayerPassive'];
+				if (client_selectPlayerPassive_args.via_deck) {
+					for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+						deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+					}
+				}
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1011,6 +1019,10 @@ class DaleOfMerchants extends Gamegui
 		if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
 			console.warn("this.chameleonArgs => don't turn off selection modes");
 			return;
+		}
+
+		if (this.gamedatas.gamestate.args && 'passive_card_id' in this.gamedatas.gamestate.args) {
+			this.setPassiveSelected((this.gamedatas.gamestate.args as any).passive_card_id, false);
 		}
 
 		//turn off selection mode(s)
@@ -1406,6 +1418,15 @@ class DaleOfMerchants extends Gamegui
 					deck.setSelectionMode('none');
 				}
 				break;
+			case 'client_selectPlayerPassive':
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
+				break;
+			case 'coffeeGrinder':
+				const coffeeGrinder_args = (this.gamedatas.gamestate.args as { opponent_id: number });
+				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -1417,6 +1438,10 @@ class DaleOfMerchants extends Gamegui
 
 		if(!this.isCurrentPlayerActive())
 			return;
+
+		if (this.gamedatas.gamestate.args && 'passive_card_id' in this.gamedatas.gamestate.args) {
+			this.setPassiveSelected((this.gamedatas.gamestate.args as any).passive_card_id, true);
+		}
 
 		switch( stateName )
 		{
@@ -1508,6 +1533,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectOpponentPassive':
 				this.addActionButtonsOpponent(this.onSelectOpponentPassive.bind(this));
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_selectPlayerPassive':
+				this.addActionButtonsOpponent(this.onSelectPlayerPassive.bind(this), true);
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_treasureHunter':
@@ -2052,6 +2081,12 @@ class DaleOfMerchants extends Gamegui
 					this.addActionButtonsOpponent(((opponent_id: number) => this.showMessage(looseMarbles_fail_message, "error")).bind(this), true);
 				}
 				break;
+			case 'coffeeGrinder':
+				this.addActionButton("confirm-button", _("Discard"), "onCoffeeGrinderDiscard");
+				this.addActionButton("skip-button", _("Skip"), "onCoffeeGrinderSkip", undefined, false, 'gray');
+				const coffeeGrinder_args = (args as { opponent_id: number });
+				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2279,6 +2314,21 @@ class DaleOfMerchants extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
+
+    /**
+     * (de)select the specified passive card
+     */
+    public setPassiveSelected(passive_card_id: number, enable: boolean) {
+		const div = DaleCard.divs.get(+passive_card_id);
+		if (div) {
+			if (enable) {
+				div.classList.add("daleofmerchants-passive-selected");
+			}
+			else {
+				div.classList.remove("daleofmerchants-passive-selected");
+			}
+		}
+    }
 
 	/**
 	 * Set standard selection modes for purchase-based client states
@@ -3018,6 +3068,15 @@ class DaleOfMerchants extends Gamegui
 			case 'anotherFineMess':
 				this.onLooseMarblesBegin(pile.getPlayerId(), pile);
 				break;
+			case 'client_selectPlayerPassive':
+				const client_selectPlayerPassive_args = this.mainClientState.args as ClientGameStates['client_selectPlayerPassive'];
+				if (client_selectPlayerPassive_args.via_deck) {
+					this.onSelectPlayerPassive(pile.getPlayerId());
+				}
+				break;
+			case 'coffeeGrinder':
+				this.onCoffeeGrinderDiscard();
+				break;
 		}
 	}
 
@@ -3547,12 +3606,15 @@ class DaleOfMerchants extends Gamegui
 	 * Use a passive for its ability
 	 */
 	playPassiveCard<K extends keyof ClientPassiveChoice>(args: ClientPassiveChoice[K]) {
-		console.log(args);
 		this.bgaPerformAction('actUsePassiveAbility', {
 			card_id: (this.mainClientState.args as ClientGameStates[K]).passive_card_id, 
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
+		const argsPassive = this.mainClientState.args as PassiveClientStates[K];
+		if (argsPassive.keep_passive_selected) {
+			argsPassive.passive_card_id = 0;
+		}
 		this.mainClientState.leave();
 	}
 
@@ -4380,10 +4442,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_CUNNINGNEIGHBOUR:
 				if (this.unique_opponent_id) {
-					this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
+					this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id, keep_passive_selected: true});
 				}
 				else {
-					this.mainClientState.enterOnStack('client_selectOpponentPassive', {passive_card_id: card.id});
+					this.mainClientState.enterOnStack('client_selectOpponentPassive', {passive_card_id: card.id, keep_passive_selected: true});
 				}
 				break;
 			case DaleCard.CT_BARRICADE:
@@ -4400,6 +4462,9 @@ class DaleOfMerchants extends Gamegui
 					cost: 1, 
 					next: 'playPassiveCard'
 				} as unknown as ClientGameStates['client_spend']);
+				break;
+			case DaleCard.CT_COFFEEGRINDER:
+				this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id, via_deck: true, keep_passive_selected: true });
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
@@ -4716,6 +4781,12 @@ class DaleOfMerchants extends Gamegui
 
 	onSelectOpponentPassive(opponent_id: number) {
 		this.playPassiveCard<'client_selectOpponentPassive'>({
+			opponent_id: opponent_id
+		})
+	}
+
+	onSelectPlayerPassive(opponent_id: number) {
+		this.playPassiveCard<'client_selectPlayerPassive'>({
 			opponent_id: opponent_id
 		})
 	}
@@ -5748,6 +5819,18 @@ class DaleOfMerchants extends Gamegui
 				throw new Error(`'onLooseMarbles' was called in an unexpected gamestate: '${this.gamedatas.gamestate.name}'`);
 		}
 	}
+	
+	onCoffeeGrinderDiscard() {
+		this.bgaPerformAction('actCoffeeGrinder', {
+			skip: false
+		});
+	}
+
+	onCoffeeGrinderSkip() {
+		this.bgaPerformAction('actCoffeeGrinder', {
+			skip: true
+		});
+	}
 
 	//(~on)
 
@@ -5823,6 +5906,7 @@ class DaleOfMerchants extends Gamegui
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
 			['updateActionButtons',					1],
+			['deselectPassive',						1],
 			['gainCoins',							1],
 			['selectBlindfold', 					1, true],
 			['addEffect', 							1],
@@ -6838,6 +6922,10 @@ class DaleOfMerchants extends Gamegui
 	notif_updateActionButtons(notif: NotifAs<'updateActionButtons'>){
 		this.removeActionButtons();
 		this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+	}
+
+	notif_deselectPassive(notif: NotifAs<'deselectPassive'>){
+		this.setPassiveSelected(notif.args.passive_card_id, false);
 	}
 
 	notif_gainCoins(notif: NotifAs<'gainCoins'>) {

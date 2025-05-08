@@ -173,7 +173,10 @@
 			"trCelestialGuidanceDiscard": 94,
 			"trFumblingDreamer": 95,
 			"trLooseMarbles": 96,
-			"trAnotherFineMess": 97
+			"trAnotherFineMess": 97,
+
+			//Hidden-information technique states (skipping some protected gamestate ids around 100)
+			"trCoffeeGrinder": 101
 		}
 	},
 
@@ -427,7 +430,7 @@
 		"descriptionmyturn": "Cunning Neighbour: ${you} are looking at ${opponent_name}\\'s hand",
 		"type": "activeplayer",
 		"action": "stCunningNeighbour",
-		"args": "argOpponentName",
+		"args": "argOpponentNameAndPassiveCardId",
 		"possibleactions": {
 			"actCunningNeighbour": [
 				{"name": "place_on_deck", "type": "AT_bool"}
@@ -951,6 +954,20 @@
 			"actAnotherFineMess": [
 				{"name": "source_id", "type": "AT_int"},
 				{"name": "destination_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"101": {
+		"name": "coffeeGrinder",
+		"description": "Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\\'s deck",
+		"descriptionmyturn": "Coffee Grinder: ${you} may discard another card from ${opponent_name}\\'s deck",
+		"type": "activeplayer",
+		"args": "argOpponentNameAndPassiveCardId",
+		"possibleactions": {
+			"actCoffeeGrinder": [
+				{"name": "skip", "type": "AT_bool"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

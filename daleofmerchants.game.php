@@ -55,7 +55,8 @@ class DaleOfMerchants extends DaleTableBasic
             "die_value" => 23,
             "debugMode" => 24,
             "animalfolk_id" => 25,
-            "die_value2" => 26
+            "die_value2" => 26,
+            "passive_card_id" => 27
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -119,6 +120,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("debugMode", 0);
         $this->setGameStateInitialValue("animalfolk_id", 0);
         $this->setGameStateInitialValue("die_value2", -1);
+        $this->setGameStateInitialValue("passive_card_id", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -5038,6 +5040,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->effects->insertModification($passive_card_id, CT_CUNNINGNEIGHBOUR);
                 if ($this->cards->countCardsInLocation(HAND.$opponent_id) > 0) {
+                    $this->setGameStateValue("passive_card_id", $passive_card_id);
                     $this->gamestate->nextState("trCunningNeighbour"); return;
                 }
                 break;
@@ -5176,11 +5179,39 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->cards->shuffle(DECK.$player_id);
                 $this->effects->insertModification($passive_card_id, CT_CALENDAR);
                 break;
+            case CT_COFFEEGRINDER:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
+                //discard 1 card
+                $topCard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
+                if ($topCard) {
+                    $this->cards->moveCardOnTop($topCard["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('Coffee Grinder: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                        "player_id" => $opponent_id,
+                        "card" => $topCard,
+                        'player_name' => $this->getActivePlayerName(),
+                        'opponent_name' => $this->getPlayerNameById($opponent_id),
+                        'card_name' => $this->getCardName($topCard)
+                    ));
+                }
+                //mark this passive as used
+                $this->effects->insertModification($passive_card_id, CT_COFFEEGRINDER);
+                //move to another state to discard the 2nd card
+                if ($this->cards->countCardsInDrawAndDiscardOfPlayer($opponent_id) > 0) {
+                    $this->setGameStateValue("opponent_id", $opponent_id);
+                    $this->setGameStateValue("passive_card_id", $passive_card_id);
+                    $this->gamestate->nextState("trCoffeeGrinder"); return;
+                }
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
         } //(~passiveability)
 
+        //complete the passive, deselecting it if needed
+        $this->notifyAllPlayers('deselectPassive', '', array(
+            "passive_card_id" => $passive_card_id
+        ));
         $this->gamestate->nextState("trPassiveAbility");
     }
 
@@ -6729,6 +6760,28 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actCoffeeGrinder($skip) {
+        $this->checkAction("actCoffeeGrinder");
+        if ($skip) {
+            $this->gamestate->nextState("trSamePlayer");
+            return;
+        }
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        //discard 1 card
+        $topCard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
+        if ($topCard) {
+            $this->cards->moveCardOnTop($topCard["id"], DISCARD.$opponent_id);
+            $this->notifyAllPlayers('deckToDiscard', clienttranslate('Coffee Grinder: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                "player_id" => $opponent_id,
+                "card" => $topCard,
+                'player_name' => $this->getActivePlayerName(),
+                'opponent_name' => $this->getPlayerNameById($opponent_id),
+                'card_name' => $this->getCardName($topCard)
+            ));
+        }
+        $this->gamestate->nextState("trSamePlayer");
+    }
+
 
     //(~acts)
 
@@ -6874,6 +6927,16 @@ class DaleOfMerchants extends DaleTableBasic
     function argOpponentName() {
         $opponent_id = $this->getGameStateValue("opponent_id");
         return array(
+            'opponent_id' => $opponent_id,
+            'opponent_name' => $this->getPlayerNameById($opponent_id)
+        );
+    }
+
+    function argOpponentNameAndPassiveCardId() {
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $passive_card_id = $this->getGameStateValue("passive_card_id");
+        return array(
+            'passive_card_id' => $passive_card_id,
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameById($opponent_id)
         );

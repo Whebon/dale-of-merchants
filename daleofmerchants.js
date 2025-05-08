@@ -3725,6 +3725,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may use this card's ability");
                     case 'client_selectOpponentPassive':
                         return _("${card_name}: ${you} must choose an opponent");
+                    case 'client_selectPlayerPassive':
+                        return _("${card_name}: ${you} must choose a player");
                     case 'client_marketDiscovery':
                         return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
@@ -5077,6 +5079,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
+                case 'client_selectPlayerPassive':
+                    var client_selectPlayerPassive_args = this.mainClientState.args;
+                    if (client_selectPlayerPassive_args.via_deck) {
+                        for (var _17 = 0, _18 = Object.entries(this.playerDecks); _17 < _18.length; _17++) {
+                            var _19 = _18[_17], player_id = _19[0], deck = _19[1];
+                            deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                        }
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5088,6 +5099,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
                 console.warn("this.chameleonArgs => don't turn off selection modes");
                 return;
+            }
+            if (this.gamedatas.gamestate.args && 'passive_card_id' in this.gamedatas.gamestate.args) {
+                this.setPassiveSelected(this.gamedatas.gamestate.args.passive_card_id, false);
             }
             switch (stateName) {
                 case 'turnStart':
@@ -5490,6 +5504,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         deck.setSelectionMode('none');
                     }
                     break;
+                case 'client_selectPlayerPassive':
+                    for (var _9 = 0, _10 = Object.entries(this.playerDecks); _9 < _10.length; _9++) {
+                        var _11 = _10[_9], player_id = _11[0], deck = _11[1];
+                        deck.setSelectionMode('none');
+                    }
+                    break;
+                case 'coffeeGrinder':
+                    var coffeeGrinder_args = this.gamedatas.gamestate.args;
+                    this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('none');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -5498,6 +5522,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
+            if (this.gamedatas.gamestate.args && 'passive_card_id' in this.gamedatas.gamestate.args) {
+                this.setPassiveSelected(this.gamedatas.gamestate.args.passive_card_id, true);
+            }
             switch (stateName) {
                 case 'deckSelection':
                     this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
@@ -5586,6 +5613,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_selectOpponentPassive':
                     this.addActionButtonsOpponent(this.onSelectOpponentPassive.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_selectPlayerPassive':
+                    this.addActionButtonsOpponent(this.onSelectPlayerPassive.bind(this), true);
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_treasureHunter':
@@ -6128,6 +6159,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.addActionButtonsOpponent((function (opponent_id) { return _this.showMessage(looseMarbles_fail_message_1, "error"); }).bind(this), true);
                     }
                     break;
+                case 'coffeeGrinder':
+                    this.addActionButton("confirm-button", _("Discard"), "onCoffeeGrinderDiscard");
+                    this.addActionButton("skip-button", _("Skip"), "onCoffeeGrinderSkip", undefined, false, 'gray');
+                    var coffeeGrinder_args = args;
+                    this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -6313,6 +6350,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 if (!isValid) {
                     new DaleCard_10.DaleCard(chameleon_card_id).unbindChameleonLocal();
+                }
+            }
+        };
+        DaleOfMerchants.prototype.setPassiveSelected = function (passive_card_id, enable) {
+            var div = DaleCard_10.DaleCard.divs.get(+passive_card_id);
+            if (div) {
+                if (enable) {
+                    div.classList.add("daleofmerchants-passive-selected");
+                }
+                else {
+                    div.classList.remove("daleofmerchants-passive-selected");
                 }
             }
         };
@@ -6880,6 +6928,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'anotherFineMess':
                     this.onLooseMarblesBegin(pile.getPlayerId(), pile);
                     break;
+                case 'client_selectPlayerPassive':
+                    var client_selectPlayerPassive_args = this.mainClientState.args;
+                    if (client_selectPlayerPassive_args.via_deck) {
+                        this.onSelectPlayerPassive(pile.getPlayerId());
+                    }
+                    break;
+                case 'coffeeGrinder':
+                    this.onCoffeeGrinderDiscard();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUnselectHandCard = function (card_id) {
@@ -7345,12 +7402,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.playPassiveCard({});
         };
         DaleOfMerchants.prototype.playPassiveCard = function (args) {
-            console.log(args);
             this.bgaPerformAction('actUsePassiveAbility', {
                 card_id: this.mainClientState.args.passive_card_id,
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
             });
+            var argsPassive = this.mainClientState.args;
+            if (argsPassive.keep_passive_selected) {
+                argsPassive.passive_card_id = 0;
+            }
             this.mainClientState.leave();
         };
         DaleOfMerchants.prototype.playTechniqueCardWithServerState = function (args) {
@@ -8121,10 +8181,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_CUNNINGNEIGHBOUR:
                     if (this.unique_opponent_id) {
-                        this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
+                        this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id, keep_passive_selected: true });
                     }
                     else {
-                        this.mainClientState.enterOnStack('client_selectOpponentPassive', { passive_card_id: card.id });
+                        this.mainClientState.enterOnStack('client_selectOpponentPassive', { passive_card_id: card.id, keep_passive_selected: true });
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_BARRICADE:
@@ -8142,6 +8202,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         cost: 1,
                         next: 'playPassiveCard'
                     });
+                    break;
+                case DaleCard_10.DaleCard.CT_COFFEEGRINDER:
+                    this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id, via_deck: true, keep_passive_selected: true });
                     break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
@@ -8421,6 +8484,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onSelectOpponentPassive = function (opponent_id) {
+            this.playPassiveCard({
+                opponent_id: opponent_id
+            });
+        };
+        DaleOfMerchants.prototype.onSelectPlayerPassive = function (opponent_id) {
             this.playPassiveCard({
                 opponent_id: opponent_id
             });
@@ -9326,6 +9394,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     throw new Error("'onLooseMarbles' was called in an unexpected gamestate: '".concat(this.gamedatas.gamestate.name, "'"));
             }
         };
+        DaleOfMerchants.prototype.onCoffeeGrinderDiscard = function () {
+            this.bgaPerformAction('actCoffeeGrinder', {
+                skip: false
+            });
+        };
+        DaleOfMerchants.prototype.onCoffeeGrinderSkip = function () {
+            this.bgaPerformAction('actCoffeeGrinder', {
+                skip: true
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -9391,6 +9469,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['rollDie', 1000],
                 ['avidFinancierTakeCoin', 500],
                 ['updateActionButtons', 1],
+                ['deselectPassive', 1],
                 ['gainCoins', 1],
                 ['selectBlindfold', 1, true],
                 ['addEffect', 1],
@@ -10212,6 +10291,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_updateActionButtons = function (notif) {
             this.removeActionButtons();
             this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+        };
+        DaleOfMerchants.prototype.notif_deselectPassive = function (notif) {
+            this.setPassiveSelected(notif.args.passive_card_id, false);
         };
         DaleOfMerchants.prototype.notif_gainCoins = function (notif) {
             this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);

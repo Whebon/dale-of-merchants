@@ -356,6 +356,9 @@ declare global {
 			animalfolk_id: number,
 			is_taking_card: boolean
 		}
+		'deselectPassive': {
+			passive_card_id: number
+		}
 		'gainCoins': {
 			player_id: number,
 			nbr: number,
@@ -481,6 +484,7 @@ declare global {
 	interface ClientPassiveChoice {
 		'client_choicelessPassiveCard': {},
 		'client_selectOpponentPassive': { opponent_id: number }
+		'client_selectPlayerPassive': { opponent_id: number }
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_barricade': { card_ids: number[] }
@@ -491,7 +495,7 @@ declare global {
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
 	type TriggerTechniqueClientStates = { [K in keyof ClientTriggerTechniqueChoice]: { technique_card_id: number } }
 	type TechniqueClientStates = { [K in keyof ClientTechniqueChoice]: { technique_card_id: number } }
-	type PassiveClientStates = { [K in keyof ClientPassiveChoice]: { passive_card_id: number } }
+	type PassiveClientStates = { [K in keyof ClientPassiveChoice]: { passive_card_id: number, keep_passive_selected?: boolean } }
 
 	//possible follow-up states after a 'client_spend'. Note that choiceless states are not allowed, use one of the included functions 
 	type ClientSpendNext = 'playPassiveCard' | 'playTechniqueCardWithServerState' | 'playTechniqueCard' | 'resolveTechniqueCard' |
@@ -531,6 +535,7 @@ declare global {
 			}
 		 }
 		'client_inventory': {}
+		'client_selectPlayerPassive': { passive_card_id: number, via_deck?: boolean, keep_passive_selected?: boolean }
 		'client_essentialPurchase': ClientGameStates['client_purchase']
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
 		'client_glue': ClientGameStates['client_purchase']

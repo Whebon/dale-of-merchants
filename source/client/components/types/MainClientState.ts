@@ -104,6 +104,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may use this card's ability");
             case 'client_selectOpponentPassive':
                 return _("${card_name}: ${you} must choose an opponent"); //e.g. cunning neighbour
+            case 'client_selectPlayerPassive':
+                return _("${card_name}: ${you} must choose a player"); //e.g. coffee grinder
             
             //Specific passive states
             case 'client_marketDiscovery':
