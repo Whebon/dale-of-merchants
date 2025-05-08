@@ -3612,10 +3612,10 @@ class DaleOfMerchants extends Gamegui
 			args: JSON.stringify(args)
 		});
 		const argsPassive = this.mainClientState.args as PassiveClientStates[K];
-		if (argsPassive.keep_passive_selected) {
-			argsPassive.passive_card_id = 0;
-		}
 		this.mainClientState.leave();
+		if (argsPassive.keep_passive_selected) {
+			this.setPassiveSelected(argsPassive.passive_card_id, true);
+		}
 	}
 
 	/**

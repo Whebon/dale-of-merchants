@@ -7408,10 +7408,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 args: JSON.stringify(args)
             });
             var argsPassive = this.mainClientState.args;
-            if (argsPassive.keep_passive_selected) {
-                argsPassive.passive_card_id = 0;
-            }
             this.mainClientState.leave();
+            if (argsPassive.keep_passive_selected) {
+                this.setPassiveSelected(argsPassive.passive_card_id, true);
+            }
         };
         DaleOfMerchants.prototype.playTechniqueCardWithServerState = function (args) {
             this.bgaPerformAction('actPlayTechniqueCard', {
