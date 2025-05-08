@@ -275,15 +275,15 @@ $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_OCELOTS,         //effect not finalized
     ANIMALFOLK_ECHIDNAS,        //effect not finalized
     //ANIMALFOLK_LEMURS,        //effect not finalized (but the text is correct)
-    ANIMALFOLK_DESERTMONITORS,  //not implemented (only CT_DUPLICATEENTRY remains)
-    ANIMALFOLK_HARES,           //not implemented
-    ANIMALFOLK_PENGUINS,        //not implemented
-    ANIMALFOLK_WOODTURTLES,     //not implemented
-    ANIMALFOLK_TASMANIANDEVILS, //not implemented
-    ANIMALFOLK_PANGOLINS,       //not implemented
+    //ANIMALFOLK_DESERTMONITORS,  //not implemented (only CT_DUPLICATEENTRY remains) (update)
+    //ANIMALFOLK_HARES,           //not implemented (update)
+    //ANIMALFOLK_PENGUINS,        //not implemented (update)
+    //ANIMALFOLK_WOODTURTLES,     //not implemented (update)
+    //ANIMALFOLK_PANGOLINS,       //not implemented (update)
     ANIMALFOLK_MONGOOSES,       //not implemented
     ANIMALFOLK_BATS,            //not implemented
     ANIMALFOLK_OWLS,            //not implemented
+    ANIMALFOLK_TASMANIANDEVILS, //not implemented
     ANIMALFOLK_BEAVERS          //not implemented
 );
 
