@@ -5194,6 +5194,9 @@ class DaleOfMerchants extends DaleTableBasic
                         'card_name' => $this->getCardName($topCard)
                     ));
                 }
+                else {
+                    throw new BgaUserException($this->_("This passive has no effect on that player"));
+                }
                 //mark this passive as used
                 $this->effects->insertModification($passive_card_id, CT_COFFEEGRINDER);
                 //move to another state to discard the 2nd card

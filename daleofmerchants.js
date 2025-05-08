@@ -7402,10 +7402,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.playPassiveCard({});
         };
         DaleOfMerchants.prototype.playPassiveCard = function (args) {
-            this.bgaPerformAction('actUsePassiveAbility', {
+            var _this = this;
+            var _a;
+            (_a = this.bgaPerformAction('actUsePassiveAbility', {
                 card_id: this.mainClientState.args.passive_card_id,
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
+            })) === null || _a === void 0 ? void 0 : _a.catch(function () {
+                if (argsPassive === null || argsPassive === void 0 ? void 0 : argsPassive.keep_passive_selected) {
+                    _this.setPassiveSelected(argsPassive.passive_card_id, false);
+                }
             });
             var argsPassive = this.mainClientState.args;
             this.mainClientState.leave();

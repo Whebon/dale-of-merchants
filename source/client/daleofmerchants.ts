@@ -3610,6 +3610,11 @@ class DaleOfMerchants extends Gamegui
 			card_id: (this.mainClientState.args as ClientGameStates[K]).passive_card_id, 
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
+		})?.catch(() => {
+			//needed to catch the CT_COFFEEGRINDER error
+			if (argsPassive?.keep_passive_selected) {
+				this.setPassiveSelected(argsPassive.passive_card_id, false);
+			}
 		});
 		const argsPassive = this.mainClientState.args as PassiveClientStates[K];
 		this.mainClientState.leave();
