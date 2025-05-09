@@ -1296,9 +1296,6 @@ class DaleOfMerchants extends DaleTableBasic
         if ($nbr == 0) {
             return;
         }
-        if ($nbr < 0) {
-            throw new BgaVisibleSystemException("Unable to add a negative amount of coins");
-        }
         $sql = "UPDATE player SET player_coins=player_coins+$nbr WHERE player_id='$player_id'";
         $this->DbQuery($sql);
     }
@@ -1339,8 +1336,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($coins < $nbr) {
             throw new BgaUserException($this->_("Insufficient coins")." ($coins / $nbr)");
         }
-        $sql = "UPDATE player SET player_coins=player_coins-$nbr WHERE player_id='$player_id'";
-        $this->DbQuery($sql);
+        $this->addCoins($player_id, -$nbr);
 
         //notify players
         $msg = clienttranslate('${player_name} spends ${positive_nbr} ${coin_icon}');
