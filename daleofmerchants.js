@@ -962,7 +962,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                         var avid_financier_coin = DaleIcons_3.DaleIcons.getCoinIcon();
                         avid_financier_coin.classList.add("daleofmerchants-avid-financier-coin-icon");
                         avid_financier_coin_container.append(avid_financier_coin);
-                        var source = 'overall_player_board_' + this.page.player_id;
+                        var player_id = this.page.isSpectator ? this.page.gamedatas.playerorder[0] : this.page.player_id;
+                        var source = 'overall_player_board_' + player_id;
                         this.page.placeOnObject(avid_financier_coin, source);
                         var duration = 500;
                         var delay = 250 * i;
@@ -2184,6 +2185,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }), this.duration);
         };
         DaleStock.prototype.updateDisplay = function (from) {
+            if (!this.control_name) {
+                return;
+            }
             var containerWidth = dojo.marginBox(this.control_name).w;
             var totalWidth = this.item_width * this.items.length + 5;
             this.item_margin = (containerWidth - totalWidth) / Math.max(1, this.items.length - 1);

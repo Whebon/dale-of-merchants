@@ -306,7 +306,8 @@ export class DaleCard {
                     avid_financier_coin.classList.add("daleofmerchants-avid-financier-coin-icon");
                     avid_financier_coin_container.append(avid_financier_coin);
                     //animate
-                    const source = 'overall_player_board_' + this.page!.player_id;
+                    const player_id = this.page!.isSpectator ? this.page!.gamedatas.playerorder[0] : this.page!.player_id;
+                    const source = 'overall_player_board_' + player_id;
                     this.page!.placeOnObject(avid_financier_coin, source);
                     const duration = 500;
                     const delay = 250*i;

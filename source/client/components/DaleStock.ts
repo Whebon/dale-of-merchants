@@ -548,6 +548,9 @@ export class DaleStock extends Stock implements DaleLocation {
 
 		//Automatically set the item_margin
 		//horizontal_overlap is broken! don't use it!
+		if (!this.control_name) {
+			return; //for spectators
+		}
 		const containerWidth = dojo.marginBox( this.control_name as any ).w!;
 		const totalWidth = this.item_width * this.items.length + 5; //+5 adds a little bit of margin and prevents an unwanted linebreak by bga stock
 		this.item_margin = (containerWidth-totalWidth)/Math.max(1, this.items.length-1);
