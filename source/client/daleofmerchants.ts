@@ -35,6 +35,7 @@ import { DaleDeckSelection } from './components/DaleDeckSelection'
 import { DaleDie } from './components/DaleDie';
 import { DaleIcons } from './components/DaleIcons';
 import { CoinManager } from './components/CoinManager';
+import { PlayerClock } from './components/PlayerClock';
 import { PrivateNotification } from './components/types/PrivateNotification'
 import { TranslatableStrings } from './components/types/TranslatableStrings'
 
@@ -55,6 +56,9 @@ class DaleOfMerchants extends Gamegui
 
 	/** Ordered pile of known cards representing the market discard deck. */
 	marketDiscard: Pile = new Pile(this, 'market-discard', 'Bin');
+
+	/** A clock for each player  */
+	playerClocks: Record<number, PlayerClock> = {};
 
 	/** A hand size counter at the overall player board for each player  */
 	playerHandSizes: Record<number, Counter> = {};
@@ -184,19 +188,8 @@ class DaleOfMerchants extends Gamegui
 		for(let player_id in gamedatas.players ){
 			let player = gamedatas.players[player_id];
 
-			//TODO: safely remove this
-			// const coins_wrap = $('daleofmerchants-coins-wrap-'+player_id)!;
-			// const coins_span = document.createElement('span'); 
-			// const coins_icon = DaleIcons.getCoinIcon();
-			// coins_span.classList.add("daleofmerchants-coins-counter");
-			// coins_icon.id = 'daleofmerchants-coins-icon-'+player_id;
-			// coins_wrap.append(coins_span);
-			// coins_wrap.append(coins_icon);
-			// coins_span.innerText = '0';
-			// this.playerCoins[player_id] = new ebg.counter();
-			// this.playerCoins[player_id].create(coins_span);
-			// this.playerCoins[player_id].setValue(gamedatas.players[player_id]!.coins);
-			// this.addTooltip('daleofmerchants-coins-icon-'+player_id, _("Number of coins"), '');
+			//clock per player
+			this.playerClocks[player_id] = new PlayerClock(this, +player_id);
 
 			//handsize per player
 			const handsize_span = document.createElement('span'); 
@@ -378,6 +371,12 @@ class DaleOfMerchants extends Gamegui
 			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TUATARAS)) {
 				const coins_wrap = $('daleofmerchants-coins-wrap-'+player_id)!;
 				coins_wrap.classList.remove("daleofmerchants-hidden");
+			}
+			//show clock if coin-based animalfolk are in play
+			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_MONGOOSES) ||
+				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_BATS)) {
+				const clock_wrap = $('daleofmerchants-clock-wrap-'+player_id)!;
+				clock_wrap.classList.remove("daleofmerchants-hidden");
 			}
 		}
 	}
@@ -2387,6 +2386,13 @@ class DaleOfMerchants extends Gamegui
 			if ('coin_icon' in args) {
 				const iconTpl = DaleIcons.getCoinIcon();
 				args['coin_icon'] = `<span class="daleofmerchants-log-span">${iconTpl.outerHTML}</span>`;
+			}
+
+			//parse clock icon
+			if ('clock' in args) {
+				const label = PlayerClock.getClockLabel(+args['clock']).toLowerCase();
+				const iconTpl = PlayerClock.getClockIcon(+args['clock']);
+				args['clock'] = `${label} (<span class="daleofmerchants-log-span">${iconTpl.outerHTML}</span>)`;
 			}
 
 			//parse ocelot die
@@ -5910,6 +5916,7 @@ class DaleOfMerchants extends Gamegui
 			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
+			['advanceClock',						1],
 			['updateActionButtons',					1],
 			['deselectPassive',						1],
 			['gainCoins',							1],
@@ -6922,6 +6929,11 @@ class DaleOfMerchants extends Gamegui
 		if (parent) {
 			new DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
 		}
+	}
+
+	notif_advanceClock(notif: NotifAs<'advanceClock'>){
+		const playerClock = this.playerClocks[+notif.args.player_id]!;
+		playerClock.advanceClock(notif.args.nbr);
 	}
 
 	notif_updateActionButtons(notif: NotifAs<'updateActionButtons'>){

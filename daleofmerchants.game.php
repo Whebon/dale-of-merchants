@@ -88,12 +88,12 @@ class DaleOfMerchants extends DaleTableBasic
  
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
-        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_coins) VALUES ";
+        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_coins, player_clock) VALUES ";
         $values = array();
         foreach( $players as $player_id => $player )
         {
             $color = array_shift( $default_colors );
-            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."',0)";
+            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."',0,0)";
         }
         $sql .= implode( ',', $values );
         $this->DbQuery( $sql );
@@ -155,7 +155,7 @@ class DaleOfMerchants extends DaleTableBasic
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $players = $this->loadPlayersBasicInfos();
-        $sql = "SELECT player_id id, player_score score, player_coins coins FROM player ";
+        $sql = "SELECT player_id id, player_score score, player_coins coins, player_clock clock FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
 
         //count the cards in each hand, but don't send the content (that information is hidden)
@@ -1692,6 +1692,94 @@ class DaleOfMerchants extends DaleTableBasic
         return $die_value;
     }
 
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Clock functions
+    ////////////  
+
+    /*
+        Here I place all function related to the clock (related to ANIMALFOLK_MONGOOSES and ANIMALFOLK_BATS)
+    */
+
+    /**
+     * Adjust the clock to show dawn
+     * @param mixed $player_id player clock to reset
+     * @param string $msg message to display to the client
+     * @param array $msg_args (optional) - additional args to display in the message
+     */
+    function resetClock($player_id, $msg = '', $msg_args = array()) {
+        $this->advanceClock($player_id, -2, $msg, $msg_args);
+    }
+
+    /**
+     * Move the clock `$nbr` spaces forward, but never beyond night, or before dawn
+     * @param mixed $player_id player clock to advance
+     * @param int $nbr, may be negative
+     * @param string $msg (optional) - notification message for the client
+     * @param array $msg_args (optional) - additional args to display in the messages
+     */
+    function advanceClock($player_id, $nbr, $msg = '', $msg_args = array()) {
+        //skip
+        if (!$this->deckSelection->includes(ANIMALFOLK_MONGOOSES) && 
+            !$this->deckSelection->includes(ANIMALFOLK_BATS)) {
+            $this->notifyAllPlayers('message', "DEBUG: clock skipped", array());
+            return;
+        }
+        //calculate the new clock position
+        $previous_clock = $this->getClock($player_id);
+        $clock = max(0, min(2, $previous_clock + $nbr));
+        if ($clock == $previous_clock) {
+            return;
+        }
+        //update db
+        $sql = "UPDATE player SET player_clock=$clock WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
+        //TODO: safely remove this
+        // $sql = "UPDATE player ";
+        // $sql .= "SET player_clock = CASE ";
+        // $sql .= "WHEN player_clock + 1 < ".CLOCK_DAWN." THEN ".CLOCK_DAWN." ";
+        // $sql .= "WHEN player_clock + 1 > ".CLOCK_NIGHT." THEN ".CLOCK_NIGHT." ";
+        // $sql .= "ELSE player_clock + 1 ";
+        // $sql .= "END ";
+        // $sql .= "WHERE player_id=".addslashes($player_id);
+        // $this->DbQuery($sql);
+        //update client
+        $this->notifyAllPlayers('advanceClock', $msg, array_merge ( array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "clock" =>  $clock,
+            "nbr" => $nbr
+        ), $msg_args));
+    }   
+
+    /**
+     * @return int time of the day (`CLOCK_DAWN`, `CLOCK_DAY` or `CLOCK_NIGHT`) for $player_id
+     */
+    function getClock($player_id) {
+        $clock = self::getUniqueValueFromDB("SELECT player_clock FROM player WHERE player_id='$player_id'") ?? 0;
+        if ($clock != CLOCK_DAWN && $clock != CLOCK_DAY && $clock != CLOCK_NIGHT) {
+            throw new BgaVisibleSystemException("Unexpected clock value: ".$clock);
+        }
+        return $clock;
+    }
+
+    //TODO: safely remove this
+    // /**
+    //  * @param int clock `CLOCK_DAWN`, `CLOCK_DAY` or `CLOCK_NIGHT`
+    //  * @return string translatable label corresponding to the clock enum
+    //  */
+    // function getClockLabel(int $clock): string {
+    //     switch($clock) {
+    //         case CLOCK_DAWN:
+    //             return $this->_("dawn");
+    //         case CLOCK_DAY:
+    //             return $this->_("day");
+    //         case CLOCK_NIGHT:
+    //             return $this->_("night");
+    //         default:
+    //             return "INVALID_CLOCK_LABEL";
+    //     }
+    // }
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Chameleon functions
 ////////////  
@@ -2078,6 +2166,15 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $type_id = $this->getTypeId($technique_card);
 
+        //enforce that this technique has a trigger
+        if ($this->getTrigger($technique_card) === null) {
+            $type_id = $this->getTypeId($technique_card);
+            throw new BgaVisibleSystemException("'resolveImmediateEffects' was called on a technique without a trigger (type_id=".$type_id.")");
+        }
+
+        //advance the clock if the technique
+        $this->advanceClock($player_id, 1, clienttranslate('${player_name} reaches ${clock}'));
+
         //decide if the player can go again
         if ($this->card_types[$type_id]["has_plus"]) {
             if ($this->getActivePlayerId() != $player_id) {
@@ -2171,6 +2268,11 @@ class DaleOfMerchants extends DaleTableBasic
                 'to_prefix' => $to_prefix,
                 'to_suffix' => $to_suffix
             ));
+        }
+
+        //advance the clock if the technique has no trigger
+        if ($this->getTrigger($technique_card) === null) {
+            $this->advanceClock($player_id, 1, clienttranslate('${player_name} reaches ${clock}'));
         }
 
         //refill the market if needed (10th anniversary rule change)
@@ -6884,13 +6986,21 @@ class DaleOfMerchants extends DaleTableBasic
         $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
 
         //notify all players
-        $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} discards ${nbr} cards'), array (
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'card_ids' => $card_ids,
-            'cards' => $cards,
-            'nbr' => count($card_ids)
-        ));
+        if (count($card_ids) > 0) {
+            $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} discards ${nbr} cards'), array (
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'card_ids' => $card_ids,
+                'cards' => $cards,
+                'nbr' => count($card_ids)
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('message', clienttranslate('${player_name} discards ${nbr} cards'), array (
+                'player_name' => $this->getActivePlayerName(),
+                'nbr' => count($card_ids)
+            ));
+        }
         
         $this->gamestate->nextState("trNextPlayer");
     }
@@ -7197,6 +7307,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stTurnStart() {
         $player_id = $this->getActivePlayerId();
+
         //obtain stored cards
         $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
         if (count($storedCards) > 0) {
@@ -7208,6 +7319,10 @@ class DaleOfMerchants extends DaleTableBasic
                 "cards" => $storedCards
             ));
         }
+
+        //reset the clock
+        $this->resetClock($player_id, clienttranslate('${player_name} reaches ${clock}'));
+
         //trigger cards on turn start
         $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
         $triggeredCards = array();

@@ -54,3 +54,4 @@ CREATE TABLE IF NOT EXISTS `character` (
 -- Add a custom field to the standard "player" table
 
 ALTER TABLE `player` ADD `player_coins` INT UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `player_clock` INT UNSIGNED NOT NULL DEFAULT '0';

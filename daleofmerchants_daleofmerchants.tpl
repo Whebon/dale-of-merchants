@@ -44,7 +44,7 @@
     <!-- BEGIN stall -->
     <div class="whiteblock">
         <span id="daleofmerchants-token-area-{PLAYER_ID}" class="daleofmerchants-token-area">
-            <!-- only needed for the coins -->
+            <!-- only needed for coin-based animalfolk -->
             <span id="daleofmerchants-coins-wrap-{PLAYER_ID}" class="daleofmerchants-coins-wrap daleofmerchants-wrap-default daleofmerchants-hidden" >
                 <span class="daleofmerchants-label daleofmerchants-spending" >
                     Label
@@ -58,6 +58,10 @@
                 <span class="daleofmerchants-coins-counter" style="font-size: x-large;">
                     0
                 </span>
+            </span>
+            <!-- only needed for clock-based animalfolk -->
+            <span id="daleofmerchants-clock-wrap-{PLAYER_ID}" class="daleofmerchants-clock-wrap daleofmerchants-hidden" >
+                <span id="daleofmerchants-clock-label-{PLAYER_ID}" class="daleofmerchants-clock-label">Clock</span>
             </span>
         </span>
         <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>

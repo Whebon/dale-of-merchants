@@ -25,6 +25,7 @@ declare global {
 	/** @gameSpecific */
 	interface Player {
 		'coins': number
+		'clock': number
 	}
 
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
@@ -351,6 +352,10 @@ declare global {
 		}
 		'rearrangeMarket': {
 			card_ids: number[]
+		}
+		'advanceClock': {
+			player_id: number | string
+			nbr: number
 		}
 		'updateActionButtons': {
 			animalfolk_id: number,

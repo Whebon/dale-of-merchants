@@ -9,7 +9,7 @@ declare function $(text: string | Element): HTMLElement;
 type CoinSelectionMode = 'none' | 'explicit' | 'implicit'; 
 
 /**
- * Singleton component for the dale of merchants market board.
+ * Manages everything related to coins and spending
  */
 export class CoinManager {
     private page: Gamegui | undefined;

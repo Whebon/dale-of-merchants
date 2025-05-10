@@ -3,8 +3,11 @@
 class DaleDeckSelection {
     private $game;
 
+    private ?array $cached_animalfolk_ids;
+
     function __construct($game) {
         $this->game = $game;
+        $this->cached_animalfolk_ids = null;
     }
 
     /**
@@ -67,21 +70,33 @@ class DaleDeckSelection {
                 throw new BgaSystemException($animalfolk_id+" is not a valid animalfolk_id");
             }
         }
-        $selected_animalfolk_ids = array_slice($animalfolk_ids, 0, $n + 1);
-        $this->submitPreference(0, $selected_animalfolk_ids); //0 means selected, this is needed for 'getAnimalfolkIds'
-        return $selected_animalfolk_ids;
+        $cached_animalfolk_ids = array_slice($animalfolk_ids, 0, $n + 1);
+        $this->submitPreference(0, $cached_animalfolk_ids); //0 means selected, this is needed for 'getAnimalfolkIds'
+        return $cached_animalfolk_ids;
     }
 
     /**
      * @return array n+1 animalfolk_ids selected by 'selectAnimalfolkIds'
      */
     function getAnimalfolkIds() {
+        if ($this->cached_animalfolk_ids !== null) {
+            return $this->cached_animalfolk_ids;
+        }
         $sql = "SELECT animalfolk_id FROM deckselection WHERE player_id = 0";
         $collection = $this->game->getCollectionFromDB($sql);
         $n = $this->game->getPlayersNumber();
         if (count($collection) != $n+1) {
             throw new BgaVisibleSystemException("'getAnimalfolkIds' failed, please ensure that 'selectAnimalfolkIds' was called exactly once");
         }
-        return array_keys($collection);
+        $this->cached_animalfolk_ids = array_keys($collection);
+        return $this->cached_animalfolk_ids;
+    }
+
+    /**
+     * @param int $animalfolk_id animalfolk
+     * @return bool true if `$animalfolk_id` was selected during deck selection
+     */
+    function includes(int $animalfolk_id): bool {
+        return in_array($animalfolk_id, $this->getAnimalfolkIds(), true);
     }
 }

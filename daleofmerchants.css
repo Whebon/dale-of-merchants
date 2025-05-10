@@ -22,6 +22,10 @@
 
 	3°) ... anything else: It is really easy to add and remove CSS classes dynamically from your Javascript with dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why, very often, using CSS classes for the logic of your user interface allow you to do complex thing easily.
 */
+#page-title {
+  min-height: 34px;
+}
+
 .daleofmerchants-deck-selection-container {
   display: flex;
   flex-wrap: wrap;
@@ -166,7 +170,29 @@
 }
 
 .daleofmerchants-token-area {
+  display: inline-flex;
   float: right;
+}
+.daleofmerchants-token-area .daleofmerchants-icon {
+  z-index: 99;
+}
+.daleofmerchants-token-area .daleofmerchants-clock-wrap {
+  min-width: 80px;
+  border-radius: 10px;
+  padding-right: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+.daleofmerchants-token-area .daleofmerchants-clock-wrap[data-clock="0"] {
+  background: rgba(0, 163, 158, 0.25);
+}
+.daleofmerchants-token-area .daleofmerchants-clock-wrap[data-clock="1"] {
+  background: rgba(230, 71, 36, 0.25);
+}
+.daleofmerchants-token-area .daleofmerchants-clock-wrap[data-clock="2"] {
+  background: rgba(115, 46, 132, 0.25);
 }
 .daleofmerchants-token-area .daleofmerchants-coins-wrap {
   display: inline-flex;

@@ -268,6 +268,13 @@ if (!defined('TRIGGER_ONTURNSTART')) {
     define('TRIGGER_ONFINISH', 'onFinish');
 }
 
+//define clock constants (for ANIMALFOLK_MONGOOSES AND ANIMALFOLK_BATS)
+if (!defined('CLOCK_DAWN')) {
+    define('CLOCK_DAWN', 0);
+    define('CLOCK_DAY', 1);
+    define('CLOCK_NIGHT', 2);
+}
+
 //disable these animalfolks in the deck selection (and random selection)
 $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_CHAMELEONS,      //... chameleons ...
@@ -275,12 +282,7 @@ $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_OCELOTS,         //effect not finalized
     ANIMALFOLK_ECHIDNAS,        //effect not finalized
     //ANIMALFOLK_LEMURS,        //effect not finalized (but the text is correct)
-    //ANIMALFOLK_DESERTMONITORS,  //not implemented (only CT_DUPLICATEENTRY remains) (update)
-    //ANIMALFOLK_HARES,           //not implemented (update)
-    //ANIMALFOLK_PENGUINS,        //not implemented (update)
-    //ANIMALFOLK_WOODTURTLES,     //not implemented (update)
-    //ANIMALFOLK_PANGOLINS,       //not implemented (update)
-    ANIMALFOLK_MONGOOSES,       //not implemented
+    //ANIMALFOLK_MONGOOSES,       //not implemented (update)
     ANIMALFOLK_BATS,            //not implemented
     ANIMALFOLK_OWLS,            //not implemented
     ANIMALFOLK_TASMANIANDEVILS, //not implemented
