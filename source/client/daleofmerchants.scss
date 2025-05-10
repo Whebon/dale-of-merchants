@@ -31,6 +31,23 @@
 	min-height: 34px; //on desktop, this prevents the page title to shrink/grow when action buttons disappear/reappear
 }
 
+.action-button:has(.daleofmerchants-icon) {
+	padding: 2px 12px; //buttons with icons should not be taller than buttons without icons
+}
+
+.whiteblock:has([data-clock="0"]) {
+	transition: background-color 0.3s ease;
+	background-color: var(--daleofmerchants-dawn-a);
+}
+.whiteblock:has([data-clock="1"]) {
+	transition: background-color 0.3s ease;
+	background-color: var(--daleofmerchants-day-a);
+}
+.whiteblock:has([data-clock="2"]) {
+	transition: background-color 0.3s ease;
+	background-color: var(--daleofmerchants-night-a);
+}
+
 ////////////////////////////////////////////////////////////////
 ////////////////////     DECK SELECTION     ////////////////////
 ////////////////////////////////////////////////////////////////
@@ -231,13 +248,13 @@
 		display: inline-flex;
 		align-items: center;
 		&[data-clock="0"] {
-			background: rgb(0, 163, 158, 0.25);
+			background: var(--daleofmerchants-dawn)
 		}
 		&[data-clock="1"] {
-			background: rgb(230, 71, 36, 0.25);
+			background: var(--daleofmerchants-day)
 		}
 		&[data-clock="2"] {
-			background: rgb(115, 46, 132, 0.25);
+			background: var(--daleofmerchants-night)
 		}
 	}
 	.daleofmerchants-coins-wrap {
@@ -949,6 +966,13 @@
 	--daleofmerchants-wrap-default: rgb(100,100,100); 
 	--daleofmerchants-wrap-default-g: rgb(100,100,100, 0.5); //grayed out
 	--daleofmerchants-wrap-default-a: rgb(100,100,100,0.15);
+
+	--daleofmerchants-dawn: rgb(0, 163, 158, 0.25);
+	--daleofmerchants-dawn-a: rgb(0, 163, 158, 0.05);
+	--daleofmerchants-day: rgb(230, 71, 36, 0.25);
+	--daleofmerchants-day-a:rgb(230, 71, 36, 0.05);
+	--daleofmerchants-night: rgb(115, 46, 132, 0.25);
+	--daleofmerchants-night-a: rgb(115, 46, 132, 0.05);
 }
   
 body {

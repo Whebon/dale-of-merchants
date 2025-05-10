@@ -43,6 +43,13 @@ export class PlayerClock {
     }
 
     /**
+     * Get the current clock position
+     */
+    public getClock() {
+        return this.position;
+    }
+
+    /**
      * Set the clock to a specific position
      * @param newPosition either CLOCK_DAWN, CLOCK_DAY or CLOCK_NIGHT
      */
@@ -113,5 +120,15 @@ export class PlayerClock {
             default:
                 throw new Error("Invalid clock position "+position);
         }
+    }
+
+    /**
+     * @param position `CLOCK_DAWN`, `CLOCK_DAY` or `CLOCK_NIGHT`
+     * @returns html string of style `"${label} (${icon})""`
+     */
+    public static getClockLabelAndIconTpl(position: number): string {
+        const label = PlayerClock.getClockLabel(position).toLowerCase();
+        const iconTpl = PlayerClock.getClockIcon(position);
+        return `${label} (<span class="daleofmerchants-log-span">${iconTpl.outerHTML}</span>)`;
     }
 }

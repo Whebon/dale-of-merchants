@@ -495,6 +495,7 @@ declare global {
 		'client_barricade': { card_ids: number[] }
 		'client_sliceoflife': { card_ids: number[] }
 		'client_stove': {} //choice sent as build args
+		'client_dramaticRomantic': { forward: boolean }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice

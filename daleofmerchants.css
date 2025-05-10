@@ -26,6 +26,25 @@
   min-height: 34px;
 }
 
+.action-button:has(.daleofmerchants-icon) {
+  padding: 2px 12px;
+}
+
+.whiteblock:has([data-clock="0"]) {
+  transition: background-color 0.3s ease;
+  background-color: var(--daleofmerchants-dawn-a);
+}
+
+.whiteblock:has([data-clock="1"]) {
+  transition: background-color 0.3s ease;
+  background-color: var(--daleofmerchants-day-a);
+}
+
+.whiteblock:has([data-clock="2"]) {
+  transition: background-color 0.3s ease;
+  background-color: var(--daleofmerchants-night-a);
+}
+
 .daleofmerchants-deck-selection-container {
   display: flex;
   flex-wrap: wrap;
@@ -186,13 +205,13 @@
   align-items: center;
 }
 .daleofmerchants-token-area .daleofmerchants-clock-wrap[data-clock="0"] {
-  background: rgba(0, 163, 158, 0.25);
+  background: var(--daleofmerchants-dawn);
 }
 .daleofmerchants-token-area .daleofmerchants-clock-wrap[data-clock="1"] {
-  background: rgba(230, 71, 36, 0.25);
+  background: var(--daleofmerchants-day);
 }
 .daleofmerchants-token-area .daleofmerchants-clock-wrap[data-clock="2"] {
-  background: rgba(115, 46, 132, 0.25);
+  background: var(--daleofmerchants-night);
 }
 .daleofmerchants-token-area .daleofmerchants-coins-wrap {
   display: inline-flex;
@@ -901,6 +920,12 @@
   --daleofmerchants-wrap-default: rgb(100,100,100);
   --daleofmerchants-wrap-default-g: rgb(100,100,100, 0.5);
   --daleofmerchants-wrap-default-a: rgb(100,100,100,0.15);
+  --daleofmerchants-dawn: rgb(0, 163, 158, 0.25);
+  --daleofmerchants-dawn-a: rgb(0, 163, 158, 0.05);
+  --daleofmerchants-day: rgb(230, 71, 36, 0.25);
+  --daleofmerchants-day-a:rgb(230, 71, 36, 0.05);
+  --daleofmerchants-night: rgb(115, 46, 132, 0.25);
+  --daleofmerchants-night-a: rgb(115, 46, 132, 0.05);
 }
 
 body {

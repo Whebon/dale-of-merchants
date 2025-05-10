@@ -890,7 +890,95 @@ define("components/DaleDie", ["require", "exports", "components/DaleDeckSelectio
     }());
     exports.DaleDie = DaleDie;
 });
-define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/DbEffect", "components/types/ChameleonChain", "components/DaleDie", "components/AbstractOrderedSelection"], function (require, exports, DaleIcons_3, Images_2, DbEffect_1, ChameleonChain_1, DaleDie_1, AbstractOrderedSelection_2) {
+define("components/PlayerClock", ["require", "exports", "components/DaleIcons"], function (require, exports, DaleIcons_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.PlayerClock = void 0;
+    var PlayerClock = (function () {
+        function PlayerClock(page, player_id) {
+            this.player_id = 0;
+            this.position = 0;
+            this.page = page;
+            this.player_id = player_id;
+            this.wrap = $('daleofmerchants-clock-wrap-' + player_id);
+            this.label = $('daleofmerchants-clock-label-' + player_id);
+            this.advanceClock(page.gamedatas.players[player_id].clock);
+        }
+        PlayerClock.prototype.advanceClock = function (steps) {
+            var prevPostion = this.position;
+            var newPosition = Math.max(PlayerClock.CLOCK_DAWN, Math.min(PlayerClock.CLOCK_NIGHT, prevPostion + steps));
+            this.setClock(newPosition);
+        };
+        PlayerClock.prototype.getClock = function () {
+            return this.position;
+        };
+        PlayerClock.prototype.setClock = function (newPosition) {
+            var _a;
+            this.position = newPosition;
+            this.wrap.dataset['clock'] = this.position.toString();
+            (_a = this.icon) === null || _a === void 0 ? void 0 : _a.remove();
+            this.icon = PlayerClock.getClockIcon(this.position);
+            this.icon.id = 'daleofmerchants-clock-icon-' + this.player_id;
+            this.wrap.prepend(this.icon);
+            this.page.addTooltip('daleofmerchants-clock-icon-' + this.player_id, PlayerClock.getClockTooltip(this.position), '');
+            this.label.innerText = PlayerClock.getClockLabel(this.position);
+        };
+        PlayerClock.getClockTooltip = function (position) {
+            var content = "";
+            switch (position) {
+                case PlayerClock.CLOCK_DAWN:
+                    content += _("It is DAWN time. After playing a technique, move your clock to DAY time.");
+                    break;
+                case PlayerClock.CLOCK_DAY:
+                    content += _("It is DAY time. After playing a technique, move your clock to NIGHT time.");
+                    break;
+                case PlayerClock.CLOCK_NIGHT:
+                    content += _("It is NIGHT time. At the start of your next turn, your clock resets to DAWN time.");
+                    break;
+                default:
+                    throw new Error("Invalid clock position " + position);
+            }
+            return content.replace('DAWN', "dawn (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDawnIcon().outerHTML, "</span>)"))
+                .replace('DAY', "day (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDayIcon().outerHTML, "</span>)"))
+                .replace('NIGHT', "night (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getNightIcon().outerHTML, "</span>)"));
+        };
+        PlayerClock.getClockLabel = function (position) {
+            switch (position) {
+                case PlayerClock.CLOCK_DAWN:
+                    return _("Dawn");
+                case PlayerClock.CLOCK_DAY:
+                    return _("Day");
+                case PlayerClock.CLOCK_NIGHT:
+                    return _("Night");
+                default:
+                    throw new Error("Invalid clock position " + position);
+            }
+        };
+        PlayerClock.getClockIcon = function (position) {
+            switch (position) {
+                case PlayerClock.CLOCK_DAWN:
+                    return DaleIcons_3.DaleIcons.getDawnIcon();
+                case PlayerClock.CLOCK_DAY:
+                    return DaleIcons_3.DaleIcons.getDayIcon();
+                case PlayerClock.CLOCK_NIGHT:
+                    return DaleIcons_3.DaleIcons.getNightIcon();
+                default:
+                    throw new Error("Invalid clock position " + position);
+            }
+        };
+        PlayerClock.getClockLabelAndIconTpl = function (position) {
+            var label = PlayerClock.getClockLabel(position).toLowerCase();
+            var iconTpl = PlayerClock.getClockIcon(position);
+            return "".concat(label, " (<span class=\"daleofmerchants-log-span\">").concat(iconTpl.outerHTML, "</span>)");
+        };
+        PlayerClock.CLOCK_DAWN = 0;
+        PlayerClock.CLOCK_DAY = 1;
+        PlayerClock.CLOCK_NIGHT = 2;
+        return PlayerClock;
+    }());
+    exports.PlayerClock = PlayerClock;
+});
+define("components/DaleCard", ["require", "exports", "components/DaleIcons", "components/Images", "components/types/DbEffect", "components/types/ChameleonChain", "components/DaleDie", "components/AbstractOrderedSelection", "components/PlayerClock"], function (require, exports, DaleIcons_4, Images_2, DbEffect_1, ChameleonChain_1, DaleDie_1, AbstractOrderedSelection_2, PlayerClock_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DaleCard = exports.OrderedSelection = void 0;
@@ -959,7 +1047,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     avid_financier_coin_container.classList.add("daleofmerchants-avid-financier-coin-container");
                     avid_financier_card.append(avid_financier_coin_container);
                     for (var i = 0; i < effect.arg; i++) {
-                        var avid_financier_coin = DaleIcons_3.DaleIcons.getCoinIcon();
+                        var avid_financier_coin = DaleIcons_4.DaleIcons.getCoinIcon();
                         avid_financier_coin.classList.add("daleofmerchants-avid-financier-coin-icon");
                         avid_financier_coin_container.append(avid_financier_coin);
                         var player_id = this.page.isSpectator ? this.page.gamedatas.playerorder[0] : this.page.player_id;
@@ -1388,7 +1476,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 effective_value = "(<span class=daleofmerchants-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }
             var legend = this.getLegend(cardType.text);
-            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(this.format_string(cardType.text), "</div>\n            <div style=\"color:gray\" class=\"daleofmerchants-card-tooltip-text\">").concat(legend ? '<hr>' + legend : '<br style="line-height: 10px" />', "</div>\n        </div>");
+            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(DaleCard.format_string(cardType.text), "</div>\n            <div style=\"color:gray\" class=\"daleofmerchants-card-tooltip-text\">").concat(legend ? '<hr>' + legend : '<br style="line-height: 10px" />', "</div>\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -1412,30 +1500,30 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             this.removeTooltip();
             DaleCard.tooltips.set(this.id, tooltip);
         };
-        DaleCard.prototype.format_string = function (text) {
+        DaleCard.format_string = function (text) {
             if (text.includes('CARDS3')) {
-                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCards3Icon().outerHTML, "</span>"));
+                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCards3Icon().outerHTML, "</span>"));
             }
             if (text.includes('CARDS2')) {
-                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCards2Icon().outerHTML, "</span>"));
+                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCards2Icon().outerHTML, "</span>"));
             }
             if (text.includes('CARD')) {
-                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCardIcon().outerHTML, "</span>"));
+                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCardIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_OCELOT')) {
-                text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDieOcelotIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDieOcelotIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_POLECAT')) {
-                text = text.replaceAll('DIE_POLECAT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDiePolecatIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DIE_POLECAT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePolecatIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_HARE')) {
-                text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDieHareIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDieHareIcon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_PANGOLIN1')) {
-                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>"));
+                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>"));
             }
             if (text.includes('DIE_PANGOLIN2')) {
-                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
+                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
             }
             if (text.includes('SOURCE')) {
                 text = text.replaceAll('SOURCE', "<span style=\"color: var(--pangolin1); font-weight: bold;\">".concat(_("source"), "</span>"));
@@ -1444,28 +1532,28 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
             }
             if (text.includes('COMET')) {
-                text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCometIcon().outerHTML, "</span>"));
+                text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCometIcon().outerHTML, "</span>"));
             }
             if (text.includes('PLANET')) {
-                text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
+                text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
             }
             if (text.includes('STARS')) {
-                text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getStarsIcon().outerHTML, "</span>"));
+                text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getStarsIcon().outerHTML, "</span>"));
             }
             if (text.includes('COIN')) {
-                text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getCoinIcon().outerHTML, "</span>"));
+                text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCoinIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAWN')) {
-                text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDawnIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDawnIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAY')) {
-                text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDayIcon().outerHTML, "</span>"));
+                text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDayIcon().outerHTML, "</span>"));
             }
             if (text.includes('NIGHT')) {
-                text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getNightIcon().outerHTML, "</span>"));
+                text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getNightIcon().outerHTML, "</span>"));
             }
             if (text.includes('CLOCK')) {
-                text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getClockIcon().outerHTML, "</span>"));
+                text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span>"));
             }
             return text;
         };
@@ -1503,8 +1591,14 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             if (text.includes(_('Spend')) || text.includes(_('Finish'))) {
                 legend += '<strong> ' + _('Spend') + ' : </strong> ' +
-                    this.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
+                    DaleCard.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
                     + '<br><br style="line-height: 10px" />';
+            }
+            if (text.includes('CLOCK')) {
+                legend += "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span> <strong>:</strong> ");
+                legend += _("a clock that tracks the");
+                legend += " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(0), ", ").concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(1), " ") + _("and") + " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(2));
+                legend += '<br><br style="line-height: 10px" />';
             }
             if (this.isChameleon()) {
                 legend += '<strong> ' + _('Copy') + ' : </strong> ' +
@@ -1530,7 +1624,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 }
             }
             if (this.isBoundChameleon()) {
-                var chameleon_icon = DaleIcons_3.DaleIcons.getChameleonIcon();
+                var chameleon_icon = DaleIcons_4.DaleIcons.getChameleonIcon();
                 chameleon_icon.classList.add("daleofmerchants-chameleon-icon");
                 var new_overlay = document.createElement("div");
                 new_overlay.classList.add("daleofmerchants-card");
@@ -2987,7 +3081,7 @@ define("components/CardSlot", ["require", "exports", "components/Images"], funct
     }());
     exports.CardSlot = CardSlot;
 });
-define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/types/DaleWrapClass", "components/DaleIcons"], function (require, exports, DaleCard_5, Images_6, CardSlot_1, DaleWrapClass_3, DaleIcons_4) {
+define("components/MarketBoard", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/types/DaleWrapClass", "components/DaleIcons"], function (require, exports, DaleCard_5, Images_6, CardSlot_1, DaleWrapClass_3, DaleIcons_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MarketBoard = void 0;
@@ -3011,7 +3105,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                 slotDiv.classList.add("daleofmerchants-placeholder-market");
                 stackContainer.appendChild(slotDiv);
                 if (pos > 0) {
-                    stackContainer.appendChild(DaleIcons_4.DaleIcons.getCostModificationIcon(pos - 1));
+                    stackContainer.appendChild(DaleIcons_5.DaleIcons.getCostModificationIcon(pos - 1));
                 }
                 this.container.appendChild(stackContainer);
                 this.slots.unshift(new CardSlot_1.CardSlot(this, pos, slotDiv));
@@ -3298,7 +3392,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
     }());
     exports.MarketBoard = MarketBoard;
 });
-define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_7, CardSlot_2, DaleIcons_5) {
+define("components/Stall", ["require", "exports", "components/DaleCard", "components/Images", "components/CardSlot", "components/DaleIcons"], function (require, exports, DaleCard_6, Images_7, CardSlot_2, DaleIcons_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Stall = void 0;
@@ -3359,7 +3453,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 stackIndexDiv.classList.add("daleofmerchants-stack-index");
                 stackIndexDiv.innerText = String(this.slots.length + 1);
                 placeholder.append(stackIndexDiv);
-                placeholder.appendChild(DaleIcons_5.DaleIcons.getBuildIcon());
+                placeholder.appendChild(DaleIcons_6.DaleIcons.getBuildIcon());
                 stackContainer.appendChild(placeholder);
                 this.container.appendChild(stackContainer);
                 this.stackContainers.push(stackContainer);
@@ -3887,6 +3981,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
                     case 'client_badOmen':
                         return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
+                    case 'client_dramaticRomantic':
+                        return _("${card_name}: ${you} move your clock");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4152,7 +4248,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard"]
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_6, DaleWrapClass_4, DaleCard_9) {
+define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_7, DaleWrapClass_4, DaleCard_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CoinManager = void 0;
@@ -4184,7 +4280,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
             for (var player_id in page.gamedatas.players) {
                 var coins_wrap = $('daleofmerchants-coins-wrap-' + player_id);
                 var coins_span = coins_wrap.querySelector('.daleofmerchants-coins-counter');
-                var coins_icon = DaleIcons_6.DaleIcons.getCoinIcon();
+                var coins_icon = DaleIcons_7.DaleIcons.getCoinIcon();
                 coins_icon.id = 'daleofmerchants-coins-icon-' + player_id;
                 coins_wrap.append(coins_icon);
                 this.playerCoins[player_id] = new ebg.counter();
@@ -4297,86 +4393,6 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
     }());
     exports.CoinManager = CoinManager;
 });
-define("components/PlayerClock", ["require", "exports", "components/DaleIcons"], function (require, exports, DaleIcons_7) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PlayerClock = void 0;
-    var PlayerClock = (function () {
-        function PlayerClock(page, player_id) {
-            this.player_id = 0;
-            this.position = 0;
-            this.page = page;
-            this.player_id = player_id;
-            this.wrap = $('daleofmerchants-clock-wrap-' + player_id);
-            this.label = $('daleofmerchants-clock-label-' + player_id);
-            this.advanceClock(page.gamedatas.players[player_id].clock);
-        }
-        PlayerClock.prototype.advanceClock = function (steps) {
-            var prevPostion = this.position;
-            var newPosition = Math.max(PlayerClock.CLOCK_DAWN, Math.min(PlayerClock.CLOCK_NIGHT, prevPostion + steps));
-            this.setClock(newPosition);
-        };
-        PlayerClock.prototype.setClock = function (newPosition) {
-            var _a;
-            this.position = newPosition;
-            this.wrap.dataset['clock'] = this.position.toString();
-            (_a = this.icon) === null || _a === void 0 ? void 0 : _a.remove();
-            this.icon = PlayerClock.getClockIcon(this.position);
-            this.icon.id = 'daleofmerchants-clock-icon-' + this.player_id;
-            this.wrap.prepend(this.icon);
-            this.page.addTooltip('daleofmerchants-clock-icon-' + this.player_id, PlayerClock.getClockTooltip(this.position), '');
-            this.label.innerText = PlayerClock.getClockLabel(this.position);
-        };
-        PlayerClock.getClockTooltip = function (position) {
-            var content = "";
-            switch (position) {
-                case PlayerClock.CLOCK_DAWN:
-                    content += _("It is DAWN time. After playing a technique, move your clock to DAY time.");
-                    break;
-                case PlayerClock.CLOCK_DAY:
-                    content += _("It is DAY time. After playing a technique, move your clock to NIGHT time.");
-                    break;
-                case PlayerClock.CLOCK_NIGHT:
-                    content += _("It is NIGHT time. At the start of your next turn, your clock resets to DAWN time.");
-                    break;
-                default:
-                    throw new Error("Invalid clock position " + position);
-            }
-            return content.replace('DAWN', "dawn (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_7.DaleIcons.getDawnIcon().outerHTML, "</span>)"))
-                .replace('DAY', "day (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_7.DaleIcons.getDayIcon().outerHTML, "</span>)"))
-                .replace('NIGHT', "night (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_7.DaleIcons.getNightIcon().outerHTML, "</span>)"));
-        };
-        PlayerClock.getClockLabel = function (position) {
-            switch (position) {
-                case PlayerClock.CLOCK_DAWN:
-                    return _("Dawn");
-                case PlayerClock.CLOCK_DAY:
-                    return _("Day");
-                case PlayerClock.CLOCK_NIGHT:
-                    return _("Night");
-                default:
-                    throw new Error("Invalid clock position " + position);
-            }
-        };
-        PlayerClock.getClockIcon = function (position) {
-            switch (position) {
-                case PlayerClock.CLOCK_DAWN:
-                    return DaleIcons_7.DaleIcons.getDawnIcon();
-                case PlayerClock.CLOCK_DAY:
-                    return DaleIcons_7.DaleIcons.getDayIcon();
-                case PlayerClock.CLOCK_NIGHT:
-                    return DaleIcons_7.DaleIcons.getNightIcon();
-                default:
-                    throw new Error("Invalid clock position " + position);
-            }
-        };
-        PlayerClock.CLOCK_DAWN = 0;
-        PlayerClock.CLOCK_DAY = 1;
-        PlayerClock.CLOCK_NIGHT = 2;
-        return PlayerClock;
-    }());
-    exports.PlayerClock = PlayerClock;
-});
 define("components/types/PrivateNotification", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -4393,7 +4409,7 @@ define("components/types/TranslatableStrings", ["require", "exports"], function 
     }());
     exports.TranslatableStrings = TranslatableStrings;
 });
-define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/PlayerClock", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_8, CoinManager_1, PlayerClock_1, TranslatableStrings_1) {
+define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/PlayerClock", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_8, CoinManager_1, PlayerClock_2, TranslatableStrings_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DaleOfMerchants = (function (_super) {
@@ -4424,6 +4440,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn('dale constructor');
             return _this;
         }
+        Object.defineProperty(DaleOfMerchants.prototype, "myClock", {
+            get: function () {
+                return this.playerClocks[this.player_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(DaleOfMerchants.prototype, "myHandSize", {
             get: function () {
                 return this.playerHandSizes[this.player_id];
@@ -4494,7 +4517,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.coinManager.init(this);
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
-                this.playerClocks[player_id] = new PlayerClock_1.PlayerClock(this, +player_id);
+                this.playerClocks[player_id] = new PlayerClock_2.PlayerClock(this, +player_id);
                 var handsize_span = document.createElement('span');
                 var handsize_icon = DaleIcons_8.DaleIcons.getHandIcon();
                 var player_board_div = (_c = $('player_board_' + player_id)) === null || _c === void 0 ? void 0 : _c.querySelector(".player_score");
@@ -6264,6 +6287,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var coffeeGrinder_args = args;
                     this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
                     break;
+                case 'client_dramaticRomantic':
+                    switch (this.myClock.getClock()) {
+                        case PlayerClock_2.PlayerClock.CLOCK_DAWN:
+                            this.addActionButton("forward-button", DaleCard_10.DaleCard.format_string(_("forward (DAY)")), "onDramaticRomanticForward");
+                            break;
+                        case PlayerClock_2.PlayerClock.CLOCK_DAY:
+                            this.addActionButton("forward-button", DaleCard_10.DaleCard.format_string(_("forward (NIGHT)")), "onDramaticRomanticForward");
+                            this.addActionButton("backward-button", DaleCard_10.DaleCard.format_string(_("backward (DAWN)")), "onDramaticRomanticBackward");
+                            break;
+                        case PlayerClock_2.PlayerClock.CLOCK_NIGHT:
+                            this.addActionButton("backward-button", DaleCard_10.DaleCard.format_string(_("backward (DAY)")), "onDramaticRomanticBackward");
+                            break;
+                    }
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -6505,9 +6543,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     args['coin_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl.outerHTML, "</span>");
                 }
                 if ('clock' in args) {
-                    var label = PlayerClock_1.PlayerClock.getClockLabel(+args['clock']).toLowerCase();
-                    var iconTpl = PlayerClock_1.PlayerClock.getClockIcon(+args['clock']);
-                    args['clock'] = "".concat(label, " (<span class=\"daleofmerchants-log-span\">").concat(iconTpl.outerHTML, "</span>)");
+                    args['clock'] = PlayerClock_2.PlayerClock.getClockLabelAndIconTpl(+args['clock']);
                 }
                 if (log.includes('${ocelot}')) {
                     args['ocelot'] = 'OCELOT_DIE_ICON';
@@ -8312,6 +8348,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_COFFEEGRINDER:
                     this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id, via_deck: true, keep_passive_selected: true });
                     break;
+                case DaleCard_10.DaleCard.CT_DRAMATICROMANTIC:
+                    this.mainClientState.enterOnStack('client_dramaticRomantic', { passive_card_id: card.id });
+                    break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
                     break;
@@ -9510,6 +9549,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onCoffeeGrinderSkip = function () {
             this.bgaPerformAction('actCoffeeGrinder', {
                 skip: true
+            });
+        };
+        DaleOfMerchants.prototype.onDramaticRomanticForward = function () {
+            this.playPassiveCard({
+                forward: true
+            });
+        };
+        DaleOfMerchants.prototype.onDramaticRomanticBackward = function () {
+            this.playPassiveCard({
+                forward: false
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

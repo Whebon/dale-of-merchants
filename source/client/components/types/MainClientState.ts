@@ -258,6 +258,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
             case 'client_badOmen':
                 return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
+            case 'client_dramaticRomantic':
+                return _("${card_name}: ${you} move your clock");
         }
         return "MISSING DESCRIPTION";
     }

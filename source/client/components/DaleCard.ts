@@ -9,6 +9,7 @@ import { ChameleonChain } from './types/ChameleonChain'
 import { DaleDie } from './DaleDie';
 import { AbstractOrderedSelection } from './AbstractOrderedSelection';
 import { DaleDeckSelection } from './DaleDeckSelection';
+import { PlayerClock } from './PlayerClock';
 
 /**
  * HTML data attribute representing a card div's location
@@ -877,7 +878,7 @@ export class DaleCard {
             <hr>
             ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="daleofmerchants-card-tooltip-text">${this.format_string(cardType.text)}</div>
+            <div class="daleofmerchants-card-tooltip-text">${DaleCard.format_string(cardType.text)}</div>
             <div style="color:gray" class="daleofmerchants-card-tooltip-text">${legend ? '<hr>'+legend : '<br style="line-height: 10px" />'}</div>
         </div>`
 	}
@@ -914,7 +915,7 @@ export class DaleCard {
     /**
      * Formats keywords in tooltip texts
      */
-    private format_string(text: string): string {
+    public static format_string(text: string): string {
         if (text.includes('CARDS3')) {
             text = text.replaceAll('CARDS3', `<span class="daleofmerchants-log-span">${DaleIcons.getCards3Icon().outerHTML}</span>`);
         }
@@ -1010,8 +1011,14 @@ export class DaleCard {
         }
         if (text.includes(_('Spend')) || text.includes(_('Finish'))) {
             legend += '<strong> ' + _('Spend') + ' : </strong> ' + 
-            this.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
+            DaleCard.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
             +'<br><br style="line-height: 10px" />';
+        }
+        if (text.includes('CLOCK')) {
+            legend += `<span class="daleofmerchants-log-span">${DaleIcons.getClockIcon().outerHTML}</span> <strong>:</strong> `
+            legend += _("a clock that tracks the");
+            legend += ` ${PlayerClock.getClockLabelAndIconTpl(0)}, ${PlayerClock.getClockLabelAndIconTpl(1)} `+_("and")+` ${PlayerClock.getClockLabelAndIconTpl(2)}`;
+            legend += '<br><br style="line-height: 10px" />';
         }
         if (this.isChameleon()) {
             legend += '<strong> ' + _('Copy') + ' : </strong> ' + 

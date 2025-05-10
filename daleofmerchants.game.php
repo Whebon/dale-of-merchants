@@ -5309,6 +5309,18 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->gamestate->nextState("trCoffeeGrinder"); return;
                 }
                 break;
+            case CT_DRAMATICROMANTIC:
+                if (!isset($args['forward'])) {
+                    throw new BgaUserException("Expected args['forward'] to be set by the client");
+                }
+                if ($args['forward']) {
+                    $this->advanceClock($player_id, 1, clienttranslate('Dramatic Romantic: ${player_name} moves their clock forwards to ${clock}'));
+                }
+                else {
+                    $this->advanceClock($player_id, -1, clienttranslate('Dramatic Romantic: ${player_name} moves their clock backwards to ${clock}'));
+                }
+                $this->effects->insertModification($passive_card_id, CT_DRAMATICROMANTIC);
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");

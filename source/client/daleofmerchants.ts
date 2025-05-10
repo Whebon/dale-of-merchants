@@ -81,6 +81,11 @@ class DaleOfMerchants extends Gamegui
 	/** A hidden draw pile for each player AND the market */
 	allDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
 
+	/** The PlayerClock component for this player */
+	get myClock(): PlayerClock {
+		return this.playerClocks[this.player_id]!;
+	}
+
 	/** The Counter component for my handsize */
 	get myHandSize(): Counter {
 		return this.playerHandSizes[this.player_id]!;
@@ -2089,6 +2094,21 @@ class DaleOfMerchants extends Gamegui
 				const coffeeGrinder_args = (args as { opponent_id: number });
 				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
 				break;
+			case 'client_dramaticRomantic':
+				switch(this.myClock.getClock()) {
+					case PlayerClock.CLOCK_DAWN:
+						this.addActionButton("forward-button", DaleCard.format_string(_("forward (DAY)")), "onDramaticRomanticForward");
+						break;
+					case PlayerClock.CLOCK_DAY:
+						this.addActionButton("forward-button", DaleCard.format_string(_("forward (NIGHT)")), "onDramaticRomanticForward");
+						this.addActionButton("backward-button", DaleCard.format_string(_("backward (DAWN)")),  "onDramaticRomanticBackward");
+						break;
+					case PlayerClock.CLOCK_NIGHT:
+						this.addActionButton("backward-button", DaleCard.format_string(_("backward (DAY)")),  "onDramaticRomanticBackward");
+						break;
+				}
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2390,9 +2410,7 @@ class DaleOfMerchants extends Gamegui
 
 			//parse clock icon
 			if ('clock' in args) {
-				const label = PlayerClock.getClockLabel(+args['clock']).toLowerCase();
-				const iconTpl = PlayerClock.getClockIcon(+args['clock']);
-				args['clock'] = `${label} (<span class="daleofmerchants-log-span">${iconTpl.outerHTML}</span>)`;
+				args['clock'] = PlayerClock.getClockLabelAndIconTpl(+args['clock']); 
 			}
 
 			//parse ocelot die
@@ -4476,6 +4494,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_COFFEEGRINDER:
 				this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id, via_deck: true, keep_passive_selected: true });
 				break;
+			case DaleCard.CT_DRAMATICROMANTIC:
+				this.mainClientState.enterOnStack('client_dramaticRomantic', {passive_card_id: card.id});
+				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;
@@ -5840,6 +5861,18 @@ class DaleOfMerchants extends Gamegui
 	onCoffeeGrinderSkip() {
 		this.bgaPerformAction('actCoffeeGrinder', {
 			skip: true
+		});
+	}
+
+	onDramaticRomanticForward() {
+		this.playPassiveCard<'client_dramaticRomantic'>({
+			forward: true
+		});
+	}
+
+	onDramaticRomanticBackward() {
+		this.playPassiveCard<'client_dramaticRomantic'>({
+			forward: false
 		});
 	}
 
