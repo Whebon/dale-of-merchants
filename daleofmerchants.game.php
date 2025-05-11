@@ -664,14 +664,15 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $dbcards cards that need to be ditched
      * @param bool $from_limbo (optional) - default false. If `false`, ditch from hand. If `true`, ditch from limbo.
      * @param array $ordered_card_ids (optional) - if provided, ditch these cards last
+     * @param array $msg_args (optional) - additional args to display in the `$msg`
      */
-    function ditchMultiple(string $msg, array $dbcards, bool $from_limbo = false, mixed $ordered_card_ids = array()) {
+    function ditchMultiple(string $msg, array $dbcards, bool $from_limbo = false, mixed $ordered_card_ids = array(), array $msg_args = array()) {
         $player_id = $this->getActivePlayerId();
-        $this->notifyAllPlayers('message', $msg, array (
+        $this->notifyAllPlayers('message', $msg, array_merge( array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'nbr' => count($dbcards)
-        ));
+        ), $msg_args));
         //ditch the unordered cards
         foreach ($dbcards as $dbcard) {
             if (!in_array($dbcard["id"], $ordered_card_ids)) {
@@ -3170,6 +3171,8 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_RISKYBUSINESS:
                 case CT_CHARM:
                 case CT_FASHIONHINT:
+                case CT_SPECIALOFFER:
+                case CT_INHERITANCE:
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
                     $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
                     if ($nbr > 0) {
@@ -3501,6 +3504,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SPECIALOFFER:
+            case CT_INHERITANCE: //same as special offer
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSpecialOffer");
                 break;
@@ -5541,6 +5545,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actSpecialOffer");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
+        $resolving_card_name = $this->getCurrentResolvingCardName();
 
         //get the card to draw (first card from the card_ids array)
         if (count($card_ids) == 0) {
@@ -5559,7 +5564,8 @@ class DaleOfMerchants extends DaleTableBasic
         
         //1. place the selected card into the hand
         $this->cards->moveCard($draw_card_id, HAND.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Special Offer: ${player_name} places 1 card into their hand'), array(
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('${resolving_card_name}: ${player_name} places 1 card into their hand'), array(
+            "resolving_card_name" => $resolving_card_name,
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "_private" => array(
@@ -5569,10 +5575,13 @@ class DaleOfMerchants extends DaleTableBasic
 
         //2. ditch the rest
         $this->ditchMultiple(
-            clienttranslate('Special Offer: ${player_name} ditches the other ${nbr} cards'),
+            clienttranslate('${resolving_card_name}: ${player_name} ditches the other ${nbr} card(s)'),
             array_merge($non_selected_cards, $selected_cards), 
             true,
-            $card_ids
+            $card_ids,
+            array(
+                "resolving_card_name" => $resolving_card_name
+            )
         );
 
         $this->fullyResolveCard($player_id);
@@ -7606,8 +7615,33 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stSpecialOffer() {
-        $nbr = $this->draw(clienttranslate('Special Offer: ${player_name} draws 3 cards'), 3, true, MARKET);
-        if ($nbr == 0) {
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->getResolvingCard();
+        $type_id = (int)$this->getTypeId($dbcard);
+        switch ($type_id) {
+            case CT_SPECIALOFFER:
+                $nbr = 3;
+                break;
+            case CT_INHERITANCE:
+                switch($this->getClock($player_id)) {
+                    case CLOCK_DAWN:
+                        $nbr = 2;
+                        break;
+                    case CLOCK_DAY:
+                        $nbr = 5;
+                        break;
+                    case CLOCK_NIGHT:
+                        $nbr = 1;
+                        break;
+                }
+                break;
+            default:
+                throw new BgaVisibleSystemException("stSpecialOffer: unexpected resolving card with type_id = ".$type_id);
+        }
+        $actual_nbr = $this->draw(clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} cards'), $nbr, true, MARKET, null, null, array(
+            "resolving_card_name" => $this->getCardName($dbcard)
+        ));
+        if ($actual_nbr == 0) {
             //special offer has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }

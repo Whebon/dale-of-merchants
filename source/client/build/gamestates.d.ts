@@ -368,10 +368,11 @@ interface GameStates {
 	},
 	53: {
 		'name': 'specialOffer',
-		'description': 'Special Offer: ${actplayer} must choose a card to take',
-		'descriptionmyturn': 'Special Offer: ${you} must choose a card to take',
+		'description': '${resolving_card_name}: ${actplayer} must choose a card to take',
+		'descriptionmyturn': '${resolving_card_name}: ${you} must choose a card to take',
 		'type': 'activeplayer',
 		'action': 'stSpecialOffer',
+		'args': 'argResolvingCardName',
 		'possibleactions': {
 			'actSpecialOffer': [{
 				'name': 'card_ids',

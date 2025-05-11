@@ -4822,7 +4822,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'specialOffer':
-                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
+                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_8.DaleIcons.getCheeseIcon()));
                     break;
                 case 'client_rottenFood':
                     for (var _k = 0, _l = Object.entries(this.allDecks); _k < _l.length; _k++) {
@@ -5178,9 +5178,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.openPopin();
                     break;
                 case 'travelingEquipment':
-                    var travelingEquipment_label = _("Choose cards to <strong>ditch</strong> (ICON1) and discard (ICON2)")
-                        .replace('ICON1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_8.DaleIcons.getTravelingEquipmentDitchIcon().outerHTML, "</span>"))
-                        .replace('ICON2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_8.DaleIcons.getTravelingEquipmentDiscardIcon().outerHTML, "</span>"));
+                    var travelingEquipment_label = this.format_dale_icons(_("Choose cards to <strong>ditch</strong> (ICON) and discard (ICON)"), DaleIcons_8.DaleIcons.getTravelingEquipmentDitchIcon(), DaleIcons_8.DaleIcons.getTravelingEquipmentDiscardIcon());
                     this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
                     break;
                 case 'fishing':
@@ -6555,6 +6553,23 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.myHand.selectItem(client_purchase_args.calculations_card_id);
             }
         };
+        DaleOfMerchants.prototype.format_dale_icons = function (text) {
+            var icons = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                icons[_i - 1] = arguments[_i];
+            }
+            var parts = text.split("ICON");
+            if (parts.length - 1 !== icons.length) {
+                console.warn("format_dale_icons: number of icons does not match number of 'ICON' placeholders");
+                return text;
+            }
+            var result = "";
+            for (var i = 0; i < icons.length; i++) {
+                result += parts[i] + "<span class=\"daleofmerchants-log-span\">".concat(icons[i].outerHTML, "</span>");
+            }
+            result += parts[icons.length];
+            return result;
+        };
         DaleOfMerchants.prototype.format_string_recursive = function (log, args) {
             var _a;
             if (log && args && !args['processed']) {
@@ -7861,6 +7876,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_CHARM:
+                case DaleCard_10.DaleCard.CT_SPECIALOFFER:
+                case DaleCard_10.DaleCard.CT_INHERITANCE:
                     fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);

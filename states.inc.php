@@ -244,10 +244,11 @@ $machinestates = array(
 	),
 	53 => array(
 		'name' => 'specialOffer',
-		'description' => clienttranslate('Special Offer: ${actplayer} must choose a card to take'),
-		'descriptionmyturn' => clienttranslate('Special Offer: ${you} must choose a card to take'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must choose a card to take'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must choose a card to take'),
 		'type' => 'activeplayer',
 		'action' => 'stSpecialOffer',
+		'args' => 'argResolvingCardName',
 		'possibleactions' => ['actSpecialOffer'],
 		'transitions' => array(
 			'trNextPlayer' => 41,

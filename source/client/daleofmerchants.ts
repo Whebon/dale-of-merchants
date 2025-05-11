@@ -551,7 +551,9 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'specialOffer':
-				this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', _("Choose a card to take"));
+				this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', 
+					this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons.getCheeseIcon())
+				);
 				break;
 			case 'client_rottenFood':
 				for (const [player_id, deck] of Object.entries(this.allDecks)) {
@@ -959,9 +961,11 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.openPopin();
 				break;
 			case 'travelingEquipment':
-				const travelingEquipment_label = _("Choose cards to <strong>ditch</strong> (ICON1) and discard (ICON2)")
-					.replace('ICON1', `<span class="daleofmerchants-log-span">${DaleIcons.getTravelingEquipmentDitchIcon().outerHTML}</span>`)
-					.replace('ICON2', `<span class="daleofmerchants-log-span">${DaleIcons.getTravelingEquipmentDiscardIcon().outerHTML}</span>`);
+				const travelingEquipment_label = this.format_dale_icons(
+					_("Choose cards to <strong>ditch</strong> (ICON) and discard (ICON)"),
+					DaleIcons.getTravelingEquipmentDitchIcon(),
+					DaleIcons.getTravelingEquipmentDiscardIcon()
+				);
 				this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
 				break;
 			case 'fishing':
@@ -2388,6 +2392,26 @@ class DaleOfMerchants extends Gamegui
 		if (client_purchase_args.calculations_card_id !== undefined && this.myHand.orderedSelection.getSize() == 0) {
 			this.myHand.selectItem(client_purchase_args.calculations_card_id);
 		}
+	}
+
+	/**
+	 * Replaces each "ICON" in the `text` with the respective `icons`
+	 * @param text Text containing `n` occurrences of "ICON"
+	 * @param icons `n` HTMLElement icons to replace each "ICON"
+	 * @returns A new string with "ICON" replaced by each icon's HTML
+	 */
+	public format_dale_icons(text: string, ...icons: HTMLElement[]): string {
+		const parts = text.split("ICON");
+		if (parts.length - 1 !== icons.length) {
+			console.warn("format_dale_icons: number of icons does not match number of 'ICON' placeholders");
+			return text;
+		}
+		let result = "";
+		for (let i = 0; i < icons.length; i++) {
+			result += parts[i] + `<span class="daleofmerchants-log-span">${icons[i]!.outerHTML}</span>`;
+		}
+		result += parts[icons.length];
+		return result;
 	}
 
 	/**
@@ -3983,6 +4007,8 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_CHARM:
+			case DaleCard.CT_SPECIALOFFER:
+			case DaleCard.CT_INHERITANCE:
 				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
