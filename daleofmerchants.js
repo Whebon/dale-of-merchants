@@ -428,6 +428,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                 case 'travelingEquipment':
                     icon = index == 0 ? DaleIcons_1.DaleIcons.getTravelingEquipmentDitchIcon() : DaleIcons_1.DaleIcons.getTravelingEquipmentDiscardIcon();
                     break;
+                case 'selectingContracts':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getDitchIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
             }
             if (icon) {
                 if (secondary) {
@@ -1551,7 +1554,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             if (text.includes('DAY')) {
                 text = text.replace(/\[DAY(.|\n)*?\]/g, function (match) {
-                    console.log(match);
                     return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"1\">".concat(match.replace(/\[|\]/g, ''), "</div>");
                 });
                 text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDayIcon().outerHTML, "</span>"));
@@ -3996,6 +3998,13 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
                     case 'client_dramaticRomantic':
                         return _("${card_name}: ${you} move your clock");
+                    case 'client_selectingContracts':
+                        if (this._args.nbr == 1) {
+                            return _("${card_name}: ${you} must <stronger>ditch</stronger> the top card of your discard");
+                        }
+                        else {
+                            return _("${card_name}: ${you} must <stronger>ditch</stronger> one of the top ${nbr} cards of your discard");
+                        }
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5226,6 +5235,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'bouquets':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place on your deck"));
                     break;
+                case 'client_selectingContracts':
+                    this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'selectingContracts', "daleofmerchants-wrap-technique", this.mainClientState.args.nbr);
+                    this.myDiscard.openPopin();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5654,6 +5667,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'bouquets':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_selectingContracts':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -6319,6 +6335,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             this.addActionButton("backward-button", DaleCard_10.DaleCard.format_string(_("backward (DAY)")), "onDramaticRomanticBackward");
                             break;
                     }
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_selectingContracts':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSelectingContracts");
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -8287,6 +8307,27 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_SELECTINGCONTRACTS:
+                    fizzle = this.myDiscard.size == 0;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        var client_selectingContracts_nbr = 0;
+                        switch (this.myClock.getClock()) {
+                            case PlayerClock_2.PlayerClock.CLOCK_DAWN:
+                                client_selectingContracts_nbr = 2;
+                                break;
+                            case PlayerClock_2.PlayerClock.CLOCK_DAY:
+                                client_selectingContracts_nbr = 4;
+                                break;
+                            case PlayerClock_2.PlayerClock.CLOCK_NIGHT:
+                                client_selectingContracts_nbr = 1;
+                                break;
+                        }
+                        this.clientScheduleTechnique('client_selectingContracts', card.id, { nbr: client_selectingContracts_nbr });
+                    }
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -9584,6 +9625,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onDramaticRomanticBackward = function () {
             this.playPassiveCard({
                 forward: false
+            });
+        };
+        DaleOfMerchants.prototype.onSelectingContracts = function () {
+            var card_ids = this.myDiscard.orderedSelection.get();
+            if (card_ids.length == 0) {
+                this.showMessage(_("Please select at least 1 card from your discard"), 'error');
+                this.myDiscard.openPopin();
+                return;
+            }
+            this.playTechniqueCard({
+                card_ids: card_ids
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

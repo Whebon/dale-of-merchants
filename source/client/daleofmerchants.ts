@@ -1013,6 +1013,12 @@ class DaleOfMerchants extends Gamegui
 			case 'bouquets':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place on your deck"));
 				break;
+			case 'client_selectingContracts':
+				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'selectingContracts', "daleofmerchants-wrap-technique", 
+					(this.mainClientState.args as ClientGameStates['client_selectingContracts']).nbr
+				);
+				this.myDiscard.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1439,6 +1445,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'bouquets':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_selectingContracts':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2113,6 +2122,10 @@ class DaleOfMerchants extends Gamegui
 						this.addActionButton("backward-button", DaleCard.format_string(_("backward (DAY)")),  "onDramaticRomanticBackward");
 						break;
 				}
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_selectingContracts':
+				this.addActionButton("confirm-button", _("Confirm"), "onSelectingContracts");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -4416,6 +4429,27 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
+			case DaleCard.CT_SELECTINGCONTRACTS:
+				fizzle = this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					let client_selectingContracts_nbr = 0;
+					switch (this.myClock.getClock()) {
+						case PlayerClock.CLOCK_DAWN:
+							client_selectingContracts_nbr = 2;
+							break;
+						case PlayerClock.CLOCK_DAY:
+							client_selectingContracts_nbr = 4;
+							break;
+						case PlayerClock.CLOCK_NIGHT:
+							client_selectingContracts_nbr = 1;
+							break;
+					}
+					this.clientScheduleTechnique('client_selectingContracts', card.id, {nbr: client_selectingContracts_nbr});
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -5886,6 +5920,18 @@ class DaleOfMerchants extends Gamegui
 		this.playPassiveCard<'client_dramaticRomantic'>({
 			forward: false
 		});
+	}
+
+	onSelectingContracts() {
+		const card_ids = this.myDiscard.orderedSelection.get();
+		if (card_ids.length == 0) {
+			this.showMessage(_("Please select at least 1 card from your discard"), 'error');
+			this.myDiscard.openPopin();
+			return;
+		}
+		this.playTechniqueCard<'client_selectingContracts'>({
+			card_ids: card_ids
+		})
 	}
 
 	//(~on)

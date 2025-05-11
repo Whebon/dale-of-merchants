@@ -411,6 +411,19 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Returns the array of dbcards as an associative array
+     * @param array $dbcards_array `$dbcards` formatted as indexed array (e.g. `[0 => Card7, 1 => Card42]`)
+     * @return array `$dbcards` formatted as associative array (e.g. `[7 => Card7, 42 => Card42]`)
+     */
+    function toAssociativeArray(array $dbcards_array){
+        $dbcards = array();
+        foreach ($dbcards_array as $i => $dbcard) { //$i in [0, 1, 2, ..., $nbr]
+            $dbcards[$dbcard["id"]] = $dbcard;
+        }
+        return $dbcards;
+    }
+
+    /**
      * Converts an array of dbcards to an array of card ids
      * @param array $dbcards `$dbcards`
      * @return array `$card_ids`
@@ -507,12 +520,15 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //only send a single message to the players
-        $this->notifyAllPlayers('message', $msg, array_merge( array (
-            'player_id' => $this->getActivePlayerId(),
-            'player_name' => $this->getActivePlayerName(),
-            'opponent_name' => $this->getPlayerNameById($deck_player_id),
-            'nbr' => count($cards) + $nbr_unordered_cards,
-        ), $msg_args));
+        $nbr = count($cards) + $nbr_unordered_cards;
+        if ($nbr > 0) {
+            $this->notifyAllPlayers('message', $msg, array_merge( array (
+                'player_id' => $this->getActivePlayerId(),
+                'player_name' => $this->getActivePlayerName(),
+                'opponent_name' => $this->getPlayerNameById($deck_player_id),
+                'nbr' => count($cards) + $nbr_unordered_cards,
+            ), $msg_args));
+        }
     }
 
     /**
@@ -3159,6 +3175,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_TIRELESSTINKERER:
                 case CT_HISTORYLESSON:
                 case CT_ALTERNATIVEPLAN:
+                case CT_SELECTINGCONTRACTS:
                     $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
                     if ($nbr > 0) {
                         throw new BgaVisibleSystemException("Unable to fizzle. The player's discard pile contains card(s).");
@@ -4893,6 +4910,56 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Bouquets: ${player_name} draws ${nbr} card(s)'), $nbr);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trBouquets");
+                break;
+            case CT_SELECTINGCONTRACTS:
+                //1. get the top of cards of the discard pile
+                switch($this->getClock($player_id)) {
+                    case CLOCK_DAWN:
+                        $nbr = 2;
+                        break;
+                    case CLOCK_DAY:
+                        $nbr = 4;
+                        break;
+                    case CLOCK_NIGHT:
+                        $nbr = 1;
+                        break;
+                }
+                $top_cards = $this->toAssociativeArray($this->cards->getCardsOnTop($nbr, DISCARD.$player_id));
+
+                //2. ditch a card
+                $card_ids = $args["card_ids"];
+                if (count($card_ids) == 0) {
+                    throw new BgaUserException($this->_("You must select at least 1 card to ditch"));
+                }
+                $ditch_card_id = array_pop($card_ids); //the last index is the card to ditch
+                if (!isset($top_cards[$ditch_card_id])) {
+                    throw new BgaUserException($this->_("The selected card to ditch is not within the top X cards of the discard pile"));
+                }
+                unset($top_cards[$ditch_card_id]);
+                $this->ditchFromDiscard(clienttranslate('Selecting Contracts: ${player_name} ditches their ${card_name}'), $ditch_card_id);
+
+                //3. place the rest on top of the deck
+                foreach ($top_cards as $top_card_id => $top_card) {
+                    if (!in_array($top_card_id, $card_ids)) {
+                        array_unshift($card_ids, $top_card_id); //prepend (put unordered cards on top first)
+                    }
+                }
+                foreach($card_ids as $card_id) {
+                    if (!isset($top_cards[$card_id])) {
+                        throw new BgaUserException($this->_("Some selected card is not within the top X cards of the discard pile"));
+                    }
+                    $this->cards->moveCardOnTop($card_id, DECK.$player_id);
+                    $this->notifyAllPlayers('discardToDeck', clienttranslate('Selecting Contracts: ${player_name} places ${card_name} on top of their deck'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "card_name" => $this->getCardName($top_cards[$card_id]),
+                        "card" => $top_cards[$card_id]
+                    ));
+                }
+                if (count($card_ids) != count($top_cards)) {
+                    throw new BgaVisibleSystemException("Invariant bug in CT_SELECTINGCONTRACTS");
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

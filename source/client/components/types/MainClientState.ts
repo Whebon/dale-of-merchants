@@ -260,6 +260,12 @@ export class MainClientState {
                 return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
             case 'client_dramaticRomantic':
                 return _("${card_name}: ${you} move your clock");
+            case 'client_selectingContracts':
+                if((this._args as ClientGameStates['client_selectingContracts']).nbr == 1) {
+                    return _("${card_name}: ${you} must <stronger>ditch</stronger> the top card of your discard");
+                } else {
+                    return _("${card_name}: ${you} must <stronger>ditch</stronger> one of the top ${nbr} cards of your discard");
+                }
         }
         return "MISSING DESCRIPTION";
     }

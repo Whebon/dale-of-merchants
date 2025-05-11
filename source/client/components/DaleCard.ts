@@ -966,7 +966,6 @@ export class DaleCard {
         }
         if (text.includes('DAY')) {
             text = text.replace(/\[DAY(.|\n)*?\]/g, match => {
-                console.log(match);
                 return `<div class="daleofmerchants-tooltip-clock" data-clock="1">${match.replace(/\[|\]/g,'')}</div>`;
             });
             text = text.replaceAll('DAY', `<span class="daleofmerchants-log-span">${DaleIcons.getDayIcon().outerHTML}</span>`);

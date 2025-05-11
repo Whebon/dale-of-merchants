@@ -484,6 +484,7 @@ declare global {
 		'client_spendx' : { spend_card_ids: number[], spend_coins: number }
 		'client_cache': { card_id: number }
 		'client_groundbreakingIdea': { card_id: number }
+		'client_selectingContracts': { card_ids: number[] }
 	}
 
 	interface ClientPassiveChoice {
@@ -559,6 +560,7 @@ declare global {
 		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
 		'client_badOmen': { ditch_card_id: number, card_name: string }
+		'client_selectingContracts': {technique_card_id: number, nbr: number }
 	}
 
 	//

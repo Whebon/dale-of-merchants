@@ -104,6 +104,9 @@ export abstract class AbstractOrderedSelection {
             case 'travelingEquipment':
                 icon = index == 0 ? DaleIcons.getTravelingEquipmentDitchIcon() : DaleIcons.getTravelingEquipmentDiscardIcon();
                 break;
+            case 'selectingContracts':
+                icon = (index == 0) ? DaleIcons.getDitchIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
         }
         if (icon) {
             if (secondary) {
