@@ -30,21 +30,6 @@
   padding: 2px 12px;
 }
 
-.whiteblock:has([data-clock="0"]) {
-  transition: background-color 0.3s ease;
-  background-color: var(--daleofmerchants-dawn-a);
-}
-
-.whiteblock:has([data-clock="1"]) {
-  transition: background-color 0.3s ease;
-  background-color: var(--daleofmerchants-day-a);
-}
-
-.whiteblock:has([data-clock="2"]) {
-  transition: background-color 0.3s ease;
-  background-color: var(--daleofmerchants-night-a);
-}
-
 .daleofmerchants-deck-selection-container {
   display: flex;
   flex-wrap: wrap;

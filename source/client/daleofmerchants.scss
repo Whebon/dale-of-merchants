@@ -35,18 +35,19 @@
 	padding: 2px 12px; //buttons with icons should not be taller than buttons without icons
 }
 
-.whiteblock:has([data-clock="0"]) {
-	transition: background-color 0.3s ease;
-	background-color: var(--daleofmerchants-dawn-a);
-}
-.whiteblock:has([data-clock="1"]) {
-	transition: background-color 0.3s ease;
-	background-color: var(--daleofmerchants-day-a);
-}
-.whiteblock:has([data-clock="2"]) {
-	transition: background-color 0.3s ease;
-	background-color: var(--daleofmerchants-night-a);
-}
+//TODO: safely remove this
+// .whiteblock:has([data-clock="0"]) {
+// 	transition: background-color 0.3s ease;
+// 	background-color: var(--daleofmerchants-dawn-a);
+// }
+// .whiteblock:has([data-clock="1"]) {
+// 	transition: background-color 0.3s ease;
+// 	background-color: var(--daleofmerchants-day-a);
+// }
+// .whiteblock:has([data-clock="2"]) {
+// 	transition: background-color 0.3s ease;
+// 	background-color: var(--daleofmerchants-night-a);
+// }
 
 ////////////////////////////////////////////////////////////////
 ////////////////////     DECK SELECTION     ////////////////////
