@@ -2245,7 +2245,8 @@ class DaleOfMerchants extends DaleTableBasic
      * Discard the resolving card, notify all players and transition to the next state. 
      * @param mixed $player_id id of the owner of the scheduled card
      * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
-     * @param string $resolve_to (optional) if true, resolve to the provided location instead of the discard pile
+     * @param string $resolve_to (optional) if specified, resolve to the provided location instead of the discard pile. 
+     *                                      if `'skip'`, don't move the card at all (useful for echidnas and swapping cards).
      */
     function fullyResolveCard(mixed $player_id, array $technique_card = null, string $resolve_to_location = null) {
         //get the resolving card
@@ -3442,7 +3443,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "stall_player_id" => $stall_player_id,
                     "stall_card_id" => $stall_card_id
                 ));
-                $this->gamestate->nextState("trSamePlayer");
+                $this->fullyResolveCard($player_id, $technique_card, 'skip');
                 break;
             case CT_GIFTVOUCHER:
                 $market_card_id = $args["market_card_id"];
@@ -3456,7 +3457,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "card" => $technique_card,
                     "market_card_id" => $market_card_id
                 ));
-                $this->gamestate->nextState("trSamePlayer");
+                $this->fullyResolveCard($player_id, $technique_card, 'skip');
                 break;
             case CT_LOYALPARTNER:
                 //get the selected cards
@@ -3824,7 +3825,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "stall_player_id" => $player_id,
                     "stall_card_id" => $card_id
                 ));
-                $this->gamestate->nextState("trSamePlayer");
+                $this->fullyResolveCard($player_id, $technique_card, 'skip');
                 break;
             case CT_MAGNET:
                 $this->beginResolvingCard($technique_card_id);
@@ -4537,7 +4538,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "stall_player_id" => $stall_player_id,
                     "stall_card_id" => $stall_card_id
                 ));
-                $this->gamestate->nextState("trSamePlayer");
+                $this->fullyResolveCard($player_id, $technique_card, 'skip');
                 break;
             case CT_MATCHINGCOLOURS:
                 //get the both cards that need to be swapped
@@ -4997,7 +4998,7 @@ class DaleOfMerchants extends DaleTableBasic
                             "stall_player_id" => $player_id,
                             "stall_card_id" => $card_id
                         ));
-                        $this->gamestate->nextState("trSamePlayer");
+                        $this->fullyResolveCard($player_id, $technique_card, 'skip');
                         break;
                     case CLOCK_DAY:
                         //Hard copy from CT_ACORN
@@ -5015,7 +5016,7 @@ class DaleOfMerchants extends DaleTableBasic
                             "stall_player_id" => $stall_player_id,
                             "stall_card_id" => $stall_card_id
                         ));
-                        $this->gamestate->nextState("trSamePlayer");
+                        $this->fullyResolveCard($player_id, $technique_card, 'skip');
                         break;
                     case CLOCK_NIGHT:
                         //Hard copy from CT_GIFTVOUCHER
@@ -5030,7 +5031,7 @@ class DaleOfMerchants extends DaleTableBasic
                             "card" => $technique_card,
                             "market_card_id" => $market_card_id
                         ));
-                        $this->gamestate->nextState("trSamePlayer");
+                        $this->fullyResolveCard($player_id, $technique_card, 'skip');
                         break;
                 }
                 break;
