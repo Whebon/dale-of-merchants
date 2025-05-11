@@ -205,6 +205,7 @@ interface GameStates {
 			'trLooseMarbles': 96,
 			'trAnotherFineMess': 97,
 			'trCoffeeGrinder': 101,
+			'trBouquets': 102,
 		},
 	},
 	31: {
@@ -1221,6 +1222,22 @@ interface GameStates {
 				'name': 'skip',
 				'type': 'AT_bool',
 				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	102: {
+		'name': 'bouquets',
+		'description': 'Bouquets: ${actplayer} must choose a card to place on their deck',
+		'descriptionmyturn': 'Bouquets: ${you} must choose a card to place on their deck',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actBouquets': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

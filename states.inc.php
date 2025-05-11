@@ -158,6 +158,7 @@ $machinestates = array(
 			'trLooseMarbles' => 96,
 			'trAnotherFineMess' => 97,
 			'trCoffeeGrinder' => 101,
+			'trBouquets' => 102,
 		),
 	),
 	31 => array(
@@ -760,6 +761,16 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argOpponentNameAndPassiveCardId',
 		'possibleactions' => ['actCoffeeGrinder'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	102 => array(
+		'name' => 'bouquets',
+		'description' => clienttranslate('Bouquets: ${actplayer} must choose a card to place on their deck'),
+		'descriptionmyturn' => clienttranslate('Bouquets: ${you} must choose a card to place on their deck'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actBouquets'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

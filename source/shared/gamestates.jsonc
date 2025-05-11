@@ -176,7 +176,8 @@
 			"trAnotherFineMess": 97,
 
 			//Hidden-information technique states (skipping some protected gamestate ids around 100)
-			"trCoffeeGrinder": 101
+			"trCoffeeGrinder": 101,
+			"trBouquets": 102
 		}
 	},
 
@@ -969,6 +970,19 @@
 		"possibleactions": {
 			"actCoffeeGrinder": [
 				{"name": "skip", "type": "AT_bool"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"102": {
+		"name": "bouquets",
+		"description": "Bouquets: ${actplayer} must choose a card to place on their deck",
+		"descriptionmyturn": "Bouquets: ${you} must choose a card to place on their deck",
+		"type": "activeplayer",
+		"possibleactions": {
+			"actBouquets": [
+				{"name": "card_id", "type": "AT_int"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

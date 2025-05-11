@@ -3286,9 +3286,10 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_MANUFACTUREDJOY:
+                case CT_BOUQUETS:
                     $counts = $this->cards->countCardsInLocations();
                     if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id]) || $counts[HAND.$player_id] >= 2) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_MANUFACTUREDJOY. There exists a card in deck, discard OR hand");
+                        throw new BgaVisibleSystemException("Unable to fizzle. There exists a card in deck, discard OR hand");
                     }
                     break;
                 case CT_SHAKYENTERPRISE:
@@ -4876,6 +4877,22 @@ class DaleOfMerchants extends DaleTableBasic
                     clienttranslate('Fresh Start: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_BOUQUETS:
+                switch($this->getClock($player_id)) {
+                    case CLOCK_DAWN:
+                        $nbr = 1;
+                        break;
+                    case CLOCK_DAY:
+                        $nbr = 2;
+                        break;
+                    case CLOCK_NIGHT:
+                        $nbr = 1;
+                        break;
+                }
+                $this->draw(clienttranslate('Bouquets: ${player_name} draws ${nbr} card(s)'), $nbr);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trBouquets");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -6910,6 +6927,15 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         $this->gamestate->nextState("trSamePlayer");
+    }
+
+    function actBouquets($card_id) {
+        $this->checkAction("actBouquets");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = array($card_id);
+        $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        $this->placeOnDeckMultiple($player_id, clienttranslate('Bouquets: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
+        $this->fullyResolveCard($player_id);
     }
 
 

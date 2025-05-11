@@ -1010,6 +1010,9 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case 'bouquets':
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place on your deck"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1433,6 +1436,9 @@ class DaleOfMerchants extends Gamegui
 			case 'coffeeGrinder':
 				const coffeeGrinder_args = (this.gamedatas.gamestate.args as { opponent_id: number });
 				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('none');
+				break;
+			case 'bouquets':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -3326,6 +3332,11 @@ class DaleOfMerchants extends Gamegui
 			case 'charmStove':
 				this.updateStoveButton();
 				break;
+			case 'bouquets':
+				this.bgaPerformAction('actBouquets', {
+					card_id: card.id
+				})
+				break;
 			case null:
 				throw new Error("gamestate.name is null");
 		}
@@ -4351,6 +4362,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_MANUFACTUREDJOY:
+			case DaleCard.CT_BOUQUETS:
 				fizzle = (this.myDiscard.size + this.myDeck.size + this.myHand.count()) <= 1;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
