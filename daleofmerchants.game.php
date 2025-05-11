@@ -5330,9 +5330,25 @@ class DaleOfMerchants extends DaleTableBasic
                     $card_ids,
                     $this->cards->getCardsFromLocation($card_ids, HAND.$player_id)
                 );
-                $this->draw(clienttranslate('Slice of Life: ${player_name} draws 2 cards'), 2);
+                $this->draw(clienttranslate('Slice of Life: ${player_name} draws ${nbr} cards'), 2);
                 $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
                 break;
+            case CT_SPINNINGWHEEL:
+                $card_ids = $args["card_ids"];
+                $x = count($card_ids);
+                if ($x == 0 || $x > 3) {
+                    throw new BgaUserException($this->_("You must discard exactly 1-3 cards"));
+                }
+                $this->discardMultiple(
+                    clienttranslate('Slice of Life: ${player_name} discards ${nbr} cards'),
+                    $player_id,
+                    $card_ids,
+                    $this->cards->getCardsFromLocation($card_ids, HAND.$player_id)
+                );
+                $nbr = $this->getClock($player_id) == CLOCK_DAY ? $x : 1;
+                $this->draw(clienttranslate('Spinning Wheel: ${player_name} draws ${nbr} cards'), $nbr);
+                $this->effects->insertModification($passive_card_id, CT_SPINNINGWHEEL);
+                break; 
             case CT_BARGAINSEEKER:
                 $rightmostcards = $this->cards->getCardsInLocation(MARKET, 0);
                 if (count($rightmostcards) != 1) {

@@ -784,6 +784,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_sliceoflife':
 				this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to discard"));
 				break;
+			case 'client_spinningWheel':
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 1-3 cards to discard"), undefined, 3);
+				break;
 			case 'refreshingDrink':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
 				break;
@@ -1275,6 +1278,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('none');
 				break;
 			case 'client_sliceoflife':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_spinningWheel':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'refreshingDrink':
@@ -1805,6 +1811,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_sliceoflife':
 				this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_spinningWheel':
+				this.addActionButton("confirm-button", _("Confirm"), "onSpinningWheel");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_replacement':
@@ -4585,6 +4595,9 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.mainClientState.enterOnStack('client_sliceoflife', { passive_card_id: card.id, disable_cancel_on_click: true });
 				break;
+			case DaleCard.CT_SPINNINGWHEEL:
+				this.mainClientState.enterOnStack('client_spinningWheel', { passive_card_id: card.id, disable_cancel_on_click: true });
+				break;
 			case DaleCard.CT_CUNNINGNEIGHBOUR:
 				if (this.unique_opponent_id) {
 					this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id, keep_passive_selected: true});
@@ -5326,6 +5339,21 @@ class DaleOfMerchants extends Gamegui
 			return;
 		}
 		this.playPassiveCard<'client_sliceoflife'>({
+			card_ids: card_ids
+		})
+	}
+
+	onSpinningWheel() {
+		const card_ids = this.myHand.orderedSelection.get();
+		if (card_ids.length == 0) {
+			this.showMessage(_("Please select at least 1 card from your hand"), 'error');
+			return;
+		}
+		if (card_ids.length > 3) {
+			this.showMessage(_("Please select at most 3 cards from your hand"), 'error');
+			return;
+		}
+		this.playPassiveCard<'client_spinningWheel'>({
 			card_ids: card_ids
 		})
 	}

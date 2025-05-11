@@ -3852,6 +3852,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may rearrange any cards in the market");
                     case 'client_sliceoflife':
                         return _("${card_name}: ${you} must choose 2 cards to discard");
+                    case 'client_spinningWheel':
+                        return _("${card_name}: ${you} must choose 1-3 cards to discard");
                     case 'client_barricade':
                         if (this._args.nbr_junk == 0) {
                             return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
@@ -5014,6 +5016,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_sliceoflife':
                     this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to discard"));
                     break;
+                case 'client_spinningWheel':
+                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 1-3 cards to discard"), undefined, 3);
+                    break;
                 case 'refreshingDrink':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
                     break;
@@ -5483,6 +5488,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('none');
                     break;
                 case 'client_sliceoflife':
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_spinningWheel':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'refreshingDrink':
@@ -6017,6 +6025,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_sliceoflife':
                     this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_spinningWheel':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSpinningWheel");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_replacement':
@@ -8447,6 +8459,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.mainClientState.enterOnStack('client_sliceoflife', { passive_card_id: card.id, disable_cancel_on_click: true });
                     break;
+                case DaleCard_10.DaleCard.CT_SPINNINGWHEEL:
+                    this.mainClientState.enterOnStack('client_spinningWheel', { passive_card_id: card.id, disable_cancel_on_click: true });
+                    break;
                 case DaleCard_10.DaleCard.CT_CUNNINGNEIGHBOUR:
                     if (this.unique_opponent_id) {
                         this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id, keep_passive_selected: true });
@@ -9107,6 +9122,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var card_ids = this.myHand.orderedSelection.get();
             if (card_ids.length != 2) {
                 this.showMessage(_("Please select exactly ") + 2 + _(" cards from your hand"), 'error');
+                return;
+            }
+            this.playPassiveCard({
+                card_ids: card_ids
+            });
+        };
+        DaleOfMerchants.prototype.onSpinningWheel = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            if (card_ids.length == 0) {
+                this.showMessage(_("Please select at least 1 card from your hand"), 'error');
+                return;
+            }
+            if (card_ids.length > 3) {
+                this.showMessage(_("Please select at most 3 cards from your hand"), 'error');
                 return;
             }
             this.playPassiveCard({

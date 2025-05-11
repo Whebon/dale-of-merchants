@@ -114,6 +114,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may rearrange any cards in the market");
             case 'client_sliceoflife':
                 return _("${card_name}: ${you} must choose 2 cards to discard");
+            case 'client_spinningWheel':
+                return _("${card_name}: ${you} must choose 1-3 cards to discard");
             case 'client_barricade':
                 if((this._args as ClientGameStates['client_barricade']).nbr_junk == 0) {
                     return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
