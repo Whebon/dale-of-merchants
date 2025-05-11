@@ -1544,16 +1544,29 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCoinIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAWN')) {
+                text = text.replace(/\[DAWN(.|\n)*?\]/g, function (match) {
+                    return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"0\">".concat(match.replace(/\[|\]/g, ''), "</div>");
+                });
                 text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDawnIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAY')) {
+                text = text.replace(/\[DAY(.|\n)*?\]/g, function (match) {
+                    console.log(match);
+                    return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"1\">".concat(match.replace(/\[|\]/g, ''), "</div>");
+                });
                 text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDayIcon().outerHTML, "</span>"));
             }
             if (text.includes('NIGHT')) {
+                text = text.replace(/\[NIGHT(.|\n)*?\]/g, function (match) {
+                    return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"2\">".concat(match.replace(/\[|\]/g, ''), "</div>");
+                });
                 text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getNightIcon().outerHTML, "</span>"));
             }
             if (text.includes('CLOCK')) {
                 text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span>"));
+            }
+            if (text.includes('<div data-clock="2"')) {
+                console.log(text);
             }
             return text;
         };

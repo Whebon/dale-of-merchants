@@ -559,6 +559,23 @@
 .daleofmerchants-card-tooltip .daleofmerchants-card-tooltip-text {
   max-width: 300px;
 }
+.daleofmerchants-card-tooltip .daleofmerchants-tooltip-clock {
+  display: inline;
+  border-radius: 10px;
+  padding-left: 0px;
+  padding-right: 3px;
+  padding-top: 3px;
+  padding-bottom: 5px;
+}
+.daleofmerchants-card-tooltip .daleofmerchants-tooltip-clock[data-clock="0"] {
+  background-color: var(--daleofmerchants-dawn);
+}
+.daleofmerchants-card-tooltip .daleofmerchants-tooltip-clock[data-clock="1"] {
+  background-color: var(--daleofmerchants-day);
+}
+.daleofmerchants-card-tooltip .daleofmerchants-tooltip-clock[data-clock="2"] {
+  background-color: var(--daleofmerchants-night);
+}
 
 .daleofmerchants-fizzle {
   scale: 1.1;

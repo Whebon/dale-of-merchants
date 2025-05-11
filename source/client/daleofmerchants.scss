@@ -631,6 +631,24 @@
 	.daleofmerchants-card-tooltip-text {
 		max-width: 300px;
 	}
+	.daleofmerchants-tooltip-clock {
+		display: inline;
+		border-radius: 10px;
+		padding-left: 0px;
+		padding-right: 3px;
+		padding-top: 3px;
+		padding-bottom: 5px;
+		&[data-clock="0"] {
+			background-color: var(--daleofmerchants-dawn);
+		}
+		&[data-clock="1"] {
+			background-color: var(--daleofmerchants-day);
+		}
+		&[data-clock="2"] {
+			background-color: var(--daleofmerchants-night);
+		}
+	}
+
 }
 
 .daleofmerchants-fizzle {
