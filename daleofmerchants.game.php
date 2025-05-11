@@ -2246,7 +2246,7 @@ class DaleOfMerchants extends DaleTableBasic
      * @param mixed $player_id id of the owner of the scheduled card
      * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
      * @param string $resolve_to (optional) if specified, resolve to the provided location instead of the discard pile. 
-     *                                      if `'skip'`, don't move the card at all (useful for echidnas and swapping cards).
+     *               if `'skip'`, don't move the card at all. WARNING: for issue #125, it is assumed that techniques that resolve with 'skip' have a plus
      */
     function fullyResolveCard(mixed $player_id, array $technique_card = null, string $resolve_to_location = null) {
         //get the resolving card
@@ -2296,7 +2296,10 @@ class DaleOfMerchants extends DaleTableBasic
         $this->refillMarket(true);
 
         //decide if the player can go again
-        if ($this->card_types[$type_id]["trigger"] != null) {
+        if ($resolve_to_location == 'skip') { //see issue #125
+            $this->gamestate->nextState("trSamePlayer");
+        }
+        else if ($this->card_types[$type_id]["trigger"] != null) {
             $this->gamestate->nextState("trSamePlayer");
         }
         else if ($this->card_types[$type_id]["has_plus"]) {
