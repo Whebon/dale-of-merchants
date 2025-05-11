@@ -3323,6 +3323,28 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has other cards in their hand.");
                     }
                     break;
+                case CT_SERENADE:
+                    switch($this->getClock($player_id)) {
+                        case CLOCK_DAWN:
+                            if ($this->cards->countCardsInLocation(STALL.$player_id) >= 1) {
+                                throw new BgaVisibleSystemException("(Dawn) Unable to fizzle. You have cards in your stall");
+                            }
+                            break;
+                        case CLOCK_DAY:
+                            $players = $this->loadPlayersBasicInfos();
+                            $counts = $this->cards->countCardsInLocations();
+                            foreach ($players as $other_player_id => $player) {
+                                if ($other_player_id != $player_id && isset($counts[STALL.$other_player_id])) {
+                                    throw new BgaVisibleSystemException("(Day) Unable to fizzle. Some opponents have cards in their stall");
+                                }
+                            }
+                            break;
+                        case CLOCK_NIGHT:
+                            if ($this->cards->countCardsInLocation(MARKET) >= 1) {
+                                throw new BgaVisibleSystemException("(Night) Unable to fizzle. The market is nonempty.");
+                            }
+                            break;
+                    }
                 default:
                     break; //by default, there is no fizzle verification. TODO: issue #126
             } //(~fizzle technique)
@@ -3332,7 +3354,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Schedule Technique
-        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_VELOCIPEDE) {
+        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_VELOCIPEDE && $technique_type_id != CT_SERENADE) {
             $choiceless = isset($args["choiceless"]) ? $args["choiceless"] : false;
             $this->scheduleCard($player_id, $technique_card, $choiceless);
         }
@@ -3408,9 +3430,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ACORN:
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
-                if ($stall_player_id == $player_id) {
-                    throw new BgaUserException("Acorn cannot be used to swap with a card in your OWN stall");
-                }
+                $this->validateOpponentId($stall_player_id);
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                 $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
@@ -4960,6 +4980,59 @@ class DaleOfMerchants extends DaleTableBasic
                     throw new BgaVisibleSystemException("Invariant bug in CT_SELECTINGCONTRACTS");
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SERENADE:
+                switch($this->getClock($player_id)) {
+                    case CLOCK_DAWN:
+                        //Hard copy from CT_SAFETYPRECAUTION
+                        $card_id = $args["card_id"];
+                        $stall_card = $this->cards->getCardFromLocation($card_id, STALL.$player_id);
+                        $this->cards->moveCard($technique_card_id, STALL.$player_id, $stall_card["location_arg"]);
+                        $this->cards->moveCard($card_id, HAND.$player_id);
+                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with a ${card_name}'), array(
+                            "player_name" => $this->getActivePlayerName(),
+                            "card_name" => $this->getCardName($stall_card),
+                            "player_id" => $player_id,
+                            "card" => $technique_card,
+                            "stall_player_id" => $player_id,
+                            "stall_card_id" => $card_id
+                        ));
+                        $this->gamestate->nextState("trSamePlayer");
+                        break;
+                    case CLOCK_DAY:
+                        //Hard copy from CT_ACORN
+                        $stall_card_id = $args["stall_card_id"];
+                        $stall_player_id = $args["stall_player_id"];
+                        $this->validateOpponentId($stall_player_id);
+                        $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
+                        $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
+                        $this->cards->moveCard($stall_card_id, HAND.$player_id);
+                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with a ${card_name}'), array(
+                            "player_name" => $this->getActivePlayerName(),
+                            "card_name" => $this->getCardName($stall_card),
+                            "player_id" => $player_id,
+                            "card" => $technique_card,
+                            "stall_player_id" => $stall_player_id,
+                            "stall_card_id" => $stall_card_id
+                        ));
+                        $this->gamestate->nextState("trSamePlayer");
+                        break;
+                    case CLOCK_NIGHT:
+                        //Hard copy from CT_GIFTVOUCHER
+                        $market_card_id = $args["market_card_id"];
+                        $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
+                        $this->cards->moveCard($technique_card_id, MARKET, $market_card["location_arg"]);
+                        $this->cards->moveCard($market_card_id, HAND.$player_id);
+                        $this->notifyAllPlayers('swapHandMarket', clienttranslate('Serenade: ${player_name} swaps with a ${card_name}'), array(
+                            "player_name" => $this->getActivePlayerName(),
+                            "card_name" => $this->getCardName($market_card),
+                            "player_id" => $player_id,
+                            "card" => $technique_card,
+                            "market_card_id" => $market_card_id
+                        ));
+                        $this->gamestate->nextState("trSamePlayer");
+                        break;
+                }
                 break;
             default:
                 $name = $this->getCardName($technique_card);

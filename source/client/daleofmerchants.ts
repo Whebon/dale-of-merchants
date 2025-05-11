@@ -4450,6 +4450,49 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_selectingContracts', card.id, {nbr: client_selectingContracts_nbr});
 				}
 				break;
+			case DaleCard.CT_SERENADE:
+				switch (this.myClock.getClock()) {
+					case PlayerClock.CLOCK_DAWN:
+						console.warn("Dawn: DaleCard.CT_SERENADE == DaleCard.CT_SAFETYPRECAUTION");
+						for (let player_id in this.gamedatas.players) {
+							if (this.playerStalls[player_id]!.getNumberOfStacks() > 0) {
+								fizzle = false;
+								break;
+							}
+						}
+						if (fizzle) {
+							this.clientScheduleTechnique('client_fizzle', card.id);
+						}
+						else {
+							this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
+						}
+						break;
+					case PlayerClock.CLOCK_DAY:
+						console.warn("Day: DaleCard.CT_SERENADE == DaleCard.CT_ACORN");
+						if (this.myStall.getNumberOfStacks() > 0) {
+							fizzle = false;
+						}
+						if (fizzle) {
+							this.clientScheduleTechnique('client_fizzle', card.id);
+						}
+						else {
+							this.mainClientState.enterOnStack('client_acorn', { technique_card_id: card.id });
+						}
+						break;
+					case PlayerClock.CLOCK_NIGHT:
+						console.warn("Night: DaleCard.CT_SERENADE == DaleCard.CT_GIFTVOUCHER");
+						fizzle = this.market!.getCards().length == 0;
+						if (fizzle) {
+							this.clientScheduleTechnique('client_fizzle', card.id);
+						}
+						else {
+							this.mainClientState.enterOnStack('client_giftVoucher', { technique_card_id: card.id });
+						}
+						break;
+					default:
+						throw new Error("Serenade played with an invalid clock");
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -4685,7 +4728,7 @@ class DaleOfMerchants extends Gamegui
 			const card_id = this.mainClientState.args.technique_card_id
 			const card = new DaleCard(card_id);
 			const type_id = card.effective_type_id;
-			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER && type_id != DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard.CT_VELOCIPEDE) || this.mainClientState.name == 'client_fizzle') {
+			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER && type_id != DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard.CT_VELOCIPEDE && type_id != DaleCard.CT_SERENADE) || this.mainClientState.name == 'client_fizzle') {
 				this.myHand.addDaleCardToStock(card, this.mySchedule.control_name+'_item_'+card_id)
 				this.mySchedule.removeFromStockByIdNoAnimation(card_id);
 				this.myHandSize.incValue(1);
