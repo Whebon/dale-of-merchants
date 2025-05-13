@@ -657,12 +657,12 @@
 
 .daleofmerchants-log-span {
   display: inline;
-  vertical-align: middle;
 }
 .daleofmerchants-log-span .daleofmerchants-icon {
   width: 25px;
   height: 25px;
   display: inline-block;
+  vertical-align: middle;
   left: auto;
   position: relative;
   transform: translate(0, 0);
