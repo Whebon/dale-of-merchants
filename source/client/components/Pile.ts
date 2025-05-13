@@ -49,6 +49,7 @@ export class Pile implements DaleLocation {
     private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
     private wrapClass: DaleWrapClass = "daleofmerchants-wrap-default";
     private showMainTitleBarInPopin: boolean = false;
+    private openPopinRequested: boolean = false;
 
     public orderedSelection: OrderedSelection;
 
@@ -411,8 +412,11 @@ export class Pile implements DaleLocation {
 
             dojo.connect(cloneElement, "onclick", () => {
                 console.warn("Redirect onclick to the related 'maintitlebar_content' button");
-                this.closePopin(); //arguably better: close the popin in each individual onclick handler. this allows the popin to stay open on errors
-                (sourceElement as HTMLAnchorElement).click();
+                this.openPopinRequested = false; //by default, close the popin
+                (sourceElement as HTMLAnchorElement).click(); //may set openPopinRequested to true
+                if (!this.openPopinRequested) {
+                    this.closePopin(); //arguably better: close the popin in each individual onclick handler. this allows the popin to stay open on errors
+                }
             });
         });
     }
@@ -421,9 +425,11 @@ export class Pile implements DaleLocation {
      * Open the pile popin
      */
     public openPopin() {
+        this.openPopinRequested = true;
         if (this.isPopinOpen) {
             return;
         }
+        console.warn("openPopin");
         this.peek()?.detachDiv();
         const player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
         var title = "";
@@ -736,6 +742,7 @@ export class Pile implements DaleLocation {
      */
     public closePopin(){
         if (this.isPopinOpen) {
+            console.warn("closePopin");
             this.popin.hide();
             this.onClosePopin();
         }

@@ -610,8 +610,8 @@ interface GameStates {
 	},
 	67: {
 		'name': 'naturalSurvivor',
-		'description': 'Natural Survivor: ${actplayer} must search their deck for ${die_value} card(s)',
-		'descriptionmyturn': 'Natural Survivor: ${you} must search your deck for ${die_value} card(s)',
+		'description': 'Natural Survivor: ${actplayer} must search their hand and deck for ${die_value} card(s)',
+		'descriptionmyturn': 'Natural Survivor: ${you} must search your hand and deck for ${die_value} card(s)',
 		'type': 'activeplayer',
 		'args': 'argNaturalSurvivor',
 		'possibleactions': {

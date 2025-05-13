@@ -2425,6 +2425,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.cardIdToPopinDiv = new Map();
             this.wrapClass = "daleofmerchants-wrap-default";
             this.showMainTitleBarInPopin = false;
+            this.openPopinRequested = false;
             page.allPiles.push(this);
             this.pile_container_id = pile_container_id;
             this.pile_name = pile_name;
@@ -2681,17 +2682,22 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 }
                 dojo.connect(cloneElement, "onclick", function () {
                     console.warn("Redirect onclick to the related 'maintitlebar_content' button");
-                    _this.closePopin();
+                    _this.openPopinRequested = false;
                     sourceElement.click();
+                    if (!_this.openPopinRequested) {
+                        _this.closePopin();
+                    }
                 });
             });
         };
         Pile.prototype.openPopin = function () {
             var _this = this;
             var _a, _b, _c, _d, _e, _f, _g;
+            this.openPopinRequested = true;
             if (this.isPopinOpen) {
                 return;
             }
+            console.warn("openPopin");
             (_a = this.peek()) === null || _a === void 0 ? void 0 : _a.detachDiv();
             var player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
             var title = "";
@@ -2932,6 +2938,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         };
         Pile.prototype.closePopin = function () {
             if (this.isPopinOpen) {
+                console.warn("closePopin");
                 this.popin.hide();
                 this.onClosePopin();
             }

@@ -396,8 +396,8 @@ $machinestates = array(
 	),
 	67 => array(
 		'name' => 'naturalSurvivor',
-		'description' => clienttranslate('Natural Survivor: ${actplayer} must search their deck for ${die_value} card(s)'),
-		'descriptionmyturn' => clienttranslate('Natural Survivor: ${you} must search your deck for ${die_value} card(s)'),
+		'description' => clienttranslate('Natural Survivor: ${actplayer} must search their hand and deck for ${die_value} card(s)'),
+		'descriptionmyturn' => clienttranslate('Natural Survivor: ${you} must search your hand and deck for ${die_value} card(s)'),
 		'type' => 'activeplayer',
 		'args' => 'argNaturalSurvivor',
 		'possibleactions' => ['actNaturalSurvivor'],
