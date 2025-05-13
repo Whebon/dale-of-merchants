@@ -41,7 +41,8 @@
 }
 
 .standard_popin #maintitlebar_content,
-.standard_popin #maintitlebar_content_clone {
+.standard_popin #maintitlebar_content_clone,
+.standard_popin #maintitlebar_content_clone_closed {
   text-align: center;
   background-color: white;
   border-radius: 25px;

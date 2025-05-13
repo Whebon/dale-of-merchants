@@ -2601,7 +2601,6 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.setZIndex(slidingElement);
             }
             var card = this.cards.pop();
-            card.detachDiv();
             this.updateHTML();
             return card;
         };
@@ -2673,6 +2672,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             sourceElements.forEach(function (sourceElement, index) {
                 var cloneElement = cloneElements[index];
                 if (cloneElement.id != sourceElement.id) {
+                    console.warn(sourceElements);
+                    console.warn(cloneElements);
                     console.warn("cloneEventHandlers failed: '".concat(cloneElement.id, "' != '").concat(sourceElement.id, "'"));
                     clone.remove();
                     return;
@@ -2685,6 +2686,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             });
         };
         Pile.prototype.openPopin = function () {
+            var _this = this;
             var _a, _b, _c, _d, _e, _f, _g;
             if (this.isPopinOpen) {
                 return;
@@ -2712,6 +2714,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             if (this.showMainTitleBarInPopin) {
                 maintitlebar = (_e = $("maintitlebar_content")) === null || _e === void 0 ? void 0 : _e.cloneNode(true);
                 maintitlebar.id = "maintitlebar_content_clone";
+                setTimeout(function () {
+                    _this.cloneEventHandlers($("maintitlebar_content"), $("maintitlebar_content_clone"));
+                }, 1);
                 (_f = $("maintitlebar_content")) === null || _f === void 0 ? void 0 : _f.classList.add("daleofmerchants-transparent");
             }
             this.popin.setContent("".concat((_g = maintitlebar === null || maintitlebar === void 0 ? void 0 : maintitlebar.outerHTML) !== null && _g !== void 0 ? _g : "", "<div id=\"").concat(popin_id, "-card-container\" class=\"popin-card-container ").concat(this.wrapClass, "\"></div>"));
@@ -2737,9 +2742,6 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.isPopinOpen = true;
             this.popin.show();
             this.orderedSelection.updateIcons();
-            if (this.showMainTitleBarInPopin) {
-                this.cloneEventHandlers($("maintitlebar_content"), $("maintitlebar_content_clone"));
-            }
         };
         Pile.prototype.onClickTopCard = function () {
             switch (this.selectionMode) {
@@ -2943,6 +2945,10 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.isPopinOpen = false;
             this.updateHTML();
             (_a = $("maintitlebar_content")) === null || _a === void 0 ? void 0 : _a.classList.remove("daleofmerchants-transparent");
+            var clone = $("maintitlebar_content_clone");
+            if (clone) {
+                clone.id = "maintitlebar_content_clone_closed";
+            }
         };
         return Pile;
     }());

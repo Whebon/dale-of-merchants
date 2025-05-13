@@ -305,7 +305,7 @@ export class Pile implements DaleLocation {
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
         let card = this.cards.pop()!;
-        card.detachDiv();
+        //card.detachDiv(); //this was a very nasty bug: it detached the new div in notifications like 'notif_draw'
         this.updateHTML();
         return card;
     }
@@ -402,7 +402,9 @@ export class Pile implements DaleLocation {
         sourceElements.forEach((sourceElement, index) => {
             const cloneElement = cloneElements[index]!;
             if (cloneElement.id != sourceElement.id) {
-                console.warn(`cloneEventHandlers failed: '${cloneElement.id}' != '${sourceElement.id}'`)
+                console.warn(sourceElements);
+                console.warn(cloneElements);
+                console.warn(`cloneEventHandlers failed: '${cloneElement.id}' != '${sourceElement.id}'`);
                 clone.remove();
                 return;
             }
@@ -445,6 +447,9 @@ export class Pile implements DaleLocation {
         if (this.showMainTitleBarInPopin) {
             maintitlebar = $("maintitlebar_content")?.cloneNode(true) as HTMLElement;
             maintitlebar.id = "maintitlebar_content_clone";
+            setTimeout(() => {
+                this.cloneEventHandlers($("maintitlebar_content"), $("maintitlebar_content_clone"));
+            }, 1);
             $("maintitlebar_content")?.classList.add("daleofmerchants-transparent");
         }
         this.popin.setContent(`${maintitlebar?.outerHTML ?? ""}<div id="${popin_id}-card-container" class="popin-card-container ${this.wrapClass}"></div>`);
@@ -465,9 +470,6 @@ export class Pile implements DaleLocation {
         this.isPopinOpen = true;
         this.popin.show();
         this.orderedSelection.updateIcons();
-        if (this.showMainTitleBarInPopin) {
-            this.cloneEventHandlers($("maintitlebar_content"), $("maintitlebar_content_clone"));
-        }
     }
 
     /**
@@ -752,5 +754,9 @@ export class Pile implements DaleLocation {
         this.isPopinOpen = false;
         this.updateHTML();
         $("maintitlebar_content")?.classList.remove("daleofmerchants-transparent");
+        const clone = $("maintitlebar_content_clone");
+        if (clone) {
+            clone.id = "maintitlebar_content_clone_closed";
+        }
     }
 }
