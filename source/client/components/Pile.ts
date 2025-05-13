@@ -305,7 +305,7 @@ export class Pile implements DaleLocation {
 
         //pop the element from the pile, and update the html to reveal the next card in the pile.
         let card = this.cards.pop()!;
-        //card.detachDiv(); //this was a very nasty bug: it detached the new div in notifications like 'notif_draw'
+        card.detachDiv(this.topCardHTML); //this was a very nasty bug: it detached the new div in notifications like 'notif_draw'
         this.updateHTML();
         return card;
     }

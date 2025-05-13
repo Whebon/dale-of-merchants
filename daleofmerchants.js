@@ -2601,6 +2601,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.setZIndex(slidingElement);
             }
             var card = this.cards.pop();
+            card.detachDiv(this.topCardHTML);
             this.updateHTML();
             return card;
         };
