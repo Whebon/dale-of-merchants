@@ -55,16 +55,23 @@ declare global {
 		}
 		'handToStoredCards': {
 			player_id: number
-			card: DbCard
+			_private?: {
+				card: DbCard
+			}
 			from_limbo?: boolean
 		}
 		'deckToStoredCards': {
 			player_id: number
-			card: DbCard
+			_private?: {
+				card: DbCard
+			}
 		}
 		'storedCardsToHand': {
 			player_id: number
-			cards: {[card_id: number]: DbCard}
+			_private?: {
+				cards: {[card_id: number]: DbCard}
+			}
+			nbr: number
 		}
 		'cancelTechnique': {
 			player_id: number
@@ -401,7 +408,7 @@ declare global {
 		}
 
 		'storedCards': {
-			[player_id: number]: {[card_id: number]: DbCard}
+			[player_id: number]: {[card_id: number]: DbCard} | number
 		}
 
 		'stalls': {

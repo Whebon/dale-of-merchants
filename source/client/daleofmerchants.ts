@@ -340,10 +340,24 @@ class DaleOfMerchants extends Gamegui
 			this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
 			this.playerStoredCards[player_id].setSelectionMode('none');
 			this.playerStoredCards[player_id].centerItems = true;
-			for (let card_id in gamedatas.storedCards[player_id]) {
-				const card = gamedatas.storedCards[+player_id]![+card_id]!;
-				this.playerStoredCards[player_id]!.addDaleCardToStock(DaleCard.of(card));
-				wrap.classList.remove("daleofmerchants-hidden"); //show this section if at least 1 card exists
+			if (typeof gamedatas.storedCards[player_id] == "number") {
+				//facedown cards
+				const n = gamedatas.storedCards[player_id];
+				gamedatas.storedCards[player_id] = {};
+				for (let i = 0; i < n; i++) {
+					const cardBack = new DaleCard(-i, 0);
+					this.playerStoredCards[player_id]!.addDaleCardToStock(cardBack);
+					wrap.classList.remove("daleofmerchants-hidden"); //show this section if at least 1 card exists
+				}
+			}
+			else {
+				//faceup cards
+				const storedCards = gamedatas.storedCards[player_id] as {[card_id: number]: DbCard;};
+				for (let card_id in storedCards) {
+					const card = storedCards[+card_id]!;
+					this.playerStoredCards[player_id]!.addDaleCardToStock(DaleCard.of(card));
+					wrap.classList.remove("daleofmerchants-hidden"); //show this section if at least 1 card exists
+				}
 			}
 		}
 
@@ -6069,9 +6083,9 @@ class DaleOfMerchants extends Gamegui
 			['resolveTechnique', 					500],
 			['cancelTechnique', 					500],
 			['scheduleToHand',						500],
-			['handToStoredCards', 					500],
-			['deckToStoredCards', 					500],
-			['storedCardsToHand',					500],
+			['handToStoredCards', 					500, true],
+			['deckToStoredCards', 					500, true],
+			['storedCardsToHand',					500, true],
 			['buildStack', 							500],
 			['rearrangeMarket', 					500],
 			['fillEmptyMarketSlots', 				1],
@@ -6281,9 +6295,9 @@ class DaleOfMerchants extends Gamegui
 		if (notif.args.player_id == this.player_id) {
 			//animate from my hand
 			const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-			const card_id = +notif.args.card.id;
+			const card_id = +notif.args._private!.card.id;
 			if ($(stock.control_name+'_item_' + card_id)) {
-				this.myStoredCards.addDaleCardToStock(DaleCard.of(notif.args.card), stock.control_name+'_item_'+card_id)
+				this.myStoredCards.addDaleCardToStock(DaleCard.of(notif.args._private!.card), stock.control_name+'_item_'+card_id)
 				stock.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -6293,7 +6307,8 @@ class DaleOfMerchants extends Gamegui
 		else {
 			//animate from player board
 			const storedCards = this.playerStoredCards[notif.args.player_id]!;
-			storedCards.addDaleCardToStock(DaleCard.of(notif.args.card), 'overall_player_board_'+notif.args.player_id)
+			const cardBack = new DaleCard(-storedCards.count(), 0);
+			storedCards.addDaleCardToStock(cardBack, 'overall_player_board_'+notif.args.player_id)
 		}
 		//update the hand sizes
 		if (!notif.args.from_limbo) {
@@ -6304,16 +6319,16 @@ class DaleOfMerchants extends Gamegui
 	notif_deckToStoredCards(notif: NotifAs<'deckToStoredCards'>) {
 		const deck = this.playerDecks[notif.args.player_id]!;
 		const storedCards = this.playerStoredCards[notif.args.player_id]!;
-		storedCards.addDaleCardToStock(DaleCard.of(notif.args.card), deck.placeholderHTML);
-		deck.pop();
+		const card = notif.args._private ? DaleCard.of(notif.args._private?.card) : new DaleCard(-storedCards.count(), 0);
+		storedCards.addDaleCardToStock(card, deck.placeholderHTML);
+		deck.pop();	
 	}
 
 	notif_storedCardsToHand(notif: NotifAs<'storedCardsToHand'>) {
 		if (notif.args.player_id == this.player_id) {
 			//animate from my hand
-			this.myStoredCards
-			for (let card_id in notif.args.cards) {
-				const dbcard = notif.args.cards[card_id]!
+			for (let card_id in notif.args._private!.cards) {
+				const dbcard = notif.args._private!.cards[card_id]!
 				if ($(this.myStoredCards.control_name+'_item_' + card_id)) {
 					this.myHand.addDaleCardToStock(DaleCard.of(dbcard), this.myStoredCards.control_name+'_item_' + card_id)
 					this.myStoredCards.removeFromStockByIdNoAnimation(+card_id);
@@ -6326,12 +6341,12 @@ class DaleOfMerchants extends Gamegui
 		else {
 			//animate from player board
 			const storedCards = this.playerStoredCards[notif.args.player_id]!;
-			for (let card_id in notif.args.cards) {
-				storedCards.removeFromStockById(+card_id, 'overall_player_board_'+notif.args.player_id);
+			for (let item of storedCards.getAllItems()) {
+				storedCards.removeFromStockById(+item.id, 'overall_player_board_'+notif.args.player_id);
 			}
 		}
 		//update the hand sizes
-		const nbr = Object.keys(notif.args.cards).length;
+		const nbr = notif.args.nbr;
 		this.playerHandSizes[notif.args.player_id]!.incValue(nbr);
 	}
 

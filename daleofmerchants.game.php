@@ -193,8 +193,9 @@ class DaleOfMerchants extends DaleTableBasic
 
         //get stored cards
         foreach ( $players as $player_id => $player ) {
-            $result['storedCards'][$player_id] = $this->cards->getCardsInLocation(STORED_CARDS.$player_id, null, 'location_arg');
+            $result['storedCards'][$player_id] = (int)$this->cards->countCardsInLocation(STORED_CARDS.$player_id, null, 'location_arg'); //facedown
         }
+        $result['storedCards'][$current_player_id] = $this->cards->getCardsInLocation(STORED_CARDS.$current_player_id, null, 'location_arg'); //faceup
 
         //other
         $result['market'] = $this->cards->getCardsInLocation(MARKET);
@@ -4583,12 +4584,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $card_id = intval($args["card_id"]);
                 $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 $this->cards->moveCard($card_id, STORED_CARDS.$player_id);
-                $this->notifyAllPlayers('handToStoredCards', clienttranslate('Clever Guardian: ${player_name} stores a ${card_name}'), array(
+                $this->notifyAllPlayersWithPrivateArguments('handToStoredCards', clienttranslate('Clever Guardian: ${player_name} stores a card'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "player_id" => $player_id,
-                    "card_name" => $this->getCardName($dbcard),
-                    "card" => $dbcard
-                ));
+                    "_private" => array(
+                        "card_name" => $this->getCardName($dbcard),
+                        "card" => $dbcard
+                    )
+                ), clienttranslate('Clever Guardian: ${player_name} stores a ${card_name}'));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_WHEELBARROW:
@@ -4613,13 +4616,15 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SUPPLYDEPOT:
                 $dbcards = $this->cards->pickCardsForLocation(2, DECK.$player_id, STORED_CARDS.$player_id);
                 foreach ($dbcards as $dbcard) {
-                    $this->notifyAllPlayers('deckToStoredCards', clienttranslate('Supply Depot: ${player_name} stores a ${card_name} from their deck'), array(
+                    $this->notifyAllPlayersWithPrivateArguments('deckToStoredCards', clienttranslate('Supply Depot: ${player_name} stores a card from their deck'), array(
                         "player_id" => $player_id,
                         "player_name" => $this->getPlayerNameById($player_id),
                         "player_id" => $player_id,
-                        "card" => $dbcard,
-                        "card_name" => $this->getCardName($dbcard)
-                    ));
+                        "_private" => array(
+                            "card" => $dbcard,
+                            "card_name" => $this->getCardName($dbcard)
+                        )
+                    ), clienttranslate('Supply Depot: ${player_name} stores a ${card_name} from their deck'));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -6450,13 +6455,15 @@ class DaleOfMerchants extends DaleTableBasic
         }
         else {
             $this->cards->moveCard($dbcard["id"], STORED_CARDS.$player_id);
-            $this->notifyAllPlayers('handToStoredCards', clienttranslate('Wheelbarrow: ${player_name} stores a ${card_name}'), array(
+            $this->notifyAllPlayersWithPrivateArguments('handToStoredCards', clienttranslate('Wheelbarrow: ${player_name} stores a card'), array(
                 "player_name" => $this->getActivePlayerName(),
                 "player_id" => $player_id,
-                "card_name" => $this->getCardName($dbcard),
-                "card" => $dbcard,
+                "_private" => array(
+                    "card_name" => $this->getCardName($dbcard),
+                    "card" => $dbcard
+                ),
                 "from_limbo" => true
-            ));
+            ), clienttranslate('Wheelbarrow: ${player_name} stores a ${card_name}'));
         }
         $this->fullyResolveCard($player_id);
     }
@@ -6466,13 +6473,15 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $dbcard = $this->cards->getCardFromLocation($card_id, DECK.$player_id);
         $this->cards->moveCard($card_id, STORED_CARDS.$player_id);
-        $this->notifyAllPlayers('deckToStoredCards', clienttranslate('Vigilance: ${player_name} stores a ${card_name} from their deck'), array(
+        $this->notifyAllPlayersWithPrivateArguments('deckToStoredCards', clienttranslate('Vigilance: ${player_name} stores a card from their deck'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "player_id" => $player_id,
-            "card" => $dbcard,
-            "card_name" => $this->getCardName($dbcard)
-        ));
+            "_private" => array(
+                "card" => $dbcard,
+                "card_name" => $this->getCardName($dbcard)
+            )
+        ), clienttranslate('Vigilance: ${player_name} stores a ${card_name} from their deck'));
         $this->cards->shuffle(DECK.$player_id);
         $this->fullyResolveCard($player_id);
     }
@@ -7519,11 +7528,16 @@ class DaleOfMerchants extends DaleTableBasic
         $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
         if (count($storedCards) > 0) {
             $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
-            $this->notifyAllPlayers('storedCardsToHand', clienttranslate('${player_name} places ${nbr} stored card(s) into their hand'), array(
+            $msg = count($storedCards) == 1 ? 
+                clienttranslate('${player_name} places a stored card into their hand') : 
+                clienttranslate('${player_name} places ${nbr} stored cards into their hand');
+            $this->notifyAllPlayersWithPrivateArguments('storedCardsToHand', $msg, array(
                 "player_name" => $this->getPlayerNameById($player_id),
                 "player_id" => $player_id,
                 "nbr" => count($storedCards),
-                "cards" => $storedCards
+                "_private" => array(
+                    "cards" => $storedCards
+                )
             ));
         }
 

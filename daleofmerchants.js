@@ -4711,10 +4711,22 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
                 this.playerStoredCards[player_id].setSelectionMode('none');
                 this.playerStoredCards[player_id].centerItems = true;
-                for (var card_id in gamedatas.storedCards[player_id]) {
-                    var card = gamedatas.storedCards[+player_id][+card_id];
-                    this.playerStoredCards[player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(card));
-                    wrap.classList.remove("daleofmerchants-hidden");
+                if (typeof gamedatas.storedCards[player_id] == "number") {
+                    var n = gamedatas.storedCards[player_id];
+                    gamedatas.storedCards[player_id] = {};
+                    for (var i = 0; i < n; i++) {
+                        var cardBack = new DaleCard_10.DaleCard(-i, 0);
+                        this.playerStoredCards[player_id].addDaleCardToStock(cardBack);
+                        wrap.classList.remove("daleofmerchants-hidden");
+                    }
+                }
+                else {
+                    var storedCards = gamedatas.storedCards[player_id];
+                    for (var card_id in storedCards) {
+                        var card = storedCards[+card_id];
+                        this.playerStoredCards[player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(card));
+                        wrap.classList.remove("daleofmerchants-hidden");
+                    }
                 }
             }
             console.warn("DbEffects:");
@@ -9797,9 +9809,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['resolveTechnique', 500],
                 ['cancelTechnique', 500],
                 ['scheduleToHand', 500],
-                ['handToStoredCards', 500],
-                ['deckToStoredCards', 500],
-                ['storedCardsToHand', 500],
+                ['handToStoredCards', 500, true],
+                ['deckToStoredCards', 500, true],
+                ['storedCardsToHand', 500, true],
                 ['buildStack', 500],
                 ['rearrangeMarket', 500],
                 ['fillEmptyMarketSlots', 1],
@@ -9964,9 +9976,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_handToStoredCards = function (notif) {
             if (notif.args.player_id == this.player_id) {
                 var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-                var card_id = +notif.args.card.id;
+                var card_id = +notif.args._private.card.id;
                 if ($(stock.control_name + '_item_' + card_id)) {
-                    this.myStoredCards.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), stock.control_name + '_item_' + card_id);
+                    this.myStoredCards.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args._private.card), stock.control_name + '_item_' + card_id);
                     stock.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -9975,23 +9987,25 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             else {
                 var storedCards = this.playerStoredCards[notif.args.player_id];
-                storedCards.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
+                var cardBack = new DaleCard_10.DaleCard(-storedCards.count(), 0);
+                storedCards.addDaleCardToStock(cardBack, 'overall_player_board_' + notif.args.player_id);
             }
             if (!notif.args.from_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(-1);
             }
         };
         DaleOfMerchants.prototype.notif_deckToStoredCards = function (notif) {
+            var _a;
             var deck = this.playerDecks[notif.args.player_id];
             var storedCards = this.playerStoredCards[notif.args.player_id];
-            storedCards.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), deck.placeholderHTML);
+            var card = notif.args._private ? DaleCard_10.DaleCard.of((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.card) : new DaleCard_10.DaleCard(-storedCards.count(), 0);
+            storedCards.addDaleCardToStock(card, deck.placeholderHTML);
             deck.pop();
         };
         DaleOfMerchants.prototype.notif_storedCardsToHand = function (notif) {
             if (notif.args.player_id == this.player_id) {
-                this.myStoredCards;
-                for (var card_id in notif.args.cards) {
-                    var dbcard = notif.args.cards[card_id];
+                for (var card_id in notif.args._private.cards) {
+                    var dbcard = notif.args._private.cards[card_id];
                     if ($(this.myStoredCards.control_name + '_item_' + card_id)) {
                         this.myHand.addDaleCardToStock(DaleCard_10.DaleCard.of(dbcard), this.myStoredCards.control_name + '_item_' + card_id);
                         this.myStoredCards.removeFromStockByIdNoAnimation(+card_id);
@@ -10003,11 +10017,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             else {
                 var storedCards = this.playerStoredCards[notif.args.player_id];
-                for (var card_id in notif.args.cards) {
-                    storedCards.removeFromStockById(+card_id, 'overall_player_board_' + notif.args.player_id);
+                for (var _i = 0, _a = storedCards.getAllItems(); _i < _a.length; _i++) {
+                    var item = _a[_i];
+                    storedCards.removeFromStockById(+item.id, 'overall_player_board_' + notif.args.player_id);
                 }
             }
-            var nbr = Object.keys(notif.args.cards).length;
+            var nbr = notif.args.nbr;
             this.playerHandSizes[notif.args.player_id].incValue(nbr);
         };
         DaleOfMerchants.prototype.notif_resolveTechnique = function (notif) {
