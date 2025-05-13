@@ -664,6 +664,9 @@
 		padding-right: 3px;
 		padding-top: 3px;
 		padding-bottom: 5px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		&[data-clock="0"] {
 			background-color: var(--daleofmerchants-dawn);
 		}
