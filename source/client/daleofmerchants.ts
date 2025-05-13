@@ -354,6 +354,16 @@ class DaleOfMerchants extends Gamegui
 			DaleCard.addEffect(new DbEffect(effect));
 		}
 
+		//TODO: safely remove this
+		// //fix the zoom for popins
+		// const overallContent = $("overall-content")
+		// if (overallContent) {
+		// 	const zoomValue = getComputedStyle(overallContent).getPropertyValue('--bga-game-zoom');
+		// 	if (zoomValue) {
+		// 		document.documentElement.style.setProperty('--bga-game-zoom', zoomValue);
+		// 	}
+		// }
+
 		this.showAnimalfolkSpecificGameComponents();
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
@@ -366,6 +376,11 @@ class DaleOfMerchants extends Gamegui
 	 * Should be called on refresh and on game start
 	 */
 	showAnimalfolkSpecificGameComponents() {
+		//hacky way of moving the top bar
+		if (!this.gamedatas.inDeckSelection) {
+			$("daleofmerchants-market-wrap")?.insertAdjacentElement('afterend', $("page-title")!);
+		}
+
 		for (let player_id in this.gamedatas.players) {
 			//show the storedCards if tree kangaroos are in play
 			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS)) {
@@ -6178,6 +6193,7 @@ class DaleOfMerchants extends Gamegui
 
 	notif_startGame(notif: NotifAs<'startGame'>) {
 		this.deckSelection!.remove();
+		this.gamedatas.inDeckSelection = false;
 		const n = Object.keys(this.gamedatas.players).length;
 		this.marketDeck.pushHiddenCards(11*(n+1));
 		for (let player_id in this.gamedatas.players) {

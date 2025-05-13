@@ -30,6 +30,28 @@
   padding: 2px 12px;
 }
 
+#after-page-title {
+  display: none !important;
+}
+
+#page-title {
+  position: sticky !important;
+  top: 0 !important;
+  zoom: 1 !important;
+}
+
+.standard_popin #maintitlebar_content,
+.standard_popin #maintitlebar_content_clone {
+  text-align: center;
+  background-color: white;
+  border-radius: 25px;
+  font-size: large;
+  font-weight: bold;
+  width: 98%;
+  margin: 5px;
+  padding: 5px;
+}
+
 .daleofmerchants-deck-selection-container {
   display: flex;
   flex-wrap: wrap;
@@ -393,6 +415,10 @@
   margin-bottom: 0px !important;
 }
 
+.daleofmerchants-no-bottom-margin {
+  margin-bottom: 0px !important;
+}
+
 .daleofmerchants-left-margin {
   margin-left: 10px;
 }
@@ -524,10 +550,15 @@
 .popin-card-container {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .daleofmerchants-hidden {
   display: none !important;
+}
+
+.daleofmerchants-transparent {
+  opacity: 0 !important;
 }
 
 .daleofmerchants-card-tooltip {

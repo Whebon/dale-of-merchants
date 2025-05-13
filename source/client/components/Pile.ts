@@ -48,6 +48,7 @@ export class Pile implements DaleLocation {
     private isPopinOpen: boolean = false;
     private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
     private wrapClass: DaleWrapClass = "daleofmerchants-wrap-default";
+    private showMainTitleBarInPopin: boolean = false;
 
     public orderedSelection: OrderedSelection;
 
@@ -383,6 +384,38 @@ export class Pile implements DaleLocation {
     }
 
     /**
+     * Quick and dirty way to copy all onclick events of buttons from the real "c" to the "maintitlebar_content" in the popin
+     * @param source $("maintitlebar_content")
+     * @param clone $("maintitlebar_content_clone")
+     */
+    private cloneEventHandlers(source: HTMLElement, clone: HTMLElement) {
+        const sourceElements = source.querySelectorAll("a");
+        const cloneElements = clone.querySelectorAll("a");
+        if (sourceElements.length != cloneElements.length) {
+            console.warn(sourceElements);
+            console.warn(cloneElements);
+            console.warn("cloneEventHandlers failed: unequal amount of anchor elements found");
+            clone.remove();
+            return;
+        }
+
+        sourceElements.forEach((sourceElement, index) => {
+            const cloneElement = cloneElements[index]!;
+            if (cloneElement.id != sourceElement.id) {
+                console.warn(`cloneEventHandlers failed: '${cloneElement.id}' != '${sourceElement.id}'`)
+                clone.remove();
+                return;
+            }
+
+            dojo.connect(cloneElement, "onclick", () => {
+                console.warn("Redirect onclick to the related 'maintitlebar_content' button");
+                this.closePopin(); //arguably better: close the popin in each individual onclick handler. this allows the popin to stay open on errors
+                (sourceElement as HTMLAnchorElement).click();
+            });
+        });
+    }
+
+    /**
      * Open the pile popin
      */
     public openPopin() {
@@ -408,9 +441,15 @@ export class Pile implements DaleLocation {
         this.popin.create(popin_id);
 		this.popin.setTitle(title);
         this.popin.setMaxWidth(1000);
-        this.popin.setContent(`<div id="${popin_id}-card-container" class="popin-card-container ${this.wrapClass}"></div>`);
+        let maintitlebar = null;
+        if (this.showMainTitleBarInPopin) {
+            maintitlebar = $("maintitlebar_content")?.cloneNode(true) as HTMLElement;
+            maintitlebar.id = "maintitlebar_content_clone";
+            $("maintitlebar_content")?.classList.add("daleofmerchants-transparent");
+        }
+        this.popin.setContent(`${maintitlebar?.outerHTML ?? ""}<div id="${popin_id}-card-container" class="popin-card-container ${this.wrapClass}"></div>`);
         const container_id = popin_id+"-card-container";
-        for (let card of this.cards) {
+        for (let card of this.cards.slice().reverse()) {
             const div = card.toDiv(container_id, 'stock');
             div.classList.add("daleofmerchants-relative");
             if(this.isClickable(card)) {
@@ -426,6 +465,9 @@ export class Pile implements DaleLocation {
         this.isPopinOpen = true;
         this.popin.show();
         this.orderedSelection.updateIcons();
+        if (this.showMainTitleBarInPopin) {
+            this.cloneEventHandlers($("maintitlebar_content"), $("maintitlebar_content_clone"));
+        }
     }
 
     /**
@@ -576,6 +618,31 @@ export class Pile implements DaleLocation {
         this.containerHTML?.classList.add("daleofmerchants-selected");
     }
 
+    //TODO: safely remove this
+    // /**
+    //  * Moves `maintitlebar_content` to a given parent. If no parent is provided, move it back to the `page-title`
+    //  * @param parent (optional) htmlelement to attach the `maintitlebar_content` to.
+    //  */
+    // private moveMainTitleBar(parent?: HTMLElement | ParentNode | null) {
+    //     this.showMainTitleBarInPopin = true;
+    //     if (!this.showMainTitleBarInPopin) {
+    //         return;
+    //     }
+    //     const mainTitleBar = $("maintitlebar_content");
+    //     if (parent) {
+    //         // //create a clone that doesn't have click events, but stays during a fade out
+    //         // const mainTitleBarContentClone = mainTitleBarContent.cloneNode(true) as HTMLElement;
+    //         // mainTitleBarContentClone.id = "maintitlebar_content_clone";
+    //         // parent.prepend(mainTitleBarContentClone);
+    //         // parent.prepend(mainTitleBarContent);
+    //         parent.prepend(mainTitleBar.cloneNode(true));
+    //         $("maintitlebar_content")?.classList.add("daleofmerchants-hidden");
+    //     }
+    //     else {
+    //         $("maintitlebar_content")?.classList.remove("daleofmerchants-hidden");
+    //     }
+    // }
+
     /**
      * Give the pile's wrap the specified css class
      */
@@ -601,6 +668,7 @@ export class Pile implements DaleLocation {
         this.orderedSelection.setMaxSize(max);
         this.orderedSelection.setIconType(iconType);
         this.selectionMode = mode;
+        this.showMainTitleBarInPopin = false;
         switch (mode) {
             case 'noneCantViewContent':
                 return; //don't update html!
@@ -609,6 +677,7 @@ export class Pile implements DaleLocation {
             case 'multipleFromTopWithGaps':
             case 'multipleFromTopNoGaps':
             case 'multipleProgrammatic':
+                this.showMainTitleBarInPopin = true;
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                 }
@@ -619,6 +688,7 @@ export class Pile implements DaleLocation {
                 break;
             case 'single':
             case 'singleAnimalfolk':
+                this.showMainTitleBarInPopin = true;
                 this.containerHTML.classList.add("daleofmerchants-blinking");
                 this.openPopin();
                 break;
@@ -681,5 +751,6 @@ export class Pile implements DaleLocation {
         //Reattach the tooltip of the top card of the pile
         this.isPopinOpen = false;
         this.updateHTML();
+        $("maintitlebar_content")?.classList.remove("daleofmerchants-transparent");
     }
 }

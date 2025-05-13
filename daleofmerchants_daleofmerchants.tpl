@@ -31,11 +31,11 @@
     </div>
 
     <div id="daleofmerchants-hand-limbo-flex" class="daleofmerchants-horizontal-flex">
-        <div id="daleofmerchants-myhand-wrap" class="whiteblock daleofmerchants-arc-stock daleofmerchants-no-vertical-margin">
+        <div id="daleofmerchants-myhand-wrap" class="whiteblock daleofmerchants-arc-stock daleofmerchants-no-bottom-margin">
             <div class="daleofmerchants-label"></div>
             <div id="daleofmerchants-myhand"></div>
         </div> 
-        <div id="daleofmerchants-mylimbo-wrap" class="whiteblock daleofmerchants-arc-stock daleofmerchants-no-vertical-margin daleofmerchants-left-margin">
+        <div id="daleofmerchants-mylimbo-wrap" class="whiteblock daleofmerchants-arc-stock daleofmerchants-no-bottom-margin daleofmerchants-left-margin">
             <div class="daleofmerchants-label"></div>
             <div id="daleofmerchants-mylimbo"></div>
         </div>
