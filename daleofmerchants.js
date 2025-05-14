@@ -4482,7 +4482,13 @@ define("components/types/TranslatableStrings", ["require", "exports"], function 
     var TranslatableStrings = (function () {
         function TranslatableStrings() {
         }
-        TranslatableStrings.please_select_a_different_player = _("Please select a different player");
+        Object.defineProperty(TranslatableStrings, "please_select_a_different_player", {
+            get: function () {
+                return _("Please select a different player");
+            },
+            enumerable: false,
+            configurable: true
+        });
         return TranslatableStrings;
     }());
     exports.TranslatableStrings = TranslatableStrings;
