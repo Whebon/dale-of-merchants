@@ -337,7 +337,8 @@ class DaleOfMerchants extends Gamegui
 		}
 
 		//initialize the stored cards
-		for (let player_id in gamedatas.storedCards) {
+		//for (let player_id in gamedatas.storedCards) { //doesn't work in production?
+		for (let player_id in this.gamedatas.playerorder.map(Number)) {
 			const container = $('daleofmerchants-stored-cards-'+player_id)!
 			const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!
 			dojo.setStyle(wrap, 'min-width', `${1.5*Images.CARD_WIDTH_S}px`);

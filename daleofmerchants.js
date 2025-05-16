@@ -4712,7 +4712,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 dojo.connect(this.mySchedule, 'onClick', this, 'onSelectScheduleCard');
                 dojo.connect(this.mySchedule.orderedSelection, 'onSelect', this, 'onSelectScheduleCard');
             }
-            for (var player_id in gamedatas.storedCards) {
+            for (var player_id in this.gamedatas.playerorder.map(Number)) {
                 var container = $('daleofmerchants-stored-cards-' + player_id);
                 var wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
                 dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
