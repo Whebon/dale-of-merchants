@@ -10820,7 +10820,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var order = this.gamedatas.playerorder.map(Number);
             var startIndex = order.indexOf(+start_with_player_id);
             if (startIndex === -1) {
-                throw new Error("Player ID ".concat(start_with_player_id, " not found in player order."));
+                console.warn("------------------------------------------------------");
+                console.warn(order);
+                console.warn("Player ID ".concat(start_with_player_id, " not found in player order."));
+                console.warn("------------------------------------------------------");
+                startIndex = 0;
             }
             return __spreadArray(__spreadArray([], order.slice(startIndex), true), order.slice(0, startIndex), true);
         };
