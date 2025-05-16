@@ -72,6 +72,10 @@
   white-space: nowrap;
 }
 
+.daleofmerchants-play-area-opponent {
+  background-color: rgba(200, 200, 200, 0.5);
+}
+
 .daleofmerchants-play-area-title {
   text-align: left;
   white-space: nowrap;

@@ -41,57 +41,59 @@
         </div>
     </div> 
 
-    <!-- BEGIN stall -->
-    <div class="whiteblock">
-        <span id="daleofmerchants-token-area-{PLAYER_ID}" class="daleofmerchants-token-area">
-            <!-- only needed for coin-based animalfolk -->
-            <span id="daleofmerchants-coins-wrap-{PLAYER_ID}" class="daleofmerchants-coins-wrap daleofmerchants-wrap-default daleofmerchants-hidden" >
-                <span class="daleofmerchants-label daleofmerchants-spending" >
-                    Label
+    <div class = "daleofmerchants-play-area-container">
+        <!-- BEGIN stall -->
+        <div id="daleofmerchants-play-area-{PLAYER_ID}" class="daleofmerchants-play-area whiteblock">
+            <span id="daleofmerchants-token-area-{PLAYER_ID}" class="daleofmerchants-token-area">
+                <!-- only needed for coin-based animalfolk -->
+                <span id="daleofmerchants-coins-wrap-{PLAYER_ID}" class="daleofmerchants-coins-wrap daleofmerchants-wrap-default daleofmerchants-hidden" >
+                    <span class="daleofmerchants-label daleofmerchants-spending" >
+                        Label
+                    </span>
+                    <span class="daleofmerchants-coins-to-spend-counter daleofmerchants-spending" style="font-size: x-large;">
+                        0
+                    </span>
+                    <span class="daleofmerchants-spending" style="font-size: x-large;">
+                        /
+                    </span>
+                    <span class="daleofmerchants-coins-counter" style="font-size: x-large;">
+                        0
+                    </span>
                 </span>
-                <span class="daleofmerchants-coins-to-spend-counter daleofmerchants-spending" style="font-size: x-large;">
-                    0
-                </span>
-                <span class="daleofmerchants-spending" style="font-size: x-large;">
-                    /
-                </span>
-                <span class="daleofmerchants-coins-counter" style="font-size: x-large;">
-                    0
+                <!-- only needed for clock-based animalfolk -->
+                <span id="daleofmerchants-clock-wrap-{PLAYER_ID}" class="daleofmerchants-clock-wrap daleofmerchants-hidden" >
+                    <span id="daleofmerchants-clock-label-{PLAYER_ID}" class="daleofmerchants-clock-label">Clock</span>
                 </span>
             </span>
-            <!-- only needed for clock-based animalfolk -->
-            <span id="daleofmerchants-clock-wrap-{PLAYER_ID}" class="daleofmerchants-clock-wrap daleofmerchants-hidden" >
-                <span id="daleofmerchants-clock-label-{PLAYER_ID}" class="daleofmerchants-clock-label">Clock</span>
-            </span>
-        </span>
-        <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
-        <div class="daleofmerchants-horizontal-flex">
-            <div id="deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
-            <div id="discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
-            <div id="daleofmerchants-stall-wrap-landscape-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
+            <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
+            <div class="daleofmerchants-horizontal-flex">
+                <div id="deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
+                <div id="discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
+                <div id="daleofmerchants-stall-wrap-landscape-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
+                    <h3 class="daleofmerchants-component-name"> {STALL} </h3>
+                    <div id="daleofmerchants-stall-{PLAYER_ID}" class="daleofmerchants-stall-container"></div>
+                </div>
+                <div id="daleofmerchants-schedule-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-schedule">
+                    <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
+                    <h3 class="daleofmerchants-component-name"> {SCHEDULE} </h3>
+                    <div id="daleofmerchants-schedule-{PLAYER_ID}"></div>
+                </div>
+                <!-- only needed for the tree kangaroos -->
+                <div id="daleofmerchants-stored-cards-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-stored-cards daleofmerchants-hidden">
+                    <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
+                    <h3 class="daleofmerchants-component-name"> {STORED_CARDS} </h3>
+                    <div id="daleofmerchants-stored-cards-{PLAYER_ID}"></div>
+                </div>
+            </div>
+            <div id="daleofmerchants-stall-wrap-portrait-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
                 <h3 class="daleofmerchants-component-name"> {STALL} </h3>
-                <div id="daleofmerchants-stall-{PLAYER_ID}" class="daleofmerchants-stall-container"></div>
+                <!-- on narrow screens, the stall will automatically be moved here -->
             </div>
-            <div id="daleofmerchants-schedule-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-schedule">
-                <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
-                <h3 class="daleofmerchants-component-name"> {SCHEDULE} </h3>
-                <div id="daleofmerchants-schedule-{PLAYER_ID}"></div>
-            </div>
-            <!-- only needed for the tree kangaroos -->
-            <div id="daleofmerchants-stored-cards-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-stored-cards daleofmerchants-hidden">
-                <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
-                <h3 class="daleofmerchants-component-name"> {STORED_CARDS} </h3>
-                <div id="daleofmerchants-stored-cards-{PLAYER_ID}"></div>
-            </div>
+            <br>
+            
         </div>
-        <div id="daleofmerchants-stall-wrap-portrait-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
-            <h3 class="daleofmerchants-component-name"> {STALL} </h3>
-            <!-- on narrow screens, the stall will automatically be moved here -->
-        </div>
-        <br>
-        
+        <!-- END stall -->
     </div>
-    <!-- END stall -->
 
     <!---------------------------->
     <!--       Debug Tools      -->

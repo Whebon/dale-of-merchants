@@ -25,5 +25,19 @@
 		  }
 		},
 		"default": 1
+	},
+
+	"101": {
+		"name": "Rotate play areas",
+		"needReload": true,
+		"values": {
+		  "0": {
+			"name": "No, always show my play area on top"
+		  },
+		  "1": {
+			"name": "Yes, show the active player's play area on top"
+		  }
+		},
+		"default": 1
 	  }
 }

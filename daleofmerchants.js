@@ -4579,6 +4579,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("------ GAME DATAS ------ !");
             console.warn(this.gamedatas);
             console.warn("------------------------");
+            if (gamedatas.gamestate.type == 'activeplayer') {
+                this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
+            }
             if (gamedatas.debugMode) {
                 this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools'), _("Spawn Card"), this.spawnCard.bind(this));
             }
@@ -4775,6 +4778,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
                 console.warn("Revalidate all local chameleons");
                 this.validateChameleonsLocal();
+            }
+            if (stateName == 'turnStart') {
+                this.movePlayAreaOnTop(args.active_player);
             }
             if (!this.isCurrentPlayerActive()) {
                 switch (stateName) {
@@ -10808,6 +10814,63 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             else {
                 throw new Error("Unknown argument ".concat(notif.args.arg));
+            }
+        };
+        DaleOfMerchants.prototype.getPlayerOrderStartingWith = function (start_with_player_id) {
+            var order = this.gamedatas.playerorder.map(Number);
+            var startIndex = order.indexOf(+start_with_player_id);
+            if (startIndex === -1) {
+                throw new Error("Player ID ".concat(start_with_player_id, " not found in player order."));
+            }
+            return __spreadArray(__spreadArray([], order.slice(startIndex), true), order.slice(0, startIndex), true);
+        };
+        DaleOfMerchants.prototype.movePlayAreaOnTop = function (start_with_player_id, duration) {
+            if (duration === void 0) { duration = 1000; }
+            if (this.getGameUserPreference(101) == 0) {
+                return;
+            }
+            var container = document.querySelector(".daleofmerchants-play-area-container");
+            var playAreas = Array.from(container.children);
+            var initialRects = new Map();
+            playAreas.forEach(function (el) { return initialRects.set(el, el.getBoundingClientRect()); });
+            for (var _i = 0, _a = this.getPlayerOrderStartingWith(start_with_player_id); _i < _a.length; _i++) {
+                var player_id = _a[_i];
+                var top_1 = container.querySelector("#daleofmerchants-play-area-".concat(player_id));
+                if (player_id != this.player_id) {
+                    top_1.classList.add("daleofmerchants-play-area-opponent");
+                }
+                container.appendChild(top_1);
+            }
+            var transitions = [];
+            playAreas.forEach(function (el) {
+                var initialRect = initialRects.get(el);
+                var newRect = el.getBoundingClientRect();
+                var deltaY = initialRect.top - newRect.top;
+                if (deltaY !== 0) {
+                    transitions.push({ el: el, deltaY: deltaY });
+                }
+            });
+            transitions.forEach(function (_a) {
+                var el = _a.el, deltaY = _a.deltaY;
+                el.style.transition = 'none';
+                el.style.transform = "translateY(".concat(deltaY, "px)");
+            });
+            void container.offsetHeight;
+            transitions.forEach(function (_a) {
+                var el = _a.el;
+                el.style.transition = "transform ".concat(duration, "ms ease");
+                el.style.transform = '';
+            });
+            var cleanup = function () {
+                transitions.forEach(function (_a) {
+                    var el = _a.el;
+                    el.style.transition = '';
+                    el.style.transform = '';
+                    el.removeEventListener('transitionend', cleanup);
+                });
+            };
+            if (transitions.length) {
+                transitions[0].el.addEventListener('transitionend', cleanup);
             }
         };
         DaleOfMerchants.prototype.addCardNameInputField = function (parent, button_label, callback) {

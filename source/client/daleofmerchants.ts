@@ -151,6 +151,11 @@ class DaleOfMerchants extends Gamegui
 		console.warn(this.gamedatas)
 		console.warn("------------------------")
 
+		//Move play area on top
+		if (gamedatas.gamestate.type == 'activeplayer') {
+			this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
+		}
+
 		//add debug tools
 		if (gamedatas.debugMode) {
 			this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools')!, _("Spawn Card"), this.spawnCard.bind(this));
@@ -430,6 +435,10 @@ class DaleOfMerchants extends Gamegui
 		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
 			console.warn("Revalidate all local chameleons");
 			this.validateChameleonsLocal();
+		}
+
+		if (stateName == 'turnStart') {
+			this.movePlayAreaOnTop(args.active_player);
 		}
 
 		//IMPORTANT: the following switch-case is for NON-active players
@@ -7285,6 +7294,92 @@ class DaleOfMerchants extends Gamegui
 			throw new Error(`Unknown argument ${notif.args.arg}`)
 		}	
 	}
+
+	///////////////////////////////////////////////////
+	//// Animation
+
+	/**
+	 * Returns the player order starting from the specified player ID,
+	 * preserving the order defined in `this.gamedatas.playerorder`.
+	 * @param start_with_player_id - The player ID to start the order from
+	 * @returns A rotated array of player IDs, starting with the specified one
+	 */
+	getPlayerOrderStartingWith(start_with_player_id: number | string): number[] {
+		const order = this.gamedatas.playerorder.map(Number);
+		const startIndex = order.indexOf(+start_with_player_id);
+
+		if (startIndex === -1) {
+			throw new Error(`Player ID ${start_with_player_id} not found in player order.`);
+		}
+
+		return [...order.slice(startIndex), ...order.slice(0, startIndex)];
+	}
+
+	/**
+	 * Move the play area of the specified player above all other play areas
+	 * @param start_with_player_id 
+	 * @param duration default `1000ms` - duration of the animation in ms
+	 */
+	movePlayAreaOnTop(start_with_player_id: number, duration: number = 1000) {
+		if (this.getGameUserPreference(101) == 0) {
+			return;
+		}
+
+		// Step 1: Record current positions
+		const container = document.querySelector(".daleofmerchants-play-area-container") as HTMLElement;
+		const playAreas = Array.from(container.children) as HTMLElement[];
+		const initialRects = new Map<HTMLElement, DOMRect>();
+		playAreas.forEach(el => initialRects.set(el, el.getBoundingClientRect()));
+
+		// Step 2: Instantly reorder the containers
+		for (let player_id of this.getPlayerOrderStartingWith(start_with_player_id)) {
+			const top = container.querySelector(`#daleofmerchants-play-area-${player_id}`) as HTMLElement;
+			if (player_id != this.player_id) {
+				top.classList.add("daleofmerchants-play-area-opponent"); //add styling to quickly find your own play area
+			}
+			container.appendChild(top);
+		}
+
+		// Step 3: Record new positions and compute deltas
+		const transitions: { el: HTMLElement, deltaY: number }[] = [];
+		playAreas.forEach(el => {
+			const initialRect = initialRects.get(el)!;
+			const newRect = el.getBoundingClientRect();
+			const deltaY = initialRect.top - newRect.top;
+			if (deltaY !== 0) {
+				transitions.push({ el, deltaY });
+			}
+		});
+
+		// Step 4: Apply transform to reverse the movement
+		transitions.forEach(({ el, deltaY }) => {
+			el.style.transition = 'none';
+			el.style.transform = `translateY(${deltaY}px)`;
+		});
+
+		// Force reflow
+		void container.offsetHeight;
+
+		// Step 5: Animate to natural position
+		transitions.forEach(({ el }) => {
+			el.style.transition = `transform ${duration}ms ease`;
+			el.style.transform = '';
+		});
+
+		// Step 6: Cleanup after transition
+		const cleanup = () => {
+			transitions.forEach(({ el }) => {
+				el.style.transition = '';
+				el.style.transform = '';
+				el.removeEventListener('transitionend', cleanup);
+			});
+		};
+
+		// Add listener to one element to clean up after animation ends
+		if (transitions.length) {
+			transitions[0]!.el.addEventListener('transitionend', cleanup);
+		}
+    }
 	
 	///////////////////////////////////////////////////
 	//// Debug functions
