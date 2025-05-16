@@ -155,8 +155,22 @@ class DaleOfMerchants extends DaleTableBasic
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $players = $this->loadPlayersBasicInfos();
-        $sql = "SELECT player_id id, player_score score, player_coins coins, player_clock clock FROM player ";
-        $result['players'] = $this->getCollectionFromDb( $sql );
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        try {
+            //IMPORTANT: ONLY KEEP THIS QUERY
+            $sql = "SELECT player_id id, player_score score, player_coins coins, player_clock clock FROM player ";
+            $result['players'] = $this->getCollectionFromDb( $sql );
+        }
+        catch (Exception $e) {
+            //IMPORTANT: REMOVE THIS CLOCK TRY CATCH BLOCK (this is only needed for 3 outdated games)
+            $sql = "SELECT player_id id, player_score score, player_coins coins FROM player ";
+            $result['players'] = $this->getCollectionFromDb( $sql );
+            foreach ($result['players'] as $key => $value) {
+                $result['players'][$key]['clock'] = 0;
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         //count the cards in each hand, but don't send the content (that information is hidden)
         $result['handSizes'] = array();
