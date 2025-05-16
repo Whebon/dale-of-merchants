@@ -338,11 +338,13 @@ class DaleOfMerchants extends Gamegui
 
 		//initialize the stored cards
 		for (let player_id in gamedatas.storedCards) {
-			const container = $('daleofmerchants-stored-cards-'+player_id)!
-			const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!
-			console.warn('daleofmerchants-stored-cards-wrap-'+player_id);
-			console.warn(player_id);
-			console.warn(wrap);
+			const container = $('daleofmerchants-stored-cards-'+player_id);
+			const wrap = $('daleofmerchants-stored-cards-wrap-'+player_id);
+			if (!container || !wrap) {
+				console.warn(`Skipped stored cards for ${player_id} (probably a spectator)`);
+				console.warn('daleofmerchants-stored-cards-wrap-'+player_id);
+				continue;
+			}
 			dojo.setStyle(wrap, 'min-width', `${1.5*Images.CARD_WIDTH_S}px`);
 			this.playerStoredCards[player_id] = new DaleStock();
 			this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));

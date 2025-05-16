@@ -4715,9 +4715,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var player_id in gamedatas.storedCards) {
                 var container = $('daleofmerchants-stored-cards-' + player_id);
                 var wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
-                console.warn('daleofmerchants-stored-cards-wrap-' + player_id);
-                console.warn(player_id);
-                console.warn(wrap);
+                if (!container || !wrap) {
+                    console.warn("Skipped stored cards for ".concat(player_id, " (probably a spectator)"));
+                    console.warn('daleofmerchants-stored-cards-wrap-' + player_id);
+                    continue;
+                }
                 dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
                 this.playerStoredCards[player_id] = new DaleStock_1.DaleStock();
                 this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
