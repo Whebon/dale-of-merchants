@@ -433,6 +433,10 @@ class DaleOfMerchants extends Gamegui
 	{
 		console.warn( 'Entering state: '+stateName );
 
+		if (stateName == 'turnStart') {
+			this.movePlayAreaOnTop(args.active_player);
+		}
+
 		if (this.isSpectator) {
 			return;
 		}
@@ -440,10 +444,6 @@ class DaleOfMerchants extends Gamegui
 		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
 			console.warn("Revalidate all local chameleons");
 			this.validateChameleonsLocal();
-		}
-
-		if (stateName == 'turnStart') {
-			this.movePlayAreaOnTop(args.active_player);
 		}
 
 		//IMPORTANT: the following switch-case is for NON-active players
@@ -7310,7 +7310,17 @@ class DaleOfMerchants extends Gamegui
 	 * @returns A rotated array of player IDs, starting with the specified one
 	 */
 	getPlayerOrderStartingWith(start_with_player_id: number | string): number[] {
-		const order = this.gamedatas.playerorder.map(Number);
+		let order = this.gamedatas.playerorder.map(Number);
+		if (this.isSpectator) {
+			//workaround to get the player order in spectator mode
+			order = [];
+			document.querySelectorAll(".daleofmerchants-play-area").forEach((elem) => {
+				const match = elem.id.match(/\d+/);
+				if (match) {
+					order.push(+match[0]);
+				}
+			})
+		}
 		let startIndex = order.indexOf(+start_with_player_id);
 
 		if (startIndex === -1) {

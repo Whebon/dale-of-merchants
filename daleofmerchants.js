@@ -4777,15 +4777,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _this = this;
             var _a, _b, _c, _d, _e, _f;
             console.warn('Entering state: ' + stateName);
+            if (stateName == 'turnStart') {
+                this.movePlayAreaOnTop(args.active_player);
+            }
             if (this.isSpectator) {
                 return;
             }
             if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
                 console.warn("Revalidate all local chameleons");
                 this.validateChameleonsLocal();
-            }
-            if (stateName == 'turnStart') {
-                this.movePlayAreaOnTop(args.active_player);
             }
             if (!this.isCurrentPlayerActive()) {
                 switch (stateName) {
@@ -10823,6 +10823,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.getPlayerOrderStartingWith = function (start_with_player_id) {
             var order = this.gamedatas.playerorder.map(Number);
+            if (this.isSpectator) {
+                order = [];
+                document.querySelectorAll(".daleofmerchants-play-area").forEach(function (elem) {
+                    var match = elem.id.match(/\d+/);
+                    if (match) {
+                        order.push(+match[0]);
+                    }
+                });
+            }
             var startIndex = order.indexOf(+start_with_player_id);
             if (startIndex === -1) {
                 console.warn("------------------------------------------------------");
