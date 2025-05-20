@@ -3186,12 +3186,12 @@ class DaleOfMerchants extends DaleTableBasic
         //Apply CT_ROYALPRIVILEGE (this effect does not stack: it's too rare to be worth tracking)
         if ($royal_privilege) {
             $this->setGameStateValue("card_id", $market_card_id);
-            $this->gamestate->nextState("trRoyalPrivilege");
+            $this->nextStateViaTriggers("trRoyalPrivilege", TRIGGER_ONPURCHASE, TRIGGER_ONMARKETCARD);
             return;
         }
 
         //end turn
-        $this->gamestate->nextState("trNextPlayer");
+        $this->nextStateViaTriggers("trNextPlayer", TRIGGER_ONPURCHASE, TRIGGER_ONMARKETCARD);
     }
 
     function actRoyalPrivilege($ditch_card_id, $market_card_id) {
