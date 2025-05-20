@@ -372,14 +372,15 @@ class DaleOfMerchants extends DaleTableBasic
      * Make a pitstop at the trigger state, then proceed to the `$next_transition`
      * @param string $next_transition transition to take after the trigger event
      * @param string $triggers `TRIGGER_` events
+     * @return bool `true` if a card triggered
      */
-    function nextStateViaTriggers(string $next_transition, string ...$triggers) {
+    function nextStateViaTriggers(string $next_transition, string ...$triggers): bool {
         //no triggers
         if (count($triggers) === 0) {
             $this->gamestate->nextState($next_transition);
-            return;
+            return false;
         }
-        $this->nextStateViaOtherPlayerTriggers($next_transition, $this->getActivePlayerId(), ...$triggers);
+        return $this->nextStateViaOtherPlayerTriggers($next_transition, $this->getActivePlayerId(), ...$triggers);
     }
 
 
@@ -387,15 +388,18 @@ class DaleOfMerchants extends DaleTableBasic
      * Make a pitstop at the trigger state, then proceed to the `$next_transition`.
      * The trigger state is for `$trigger_player_id`.
      * The current active player remains the active player after the `$next_transition`.
-     * @param string $next_transition transition to take after the trigger event
+     * @param string|null $next_transition transition to take after the trigger event. if `null`, transition back to the current gamestate
      * @param mixed $player_id the player that should become the active player of the trigger state
      * @param string $triggers `TRIGGER_` events
+     * @return bool `true` if a card triggered
      */
-    function nextStateViaOtherPlayerTriggers(string $next_transition, mixed $trigger_player_id, string ...$triggers) {
+    function nextStateViaOtherPlayerTriggers(string|null $next_transition, mixed $trigger_player_id, string ...$triggers): bool {
         //no triggers
         if (count($triggers) === 0) {
-            $this->gamestate->nextState($next_transition);
-            return;
+            if ($next_transition !== null) {
+                $this->gamestate->nextState($next_transition);
+            }
+            return false;
         }
 
         //trigger all related schedule cards
@@ -429,8 +433,10 @@ class DaleOfMerchants extends DaleTableBasic
 
         //if none of the scheduled cards triggered, skip the trigger state
         if (count($unaffected_dbcards) == count($all_card_ids)) {
-            $this->gamestate->nextState($next_transition);
-            return;
+            if ($next_transition !== null) {
+                $this->gamestate->nextState($next_transition);
+            }
+            return false;
         }
 
         //set the other schedule cards on a cooldown (so the player cannot resolve them)
@@ -443,11 +449,11 @@ class DaleOfMerchants extends DaleTableBasic
 
         //move to the trigger state (28), and store the state to visit afterwards in `trigger_next_state_id`
         $current_state_id = $this->gamestate->state_id();
-        if (!array_key_exists($next_transition, $this->gamestate->states[$current_state_id]['transitions'])) {
+        if ($next_transition !== null && !array_key_exists($next_transition, $this->gamestate->states[$current_state_id]['transitions'])) {
             throw new BgaVisibleSystemException("Beaver trigger: '$next_transition' is not a valid transition in in the current gamestate");
         }
         $next_player_id = $this->getActivePlayerId();
-        $next_state_id = $this->gamestate->states[$current_state_id]['transitions'][$next_transition];
+        $next_state_id = $next_transition === null ? $this->gamestate->state_id() : $this->gamestate->states[$current_state_id]['transitions'][$next_transition];
         $this->setGameStateValue("trigger_next_player_id", $next_player_id);
         $this->setGameStateValue("trigger_next_state_id", $next_state_id);
         if ($trigger_player_id == $next_player_id) {
@@ -458,6 +464,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->setGameStateValue("changeActivePlayer_state_id", 28);
             $this->gamestate->nextState("trChangeActivePlayer");
         }
+        return true;
     }
 
     /**
@@ -5391,6 +5398,12 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_PRACTICE:
+                $this->notifyAllPlayers('message', 'TODO: IMPLEMENT PRACTICE!', array(
+                    'player_name' => $this->getActivePlayerName()
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");
@@ -6116,12 +6129,20 @@ class DaleOfMerchants extends DaleTableBasic
                 'market_card_id' => $card_id,
                 'pos' => $card["location_arg"],
             ));
+            if ($other_player_id != $player_id) {
+                //check for other player's TRIGGER_ONMARKETCARD triggers (the active player has their trigger when the Tasters resolves)
+                if ($this->nextStateViaOtherPlayerTriggers(null, $other_player_id, TRIGGER_ONMARKETCARD)) {
+                    $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
+                    $this->setGameStateValuePlayerIds($remaining_player_ids);
+                    return;
+                }
+            }
         }
         //update the remaining player_ids
         $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
         $this->setGameStateValuePlayerIds($remaining_player_ids);
         if (count($remaining_player_ids) == 0) {
-            $this->fullyResolveCard($player_id);
+            $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
             return;
         }
         //market is empty? the remaining players miss out on receiving a card
@@ -6131,7 +6152,12 @@ class DaleOfMerchants extends DaleTableBasic
                     'player_name' => $this->getPlayerNameById($remaining_player_id),
                 ));
             }
-            $this->fullyResolveCard($player_id);
+            if (in_array($player_id, $remaining_player_ids)) {
+                $this->fullyResolveCard($player_id); //no trigger for the active player (very, very rare)
+            }
+            else {
+                $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
+            }
             return;
         }
     }
@@ -8204,6 +8230,15 @@ class DaleOfMerchants extends DaleTableBasic
         //     //bad omen has no effect
         //     $this->fullyResolveCard($this->getActivePlayerId());
         // }
+    }
+
+    function stTasters() {
+        $remaining_player_ids = $this->getGameStateValuePlayerIds();
+        if (count($remaining_player_ids) == 0) {
+            //tasters has no effect remaining
+            $this->fullyResolveCard($this->getActivePlayerId(), null, null, TRIGGER_ONMARKETCARD);
+            return;
+        }
     }
 
     //(~st)

@@ -35,6 +35,7 @@ if (false) {
 	$game->stRuthlessCompetition();
 	$game->stCunningNeighbour();
 	$game->stCharity();
+	$game->stTasters();
 	$game->stDaringAdventurer();
 	$game->stRefreshingDrink();
 	$game->stDelightfulSurprise();
@@ -390,9 +391,11 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Tasters: ${you} must choose a card from the market and a player'),
 		'type' => 'activeplayer',
 		'args' => 'argPlayerIds',
+		'action' => 'stTasters',
 		'possibleactions' => ['actTasters'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+			'trChangeActivePlayer' => 29,
 		),
 	),
 	66 => array(

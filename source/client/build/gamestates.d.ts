@@ -601,6 +601,7 @@ interface GameStates {
 		'descriptionmyturn': 'Tasters: ${you} must choose a card from the market and a player',
 		'type': 'activeplayer',
 		'args': 'argPlayerIds',
+		'action': 'stTasters',
 		'possibleactions': {
 			'actTasters': [{
 				'name': 'card_ids',
@@ -614,6 +615,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+			'trChangeActivePlayer': 29,
 		},
 	},
 	66: {
