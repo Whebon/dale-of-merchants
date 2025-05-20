@@ -216,6 +216,14 @@ class DaleDeck extends Deck {
         $sql .= "WHERE card_location='".addslashes( $location )."' ";
         self::DbQuery( $sql );
 
+        //when starting a new pile, make sure it is 1-indexed
+        if ($bottom_location_arg <= 0) {
+            if ($this->countCardsInLocation($location) > 0) {
+                throw new BgaVisibleSystemException($location." is not 1-indexed");
+            }
+            $bottom_location_arg = 1;
+        }
+
         //move the card to the bottom
         $this->moveCard($card_id, $location, $bottom_location_arg);
 
@@ -401,6 +409,20 @@ class DaleDeck extends Deck {
             }
         }
         return $cards;
+    }
+
+    /**
+     * Shuffle card of a specified location, result of the operation will changes state of the card to be a position after shuffling.
+     * Overrides the parent::shuffle, the only difference is that the resulting pile is 1-indexed, not 0-indexed
+     */
+    function shuffle($location) {
+        $card_ids = self::getObjectListFromDB("SELECT card_id FROM ".$this->table." WHERE card_location='$location'", true);
+        shuffle($card_ids);
+        $n=1; //$n=0; This is the only difference compared to the parent::shuffle
+        foreach($card_ids as $card_id){
+            self::DbQuery("UPDATE ".$this->table." SET card_location_arg='$n' WHERE card_id='$card_id'");
+            $n++;
+        }
     }
 
     function pickCard($location, $player_id) { die("DISABLED"); }

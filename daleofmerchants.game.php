@@ -3533,7 +3533,8 @@ class DaleOfMerchants extends DaleTableBasic
                 $discard_card_ids = array();
                 $discard_cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
                 foreach ($discard_cards as $discard_card) {
-                    $discard_card_ids[(int)$discard_card["location_arg"]] = $discard_card["id"];
+                    //the discard pile is 1-indexed on the server side, and 0-index on the client side
+                    $discard_card_ids[(int)$discard_card["location_arg"]-1] = $discard_card["id"];
                 }
                 ksort($discard_card_ids);
                 $this->notifyAllPlayers('wilyFellow', clienttranslate('Wily Fellow: ${player_name} swaps their discard pile and deck'), array (
