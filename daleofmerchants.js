@@ -10803,6 +10803,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 else {
                     DaleCard_10.DaleCard.scheduleCooldownCardIds.delete(+card_id);
                 }
+                if (notif.args.player_id == this.player_id) {
+                    this.mySchedule.setClickable(+card_id);
+                }
             }
         };
         DaleOfMerchants.prototype.notif_message = function (notif) {

@@ -402,8 +402,13 @@ class DaleOfMerchants extends DaleTableBasic
             return false;
         }
 
+        //if we are already in the trigger state, only try to trigger more cards (schedule cards that are on cooldown)
+        $current_state_id = $this->gamestate->state_id();
+        $schedule = ($current_state_id == 28) ? SCHEDULE_COOLDOWN : SCHEDULE;
+
         //trigger all related schedule cards
-        $unaffected_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$trigger_player_id);
+        $triggered_dbcards = array();
+        $unaffected_dbcards = $this->cards->getCardsInLocation($schedule.$trigger_player_id);
         $all_card_ids = $this->toCardIds($unaffected_dbcards);
         foreach($all_card_ids as $card_id) {
             $dbcard = $unaffected_dbcards[$card_id];
@@ -411,16 +416,19 @@ class DaleOfMerchants extends DaleTableBasic
                 switch ($trigger) {
                     case TRIGGER_ONMARKETCARD:
                         if ($this->getTypeId($dbcard) == CT_MASTERBUILDER) {
+                            $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
                             unset($unaffected_dbcards[$card_id]);
                         }
                         break;
                     case TRIGGER_ONPURCHASE:
                         if ($this->getTypeId($dbcard) == CT_WINDOFCHANGE) {
+                            $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
                             unset($unaffected_dbcards[$card_id]);
                         }
                         break;
                     case TRIGGER_ONRESOLVE:
                         if ($this->getTypeId($dbcard) == CT_PRACTICE) {
+                            $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
                             unset($unaffected_dbcards[$card_id]);
                         }
                         break;
@@ -439,7 +447,18 @@ class DaleOfMerchants extends DaleTableBasic
             return false;
         }
 
-        //set the other schedule cards on a cooldown (so the player cannot resolve them)
+        //we are already in the trigger gamestate: include more triggered_dbcards (e.g. tasters(P1) -> masterbuilder(P2) -> practice(P2))
+        if ($current_state_id == 28) {
+            $this->cards->moveCards($this->toCardIds($triggered_dbcards), SCHEDULE.$trigger_player_id);
+            $this->notifyAllPlayers('setScheduleCooldown', '', array(
+                'player_id' => $trigger_player_id,
+                'cards' => $triggered_dbcards,
+                'status' => false
+            ));
+            return true;
+        }
+
+        //set unaffected cards on a cooldown (so the player cannot resolve them in the trigger gamestate)
         $this->cards->moveCards($this->toCardIds($unaffected_dbcards), SCHEDULE_COOLDOWN.$trigger_player_id);
         $this->notifyAllPlayers('setScheduleCooldown', '', array(
             'player_id' => $trigger_player_id,
@@ -448,7 +467,6 @@ class DaleOfMerchants extends DaleTableBasic
         ));
 
         //move to the trigger state (28), and store the state to visit afterwards in `trigger_next_state_id`
-        $current_state_id = $this->gamestate->state_id();
         if ($next_transition !== null && !array_key_exists($next_transition, $this->gamestate->states[$current_state_id]['transitions'])) {
             throw new BgaVisibleSystemException("Beaver trigger: '$next_transition' is not a valid transition in in the current gamestate");
         }

@@ -210,7 +210,7 @@ export class DaleStock extends Stock implements DaleLocation {
 	/**
 	 * Make the given card with the given card id clickable based on the current selectionMode 
 	 */
-	private setClickable(card_id: number) {
+	public setClickable(card_id: number) {
 		const div = $(this.control_name+"_item_"+card_id);
 		if (!div) {
 			throw new Error(`Card ${card_id} does not exist in hand, so setClickable cannot be set`);

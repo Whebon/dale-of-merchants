@@ -7273,6 +7273,9 @@ class DaleOfMerchants extends Gamegui
 			else {
 				DaleCard.scheduleCooldownCardIds.delete(+card_id);
 			}
+			if (notif.args.player_id == this.player_id) {
+				this.mySchedule.setClickable(+card_id); //update the selection mode
+			}
 		}
 	}
 
