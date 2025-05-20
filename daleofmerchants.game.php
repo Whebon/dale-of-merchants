@@ -58,7 +58,8 @@ class DaleOfMerchants extends DaleTableBasic
             "die_value2" => 26,
             "passive_card_id" => 27,
             "trigger_next_player_id" => 28,
-            "trigger_next_state_id" => 29
+            "trigger_next_state_id" => 29,
+            "practice_card_id" => 30
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -125,6 +126,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("passive_card_id", -1);
         $this->setGameStateInitialValue("trigger_next_player_id", -1);
         $this->setGameStateInitialValue("trigger_next_state_id", -1);
+        $this->setGameStateInitialValue("practice_card_id", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -428,6 +430,11 @@ class DaleOfMerchants extends DaleTableBasic
                         break;
                     case TRIGGER_ONRESOLVE:
                         if ($this->getTypeId($dbcard) == CT_PRACTICE) {
+                            $practice_card = $this->cards->getCardOnTop(DISCARD.$trigger_player_id);
+                            if ($practice_card === null) {
+                                throw new BgaVisibleSystemException("TRIGGER_ONRESOLVE event without a resolved card in discard");
+                            }
+                            $this->setGameStateValue("practice_card_id", $practice_card["id"]);
                             $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
                             unset($unaffected_dbcards[$card_id]);
                         }
@@ -5417,9 +5424,24 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_PRACTICE:
-                $this->notifyAllPlayers('message', 'TODO: IMPLEMENT PRACTICE!', array(
-                    'player_name' => $this->getActivePlayerName()
-                ));
+                $practice_card_id = $this->getGameStateValue("practice_card_id");
+                $practice_card = $this->cards->getCard($practice_card_id);
+                if ($practice_card["location"] == DISCARD.$player_id) {
+                    $practice_card = $this->cards->removeCardFromPile($practice_card_id, DISCARD.$player_id);
+                    $this->cards->moveCard($practice_card_id, HAND.$player_id);
+                    $this->notifyAllPlayers('discardToHand', clienttranslate('Practice: ${player_name} takes their ${card_name} from their discard pile'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameById($player_id),
+                        "card_name" => $this->getCardName($practice_card),
+                        "card" => $practice_card
+                    ));
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Practice: ${player_name} cannot retrieve their ${card_name} from their discard pile because it was already moved by another effect'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                        'card_name' => $this->getCardName($practice_card)
+                    ));
+                }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
