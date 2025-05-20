@@ -1074,6 +1074,9 @@ class DaleOfMerchants extends Gamegui
 			case 'trigger':
 				this.mySchedule.setSelectionMode('clickOnTrigger', undefined, 'daleofmerchants-wrap-technique');
 				break;
+			case 'client_windOfChange':
+				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1509,6 +1512,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'trigger':
 				this.mySchedule.setSelectionMode('none');
+				break;
+			case 'client_windOfChange':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2191,6 +2197,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectingContracts':
 				this.addActionButton("confirm-button", _("Confirm"), "onSelectingContracts");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_windOfChange':
+				this.addActionButton("skip-button", _("Skip"), "onWindOfChangeSkip", undefined, false, 'gray');
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -3130,6 +3140,11 @@ class DaleOfMerchants extends Gamegui
 			case 'anotherFineMess':
 				this.onLooseMarblesBegin(pile.getPlayerId(), pile);
 				break;
+			case 'client_windOfChange':
+				this.resolveTechniqueCard<'client_windOfChange'>({
+					card_id: card!.id
+				})
+				break;
 		}
 	}
 
@@ -3581,6 +3596,10 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_MASTERBUILDER:
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
+				break;
+			case DaleCard.CT_WINDOFCHANGE:
+				fizzle = this.myDiscard.size == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -6082,6 +6101,10 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCard<'client_selectingContracts'>({
 			card_ids: card_ids
 		})
+	}
+
+	onWindOfChangeSkip() {
+		this.resolveTechniqueCard<'client_windOfChange'>({});
 	}
 
 	//(~on)

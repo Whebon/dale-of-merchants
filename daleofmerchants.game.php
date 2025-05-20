@@ -5202,10 +5202,11 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_SIESTA:
                 case CT_MASTERBUILDER:
+                case CT_WINDOFCHANGE:
                     $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_SIESTA / CT_MASTERBUILDER. Your discard pile is nonempty.");
+                        throw new BgaVisibleSystemException("Unable to fizzle. Your discard pile is nonempty.");
                     }
                     break;
                 default:
@@ -5378,7 +5379,16 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_MASTERBUILDER:
+            case CT_WINDOFCHANGE:
+                if (isset($args["card_id"])) {
+                    $card_id = $args["card_id"];
+                    $this->ditchFromDiscard(clienttranslate('Wind of Change: ${player_name} ditches a ${card_name}'), $card_id);
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Wind of Change: ${player_name} does not ditch a card'), array(
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

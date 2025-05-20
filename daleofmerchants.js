@@ -4065,6 +4065,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         else {
                             return _("${card_name}: ${you} must <stronger>ditch</stronger> one of the top ${nbr} cards of your discard");
                         }
+                    case 'client_windOfChange':
+                        return _("${card_name}: ${you} may ditch a card from your discard");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5336,6 +5338,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'trigger':
                     this.mySchedule.setSelectionMode('clickOnTrigger', undefined, 'daleofmerchants-wrap-technique');
                     break;
+                case 'client_windOfChange':
+                    this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5773,6 +5778,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'trigger':
                     this.mySchedule.setSelectionMode('none');
+                    break;
+                case 'client_windOfChange':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -6446,6 +6454,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_selectingContracts':
                     this.addActionButton("confirm-button", _("Confirm"), "onSelectingContracts");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_windOfChange':
+                    this.addActionButton("skip-button", _("Skip"), "onWindOfChangeSkip", undefined, false, 'gray');
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -7165,6 +7177,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'anotherFineMess':
                     this.onLooseMarblesBegin(pile.getPlayerId(), pile);
                     break;
+                case 'client_windOfChange':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         DaleOfMerchants.prototype.onSelectMarketPileCard = function (pile, card) {
@@ -7567,6 +7584,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_MASTERBUILDER:
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_WINDOFCHANGE:
+                    fizzle = this.myDiscard.size == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -9825,6 +9846,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.playTechniqueCard({
                 card_ids: card_ids
             });
+        };
+        DaleOfMerchants.prototype.onWindOfChangeSkip = function () {
+            this.resolveTechniqueCard({});
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

@@ -268,6 +268,8 @@ export class MainClientState {
                 } else {
                     return _("${card_name}: ${you} must <stronger>ditch</stronger> one of the top ${nbr} cards of your discard");
                 }
+            case 'client_windOfChange':
+                return _("${card_name}: ${you} may ditch a card from your discard");
         }
         return "MISSING DESCRIPTION";
     }

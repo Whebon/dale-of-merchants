@@ -438,6 +438,7 @@ declare global {
 		'client_siesta': { card_id?: number }
 		'client_spend' : { spend_card_ids: number[], spend_coins: number } //for finish cards
 		'client_spendx' : { spend_card_ids: number[], spend_coins: number } //for finish cards
+		'client_windOfChange': { card_id?: number }
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
