@@ -2175,6 +2175,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.trigger != null && !card.inScheduleCooldown();
                 case 'clickOnFinish':
                     return card.trigger == 'onFinish';
+                case 'clickOnFinishAndSnack':
+                    return card.trigger == 'onFinish' || card.effective_type_id == DaleCard_1.DaleCard.CT_SNACK;
                 case 'clickAnimalfolk':
                     return card.isAnimalfolk();
                 case 'clickWhitelist':
@@ -2248,6 +2250,25 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
             }
             return false;
+        };
+        DaleStock.prototype.containsTrigger = function (trigger) {
+            for (var i in this.items) {
+                var item = this.items[i];
+                if (new DaleCard_1.DaleCard(item.id).trigger == trigger) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        DaleStock.prototype.countTypeId = function (type_id) {
+            var nbr = 0;
+            for (var i in this.items) {
+                var item = this.items[i];
+                if (new DaleCard_1.DaleCard(item.id).effective_type_id == type_id) {
+                    nbr++;
+                }
+            }
+            return nbr;
         };
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.original_type_id, card.id, from);
@@ -4067,6 +4088,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         }
                     case 'client_windOfChange':
                         return _("${card_name}: ${you} may ditch a card from your discard");
+                    case 'client_snack':
+                        return _("${card_name}: ${you} must take a card from the market");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -4833,7 +4856,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.setLeftPlaceholderClickable(true);
-                    this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+                    this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'client_build':
                     this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
@@ -6460,6 +6483,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("skip-button", _("Skip"), "onWindOfChangeSkip", undefined, false, 'gray');
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_snack':
+                    this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -7104,6 +7131,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
+                case 'client_snack':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUnselectPileCard = function (pile, card_id) {
@@ -7556,14 +7588,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onTriggerTechnique(card_id);
                     break;
                 case 'client_technique':
-                    this.onFinish(card_id);
+                    this.onTriggerTechnique(card_id);
                     break;
                 case 'client_spend':
                 case 'client_spendx':
                     var finish_card_id = this.mainClientState.args.passive_card_id;
                     this.mainClientState.leave();
                     if (card_id != finish_card_id) {
-                        this.onFinish(card_id);
+                        this.onTriggerTechnique(card_id);
                     }
                     break;
             }
@@ -7571,31 +7603,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onTriggerTechnique = function (card_id) {
             var card = new DaleCard_10.DaleCard(card_id);
             var fizzle = true;
-            switch (card.effective_type_id) {
-                case DaleCard_10.DaleCard.CT_SHOPPINGJOURNEY:
-                    fizzle = this.market.getCards().length == 0;
-                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
-                    break;
-                case DaleCard_10.DaleCard.CT_HOUSECLEANING:
-                    fizzle = this.myHand.count() == 0;
-                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
-                    break;
-                case DaleCard_10.DaleCard.CT_SIESTA:
-                case DaleCard_10.DaleCard.CT_MASTERBUILDER:
-                    fizzle = this.myDiscard.size == 0;
-                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
-                    break;
-                case DaleCard_10.DaleCard.CT_WINDOFCHANGE:
-                    fizzle = this.myDiscard.size == 0;
-                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
-                    break;
-                default:
-                    this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
-                    break;
-            }
-        };
-        DaleOfMerchants.prototype.onFinish = function (card_id) {
-            var card = new DaleCard_10.DaleCard(card_id);
             switch (card.effective_type_id) {
                 case DaleCard_10.DaleCard.CT_IMPULSIVEVISIONARY:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
@@ -7614,6 +7621,27 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_PERFECTMOVE:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    break;
+                case DaleCard_10.DaleCard.CT_SHOPPINGJOURNEY:
+                    fizzle = this.market.getCards().length == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_HOUSECLEANING:
+                    fizzle = this.myHand.count() == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_SIESTA:
+                case DaleCard_10.DaleCard.CT_MASTERBUILDER:
+                    fizzle = this.myDiscard.size == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_SNACK:
+                    fizzle = this.market.size == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_snack', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_WINDOFCHANGE:
+                    fizzle = this.myDiscard.size == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -8802,6 +8830,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.restoreServerGameState();
         };
         DaleOfMerchants.prototype.onRequestBuildAction = function () {
+            var snack_cards = this.mySchedule.getAllDaleCards().filter(function (card) { return card.effective_type_id == DaleCard_10.DaleCard.CT_SNACK; });
+            if (snack_cards.length > 0) {
+                this.clientTriggerTechnique('client_snack', snack_cards[0].id);
+                return;
+            }
             switch (this.gamedatas.gamestate.name) {
                 case 'client_purchase':
                 case 'client_technique':

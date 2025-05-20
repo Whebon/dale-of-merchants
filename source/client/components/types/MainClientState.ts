@@ -270,6 +270,8 @@ export class MainClientState {
                 }
             case 'client_windOfChange':
                 return _("${card_name}: ${you} may ditch a card from your discard");
+            case 'client_snack':
+                return _("${card_name}: ${you} must take a card from the market");
         }
         return "MISSING DESCRIPTION";
     }

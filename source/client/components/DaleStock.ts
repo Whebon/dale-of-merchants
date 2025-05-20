@@ -6,6 +6,7 @@ import { Images } from './Images';
 import { DaleLocation } from './types/DaleLocation';
 import { SelectionIconType } from './SelectionIconType';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
+import { DaleTrigger } from './types/DaleTrigger';
 
 /**
  * Selection modes for the dale stock
@@ -19,6 +20,7 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'clickOnTurnStart'			no selection possible, only cards with an 'onTurnStart' trigger are clickable, except the once on "cooldown"
  * 'clickOnTrigger'				no selection possible, only cards with a trigger are clickable, except the once on "cooldown"
  * 'clickOnFinish'				no selection possible, only cards with an 'onFinish' trigger are clickable
+ * 'clickOnFinishAndSnack'		no selection possible, only CT_SNACK and cards with an 'onFinish' trigger are clickable
  * 'clickAnimalfolk':			no selection possible, only animalfolk cards are clickable
  * 'clickAnimalfolk16':			no selection possible, only cards of a specific animalfolk id are clickable
  * 'clickWhitelist':			no selection possible, only cards set using `setClickWhitelist` are clickable
@@ -32,7 +34,7 @@ import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -366,6 +368,8 @@ export class DaleStock extends Stock implements DaleLocation {
 				return card.trigger != null && !card.inScheduleCooldown();
 			case 'clickOnFinish':
 				return card.trigger == 'onFinish';
+			case 'clickOnFinishAndSnack':
+				return card.trigger == 'onFinish' || card.effective_type_id == DaleCard.CT_SNACK;
 			case 'clickAnimalfolk':
 				return card.isAnimalfolk();
 			case 'clickWhitelist':
@@ -452,6 +456,35 @@ export class DaleStock extends Stock implements DaleLocation {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * @param trigger 
+	 * @returns `true` if the stock contains the specified `trigger`
+	 */
+	public containsTrigger(trigger: DaleTrigger) {
+		for(let i in this.items){
+			const item = this.items[i]!;
+			if (new DaleCard(item.id).trigger == trigger) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param type_id 
+	 * @returns the number of cards in this stock with the given `type_id`
+	 */
+	public countTypeId(type_id: number) {
+		let nbr = 0;
+		for(let i in this.items){
+			const item = this.items[i]!;
+			if (new DaleCard(item.id).effective_type_id == type_id) {
+				nbr++;
+			}
+		}
+		return nbr;
 	}
 
 	/////////////////////////////////////////////////

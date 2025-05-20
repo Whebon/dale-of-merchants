@@ -415,33 +415,17 @@ class DaleOfMerchants extends DaleTableBasic
         foreach($all_card_ids as $card_id) {
             $dbcard = $unaffected_dbcards[$card_id];
             foreach ($triggers as $trigger) {
-                switch ($trigger) {
-                    case TRIGGER_ONMARKETCARD:
-                        if ($this->getTypeId($dbcard) == CT_MASTERBUILDER) {
-                            $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
-                            unset($unaffected_dbcards[$card_id]);
+                if ($this->getTrigger($dbcard) == $trigger) {
+                    //trigger!
+                    $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
+                    unset($unaffected_dbcards[$card_id]);
+                    if ($trigger == TRIGGER_ONRESOLVE) {
+                        $practice_card = $this->cards->getCardOnTop(DISCARD.$trigger_player_id);
+                        if ($practice_card === null) {
+                            throw new BgaVisibleSystemException("TRIGGER_ONRESOLVE event without a resolved card in discard");
                         }
-                        break;
-                    case TRIGGER_ONPURCHASE:
-                        if ($this->getTypeId($dbcard) == CT_WINDOFCHANGE) {
-                            $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
-                            unset($unaffected_dbcards[$card_id]);
-                        }
-                        break;
-                    case TRIGGER_ONRESOLVE:
-                        if ($this->getTypeId($dbcard) == CT_PRACTICE) {
-                            $practice_card = $this->cards->getCardOnTop(DISCARD.$trigger_player_id);
-                            if ($practice_card === null) {
-                                throw new BgaVisibleSystemException("TRIGGER_ONRESOLVE event without a resolved card in discard");
-                            }
-                            $this->setGameStateValue("practice_card_id", $practice_card["id"]);
-                            $triggered_dbcards[$card_id] = $unaffected_dbcards[$card_id];
-                            unset($unaffected_dbcards[$card_id]);
-                        }
-                        break;
-                    default:
-                        throw new BgaVisibleSystemException("nextStateViaTriggers does not support trigger ".$trigger);
-                        break;
+                        $this->setGameStateValue("practice_card_id", $practice_card["id"]);
+                    }
                 }
             }
         }
@@ -2453,6 +2437,9 @@ class DaleOfMerchants extends DaleTableBasic
         //decide if the player can go again
         if ($resolve_to_location == 'skip') { //see issue #125
             $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
+        }
+        else if ($type_id == CT_SNACK) {
+            $this->nextStateViaTriggers("trWinterIsComing", ...$triggers);
         }
         else if ($this->card_types[$type_id]["trigger"] != null) {
             $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
@@ -5226,10 +5213,11 @@ class DaleOfMerchants extends DaleTableBasic
         if (array_key_exists("fizzle", $args)) {
             switch($technique_type_id) {
                 case CT_SHOPPINGJOURNEY:
+                case CT_SNACK:
                     $cards = $this->cards->getCardsInLocation(MARKET);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_SHOPPINGJOURNEY. The market is nonempty.");
+                        throw new BgaVisibleSystemException("Unable to fizzle. The market is nonempty.");
                     }
                     break;
                 case CT_SIESTA:
@@ -5410,6 +5398,20 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SNACK:
+                $card_id = $args["card_id"];
+                $card = $this->cards->getCardFromLocation($card_id, MARKET);
+                //place the card into the player's hand
+                $this->cards->moveCard($card_id, HAND.$player_id);
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Snack: ${player_name} places a ${card_name} into their hand'), array (
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'card_name' => $this->getCardName($card),
+                    'market_card_id' => $card_id,
+                    'pos' => $card["location_arg"],
+                ));
+                $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONPREBUILD, TRIGGER_ONMARKETCARD);
                 break;
             case CT_WINDOFCHANGE:
                 if (isset($args["card_id"])) {
@@ -7324,6 +7326,41 @@ class DaleOfMerchants extends DaleTableBasic
         $this->placeOnDeckMultiple($player_id, clienttranslate('Bouquets: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
         $this->fullyResolveCard($player_id);
     }
+
+    //TODO: safely remove this
+    // function actSnack($card_ids) {
+    //     $this->checkAction("actSnack");
+    //     $player_id = $this->getActivePlayerId();
+    //     $card_ids = $this->numberListsToArray($card_ids);
+    //     $market_cards = $this->cards->getCardsInLocation(MARKET);
+    //     $schedule_cards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+    //     $nbr_snacks = $this->countTypeId($schedule_cards, CT_SNACK);
+    //     if ($nbr_snacks == 0) {
+    //         throw new BgaUserException("'actSnack' requires at least 1 snack in the schedule");
+    //     }
+    //     $nbr = min(count($market_cards), $nbr_snacks);
+    //     if (count($card_ids) != $nbr) {
+    //         throw new BgaUserException($this->_("Snack: please select exactly ".$nbr." card(s) from the market"));
+    //     }
+    //     foreach ($card_ids as $card_id) {
+    //         //verify that the card_id comes from the market
+    //         if (!isset($market_cards[$card_id])) {
+    //             throw new BgaUserException("Snack: some selected card was not found in the market"); 
+    //         }
+    //         $card = $market_cards[$card_id];
+    //         unset($market_cards[$card_id]);
+    //         //place the card into the player's hand
+    //         $this->cards->moveCard($card_id, HAND.$player_id);
+    //         $this->notifyAllPlayers('marketToHand', clienttranslate('Snack: ${player_name} places a ${card_name} into their hand'), array (
+    //             'player_id' => $player_id,
+    //             'player_name' => $this->getActivePlayerName(),
+    //             'card_name' => $this->getCardName($card),
+    //             'market_card_id' => $card_id,
+    //             'pos' => $card["location_arg"],
+    //         ));
+    //     }
+    //     $this->nextStateViaTriggers("trWinterIsComing", TRIGGER_ONPREBUILD);
+    // }
 
 
     //(~acts)

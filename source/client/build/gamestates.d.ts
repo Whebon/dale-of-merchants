@@ -71,6 +71,7 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 28,
 			'trChangeActivePlayer': 29,
+			'trWinterIsComing': 36,
 		},
 	},
 	29: {

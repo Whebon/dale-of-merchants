@@ -265,6 +265,7 @@ if (!defined('TRIGGER_ONTURNSTART')) {
     define('TRIGGER_ONSHUFFLE', 'onShuffle');
     define('TRIGGER_ONPURCHASE', 'onPurchase');
     define('TRIGGER_ONRESOLVE', 'onResolve');
+    define('TRIGGER_ONPREBUILD', 'onPreBuild');
     define('TRIGGER_ONBUILD', 'onBuild');
     define('TRIGGER_ONFINISH', 'onFinish');
 }
@@ -1485,7 +1486,7 @@ $this->card_types = array(
       'has_plus' => false,
       'has_ability' => false,
       'playable' => true,
-      'trigger' => null,
+      'trigger' => "onPreBuild",
       'value' => 2,
       'nbr' => 3,
       'animalfolk_displayed' => clienttranslate("Beavers"),
@@ -1515,7 +1516,7 @@ $this->card_types = array(
       'has_plus' => true,
       'has_ability' => false,
       'playable' => true,
-      'trigger' => null,
+      'trigger' => "onBuild",
       'value' => 4,
       'nbr' => 3,
       'animalfolk_displayed' => clienttranslate("Beavers"),

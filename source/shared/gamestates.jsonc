@@ -67,7 +67,8 @@
 		},
 		"transitions": { //the trigger gamestate uses "jumpToState" in "stTrigger"
 			"trSamePlayer": 28,
-			"trChangeActivePlayer": 29
+			"trChangeActivePlayer": 29,
+			"trWinterIsComing": 36
 		} 
 	},
 

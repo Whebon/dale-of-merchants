@@ -97,6 +97,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 28,
 			'trChangeActivePlayer' => 29,
+			'trWinterIsComing' => 36,
 		),
 	),
 	29 => array(

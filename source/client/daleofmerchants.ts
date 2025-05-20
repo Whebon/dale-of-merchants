@@ -496,7 +496,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to play <strong>techniques</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
-				this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+				this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'client_build':
 				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
@@ -2203,6 +2203,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("skip-button", _("Skip"), "onWindOfChangeSkip", undefined, false, 'gray');
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_snack':
+				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -3062,6 +3066,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break;
+			case 'client_snack':
+				this.resolveTechniqueCard<'client_snack'>({
+					card_id: card.id
+				});
+				break;
 		}
 	}
 
@@ -3567,14 +3576,14 @@ class DaleOfMerchants extends Gamegui
 				this.onTriggerTechnique(card_id);
 				break;
 			case 'client_technique':
-				this.onFinish(card_id);
+				this.onTriggerTechnique(card_id); //finish or snack
 				break;
 			case 'client_spend':
 			case 'client_spendx':
 				const finish_card_id = (this.mainClientState.args as any).passive_card_id;
 				this.mainClientState.leave();
 				if (card_id != finish_card_id) {
-					this.onFinish(card_id);
+					this.onTriggerTechnique(card_id); //select other finish card
 				}
 				break;
 		}
@@ -3583,32 +3592,6 @@ class DaleOfMerchants extends Gamegui
 	onTriggerTechnique(card_id: number) {
 		const card = new DaleCard(card_id);
 		let fizzle = true;
-		switch(card.effective_type_id) {
-			case DaleCard.CT_SHOPPINGJOURNEY:
-				fizzle = this.market!.getCards().length == 0;
-				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
-				break;
-			case DaleCard.CT_HOUSECLEANING:
-				fizzle = this.myHand.count() == 0;
-				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
-				break;
-			case DaleCard.CT_SIESTA:
-			case DaleCard.CT_MASTERBUILDER:
-				fizzle = this.myDiscard.size == 0;
-				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
-				break;
-			case DaleCard.CT_WINDOFCHANGE:
-				fizzle = this.myDiscard.size == 0;
-				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
-				break;
-			default:
-				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
-				break;
-		}
-	}
-
-	onFinish(card_id: number) {
-		const card = new DaleCard(card_id);
 		switch(card.effective_type_id) {
 			case DaleCard.CT_IMPULSIVEVISIONARY:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
@@ -3627,6 +3610,27 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_PERFECTMOVE:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				break;
+			case DaleCard.CT_SHOPPINGJOURNEY:
+				fizzle = this.market!.getCards().length == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_shoppingJourney', card.id);
+				break;
+			case DaleCard.CT_HOUSECLEANING:
+				fizzle = this.myHand.count() == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
+				break;
+			case DaleCard.CT_SIESTA:
+			case DaleCard.CT_MASTERBUILDER:
+				fizzle = this.myDiscard.size == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
+				break;
+			case DaleCard.CT_SNACK:
+				fizzle = this.market!.size == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_snack', card.id);
+				break;
+			case DaleCard.CT_WINDOFCHANGE:
+				fizzle = this.myDiscard.size == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -4909,6 +4913,15 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onRequestBuildAction() {
+		//check for snacks
+		const snack_cards = this.mySchedule.getAllDaleCards().filter(card=>card.effective_type_id == DaleCard.CT_SNACK);
+		if (snack_cards.length > 0) {
+			//TODO: let the player decide which snack to resolve first! (issue #135)
+			//this.mainClientState.enter('client_choose_first_snack', {});
+			this.clientTriggerTechnique('client_snack', snack_cards[0]!.id);
+			return;
+		}
+		//default behaviour
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_purchase':
 			case 'client_technique':
