@@ -474,8 +474,8 @@ class DaleOfMerchants extends Gamegui
 				// However, automatic actions lead to the "Move Recorded, Waiting for Update" issue spotted by Sir Thecos
 				// const turnStart_unique_card_id = this.mySchedule.getUniqueClickableCardId();
 				// if (turnStart_unique_card_id) {
-				// 	setTimeout((()=>this.onTurnStartTriggerTechnique(turnStart_unique_card_id)).bind(this), 1);
-				// 	//this.onTurnStartTriggerTechnique(turnStart_unique_card_id);
+				// 	setTimeout((()=>this.onTriggerTechnique(turnStart_unique_card_id)).bind(this), 1);
+				// 	//this.onTriggerTechnique(turnStart_unique_card_id);
 				// }
 				break;
 			case 'postCleanUpPhase':
@@ -1071,6 +1071,9 @@ class DaleOfMerchants extends Gamegui
 				);
 				this.myDiscard.openPopin();
 				break;
+			case 'trigger':
+				this.mySchedule.setSelectionMode('clickOnTrigger', undefined, 'daleofmerchants-wrap-technique');
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1503,6 +1506,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectingContracts':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'trigger':
+				this.mySchedule.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -3542,7 +3548,8 @@ class DaleOfMerchants extends Gamegui
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'turnStart':
-				this.onTurnStartTriggerTechnique(card_id);
+			case 'trigger':
+				this.onTriggerTechnique(card_id);
 				break;
 			case 'client_technique':
 				this.onFinish(card_id);
@@ -3558,7 +3565,7 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onTurnStartTriggerTechnique(card_id: number) {
+	onTriggerTechnique(card_id: number) {
 		const card = new DaleCard(card_id);
 		let fizzle = true;
 		switch(card.effective_type_id) {
@@ -3571,6 +3578,7 @@ class DaleOfMerchants extends Gamegui
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
 				break;
 			case DaleCard.CT_SIESTA:
+			case DaleCard.CT_MASTERBUILDER:
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
 				break;
@@ -6751,7 +6759,9 @@ class DaleOfMerchants extends Gamegui
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		if (stock === this.myHand) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		}
 	}
 
 	notif_instant_discardToHand(notif: NotifAs<'discardToHand'>) {

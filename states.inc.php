@@ -20,6 +20,7 @@ if (false) {
 	/** @var daleofmerchants $game */
 	$game->stDeckSelection();
 	$game->stStartGame();
+	$game->stTrigger();
 	$game->stChangeActivePlayer();
 	$game->stTurnStart();
 	$game->stFullyResolve();
@@ -83,6 +84,18 @@ $machinestates = array(
 		'action' => 'stStartGame',
 		'transitions' => array(
 			'trStartGame' => 31,
+		),
+	),
+	28 => array(
+		'name' => 'trigger',
+		'description' => clienttranslate('${actplayer} must resolve triggered techniques'),
+		'descriptionmyturn' => clienttranslate('${you} must resolve triggered techniques'),
+		'type' => 'activeplayer',
+		'action' => 'stTrigger',
+		'possibleactions' => ['actFullyResolveTechniqueCard'],
+		'transitions' => array(
+			'trSamePlayer' => 28,
+			'trChangeActivePlayer' => 29,
 		),
 	),
 	29 => array(

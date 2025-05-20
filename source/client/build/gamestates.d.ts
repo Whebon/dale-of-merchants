@@ -47,6 +47,32 @@ interface GameStates {
 			'trStartGame': 31,
 		},
 	},
+	28: {
+		'name': 'trigger',
+		'description': '${actplayer} must resolve triggered techniques',
+		'descriptionmyturn': '${you} must resolve triggered techniques',
+		'type': 'activeplayer',
+		'action': 'stTrigger',
+		'possibleactions': {
+			'actFullyResolveTechniqueCard': [{
+				'name': 'chameleons_json',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}, {
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 28,
+			'trChangeActivePlayer': 29,
+		},
+	},
 	29: {
 		'name': 'changeActivePlayer',
 		'description': '',

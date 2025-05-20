@@ -261,6 +261,7 @@ if (!defined('DIE_STARS')) {
 if (!defined('TRIGGER_ONTURNSTART')) {
     define('TRIGGER_INSTANT', null);
     define('TRIGGER_ONTURNSTART', 'onTurnStart');
+    define('TRIGGER_ONMARKETCARD', 'onMarketCard');
     define('TRIGGER_ONSHUFFLE', 'onShuffle');
     define('TRIGGER_ONPURCHASE', 'onPurchase');
     define('TRIGGER_ONRESOLVE', 'onResolve');

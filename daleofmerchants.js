@@ -2171,6 +2171,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return true;
                 case 'clickOnTurnStart':
                     return card.trigger == 'onTurnStart' && !card.inScheduleCooldown();
+                case 'clickOnTrigger':
+                    return card.trigger != null && !card.inScheduleCooldown();
                 case 'clickOnFinish':
                     return card.trigger == 'onFinish';
                 case 'clickAnimalfolk':
@@ -2217,6 +2219,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickAbilityPostCleanup':
                     return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
                 case 'clickOnTurnStart':
+                    return true;
+                case 'clickOnTrigger':
                     return true;
                 default:
                     return false;
@@ -5329,6 +5333,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'selectingContracts', "daleofmerchants-wrap-technique", this.mainClientState.args.nbr);
                     this.myDiscard.openPopin();
                     break;
+                case 'trigger':
+                    this.mySchedule.setSelectionMode('clickOnTrigger', undefined, 'daleofmerchants-wrap-technique');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5763,6 +5770,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_selectingContracts':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'trigger':
+                    this.mySchedule.setSelectionMode('none');
                     break;
             }
         };
@@ -7525,7 +7535,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var card = new DaleCard_10.DaleCard(card_id);
             switch (this.gamedatas.gamestate.name) {
                 case 'turnStart':
-                    this.onTurnStartTriggerTechnique(card_id);
+                case 'trigger':
+                    this.onTriggerTechnique(card_id);
                     break;
                 case 'client_technique':
                     this.onFinish(card_id);
@@ -7540,7 +7551,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
             }
         };
-        DaleOfMerchants.prototype.onTurnStartTriggerTechnique = function (card_id) {
+        DaleOfMerchants.prototype.onTriggerTechnique = function (card_id) {
             var card = new DaleCard_10.DaleCard(card_id);
             var fizzle = true;
             switch (card.effective_type_id) {
@@ -7553,6 +7564,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_SIESTA:
+                case DaleCard_10.DaleCard.CT_MASTERBUILDER:
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_siesta', card.id);
                     break;
@@ -10373,7 +10385,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("notif_marketDiscardToHand");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
-            this.playerHandSizes[notif.args.player_id].incValue(1);
+            if (stock === this.myHand) {
+                this.playerHandSizes[notif.args.player_id].incValue(1);
+            }
         };
         DaleOfMerchants.prototype.notif_instant_discardToHand = function (notif) {
             this.notif_discardToHand(notif);

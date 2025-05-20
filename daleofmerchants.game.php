@@ -56,7 +56,9 @@ class DaleOfMerchants extends DaleTableBasic
             "debugMode" => 24,
             "animalfolk_id" => 25,
             "die_value2" => 26,
-            "passive_card_id" => 27
+            "passive_card_id" => 27,
+            "trigger_next_player_id" => 28,
+            "trigger_next_state_id" => 29
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -121,6 +123,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("animalfolk_id", 0);
         $this->setGameStateInitialValue("die_value2", -1);
         $this->setGameStateInitialValue("passive_card_id", -1);
+        $this->setGameStateInitialValue("trigger_next_player_id", -1);
+        $this->setGameStateInitialValue("trigger_next_state_id", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -350,6 +354,10 @@ class DaleOfMerchants extends DaleTableBasic
      * transition to the next state and make `$player_id` the active player
      */
     function nextStateChangeActivePlayer(string $transition, int $player_id) {
+        if ($player_id == $this->getActivePlayerId()) {
+            $this->gamestate->nextState($transition);
+            return;
+        }
         if (!array_key_exists($transition, $this->gamestate->states[29]['transitions'])) {
             throw new BgaVisibleSystemException("'$transition' is not a valid transition in 'changeActivePlayer'");
         }
@@ -357,6 +365,99 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateValue("changeActivePlayer_player_id", $player_id);
         $this->setGameStateValue("changeActivePlayer_state_id", $state_id);
         $this->gamestate->nextState("trChangeActivePlayer");
+    }
+
+
+    /**
+     * Make a pitstop at the trigger state, then proceed to the `$next_transition`
+     * @param string $next_transition transition to take after the trigger event
+     * @param string $triggers `TRIGGER_` events
+     */
+    function nextStateViaTriggers(string $next_transition, string ...$triggers) {
+        //no triggers
+        if (count($triggers) === 0) {
+            $this->gamestate->nextState($next_transition);
+            return;
+        }
+        $this->nextStateViaOtherPlayerTriggers($next_transition, $this->getActivePlayerId(), ...$triggers);
+    }
+
+
+    /**
+     * Make a pitstop at the trigger state, then proceed to the `$next_transition`.
+     * The trigger state is for `$trigger_player_id`.
+     * The current active player remains the active player after the `$next_transition`.
+     * @param string $next_transition transition to take after the trigger event
+     * @param mixed $player_id the player that should become the active player of the trigger state
+     * @param string $triggers `TRIGGER_` events
+     */
+    function nextStateViaOtherPlayerTriggers(string $next_transition, mixed $trigger_player_id, string ...$triggers) {
+        //no triggers
+        if (count($triggers) === 0) {
+            $this->gamestate->nextState($next_transition);
+            return;
+        }
+
+        //trigger all related schedule cards
+        $unaffected_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$trigger_player_id);
+        $all_card_ids = $this->toCardIds($unaffected_dbcards);
+        foreach($all_card_ids as $card_id) {
+            $dbcard = $unaffected_dbcards[$card_id];
+            foreach ($triggers as $trigger) {
+                switch ($trigger) {
+                    case TRIGGER_ONMARKETCARD:
+                        if ($this->getTypeId($dbcard) == CT_MASTERBUILDER) {
+                            unset($unaffected_dbcards[$card_id]);
+                        }
+                        break;
+                    case TRIGGER_ONPURCHASE:
+                        if ($this->getTypeId($dbcard) == CT_WINDOFCHANGE) {
+                            unset($unaffected_dbcards[$card_id]);
+                        }
+                        break;
+                    case TRIGGER_ONRESOLVE:
+                        if ($this->getTypeId($dbcard) == CT_PRACTICE) {
+                            unset($unaffected_dbcards[$card_id]);
+                        }
+                        break;
+                    default:
+                        throw new BgaVisibleSystemException("nextStateViaTriggers does not support trigger ".$trigger);
+                        break;
+                }
+            }
+        }
+
+        //if none of the scheduled cards triggered, skip the trigger state
+        if (count($unaffected_dbcards) == count($all_card_ids)) {
+            $this->gamestate->nextState($next_transition);
+            return;
+        }
+
+        //set the other schedule cards on a cooldown (so the player cannot resolve them)
+        $this->cards->moveCards($this->toCardIds($unaffected_dbcards), SCHEDULE_COOLDOWN.$trigger_player_id);
+        $this->notifyAllPlayers('setScheduleCooldown', '', array(
+            'player_id' => $trigger_player_id,
+            'cards' => $unaffected_dbcards,
+            'status' => true
+        ));
+
+        //move to the trigger state (28), and store the state to visit afterwards in `trigger_next_state_id`
+        $current_state_id = $this->gamestate->state_id();
+        if (!array_key_exists($next_transition, $this->gamestate->states[$current_state_id]['transitions'])) {
+            throw new BgaVisibleSystemException("Beaver trigger: '$next_transition' is not a valid transition in in the current gamestate");
+        }
+        $next_player_id = $this->getActivePlayerId();
+        $next_state_id = $this->gamestate->states[$current_state_id]['transitions'][$next_transition];
+        $this->setGameStateValue("trigger_next_player_id", $next_player_id);
+        $this->setGameStateValue("trigger_next_state_id", $next_state_id);
+        if ($trigger_player_id == $next_player_id) {
+            $this->gamestate->jumpToState(28);
+        }
+        else {
+            $this->setGameStateValue("changeActivePlayer_player_id", $trigger_player_id);
+            $this->setGameStateValue("changeActivePlayer_state_id", 28);
+            $this->gamestate->nextState("trChangeActivePlayer");
+        }
     }
 
     /**
@@ -2263,8 +2364,9 @@ class DaleOfMerchants extends DaleTableBasic
      * @param ?array $technique_card (optional) by default, resolve the card stored in "resolvingCard" - otherwise, resolve the specified card
      * @param string $resolve_to (optional) if specified, resolve to the provided location instead of the discard pile. 
      *               if `'skip'`, don't move the card at all. WARNING: for issue #125, it is assumed that techniques that resolve with 'skip' have a plus
+     * @param string $triggers resolving this card triggers provided `TRIGGER_` events.
      */
-    function fullyResolveCard(mixed $player_id, array $technique_card = null, string $resolve_to_location = null) {
+    function fullyResolveCard(mixed $player_id, array $technique_card = null, string $resolve_to_location = null, string ...$triggers) {
         //get the resolving card
         if ($technique_card != null) {
             $technique_card_id = $technique_card["id"];
@@ -2311,23 +2413,28 @@ class DaleOfMerchants extends DaleTableBasic
         //refill the market if needed (10th anniversary rule change)
         $this->refillMarket(true);
 
+        //add the onresolve trigger
+        if ($resolve_to_location == DISCARD.$player_id) {
+            $triggers[] = TRIGGER_ONRESOLVE;
+        }
+
         //decide if the player can go again
         if ($resolve_to_location == 'skip') { //see issue #125
-            $this->gamestate->nextState("trSamePlayer");
+            $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
         }
         else if ($this->card_types[$type_id]["trigger"] != null) {
-            $this->gamestate->nextState("trSamePlayer");
+            $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
         }
         else if ($this->card_types[$type_id]["has_plus"]) {
             if ($this->getActivePlayerId() == $player_id || $this->gamestate->state()["type"] == "game") {
-                $this->gamestate->nextState("trSamePlayer");
+                $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
             }
             else {
-                $this->nextStateChangeActivePlayer("trSamePlayer", $player_id);
+                $this->nextStateChangeActivePlayer("trSamePlayer", $player_id); //idk why this is here, but I'm too afraid to touch it
             }
         }
         else {
-            $this->gamestate->nextState("trNextPlayer");
+            $this->nextStateViaTriggers("trNextPlayer", ...$triggers);
         }
         $this->notifyPlayer($player_id, 'message', '', array()); //workaround for issue #129
     }
@@ -3478,7 +3585,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "card" => $technique_card,
                     "market_card_id" => $market_card_id
                 ));
-                $this->fullyResolveCard($player_id, $technique_card, 'skip');
+                $this->fullyResolveCard($player_id, $technique_card, 'skip', TRIGGER_ONMARKETCARD);
                 break;
             case CT_LOYALPARTNER:
                 //get the selected cards
@@ -3516,7 +3623,7 @@ class DaleOfMerchants extends DaleTableBasic
                     'market_card_id' => $card_id,
                     'pos' => $card["location_arg"],
                 ));
-                $this->fullyResolveCard($player_id, $technique_card);
+                $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONMARKETCARD);
                 break;
             case CT_SPECIALOFFER:
             case CT_INHERITANCE: //same as special offer
@@ -5058,9 +5165,17 @@ class DaleOfMerchants extends DaleTableBasic
                             "card" => $technique_card,
                             "market_card_id" => $market_card_id
                         ));
-                        $this->fullyResolveCard($player_id, $technique_card, 'skip');
+                        $this->fullyResolveCard($player_id, $technique_card, 'skip', TRIGGER_ONMARKETCARD);
                         break;
                 }
+                break;
+            case CT_MASTERBUILDER:
+            case CT_SNACK:
+            case CT_WINDOFCHANGE:
+            case CT_OVERTIME:
+            case CT_ORDERINCHAOS:
+            case CT_PRACTICE:
+                $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -5086,10 +5201,11 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_SIESTA:
+                case CT_MASTERBUILDER:
                     $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_SIESTA. Your discard pile is nonempty.");
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_SIESTA / CT_MASTERBUILDER. Your discard pile is nonempty.");
                     }
                     break;
                 default:
@@ -5124,7 +5240,7 @@ class DaleOfMerchants extends DaleTableBasic
                     'pos' => $card["location_arg"],
                 ));
                 $this->refillMarket(true);
-                $this->fullyResolveCard($player_id, $technique_card);
+                $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONMARKETCARD);
                 break;
             case CT_HOUSECLEANING:
                 if (isset($args["card_id"])) {
@@ -5140,11 +5256,13 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SIESTA:
+            case CT_MASTERBUILDER:
                 if (isset($args["card_id"])) {
                     $card_id = $args["card_id"];
                     $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
                     $this->cards->moveCard($card_id, HAND.$player_id);
-                    $this->notifyAllPlayers('discardToHand', clienttranslate('Siesta: ${player_name} takes their ${card_name} from their discard pile'), array(
+                    $this->notifyAllPlayers('discardToHand', clienttranslate('${resolving_card_name}: ${player_name} takes their ${card_name} from their discard pile'), array(
+                        "resolving_card_name" => $this->getCardName($dbcard),
                         "player_id" => $player_id,
                         "player_name" => $this->getPlayerNameById($player_id),
                         "card_name" => $this->getCardName($dbcard),
@@ -5153,9 +5271,6 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 else {
                     throw new BgaUserException($this->_("You MUST take a card from your discard pile"));
-                    // $this->notifyAllPlayers('message', clienttranslate('Siesta: ${player_name} does not take a card from their discard pile'), array(
-                    //     'player_name' => $this->getActivePlayerName()
-                    // ));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -5234,7 +5349,7 @@ class DaleOfMerchants extends DaleTableBasic
                     'pos' => $leftmostcard["location_arg"],
                 ));
                 //$this->refillMarket(true); //not needed: this is done by fullyResolveCard
-                $this->fullyResolveCard($player_id, $technique_card);
+                $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONMARKETCARD);
                 break;
             case CT_GROUNDBREAKINGIDEA:
                 $this->spend($player_id, $args, 2, $this->_("Groundbreaking Idea"));
@@ -5261,6 +5376,9 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->notifyAllPlayers('message', clienttranslate('Perfect Move: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_MASTERBUILDER:
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -6187,7 +6305,7 @@ class DaleOfMerchants extends DaleTableBasic
             'market_card_id' => $card_id,
             'pos' => $card["location_arg"],
         ));
-        $this->fullyResolveCard($player_id);
+        $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
     }
 
     function actFashionHint($card_id) {
@@ -6839,7 +6957,7 @@ class DaleOfMerchants extends DaleTableBasic
             'market_card_id' => $card_id,
             'pos' => $dbcard["location_arg"],
         ));
-        $this->fullyResolveCard($player_id);
+        $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
     }
 
     function actCelestialGuidanceDiscard($card_id) {
@@ -7534,6 +7652,26 @@ class DaleOfMerchants extends DaleTableBasic
         $this->giveExtraTime($next_player_id);
         $this->incStat(1, "number_of_turns", $next_player_id);
         $this->gamestate->nextState("trStartGame");
+    }
+
+    function stTrigger() {
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+        if (count($dbcards) == 0) {
+            $this->removeScheduleCooldown();
+            $trigger_next_player_id = $this->getGameStateValue("trigger_next_player_id");
+            $trigger_next_state_id = $this->getGameStateValue("trigger_next_state_id");
+            if ($trigger_next_player_id == $player_id) {
+                //jump to the next state
+                $this->gamestate->jumpToState($trigger_next_state_id);
+            }
+            else {
+                //switch players, then go to the next state
+                $this->setGameStateValue("changeActivePlayer_player_id", $trigger_next_player_id);
+                $this->setGameStateValue("changeActivePlayer_state_id", $trigger_next_state_id);
+                $this->gamestate->nextState("trChangeActivePlayer");
+            }
+        }
     }
 
     function stTurnStart() {

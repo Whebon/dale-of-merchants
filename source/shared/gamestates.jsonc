@@ -50,6 +50,27 @@
 		"transitions": { "trStartGame": 31 }
 	},
 
+	//////////////// Trigger state (28) ////////////////
+
+	"28": {
+		"name": "trigger",
+		"description": "${actplayer} must resolve triggered techniques",
+		"descriptionmyturn": "${you} must resolve triggered techniques",
+		"type": "activeplayer",
+		"action": "stTrigger",
+		"possibleactions": {
+			"actFullyResolveTechniqueCard": [
+				{"name": "chameleons_json", "type": "AT_json"},
+				{"name": "card_id", "type": "AT_int"},
+				{"name": "args", "type": "AT_json"}
+			]
+		},
+		"transitions": { //the trigger gamestate uses "jumpToState" in "stTrigger"
+			"trSamePlayer": 28,
+			"trChangeActivePlayer": 29
+		} 
+	},
+
 	//////////////// Change active player (https://forum.boardgamearena.com/viewtopic.php?p=10016) ////////////////
 
 	"29": {
