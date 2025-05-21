@@ -5259,7 +5259,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost);
                     this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
                     if ('passive_card_id' in this.mainClientState.args) {
-                        this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+                        this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
                     }
                     break;
                 case 'client_spendx':
@@ -5269,7 +5269,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
                     this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
                     if ('passive_card_id' in this.mainClientState.args) {
-                        this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+                        this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
                     }
                     break;
                 case 'client_stove':
@@ -7847,14 +7847,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             else if (cost_max === undefined) {
                 this.clientTriggerTechnique('client_spend', technique_card_id, {
-                    passive_card_id: technique_card_id,
                     cost: cost,
                     next: next
                 });
             }
             else {
                 this.clientTriggerTechnique('client_spendx', technique_card_id, {
-                    passive_card_id: technique_card_id,
                     cost_min: cost,
                     cost_max: cost_max,
                     cost_displayed: (cost_max == Infinity) ? "".concat(cost, "+") : "".concat(cost, " - ").concat(cost_max),
@@ -7884,7 +7882,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (args === void 0) { args = {}; }
             if (this.checkLock(true)) {
                 if ($(this.mySchedule.control_name + '_item_' + technique_card_id)) {
-                    this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id, is_trigger: true }, args));
+                    this.mainClientState.enterOnStack(stateName, __assign({ technique_card_id: technique_card_id, passive_card_id: technique_card_id, is_trigger: true }, args));
                 }
                 else {
                     throw new Error("Cannot trigger and resolve the technique card. Card ".concat(technique_card_id, " does not exist in my schedule"));
@@ -10927,6 +10925,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             return __spreadArray(__spreadArray([], order.slice(startIndex), true), order.slice(0, startIndex), true);
         };
         DaleOfMerchants.prototype.movePlayAreaOnTop = function (start_with_player_id, duration) {
+            var _a;
             if (duration === void 0) { duration = 1000; }
             if (this.getGameUserPreference(101) == 0) {
                 return;
@@ -10935,8 +10934,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var playAreas = Array.from(container.children);
             var initialRects = new Map();
             playAreas.forEach(function (el) { return initialRects.set(el, el.getBoundingClientRect()); });
-            for (var _i = 0, _a = this.getPlayerOrderStartingWith(start_with_player_id); _i < _a.length; _i++) {
-                var player_id = _a[_i];
+            if ((_a = playAreas[0]) === null || _a === void 0 ? void 0 : _a.id.includes(start_with_player_id.toString())) {
+                return;
+            }
+            for (var _i = 0, _b = this.getPlayerOrderStartingWith(start_with_player_id); _i < _b.length; _i++) {
+                var player_id = _b[_i];
                 var top_1 = container.querySelector("#daleofmerchants-play-area-".concat(player_id));
                 if (player_id != this.player_id) {
                     top_1.classList.add("daleofmerchants-play-area-opponent");

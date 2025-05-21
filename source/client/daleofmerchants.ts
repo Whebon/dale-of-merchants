@@ -971,7 +971,7 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost)
 				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
 				if ('passive_card_id' in this.mainClientState.args) {
-					this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+					this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				}
 				break;
 			case 'client_spendx':
@@ -981,7 +981,7 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
 				this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
 				if ('passive_card_id' in this.mainClientState.args) {
-					this.mySchedule.setSelectionMode('clickOnFinish', undefined, 'daleofmerchants-wrap-technique');
+					this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				}
 				break;
 			case 'client_stove':
@@ -2441,7 +2441,7 @@ class DaleOfMerchants extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Utility methods
-	
+
 	/*
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
@@ -3886,14 +3886,12 @@ class DaleOfMerchants extends Gamegui
 		}
 		else if (cost_max === undefined) {
 			this.clientTriggerTechnique('client_spend', technique_card_id, {
-				passive_card_id: technique_card_id, //for the blue outline
 				cost: cost,
 				next: next
 			});
 		}
 		else {
 			this.clientTriggerTechnique('client_spendx', technique_card_id, {
-				passive_card_id: technique_card_id, //for the blue outline
 				cost_min: cost,
 				cost_max: cost_max,
 				cost_displayed: (cost_max == Infinity) ? `${cost}+` : `${cost} - ${cost_max}`,
@@ -3938,7 +3936,12 @@ class DaleOfMerchants extends Gamegui
 	clientTriggerTechnique<K extends keyof ClientTriggerTechniqueChoice>(stateName: K, technique_card_id: number, args: any = {}) {
 		if (this.checkLock(true)) {
 			if ($(this.mySchedule.control_name+'_item_' + technique_card_id)) {
-				this.mainClientState.enterOnStack(stateName, { technique_card_id: technique_card_id, is_trigger: true, ...args });
+				this.mainClientState.enterOnStack(stateName, { 
+					technique_card_id: technique_card_id, 
+					passive_card_id: technique_card_id, //for the blue outline
+					is_trigger: true, 
+					...args 
+				});
 			}
 			else {
 				throw new Error(`Cannot trigger and resolve the technique card. Card ${technique_card_id} does not exist in my schedule`);
@@ -7410,6 +7413,11 @@ class DaleOfMerchants extends Gamegui
 		const playAreas = Array.from(container.children) as HTMLElement[];
 		const initialRects = new Map<HTMLElement, DOMRect>();
 		playAreas.forEach(el => initialRects.set(el, el.getBoundingClientRect()));
+
+		// Don't reorder if the starting player is already on top
+		if (playAreas[0]?.id.includes(start_with_player_id.toString())) {
+			return;
+		}
 
 		// Step 2: Instantly reorder the containers
 		for (let player_id of this.getPlayerOrderStartingWith(start_with_player_id)) {

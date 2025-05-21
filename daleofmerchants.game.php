@@ -7745,7 +7745,6 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
         if (count($dbcards) == 0) {
-            $this->removeScheduleCooldown();
             $trigger_next_player_id = $this->getGameStateValue("trigger_next_player_id");
             $trigger_next_state_id = $this->getGameStateValue("trigger_next_state_id");
             if ($trigger_next_player_id == $player_id) {
@@ -7758,6 +7757,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("changeActivePlayer_state_id", $trigger_next_state_id);
                 $this->gamestate->nextState("trChangeActivePlayer");
             }
+            $this->removeScheduleCooldown(); //this must happen after the transition, otherwise non-triggered will briefly animate
         }
     }
 
@@ -7793,8 +7793,8 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         if (count($triggeredCards) == 0) {
-            $this->removeScheduleCooldown();
             $this->gamestate->nextState("trSkipTurnStart");
+            $this->removeScheduleCooldown(); //this must happen after the transition, otherwise non-triggered cards will briefly animate
         }
     }
 

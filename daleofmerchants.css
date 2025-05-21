@@ -85,31 +85,73 @@
   outline: 3px solid red;
 }
 
-@keyframes high-priority {
-  from {
-    opacity: 1;
-    scale: 1;
+@keyframes high-priority-flat-stock {
+  0% {
+    rotate: 0deg;
+    transform: scale(1);
   }
-  25% {
-    opacity: 0.75;
+  60% {
+    rotate: 0deg;
+    transform: scale(1);
   }
-  50% {
-    opacity: 1;
-    scale: 1.1;
+  65% {
+    rotate: -4deg;
+    transform: scale(1.05);
+  }
+  70% {
+    rotate: 4deg;
+    transform: scale(1.1);
   }
   75% {
-    opacity: 0.75;
+    rotate: -4deg;
+    transform: scale(1.05);
+  }
+  80% {
+    rotate: 3deg;
+    transform: scale(1.03);
+  }
+  85% {
+    rotate: -3deg;
+    transform: scale(1.02);
+  }
+  90% {
+    rotate: 2deg;
+    transform: scale(1.01);
+  }
+  95% {
+    rotate: -1deg;
+    transform: scale(1);
+  }
+  100% {
+    rotate: 0deg;
+    transform: scale(1);
+  }
+}
+@keyframes high-priority-arc-stock {
+  from {
+    filter: brightness(1);
+    scale: 1;
+  }
+  50% {
+    filter: brightness(1.1);
+    scale: 1.1;
   }
   to {
-    opacity: 1;
+    filter: brightness(1);
     scale: 1;
   }
 }
+.daleofmerchants-flat-stock .daleofmerchants-clickable.daleofmerchants-high-priority {
+  animation: high-priority-flat-stock 1.5s ease-in-out infinite;
+  box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-technique);
+}
+
+.daleofmerchants-arc-stock .daleofmerchants-clickable.daleofmerchants-high-priority {
+  animation: high-priority-arc-stock 1s ease-in-out infinite;
+}
+
 .daleofmerchants-clickable {
   cursor: pointer;
-}
-.daleofmerchants-clickable.daleofmerchants-high-priority {
-  animation: high-priority 1s ease-in-out infinite;
 }
 
 .daleofmerchants-text {
@@ -314,7 +356,7 @@
 .daleofmerchants-passive-selected {
   cursor: pointer;
   scale: 1.1;
-  z-index: 200 !important;
+  z-index: 201 !important;
   outline: 3px solid var(--daleofmerchants-wrap-technique);
 }
 
