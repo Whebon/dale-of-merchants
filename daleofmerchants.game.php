@@ -7388,7 +7388,12 @@ class DaleOfMerchants extends DaleTableBasic
 
     function actBonusBuildSkip() {
         $this->checkAction("actBonusBuildSkip");
-        $this->notifyAllPlayers('message', clienttranslate('Winter is Coming: ${player_name} skips building an additional stack.'), array(
+        $argStackIndex = $this->argStackIndex();
+        $msg = $argStackIndex['is_first_build'] ?
+            clienttranslate('${bonus_build_name}: ${player_name} skips building a stack') :
+            clienttranslate('${bonus_build_name}: ${player_name} skips building an additional stack');
+        $this->notifyAllPlayers('message', $msg, array(
+            'bonus_build_name' => $argStackIndex['bonus_build_name'],
             "player_name" => $this->getActivePlayerName()
         ));
         //Charm (free build action)
