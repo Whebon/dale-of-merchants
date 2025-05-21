@@ -119,21 +119,23 @@
 // }
 
 //high-priority animation analysis
+//downside starting at 0%:  animation of wrong cards will briefly play between removing the schedule cooldown and switching gamestates
 //downside 'scale': 		doesn't smoothly transition on animation end
 //downside 'brightness': 	performance intensive
 //downside 'opacity':		card is hard to read
-//downside 'rotate':		doesn't work in arc stocks	
+//downside 'rotate':		doesn't work in arc stocks
+//downside 'box-shadow':	breaks boxshadow on hover (without !important)
 @keyframes high-priority-flat-stock {
-  0%   { rotate: 0deg; transform: scale(1); }
-  60%  { rotate: 0deg; transform: scale(1); }
+  0%   { rotate: 0deg; transform: scale(1); filter: brightness(1); }
+  60%  { rotate: 0deg; transform: scale(1); filter: brightness(1); }
   65%  { rotate: -4deg; transform: scale(1.05); }
-  70%  { rotate: 4deg; transform: scale(1.1); }
+  70%  { rotate: 4deg; transform: scale(1.1); filter: brightness(1.1);  }
   75%  { rotate: -4deg; transform: scale(1.05); }
   80%  { rotate: 3deg; transform: scale(1.03); }
   85%  { rotate: -3deg; transform: scale(1.02); }
   90%  { rotate: 2deg; transform: scale(1.01); }
-  95%  { rotate: -1deg; transform: scale(1); }
-  100% { rotate: 0deg; transform: scale(1); }
+  95%  { rotate: -1deg; transform: scale(1); filter: brightness(1); }
+  100% { rotate: 0deg; transform: scale(1); filter: brightness(1); }
 }
 
 @keyframes high-priority-arc-stock {
@@ -145,7 +147,6 @@
 .daleofmerchants-flat-stock {
 	.daleofmerchants-clickable.daleofmerchants-high-priority {
 		animation: high-priority-flat-stock 1.5s ease-in-out infinite;
-		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-technique);
 	}
 }
 
