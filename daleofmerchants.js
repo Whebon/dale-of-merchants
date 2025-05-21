@@ -4904,8 +4904,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
-                case 'winterIsComing':
-                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
+                case 'bonusBuild':
+                    var bonusBuild_args = args.args;
+                    var bonusBuildLabel = bonusBuild_args.is_first_build ?
+                        _("Click cards to <strong>build stacks</strong>") :
+                        _("Click cards to <strong>build additional stacks</strong>");
+                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     break;
@@ -5427,7 +5431,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(0);
                     this.myHand.orderedSelection.secondaryToPrimary();
                     break;
-                case 'winterIsComing':
+                case 'bonusBuild':
                     this.myHand.setSelectionMode('none');
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
@@ -5854,9 +5858,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Ditch selected junk"), "onPurchase");
                     this.addActionButtonCancelClient();
                     break;
-                case 'winterIsComing':
+                case 'bonusBuild':
                     this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
-                    this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
+                    var bonusBuild_args = args;
+                    if (bonusBuild_args.is_first_build) {
+                        this.addActionButton("skip-button", _("Skip turn"), "onBonusBuildSkip", undefined, false, 'red');
+                    }
+                    else {
+                        this.addActionButton("skip-button", _("Skip"), "onBonusBuildSkip", undefined, false, 'gray');
+                    }
                     break;
                 case 'client_swiftBroker':
                     this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
@@ -7296,7 +7306,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_build':
                     this.onBuildSelectionChanged();
                     break;
-                case 'winterIsComing':
+                case 'bonusBuild':
                     this.onBuildSelectionChanged();
                     break;
                 case 'client_glue':
@@ -7358,7 +7368,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.onBuildSelectionChanged();
                     }
                     break;
-                case 'winterIsComing':
+                case 'bonusBuild':
                     if (this.verifyChameleon(card)) {
                         this.onBuildSelectionChanged();
                     }
@@ -8713,7 +8723,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_stove':
                     break;
                 case 'client_build':
-                case 'winterIsComing':
+                case 'bonusBuild':
                     args.stack_card_ids = this.myHand.orderedSelection.get();
                     args.stack_card_ids_from_discard = this.myDiscard.orderedSelection.get();
                     args.optionalArgs = { stove_spend_args: {} };
@@ -8743,17 +8753,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args.optionalArgs)
             }).then(function () {
-                while (_this.gamedatas.gamestate.name != 'client_build' && _this.gamedatas.gamestate.name != 'winterIsComing') {
+                while (_this.gamedatas.gamestate.name != 'client_build' && _this.gamedatas.gamestate.name != 'bonusBuild') {
                     _this.mainClientState.leave();
                 }
             });
         };
-        DaleOfMerchants.prototype.onWinterIsComingSkip = function () {
+        DaleOfMerchants.prototype.onBonusBuildSkip = function () {
             if (this.myHand.orderedSelection.getSize() > 0) {
                 this.myHand.unselectAll();
             }
-            else if (this.checkAction('actWinterIsComingSkip')) {
-                this.bgaPerformAction('actWinterIsComingSkip', {});
+            else if (this.checkAction('actBonusBuildSkip')) {
+                this.bgaPerformAction('actBonusBuildSkip', {});
             }
         };
         DaleOfMerchants.prototype.onCancelClient = function () {

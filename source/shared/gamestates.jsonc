@@ -68,7 +68,7 @@
 		"transitions": { //the trigger gamestate uses "jumpToState" in "stTrigger"
 			"trSamePlayer": 28,
 			"trChangeActivePlayer": 29,
-			"trWinterIsComing": 36
+			"trBonusBuild": 36
 		} 
 	},
 
@@ -122,7 +122,7 @@
 			],
 
 			//Build Actions
-			"actWinterIsComingSkip": [],
+			"actBonusBuildSkip": [],
 			"actBuild": [
 				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
@@ -144,7 +144,7 @@
 			//Main cycle
 			"trChangeActivePlayer": 29,
 			"trPassiveAbility": 30,
-			"trWinterIsComing": 36,
+			"trBonusBuild": 36,
 			"trRoyalPrivilege": 37,
 			"trSamePlayer": 30,
 			"trNextPlayer": 41,
@@ -233,9 +233,9 @@
 	
 
 	"36": {
-		"name": "winterIsComing",
-		"description": "Winter is Coming: ${actplayer} may select cards to build in stack ${stack_index_plus_1}",
-		"descriptionmyturn": "Winter is Coming: ${you} may select cards to build in stack ${stack_index_plus_1}",
+		"name": "bonusBuild",
+		"description": "${bonus_build_name}: ${actplayer} may select cards to build in stack ${stack_index_plus_1}",
+		"descriptionmyturn": "${bonus_build_name}: ${you} may select cards to build in stack ${stack_index_plus_1}",
 		"type": "activeplayer",
 		"args": "argStackIndex",
 		"possibleactions": {
@@ -249,9 +249,9 @@
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
-			"actWinterIsComingSkip": []
+			"actBonusBuildSkip": []
 		},
-		"transitions": { "trPassiveAbility": 36, "trWinterIsComing": 36, "trNextPlayer": 41, "trSamePlayer": 30, "trGameEnd": 98 }
+		"transitions": { "trPassiveAbility": 36, "trBonusBuild": 36, "trNextPlayer": 41, "trSamePlayer": 30, "trGameEnd": 98 }
 	},
 
 	"37": {

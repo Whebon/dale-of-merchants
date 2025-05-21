@@ -542,8 +542,12 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
-			case 'winterIsComing':
-				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build additional stacks</strong>"));
+			case 'bonusBuild':
+				const bonusBuild_args = args.args as { is_first_build: number };
+				const bonusBuildLabel = bonusBuild_args.is_first_build ? 
+					_("Click cards to <strong>build stacks</strong>") :
+					_("Click cards to <strong>build additional stacks</strong>");
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
@@ -1149,7 +1153,7 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(0);
 				this.myHand.orderedSelection.secondaryToPrimary();
 				break;
-			case 'winterIsComing':
+			case 'bonusBuild':
 				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
@@ -1572,9 +1576,17 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Ditch selected junk"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
-			case 'winterIsComing':
+			case 'bonusBuild':
 				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
-				this.addActionButton("skip-button", _("Skip"), "onWinterIsComingSkip", undefined, false, 'gray');
+				const bonusBuild_args = args as { is_first_build: number };
+				if (bonusBuild_args.is_first_build) {
+					//the player is skipping their entire turn
+					this.addActionButton("skip-button", _("Skip turn"), "onBonusBuildSkip", undefined, false, 'red');
+				}
+				else {
+					//the player is skipping just a bonus action
+					this.addActionButton("skip-button", _("Skip"), "onBonusBuildSkip", undefined, false, 'gray'); 
+				}
 				break;
 			case 'client_swiftBroker':
 				this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
@@ -3241,7 +3253,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_build':
 				this.onBuildSelectionChanged();
 				break;
-			case 'winterIsComing':
+			case 'bonusBuild':
 				this.onBuildSelectionChanged();
 				break;
 			case 'client_glue':
@@ -3304,7 +3316,7 @@ class DaleOfMerchants extends Gamegui
 					this.onBuildSelectionChanged();
 				}
 				break;
-			case 'winterIsComing':
+			case 'bonusBuild':
 				if (this.verifyChameleon(card)) {
 					this.onBuildSelectionChanged();
 				}
@@ -4778,7 +4790,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_stove':
 				break; //already set by onStove()
 			case 'client_build':
-			case 'winterIsComing':
+			case 'bonusBuild':
 				args.stack_card_ids = this.myHand.orderedSelection.get();
 				args.stack_card_ids_from_discard = this.myDiscard.orderedSelection.get();
 				args.optionalArgs = {stove_spend_args: {}};
@@ -4807,19 +4819,19 @@ class DaleOfMerchants extends Gamegui
 			args: JSON.stringify(args.optionalArgs)
 		}).then(() => {
 			//if the build is successful, nicely close the stack of client states
-			while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'winterIsComing') {
+			while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'bonusBuild') {
 				this.mainClientState.leave(); //see issue #97.2 and #97.3
 			}
 		});
 	}
 	
-	onWinterIsComingSkip() {
+	onBonusBuildSkip() {
 		if (this.myHand.orderedSelection.getSize() > 0) {
 			//help players to not accidentally skip winter is coming if they intend to cancel their selection instead of skipping
 			this.myHand.unselectAll();
 		}
-		else if(this.checkAction('actWinterIsComingSkip')) {
-			this.bgaPerformAction('actWinterIsComingSkip', {})
+		else if(this.checkAction('actBonusBuildSkip')) {
+			this.bgaPerformAction('actBonusBuildSkip', {})
 		}
 	}
 

@@ -108,11 +108,11 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actWinterIsComingSkip()
+	public function actBonusBuildSkip()
 	{
 		self::setAjaxMode();
 
-		$this->game->actWinterIsComingSkip(  );
+		$this->game->actBonusBuildSkip(  );
 		self::ajaxResponse();
 	}
 

@@ -97,7 +97,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 28,
 			'trChangeActivePlayer' => 29,
-			'trWinterIsComing' => 36,
+			'trBonusBuild' => 36,
 		),
 	),
 	29 => array(
@@ -118,11 +118,11 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take an action'),
 		'descriptionmyturn' => clienttranslate('${you} must take an action'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actFullyResolveTechniqueCard', 'actWinterIsComingSkip', 'actBuild', 'actInventoryAction', 'actSpawn'],
+		'possibleactions' => ['actPurchase', 'actPlayTechniqueCard', 'actUsePassiveAbility', 'actFullyResolveTechniqueCard', 'actBonusBuildSkip', 'actBuild', 'actInventoryAction', 'actSpawn'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
 			'trPassiveAbility' => 30,
-			'trWinterIsComing' => 36,
+			'trBonusBuild' => 36,
 			'trRoyalPrivilege' => 37,
 			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
@@ -199,15 +199,15 @@ $machinestates = array(
 		),
 	),
 	36 => array(
-		'name' => 'winterIsComing',
-		'description' => clienttranslate('Winter is Coming: ${actplayer} may select cards to build in stack ${stack_index_plus_1}'),
-		'descriptionmyturn' => clienttranslate('Winter is Coming: ${you} may select cards to build in stack ${stack_index_plus_1}'),
+		'name' => 'bonusBuild',
+		'description' => clienttranslate('${bonus_build_name}: ${actplayer} may select cards to build in stack ${stack_index_plus_1}'),
+		'descriptionmyturn' => clienttranslate('${bonus_build_name}: ${you} may select cards to build in stack ${stack_index_plus_1}'),
 		'type' => 'activeplayer',
 		'args' => 'argStackIndex',
-		'possibleactions' => ['actBuild', 'actUsePassiveAbility', 'actWinterIsComingSkip'],
+		'possibleactions' => ['actBuild', 'actUsePassiveAbility', 'actBonusBuildSkip'],
 		'transitions' => array(
 			'trPassiveAbility' => 36,
-			'trWinterIsComing' => 36,
+			'trBonusBuild' => 36,
 			'trNextPlayer' => 41,
 			'trSamePlayer' => 30,
 			'trGameEnd' => 98,

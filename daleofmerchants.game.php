@@ -59,7 +59,8 @@ class DaleOfMerchants extends DaleTableBasic
             "passive_card_id" => 27,
             "trigger_next_player_id" => 28,
             "trigger_next_state_id" => 29,
-            "practice_card_id" => 30
+            "practice_card_id" => 30,
+            "bonus_build_type_id" => 31
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -127,6 +128,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("trigger_next_player_id", -1);
         $this->setGameStateInitialValue("trigger_next_state_id", -1);
         $this->setGameStateInitialValue("practice_card_id", -1);
+        $this->setGameStateInitialValue("bonus_build_type_id", -1);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -2439,7 +2441,8 @@ class DaleOfMerchants extends DaleTableBasic
             $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
         }
         else if ($type_id == CT_SNACK) {
-            $this->nextStateViaTriggers("trWinterIsComing", ...$triggers);
+            $this->setGameStateValue("bonus_build_type_id", CT_SNACK);
+            $this->nextStateViaTriggers("trBonusBuild", ...$triggers);
         }
         else if ($this->card_types[$type_id]["trigger"] != null) {
             $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
@@ -2558,7 +2561,7 @@ class DaleOfMerchants extends DaleTableBasic
      * @param ?string $from (optional) - if provided, `$cards_from_hand` come from `from` instead of `HAND`
      * @return string game state transition to take after building. One of:
      * * trGameEnd
-     * * trWinterIsComing
+     * * trBonusBuild
      * * trNextPlayer
      * * trSamePlayer
      */
@@ -2613,7 +2616,8 @@ class DaleOfMerchants extends DaleTableBasic
             $this->notifyAllPlayers('message', clienttranslate('Winter Is Coming: ${player_name} may build an additional stack'), array(
                 "player_name" => $this->getPlayerNameById($player_id)
             ));
-            return "trWinterIsComing";
+            $this->setGameStateValue("bonus_build_type_id", CT_WINTERISCOMING);
+            return "trBonusBuild";
         }
 
         //Charm (free build action)
@@ -7327,41 +7331,6 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    //TODO: safely remove this
-    // function actSnack($card_ids) {
-    //     $this->checkAction("actSnack");
-    //     $player_id = $this->getActivePlayerId();
-    //     $card_ids = $this->numberListsToArray($card_ids);
-    //     $market_cards = $this->cards->getCardsInLocation(MARKET);
-    //     $schedule_cards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
-    //     $nbr_snacks = $this->countTypeId($schedule_cards, CT_SNACK);
-    //     if ($nbr_snacks == 0) {
-    //         throw new BgaUserException("'actSnack' requires at least 1 snack in the schedule");
-    //     }
-    //     $nbr = min(count($market_cards), $nbr_snacks);
-    //     if (count($card_ids) != $nbr) {
-    //         throw new BgaUserException($this->_("Snack: please select exactly ".$nbr." card(s) from the market"));
-    //     }
-    //     foreach ($card_ids as $card_id) {
-    //         //verify that the card_id comes from the market
-    //         if (!isset($market_cards[$card_id])) {
-    //             throw new BgaUserException("Snack: some selected card was not found in the market"); 
-    //         }
-    //         $card = $market_cards[$card_id];
-    //         unset($market_cards[$card_id]);
-    //         //place the card into the player's hand
-    //         $this->cards->moveCard($card_id, HAND.$player_id);
-    //         $this->notifyAllPlayers('marketToHand', clienttranslate('Snack: ${player_name} places a ${card_name} into their hand'), array (
-    //             'player_id' => $player_id,
-    //             'player_name' => $this->getActivePlayerName(),
-    //             'card_name' => $this->getCardName($card),
-    //             'market_card_id' => $card_id,
-    //             'pos' => $card["location_arg"],
-    //         ));
-    //     }
-    //     $this->nextStateViaTriggers("trWinterIsComing", TRIGGER_ONPREBUILD);
-    // }
-
 
     //(~acts)
 
@@ -7417,8 +7386,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState($transition);
     }
 
-    function actWinterIsComingSkip() {
-        $this->checkAction("actWinterIsComingSkip");
+    function actBonusBuildSkip() {
+        $this->checkAction("actBonusBuildSkip");
         $this->notifyAllPlayers('message', clienttranslate('Winter is Coming: ${player_name} skips building an additional stack.'), array(
             "player_name" => $this->getActivePlayerName()
         ));
@@ -7506,7 +7475,12 @@ class DaleOfMerchants extends DaleTableBasic
     function argStackIndex() {
         $player_id = $this->getActivePlayerId();
         $stack_index = $this->cards->getNextStackIndex($player_id);
+        $bonus_build_type_id = $this->getGameStateValue("bonus_build_type_id");
+        $is_first_build = ($bonus_build_type_id == CT_SNACK);
         return array(
+            'is_first_build' => $is_first_build,
+            'bonus_build_type_id' => $bonus_build_type_id,
+            'bonus_build_name' => $this->card_types[$bonus_build_type_id]['name'],
             'stack_index' => $stack_index,
             'stack_index_plus_1' => $stack_index + 1
         );

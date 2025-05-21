@@ -71,7 +71,7 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 28,
 			'trChangeActivePlayer': 29,
-			'trWinterIsComing': 36,
+			'trBonusBuild': 36,
 		},
 	},
 	29: {
@@ -149,7 +149,7 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
-			'actWinterIsComingSkip': [],
+			'actBonusBuildSkip': [],
 			'actBuild': [{
 				'name': 'chameleons_json',
 				'type': 'AT_json',
@@ -181,7 +181,7 @@ interface GameStates {
 		'transitions': {
 			'trChangeActivePlayer': 29,
 			'trPassiveAbility': 30,
-			'trWinterIsComing': 36,
+			'trBonusBuild': 36,
 			'trRoyalPrivilege': 37,
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
@@ -272,9 +272,9 @@ interface GameStates {
 		},
 	},
 	36: {
-		'name': 'winterIsComing',
-		'description': 'Winter is Coming: ${actplayer} may select cards to build in stack ${stack_index_plus_1}',
-		'descriptionmyturn': 'Winter is Coming: ${you} may select cards to build in stack ${stack_index_plus_1}',
+		'name': 'bonusBuild',
+		'description': '${bonus_build_name}: ${actplayer} may select cards to build in stack ${stack_index_plus_1}',
+		'descriptionmyturn': '${bonus_build_name}: ${you} may select cards to build in stack ${stack_index_plus_1}',
 		'type': 'activeplayer',
 		'args': 'argStackIndex',
 		'possibleactions': {
@@ -304,11 +304,11 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
-			'actWinterIsComingSkip': [],
+			'actBonusBuildSkip': [],
 		},
 		'transitions': {
 			'trPassiveAbility': 36,
-			'trWinterIsComing': 36,
+			'trBonusBuild': 36,
 			'trNextPlayer': 41,
 			'trSamePlayer': 30,
 			'trGameEnd': 98,
