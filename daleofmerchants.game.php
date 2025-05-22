@@ -3936,7 +3936,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     //build with a regular card
                     $transition = $this->build($stack_index, $dbcards, null, DECK);
-                    $this->gamestate->nextState($transition);
+                    $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
                 }
                 catch(BgaUserException $e) {
                     //building failed: ditch the card instead
@@ -5512,6 +5512,10 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_OVERTIME:
+                //just resolve the card, the effect is already applied in the build action
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");
@@ -6919,13 +6923,13 @@ class DaleOfMerchants extends DaleTableBasic
         if ($x > 0) {
             //Modified stove (mandatory)
             $transition = $this->build($stack_index, $dbcards, null, LIMBO);
-            $this->gamestate->nextState($transition);
+            $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
         }
         else {
             //Unmodified stove (optional)
             try {
                 $transition = $this->build($stack_index, $dbcards, null, LIMBO);
-                $this->gamestate->nextState($transition);
+                $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
             }
             catch(BgaUserException $e) {
                 //building failed: ditch the card instead
@@ -7436,7 +7440,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Build the stack
         $transition = $this->build($stack_index, $stack_cards, $stack_cards_from_discard);
-        $this->gamestate->nextState($transition);
+        $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
     }
 
     function actBonusBuildSkip() {
@@ -7815,6 +7819,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("changeActivePlayer_player_id", $trigger_next_player_id);
                 $this->setGameStateValue("changeActivePlayer_state_id", $trigger_next_state_id);
                 $this->gamestate->nextState("trChangeActivePlayer");
+            }
+        }
+        else if (count($dbcards) == 1) {
+            //try to autoresolve the only trigger
+            $technique_card = reset($dbcards);
+            $type_id = $this->getTypeId($technique_card);
+            if (in_array($type_id , $this->AUTORESOLVE_TRIGGERS)) {
+                $this->actFullyResolveTechniqueCard(array(), $technique_card["id"], array());
             }
         }
     }

@@ -277,6 +277,12 @@ if (!defined('CLOCK_DAWN')) {
     define('CLOCK_NIGHT', 2);
 }
 
+//automatically resolve these choiceless triggers if they are the only one that needs to be resolved
+$this->AUTORESOLVE_TRIGGERS = array(
+    CT_OVERTIME,
+    CT_PRACTICE
+);
+
 //disable these animalfolks in the deck selection (and random selection)
 $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_CHAMELEONS,      //... chameleons ...
