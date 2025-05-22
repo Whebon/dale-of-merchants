@@ -83,7 +83,7 @@ export class Images {
         if (card_type_id !== undefined) {
             const image_index = card_type_id % (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
             const sheet_index = (card_type_id - image_index) / (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
-            if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 3) {
+            if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 4) {
                 let x = card_type_id % Images.IMAGES_PER_ROW;
                 let y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                 dojo.setStyle(div, 'background-position', `-${x}00% -${y}00%`);

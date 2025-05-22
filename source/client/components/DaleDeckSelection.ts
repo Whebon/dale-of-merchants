@@ -57,6 +57,9 @@ export class DaleDeckSelection {
     static readonly ANIMALFOLK_MONGOOSES: number = 26;
     static readonly ANIMALFOLK_BATS: number = 27;
 
+    //10th anniversary
+    static readonly ANIMALFOLK_SNOWMACAQUES: number = 28;
+
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
@@ -70,7 +73,7 @@ export class DaleDeckSelection {
 
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1)
-        for (let animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+        for (let animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;

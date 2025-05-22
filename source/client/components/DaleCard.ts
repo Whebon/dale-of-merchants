@@ -215,9 +215,15 @@ export class DaleCard {
     static readonly CT_SECRETMISSION: number = 165;
     static readonly CT_CAPTURE: number = 166;
     static readonly CT_PROVOCATION: number = 167;
-    static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 168;
-    static readonly CT_DEPRECATED_CHEER: number = 169;
-    static readonly CT_DEPRECATED_TASTERS: number = 170;    
+    static readonly CT_PRISTINEOWNER: number = 168;
+    static readonly CT_BONSAI: number = 169;
+    static readonly CT_RAKE: number = 170;
+    static readonly CT_SLOTMACHINE: number = 171;
+    static readonly CT_GENERATIONCHANGE: number = 172;
+    static readonly CT_WARMEMBRACE: number = 173;
+    static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 174;
+    static readonly CT_DEPRECATED_CHEER: number = 175;
+    static readonly CT_DEPRECATED_TASTERS: number = 176;
     
 
     public id: number

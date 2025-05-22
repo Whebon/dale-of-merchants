@@ -192,7 +192,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
             if (card_type_id !== undefined) {
                 var image_index = card_type_id % (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
                 var sheet_index = (card_type_id - image_index) / (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
-                if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 3) {
+                if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 4) {
                     var x = card_type_id % Images.IMAGES_PER_ROW;
                     var y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                     dojo.setStyle(div, 'background-position', "-".concat(x, "00% -").concat(y, "00%"));
@@ -648,7 +648,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 });
             };
             var this_1 = this;
-            for (var animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+            for (var animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES; animalfolk_id++) {
                 _loop_1(animalfolk_id);
             }
             for (var _i = 0, _a = page.gamedatas.disabledAnimalfolkIds; _i < _a.length; _i++) {
@@ -710,6 +710,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
         DaleDeckSelection.ANIMALFOLK_GULLS = 25;
         DaleDeckSelection.ANIMALFOLK_MONGOOSES = 26;
         DaleDeckSelection.ANIMALFOLK_BATS = 27;
+        DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES = 28;
         return DaleDeckSelection;
     }());
     exports.DaleDeckSelection = DaleDeckSelection;
@@ -1920,9 +1921,15 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_SECRETMISSION = 165;
         DaleCard.CT_CAPTURE = 166;
         DaleCard.CT_PROVOCATION = 167;
-        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 168;
-        DaleCard.CT_DEPRECATED_CHEER = 169;
-        DaleCard.CT_DEPRECATED_TASTERS = 170;
+        DaleCard.CT_PRISTINEOWNER = 168;
+        DaleCard.CT_BONSAI = 169;
+        DaleCard.CT_RAKE = 170;
+        DaleCard.CT_SLOTMACHINE = 171;
+        DaleCard.CT_GENERATIONCHANGE = 172;
+        DaleCard.CT_WARMEMBRACE = 173;
+        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 174;
+        DaleCard.CT_DEPRECATED_CHEER = 175;
+        DaleCard.CT_DEPRECATED_TASTERS = 176;
         DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());

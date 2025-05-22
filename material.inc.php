@@ -189,9 +189,15 @@ if (!defined('CT_CARDBACK')) {
     define('CT_SECRETMISSION', 165);
     define('CT_CAPTURE', 166);
     define('CT_PROVOCATION', 167);
-    define('CT_DEPRECATED_MARKETDISCOVERY', 168);
-    define('CT_DEPRECATED_CHEER', 169);
-    define('CT_DEPRECATED_TASTERS', 170);  
+    define('CT_PRISTINEOWNER', 168);
+    define('CT_BONSAI', 169);
+    define('CT_RAKE', 170);
+    define('CT_SLOTMACHINE', 171);
+    define('CT_GENERATIONCHANGE', 172);
+    define('CT_WARMEMBRACE', 173);
+    define('CT_DEPRECATED_MARKETDISCOVERY', 174);
+    define('CT_DEPRECATED_CHEER', 175);
+    define('CT_DEPRECATED_TASTERS', 176);
 }
 
 //define all animalfolk
@@ -235,6 +241,9 @@ if (!defined('ANIMALFOLK_MACAWS')) {
     define('ANIMALFOLK_GULLS', 25);
     define('ANIMALFOLK_MONGOOSES', 26);
     define('ANIMALFOLK_BATS', 27);
+
+    //10th anniversary
+    define('ANIMALFOLK_SNOWMACAQUES', 28);
 }
 
 //define dice results
@@ -290,7 +299,6 @@ $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_OCELOTS,         //effect not finalized
     ANIMALFOLK_ECHIDNAS,        //effect not finalized
     //ANIMALFOLK_LEMURS,        //effect not finalized (but the text is correct)
-    //ANIMALFOLK_MONGOOSES,       //not implemented (update)
     ANIMALFOLK_BATS,            //not implemented
     ANIMALFOLK_OWLS,            //not implemented
     ANIMALFOLK_TASMANIANDEVILS, //not implemented
@@ -2041,7 +2049,7 @@ $this->card_types = array(
   116 => array(
       'type_id' => 116,
       'name' => clienttranslate("Wheelbarrow"),
-      'text' => clienttranslate("Store the top CARD of your deck. Toss or store it."),
+      'text' => clienttranslate("Look at the top CARD of your deck. Toss or store it."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -2817,5 +2825,95 @@ $this->card_types = array(
       'nbr' => 1,
       'animalfolk_displayed' => clienttranslate("Bats"),
       'animalfolk_id' => 27
+  ),
+  168 => array(
+      'type_id' => 168,
+      'name' => clienttranslate("Pristine Owner"),
+      'text' => clienttranslate("Draw 2 CARDS2. Place 1 CARD junk from the junkyard on your deck."),
+      'type_displayed' => clienttranslate("Technique"),
+      'is_technique' => true,
+      'has_plus' => true,
+      'has_ability' => false,
+      'playable' => true,
+      'trigger' => null,
+      'value' => 1,
+      'nbr' => 0,
+      'animalfolk_displayed' => clienttranslate("Snow Macaques"),
+      'animalfolk_id' => 28
+  ),
+  169 => array(
+      'type_id' => 169,
+      'name' => clienttranslate("Bonsai"),
+      'text' => clienttranslate("At the end of your turn, discard 2 junk CARDS2 to draw 3 CARDS3."),
+      'type_displayed' => clienttranslate("Passive"),
+      'is_technique' => false,
+      'has_plus' => false,
+      'has_ability' => true,
+      'playable' => true,
+      'trigger' => "onCleanUp",
+      'value' => 2,
+      'nbr' => 3,
+      'animalfolk_displayed' => clienttranslate("Snow Macaques"),
+      'animalfolk_id' => 28
+  ),
+  170 => array(
+      'type_id' => 170,
+      'name' => clienttranslate("Rake"),
+      'text' => clienttranslate("Search your deck for 0-1 CARD to toss and 0-2 CARDS2 to discard. Shuffle your deck."),
+      'type_displayed' => clienttranslate("Technique"),
+      'is_technique' => true,
+      'has_plus' => true,
+      'has_ability' => false,
+      'playable' => true,
+      'trigger' => null,
+      'value' => 3,
+      'nbr' => 3,
+      'animalfolk_displayed' => clienttranslate("Snow Macaques"),
+      'animalfolk_id' => 28
+  ),
+  171 => array(
+      'type_id' => 171,
+      'name' => clienttranslate("Slot Machine"),
+      'text' => clienttranslate("Draw CARDS3 until you draw 1 non-junk CARD. Discard any junk CARDS3 drawn."),
+      'type_displayed' => clienttranslate("Technique"),
+      'is_technique' => true,
+      'has_plus' => true,
+      'has_ability' => false,
+      'playable' => true,
+      'trigger' => null,
+      'value' => 4,
+      'nbr' => 3,
+      'animalfolk_displayed' => clienttranslate("Snow Macaques"),
+      'animalfolk_id' => 28
+  ),
+  172 => array(
+      'type_id' => 172,
+      'name' => clienttranslate("Generation Change"),
+      'text' => clienttranslate("Take any 2 CARDS2 from your discard. Place 2 junk CARDS2 from the junkyard on your deck."),
+      'type_displayed' => clienttranslate("Technique"),
+      'is_technique' => true,
+      'has_plus' => true,
+      'has_ability' => false,
+      'playable' => true,
+      'trigger' => null,
+      'value' => 5,
+      'nbr' => 1,
+      'animalfolk_displayed' => clienttranslate("Snow Macaques"),
+      'animalfolk_id' => 28
+  ),
+  173 => array(
+      'type_id' => 173,
+      'name' => clienttranslate("Warm Embrace"),
+      'text' => clienttranslate("While in your stall, you can include 1 junk CARD in each new stack."),
+      'type_displayed' => clienttranslate("Passive"),
+      'is_technique' => false,
+      'has_plus' => false,
+      'has_ability' => false,
+      'playable' => false,
+      'trigger' => null,
+      'value' => 5,
+      'nbr' => 1,
+      'animalfolk_displayed' => clienttranslate("Snow Macaques"),
+      'animalfolk_id' => 28
   )
 );

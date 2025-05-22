@@ -11,7 +11,9 @@ output = ""
 for index, row in df.iterrows():
     type_id = int(row['type_id'])
     upper = row['name'].replace(' ', '').replace("'", '').upper()
-    output += f"static readonly CT_{upper}: number = {type_id};\n"
+    if upper == "JUNK" and index > 1:
+        upper += str(index)
+    output += f"    static readonly CT_{upper}: number = {type_id};\n"
 
 # Add deprecated card types
 with open("deprecated_card_types.txt") as f:
@@ -19,7 +21,7 @@ with open("deprecated_card_types.txt") as f:
         deprecated_card_type = deprecated_card_type.replace("\n", "")
         if deprecated_card_type != "":
             type_id += 1
-            output += f"static readonly {deprecated_card_type}: number = {type_id};\n"
+            output += f"    static readonly {deprecated_card_type}: number = {type_id};\n"
 
 # Print the output
 print(output)

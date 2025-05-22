@@ -148,6 +148,11 @@
 			"id": 77,
 			"name": "Deck selected: Bats",
 			"type": "boolean"
+		},
+		"deck_selection_28": {
+			"id": 78,
+			"name": "Deck selected: Snow Macaques",
+			"type": "boolean"
 		}
 	},
 
