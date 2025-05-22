@@ -502,6 +502,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
+				this.mySchedule.setSelectionMode('clickOvertime');
 				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_inventory':
@@ -1139,6 +1140,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
+				this.mySchedule.setSelectionMode('none');
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
@@ -3598,6 +3600,11 @@ class DaleOfMerchants extends Gamegui
 					this.onTriggerTechnique(card_id); //select other finish card
 				}
 				break;
+			case 'client_build':
+				if (card.effective_type_id == DaleCard.CT_OVERTIME) {
+					this.myDiscard.openPopin();
+				}
+				break;
 		}
 	}
 
@@ -4739,7 +4746,11 @@ class DaleOfMerchants extends Gamegui
 	onBuildSelectionChanged(card?: DaleCard){
 		console.warn("onBuildSelectionChanged");
 		const card_ids = this.myHand.orderedSelection.get();
-		let count_nostalgic_items = 0;
+		let count_nostalgic_items = 0; 
+		if (this.mySchedule.countTypeId(DaleCard.CT_OVERTIME) > 0) {
+			//when an overtime is in schedule, any number of cards may be selected
+			count_nostalgic_items = 999;
+		}
 		for (let card_id of card_ids) {
 			const card = new DaleCard(card_id);
 			if (card.effective_type_id == DaleCard.CT_NOSTALGICITEM) {

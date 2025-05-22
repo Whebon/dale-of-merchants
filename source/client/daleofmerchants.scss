@@ -416,6 +416,12 @@
 	// }
 }
 
+.daleofmerchants-overtime-selected {
+	scale: 1.1;
+	z-index: 201 !important; //maybe this should be 199? to be just below the hovering z-index?
+	outline: 3px solid var(--daleofmerchants-wrap-build);
+}
+
 .daleofmerchants-blinking {
 	animation: blinker 1s infinite;
 }

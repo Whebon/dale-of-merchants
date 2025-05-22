@@ -24,6 +24,7 @@ import { DaleTrigger } from './types/DaleTrigger';
  * 'clickAnimalfolk':			no selection possible, only animalfolk cards are clickable
  * 'clickAnimalfolk16':			no selection possible, only cards of a specific animalfolk id are clickable
  * 'clickWhitelist':			no selection possible, only cards set using `setClickWhitelist` are clickable
+ * 'clickOvertime':				no selection possible, only cards of type_id CT_OVERTIME can be clicked
  * 'single':			   		a single card can be selected
  * 'singleAnimalfolk':			a single animalfolk card can be selected
  * 'multiple':             		multiple cards can be selected
@@ -34,7 +35,7 @@ import { DaleTrigger } from './types/DaleTrigger';
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -379,6 +380,8 @@ export class DaleStock extends Stock implements DaleLocation {
 					}
 				}
 				return false;
+			case 'clickOvertime':
+				return card.effective_type_id == DaleCard.CT_OVERTIME;
 			case 'single':
 				return true;
 			case 'singleAnimalfolk':
@@ -420,6 +423,8 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickOnTurnStart':
 				return true;
 			case 'clickOnTrigger':
+				return true;
+			case 'clickOvertime':
 				return true;
 			default:
 				return false;

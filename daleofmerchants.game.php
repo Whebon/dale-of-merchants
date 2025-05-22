@@ -1274,6 +1274,22 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Returns an array of unique effective animalfolks of an array of dbcards.
+     * @param array $dbcards dbcard objects
+     * @return array array of unique animalfolk ids
+    */
+    function getAnimalfolks(array $dbcards): array {
+        $animalfolks = array();
+        foreach ($dbcards as $dbcard) {
+            $animalfolk = $this->getAnimalfolk($dbcard);
+            if ($animalfolk != 0 && !in_array($animalfolk, $animalfolks)) {
+                $animalfolks[] = $animalfolk;
+            }
+        }
+        return $animalfolks;
+    }
+
+    /**
      * Returns the effective animalfolk of a dbcard. 0 represents rubbish/junk.
      * @param array $dbcard dbcard object
     */
@@ -2500,39 +2516,85 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Enforces the specified collection of cards suffices to build the stack of the provided index
      * @param int $stack_index index of the stack that needs to be build (e.g. stack_index = 3 is the 4th stack)
-     * @param array $cards cards that will be used to build the stack
+     * @param array $cards cards from hand that will be used to build the stack
      * @param array $cards_from_discard additional (optional) additional cards to include in the stack, but selected by CT_NOSTALGICITEM
      */
-    function enforceValidStack(int $stack_index, array $cards, array $cards_from_discard = null) {
-        //Check if the animalfolk sets are correct
-        $multiple_sets_used = false;
-        $junk_used = false;
-        $set = null;
-        foreach ($cards as $card) {
-            $animalfolk = $this->getAnimalfolk($card);
-            if ($animalfolk == null) {
-                $junk_used = true;
+    function enforceValidStack(int $stack_index, array $cards_from_hand, array $cards_from_discard = null) {
+        //get all the cards involved
+        $player_id = $this->getActivePlayerId();
+        $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
+
+        //Apply CT_STASHINGVENDOR and CT_WARMEMBRACE
+        $nbr_junk = $this->countTypeId($cards_from_hand, CT_JUNK);
+        if ($this->containsTypeId($cards, CT_STASHINGVENDOR)) {
+            $max_nbr_junk = INF;
+        }
+        else {
+            $max_nbr_junk = $this->countTypeId($this->cards->getCardsInLocation(STALL.$player_id), 999); //TODO: CT_WARMEMBRACE
+        }
+
+        if ($cards_from_discard) {
+            //Apply CT_OVERTIME (fetch cards from discard to hand)
+            $overtime = $this->containsTypeId($this->cards->getCardsInLocation(SCHEDULE.$player_id), CT_OVERTIME);
+            if ($overtime) {
+                $fetchable_animalfolks = $this->getAnimalfolks($cards_from_hand);
+                if ((count($fetchable_animalfolks) == 0 || in_array(ANIMALFOLK_SQUIRRELS, $fetchable_animalfolks)) && $this->containsTypeId($cards, CT_EMPTYCHEST)) {
+                    //an empty chest is fetchable => all animalfolk cards will be fetched
+                    $fetchable_animalfolks = $this->getAnimalfolks($cards);
+                }
+                else if (count($fetchable_animalfolks) == 0) {
+                    //the animalfolk type is not defined yet => fetch any 1 animalfolk type, or squirrels (for CT_NOSTALGICITEM)
+                    $fetchable_animalfolks = $this->getAnimalfolks($cards);
+                    if (count($fetchable_animalfolks) >= 2) {
+                        $fetchable_animalfolks = array(ANIMALFOLK_SQUIRRELS);
+                    }
+                }
+                foreach ($this->toCardIds($cards_from_discard) as $discard_card_id) {
+                    $dbcard = $cards_from_discard[$discard_card_id];
+                    $animalfolk_id = $this->getAnimalfolk($dbcard);
+                    if ($animalfolk_id == 0) {
+                        //fetch a junk card using overtime
+                        if ($nbr_junk < $max_nbr_junk) {
+                            $nbr_junk += 1;
+                            $cards_from_hand[$discard_card_id] = $dbcard;
+                            unset($cards_from_discard[$discard_card_id]);
+                        }
+                    }
+                    else if (in_array($animalfolk_id, $fetchable_animalfolks)) {
+                        //fetch an animalfolk card using overtime
+                        $cards_from_hand[$discard_card_id] = $dbcard;
+                        unset($cards_from_discard[$discard_card_id]);
+                    }
+                }
             }
-            else if ($set == null) {
-                $set = $animalfolk;
+
+            //Apply CT_NOSTALGICITEM (provide immunity to cards in discard)
+            $nbr_nostalgic_item = $this->countTypeId($cards_from_hand, CT_NOSTALGICITEM);
+            if ($nbr_nostalgic_item > 0) {
+                //you need at least 1 nostalgic item in hand to start counting nostalgic items from discard
+                $nbr_nostalgic_item += $this->countTypeId($cards_from_discard, CT_NOSTALGICITEM);
             }
-            else if ($set != $animalfolk) {
-                $multiple_sets_used = true;
+            if (count($cards_from_discard) > $nbr_nostalgic_item) {
+                if ($overtime) {
+                    if ($this->countTypeId($cards_from_discard, CT_JUNK)) {
+                        throw new BgaUserException($this->_("Overtime: Junk cards from discard cannot be included in a stack"));
+                    }
+                    else {
+                        throw new BgaUserException($this->_("Overtime: Unable to fetch cards from a different animalfolk set"));
+                    }
+                }
+                throw new BgaUserException($this->_("You cannot include cards from your discard pile"));
             }
         }
 
-        //cards from discard bypass the basic rules, but will be included from this point onwards
-        if ($cards_from_discard) {
-            $cards = array_merge($cards, $cards_from_discard);
-        }
-    
-        //Enforce no junk cards are used
-        if ($junk_used && !$this->containsTypeId($cards, CT_STASHINGVENDOR)) {
+        //Apply junk rule
+        if ($nbr_junk > $max_nbr_junk) {
             throw new BgaUserException($this->_("Junk cards cannot be included in a stack"));
         }
 
-        //Enforce only a single animalfolk set is used
-        if ($multiple_sets_used && !$this->containsTypeId($cards, CT_EMPTYCHEST)) {
+        //Apply animalfolk rule (and CT_EMPTYCHEST)
+        $animalfolks = $this->getAnimalfolks($cards_from_hand);
+        if (count($animalfolks) >= 2 && !$this->containsTypeId($cards, CT_EMPTYCHEST)) {
             throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set"));
         }
 
@@ -7346,19 +7408,10 @@ class DaleOfMerchants extends DaleTableBasic
         $stack_index = $this->cards->getNextStackIndex($player_id);
         $this->incStat(1, "actions_build", $player_id);
 
-        //Get information about the stack cards from discard (CT_NOSTALGICITEM)
+        //Get information about the stack cards from discard
         $stack_cards_from_discard = null;
-        $nbr_from_discard = count($stack_card_ids_from_discard);
-        if ($nbr_from_discard > 0) {
+        if (count($stack_card_ids_from_discard) > 0) {
             $stack_cards_from_discard = $this->cards->removeCardsFromPile($stack_card_ids_from_discard, DISCARD.$player_id);
-            $nbr_nostalgic_item = $this->countTypeId($stack_cards, CT_NOSTALGICITEM);
-            if ($nbr_nostalgic_item > 0) {
-                //you need at least 1 nostalgic item in hand to start counting nostalgic items from discard
-                $nbr_nostalgic_item += $this->countTypeId($stack_cards_from_discard, CT_NOSTALGICITEM);
-            }
-            if ($nbr_from_discard > $nbr_nostalgic_item) {
-                throw new BgaUserException($this->_("You cannot include cards from your discard pile."));
-            }
         }
 
         //Apply CT_STOVE

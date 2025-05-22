@@ -2187,6 +2187,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                         }
                     }
                     return false;
+                case 'clickOvertime':
+                    return card.effective_type_id == DaleCard_1.DaleCard.CT_OVERTIME;
                 case 'single':
                     return true;
                 case 'singleAnimalfolk':
@@ -2223,6 +2225,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickOnTurnStart':
                     return true;
                 case 'clickOnTrigger':
+                    return true;
+                case 'clickOvertime':
                     return true;
                 default:
                     return false;
@@ -4862,6 +4866,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.selectLeftPlaceholder();
+                    this.mySchedule.setSelectionMode('clickOvertime');
                     this.onBuildSelectionChanged();
                     break;
                 case 'client_inventory':
@@ -5417,6 +5422,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
+                    this.mySchedule.setSelectionMode('none');
                     break;
                 case 'client_inventory':
                     this.market.setSelectionMode(0);
@@ -7608,6 +7614,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.onTriggerTechnique(card_id);
                     }
                     break;
+                case 'client_build':
+                    if (card.effective_type_id == DaleCard_10.DaleCard.CT_OVERTIME) {
+                        this.myDiscard.openPopin();
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.onTriggerTechnique = function (card_id) {
@@ -8670,6 +8681,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("onBuildSelectionChanged");
             var card_ids = this.myHand.orderedSelection.get();
             var count_nostalgic_items = 0;
+            if (this.mySchedule.countTypeId(DaleCard_10.DaleCard.CT_OVERTIME) > 0) {
+                count_nostalgic_items = 999;
+            }
             for (var _i = 0, card_ids_4 = card_ids; _i < card_ids_4.length; _i++) {
                 var card_id = card_ids_4[_i];
                 var card_6 = new DaleCard_10.DaleCard(card_id);

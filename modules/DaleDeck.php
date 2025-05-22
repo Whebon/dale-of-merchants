@@ -108,16 +108,16 @@ class DaleDeck extends Deck {
      * Objects B and C are now expected to be moved away from the pile by another function
      */
     function removeCardsFromPile(array $card_ids, string $location): array {
-        $cards = $this->getCardsFromLocation($card_ids, $location);
         foreach ($card_ids as $card_id) {
             $this->removeCardFromPile($card_id, $location);
         }
+        $cards = $this->getCardsFromLocation($card_ids, $location);
         return $cards;
     }
 
     /**
      * Get cards from a specific "pile" location where cards are ordered. Decrements the indices of cards on the right by 1
-     * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
+     * IMPORTANT: the card still exists in the table should be moved to a different location by another function.
      * @param mixed $card_id card id to get
      * @param string $location location to remove the card from
      * @return array dbcard
@@ -128,7 +128,7 @@ class DaleDeck extends Deck {
         $sql = "UPDATE ".$this->table." ";
         $sql .= "SET card_location_arg=card_location_arg-1 ";
         $sql .= "WHERE card_location='".addslashes( $location )."' ";
-        $sql .= "AND card_location_arg>=".$location_arg;
+        $sql .= "AND card_location_arg>".$location_arg;
         self::DbQuery( $sql );
         return $card;
     }
