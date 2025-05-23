@@ -3936,7 +3936,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     //build with a regular card
                     $transition = $this->build($stack_index, $dbcards, null, DECK);
-                    $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
+                    $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD, TRIGGER_ONPREBUILD);
                 }
                 catch(BgaUserException $e) {
                     //building failed: ditch the card instead
