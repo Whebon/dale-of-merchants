@@ -10823,9 +10823,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var playerDeck = this.playerDecks[notif.args.player_id];
             var dbcard = notif.args.card;
             var card = DaleCard_10.DaleCard.of(dbcard);
-            playerDeck.pop();
             if (card.isAnimalfolk()) {
+                playerDeck.pop();
                 this.marketDiscard.push(card, playerDeck.placeholderHTML);
+            }
+            else {
+                playerDeck.pop('overall_player_board_' + notif.args.player_id);
             }
         };
         DaleOfMerchants.prototype.notif_ditchFromMarketDeck = function (notif) {

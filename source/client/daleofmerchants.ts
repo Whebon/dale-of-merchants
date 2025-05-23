@@ -7257,11 +7257,14 @@ class DaleOfMerchants extends Gamegui
 		const playerDeck = this.playerDecks[notif.args.player_id]!;
 		const dbcard = notif.args.card;
 		const card = DaleCard.of(dbcard);
-		playerDeck.pop(); //pop a cardback
 		if (card.isAnimalfolk()) {
+			playerDeck.pop(); //pop a cardback
 			this.marketDiscard.push(card, playerDeck.placeholderHTML);
 		}
-		//TODO: animate ditching non-animalfolk cards
+		else {
+			//TODO: better animation for ditching non-animalfolk cards
+			playerDeck.pop('overall_player_board_'+notif.args.player_id);
+		}
 	}
 
 	notif_ditchFromMarketDeck(notif: NotifAs<'ditchFromMarketDeck'>) {
