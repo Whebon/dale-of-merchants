@@ -1296,9 +1296,27 @@ class DaleOfMerchants extends DaleTableBasic
      * @return int number of occurrences
      */
     function countTypeId(array $dbcards, int $card_type): int {
+        if ($card_type == CT_JUNK) {
+            throw new BgaVisibleSystemException("Server error: 'countTypeId' for CT_JUNK is discouraged, use 'countJunk' instead");
+        }
         $count = 0;
         foreach ($dbcards as $dbcard) {
             if ($this->getTypeId($dbcard) == $card_type) {
+                $count += 1;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * Counts the number of effective junk cards (i.e. after copying effects, the card is CT_JUNK, CT_JUNK2, CT_JUNK3, CT_JUNK4 or CT_JUNK5)
+     * @param array $dbcards array of dbcards to scan
+     * @return int number of occurrences
+     */
+    function countJunk(array $dbcards) {
+        $count = 0;
+        foreach ($dbcards as $dbcard) {
+            if ($this->isEffectiveJunk($dbcard)) {
                 $count += 1;
             }
         }
@@ -2565,12 +2583,12 @@ class DaleOfMerchants extends DaleTableBasic
         $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
 
         //Apply CT_STASHINGVENDOR and CT_WARMEMBRACE
-        $nbr_junk = $this->countTypeId($cards_from_hand, CT_JUNK);
+        $nbr_junk = $this->countJunk($cards_from_hand);
         if ($this->containsTypeId($cards, CT_STASHINGVENDOR)) {
             $max_nbr_junk = INF;
         }
         else {
-            $max_nbr_junk = $this->countTypeId($this->cards->getCardsInLocation(STALL.$player_id), 999); //TODO: CT_WARMEMBRACE
+            $max_nbr_junk = $this->countTypeId($this->cards->getCardsInLocation(STALL.$player_id), CT_WARMEMBRACE);
         }
 
         if ($cards_from_discard) {
@@ -2616,7 +2634,7 @@ class DaleOfMerchants extends DaleTableBasic
             }
             if (count($cards_from_discard) > $nbr_nostalgic_item) {
                 if ($overtime) {
-                    if ($this->countTypeId($cards_from_discard, CT_JUNK)) {
+                    if ($this->countJunk($cards_from_discard)) {
                         throw new BgaUserException($this->_("Overtime: Junk cards from discard cannot be included in a stack"));
                     }
                     else {
