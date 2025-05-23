@@ -4135,6 +4135,15 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take a card from the market");
                     case 'client_bonsai':
                         return _("${card_name}: ${you} must discard 2 junk cards");
+                    case 'client_generationChange':
+                        switch (this._args.nbr) {
+                            case 0:
+                                return _("${card_name}: Are you sure you want to place 2 junk cards on your deck?");
+                            case 1:
+                                return _("${card_name}: ${you} must take 1 card from your discard");
+                            default:
+                                return _("${card_name}: ${you} must take 2 cards from your discard");
+                        }
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5424,6 +5433,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
                     this.myDeck.openPopin();
                     break;
+                case 'client_generationChange':
+                    if (this.myDiscard.size > 0) {
+                        this.myDiscard.setSelectionMode('multiple', 'hand', 'daleofmerchants-wrap-technique', 2);
+                        this.myDiscard.openPopin();
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5872,6 +5887,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'rake':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
+                    break;
+                case 'client_generationChange':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -6568,6 +6586,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'rake':
                     this.addActionButton("confirm-button", _("Confirm all"), "onRake");
                     break;
+                case 'client_generationChange':
+                    this.addActionButton("confirm-button", _("Confirm"), "onGenerationChange");
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -6755,6 +6777,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     new DaleCard_10.DaleCard(chameleon_card_id).unbindChameleonLocal();
                 }
             }
+        };
+        DaleOfMerchants.prototype.sortCardsByLocationArg = function (cards, ascending) {
+            var dbcards_sorted = [];
+            for (var i in cards) {
+                dbcards_sorted.push(cards[i]);
+            }
+            if (ascending) {
+                dbcards_sorted.sort(function (dbcard1, dbcard2) { return (+dbcard1.location_arg) - (+dbcard2.location_arg); });
+            }
+            else {
+                dbcards_sorted.sort(function (dbcard1, dbcard2) { return (+dbcard2.location_arg) - (+dbcard1.location_arg); });
+            }
+            return dbcards_sorted;
         };
         DaleOfMerchants.prototype.setPassiveSelected = function (passive_card_id, enable) {
             var div = DaleCard_10.DaleCard.divs.get(+passive_card_id);
@@ -8633,6 +8668,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             throw new Error("Serenade played with an invalid clock");
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_GENERATIONCHANGE:
+                    this.clientScheduleTechnique('client_generationChange', card.id, {
+                        nbr: Math.min(2, this.myDiscard.size)
+                    });
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -10000,6 +10040,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 discard_card_ids: this.arrayToNumberList(discard_card_ids)
             });
         };
+        DaleOfMerchants.prototype.onGenerationChange = function () {
+            var card_ids = this.myDiscard.orderedSelection.get();
+            var nbr = Math.min(2, this.myDiscard.size);
+            if (card_ids.length != nbr) {
+                this.showMessage(_("Please select exactly ") + nbr + _(" card(s) from your discard"), "error");
+                this.myDiscard.openPopin();
+                return;
+            }
+            this.playTechniqueCard({
+                card_ids: card_ids
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -10255,8 +10307,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _a;
             console.warn("notif_buildStack");
             var stall = this.playerStalls[notif.args.player_id];
-            for (var i in notif.args.cards) {
-                var dbcard = notif.args.cards[i];
+            var dbcards_desc = this.sortCardsByLocationArg(notif.args.cards, false);
+            for (var _i = 0, dbcards_desc_1 = dbcards_desc; _i < dbcards_desc_1.length; _i++) {
+                var dbcard = dbcards_desc_1[_i];
                 var card = DaleCard_10.DaleCard.of(dbcard);
                 switch (notif.args.from) {
                     case 'hand':
@@ -10292,7 +10345,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var index = +dbcard.location_arg - 1;
                         stall.insertCard(card, notif.args.stack_index, undefined, discard.placeholderHTML);
                         console.warn("index = " + index);
-                        discard.removeAt(index);
+                        var foundCard = discard.removeAt(index);
+                        if (foundCard.id != card.id) {
+                            throw new Error("buildStack: discarded card ".concat(card.id, " was not found at its expected index"));
+                        }
                         break;
                     case 'deck':
                         var deck = this.marketDeck;
@@ -10454,9 +10510,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_obtainNewJunkOnDeck = function (notif) {
             var _a;
             var from_player_id = (_a = notif.args.from_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
+            var delay = 0;
             for (var i in notif.args.cards) {
                 var card = notif.args.cards[i];
-                this.overallPlayerBoardToPile(card, from_player_id, this.playerDecks[notif.args.player_id]);
+                this.overallPlayerBoardToPile(card, from_player_id, this.playerDecks[notif.args.player_id], delay);
+                delay += 75;
             }
         };
         DaleOfMerchants.prototype.notif_instant_ditch = function (notif) {
@@ -10588,13 +10646,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("notif_discardToHandMultiple");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
-            var dbcards_desc = [];
-            for (var i in notif.args.cards) {
-                dbcards_desc.push(notif.args.cards[i]);
-            }
-            dbcards_desc.sort(function (dbcard1, dbcard2) { return (+dbcard2.location_arg) - (+dbcard1.location_arg); });
-            for (var _i = 0, dbcards_desc_1 = dbcards_desc; _i < dbcards_desc_1.length; _i++) {
-                var card = dbcards_desc_1[_i];
+            var dbcards_desc = this.sortCardsByLocationArg(notif.args.cards, false);
+            for (var _i = 0, dbcards_desc_2 = dbcards_desc; _i < dbcards_desc_2.length; _i++) {
+                var card = dbcards_desc_2[_i];
                 this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
             }
             if (stock === this.myHand) {

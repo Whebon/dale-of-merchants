@@ -274,6 +274,15 @@ export class MainClientState {
                 return _("${card_name}: ${you} must take a card from the market");
             case 'client_bonsai':
                 return _("${card_name}: ${you} must discard 2 junk cards");
+            case 'client_generationChange':
+                switch ((this._args as ClientGameStates['client_generationChange']).nbr) {
+                    case 0:
+                        return _("${card_name}: Are you sure you want to place 2 junk cards on your deck?");
+                    case 1:
+                        return _("${card_name}: ${you} must take 1 card from your discard");
+                    default:
+                        return _("${card_name}: ${you} must take 2 cards from your discard");
+                }
         }
         return "MISSING DESCRIPTION";
     }

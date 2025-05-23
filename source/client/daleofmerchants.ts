@@ -1095,6 +1095,12 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
 				this.myDeck.openPopin();
 				break;
+			case 'client_generationChange':
+				if (this.myDiscard.size > 0) {
+					this.myDiscard.setSelectionMode('multiple', 'hand', 'daleofmerchants-wrap-technique', 2);
+					this.myDiscard.openPopin();
+				}
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1541,6 +1547,9 @@ class DaleOfMerchants extends Gamegui
 			case 'rake':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
+				break;
+			case 'client_generationChange':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2248,6 +2257,10 @@ class DaleOfMerchants extends Gamegui
 			case 'rake':
 				this.addActionButton("confirm-button", _("Confirm all"), "onRake");
 				break;
+			case 'client_generationChange':
+				this.addActionButton("confirm-button", _("Confirm"), "onGenerationChange");
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -2470,6 +2483,25 @@ class DaleOfMerchants extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Utility methods
+
+	/**
+	 * Sorts an unordered object of dbcards by their "location_arg"
+	 * @param cards unsorted object of dbcards
+	 * @param ascending indicates if the order should be ascending (`true`) or descending (`false`)
+	 */
+	public sortCardsByLocationArg(cards: {[card_id: number]: DbCard}, ascending: boolean): DbCard[] {
+		let dbcards_sorted: DbCard[] = [];
+		for (let i in cards) {
+			dbcards_sorted.push(cards[i]!);
+		}
+		if (ascending) {
+			dbcards_sorted.sort((dbcard1, dbcard2) => (+dbcard1.location_arg) - (+dbcard2.location_arg));
+		}
+		else {
+			dbcards_sorted.sort((dbcard1, dbcard2) => (+dbcard2.location_arg) - (+dbcard1.location_arg));
+		}
+		return dbcards_sorted;
+	}
 
 	/*
 		Here, you can defines some utility methods that you can use everywhere in your typescript
@@ -4655,6 +4687,11 @@ class DaleOfMerchants extends Gamegui
 						throw new Error("Serenade played with an invalid clock");
 				}
 				break;
+			case DaleCard.CT_GENERATIONCHANGE:
+				this.clientScheduleTechnique('client_generationChange', card.id, { 
+					nbr: Math.min(2, this.myDiscard.size)
+				});
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -6243,6 +6280,19 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
+	onGenerationChange() {
+		const card_ids = this.myDiscard.orderedSelection.get();
+		const nbr = Math.min(2, this.myDiscard.size);
+		if (card_ids.length != nbr) {
+			this.showMessage(_("Please select exactly ")+nbr+_(" card(s) from your discard"), "error");
+			this.myDiscard.openPopin();
+			return;
+		}
+		this.playTechniqueCard<'client_generationChange'>({
+			card_ids: card_ids
+		});
+	}
+
 	//(~on)
 
 
@@ -6570,8 +6620,8 @@ class DaleOfMerchants extends Gamegui
 	notif_buildStack(notif: NotifAs<'buildStack'>) {
 		console.warn("notif_buildStack");
 		const stall = this.playerStalls[notif.args.player_id]!;
-		for (let i in notif.args.cards) {
-			const dbcard = notif.args.cards[i]!
+		const dbcards_desc = this.sortCardsByLocationArg(notif.args.cards, false);
+		for (let dbcard of dbcards_desc) {
 			const card = DaleCard.of(dbcard);
 			switch(notif.args.from){
 				case 'hand':
@@ -6607,7 +6657,12 @@ class DaleOfMerchants extends Gamegui
 					const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed
 					stall.insertCard(card, notif.args.stack_index, undefined, discard.placeholderHTML)
 					console.warn("index = "+index);
-					discard.removeAt(index); 
+					const foundCard = discard.removeAt(index);
+					if (foundCard.id != card.id) {
+						//IMPORTANT: we remove cards from the discard from top to bottom: [(BottomCard, 1), (TopCard, 2)] -> [(BottomCard, 1)] -> []
+						//if this causes issues, it might be time to refactor "removeAt(index)" to "remove(card)"
+						throw new Error(`buildStack: discarded card ${card.id} was not found at its expected index`);
+					}
 					break;
 				case 'deck':
 					const deck = this.marketDeck;
@@ -6799,9 +6854,11 @@ class DaleOfMerchants extends Gamegui
 	
 	notif_obtainNewJunkOnDeck(notif: NotifAs<'obtainNewJunkOnDeck'>) {
 		const from_player_id = notif.args.from_player_id ?? notif.args.player_id;
+		let delay = 0;
 		for (let i in notif.args.cards) {
 			const card = notif.args.cards[i]!;
-			this.overallPlayerBoardToPile(card, from_player_id, this.playerDecks[notif.args.player_id]!);
+			this.overallPlayerBoardToPile(card, from_player_id, this.playerDecks[notif.args.player_id]!, delay);
+			delay += 75;
 		}
 	}
 
@@ -6948,11 +7005,7 @@ class DaleOfMerchants extends Gamegui
 		console.warn("notif_discardToHandMultiple");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
-		let dbcards_desc = []; //we remove from top to bottom: [(BottomCard, 1), (TopCard, 2)] -> [(BottomCard, 1)] -> []
-		for (let i in notif.args.cards) {
-			dbcards_desc.push(notif.args.cards[i]!);
-		}
-		dbcards_desc.sort((dbcard1, dbcard2) => (+dbcard2.location_arg) - (+dbcard1.location_arg));
+		const dbcards_desc = this.sortCardsByLocationArg(notif.args.cards, false); //we remove from top to bottom: [(BottomCard, 1), (TopCard, 2)] -> [(BottomCard, 1)] -> []
 		for (let card of dbcards_desc) {
 			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
 		}

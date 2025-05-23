@@ -873,6 +873,38 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Place multiple cards from a discard pile into a player's hand
+     * @param string $msg_per_card this message will be displayed per retrieved card, and must contain "card_name"
+     * @param int $player_id the player that will receive the card in hand
+     * @param array $card_ids the card to retrieve from $discard_id
+     * @param bool $to_limbo (optional) default false. If true, move the cards to limbo
+     * @param ?int $discard_id (optional) default $player_id
+     * @param array $msg_args (optional)
+     */
+    function discardToHandMultiple(string $msg_per_card, int $player_id, array $card_ids, bool $to_limbo = false, ?int $discard_id = null, array $msg_args = array()) {
+        if ($discard_id === null) {
+            $discard_id = $player_id;
+        }
+        $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$discard_id);
+        $this->cards->moveCards($card_ids, HAND.$player_id);
+        foreach ($dbcards as $dbcard) {
+            $this->notifyAllPlayers('message', $msg_per_card, array_merge(array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "opponent_name" => $this->getPlayerNameById($discard_id),
+                "card_name" => $this->getCardName($dbcard)
+            ), $msg_args));
+        }
+        $this->notifyAllPlayers('discardToHandMultiple', '', array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "nbr" => count($dbcards),
+            "cards" => $dbcards,
+            "discard_id" => $discard_id,
+            "to_limbo" => $to_limbo
+        ));
+    }
+
+    /**
      * Discard multiple cards for a player in the given order
      * @param string $msg notification message for all players
      * @param int $player_id player that will discard the cards from hand
@@ -5345,6 +5377,29 @@ class DaleOfMerchants extends DaleTableBasic
                         true
                     );
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_GENERATIONCHANGE:
+                $card_ids = $args["card_ids"];
+                $nbr = min(2, $this->cards->countCardInLocation(DISCARD.$player_id));
+                if (count($card_ids) != $nbr) {
+                    throw new BgaUserException($this->_("Please select exactly ").$nbr.$this->_(" cards"));
+                }
+                //take 2 cards the discard pile to your hand (show 1 message per card)
+                $this->discardToHandMultiple(
+                    clienttranslate('Generation Change: ${player_name} takes a ${card_name} from their discard to their hand'),
+                    $player_id,
+                    $card_ids
+                );
+                //place 2 junk on top of the deck
+                $junk_cards = $this->cards->getJunk(2);
+                $this->cards->moveCardsOnTop($this->toCardIds($junk_cards), DECK.$player_id);
+                $this->notifyAllPlayers('obtainNewJunkOnDeck', clienttranslate('Generation Change: ${player_name} places 2 junk cards on their deck'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "player_id" => $player_id,
+                    "cards" => $junk_cards,
+                    "nbr" => 2,
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
