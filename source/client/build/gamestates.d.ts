@@ -233,6 +233,7 @@ interface GameStates {
 			'trAnotherFineMess': 97,
 			'trCoffeeGrinder': 101,
 			'trBouquets': 102,
+			'trRake': 103,
 		},
 	},
 	31: {
@@ -1268,6 +1269,27 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	103: {
+		'name': 'rake',
+		'description': '${resolving_card_name}: ${actplayer} may ditch 0-1 cards and discard 0-2 cards from their deck',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may ditch (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContentAndResolvingCardName',
+		'possibleactions': {
+			'actRake': [{
+				'name': 'ditch_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'discard_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

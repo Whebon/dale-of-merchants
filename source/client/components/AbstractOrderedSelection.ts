@@ -274,8 +274,9 @@ export abstract class AbstractOrderedSelection {
      * Shift selection icons to ensure the icons remain adjacent. Should be called when the user removes an item from the selection.
      */
     public updateIcons(secondary?: boolean) {
-        const card_ids = secondary ? this.secondary_card_ids : this.card_ids
-        if (this.iconType) {
+        const card_ids = secondary ? this.secondary_card_ids : this.card_ids;
+        const iconType = secondary ? this.secondaryIconType : this.iconType;
+        if (iconType) {
             for (let i = 0; i < card_ids.length; i++) {
                 const card_id = card_ids[i]!;
                 this.removeIcon(card_id, secondary);

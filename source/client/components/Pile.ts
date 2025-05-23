@@ -20,10 +20,11 @@ declare function $(text: string | Element): HTMLElement;
  * 'multipleFromTopWithGaps':   multiple cards (up to the selectionMax) can be selected from the popin, up to 'selectionMax' cards deep
  * 'multipleFromTopNoGaps':     multiple cards (up to the selectionMax) can be selected from the popin, but they must be adjacent and the top card must be included
  * 'multipleProgrammatic':      multiple cards can be selected programmatically, but NOT by the player
+ * 'multiplePrimarySecondary':  multiple cards in both the primary and secondary selection
  * 'top':                       content popin can cannot be viewed, and only the top card of the pile can be selected.
  * 'topIncludingEmpty':         content popin can cannot be viewed, and only the top card (or the empty pile) can be selected.
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'top' | 'topIncludingEmpty';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'multiplePrimarySecondary' | 'top' | 'topIncludingEmpty';
 
 /**
  * A component to display a set of cards in a pile.
@@ -121,15 +122,17 @@ export class Pile implements DaleLocation {
      */
     protected updateHTML() {
         let topCard = this.peek(true);
-        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps' || this.selectionMode == 'multipleProgrammatic') && this.orderedSelection.getMaxSize() > 0) {
-            if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+        if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps' || this.selectionMode == 'multipleProgrammatic' || this.selectionMode == 'multiplePrimarySecondary') && this.orderedSelection.getMaxSize() > 0) {
+            const selectionSize = this.orderedSelection.getSize() + this.orderedSelection.getSize(true);
+            const selectionMaxSize = this.orderedSelection.getMaxSize() + this.orderedSelection.getMaxSize(true);
+            if (selectionSize < selectionMaxSize) {
                 this.containerHTML.classList.add("daleofmerchants-blinking");
             }
             else {
                 this.containerHTML.classList.remove("daleofmerchants-blinking");
             }
             this.selectedSizeHTML.classList.remove("daleofmerchants-hidden");
-            this.selectedSizeHTML.innerHTML = `(x ${this.orderedSelection.getSize()})`;
+            this.selectedSizeHTML.innerHTML = `(x ${selectionSize})`;
         }
         else {
             this.selectedSizeHTML.classList.add("daleofmerchants-hidden");
@@ -476,6 +479,7 @@ export class Pile implements DaleLocation {
         this.isPopinOpen = true;
         this.popin.show();
         this.orderedSelection.updateIcons();
+        this.orderedSelection.updateIcons(true);
     }
 
     /**
@@ -593,6 +597,32 @@ export class Pile implements DaleLocation {
                 }
                 this.updateHTML();
                 break;
+            case 'multiplePrimarySecondary':
+                if (this.orderedSelection.includes(card.id)) {
+                    if (this.orderedSelection.getSize(true) < this.orderedSelection.getMaxSize(true)) {
+                        //primary => secondary
+                        this.orderedSelection.unselectItem(card.id);
+                        this.orderedSelection.selectItem(card.id, true);
+                    }
+                    else {
+                        //primary => NONE
+                        this.orderedSelection.unselectItem(card.id);
+                    }
+                }
+                else if (this.orderedSelection.includes(card.id, true)) {
+                    //secondary => NONE 
+                    this.orderedSelection.unselectItem(card.id, true);
+                }
+                else if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+                    //NONE => primary
+                    this.orderedSelection.selectItem(card.id);
+                }
+                else {
+                    //NONE => secondary
+                    this.orderedSelection.selectItem(card.id, true);
+                }
+                this.updateHTML();
+                break;
         }
     }
 
@@ -668,13 +698,17 @@ export class Pile implements DaleLocation {
      * Set the selection mode for within the popin
      * @param mode see `SelectionIconType`
      * @param iconType
+     * @param wrapClass
      * @param max (optional) default 0.
+     * @param secondaryIconType (optional) default undefined
+     * @param secondaryMax (optional) default 0.
      * if selection mode is 'multiple', a maximum number of selected cards is enforced upon the selection
      */
-    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default', max: number = 0) {
+    public setSelectionMode(mode: SelectionMode, iconType?: SelectionIconType, wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default', max: number = 0, secondaryIconType?: SelectionIconType, secondaryMax = 0) {
         this.setWrapClass(wrapClass);
         this.orderedSelection.setMaxSize(max);
-        this.orderedSelection.setIconType(iconType);
+        this.orderedSelection.setMaxSize(secondaryMax, true);
+        this.orderedSelection.setIconType(iconType, secondaryIconType);
         this.selectionMode = mode;
         this.showMainTitleBarInPopin = false;
         switch (mode) {
@@ -685,6 +719,7 @@ export class Pile implements DaleLocation {
             case 'multipleFromTopWithGaps':
             case 'multipleFromTopNoGaps':
             case 'multipleProgrammatic':
+            case 'multiplePrimarySecondary':
                 this.showMainTitleBarInPopin = true;
                 if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                     this.containerHTML.classList.add("daleofmerchants-blinking");
@@ -732,6 +767,8 @@ export class Pile implements DaleLocation {
                     }
                 }
                 return false;
+            case 'multiplePrimarySecondary':
+                return true;
 			default:
                 return false;
 		}

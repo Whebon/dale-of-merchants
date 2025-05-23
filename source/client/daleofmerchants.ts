@@ -1085,6 +1085,16 @@ class DaleOfMerchants extends Gamegui
 			case 'client_bonsai':
 				this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
 				break;
+			case 'rake':
+				this.setMainTitle(this.format_dale_icons($('pagemaintitletext')!.innerHTML,
+					DaleIcons.getDitchIcon(),
+					DaleIcons.getBluePileIcon(0)
+				));
+				const raket_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(raket_args._private.cards.map(DaleCard.of));
+				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
+				this.myDeck.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1527,6 +1537,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_bonsai':
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'rake':
+				this.myDeck.hideContent();
+				this.myDeck.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2230,6 +2244,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_bonsai':
 				this.addActionButton("confirm-button", _("Confirm"), "onBonsai");
 				this.addActionButtonCancelClient();
+				break;
+			case 'rake':
+				this.addActionButton("confirm-button", _("Confirm all"), "onRake");
 				break;
 		}
 		//(~actionbuttons)
@@ -4171,6 +4188,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_MAGNET:
+			case DaleCard.CT_RAKE:
 			case DaleCard.CT_WHEELBARROW:
 			case DaleCard.CT_VIGILANCE:
 			case DaleCard.CT_SUPPLYDEPOT:
@@ -6166,6 +6184,62 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.playPassiveCard<'client_bonsai'>({
 			card_ids: card_ids
+		});
+	}
+
+	//safely remove this
+	// onRakeSkip() {
+	// 	const rake_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
+	// 	this.mainClientState.enterOnStack('client_rake', {
+	// 		ditch_card_id: -1,
+	// 		card_name: rake_args.resolving_card_name ?? "MISSING CARD NAME"
+	// 	});
+	// 	this.myDeck.openPopin();
+	// }
+
+	// onRakeUndo() {
+	// 	const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
+	// 	if (args.ditch_card_id != -1) {
+	// 		//undo the ditch
+	// 		if (new DaleCard(args.ditch_card_id).isAnimalfolk()) {
+	// 			const card = this.marketDiscard.pop();
+	// 			if (args.ditch_card_id != card.id) {
+	// 				throw new Error(`Expected card ${card.id} on top of the bin`);
+	// 			}
+	// 			this.myDeck.push(card, this.marketDiscard.placeholderHTML);
+	// 		}
+	// 		else {
+	// 			//warning: if specialty/trap cards exist, this come from somewhere else
+	// 			this.myDeck.pushHiddenCards(1);
+	// 		}
+	// 	}
+	// 	this.mainClientState.leave();
+	// }
+
+	// onRakeDiscard() {
+	// 	const args = (this.mainClientState.args as ClientGameStates['client_rake']);
+	// 	const discard_card_ids = this.myDeck.orderedSelection.get();
+	// 	this.bgaPerformAction('actRake', {
+	// 		ditch_card_id: args.ditch_card_id,
+	// 		discard_card_ids: this.arrayToNumberList(discard_card_ids)
+	// 	});
+	// 	this.mainClientState.leave();
+	// }
+
+	onRake() {
+		const ditch_card_ids = this.myDeck.orderedSelection.get();
+		const discard_card_ids = this.myDeck.orderedSelection.get(true);
+		if (ditch_card_ids.length > 1) {
+			this.showMessage(_("Please select at most 1 card to ditch"), "error");
+			return;
+		}
+		if (discard_card_ids.length > 2) {
+			this.showMessage(_("Please select at most 2 cards to ditch"), "error");
+			return;
+		}
+		this.bgaPerformAction('actRake', {
+			ditch_card_ids: this.arrayToNumberList(ditch_card_ids),
+			discard_card_ids: this.arrayToNumberList(discard_card_ids)
 		});
 	}
 

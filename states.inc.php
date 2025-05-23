@@ -174,6 +174,7 @@ $machinestates = array(
 			'trAnotherFineMess' => 97,
 			'trCoffeeGrinder' => 101,
 			'trBouquets' => 102,
+			'trRake' => 103,
 		),
 	),
 	31 => array(
@@ -789,6 +790,17 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Bouquets: ${you} must choose a card to place on their deck'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actBouquets'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	103 => array(
+		'name' => 'rake',
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may ditch 0-1 cards and discard 0-2 cards from their deck'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may ditch (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContentAndResolvingCardName',
+		'possibleactions' => ['actRake'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

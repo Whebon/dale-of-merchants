@@ -546,7 +546,8 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
         };
         AbstractOrderedSelection.prototype.updateIcons = function (secondary) {
             var card_ids = secondary ? this.secondary_card_ids : this.card_ids;
-            if (this.iconType) {
+            var iconType = secondary ? this.secondaryIconType : this.iconType;
+            if (iconType) {
                 for (var i = 0; i < card_ids.length; i++) {
                     var card_id = card_ids[i];
                     this.removeIcon(card_id, secondary);
@@ -2506,15 +2507,17 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.updateHTML = function () {
             var _a;
             var topCard = this.peek(true);
-            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps' || this.selectionMode == 'multipleProgrammatic') && this.orderedSelection.getMaxSize() > 0) {
-                if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+            if ((this.selectionMode == 'multiple' || this.selectionMode == 'multipleJunk' || this.selectionMode == 'multipleFromTopWithGaps' || this.selectionMode == 'multipleFromTopNoGaps' || this.selectionMode == 'multipleProgrammatic' || this.selectionMode == 'multiplePrimarySecondary') && this.orderedSelection.getMaxSize() > 0) {
+                var selectionSize = this.orderedSelection.getSize() + this.orderedSelection.getSize(true);
+                var selectionMaxSize = this.orderedSelection.getMaxSize() + this.orderedSelection.getMaxSize(true);
+                if (selectionSize < selectionMaxSize) {
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                 }
                 else {
                     this.containerHTML.classList.remove("daleofmerchants-blinking");
                 }
                 this.selectedSizeHTML.classList.remove("daleofmerchants-hidden");
-                this.selectedSizeHTML.innerHTML = "(x ".concat(this.orderedSelection.getSize(), ")");
+                this.selectedSizeHTML.innerHTML = "(x ".concat(selectionSize, ")");
             }
             else {
                 this.selectedSizeHTML.classList.add("daleofmerchants-hidden");
@@ -2787,6 +2790,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.isPopinOpen = true;
             this.popin.show();
             this.orderedSelection.updateIcons();
+            this.orderedSelection.updateIcons(true);
         };
         Pile.prototype.onClickTopCard = function () {
             switch (this.selectionMode) {
@@ -2885,6 +2889,27 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     }
                     this.updateHTML();
                     break;
+                case 'multiplePrimarySecondary':
+                    if (this.orderedSelection.includes(card.id)) {
+                        if (this.orderedSelection.getSize(true) < this.orderedSelection.getMaxSize(true)) {
+                            this.orderedSelection.unselectItem(card.id);
+                            this.orderedSelection.selectItem(card.id, true);
+                        }
+                        else {
+                            this.orderedSelection.unselectItem(card.id);
+                        }
+                    }
+                    else if (this.orderedSelection.includes(card.id, true)) {
+                        this.orderedSelection.unselectItem(card.id, true);
+                    }
+                    else if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
+                        this.orderedSelection.selectItem(card.id);
+                    }
+                    else {
+                        this.orderedSelection.selectItem(card.id, true);
+                    }
+                    this.updateHTML();
+                    break;
             }
         };
         Pile.prototype.unselectItem = function (card_id) {
@@ -2912,12 +2937,14 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this.wrapClass = wrapClass;
             }
         };
-        Pile.prototype.setSelectionMode = function (mode, iconType, wrapClass, max) {
+        Pile.prototype.setSelectionMode = function (mode, iconType, wrapClass, max, secondaryIconType, secondaryMax) {
             if (wrapClass === void 0) { wrapClass = 'daleofmerchants-wrap-default'; }
             if (max === void 0) { max = 0; }
+            if (secondaryMax === void 0) { secondaryMax = 0; }
             this.setWrapClass(wrapClass);
             this.orderedSelection.setMaxSize(max);
-            this.orderedSelection.setIconType(iconType);
+            this.orderedSelection.setMaxSize(secondaryMax, true);
+            this.orderedSelection.setIconType(iconType, secondaryIconType);
             this.selectionMode = mode;
             this.showMainTitleBarInPopin = false;
             switch (mode) {
@@ -2928,6 +2955,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 case 'multipleFromTopWithGaps':
                 case 'multipleFromTopNoGaps':
                 case 'multipleProgrammatic':
+                case 'multiplePrimarySecondary':
                     this.showMainTitleBarInPopin = true;
                     if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
                         this.containerHTML.classList.add("daleofmerchants-blinking");
@@ -2970,6 +2998,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                         }
                     }
                     return false;
+                case 'multiplePrimarySecondary':
+                    return true;
                 default:
                     return false;
             }
@@ -5387,6 +5417,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_bonsai':
                     this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
                     break;
+                case 'rake':
+                    this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_8.DaleIcons.getDitchIcon(), DaleIcons_8.DaleIcons.getBluePileIcon(0)));
+                    var raket_args = args.args;
+                    this.myDeck.setContent(raket_args._private.cards.map(DaleCard_10.DaleCard.of));
+                    this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
+                    this.myDeck.openPopin();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5831,6 +5868,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_bonsai':
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'rake':
+                    this.myDeck.hideContent();
+                    this.myDeck.setSelectionMode('none');
                     break;
             }
         };
@@ -6523,6 +6564,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_bonsai':
                     this.addActionButton("confirm-button", _("Confirm"), "onBonsai");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'rake':
+                    this.addActionButton("confirm-button", _("Confirm all"), "onRake");
                     break;
             }
         };
@@ -8122,6 +8166,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_MAGNET:
+                case DaleCard_10.DaleCard.CT_RAKE:
                 case DaleCard_10.DaleCard.CT_WHEELBARROW:
                 case DaleCard_10.DaleCard.CT_VIGILANCE:
                 case DaleCard_10.DaleCard.CT_SUPPLYDEPOT:
@@ -9937,6 +9982,22 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.playPassiveCard({
                 card_ids: card_ids
+            });
+        };
+        DaleOfMerchants.prototype.onRake = function () {
+            var ditch_card_ids = this.myDeck.orderedSelection.get();
+            var discard_card_ids = this.myDeck.orderedSelection.get(true);
+            if (ditch_card_ids.length > 1) {
+                this.showMessage(_("Please select at most 1 card to ditch"), "error");
+                return;
+            }
+            if (discard_card_ids.length > 2) {
+                this.showMessage(_("Please select at most 2 cards to ditch"), "error");
+                return;
+            }
+            this.bgaPerformAction('actRake', {
+                ditch_card_ids: this.arrayToNumberList(ditch_card_ids),
+                discard_card_ids: this.arrayToNumberList(discard_card_ids)
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

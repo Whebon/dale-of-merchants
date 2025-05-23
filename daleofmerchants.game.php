@@ -3450,6 +3450,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_MAGNET:
+                case CT_RAKE:
                 case CT_WHEELBARROW:
                 case CT_VIGILANCE:
                 case CT_SUPPLYDEPOT:
@@ -5282,6 +5283,11 @@ class DaleOfMerchants extends DaleTableBasic
                     "nbr" => 1,
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_RAKE:
+                $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 3);
+                $this->gamestate->nextState("trRake");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -7438,6 +7444,37 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actRake($ditch_card_ids, $discard_card_ids) {
+        $this->checkAction("actRake");
+        $player_id = $this->getActivePlayerId();
+        $ditch_card_ids = $this->numberListToArray($ditch_card_ids);
+        $discard_card_ids = $this->numberListToArray($discard_card_ids);
+        if (count($ditch_card_ids) > 1) {
+            throw new BgaUserException($this->_("Please select at most 1 card to ditch"));
+        }
+        if (count($discard_card_ids) > 2) {
+            throw new BgaUserException($this->_("Please select at most 2 card to discard"));
+        }
+
+        //ditch cards
+        foreach ($ditch_card_ids as $ditch_card_id) {
+            $this->ditchFromDeck(clienttranslate('Rake: ${player_name} ditches their ${card_name}'), $ditch_card_id);
+        }
+
+        //discard cards
+        foreach ($discard_card_ids as $discard_card_id) {
+            $dbcard = $this->cards->removeCardFromPile($discard_card_id, DECK.$player_id); //order matters
+            $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
+            $this->notifyAllPlayers('deckToDiscard', clienttranslate('Rake: ${player_name} discards their ${card_name}'), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "player_id" => $player_id,
+                "card" => $dbcard,
+                "card_name" => $this->getCardName($dbcard)
+            ));
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
 
     //(~acts)
 
@@ -7631,6 +7668,13 @@ class DaleOfMerchants extends DaleTableBasic
             'card_id' => $card_id,
             'card_name' => $this->getCardName($dbcard),
             'possible_values' => $this->getBaseEffectiveValues()
+        );
+    }
+
+    function argMyDeckContentAndResolvingCardName() {
+        return array_merge(
+            $this->argMyDeckContent(), 
+            $this->argResolvingCardName()
         );
     }
 
