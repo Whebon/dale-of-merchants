@@ -4942,8 +4942,7 @@ class DaleOfMerchants extends Gamegui
 		//check for snacks
 		const snack_cards = this.mySchedule.getAllDaleCards().filter(card=>card.effective_type_id == DaleCard.CT_SNACK);
 		if (snack_cards.length > 0) {
-			//TODO: let the player decide which snack to resolve first! (issue #135)
-			//this.mainClientState.enter('client_choose_first_snack', {});
+			//note: if the player wants to resolve snack_cards[1] instead, they should click on it in the schedule
 			this.clientTriggerTechnique('client_snack', snack_cards[0]!.id);
 			return;
 		}
