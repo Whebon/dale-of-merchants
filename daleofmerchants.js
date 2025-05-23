@@ -10086,10 +10086,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     _this.notifqueue.setIgnoreNotificationCheck(notif[0], function (notif) {
                         if (notif.type == "history_history") {
                             var isPublic_1 = notif.channelorig.includes('table');
-                            if (!isPublic_1) {
-                                notif.log = "• " + notif.log;
-                            }
-                            return isPublic_1;
+                            return !isPublic_1;
                         }
                         var args = notif.args;
                         var isPublic = args._private === undefined;

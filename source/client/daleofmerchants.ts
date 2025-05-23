@@ -6338,12 +6338,8 @@ class DaleOfMerchants extends Gamegui
 				const player_id = this.player_id;
 				this.notifqueue.setIgnoreNotificationCheck(notif[0], (notif) => {
 					if (notif.type == "history_history") {
-						const isPublic = notif.channelorig.includes('table');
-						if (!isPublic) {
-							//the ordering of public and private messages is incorrect
-							notif.log = "• " + notif.log; //TODO: see issue #130
-						}
-						return isPublic;
+						const isPublic = notif.channelorig.includes('table'); //TODO: see issue #130
+						return !isPublic; //for 1 private message, there is exactly 1 public message
 					}
 					//"_private" and "opponent_id" are lost args in "history_history" notifications
 					const args = notif.args as PrivateNotification;
