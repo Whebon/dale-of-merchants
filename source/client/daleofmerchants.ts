@@ -2648,7 +2648,7 @@ class DaleOfMerchants extends Gamegui
 	 * @param delay
 	*/
 	overallPlayerBoardToPile(card: DbCard, player_id: number, pile: Pile, delay: number = 0) {
-		pile.push(DaleCard.of(card), 'overall_player_board_'+player_id);
+		pile.push(DaleCard.of(card), 'overall_player_board_'+player_id, null, 500, delay);
 	}
 
 	/**
@@ -2665,7 +2665,7 @@ class DaleOfMerchants extends Gamegui
 			this.stockToPile(card, stock, pile, delay, ignore_card_not_found);
 		}
 		else {
-			this.overallPlayerBoardToPile(card, player_id, pile);
+			this.overallPlayerBoardToPile(card, player_id, pile, delay);
 		}
 	}
 
@@ -6317,6 +6317,7 @@ class DaleOfMerchants extends Gamegui
 			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
+			['startSlotMachine',					1],
 			['advanceClock',						1],
 			['updateActionButtons',					1],
 			['deselectPassive',						1],
@@ -7345,6 +7346,10 @@ class DaleOfMerchants extends Gamegui
 		if (parent) {
 			new DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
 		}
+	}
+
+	notif_startSlotMachine(notif: NotifAs<'startSlotMachine'>) {
+		this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Slot Machine"));
 	}
 
 	notif_advanceClock(notif: NotifAs<'advanceClock'>){

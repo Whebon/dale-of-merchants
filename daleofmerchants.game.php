@@ -5289,6 +5289,64 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->reshuffleDeckForSearch($player_id, 3);
                 $this->gamestate->nextState("trRake");
                 break;
+            case CT_SLOTMACHINE:
+                $discard_cards = array();
+                $this->notifyAllPlayers('startSlotMachine', '', array());
+                for ($i=0; $i<999; $i++) { //while(true) { //prevent an infinite loop
+                    $card = $this->cards->pickCardForLocation(DECK.$player_id, LIMBO.$player_id);
+                    if (!$card) {
+                        //stop drawing cards
+                        $this->notifyAllPlayers('message', clienttranslate('Slot Machine: ${player_name} ran out of cards to draw'), array(
+                            "player_name" => $this->getPlayerNameById($player_id)
+                        ));
+                        break;
+                    }
+                    else if ($this->isEffectiveJunk($card)) {
+                        //move junk to limbo
+                        $discard_cards[$card["id"]] = $card;
+                        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Slot Machine: ${player_name} draws a junk'), array(
+                            "player_id" => $player_id,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "nbr" => 1,
+                            "_private" => array(
+                                "card" => $card,
+                                "card_name" => $this->getCardName($card)
+                            ),
+                            "to_limbo" => true
+                        ));
+                    }
+                    else {
+                        //move non-junk to hand
+                        $this->cards->moveCard($card["id"], HAND.$player_id);
+                        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Slotmachine: ${player_name} draws a non-junk card'), array(
+                            "player_id" => $player_id,
+                            "player_name" => $this->getPlayerNameById($player_id),
+                            "nbr" => 1,
+                            "_private" => array(
+                                "card" => $card,
+                                "card_name" => $this->getCardName($card)
+                            ),
+                            "to_limbo" => false
+                        ), clienttranslate('Slotmachine: ${player_name} draws a ${card_name}'));
+                        break;
+                    }
+                }
+                //discard limbo cards
+                if (count($discard_cards) > 0) {
+                    $msg = count($discard_cards) == 1 ? 
+                            clienttranslate('Slotmachine: ${player_name} discards 1 junk card') :
+                            clienttranslate('Slotmachine: ${player_name} discards ${nbr} junk cards');
+                    $this->discardMultiple(
+                        $msg,
+                        $player_id,
+                        array(),
+                        array(),
+                        $discard_cards,
+                        true
+                    );
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

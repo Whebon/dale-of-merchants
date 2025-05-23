@@ -6873,7 +6873,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.overallPlayerBoardToPile = function (card, player_id, pile, delay) {
             if (delay === void 0) { delay = 0; }
-            pile.push(DaleCard_10.DaleCard.of(card), 'overall_player_board_' + player_id);
+            pile.push(DaleCard_10.DaleCard.of(card), 'overall_player_board_' + player_id, null, 500, delay);
         };
         DaleOfMerchants.prototype.playerStockToPile = function (card, stock, player_id, pile, delay, ignore_card_not_found) {
             if (delay === void 0) { delay = 0; }
@@ -6882,7 +6882,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.stockToPile(card, stock, pile, delay, ignore_card_not_found);
             }
             else {
-                this.overallPlayerBoardToPile(card, player_id, pile);
+                this.overallPlayerBoardToPile(card, player_id, pile, delay);
             }
         };
         DaleOfMerchants.prototype.playerStockRemove = function (card, stock, player_id, ignore_card_not_found) {
@@ -10065,6 +10065,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['discardToDiscard', 500],
                 ['rollDie', 1000],
                 ['avidFinancierTakeCoin', 500],
+                ['startSlotMachine', 1],
                 ['advanceClock', 1],
                 ['updateActionButtons', 1],
                 ['deselectPassive', 1],
@@ -10902,6 +10903,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (parent) {
                 new DaleDie_2.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
             }
+        };
+        DaleOfMerchants.prototype.notif_startSlotMachine = function (notif) {
+            this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Slot Machine"));
         };
         DaleOfMerchants.prototype.notif_advanceClock = function (notif) {
             var playerClock = this.playerClocks[+notif.args.player_id];
