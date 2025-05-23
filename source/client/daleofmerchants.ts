@@ -1082,6 +1082,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_windOfChange':
 				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
+			case 'client_bonsai':
+				this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1521,6 +1524,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_windOfChange':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_bonsai':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2219,6 +2225,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_snack':
 				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_bonsai':
+				this.addActionButton("confirm-button", _("Confirm"), "onBonsai");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -4723,6 +4733,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_DRAMATICROMANTIC:
 				this.mainClientState.enterOnStack('client_dramaticRomantic', {passive_card_id: card.id});
 				break;
+			case DaleCard.CT_BONSAI:
+				this.mainClientState.enterOnStack('client_bonsai', {passive_card_id: card.id});
+				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;
@@ -6143,6 +6156,17 @@ class DaleOfMerchants extends Gamegui
 
 	onWindOfChangeSkip() {
 		this.resolveTechniqueCard<'client_windOfChange'>({});
+	}
+
+	onBonsai() {
+		const card_ids = this.myHand.orderedSelection.get();
+		if (card_ids.length != 2) {
+			this.showMessage(_("Please select exactly 2 junk cards"), "error");
+			return;
+		}
+		this.playPassiveCard<'client_bonsai'>({
+			card_ids: card_ids
+		});
 	}
 
 	//(~on)

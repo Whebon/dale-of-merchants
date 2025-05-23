@@ -514,6 +514,7 @@ declare global {
 		'client_spinningWheel': { card_ids: number[] }
 		'client_stove': {} //choice sent as build args
 		'client_dramaticRomantic': { forward: boolean }
+		'client_bonsai': { card_ids: number[] }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
@@ -578,7 +579,6 @@ declare global {
 		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
 		'client_badOmen': { ditch_card_id: number, card_name: string }
 		'client_selectingContracts': {technique_card_id: number, nbr: number }
-		'client_choose_first_snack': {}
 	}
 
 	//

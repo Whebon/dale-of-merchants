@@ -2206,6 +2206,8 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return true;
                 case 'multiple3':
                     return true;
+                case 'multipleJunk':
+                    return card.isEffectiveJunk();
                 case 'multipleExceptSecondary':
                     return !this.orderedSelection.includes(card_id, true);
                 case 'essentialPurchase':
@@ -4101,6 +4103,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may ditch a card from your discard");
                     case 'client_snack':
                         return _("${card_name}: ${you} must take a card from the market");
+                    case 'client_bonsai':
+                        return _("${card_name}: ${you} must discard 2 junk cards");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5380,6 +5384,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_windOfChange':
                     this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
+                case 'client_bonsai':
+                    this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -5821,6 +5828,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_windOfChange':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'client_bonsai':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -6508,6 +6518,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_snack':
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_bonsai':
+                    this.addActionButton("confirm-button", _("Confirm"), "onBonsai");
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -8666,6 +8680,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_DRAMATICROMANTIC:
                     this.mainClientState.enterOnStack('client_dramaticRomantic', { passive_card_id: card.id });
                     break;
+                case DaleCard_10.DaleCard.CT_BONSAI:
+                    this.mainClientState.enterOnStack('client_bonsai', { passive_card_id: card.id });
+                    break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
                     break;
@@ -9911,6 +9928,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onWindOfChangeSkip = function () {
             this.resolveTechniqueCard({});
+        };
+        DaleOfMerchants.prototype.onBonsai = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            if (card_ids.length != 2) {
+                this.showMessage(_("Please select exactly 2 junk cards"), "error");
+                return;
+            }
+            this.playPassiveCard({
+                card_ids: card_ids
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

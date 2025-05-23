@@ -30,12 +30,13 @@ import { DaleTrigger } from './types/DaleTrigger';
  * 'multiple':             		multiple cards can be selected
  * 'multiple2':					multiple cards can be selected, but no more than 2
  * 'multiple3':					multiple cards can be selected, but no more than 3
+ * 'multipleJunk':				multiple junk cards can be selected
  * 'multipleExceptSecondary'	multiple cards can be selected, except the cards that are already selected in the secondary selection
  * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'						only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -392,6 +393,8 @@ export class DaleStock extends Stock implements DaleLocation {
 				return true;
 			case 'multiple3':
 				return true;
+			case 'multipleJunk':
+				return card.isEffectiveJunk();
 			case 'multipleExceptSecondary':
 				return !this.orderedSelection.includes(card_id, true);
 			case 'essentialPurchase':

@@ -272,6 +272,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may ditch a card from your discard");
             case 'client_snack':
                 return _("${card_name}: ${you} must take a card from the market");
+            case 'client_bonsai':
+                return _("${card_name}: ${you} must discard 2 junk cards");
         }
         return "MISSING DESCRIPTION";
     }

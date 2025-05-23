@@ -1437,6 +1437,14 @@ class DaleOfMerchants extends DaleTableBasic
         return ($type_id >= 1) && ($type_id <= 5);
     }
 
+    /**
+     * Returns true iff if the card is currently considered a junk card (could be a chameleon)
+     */
+    function isEffectiveJunk(array $dbcard): bool {
+        $type_id = $this->getTypeId($dbcard);
+        return ($type_id >= 1) && ($type_id <= 5);
+    }
+
         
     /**
      * Returns true iff the original card is an animalfolk card
@@ -4651,15 +4659,15 @@ class DaleOfMerchants extends DaleTableBasic
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Periscope cannot target the active player");
                 }
-                $named_animalfolk_id = intval($args['animalfolk_id']);
-                $named_value = intval($args['value']);
+                $named_animalfolk_id = intval($args["animalfolk_id"]);
+                $named_value = intval($args["value"]);
                 $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${animalfolk_name} ${value}"'), array(
                     "animalfolk_name" => $this->getAnimalfolkDisplayedName($named_animalfolk_id),
                     "value" => $named_value,
                     "player_name" => $this->getPlayerNameById($player_id)
                 ));
                 //TODO: safely remove this
-                // $card_name = trim($args['card_name'], '"');
+                // $card_name = trim($args["card_name"], '"');
                 // $type_id = $this->nameToTypeId($card_name);
                 // $players = $this->loadPlayersBasicInfos();
                 // $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${card_name}"'), array(
@@ -5777,16 +5785,36 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_DRAMATICROMANTIC:
-                if (!isset($args['forward'])) {
+                if (!isset($args["forward"])) {
                     throw new BgaUserException("Expected args['forward'] to be set by the client");
                 }
-                if ($args['forward']) {
+                if ($args["forward"]) {
                     $this->advanceClock($player_id, 1, clienttranslate('Dramatic Romantic: ${player_name} moves their clock forwards to ${clock}'));
                 }
                 else {
                     $this->advanceClock($player_id, -1, clienttranslate('Dramatic Romantic: ${player_name} moves their clock backwards to ${clock}'));
                 }
                 $this->effects->insertModification($passive_card_id, CT_DRAMATICROMANTIC);
+                break;
+            case CT_BONSAI:
+                $card_ids = $args["card_ids"];
+                if (count($card_ids) != 2) {
+                    throw new BgaUserException("Bonsai: please select exactly 2 cards");
+                }
+                $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+                foreach ($dbcards as $dbcard) {
+                    if (!$this->isEffectiveJunk($dbcard)) {
+                        throw new BgaUserException("Bonsai: please select junk cards only");
+                    }
+                }
+                $this->discardMultiple(
+                    clienttranslate('Bonsai: ${player_name} discards 2 junk cards'),
+                    $player_id, 
+                    $card_ids, 
+                    $dbcards
+                );
+                $this->draw(clienttranslate('Bonsai: ${player_name} draws ${nbr} cards'), 3);
+                $this->effects->insertModification($passive_card_id, CT_BONSAI);
                 break;
             default:
                 $name = $this->getCardName($passive_card);
@@ -7157,27 +7185,27 @@ class DaleOfMerchants extends DaleTableBasic
             $msg_args //important: has the power to override 'die_value1' and 'die_value2'
         );
 
-        if ($args['die_value1'] == DIE_DISCARD) {
+        if ($args["die_value1"] == DIE_DISCARD) {
             //Move from discard
             $dbcard = $this->cards->getCardOnTop(DISCARD.$source_id);
             if ($dbcard === null) {
                 $this->notifyAllPlayers('message', $message_empty_source, $args);
             }
-            else if ($args['die_value2'] == DIE_DISCARD2) {
+            else if ($args["die_value2"] == DIE_DISCARD2) {
                 $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$destination_id);
                 $this->notifyAllPlayers('discardToDiscard', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
                     "from_player_id" => $source_id,
                     "to_player_id" => $destination_id
                 )));
             }
-            else if ($args['die_value2'] == DIE_DECK2) {
+            else if ($args["die_value2"] == DIE_DECK2) {
                 $this->cards->moveCardOnTop($dbcard["id"], DECK.$destination_id);
                 $this->notifyAllPlayers('discardToDeck', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
                     "player_id" => $source_id,
                     "opponent_id" => $destination_id
                 )));
             }
-            else if ($args['die_value2'] == DIE_HAND2) {
+            else if ($args["die_value2"] == DIE_HAND2) {
                 $this->cards->moveCard($dbcard["id"], HAND.$destination_id);
                 $this->notifyAllPlayers('discardToHand', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
                     "discard_id" => $source_id,
@@ -7185,23 +7213,23 @@ class DaleOfMerchants extends DaleTableBasic
                 )));
             }
             else {
-                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args['die_value2']);
+                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args["die_value2"]);
             }
         }
-        else if ($args['die_value1'] == DIE_DECK) {
+        else if ($args["die_value1"] == DIE_DECK) {
             //Move from deck
             $dbcard = $this->cards->getCardOnTop(DECK.$source_id);
             if ($dbcard === null) {
                 $this->notifyAllPlayers('message', $message_empty_source, $args);
             }
-            else if ($args['die_value2'] == DIE_DISCARD2) {
+            else if ($args["die_value2"] == DIE_DISCARD2) {
                 $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$destination_id);
                 $this->notifyAllPlayers('deckToDiscard', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
                     "opponent_id" => $source_id,
                     "player_id" => $destination_id
                 )));
             }
-            else if ($args['die_value2'] == DIE_DECK2) {
+            else if ($args["die_value2"] == DIE_DECK2) {
                 $this->cards->moveCardOnTop($dbcard["id"], DECK.$destination_id);
                 $this->notifyAllPlayers('deckToDeck', $message_without_card_name, array_merge($args, array(
                     "from_player_id" => $source_id,
@@ -7210,7 +7238,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "card_name" => $this->getCardName($dbcard)
                 )));
             }
-            else if ($args['die_value2'] == DIE_HAND2) {
+            else if ($args["die_value2"] == DIE_HAND2) {
                 $this->cards->moveCard($dbcard["id"], HAND.$destination_id);
                 $this->notifyAllPlayersWithPrivateArguments('draw', $message_without_card_name, array_merge($args, $this->getPrivateCardArgs($dbcard), array(
                     "deck_player_id" => $source_id,
@@ -7218,10 +7246,10 @@ class DaleOfMerchants extends DaleTableBasic
                 )), $message);
             }
             else {
-                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args['die_value2']);
+                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args["die_value2"]);
             }
         }
-        else if ($args['die_value1'] == DIE_HAND) {
+        else if ($args["die_value1"] == DIE_HAND) {
             //Move from hand
             $dbcards = $this->cards->getCardsInLocation(HAND.$source_id);
             $dbcard = null;
@@ -7232,21 +7260,21 @@ class DaleOfMerchants extends DaleTableBasic
             if ($dbcard === null) {
                 $this->notifyAllPlayers('message', $message_empty_source, $args);
             }
-            else if ($args['die_value2'] == DIE_DISCARD2) {
+            else if ($args["die_value2"] == DIE_DISCARD2) {
                 $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$destination_id);
                 $this->notifyAllPlayers('discard', $message, array_merge($args, $this->getPublicCardArgs($dbcard), array(
                     "player_id" => $source_id,
                     "discard_id" => $destination_id
                 )));
             }
-            else if ($args['die_value2'] == DIE_DECK2) {
+            else if ($args["die_value2"] == DIE_DECK2) {
                 $this->cards->moveCardOnTop($dbcard["id"], DECK.$destination_id);
                 $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', $message_without_card_name, array_merge($args, $this->getPrivateCardArgs($dbcard), array(
                     "player_id" => $source_id,
                     "deck_player_id" => $destination_id
                 )), $message);
             }
-            else if ($args['die_value2'] == DIE_HAND2) {
+            else if ($args["die_value2"] == DIE_HAND2) {
                 $this->cards->moveCard($dbcard["id"], HAND.$destination_id);
                 $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', $message_without_card_name, array_merge($args, $this->getPrivateCardArgs($dbcard), array(
                     "opponent_id" => $source_id,
@@ -7254,11 +7282,11 @@ class DaleOfMerchants extends DaleTableBasic
                 )), $message);
             }
             else {
-                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args['die_value2']);
+                throw new BgaVisibleSystemException("Unexpected destination die roll: ".$args["die_value2"]);
             }
         }
         else {
-            throw new BgaVisibleSystemException("Unexpected source die roll: ".$args['die_value1']);
+            throw new BgaVisibleSystemException("Unexpected source die roll: ".$args["die_value1"]);
         }
         return $dbcard;
     }
