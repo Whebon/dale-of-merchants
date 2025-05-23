@@ -6192,6 +6192,7 @@ class DaleOfMerchants extends Gamegui
 			['opponentHandToPlayerHand', 			500, true],
 			['obtainNewJunkInHand', 				500],
 			['obtainNewJunkInDiscard',				500],
+			['obtainNewJunkOnDeck',					500],
 			['instant_ditch', 						1],
 			['ditch', 								500],
 			['ditchMultiple', 						500],
@@ -6698,6 +6699,14 @@ class DaleOfMerchants extends Gamegui
 		for (let i in notif.args.cards) {
 			const card = notif.args.cards[i]!;
 			this.overallPlayerBoardToPile(card, from_player_id, this.playerDiscards[notif.args.player_id]!);
+		}
+	}
+	
+	notif_obtainNewJunkOnDeck(notif: NotifAs<'obtainNewJunkOnDeck'>) {
+		const from_player_id = notif.args.from_player_id ?? notif.args.player_id;
+		for (let i in notif.args.cards) {
+			const card = notif.args.cards[i]!;
+			this.overallPlayerBoardToPile(card, from_player_id, this.playerDecks[notif.args.player_id]!);
 		}
 	}
 

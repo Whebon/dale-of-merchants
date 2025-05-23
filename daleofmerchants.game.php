@@ -5262,6 +5262,19 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_PRACTICE:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_PRISTINEOWNER:
+                $this->draw(clienttranslate('Pristine Owner: ${player_name} draws ${nbr} cards'), 2);
+                $junk_cards = $this->cards->getJunk();
+                $junk_id = key($junk_cards);
+                $this->cards->moveCardOnTop($junk_id, DECK.$player_id);
+                $this->notifyAllPlayers('obtainNewJunkOnDeck', clienttranslate('Pristine Owner: ${player_name} places a junk on their deck'), array(
+                    "player_name" => $this->getPlayerNameById($player_id),
+                    "player_id" => $player_id,
+                    "cards" => $junk_cards,
+                    "nbr" => 1,
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

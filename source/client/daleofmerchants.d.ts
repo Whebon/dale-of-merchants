@@ -349,6 +349,13 @@ declare global {
 			nbr: number
 			from_player_id?: number //by default, this is the same as player_id
 		}
+		'obtainNewJunkOnDeck': {
+			player_id: number
+			player_name: string
+			cards: {[card_id: number]: DbCard}
+			nbr: number
+			from_player_id?: number //by default, this is the same as player_id
+		}
 		'buildStack': {
 			player_id: number 
             player_name: string

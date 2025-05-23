@@ -9950,6 +9950,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['opponentHandToPlayerHand', 500, true],
                 ['obtainNewJunkInHand', 500],
                 ['obtainNewJunkInDiscard', 500],
+                ['obtainNewJunkOnDeck', 500],
                 ['instant_ditch', 1],
                 ['ditch', 500],
                 ['ditchMultiple', 500],
@@ -10362,6 +10363,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var i in notif.args.cards) {
                 var card = notif.args.cards[i];
                 this.overallPlayerBoardToPile(card, from_player_id, this.playerDiscards[notif.args.player_id]);
+            }
+        };
+        DaleOfMerchants.prototype.notif_obtainNewJunkOnDeck = function (notif) {
+            var _a;
+            var from_player_id = (_a = notif.args.from_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
+            for (var i in notif.args.cards) {
+                var card = notif.args.cards[i];
+                this.overallPlayerBoardToPile(card, from_player_id, this.playerDecks[notif.args.player_id]);
             }
         };
         DaleOfMerchants.prototype.notif_instant_ditch = function (notif) {
