@@ -5797,6 +5797,9 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_BARRICADE:
                 $card_ids = $args["card_ids"];
                 $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$player_id);
+                if (count($card_ids) > 2) {
+                    throw new BgaVisibleSystemException("Please select at most 2 junk cards");
+                }
                 foreach ($dbcards as $dbcard) {
                     if (!$this->isJunk($dbcard)) {
                         throw new BgaVisibleSystemException("CT_BARRICADE cannot be used to take non-junk cards");
