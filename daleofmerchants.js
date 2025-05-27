@@ -2779,6 +2779,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                         thiz_3.onClickCard(card, div);
                     });
                 }
+                else if (this_2.isGrayedOut(card)) {
+                    div.classList.add("daleofmerchants-card-grayed-out");
+                }
                 this_2.cardIdToPopinDiv.set(card.id, div);
             };
             var this_2 = this;
@@ -2977,6 +2980,15 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     break;
             }
             this.updateHTML();
+        };
+        Pile.prototype.isGrayedOut = function (card) {
+            switch (this.selectionMode) {
+                case 'multipleFromTopWithGaps':
+                case 'multipleFromTopNoGaps':
+                    return !this.isClickable(card);
+                default:
+                    return false;
+            }
         };
         Pile.prototype.isClickable = function (card) {
             switch (this.selectionMode) {
@@ -3874,7 +3886,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
     }());
     exports.Stall = Stall;
 });
-define("components/types/MainClientState", ["require", "exports", "components/DaleCard"], function (require, exports, DaleCard_7) {
+define("components/types/MainClientState", ["require", "exports", "components/DaleCard", "components/DaleIcons"], function (require, exports, DaleCard_7, DaleIcons_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.MainClientState = void 0;
@@ -4127,7 +4139,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                             return _("${card_name}: ${you} must <stronger>ditch</stronger> the top card of your discard");
                         }
                         else {
-                            return _("${card_name}: ${you} must <stronger>ditch</stronger> one of the top ${nbr} cards of your discard");
+                            return this._page.format_dale_icons(_("${card_name}: ${you} must <stronger>ditch</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"), DaleIcons_7.DaleIcons.getDitchIcon(), DaleIcons_7.DaleIcons.getBluePileIcon(0));
                         }
                     case 'client_windOfChange':
                         return _("${card_name}: ${you} may ditch a card from your discard");
@@ -4409,7 +4421,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard"]
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_7, DaleWrapClass_4, DaleCard_9) {
+define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_8, DaleWrapClass_4, DaleCard_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CoinManager = void 0;
@@ -4441,7 +4453,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
             for (var player_id in page.gamedatas.players) {
                 var coins_wrap = $('daleofmerchants-coins-wrap-' + player_id);
                 var coins_span = coins_wrap.querySelector('.daleofmerchants-coins-counter');
-                var coins_icon = DaleIcons_7.DaleIcons.getCoinIcon();
+                var coins_icon = DaleIcons_8.DaleIcons.getCoinIcon();
                 coins_icon.id = 'daleofmerchants-coins-icon-' + player_id;
                 coins_wrap.append(coins_icon);
                 this.playerCoins[player_id] = new ebg.counter();
@@ -4576,7 +4588,7 @@ define("components/types/TranslatableStrings", ["require", "exports"], function 
     }());
     exports.TranslatableStrings = TranslatableStrings;
 });
-define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/PlayerClock", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_8, CoinManager_1, PlayerClock_2, TranslatableStrings_1) {
+define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/ChameleonArgs", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/PlayerClock", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_10, MarketBoard_1, Stall_1, ChameleonArgs_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_2, DaleDeckSelection_2, DaleDie_2, DaleIcons_9, CoinManager_1, PlayerClock_2, TranslatableStrings_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DaleOfMerchants = (function (_super) {
@@ -4689,7 +4701,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var player = gamedatas.players[player_id];
                 this.playerClocks[player_id] = new PlayerClock_2.PlayerClock(this, +player_id);
                 var handsize_span = document.createElement('span');
-                var handsize_icon = DaleIcons_8.DaleIcons.getHandIcon();
+                var handsize_icon = DaleIcons_9.DaleIcons.getHandIcon();
                 var player_board_div = (_c = $('player_board_' + player_id)) === null || _c === void 0 ? void 0 : _c.querySelector(".player_score");
                 handsize_icon.id = 'daleofmerchants-myhandsize-icon-' + player_id;
                 player_board_div.prepend(handsize_icon);
@@ -4975,7 +4987,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
                     break;
                 case 'spyglass':
-                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_8.DaleIcons.getSpyglassIcon()));
+                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_9.DaleIcons.getSpyglassIcon()));
                     break;
                 case 'client_acorn':
                 case 'client_velocipede':
@@ -4999,7 +5011,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'specialOffer':
-                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_8.DaleIcons.getCheeseIcon()));
+                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_9.DaleIcons.getCheeseIcon()));
                     break;
                 case 'client_rottenFood':
                     for (var _k = 0, _l = Object.entries(this.allDecks); _k < _l.length; _k++) {
@@ -5358,7 +5370,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.openPopin();
                     break;
                 case 'travelingEquipment':
-                    var travelingEquipment_label = this.format_dale_icons(_("Choose cards to <strong>ditch</strong> (ICON) and discard (ICON)"), DaleIcons_8.DaleIcons.getTravelingEquipmentDitchIcon(), DaleIcons_8.DaleIcons.getTravelingEquipmentDiscardIcon());
+                    var travelingEquipment_label = this.format_dale_icons(_("Choose cards to <strong>ditch</strong> (ICON) and discard (ICON)"), DaleIcons_9.DaleIcons.getTravelingEquipmentDitchIcon(), DaleIcons_9.DaleIcons.getTravelingEquipmentDiscardIcon());
                     this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
                     break;
                 case 'fishing':
@@ -5427,7 +5439,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
                     break;
                 case 'rake':
-                    this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_8.DaleIcons.getDitchIcon(), DaleIcons_8.DaleIcons.getBluePileIcon(0)));
+                    this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_9.DaleIcons.getDitchIcon(), DaleIcons_9.DaleIcons.getBluePileIcon(0)));
                     var raket_args = args.args;
                     this.myDeck.setContent(raket_args._private.cards.map(DaleCard_10.DaleCard.of));
                     this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
@@ -6857,7 +6869,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     args['die_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl, "</span>");
                 }
                 if ('coin_icon' in args) {
-                    var iconTpl = DaleIcons_8.DaleIcons.getCoinIcon();
+                    var iconTpl = DaleIcons_9.DaleIcons.getCoinIcon();
                     args['coin_icon'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl.outerHTML, "</span>");
                 }
                 if ('clock' in args) {
@@ -8622,6 +8634,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                 client_selectingContracts_nbr = 1;
                                 break;
                         }
+                        client_selectingContracts_nbr = Math.min(client_selectingContracts_nbr, this.myDiscard.size);
                         this.clientScheduleTechnique('client_selectingContracts', card.id, { nbr: client_selectingContracts_nbr });
                     }
                     break;

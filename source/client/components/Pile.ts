@@ -473,6 +473,9 @@ export class Pile implements DaleLocation {
                     thiz.onClickCard(card, div);
                 });
             }
+            else if (this.isGrayedOut(card)) {
+                div.classList.add("daleofmerchants-card-grayed-out");
+            }
             this.cardIdToPopinDiv.set(card.id, div);
         }
         dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
@@ -742,6 +745,19 @@ export class Pile implements DaleLocation {
                 break;
         }
         this.updateHTML();
+    }
+
+    /**
+	 * @returns `true` if the card should be grayed out in the current selection mode (popin only!)
+	 */
+    private isGrayedOut(card: DaleCard) {
+		switch (this.selectionMode) {
+            case 'multipleFromTopWithGaps':
+            case 'multipleFromTopNoGaps':
+                return !this.isClickable(card);
+            default:
+                return false;
+        }
     }
 
     /**

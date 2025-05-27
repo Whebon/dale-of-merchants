@@ -500,6 +500,11 @@
 	&.daleofmerchants-card-sheet-4 {
 		background-image: url("img/cards_4.jpg");
 	}
+	&.daleofmerchants-card-grayed-out {
+		background-color: black;
+		background-blend-mode: luminosity;
+		opacity: 0.75;
+	}
 }
 
 #daleofmerchants-market-board-background {

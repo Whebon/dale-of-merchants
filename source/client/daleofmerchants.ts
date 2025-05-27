@@ -4641,6 +4641,7 @@ class DaleOfMerchants extends Gamegui
 							client_selectingContracts_nbr = 1;
 							break;
 					}
+					client_selectingContracts_nbr = Math.min(client_selectingContracts_nbr, this.myDiscard.size);
 					this.clientScheduleTechnique('client_selectingContracts', card.id, {nbr: client_selectingContracts_nbr});
 				}
 				break;

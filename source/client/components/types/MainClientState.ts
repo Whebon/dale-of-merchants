@@ -1,5 +1,6 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from '../DaleCard';
+import { DaleIcons } from '../DaleIcons';
 
 class ServerState {}
 class PreviousState {
@@ -266,7 +267,11 @@ export class MainClientState {
                 if((this._args as ClientGameStates['client_selectingContracts']).nbr == 1) {
                     return _("${card_name}: ${you} must <stronger>ditch</stronger> the top card of your discard");
                 } else {
-                    return _("${card_name}: ${you} must <stronger>ditch</stronger> one of the top ${nbr} cards of your discard");
+                    return (this._page as any).format_dale_icons(
+                        _("${card_name}: ${you} must <stronger>ditch</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"),
+                        DaleIcons.getDitchIcon(),
+                        DaleIcons.getBluePileIcon(0)
+                    )
                 }
             case 'client_windOfChange':
                 return _("${card_name}: ${you} may ditch a card from your discard");

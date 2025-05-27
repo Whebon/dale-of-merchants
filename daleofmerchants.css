@@ -454,6 +454,11 @@
 .daleofmerchants-card.daleofmerchants-card-sheet-4 {
   background-image: url("img/cards_4.jpg");
 }
+.daleofmerchants-card.daleofmerchants-card-grayed-out {
+  background-color: black;
+  background-blend-mode: luminosity;
+  opacity: 0.75;
+}
 
 #daleofmerchants-market-board-background {
   background-image: url(img/shop_day.jpg);
