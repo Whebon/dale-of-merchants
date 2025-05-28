@@ -7358,7 +7358,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         else if ($args["die_value1"] == DIE_DECK) {
             //Move from deck
-            $dbcard = $this->cards->getCardOnTop(DECK.$source_id);
+            $dbcard = $this->cards->pickCardForLocation(DECK.$source_id, 'unstable');
             if ($dbcard === null) {
                 $this->notifyAllPlayers('message', $message_empty_source, $args);
             }
