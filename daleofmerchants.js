@@ -4584,6 +4584,13 @@ define("components/types/TranslatableStrings", ["require", "exports"], function 
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(TranslatableStrings, "s_hand", {
+            get: function () {
+                return _("\'s hand");
+            },
+            enumerable: false,
+            configurable: true
+        });
         return TranslatableStrings;
     }());
     exports.TranslatableStrings = TranslatableStrings;
@@ -6551,11 +6558,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', looseMarbles_hand_label);
                         this.addActionButtonsOpponent((function (opponent_id) {
                             _this.onLooseMarblesBegin(opponent_id);
-                        }).bind(this), true);
+                        }).bind(this), true, TranslatableStrings_1.TranslatableStrings.s_hand);
                     }
                     else if (looseMarbles_args.die_value2 == DaleDie_2.DaleDie.DIE_HAND2) {
                         var looseMarbles_fail_message_1 = _("Please select the top card of a pile first");
-                        this.addActionButtonsOpponent((function (opponent_id) { return _this.showMessage(looseMarbles_fail_message_1, "error"); }).bind(this), true);
+                        this.addActionButtonsOpponent((function (opponent_id) { return _this.showMessage(looseMarbles_fail_message_1, "error"); }).bind(this), true, TranslatableStrings_1.TranslatableStrings.s_hand);
                     }
                     break;
                 case 'coffeeGrinder':
@@ -6998,13 +7005,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler, include_player) {
+        DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler, include_player, suffix) {
             if (include_player === void 0) { include_player = false; }
+            if (suffix === void 0) { suffix = ""; }
             var _loop_11 = function (opponent_id) {
                 if (include_player || opponent_id != this_9.player_id) {
                     var name_1 = this_9.gamedatas.players[opponent_id].name;
                     var color = this_9.gamedatas.players[opponent_id].color;
-                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1, "</span>");
+                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1).concat(suffix, "</span>");
                     this_9.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
                 }
             };
@@ -9950,7 +9958,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             if (button_opponent_id == opponent_id) {
                                 _this.showMessage(TranslatableStrings_1.TranslatableStrings.please_select_a_different_player, 'error');
                             }
-                        }).bind(this), true);
+                        }).bind(this), true, TranslatableStrings_1.TranslatableStrings.s_hand);
                     }
                     for (var _j = 0, _k = Object.entries(this.playerHandSizes); _j < _k.length; _j++) {
                         var _l = _k[_j], player_id = _l[0], _ = _l[1];

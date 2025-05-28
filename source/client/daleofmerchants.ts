@@ -2210,11 +2210,11 @@ class DaleOfMerchants extends Gamegui
 					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', looseMarbles_hand_label);
 					this.addActionButtonsOpponent(((opponent_id: number) => {
 						this.onLooseMarblesBegin(opponent_id);
-					}).bind(this), true);
+					}).bind(this), true, TranslatableStrings.s_hand);
 				}
 				else if (looseMarbles_args.die_value2 == DaleDie.DIE_HAND2) {
 					const looseMarbles_fail_message = _("Please select the top card of a pile first");
-					this.addActionButtonsOpponent(((opponent_id: number) => this.showMessage(looseMarbles_fail_message, "error")).bind(this), true);
+					this.addActionButtonsOpponent(((opponent_id: number) => this.showMessage(looseMarbles_fail_message, "error")).bind(this), true, TranslatableStrings.s_hand);
 				}
 				break;
 			case 'coffeeGrinder':
@@ -2830,12 +2830,12 @@ class DaleOfMerchants extends Gamegui
 	/**
 	 * Add selection buttons to select a single opponent
 	 */
-	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void, include_player: boolean = false) {
+	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void, include_player: boolean = false, suffix: string = "") {
 		for(let opponent_id of this.gamedatas.playerorder) {
 			if (include_player || opponent_id != this.player_id) {
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
-				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
+				const label = `<span style="font-weight:bold;color:#${color};">${name}${suffix}</span>`;
 				this.addActionButton("opponent-selection-button-"+opponent_id, label, () => {onOpponentHandler(opponent_id)}, undefined, false, 'gray');
 			}
 		}
@@ -6120,7 +6120,7 @@ class DaleOfMerchants extends Gamegui
 						if (button_opponent_id == opponent_id) {
 							this.showMessage(TranslatableStrings.please_select_a_different_player, 'error');
 						}
-					}).bind(this), true);
+					}).bind(this), true, TranslatableStrings.s_hand);
 				}
 				for (const [player_id, _] of Object.entries(this.playerHandSizes)) {
 					const target = $("opponent-selection-button-"+player_id)! as HTMLElement;
