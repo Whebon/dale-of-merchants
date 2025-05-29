@@ -1586,7 +1586,14 @@ class DaleOfMerchants extends Gamegui
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
 				break;
 			case 'client_technique':
-				this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
+				if (this.myHand.count() == 0) {
+					//Requested by Sami, but technically, you can still finish techniques
+					this.setDescriptionOnMyTurn(_("${you} must"));
+					this.addActionButton("confirm-button", _("Take an inventory action with 0 cards"), "onInventoryAction");
+				}
+				else {
+					this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
+				}
 				if (DaleCard.countChameleonsLocal() > 0) {
 					this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
 				}
@@ -2622,6 +2629,45 @@ class DaleOfMerchants extends Gamegui
 		if (this.previousMainTitle) {
 			this.setMainTitle(this.previousMainTitle);
 		}
+	}
+
+	/**
+	 * Same as `setMainTitle`, but uses args
+	 * Code copied from https://studio.boardgamearena.com/doc/BGA_Studio_Cookbook
+	 * @param text new string to display at the main title
+	 */
+	setDescriptionOnMyTurn(text: string) {
+		this.gamedatas.gamestate.descriptionmyturn = text;
+		var tpl = dojo.clone(this.gamedatas.gamestate.args) as any;
+		if (tpl === null) {
+			tpl = {};
+		}
+		var title = "";
+		if (this.isCurrentPlayerActive() && text !== null) {
+			tpl.you = this.divYou(); 
+		}
+		title = this.format_string_recursive(text, tpl);
+
+		if (!title) {
+			this.setMainTitle(" ");
+		} else {
+			this.setMainTitle(title);
+		}
+    }
+
+	/**
+	 * Implementation of proper colored You with background in case of white or light colors
+	 * Code copied from https://studio.boardgamearena.com/doc/BGA_Studio_Cookbook
+	 * @returns formatted `you`
+	 */
+	divYou(): string {
+		var color = this.gamedatas.players[this.player_id]!.color;
+		var color_bg = "";
+		if (this.gamedatas.players[this.player_id] && this.gamedatas.players[this.player_id]!.color_back) {
+			color_bg = "background-color:#" + this.gamedatas.players[this.player_id]!.color_back + ";";
+		}
+		var you = "<span style=\"font-weight:bold;color:#" + color + ";" + color_bg + "\">" + __("lang_mainsite", "You") + "</span>";
+		return you;
 	}
 
 	/**

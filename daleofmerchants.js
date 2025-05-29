@@ -5938,7 +5938,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'playerTurn':
                     break;
                 case 'client_technique':
-                    this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
+                    if (this.myHand.count() == 0) {
+                        this.setDescriptionOnMyTurn(_("${you} must"));
+                        this.addActionButton("confirm-button", _("Take an inventory action with 0 cards"), "onInventoryAction");
+                    }
+                    else {
+                        this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
+                    }
                     if (DaleCard_10.DaleCard.countChameleonsLocal() > 0) {
                         this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
                     }
@@ -6892,6 +6898,33 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (this.previousMainTitle) {
                 this.setMainTitle(this.previousMainTitle);
             }
+        };
+        DaleOfMerchants.prototype.setDescriptionOnMyTurn = function (text) {
+            this.gamedatas.gamestate.descriptionmyturn = text;
+            var tpl = dojo.clone(this.gamedatas.gamestate.args);
+            if (tpl === null) {
+                tpl = {};
+            }
+            var title = "";
+            if (this.isCurrentPlayerActive() && text !== null) {
+                tpl.you = this.divYou();
+            }
+            title = this.format_string_recursive(text, tpl);
+            if (!title) {
+                this.setMainTitle(" ");
+            }
+            else {
+                this.setMainTitle(title);
+            }
+        };
+        DaleOfMerchants.prototype.divYou = function () {
+            var color = this.gamedatas.players[this.player_id].color;
+            var color_bg = "";
+            if (this.gamedatas.players[this.player_id] && this.gamedatas.players[this.player_id].color_back) {
+                color_bg = "background-color:#" + this.gamedatas.players[this.player_id].color_back + ";";
+            }
+            var you = "<span style=\"font-weight:bold;color:#" + color + ";" + color_bg + "\">" + __("lang_mainsite", "You") + "</span>";
+            return you;
         };
         DaleOfMerchants.prototype.setMainTitle = function (text) {
             this.previousMainTitle = $('pagemaintitletext').innerHTML;
