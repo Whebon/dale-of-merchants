@@ -17,4 +17,5 @@ export interface CardType {
     nbr: number;                        // number of copies of this card deck in the initial deck
     animalfolk_id: number;              // animalfolk set name
     animalfolk_displayed: string;       // translated animalfolk set name
+    is_mono: boolean;                   // indicates if this is a Mono card
 }

@@ -22,11 +22,11 @@
     <div id="daleofmerchants-market-wrap" class="whiteblock">
         <!-- Display the name of this area? <h3>{MARKET}</h3> -->
         <div style="display:flex; align-items: center; justify-content: space-evenly;">
-            <div id="market-deck" class="daleofmerchants-pile-container"></div>
+            <div id="daleofmerchants-market-deck" class="daleofmerchants-pile-container"></div>
             <div id="daleofmerchants-market-board-background">
                 <div id="daleofmerchants-market-board" class="daleofmerchants-stall-container"></div>
             </div>
-            <div id="market-discard" class="daleofmerchants-pile-container"></div>
+            <div id="daleofmerchants-market-discard" class="daleofmerchants-pile-container"></div>
         </div>
     </div>
 
@@ -67,8 +67,8 @@
             </span>
             <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
             <div class="daleofmerchants-horizontal-flex">
-                <div id="deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
-                <div id="discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
+                <div id="daleofmerchants-deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
+                <div id="daleofmerchants-discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
                 <div id="daleofmerchants-stall-wrap-landscape-{PLAYER_ID}" class="daleofmerchants-stall-wrap">
                     <h3 class="daleofmerchants-component-name"> {STALL} </h3>
                     <div id="daleofmerchants-stall-{PLAYER_ID}" class="daleofmerchants-stall-container"></div>

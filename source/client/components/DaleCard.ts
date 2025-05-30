@@ -221,10 +221,37 @@ export class DaleCard {
     static readonly CT_SLOTMACHINE: number = 171;
     static readonly CT_GENERATIONCHANGE: number = 172;
     static readonly CT_WARMEMBRACE: number = 173;
-    static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 174;
-    static readonly CT_DEPRECATED_CHEER: number = 175;
-    static readonly CT_DEPRECATED_TASTERS: number = 176;
-    
+    static readonly CT_SWIFTMEMBER: number = 174;
+    static readonly CT_LOYALMEMBER: number = 175;
+    static readonly CT_WILYMEMBER: number = 176;
+    static readonly CT_STASHINGMEMBER: number = 177;
+    static readonly CT_BOLDMEMBER: number = 178;
+    static readonly CT_FLEXIBLEMEMBER: number = 179;
+    static readonly CT_TIRELESSMEMBER: number = 180;
+    static readonly CT_STEADYMEMBER: number = 181;
+    static readonly CT_LITTLEMEMBER: number = 182;
+    static readonly CT_CUNNINGMEMBER: number = 183;
+    static readonly CT_DARINGMEMBER: number = 184;
+    static readonly CT_WISEMEMBER: number = 185;
+    static readonly CT_MASTERMEMBER: number = 186;
+    static readonly CT_RIGOROUSMEMBER: number = 187;
+    static readonly CT_VORACIOUSMEMBER: number = 188;
+    static readonly CT_POMPOUSMEMBER: number = 189;
+    static readonly CT_CAREFREEMEMBER: number = 190;
+    static readonly CT_ARCANEMEMBER: number = 191;
+    static readonly CT_CLEVERMEMBER: number = 192;
+    static readonly CT_RESOURCEFULMEMBER: number = 193;
+    static readonly CT_AVIDMEMBER: number = 194;
+    static readonly CT_IMPULSIVEMEMBER: number = 195;
+    static readonly CT_SHREWDMEMBER: number = 196;
+    static readonly CT_FUMBLINGMEMBER: number = 197;
+    static readonly CT_MEDDLINGMEMBER: number = 198;
+    static readonly CT_DRAMATICMEMBER: number = 199;
+    static readonly CT_STEALTHYMEMBER: number = 200;
+    static readonly CT_PRISTINEMEMBER: number = 201;
+    static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 202;
+    static readonly CT_DEPRECATED_CHEER: number = 203;
+    static readonly CT_DEPRECATED_TASTERS: number = 204;
 
     public id: number
 
@@ -262,6 +289,7 @@ export class DaleCard {
         }
         DaleCard.cardTypes = Object.values(cardTypes);
         DaleCard.page = page;
+        Images.first_mono_type_id = DaleCard.CT_SWIFTMEMBER;
         // for (let i = 0; i < DaleCard.cardTypes.length; i++) {
         //     const card = cards[i];
         //     // Process the card object
@@ -821,7 +849,11 @@ export class DaleCard {
     }
 
     public isAnimalfolk(): boolean {
-        return (this.original_animalfolk_id != 0);
+        return (this.original_animalfolk_id != 0) && !this.isMonoCard();
+    }
+
+    public isMonoCard(): boolean {
+        return DaleCard.cardTypes[this.effective_type_id]!.is_mono;
     }
 
     public isTechnique(): boolean {

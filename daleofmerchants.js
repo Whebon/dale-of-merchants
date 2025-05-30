@@ -190,6 +190,10 @@ define("components/Images", ["require", "exports"], function (require, exports) 
             dojo.setStyle(div, 'height', "".concat(Images.CARD_HEIGHT_S, "px"));
             dojo.setStyle(div, 'background-size', "".concat(Images.IMAGES_PER_ROW, "00% ").concat(Images.IMAGES_PER_COLUMN, "00%"));
             if (card_type_id !== undefined) {
+                if (card_type_id >= Images.first_mono_type_id) {
+                    div.classList.add('daleofmerchants-card-sheet-mono');
+                    card_type_id -= Images.first_mono_type_id;
+                }
                 var image_index = card_type_id % (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
                 var sheet_index = (card_type_id - image_index) / (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
                 if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 4) {
@@ -253,6 +257,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
         Images.DECK_SELECTION_IMAGES_PER_ROW = 6;
         Images.DECK_SELECTION_IMAGES_PER_COLUMN = 5;
+        Images.first_mono_type_id = Infinity;
         return Images;
     }());
     exports.Images = Images;
@@ -1025,6 +1030,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             DaleCard.cardTypes = Object.values(cardTypes);
             DaleCard.page = page;
+            Images_2.Images.first_mono_type_id = DaleCard.CT_SWIFTMEMBER;
         };
         DaleCard.addEffect = function (effect) {
             console.warn("addEffect");
@@ -1445,7 +1451,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
         };
         DaleCard.prototype.isAnimalfolk = function () {
-            return (this.original_animalfolk_id != 0);
+            return (this.original_animalfolk_id != 0) && !this.isMonoCard();
+        };
+        DaleCard.prototype.isMonoCard = function () {
+            return DaleCard.cardTypes[this.effective_type_id].is_mono;
         };
         DaleCard.prototype.isTechnique = function () {
             return DaleCard.cardTypes[this.effective_type_id].is_technique;
@@ -1929,9 +1938,37 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_SLOTMACHINE = 171;
         DaleCard.CT_GENERATIONCHANGE = 172;
         DaleCard.CT_WARMEMBRACE = 173;
-        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 174;
-        DaleCard.CT_DEPRECATED_CHEER = 175;
-        DaleCard.CT_DEPRECATED_TASTERS = 176;
+        DaleCard.CT_SWIFTMEMBER = 174;
+        DaleCard.CT_LOYALMEMBER = 175;
+        DaleCard.CT_WILYMEMBER = 176;
+        DaleCard.CT_STASHINGMEMBER = 177;
+        DaleCard.CT_BOLDMEMBER = 178;
+        DaleCard.CT_FLEXIBLEMEMBER = 179;
+        DaleCard.CT_TIRELESSMEMBER = 180;
+        DaleCard.CT_STEADYMEMBER = 181;
+        DaleCard.CT_LITTLEMEMBER = 182;
+        DaleCard.CT_CUNNINGMEMBER = 183;
+        DaleCard.CT_DARINGMEMBER = 184;
+        DaleCard.CT_WISEMEMBER = 185;
+        DaleCard.CT_MASTERMEMBER = 186;
+        DaleCard.CT_RIGOROUSMEMBER = 187;
+        DaleCard.CT_VORACIOUSMEMBER = 188;
+        DaleCard.CT_POMPOUSMEMBER = 189;
+        DaleCard.CT_CAREFREEMEMBER = 190;
+        DaleCard.CT_ARCANEMEMBER = 191;
+        DaleCard.CT_CLEVERMEMBER = 192;
+        DaleCard.CT_RESOURCEFULMEMBER = 193;
+        DaleCard.CT_AVIDMEMBER = 194;
+        DaleCard.CT_IMPULSIVEMEMBER = 195;
+        DaleCard.CT_SHREWDMEMBER = 196;
+        DaleCard.CT_FUMBLINGMEMBER = 197;
+        DaleCard.CT_MEDDLINGMEMBER = 198;
+        DaleCard.CT_DRAMATICMEMBER = 199;
+        DaleCard.CT_STEALTHYMEMBER = 200;
+        DaleCard.CT_PRISTINEMEMBER = 201;
+        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 202;
+        DaleCard.CT_DEPRECATED_CHEER = 203;
+        DaleCard.CT_DEPRECATED_TASTERS = 204;
         DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());
@@ -4606,8 +4643,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             _this.allPiles = [];
             _this.allDaleStocks = [];
             _this.allCardSlots = [];
-            _this.marketDeck = new HiddenPile_1.HiddenPile(_this, 'market-deck', 'Supply');
-            _this.marketDiscard = new Pile_2.Pile(_this, 'market-discard', 'Bin');
+            _this.marketDeck = new HiddenPile_1.HiddenPile(_this, "daleofmerchants-market-deck", 'Supply');
+            _this.marketDiscard = new Pile_2.Pile(_this, "daleofmerchants-market-discard", 'Bin');
             _this.playerClocks = {};
             _this.playerHandSizes = {};
             _this.playerDecks = {};
@@ -4722,10 +4759,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.addTooltip('daleofmerchants-myhandsize-icon-' + player_id, _("Number of cards in hand."), '');
                 this.addTooltip('icon_point_' + player_id, _("Number of stacks built."), '');
                 (_d = player_board_div.querySelector(".player_score_value")) === null || _d === void 0 ? void 0 : _d.insertAdjacentText('afterend', "/8");
-                this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, 'deck-' + player_id, 'Deck', +player_id);
+                console.log("Create deck for player " + player_id);
+                this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, "daleofmerchants-deck-" + player_id, 'Deck', +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
                 this.allDecks[player_id] = this.playerDecks[player_id];
-                this.playerDiscards[player_id] = new Pile_2.Pile(this, 'discard-' + player_id, 'Discard', +player_id);
+                this.playerDiscards[player_id] = new Pile_2.Pile(this, "daleofmerchants-discard-" + player_id, 'Discard', +player_id);
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
                     this.playerDiscards[player_id].push(DaleCard_10.DaleCard.of(card));
@@ -10270,6 +10308,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.marketDeck.pushHiddenCards(11 * (n + 1));
             for (var player_id in this.gamedatas.players) {
                 this.playerDecks[+player_id].pushHiddenCards(10);
+            }
+            if (this.is_solo && this.unique_opponent_id) {
+                this.playerDecks[this.unique_opponent_id].pushHiddenCards(3);
             }
             this.showAnimalfolkSpecificGameComponents();
             this.market.onResize();

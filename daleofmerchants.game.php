@@ -324,7 +324,59 @@ class DaleOfMerchants extends DaleTableBasic
         return $this->getPlayerNameById($player_id);
     }
 
-    
+    /**
+     * Automatically execute an entire turn for Mono
+     */
+    function monoTurnStart() {
+        $this->showDebugMessage("monoTurnStart");
+        $this->obtainStoredCards(MONO_PLAYER_ID);
+        $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
+        $this->monoResolveCards(TRIGGER_ONTURNSTART);
+        $aquire = false;
+        if ($aquire) {
+            $this->monoMarketAction() || $this->monoStallAction();
+        }
+        else {
+            $this->monoStallAction() || $this->monoMarketAction();
+        }
+        $this->monoCleanUpPhase();
+    }
+
+    /**
+     * Automatically resolves all cards in Mono's schedule with the given trigger
+     */
+    function monoResolveCards($trigger) {
+        $this->showDebugMessage("monoResolveCards");
+    }
+
+    /**
+     * Automatically executes a stall action for Mono
+     * @return bool indicating if the action was successful
+     */
+    function monoStallAction(): bool {
+        $this->showDebugMessage("monoStallAction");
+        return true;
+    }
+
+    /**
+     * Automatically executes a market action for Mono
+     * @return bool indicating if the action was successful
+     */
+    function monoMarketAction(): bool {
+        $this->showDebugMessage("monoMarketAction");
+        return true;
+    }
+
+    /**
+     * Automatically executes a clean-up phase for Mono
+     */
+    function monoCleanUpPhase() {
+        $this->showDebugMessage("monoCleanUpPhase");
+        $this->refillMarket(true);
+        $this->refillHand(MONO_PLAYER_ID);
+    }
+
+    //(~mono)
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1131,12 +1183,12 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Refills your hand to the maximum hand size.
+     * @param mixed $player_id
      * @param bool $isPostCleanUpPhase indicates if this function is called an additional time (after postCleanUpPhase)
      * @return `true` if any cards were drawn
     */
-    function refillHand($isPostCleanUpPhase) {
+    function refillHand($player_id, $isPostCleanUpPhase = false) {
         //get information about the hand
-        $player_id = $this->getActivePlayerId();
         $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
         $stall_cards = $this->cards->getCardsInLocation(STALL.$player_id);
         $maximum_hand_size = $this->getMaximumHandSize($player_id, $hand_cards, $stall_cards);
@@ -1323,6 +1375,28 @@ class DaleOfMerchants extends DaleTableBasic
             $this->notifyAllPlayers('fillEmptyMarketSlots', clienttranslate('Empty market slots get filled'), array(
                 "positions" => $free_slots,
                 "cards" => $new_cards
+            ));
+        }
+    }
+
+
+    /**
+     * Obtain all stored cards. Should be called on turn start.
+     */
+    function obtainStoredCards($player_id) {
+        $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
+        if (count($storedCards) > 0) {
+            $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
+            $msg = count($storedCards) == 1 ? 
+                clienttranslate('${player_name} places a stored card into their hand') : 
+                clienttranslate('${player_name} places ${nbr} stored cards into their hand');
+            $this->notifyAllPlayersWithPrivateArguments('storedCardsToHand', $msg, array(
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "player_id" => $player_id,
+                "nbr" => count($storedCards),
+                "_private" => array(
+                    "cards" => $storedCards
+                )
             ));
         }
     }
@@ -1579,7 +1653,15 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $dbcard dbcard object
     */
     function isAnimalfolk(array $dbcard): int {
-        return $this->card_types[$dbcard["type_arg"]]['animalfolk_id'] != 0;
+        return $this->card_types[$dbcard["type_arg"]]['animalfolk_id'] != 0 && !$this->isMonoCard($dbcard);
+    }
+
+    /**
+     * Returns true iff the original card is a Mono card
+     * @param array $dbcard dbcard object
+    */
+    function isMonoCard(array $dbcard): int {
+        return $this->card_types[$dbcard["type_arg"]]['is_mono'];
     }
 
     /**
@@ -3162,6 +3244,13 @@ class DaleOfMerchants extends DaleTableBasic
     function getResolvingCard(){
         $resolvingCard = $this->getGameStateValue("resolvingCard");
         return $this->cards->getCard($resolvingCard);
+    }
+
+    /**
+     * Display a message in the BGA client log
+     */
+    function showDebugMessage($msg) {
+        $this->notifyAllPlayers('message', 'DEBUG: '.$msg, array());
     }
 
     /**
@@ -8056,6 +8145,17 @@ class DaleOfMerchants extends DaleTableBasic
         $this->cards->createCards($cards, DECK.MARKET);
         $this->cards->shuffle(DECK.MARKET);
 
+        //Create Mono cards
+        if ($this->isSoloGame()) {
+            $mono_cards = array();
+            foreach ($this->card_types as $type_id => $card_type) {
+                if (in_array($card_type['animalfolk_id'], $animalfolk_ids) && $card_type['is_mono']) {
+                    $mono_cards[] = array('type' => 'null', 'type_arg' => $type_id, 'nbr' => 1);
+                }
+            }
+            $this->cards->createCards($mono_cards, DECK.MONO_PLAYER_ID);
+        }
+
         //Create the initial player decks
         $nbr_junk = 10 - count($animalfolk_ids);
         $player_cards = array(array('type' => 'null', 'type_arg' => 1, 'nbr' => $nbr_junk));
@@ -8124,21 +8224,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
 
         //obtain stored cards
-        $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
-        if (count($storedCards) > 0) {
-            $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
-            $msg = count($storedCards) == 1 ? 
-                clienttranslate('${player_name} places a stored card into their hand') : 
-                clienttranslate('${player_name} places ${nbr} stored cards into their hand');
-            $this->notifyAllPlayersWithPrivateArguments('storedCardsToHand', $msg, array(
-                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                "player_id" => $player_id,
-                "nbr" => count($storedCards),
-                "_private" => array(
-                    "cards" => $storedCards
-                )
-            ));
-        }
+        $this->obtainStoredCards($player_id);
 
         //reset the clock
         $this->resetClock($player_id, clienttranslate('${player_name} reaches ${clock}'));
@@ -8164,7 +8250,7 @@ class DaleOfMerchants extends DaleTableBasic
         //2. fill your hand to the maximum hand size
         $player_id = $this->getActivePlayerId();
         $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
-        $hasDrawnCards = $this->refillHand($isPostCleanUpPhase);
+        $hasDrawnCards = $this->refillHand($player_id, $isPostCleanUpPhase);
 
         //3. check for post clean-up phase
         if ($hasDrawnCards || !$isPostCleanUpPhase) {
@@ -8197,6 +8283,7 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         $this->setGameStateValue("isPostCleanUpPhase", 0);
+        $this->incStat(1, "number_of_turns", $player_id);
 
         //4. expire all effects, except global effects with their corresponding card in a schedule
         $schedule_card_ids = array();
@@ -8210,6 +8297,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->effects->expireAllExcept($schedule_card_ids);
 
         //5. activate the next player
+        if ($this->isSoloGame()) {
+            $this->monoTurnStart(); //execute a turn for Mono
+        }
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
         $this->incStat(1, "number_of_turns", $next_player_id);
