@@ -339,6 +339,7 @@ class DaleOfMerchants extends DaleTableBasic
         else {
             $this->monoStallAction() || $this->monoMarketAction();
         }
+        $this->delay500ms(10);
         $this->monoCleanUpPhase();
     }
 
@@ -355,7 +356,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoStallAction(): bool {
         $this->showDebugMessage("monoStallAction");
-        return true;
+        return false;
     }
 
     /**
@@ -364,7 +365,58 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoMarketAction(): bool {
         $this->showDebugMessage("monoMarketAction");
-        return true;
+
+
+        // $hand_cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        // $market_cards = $this->cards->getCardsInLocation(MARKET, null, 'location_arg DESC');
+
+
+        // foreach ($market_cards as $market_card) {
+        //     $cost = $this->getCost($market_card);
+        //     if ($this->card)
+        //     if ($this->monoMarketActionAttempt($hand_cards, $market_card)) {
+        //         return true;
+        //     }
+        // }
+
+        // //Verify the cost
+        // $this->verifyCost($player_id, $funds_cards, $cost, null, true);
+
+        // //Discard the funds
+        // if (count($funds_card_ids) > 0) {
+        //     $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
+        //     $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
+        //         'player_id' => $player_id,
+        //         'player_name' => $this->getActivePlayerName(),
+        //         'card_ids' => $funds_card_ids,
+        //         'cards' => $funds_cards,
+        //         'nbr' => count($funds_cards)
+        //     ));
+        // }
+
+        // //Obtain the market card
+        // $this->cards->moveCard($market_card_id, HAND.$player_id);
+        // if ($from_bin) {
+        //     $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${extended_card_name}'), array (
+        //         'player_id' => $player_id,
+        //         'player_name' => $this->getActivePlayerName(),
+        //         'card_name' => $this->getCardName($market_card),
+        //         'extended_card_name' => $this->getCardNameExt($market_card),
+        //         'card' => $market_card,
+        //     ));
+        // }
+        // else {
+        //     $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name}'), array (
+        //         'player_id' => $player_id,
+        //         'player_name' => $this->getActivePlayerName(),
+        //         'card_name' => $this->getCardName($market_card),
+        //         'extended_card_name' => $this->getCardNameExt($market_card),
+        //         'market_card_id' => $market_card_id,
+        //         'pos' => $market_card["location_arg"]
+        //     ));
+        // }
+
+        return false;
     }
 
     /**

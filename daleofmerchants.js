@@ -4972,6 +4972,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         DaleCard_10.DaleCard.unbindAllChameleonsLocal();
                         this.mainClientState.leaveAll();
                         break;
+                    case 'cleanUpPhase':
+                        if (this.is_solo && this.unique_opponent_id) {
+                            this.movePlayAreaOnTop(this.unique_opponent_id);
+                        }
+                        break;
                     case 'blindfold':
                         var blindfold_args = args.args;
                         if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.card_id) {
@@ -11256,7 +11261,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var playAreas = Array.from(container.children);
             var initialRects = new Map();
             playAreas.forEach(function (el) { return initialRects.set(el, el.getBoundingClientRect()); });
-            if ((_a = playAreas[0]) === null || _a === void 0 ? void 0 : _a.id.includes(start_with_player_id.toString())) {
+            var topPlayerId = (_a = playAreas[0]) === null || _a === void 0 ? void 0 : _a.id.split('-').pop();
+            if (topPlayerId === start_with_player_id.toString()) {
                 return;
             }
             for (var _i = 0, _b = this.getPlayerOrderStartingWith(start_with_player_id); _i < _b.length; _i++) {

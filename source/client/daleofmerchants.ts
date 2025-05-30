@@ -504,6 +504,11 @@ class DaleOfMerchants extends Gamegui
 					DaleCard.unbindAllChameleonsLocal();
 					this.mainClientState.leaveAll();
 					break;
+				case 'cleanUpPhase':
+					if (this.is_solo && this.unique_opponent_id) {
+						this.movePlayAreaOnTop(this.unique_opponent_id); //put Mono on top
+					}
+					break;
 				case 'blindfold':
 					const blindfold_args = args.args as { _private?: { card_id?: number } };
 					if (blindfold_args._private?.card_id) {
@@ -7710,7 +7715,8 @@ class DaleOfMerchants extends Gamegui
 		playAreas.forEach(el => initialRects.set(el, el.getBoundingClientRect()));
 
 		// Don't reorder if the starting player is already on top
-		if (playAreas[0]?.id.includes(start_with_player_id.toString())) {
+		const topPlayerId = playAreas[0]?.id.split('-').pop();
+		if (topPlayerId === start_with_player_id.toString()) {
 			return;
 		}
 
