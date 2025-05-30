@@ -268,6 +268,16 @@ class DaleOfMerchants extends DaleTableBasic
         return max(2, $this->getPlayersNumber());
     }
 
+    /**
+     * @return bool indicating if this is a solo-game.
+     */
+    function isSoloGame() {
+        return $this->getPlayersNumber() == 1;
+    }
+
+    /**
+     * Same as `loadPlayersBasicInfos`, but also works for solo-mode
+     */
     function loadPlayersBasicInfosInclMono() {
         $players = $this->loadPlayersBasicInfos();
         if (count($players) == 1) {
@@ -282,6 +292,23 @@ class DaleOfMerchants extends DaleTableBasic
         }
         return $players;
     }
+
+    /**
+     * Same as `getNextPlayerTable`, but also works for solo-mode
+     * @param $reverse_direction, call `getPrevPlayerTable` instead
+     */
+    function getNextPlayerTableInclMono(bool $reverse_direction = false) {
+        if ($this->isSoloGame()) {
+            $player_id = $this->getActivePlayerId();
+            return array(
+                $player_id => MONO_PLAYER_ID,
+                MONO_PLAYER_ID => $player_id
+            );
+        }
+        return $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
+    }
+
+    
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -4245,7 +4272,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_RAFFLE:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
                 $take_id_to_card = array();
-                $next = $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
+                $next = $this->getNextPlayerTableInclMono($reverse_direction);
                 $take_id = $player_id;
                 //pick cards simultaneously
                 while (true) {
@@ -4322,7 +4349,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DEPRECATED_TASTERS:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
-                $next = $reverse_direction ? $this->getPrevPlayerTable() : $this->getNextPlayerTable();
+                $next = $this->getNextPlayerTableInclMono($reverse_direction);
                 $opponent_ids = [$next[$player_id]];
                 $nbr = $this->getPlayersNumber();
                 while(count($opponent_ids) < $nbr) {
