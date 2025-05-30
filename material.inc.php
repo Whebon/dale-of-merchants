@@ -286,6 +286,11 @@ if (!defined('CLOCK_DAWN')) {
     define('CLOCK_NIGHT', 2);
 }
 
+//define constants for Mono
+if (!defined('MONO_PLAYER_ID')) {
+    define('MONO_PLAYER_ID', 1);
+}
+
 //automatically resolve these choiceless triggers if they are the only one that needs to be resolved
 $this->AUTORESOLVE_TRIGGERS = array(
     CT_OVERTIME,

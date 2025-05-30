@@ -182,6 +182,9 @@ class DaleOfMerchants extends Gamegui
 		//initialize the card types
 		DaleCard.init(this, gamedatas.cardTypes);
 
+		//initialize mono (this adds mono to the gamedatas.playerorder)
+		this.setupMono(gamedatas);
+
 		//set the unique opponent id
 		if (gamedatas.playerorder.length == 2) {
 			for (let player_id of gamedatas.playerorder) {
@@ -394,6 +397,53 @@ class DaleOfMerchants extends Gamegui
 		this.setupNotifications();
 
 		console.warn( "Ending game setup" );
+	}
+
+	/**
+	 * In solo-mode, create a player panel for Mono and add it to the playerorder
+	 */
+	setupMono(gamedatas: Gamedatas) {
+		//only setup mono in solo games
+		if (gamedatas.playerorder.length > 1) {
+			console.warn("setupMono skipped (multiplayer game)");
+			return;
+		}
+
+		//get an existing player panel
+		const player_id = gamedatas.playerorder[0] ?? this.getActivePlayers()[0]!;
+		const player_panel = $('overall_player_board_' + player_id);
+		if (!player_panel) {
+			throw new Error("Unable to setup a player panel for Mono");
+		}
+
+		//find the mono player, and add it to the playerorder
+		let mono = undefined;
+		for (let mono_player_id in this.gamedatas.players) {
+			if (player_id != +mono_player_id) {
+				mono = gamedatas.players[mono_player_id]!;
+				gamedatas.playerorder.push(+mono_player_id);
+			}
+		}
+		if (gamedatas.playerorder.length != 2) {
+			console.warn(gamedatas.playerorder.length);
+			throw new Error(`A solo-game should consists of only 1 player and 1 Mono, found ${gamedatas.playerorder.length} players instead`);
+		}
+		if (!mono) {
+			throw new Error("Mono not found");
+		}
+
+		//copy the panel and replace the content with Mono's info
+		let xclone = player_panel.outerHTML;
+		const player = gamedatas.players[player_id]!;
+		xclone = xclone.replaceAll(String(player.id), String(mono.id));
+		xclone = xclone.replaceAll(player.name, mono.name);
+		xclone = xclone.replaceAll(player.color, mono.color);
+		dojo.place(xclone, 'player_boards');
+		const avatar = $(`avatar_${mono.id}`);
+		if (avatar) {
+			avatar.classList.add("daleofmerchants-mono-avatar");
+			this.updateTagName(avatar, "div");
+		}
 	}
 
 	/**
@@ -2491,6 +2541,11 @@ class DaleOfMerchants extends Gamegui
 	///////////////////////////////////////////////////
 	//// Utility methods
 
+	/*
+		Here, you can defines some utility methods that you can use everywhere in your typescript
+		script.
+	*/
+
 	/**
 	 * Sorts an unordered object of dbcards by their "location_arg"
 	 * @param cards unsorted object of dbcards
@@ -2510,10 +2565,25 @@ class DaleOfMerchants extends Gamegui
 		return dbcards_sorted;
 	}
 
-	/*
-		Here, you can defines some utility methods that you can use everywhere in your typescript
-		script.
-	*/
+
+	/**
+	 * Replaces an html element with a new htmlElement of a new tag name newTagName
+	 * @param oldElement an html element in the document
+	 * @param tagName the new tag name of the element
+	 * @returns an identical newElement with a new tag name
+	 */
+	updateTagName(oldElement: Element, tagName: string) {
+		if (!oldElement.parentNode) {
+			return oldElement;
+		}
+		const newElement = document.createElement(tagName);
+		Array.from(oldElement.attributes).forEach(attr => {
+			newElement.setAttribute(attr.name, attr.value);
+		});
+		newElement.innerHTML = oldElement.innerHTML;
+		oldElement.parentNode.replaceChild(newElement, oldElement);
+		return newElement;
+	}
 
     /**
      * (de)select the specified passive card

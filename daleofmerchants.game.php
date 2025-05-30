@@ -162,23 +162,26 @@ class DaleOfMerchants extends DaleTableBasic
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
+        $sql = "SELECT player_id id, player_score score, player_coins coins, player_clock clock FROM player ";
+        $result['players'] = $this->getCollectionFromDb( $sql );
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        try {
-            //IMPORTANT: ONLY KEEP THIS QUERY
-            $sql = "SELECT player_id id, player_score score, player_coins coins, player_clock clock FROM player ";
-            $result['players'] = $this->getCollectionFromDb( $sql );
+        // Get extra information about Mono
+        if (isset($players[MONO_PLAYER_ID])) {
+            $player_mono = $players[MONO_PLAYER_ID];
+            $result['players'][MONO_PLAYER_ID] = array(
+                "id" =>         $player_mono["player_id"],
+                "color" =>      $player_mono["player_color"],
+                "name" =>       $player_mono["player_name"],
+                "zombie" =>     $player_mono["player_zombie"],
+                "no" =>         $player_mono["player_no"],           
+                "eliminated" => $player_mono["player_eliminated"],
+                "id" => MONO_PLAYER_ID,
+                "score" => 5,
+                "coins" => 0,
+                "clock" => 0
+            );
         }
-        catch (Exception $e) {
-            //IMPORTANT: REMOVE THIS CLOCK TRY CATCH BLOCK (this is only needed for 3 outdated games)
-            $sql = "SELECT player_id id, player_score score, player_coins coins FROM player ";
-            $result['players'] = $this->getCollectionFromDb( $sql );
-            foreach ($result['players'] as $key => $value) {
-                $result['players'][$key]['clock'] = 0;
-            }
-        }
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         //count the cards in each hand, but don't send the content (that information is hidden)
         $result['handSizes'] = array();
@@ -253,6 +256,33 @@ class DaleOfMerchants extends DaleTableBasic
         }
         return 100 * $highest_stack_index / MAX_STACKS;
     }
+
+//////////////////////////////////////////////////////////////////////////////
+//////////// Mono functions
+////////////    
+
+    /**
+     * @return int `getPlayersNumber`, but also counts "Mono" in a solo-game
+     */
+    function getPlayersNumberInclMono(): int {
+        return max(2, $this->getPlayersNumber());
+    }
+
+    function loadPlayersBasicInfosInclMono() {
+        $players = $this->loadPlayersBasicInfos();
+        if (count($players) == 1) {
+            $players[MONO_PLAYER_ID] = array(
+                'player_id' => MONO_PLAYER_ID,
+                'player_color' => "9f4488",
+                'player_name' => "Mono",
+                'player_zombie' => 0,
+                'player_no' => 2,
+                'player_eliminated' => 0
+            );
+        }
+        return $players;
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
@@ -7739,7 +7769,7 @@ class DaleOfMerchants extends DaleTableBasic
     */
 
     function argNumberOfPlayers() {
-        $n = $this->getPlayersNumber();
+        $n = $this->getPlayersNumberInclMono();
         return array(
             'n' => $n,
             'n_plus_1' => $n + 1

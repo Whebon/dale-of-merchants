@@ -615,8 +615,9 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 return;
             }
             this.gameHTML.classList.add("daleofmerchants-hidden");
+            var n = Math.max(2, Object.values(page.gamedatas.players).length);
             this.orderedSelection.setIconType('numbers');
-            this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1);
+            this.orderedSelection.setMaxSize(n + 1);
             var _loop_1 = function (animalfolk_id) {
                 var card_div = document.createElement('div');
                 card_div.id = "deck-" + animalfolk_id;
@@ -4695,6 +4696,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             addEventListener("mousemove", function (evt) { TargetingLine_1.TargetingLine.previousMouseEvent = evt; });
             this.deckSelection = new DaleDeckSelection_2.DaleDeckSelection(this, $("daleofmerchants-page-deck-selection"), $("daleofmerchants-page-game"), gamedatas.inDeckSelection);
             DaleCard_10.DaleCard.init(this, gamedatas.cardTypes);
+            this.setupMono(gamedatas);
             if (gamedatas.playerorder.length == 2) {
                 for (var _i = 0, _e = gamedatas.playerorder; _i < _e.length; _i++) {
                     var player_id = _e[_i];
@@ -4853,6 +4855,43 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.showAnimalfolkSpecificGameComponents();
             this.setupNotifications();
             console.warn("Ending game setup");
+        };
+        DaleOfMerchants.prototype.setupMono = function (gamedatas) {
+            var _a;
+            if (gamedatas.playerorder.length > 1) {
+                console.warn("setupMono skipped (multiplayer game)");
+                return;
+            }
+            var player_id = (_a = gamedatas.playerorder[0]) !== null && _a !== void 0 ? _a : this.getActivePlayers()[0];
+            var player_panel = $('overall_player_board_' + player_id);
+            if (!player_panel) {
+                throw new Error("Unable to setup a player panel for Mono");
+            }
+            var mono = undefined;
+            for (var mono_player_id in this.gamedatas.players) {
+                if (player_id != +mono_player_id) {
+                    mono = gamedatas.players[mono_player_id];
+                    gamedatas.playerorder.push(+mono_player_id);
+                }
+            }
+            if (gamedatas.playerorder.length != 2) {
+                console.warn(gamedatas.playerorder.length);
+                throw new Error("A solo-game should consists of only 1 player and 1 Mono, found ".concat(gamedatas.playerorder.length, " players instead"));
+            }
+            if (!mono) {
+                throw new Error("Mono not found");
+            }
+            var xclone = player_panel.outerHTML;
+            var player = gamedatas.players[player_id];
+            xclone = xclone.replaceAll(String(player.id), String(mono.id));
+            xclone = xclone.replaceAll(player.name, mono.name);
+            xclone = xclone.replaceAll(player.color, mono.color);
+            dojo.place(xclone, 'player_boards');
+            var avatar = $("avatar_".concat(mono.id));
+            if (avatar) {
+                avatar.classList.add("daleofmerchants-mono-avatar");
+                this.updateTagName(avatar, "div");
+            }
         };
         DaleOfMerchants.prototype.showAnimalfolkSpecificGameComponents = function () {
             var _a;
@@ -6815,6 +6854,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 dbcards_sorted.sort(function (dbcard1, dbcard2) { return (+dbcard2.location_arg) - (+dbcard1.location_arg); });
             }
             return dbcards_sorted;
+        };
+        DaleOfMerchants.prototype.updateTagName = function (oldElement, tagName) {
+            if (!oldElement.parentNode) {
+                return oldElement;
+            }
+            var newElement = document.createElement(tagName);
+            Array.from(oldElement.attributes).forEach(function (attr) {
+                newElement.setAttribute(attr.name, attr.value);
+            });
+            newElement.innerHTML = oldElement.innerHTML;
+            oldElement.parentNode.replaceChild(newElement, oldElement);
+            return newElement;
         };
         DaleOfMerchants.prototype.setPassiveSelected = function (passive_card_id, enable) {
             var div = DaleCard_10.DaleCard.divs.get(+passive_card_id);

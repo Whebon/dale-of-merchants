@@ -71,8 +71,9 @@ export class DaleDeckSelection {
         }
         this.gameHTML.classList.add("daleofmerchants-hidden");
 
+        const n = Math.max(2, Object.values(page.gamedatas.players).length);
         this.orderedSelection.setIconType('numbers');
-        this.orderedSelection.setMaxSize(Object.values(page.gamedatas.players).length + 1)
+        this.orderedSelection.setMaxSize(n + 1);
         for (let animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');

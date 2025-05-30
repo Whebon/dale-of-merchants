@@ -25,7 +25,7 @@ class DaleDeckSelection {
      * Submit a list of preferences for a player
      */
     function submitPreference(int $player_id, array $animalfolk_ids) {
-        $n = $this->game->getPlayersNumber();
+        $n = $this->game->getPlayersNumberInclMono();
         if (count($animalfolk_ids) !== count(array_unique($animalfolk_ids))) {
             throw new BgaVisibleSystemException("A player's deck selection preferences must be unique");
         }
@@ -53,7 +53,7 @@ class DaleDeckSelection {
      */
     function selectAnimalfolkIds() {
         $animalfolk_ids = $this->getPreferences();
-        $n = $this->game->getPlayersNumber();
+        $n = $this->game->getPlayersNumberInclMono();
         while(count($animalfolk_ids) < $n + 1) {
             //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_SNOWMACAQUES are not the last anymore)
             $random_id = rand(ANIMALFOLK_MACAWS, ANIMALFOLK_SNOWMACAQUES);
@@ -84,7 +84,7 @@ class DaleDeckSelection {
         }
         $sql = "SELECT animalfolk_id FROM deckselection WHERE player_id = 0";
         $collection = $this->game->getCollectionFromDB($sql);
-        $n = $this->game->getPlayersNumber();
+        $n = $this->game->getPlayersNumberInclMono();
         if (count($collection) != $n+1) {
             throw new BgaVisibleSystemException("'getAnimalfolkIds' failed, please ensure that 'selectAnimalfolkIds' was called exactly once");
         }

@@ -66,6 +66,13 @@
   opacity: 0.5;
 }
 
+.daleofmerchants-mono-avatar {
+  background: url(img/cards.jpg);
+  background-size: 1000% 1820%;
+  background-position-x: 6%;
+  background-position-y: 17.4%;
+}
+
 .daleofmerchants-component-name {
   text-align: center;
   margin: 10px;
