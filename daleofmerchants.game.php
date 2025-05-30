@@ -249,7 +249,7 @@ class DaleOfMerchants extends DaleTableBasic
     function getGameProgression()
     {
         $highest_stack_index = 0;
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach ( $players as $player_id => $player ) {
             $next_stack_index = $this->cards->getNextStackIndex($player_id);
             $highest_stack_index = max($highest_stack_index, $next_stack_index);
@@ -302,7 +302,7 @@ class DaleOfMerchants extends DaleTableBasic
      * Validates that the parameter is a registered player
      */
     function validatePlayerId($player_id) {
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         if (!isset($players[$player_id])) {
             throw new BgaUserException($player_id._(" is not a valid player id"));
         }
@@ -522,7 +522,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function getUniqueOpponentId() {
         $player_id = $this->getActivePlayerId();
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         if (count($players) != 2) {
             throw new BgaVisibleSystemException("getUniqueOpponentId is not defined for non-2-player games");
         }
@@ -2069,7 +2069,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_REFLECTION:
                 array_push($visited_chameleons, CT_REFLECTION);
                 $active_player_id = $this->getActivePlayerId();
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 foreach ($players as $player_id => $player) {
                     if ($player_id != $active_player_id) {
                         $target = $this->cards->getCardOnTop(DISCARD.$player_id);
@@ -2133,7 +2133,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_REFLECTION:
                 $active_player_id = $this->getActivePlayerId();
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 foreach ($players as $player_id => $player) {
                     if ($player_id != $active_player_id) {
                         $target = $this->cards->getCardOnTop(DISCARD.$player_id);
@@ -2995,7 +2995,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function destroySchedule() {
         //requires refresh
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach ( $players as $player_id => $player ) {
             $this->cards->moveAllCardsInLocation(SCHEDULE.$player_id, 'destroyed');
         }   
@@ -3145,7 +3145,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function debugPlayers() {
-        die(print_r($this->loadPlayersBasicInfos()));
+        die(print_r($this->loadPlayersBasicInfosInclMono()));
     }
 
     function debugActivePlayer() {
@@ -3431,7 +3431,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_ACORN:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $cards = array();
                     foreach ($players as $other_player_id => $player) {
                         if ($other_player_id != $player_id) {
@@ -3444,7 +3444,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_TREASUREHUNTER:
                 case CT_CAREFREESWAPPER:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     foreach ($players as $opponent_id => $opponent) {
                         if ($player_id != $opponent_id) {
                             $target = $this->cards->getCardOnTop(DISCARD.$opponent_id);
@@ -3491,7 +3491,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_NIGHTSHIFT:
                 case CT_RUMOURS:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
                         if (isset($counts[DECK.$other_player_id]) || isset($counts[DISCARD.$other_player_id])) {
@@ -3502,7 +3502,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_RUTHLESSCOMPETITION:
                 case CT_BURGLARY:
                 case CT_PERISCOPE:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $opponent_id => $opponent) {
                         if ($opponent_id != $player_id && (isset($counts[DECK.$opponent_id]) || isset($counts[DISCARD.$opponent_id]))) {
@@ -3511,7 +3511,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_CHARITY:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
                         if (isset($counts[HAND.$other_player_id])) {
@@ -3548,7 +3548,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_GRASP:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $opponent_id => $player) {
                         if ($opponent_id != $player_id && isset($counts[HAND.$opponent_id])) {
@@ -3557,7 +3557,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_VELOCIPEDE:
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $cards = array();
                     foreach ($players as $other_player_id => $player) {
                         $cards = array_merge($cards, $this->cards->getCardsInLocation(STALL.$other_player_id));
@@ -3568,7 +3568,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_MATCHINGCOLOURS:
                     //get the possible values
-                    $players = $this->loadPlayersBasicInfos();
+                    $players = $this->loadPlayersBasicInfosInclMono();
                     $values = [];
                     foreach ($players as $other_player_id => $player) {
                         if ($other_player_id != $player_id) {
@@ -3634,7 +3634,7 @@ class DaleOfMerchants extends DaleTableBasic
                             }
                             break;
                         case CLOCK_DAY:
-                            $players = $this->loadPlayersBasicInfos();
+                            $players = $this->loadPlayersBasicInfosInclMono();
                             $counts = $this->cards->countCardsInLocations();
                             foreach ($players as $other_player_id => $player) {
                                 if ($other_player_id != $player_id && isset($counts[STALL.$other_player_id])) {
@@ -4174,7 +4174,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_LITTLEVILLAIN:
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 $this->notifyAllPlayers('message', clienttranslate('Little Villain: all players except ${player_name} discard two cards from their deck'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
@@ -4203,7 +4203,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_NIGHTSHIFT:
                 $this->beginResolvingCard($technique_card_id);
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 $counts = $this->cards->countCardsInLocations();
                 $player_ids = [];
                 foreach ($players as $player_id => $player) {
@@ -4290,7 +4290,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_CHARITY:
                 $this->beginResolvingCard($technique_card_id);
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 $counts = $this->cards->countCardsInLocations();
                 $player_ids = [];
                 foreach ($players as $player_id => $player) {
@@ -4306,7 +4306,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_RUMOURS:
                 $this->beginResolvingCard($technique_card_id);
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 $counts = $this->cards->countCardsInLocations();
                 $player_ids = [];
                 foreach ($players as $player_id => $player) {
@@ -4335,7 +4335,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_TASTERS:
                 $this->beginResolvingCard($technique_card_id);
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 $player_ids = [];
                 foreach ($players as $player_id => $player) {
                     $player_ids[] = $player_id;
@@ -4344,7 +4344,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trTasters");
                 break;
             case CT_CHEER:
-                $players = $this->loadPlayersBasicInfos();
+                $players = $this->loadPlayersBasicInfosInclMono();
                 $this->notifyAllPlayers('message', clienttranslate('Cheer: all players place the top 1 card from their discard piles on their decks'), array(
                     "player_name" => $this->getPlayerNameById($player_id),
                 ));
@@ -4750,7 +4750,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //TODO: safely remove this
                 // $card_name = trim($args["card_name"], '"');
                 // $type_id = $this->nameToTypeId($card_name);
-                // $players = $this->loadPlayersBasicInfos();
+                // $players = $this->loadPlayersBasicInfosInclMono();
                 // $this->notifyAllPlayers('message', clienttranslate('Periscope: ${player_name} named "${card_name}"'), array(
                 //     "player_name" => $this->getPlayerNameById($player_id),
                 //     "card_name" => $this->card_types[$type_id]['name'],
@@ -7852,7 +7852,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function argDeckContent() {
         $_private = array();
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach ($players as $player_id => $player) {
             $dbcards = array_values($this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg'));
             $_private[$player_id] = array('cards' => array_values($dbcards));
@@ -7994,7 +7994,7 @@ class DaleOfMerchants extends DaleTableBasic
     function stStartGame() {
         //Complete the deck selection and get the results
         $this->setGameStateValue("inDeckSelection", 0);
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         $animalfolk_ids = $this->deckSelection->selectAnimalfolkIds();
         foreach ($animalfolk_ids as $animalfolk_id) {
             $this->initStat("table", "deck_selection_".$animalfolk_id, true);
@@ -8160,7 +8160,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //4. expire all effects, except global effects with their corresponding card in a schedule
         $schedule_card_ids = array();
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach($players as $player_id => $player) {
             $schedule_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
             foreach ($schedule_dbcards as $dbcard) {
@@ -8185,7 +8185,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stFinalStatistics() {
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach($players as $player_id => $player) {
             $nbr = $this->cards->countCardsInLocation(HAND.$player_id);
             $nbr += $this->cards->countCardsInLocation(DISCARD.$player_id);
@@ -8297,7 +8297,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stNightShift() {
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach ($players as $player_id => $player) {
             $this->draw(
                 clienttranslate('Night Shift: ${player_name} draws a card from ${opponent_name}\'s deck'),
@@ -8341,7 +8341,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stDeprecatedCheer() {
         $this->gamestate->setAllPlayersMultiactive();
-        $players = $this->loadPlayersBasicInfos();
+        $players = $this->loadPlayersBasicInfosInclMono();
         foreach ( $players as $player_id => $player ) {
             if ($this->cards->countCardsInLocation(DECK.$player_id) == 0) {
                 $this->notifyAllPlayers('message', clienttranslate('Cheer: ${player_name} cannot search a card, their deck is empty'), array(
