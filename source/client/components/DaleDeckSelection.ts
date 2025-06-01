@@ -1,5 +1,6 @@
 import Gamegui = require("ebg/core/gamegui");
 
+import { DaleIcons } from "./DaleIcons"
 import { Images } from "./Images";
 import { AbstractOrderedSelection } from "./AbstractOrderedSelection";
 
@@ -12,6 +13,7 @@ class OrderedDeckSelection extends AbstractOrderedSelection {
 export class DaleDeckSelection {
     private gameHTML: HTMLElement;
     private deckSelectionHTML: HTMLElement;
+    private filterContainer: HTMLElement;
     private cardContainer: HTMLElement;
     public orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
 
@@ -71,6 +73,7 @@ export class DaleDeckSelection {
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
+        this.filterContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-filters") as HTMLElement)!;
         this.cardContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container") as HTMLElement)!;
         this.cardContainer.classList.add("daleofmerchants-wrap-technique");
         if (!inDeckSelection) {
@@ -126,6 +129,8 @@ export class DaleDeckSelection {
             console.log("deck-"+disabled_animalfolk_id);
             this.cardContainer.appendChild($("deck-"+disabled_animalfolk_id)!);
         }
+
+        this.setupFilters();
     }
 
     private getTooltipContent(animalfolk_id: number): string {
@@ -136,6 +141,7 @@ export class DaleDeckSelection {
      * Remove all elements related to the deck selection and show the actual game
      */
     public remove() {
+        this.filterContainer.remove();
         this.cardContainer.remove();
         for (let tooltip of this.tooltips) {
             tooltip.destroy();
@@ -155,5 +161,19 @@ export class DaleDeckSelection {
         }
         $("deck-"+animalfolk_id)?.classList.remove("daleofmerchants-deck-selection-unavailable");
         this.orderedSelection.selectItem(animalfolk_id);
+    }
+
+    public setupFilters() {
+        const icons: [string, HTMLElement][] = [
+            ["daleofmerchants-filter-title-reset-filters",  DaleIcons.getResetFiltersIcon()],
+            ["daleofmerchants-filter-title-complexity",     DaleIcons.getComplexityIcon()],
+            ["daleofmerchants-filter-title-interactivity",  DaleIcons.getInteractivityIcon()],
+            ["daleofmerchants-filter-title-nastiness",      DaleIcons.getNastinessIcon()],
+            ["daleofmerchants-filter-title-randomness",     DaleIcons.getRandomnessIcon()],
+            ["daleofmerchants-filter-title-game",           DaleIcons.getGameIcon()]
+        ]
+        for (const [html_id, icon] of icons) {
+            $(html_id)!.insertAdjacentHTML('afterbegin', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
+        }
     }
 }

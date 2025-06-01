@@ -857,6 +857,16 @@
   background-color: rgb(212, 130, 30);
   color: white;
 }
+.daleofmerchants-filters button .daleofmerchants-log-span .daleofmerchants-icon {
+  top: -1px;
+  width: 20px;
+  height: 20px;
+}
+.daleofmerchants-filters h3 .daleofmerchants-log-span .daleofmerchants-icon {
+  top: -2px;
+  width: 28px;
+  height: 28px;
+}
 
 :root {
   --ocelot: rgb(227, 6, 19);

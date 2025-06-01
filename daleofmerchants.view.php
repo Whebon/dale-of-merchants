@@ -73,6 +73,23 @@ class view_daleofmerchants_daleofmerchants extends game_view
         // $this->tpl['ACTION_LABEL_DISCARD'] = $this->_("Click cards to <strong>discard</strong>");
         // $this->tpl['ACTION_LABEL_DEFAULT'] = $this->_("Your hand");
 
+        //Filter titles
+        $this->tpl['RESET_FILTERS'] = $this->_("Reset Filters");
+        $this->tpl['FILTER_DECKS'] = $this->_("Filter Decks");
+        $this->tpl['COMPLEXITY'] = $this->_("Complexity");
+        $this->tpl['INTERACTIVITY'] = $this->_("Interactivity");
+        $this->tpl['NASTINESS'] = $this->_("Nastiness");
+        $this->tpl['RANDOMNESS'] = $this->_("Randomness");
+        $this->tpl['GAME'] = $this->_("Game");
+
+        //Filter toggles
+        $this->tpl['NONE'] = $this->_("None");
+        $this->tpl['LOW'] = $this->_("Low");
+        $this->tpl['MEDIUM'] = $this->_("Medium");
+        $this->tpl['HIGH'] = $this->_("High");
+        $this->tpl['ALL_DECKS'] = $this->_("All Decks");
+        $this->tpl['ALL_GAMES'] = $this->_("All Games");
+
         //Other variables
         // $this->tpl['YOUR_HAND'] = $this->_("Your hand");
         $this->tpl['MARKET'] = $this->_("Market");

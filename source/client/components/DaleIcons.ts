@@ -1,5 +1,5 @@
 export class DaleIcons {
-    private static readonly ROWS = 10;
+    private static readonly ROWS = 11;
     private static readonly COLUMNS = 6;
     
     private static readonly ICON_WIDTH = 150;
@@ -26,6 +26,10 @@ export class DaleIcons {
     ///////////////////////////////
     ////////    ALIASES    ////////
     ///////////////////////////////
+
+    public static getResetFiltersIcon(): HTMLElement {
+        return this.getClockIcon(); //TODO: should be a 'rotating arrow' icon
+    }
 
     public static getDuplicateEntry(): HTMLElement {
         return this.getHandIcon(); //TODO: should be a 'put aside' icon (these cards are moved to limbo)
@@ -206,5 +210,29 @@ export class DaleIcons {
 
     public static get3DDiePangolin2Icon(): HTMLElement {
         return this.getIcon(9, 4);
+    }
+
+    //////////////////////////////
+    ////////    ROW 10    ////////
+    //////////////////////////////
+
+    public static getComplexityIcon(): HTMLElement {
+        return this.getIcon(10, 0);
+    }
+
+    public static getInteractivityIcon(): HTMLElement {
+        return this.getIcon(10, 1);
+    }
+
+    public static getNastinessIcon(): HTMLElement {
+        return this.getIcon(10, 2);
+    }
+
+    public static getRandomnessIcon(): HTMLElement {
+        return this.getIcon(10, 3);
+    }
+
+    public static getGameIcon(): HTMLElement {
+        return this.getIcon(10, 4);
     }
 }

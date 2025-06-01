@@ -17,47 +17,50 @@
 <div id="daleofmerchants-page-deck-selection">
     <!-- Filter HTML by Sami Laakso -->
     <div class="daleofmerchants-filters">
-        <button class="reset-filters">Reset filters</button>
-        <h2>Filter decks</h2>
+        <button class="reset-filters" id="daleofmerchants-filter-title-reset-filters"> {RESET_FILTERS}</button>
+        <h2>{FILTER_DECKS}</h2>
         <div class="filter">
-            <h3>Complexity</h3>
+            <h3 id="daleofmerchants-filter-title-complexity"> {COMPLEXITY}</h3>
             <div class="toggle-holder">
-            <span class="toggle">Low</span>
-            <span class="toggle">Medium</span>
-            <span class="toggle">High</span>
-            <span class="toggle chosen">All decks</span>
+            <span class="toggle">{NONE}</span>
+            <span class="toggle">{LOW}</span>
+            <span class="toggle">{MEDIUM}</span>
+            <span class="toggle">{HIGH}</span>
+            <span class="toggle chosen">{ALL_DECKS}</span>
             </div>
         </div>
         <div class="filter">
-            <h3>Interactivity</h3>
+            <h3 id="daleofmerchants-filter-title-interactivity"> {INTERACTIVITY}</h3>
             <div class="toggle-holder">
-            <span class="toggle">Low</span>
-            <span class="toggle">Medium</span>
-            <span class="toggle">High</span>
-            <span class="toggle chosen">All decks</span>
+            <span class="toggle">{NONE}</span>
+            <span class="toggle">{LOW}</span>
+            <span class="toggle">{MEDIUM}</span>
+            <span class="toggle">{HIGH}</span>
+            <span class="toggle chosen">{ALL_DECKS}</span>
             </div>
         </div>
         <div class="filter">
-            <h3>Nastiness</h3>
+            <h3 id="daleofmerchants-filter-title-nastiness"> {NASTINESS}</h3>
             <div class="toggle-holder">
-            <span class="toggle">None</span>
-            <span class="toggle">Low</span>
-            <span class="toggle">Medium</span>
-            <span class="toggle">High</span>
-            <span class="toggle chosen">All decks</span>
+            <span class="toggle">{NONE}</span>
+            <span class="toggle">{LOW}</span>
+            <span class="toggle">{MEDIUM}</span>
+            <span class="toggle">{HIGH}</span>
+            <span class="toggle chosen">{ALL_DECKS}</span>
             </div>
         </div>
         <div class="filter">
-            <h3>Randomness</h3>
+            <h3 id="daleofmerchants-filter-title-randomness"> {RANDOMNESS}</h3>
             <div class="toggle-holder">
-            <span class="toggle">Low</span>
-            <span class="toggle">Medium</span>
-            <span class="toggle">High</span>
-            <span class="toggle chosen">All decks</span>
+            <span class="toggle">{NONE}</span>
+            <span class="toggle">{LOW}</span>
+            <span class="toggle">{MEDIUM}</span>
+            <span class="toggle">{HIGH}</span>
+            <span class="toggle chosen">{ALL_DECKS}</span>
             </div>
         </div>
         <div class="filter">
-            <h3>Game</h3>
+            <h3 id="daleofmerchants-filter-title-game"> {GAME}</h3>
             <div class="toggle-holder">
             <span class="toggle">1</span>
             <span class="toggle">2</span>
@@ -65,7 +68,7 @@
             <span class="toggle">4</span>
             <span class="toggle">5</span>
             <span class="toggle">6</span>
-            <span class="toggle chosen">All games</span>
+            <span class="toggle chosen">{ALL_GAMES}</span>
             </div>
         </div>
     </div>
