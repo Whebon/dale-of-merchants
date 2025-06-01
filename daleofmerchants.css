@@ -53,11 +53,20 @@
   padding: 5px;
 }
 
+#daleofmerchants-page-deck-selection {
+  display: flex;
+}
+
+.mobile_version #daleofmerchants-page-deck-selection {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
 .daleofmerchants-deck-selection-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  margin: 20px;
+  margin: 5px;
 }
 
 .daleofmerchants-deck-selection-unavailable {
@@ -446,6 +455,9 @@
   margin: 5px;
   position: relative;
 }
+.daleofmerchants-card.daleofmerchants-relative.daleofmerchants-deck-selection {
+  margin: 10px;
+}
 .daleofmerchants-card.daleofmerchants-deck-selection {
   background-image: url("img/cards_selection.jpg");
 }
@@ -511,15 +523,18 @@
 }
 
 .daleofmerchants-stall-container {
-  width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
+  width: 100%;
+  /* literally wasted 2 full hours to get this dumb css styling to work */
   display: flex;
   flex: 1 1;
   justify-content: left;
 }
 .daleofmerchants-stall-container .daleofmerchants-stack-container {
-  flex: 1 1; /* Allow items to grow and shrink */
+  flex: 1 1;
+  /* Allow items to grow and shrink */
   margin-left: 5px;
-  min-width: 0; /* Ensure items can shrink below their content width */
+  min-width: 0;
+  /* Ensure items can shrink below their content width */
   position: relative;
 }
 .daleofmerchants-stall-container .daleofmerchants-stack-container .daleofmerchants-card:hover {
@@ -607,7 +622,8 @@
   font-weight: bold;
   top: 4%;
   color: white;
-  background-color: rgba(0, 0, 0, 0.62); /* Optional, for better visibility */
+  background-color: rgba(0, 0, 0, 0.62);
+  /* Optional, for better visibility */
   text-align: center;
   font-size: 16px;
   right: -5%;
@@ -775,12 +791,79 @@
   background-color: #f1f1f1;
 }
 
+.daleofmerchants-filters {
+  height: max-content;
+  margin: 5px;
+  background-color: rgba(255, 250, 220, 0.4);
+  border-radius: 20px;
+  padding: 10px;
+  display: inline-block;
+  font-family: "arial";
+}
+.daleofmerchants-filters h2 {
+  margin: 0;
+  padding: 0 0.2em;
+  font-size: 1.5em;
+}
+.daleofmerchants-filters button {
+  width: auto;
+}
+.daleofmerchants-filters .reset-filters {
+  border: none;
+  font-size: 1em;
+  background-color: rgba(120, 62, 21, 0.1);
+  border-radius: 0.4em;
+  padding: 0.3em 0.5em;
+  float: right;
+  color: rgba(120, 62, 21, 0.5);
+  cursor: pointer;
+}
+.daleofmerchants-filters .reset-filters.active {
+  color: white;
+  background-color: rgb(212, 130, 30);
+}
+.daleofmerchants-filters .filter {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgb(255, 250, 220);
+  border-radius: 10px;
+}
+.daleofmerchants-filters .filter h3 {
+  margin: 0 0 0.5em;
+}
+.daleofmerchants-filters .toggle-holder {
+  flex: 0 1;
+  display: flex;
+  gap: 4px;
+  justify-content: right;
+  white-space: nowrap;
+  max-width: -moz-fit-content;
+  max-width: fit-content;
+  background-color: rgba(120, 62, 21, 0.1);
+  padding: 4px;
+  border-radius: 12px;
+}
+.daleofmerchants-filters .toggle-holder .toggle {
+  background: none;
+  color: rgb(120, 62, 21);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+.daleofmerchants-filters .toggle-holder .toggle:not(.chosen) {
+  opacity: 0.5;
+}
+.daleofmerchants-filters .toggle-holder .toggle.chosen {
+  background-color: rgb(212, 130, 30);
+  color: white;
+}
+
 :root {
-  --ocelot: rgb(227,6,19);
-  --polecat: rgb(215,64,119);
-  --hare: rgb(72,124,190);
-  --pangolin1: rgb(127,186,39);
-  --pangolin2: rgb(0,149,62);
+  --ocelot: rgb(227, 6, 19);
+  --polecat: rgb(215, 64, 119);
+  --hare: rgb(72, 124, 190);
+  --pangolin1: rgb(127, 186, 39);
+  --pangolin2: rgb(0, 149, 62);
   --die-size: 60px;
   --die-half: 30px;
 }
@@ -1020,21 +1103,21 @@
   }
 }
 :root {
-  --daleofmerchants-wrap-technique: rgb(40,125,184);
-  --daleofmerchants-wrap-technique-a: rgba(40,125,184,0.15);
-  --daleofmerchants-wrap-purchase: rgb(210,128,21);
-  --daleofmerchants-wrap-purchase-a: rgba(210,128,21,0.15);
+  --daleofmerchants-wrap-technique: rgb(40, 125, 184);
+  --daleofmerchants-wrap-technique-a: rgba(40, 125, 184, 0.15);
+  --daleofmerchants-wrap-purchase: rgb(210, 128, 21);
+  --daleofmerchants-wrap-purchase-a: rgba(210, 128, 21, 0.15);
   --daleofmerchants-wrap-build: rgb(192, 61, 120);
-  --daleofmerchants-wrap-build-a: rgb(192,61,120,0.15);
-  --daleofmerchants-wrap-discard: rgb(232,62,51);
-  --daleofmerchants-wrap-discard-a: rgb(232,62,51,0.15);
-  --daleofmerchants-wrap-default: rgb(100,100,100);
-  --daleofmerchants-wrap-default-g: rgb(100,100,100, 0.5);
-  --daleofmerchants-wrap-default-a: rgb(100,100,100,0.15);
+  --daleofmerchants-wrap-build-a: rgb(192, 61, 120, 0.15);
+  --daleofmerchants-wrap-discard: rgb(232, 62, 51);
+  --daleofmerchants-wrap-discard-a: rgb(232, 62, 51, 0.15);
+  --daleofmerchants-wrap-default: rgb(100, 100, 100);
+  --daleofmerchants-wrap-default-g: rgb(100, 100, 100, 0.5);
+  --daleofmerchants-wrap-default-a: rgb(100, 100, 100, 0.15);
   --daleofmerchants-dawn: rgb(0, 163, 158, 0.25);
   --daleofmerchants-dawn-a: rgb(0, 163, 158, 0.05);
   --daleofmerchants-day: rgb(230, 71, 36, 0.25);
-  --daleofmerchants-day-a:rgb(230, 71, 36, 0.05);
+  --daleofmerchants-day-a: rgb(230, 71, 36, 0.05);
   --daleofmerchants-night: rgb(115, 46, 132, 0.25);
   --daleofmerchants-night-a: rgb(115, 46, 132, 0.05);
 }

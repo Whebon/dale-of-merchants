@@ -45,12 +45,13 @@
 
 #page-title {
 	position: sticky !important;
-    top: 0 !important;
+	top: 0 !important;
 	zoom: 1 !important;
 }
 
 .standard_popin {
-	#maintitlebar_content, 
+
+	#maintitlebar_content,
 	#maintitlebar_content_clone,
 	#maintitlebar_content_clone_closed {
 		text-align: center;
@@ -69,16 +70,27 @@
 ////////////////////     DECK SELECTION     ////////////////////
 ////////////////////////////////////////////////////////////////
 
+#daleofmerchants-page-deck-selection {
+	display: flex;
+}
+
+.mobile_version {
+	#daleofmerchants-page-deck-selection {
+		display: flex;
+		flex-direction: column-reverse;
+	}
+}
+
 .daleofmerchants-deck-selection-container {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
-	margin: 20px
+	margin: 5px
 }
 
 .daleofmerchants-deck-selection-unavailable {
 	background-color: black;
-    background-blend-mode: luminosity;
+	background-blend-mode: luminosity;
 	opacity: 0.5;
 }
 
@@ -88,9 +100,9 @@
 
 .daleofmerchants-mono-avatar {
 	background: url(img/cards.jpg);
-    background-size: 1000% 1820%;
-    background-position-x: 6%;
-    background-position-y: 17.4%;
+	background-size: 1000% 1820%;
+	background-position-x: 6%;
+	background-position-y: 17.4%;
 }
 
 //////////////////////////////////////////////////////
@@ -104,7 +116,7 @@
 }
 
 .daleofmerchants-play-area-opponent {
-	background-color: rgba(200,200,200,0.5)
+	background-color: rgba(200, 200, 200, 0.5)
 }
 
 .daleofmerchants-play-area-title {
@@ -137,22 +149,77 @@
 //downside 'rotate':		doesn't work in arc stocks
 //downside 'box-shadow':	breaks boxshadow on hover (without !important)
 @keyframes high-priority-flat-stock {
-  0%   { rotate: 0deg; transform: scale(1); filter: brightness(1); }
-  60%  { rotate: 0deg; transform: scale(1); filter: brightness(1); }
-  65%  { rotate: -4deg; transform: scale(1.05); }
-  70%  { rotate: 4deg; transform: scale(1.1); filter: brightness(1.1);  }
-  75%  { rotate: -4deg; transform: scale(1.05); }
-  80%  { rotate: 3deg; transform: scale(1.03); }
-  85%  { rotate: -3deg; transform: scale(1.02); }
-  90%  { rotate: 2deg; transform: scale(1.01); }
-  95%  { rotate: -1deg; transform: scale(1); filter: brightness(1); }
-  100% { rotate: 0deg; transform: scale(1); filter: brightness(1); }
+	0% {
+		rotate: 0deg;
+		transform: scale(1);
+		filter: brightness(1);
+	}
+
+	60% {
+		rotate: 0deg;
+		transform: scale(1);
+		filter: brightness(1);
+	}
+
+	65% {
+		rotate: -4deg;
+		transform: scale(1.05);
+	}
+
+	70% {
+		rotate: 4deg;
+		transform: scale(1.1);
+		filter: brightness(1.1);
+	}
+
+	75% {
+		rotate: -4deg;
+		transform: scale(1.05);
+	}
+
+	80% {
+		rotate: 3deg;
+		transform: scale(1.03);
+	}
+
+	85% {
+		rotate: -3deg;
+		transform: scale(1.02);
+	}
+
+	90% {
+		rotate: 2deg;
+		transform: scale(1.01);
+	}
+
+	95% {
+		rotate: -1deg;
+		transform: scale(1);
+		filter: brightness(1);
+	}
+
+	100% {
+		rotate: 0deg;
+		transform: scale(1);
+		filter: brightness(1);
+	}
 }
 
 @keyframes high-priority-arc-stock {
-	from { filter: brightness(1); scale: 1; }
-	50% { filter: brightness(1.1); scale: 1.1; }
-	to { filter: brightness(1); scale: 1; }
+	from {
+		filter: brightness(1);
+		scale: 1;
+	}
+
+	50% {
+		filter: brightness(1.1);
+		scale: 1.1;
+	}
+
+	to {
+		filter: brightness(1);
+		scale: 1;
+	}
 }
 
 .daleofmerchants-flat-stock {
@@ -185,44 +252,44 @@
 
 .daleofmerchants-effective-value {
 	height: 20px;
-    width: 20px;
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    left: 6%;
-    position: absolute;
-    top: 2%;
-    color: lightgreen;
-    font-weight: bold;
+	width: 20px;
+	border-radius: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	left: 6%;
+	position: absolute;
+	top: 2%;
+	color: lightgreen;
+	font-weight: bold;
 	font-size: large;
-    text-shadow: 
-        /* first layer at 1px */
-        -1px -1px 0px #000,
-         0px -1px 0px #000,
-         1px -1px 0px #000,
-        -1px  0px 0px #000,
-         1px  0px 0px #000,
-        -1px  1px 0px #000,
-         0px  1px 0px #000,
-         1px  1px 0px #000,
-        /* second layer at 2px */
-        -2px -2px 0px #000,
-        -1px -2px 0px #000,
-         0px -2px 0px #000,
-         1px -2px 0px #000,
-         2px -2px 0px #000,
-         2px -1px 0px #000,
-         2px  0px 0px #000,
-         2px  1px 0px #000,
-         2px  2px 0px #000,
-         1px  2px 0px #000,
-         0px  2px 0px #000,
-        -1px  2px 0px #000,
-        -2px  2px 0px #000,
-        -2px  1px 0px #000,
-        -2px  0px 0px #000,
-        -2px -1px 0px #000;
+	text-shadow:
+		/* first layer at 1px */
+		-1px -1px 0px #000,
+		0px -1px 0px #000,
+		1px -1px 0px #000,
+		-1px 0px 0px #000,
+		1px 0px 0px #000,
+		-1px 1px 0px #000,
+		0px 1px 0px #000,
+		1px 1px 0px #000,
+		/* second layer at 2px */
+		-2px -2px 0px #000,
+		-1px -2px 0px #000,
+		0px -2px 0px #000,
+		1px -2px 0px #000,
+		2px -2px 0px #000,
+		2px -1px 0px #000,
+		2px 0px 0px #000,
+		2px 1px 0px #000,
+		2px 2px 0px #000,
+		1px 2px 0px #000,
+		0px 2px 0px #000,
+		-1px 2px 0px #000,
+		-2px 2px 0px #000,
+		-2px 1px 0px #000,
+		-2px 0px 0px #000,
+		-2px -1px 0px #000;
 	z-index: 200;
 }
 
@@ -234,24 +301,29 @@
 	top: 50%; //a more specific selector should override this
 	border-radius: 3px;
 	background-image: url('img/icons.png');
-    transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
 	z-index: 500;
+
 	&.daleofmerchants-selection-icon-1 {
 		top: 80%;
 		width: 50px;
 		height: 50px;
+
 		&~.daleofmerchants-selection-icon-2 {
 			display: none;
 		}
 	}
+
 	&.daleofmerchants-selection-icon-2 {
 		top: 80%;
 		width: 50px;
 		height: 50px;
+
 		&~.daleofmerchants-selection-icon-1 {
 			display: none;
 		}
 	}
+
 	&.daleofmerchants-chameleon-icon {
 		pointer-events: none;
 		width: 90px;
@@ -260,16 +332,19 @@
 		left: 50%;
 		opacity: 50%;
 	}
+
 	&.daleofmerchants-avid-financier-coin-icon {
 		z-index: 501; //above the chameleon overlay
 		width: 50px;
 		height: 50px;
 		top: 45%;
 		left: 50%;
+
 		//In order to safely use nth-child, the icons are in a "daleofmerchants-avid-financier-coin-container"
 		&:nth-child(1):nth-last-child(2) {
 			left: 35%; //1st child
 		}
+
 		&:nth-child(2):nth-last-child(1) {
 			left: 65%; //2nd child
 		}
@@ -281,6 +356,7 @@
 		before {
 			content: "\f005";
 		}
+
 		position: static;
 		height: 23px;
 		width: 23px;
@@ -294,9 +370,11 @@
 .daleofmerchants-token-area {
 	display: inline-flex;
 	float: right;
+
 	.daleofmerchants-icon {
 		z-index: 99; //below cards
 	}
+
 	.daleofmerchants-clock-wrap {
 		min-width: 80px;
 		border-radius: 10px;
@@ -305,25 +383,31 @@
 		padding-bottom: 3px;
 		display: inline-flex;
 		align-items: center;
+
 		&[data-clock="0"] {
 			background: var(--daleofmerchants-dawn)
 		}
+
 		&[data-clock="1"] {
 			background: var(--daleofmerchants-day)
 		}
+
 		&[data-clock="2"] {
 			background: var(--daleofmerchants-night)
 		}
 	}
+
 	.daleofmerchants-coins-wrap {
 		display: inline-flex;
 		align-items: center;
 		user-select: none;
 	}
+
 	.daleofmerchants-icon {
 		before {
 			content: "\f005";
 		}
+
 		position: static;
 		height: 28px;
 		width: 28px;
@@ -332,16 +416,19 @@
 		margin-right: 4px;
 		transform: translate(0px, 0px);
 	}
+
 	.daleofmerchants-label {
 		&.daleofmerchants-clickable {
 			box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
 			transition: scale 0.3s ease, margin-right 0.3s ease;
 			scale: 1;
+
 			&:hover {
 				margin-right: 10px;
 				scale: 1.1;
 			}
 		}
+
 		color: white;
 		border-radius: 10px;
 		padding: 5px;
@@ -349,21 +436,22 @@
 	}
 }
 
-.daleofmerchants-wrap-default {	
+.daleofmerchants-wrap-default {
 	.daleofmerchants-spending {
 		display: none;
 	}
-}	
+}
 
 .daleofmerchants-myhandsize-icon {
 	before {
 		content: "\f005";
 	}
+
 	background-image: url('img/handsize_icon.png');
 	width: 16px;
-    height: 16px;
-    background-size: contain;
-    background-repeat: no-repeat;
+	height: 16px;
+	background-size: contain;
+	background-repeat: no-repeat;
 	display: inline-block;
 	margin-left: 4px;
 	margin-right: 5px;
@@ -378,7 +466,9 @@
 }
 
 #daleofmerchants-market-wrap {
-	.daleofmerchants-selected { //note that the slot is selected, not the card
+	.daleofmerchants-selected {
+
+		//note that the slot is selected, not the card
 		&.daleofmerchants-wrap-technique {
 			.daleofmerchants-card {
 				box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-technique); //for CT_FASHIONHINT
@@ -387,6 +477,7 @@
 				background-blend-mode: overlay; //for CT_FASHIONHINT
 			}
 		}
+
 		.daleofmerchants-card {
 			border-radius: 10px;
 			box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-purchase); //for CT_DEPRECATED_MARKETDISCOVERY
@@ -394,6 +485,7 @@
 			transform: translateY(5px);
 			scale: 1.1;
 			z-index: 200;
+
 			&.daleofmerchants-line-target-chameleon {
 				transform: translateY(0);
 			}
@@ -401,7 +493,7 @@
 	}
 
 	//cost modification icon
-	.daleofmerchants-stack-container > .daleofmerchants-icon {
+	.daleofmerchants-stack-container>.daleofmerchants-icon {
 		top: -20px;
 		width: 40px;
 		height: 40px;
@@ -438,9 +530,17 @@
 }
 
 @keyframes blinker {
-	from { opacity: 1.0; }
-	50% { opacity: 0.75; }
-	to { opacity: 1.0; }
+	from {
+		opacity: 1.0;
+	}
+
+	50% {
+		opacity: 0.75;
+	}
+
+	to {
+		opacity: 1.0;
+	}
 }
 
 .daleofmerchants-line-source {
@@ -479,41 +579,54 @@
 .daleofmerchants-card {
 	background-image: url("img/cards.jpg");
 	background-size: cover;
-	box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
+	box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
 	border-radius: 10px;
 	position: absolute; //this is needed for dojo animations
 	transition: transform 0.3s ease, scale 0.3s ease;
 	z-index: 100;
+
 	&:hover {
 		scale: 1.1;
 		z-index: 200;
 	}
+
 	&.daleofmerchants-chameleon-overlay {
 		pointer-events: none;
 		box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5); //no box shadows for overlays
 	}
+
 	&.daleofmerchants-relative {
 		margin: 5px;
 		position: relative;
+		&.daleofmerchants-deck-selection {
+			margin: 10px;
+		}
 	}
+
 	&.daleofmerchants-deck-selection {
 		background-image: url("img/cards_selection.jpg");
 	}
+
 	&.daleofmerchants-card-sheet-1 {
 		background-image: url("img/cards_1.jpg");
 	}
+
 	&.daleofmerchants-card-sheet-2 {
 		background-image: url("img/cards_2.jpg");
 	}
+
 	&.daleofmerchants-card-sheet-3 {
 		background-image: url("img/cards_3.jpg");
 	}
+
 	&.daleofmerchants-card-sheet-4 {
 		background-image: url("img/cards_4.jpg");
 	}
+
 	&.daleofmerchants-card-sheet-mono {
 		background-image: url("img/cards_mono.jpg");
 	}
+
 	&.daleofmerchants-card-grayed-out {
 		background-color: black;
 		background-blend-mode: luminosity;
@@ -522,7 +635,7 @@
 }
 
 #daleofmerchants-market-board-background {
-    background-image: url(img/shop_day.jpg);
+	background-image: url(img/shop_day.jpg);
 	background-repeat: no-repeat;
 	position: relative;
 	background-position: center;
@@ -531,7 +644,7 @@
 }
 
 .daleofmerchants-horizontal-flex {
-	display: flex; 
+	display: flex;
 	justify-content: space-evenly;
 	width: 100%;
 }
@@ -562,22 +675,26 @@
 }
 
 .daleofmerchants-stall-container {
-	width: 100%; /* literally wasted 2 full hours to get this dumb css styling to work */
+	width: 100%;
+	/* literally wasted 2 full hours to get this dumb css styling to work */
 	display: flex;
 	flex: 1 1;
 	justify-content: left; //stack containers are left aligned
 
 	.daleofmerchants-stack-container {
-		flex: 1 1; /* Allow items to grow and shrink */
+		flex: 1 1;
+		/* Allow items to grow and shrink */
 		// background-color: red;
 		// border: 2px solid black;
 		margin-left: 5px;
-		min-width: 0; /* Ensure items can shrink below their content width */
+		min-width: 0;
+		/* Ensure items can shrink below their content width */
 		position: relative;
 
 		.daleofmerchants-card:hover {
 			//add a delay to the z-index to (issue #47)
 			transition: transform 0.3s ease 0s, scale 0.3s ease 0s, z-index 0s ease 0.3s;
+
 			&.daleofmerchants-line-source {
 				transition: transform 0.3s ease 0s, scale 0.3s ease 0s; //...except when targeted with a targeting line
 			}
@@ -586,16 +703,19 @@
 		&.daleofmerchants-grayed-out {
 			pointer-events: none;
 			opacity: 0.5;
-			.daleofmerchants-placeholder { 
+
+			.daleofmerchants-placeholder {
 				background-position-y: -100%;
 			}
+
 			.daleofmerchants-stack-index {
-				color:#707070; //same as in placeholders.png
+				color: #707070; //same as in placeholders.png
 			}
 		}
 
 		.daleofmerchants-placeholder-market {
 			background-position-x: -300%;
+
 			&.daleofmerchants-placeholder-partially-covered {
 				background-position-x: -400%;
 			}
@@ -603,8 +723,10 @@
 
 		.daleofmerchants-placeholder-stall {
 			background-position-x: 0%;
+
 			&.daleofmerchants-placeholder-partially-covered {
 				background-position-x: -100%;
+
 				&.daleofmerchants-clickable:hover {
 					.daleofmerchants-icon {
 						width: 50px;
@@ -617,14 +739,17 @@
 					}
 				}
 			}
+
 			&.daleofmerchants-clickable:hover {
 				background-color: var(--daleofmerchants-wrap-build-a);
+
 				.daleofmerchants-icon {
 					width: 50px;
 					height: 50px;
 					top: 40%;
 					left: 56%;
 				}
+
 				.daleofmerchants-text {
 					display: block;
 					color: var(--daleofmerchants-wrap-build);
@@ -637,6 +762,7 @@
 					text-align: center;
 				}
 			}
+
 			&.daleofmerchants-selected {
 				background-color: var(--daleofmerchants-wrap-build-a);
 			}
@@ -670,7 +796,8 @@
 		font-weight: bold;
 		top: 4%;
 		color: white;
-		background-color: rgba(0, 0, 0, 0.62); /* Optional, for better visibility */
+		background-color: rgba(0, 0, 0, 0.62);
+		/* Optional, for better visibility */
 		text-align: center;
 		font-size: 16px;
 		right: -5%;
@@ -704,17 +831,21 @@
 
 .daleofmerchants-card-tooltip {
 	pointer-events: none;
+
 	.daleofmerchants-chameleon-name {
 		text-decoration: line-through;
 		color: #1d7a2a;
 	}
+
 	.daleofmerchants-original-value {
 		text-decoration: line-through;
 		color: gray;
 	}
+
 	.daleofmerchants-card-tooltip-text {
 		max-width: 300px;
 	}
+
 	.daleofmerchants-tooltip-clock {
 		display: inline;
 		border-radius: 10px;
@@ -725,12 +856,15 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+
 		&[data-clock="0"] {
 			background-color: var(--daleofmerchants-dawn);
 		}
+
 		&[data-clock="1"] {
 			background-color: var(--daleofmerchants-day);
 		}
+
 		&[data-clock="2"] {
 			background-color: var(--daleofmerchants-night);
 		}
@@ -748,6 +882,7 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
+
 	svg {
 		width: 100%;
 		height: 100%;
@@ -755,6 +890,7 @@
 
 	pointer-events: none;
 	z-index: 201; //just above 'selected'
+
 	.daleofmerchants-line-chameleon {
 		stroke: green;
 		stroke-width: 10;
@@ -770,19 +906,26 @@
 		stroke-dasharray: 30, 10;
 		animation: daleofmerchants-dash 20s linear infinite;
 	}
-	  
+
 	@keyframes daleofmerchants-dash {
-		from { stroke-dashoffset: 1000; }
-		to { stroke-dashoffset: 0; }
+		from {
+			stroke-dashoffset: 1000;
+		}
+
+		to {
+			stroke-dashoffset: 0;
+		}
 	}
 }
 
 .dijitTooltip {
 	pointer-events: none;
+
 	div {
 		pointer-events: none;
 	}
 }
+
 .dijitTooltipContainer {
 	pointer-events: none;
 }
@@ -798,7 +941,8 @@
 }
 
 .daleofmerchants-log-span {
-    display: inline;
+	display: inline;
+
 	.daleofmerchants-icon {
 		width: 25px;
 		height: 25px;
@@ -818,6 +962,7 @@
 .daleofmerchants-autocomplete-container {
 	position: relative;
 	display: inline-block;
+
 	input {
 		width: 300px;
 		padding: 8px;
@@ -844,17 +989,98 @@
 	background-color: #f1f1f1;
 }
 
+//////////////////////////////////////////////////////////////////
+//////       Deck selection filter css by Sami Laakso       //////
+//////////////////////////////////////////////////////////////////
+
+.daleofmerchants-filters {
+	height: max-content;
+	margin: 5px;
+
+	background-color: rgba(255, 250, 220, 0.4);
+	border-radius: 20px;
+	padding: 10px;
+	display: inline-block;
+	font-family: "arial";
+
+	h2 {
+		margin: 0;
+		padding: 0 0.2em;
+		font-size: 1.5em;
+	}
+
+	button {
+		width: auto;
+	}
+
+	.reset-filters {
+		border: none;
+		font-size: 1em;
+		background-color: rgba(120, 62, 21, 0.1);
+		border-radius: 0.4em;
+		padding: 0.3em 0.5em;
+		float: right;
+		color: rgba(120, 62, 21, 0.5);
+		cursor: pointer;
+
+		&.active {
+			color: white;
+			background-color: rgb(212, 130, 30);
+		}
+	}
+
+	.filter {
+		margin-top: 10px;
+		padding: 10px;
+		background-color: rgb(255, 250, 220);
+		border-radius: 10px;
+
+		h3 {
+			margin: 0 0 0.5em;
+		}
+	}
+
+	.toggle-holder {
+		flex: 0 1;
+		display: flex;
+		gap: 4px;
+		justify-content: right;
+		white-space: nowrap;
+		max-width: -moz-fit-content;
+		max-width: fit-content;
+		background-color: rgba(120, 62, 21, 0.1);
+		padding: 4px;
+		border-radius: 12px;
+
+		.toggle {
+			background: none;
+			color: rgb(120, 62, 21);
+			cursor: pointer;
+			padding: 6px 12px;
+			border-radius: 8px;
+
+			&:not(.chosen) {
+				opacity: 0.5;
+			}
+
+			&.chosen {
+				background-color: rgb(212, 130, 30);
+				color: white;
+			}
+		}
+	}
+}
 
 ////////////////////////////////////////////////////////
 //////       Awesome die css by Sami Laakso       //////
 ////////////////////////////////////////////////////////
 
 :root {
-	--ocelot: rgb(227,6,19);
-	--polecat: rgb(215,64,119);
-	--hare: rgb(72,124,190);
-	--pangolin1: rgb(127,186,39);
-	--pangolin2: rgb(0,149,62);
+	--ocelot: rgb(227, 6, 19);
+	--polecat: rgb(215, 64, 119);
+	--hare: rgb(72, 124, 190);
+	--pangolin1: rgb(127, 186, 39);
+	--pangolin2: rgb(0, 149, 62);
 	--die-size: 60px;
 	--die-half: 30px;
 }
@@ -863,14 +1089,16 @@
 	text-align: center;
 	padding: 10px;
 	position: absolute;
-    top: 19%;
-    left: 50%;
-    z-index: 700;
-    transform: translateX(-50%);
+	top: 19%;
+	left: 50%;
+	z-index: 700;
+	transform: translateX(-50%);
 	min-width: 100%;
+
 	&[data-die_type="pangolin1"] {
 		left: 20%;
 	}
+
 	&[data-die_type="pangolin2"] {
 		left: 80%;
 	}
@@ -889,97 +1117,230 @@
 	position: absolute;
 	width: 100%;
 	height: 100%;
-	box-shadow: inset 0 0 5px 2px rgba(255,255,255,0.6);
+	box-shadow: inset 0 0 5px 2px rgba(255, 255, 255, 0.6);
 	background-image: url('img/dice.png');
 	background-size: 600% 500%;
 }
 
 .daleofmerchants-die {
-	.daleofmerchants-die-side-1 { transform: translateZ(var(--die-half)); }
-	.daleofmerchants-die-side-2 { transform: rotateX(-180deg) translateZ(var(--die-half)) scaleY(-1); }
-	.daleofmerchants-die-side-3 { transform: rotateY(90deg) translateZ(var(--die-half)); }
-	.daleofmerchants-die-side-4 { transform: rotateY(-90deg) translateZ(var(--die-half)); }
-	.daleofmerchants-die-side-5 { transform: rotateX(90deg) translateZ(var(--die-half)); }
-	.daleofmerchants-die-side-6 { transform: rotateX(-90deg) translateZ(var(--die-half)); }
+	.daleofmerchants-die-side-1 {
+		transform: translateZ(var(--die-half));
+	}
+
+	.daleofmerchants-die-side-2 {
+		transform: rotateX(-180deg) translateZ(var(--die-half)) scaleY(-1);
+	}
+
+	.daleofmerchants-die-side-3 {
+		transform: rotateY(90deg) translateZ(var(--die-half));
+	}
+
+	.daleofmerchants-die-side-4 {
+		transform: rotateY(-90deg) translateZ(var(--die-half));
+	}
+
+	.daleofmerchants-die-side-5 {
+		transform: rotateX(90deg) translateZ(var(--die-half));
+	}
+
+	.daleofmerchants-die-side-6 {
+		transform: rotateX(-90deg) translateZ(var(--die-half));
+	}
 }
+
 .daleofmerchants-die[type="ocelot"] {
-	.daleofmerchants-die-side-1 { background-position: 0% 0%; }
-	.daleofmerchants-die-side-2 { background-position: -100% 0%; }
-	.daleofmerchants-die-side-3 { background-position: -200% 0%; }
-	.daleofmerchants-die-side-4 { background-position: -300% 0%; }
-	.daleofmerchants-die-side-5 { background-position: -400% 0%; }
-	.daleofmerchants-die-side-6 { background-position: -500% 0%; }
-	&~.daleofmerchants-die-result { background-color: var(--ocelot); }
+	.daleofmerchants-die-side-1 {
+		background-position: 0% 0%;
+	}
+
+	.daleofmerchants-die-side-2 {
+		background-position: -100% 0%;
+	}
+
+	.daleofmerchants-die-side-3 {
+		background-position: -200% 0%;
+	}
+
+	.daleofmerchants-die-side-4 {
+		background-position: -300% 0%;
+	}
+
+	.daleofmerchants-die-side-5 {
+		background-position: -400% 0%;
+	}
+
+	.daleofmerchants-die-side-6 {
+		background-position: -500% 0%;
+	}
+
+	&~.daleofmerchants-die-result {
+		background-color: var(--ocelot);
+	}
 }
+
 .daleofmerchants-die[type="polecat"] {
-	.daleofmerchants-die-side-1 { background-position: 0% -100%; }
-	.daleofmerchants-die-side-2 { background-position: -100% -100%; }
-	.daleofmerchants-die-side-3 { background-position: -200% -100%; }
-	.daleofmerchants-die-side-4 { background-position: -300% -100%; }
-	.daleofmerchants-die-side-5 { background-position: -400% -100%; }
-	.daleofmerchants-die-side-6 { background-position: -500% -100%; }
-	&~.daleofmerchants-die-result { background-color: var(--polecat); }
+	.daleofmerchants-die-side-1 {
+		background-position: 0% -100%;
+	}
+
+	.daleofmerchants-die-side-2 {
+		background-position: -100% -100%;
+	}
+
+	.daleofmerchants-die-side-3 {
+		background-position: -200% -100%;
+	}
+
+	.daleofmerchants-die-side-4 {
+		background-position: -300% -100%;
+	}
+
+	.daleofmerchants-die-side-5 {
+		background-position: -400% -100%;
+	}
+
+	.daleofmerchants-die-side-6 {
+		background-position: -500% -100%;
+	}
+
+	&~.daleofmerchants-die-result {
+		background-color: var(--polecat);
+	}
 }
+
 .daleofmerchants-die[type="hare"] {
-	.daleofmerchants-die-side-1 { background-position: 0% -200%; }
-	.daleofmerchants-die-side-2 { background-position: -100% -200%; }
-	.daleofmerchants-die-side-3 { background-position: -200% -200%; }
-	.daleofmerchants-die-side-4 { background-position: -300% -200%; }
-	.daleofmerchants-die-side-5 { background-position: -400% -200%; }
-	.daleofmerchants-die-side-6 { background-position: -500% -200%; }
-	&~.daleofmerchants-die-result { background-color: var(--hare); }
+	.daleofmerchants-die-side-1 {
+		background-position: 0% -200%;
+	}
+
+	.daleofmerchants-die-side-2 {
+		background-position: -100% -200%;
+	}
+
+	.daleofmerchants-die-side-3 {
+		background-position: -200% -200%;
+	}
+
+	.daleofmerchants-die-side-4 {
+		background-position: -300% -200%;
+	}
+
+	.daleofmerchants-die-side-5 {
+		background-position: -400% -200%;
+	}
+
+	.daleofmerchants-die-side-6 {
+		background-position: -500% -200%;
+	}
+
+	&~.daleofmerchants-die-result {
+		background-color: var(--hare);
+	}
 }
+
 .daleofmerchants-die[type="pangolin1"] {
-	.daleofmerchants-die-side-1 { background-position: 0% -300%; }
-	.daleofmerchants-die-side-2 { background-position: -100% -300%; }
-	.daleofmerchants-die-side-3 { background-position: -200% -300%; }
-	.daleofmerchants-die-side-4 { background-position: -300% -300%; }
-	.daleofmerchants-die-side-5 { background-position: -400% -300%; }
-	.daleofmerchants-die-side-6 { background-position: -500% -300%; }
-	&~.daleofmerchants-die-result { background-color: var(--pangolin1); }
+	.daleofmerchants-die-side-1 {
+		background-position: 0% -300%;
+	}
+
+	.daleofmerchants-die-side-2 {
+		background-position: -100% -300%;
+	}
+
+	.daleofmerchants-die-side-3 {
+		background-position: -200% -300%;
+	}
+
+	.daleofmerchants-die-side-4 {
+		background-position: -300% -300%;
+	}
+
+	.daleofmerchants-die-side-5 {
+		background-position: -400% -300%;
+	}
+
+	.daleofmerchants-die-side-6 {
+		background-position: -500% -300%;
+	}
+
+	&~.daleofmerchants-die-result {
+		background-color: var(--pangolin1);
+	}
 }
-	.daleofmerchants-die[type="pangolin2"] {
-	.daleofmerchants-die-side-1 { background-position: 0% -400%; }
-	.daleofmerchants-die-side-2 { background-position: -100% -400%; }
-	.daleofmerchants-die-side-3 { background-position: -200% -400%; }
-	.daleofmerchants-die-side-4 { background-position: -300% -400%; }
-	.daleofmerchants-die-side-5 { background-position: -400% -400%; }
-	.daleofmerchants-die-side-6 { background-position: -500% -400%; }
-	&~.daleofmerchants-die-result { background-color: var(--pangolin2); }
+
+.daleofmerchants-die[type="pangolin2"] {
+	.daleofmerchants-die-side-1 {
+		background-position: 0% -400%;
+	}
+
+	.daleofmerchants-die-side-2 {
+		background-position: -100% -400%;
+	}
+
+	.daleofmerchants-die-side-3 {
+		background-position: -200% -400%;
+	}
+
+	.daleofmerchants-die-side-4 {
+		background-position: -300% -400%;
+	}
+
+	.daleofmerchants-die-side-5 {
+		background-position: -400% -400%;
+	}
+
+	.daleofmerchants-die-side-6 {
+		background-position: -500% -400%;
+	}
+
+	&~.daleofmerchants-die-result {
+		background-color: var(--pangolin2);
+	}
 }
 
 .daleofmerchants-die[side="1"] {
 	transform: rotateX(0deg) rotateY(0deg);
+
 	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 	}
 }
+
 .daleofmerchants-die[side="2"] {
 	transform: rotateX(0deg) rotateY(180deg);
+
 	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(180deg) rotateX(360deg) rotateY(360deg);
 	}
 }
+
 .daleofmerchants-die[side="3"] {
 	transform: rotateX(0deg) rotateY(-90deg);
+
 	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(-90deg) rotateX(360deg) rotateY(360deg);
 	}
 }
+
 .daleofmerchants-die[side="4"] {
 	transform: rotateX(0deg) rotateY(90deg);
+
 	&.daleofmerchants-roll {
 		transform: rotateX(0deg) rotateY(90deg) rotateX(360deg) rotateY(360deg);
 	}
 }
+
 .daleofmerchants-die[side="5"] {
 	transform: rotateX(-90deg) rotateY(0deg);
+
 	&.daleofmerchants-roll {
 		transform: rotateX(-90deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 	}
 }
+
 .daleofmerchants-die[side="6"] {
 	transform: rotateX(90deg) rotateY(0deg);
+
 	&.daleofmerchants-roll {
 		transform: rotateX(90deg) rotateY(0deg) rotateX(360deg) rotateY(360deg);
 	}
@@ -1034,13 +1395,19 @@
 	display: inline-block;
 	white-space: nowrap;
 	position: relative;
-		color: white;
-		font-weight: bold;
-		padding: 0.5rem 1rem;
-		border-radius: 0.25rem;
-		box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
-	&.daleofmerchants-die-hide { opacity: 0; }
-	&.daleofmerchants-die-reveal { animation: fadeUp 0.3s forwards; }
+	color: white;
+	font-weight: bold;
+	padding: 0.5rem 1rem;
+	border-radius: 0.25rem;
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+
+	&.daleofmerchants-die-hide {
+		opacity: 0;
+	}
+
+	&.daleofmerchants-die-reveal {
+		animation: fadeUp 0.3s forwards;
+	}
 }
 
 @keyframes fadeUp {
@@ -1060,26 +1427,26 @@
 ////////////////////////////////////
 
 :root {
-	--daleofmerchants-wrap-technique: rgb(40,125,184);
-	--daleofmerchants-wrap-technique-a: rgba(40,125,184,0.15);
-	--daleofmerchants-wrap-purchase: rgb(210,128,21);
-	--daleofmerchants-wrap-purchase-a: rgba(210,128,21,0.15);
+	--daleofmerchants-wrap-technique: rgb(40, 125, 184);
+	--daleofmerchants-wrap-technique-a: rgba(40, 125, 184, 0.15);
+	--daleofmerchants-wrap-purchase: rgb(210, 128, 21);
+	--daleofmerchants-wrap-purchase-a: rgba(210, 128, 21, 0.15);
 	--daleofmerchants-wrap-build: rgb(192, 61, 120);
-	--daleofmerchants-wrap-build-a: rgb(192,61,120,0.15);
-	--daleofmerchants-wrap-discard: rgb(232,62,51);
-	--daleofmerchants-wrap-discard-a: rgb(232,62,51,0.15);
-	--daleofmerchants-wrap-default: rgb(100,100,100); 
-	--daleofmerchants-wrap-default-g: rgb(100,100,100, 0.5); //grayed out
-	--daleofmerchants-wrap-default-a: rgb(100,100,100,0.15);
+	--daleofmerchants-wrap-build-a: rgb(192, 61, 120, 0.15);
+	--daleofmerchants-wrap-discard: rgb(232, 62, 51);
+	--daleofmerchants-wrap-discard-a: rgb(232, 62, 51, 0.15);
+	--daleofmerchants-wrap-default: rgb(100, 100, 100);
+	--daleofmerchants-wrap-default-g: rgb(100, 100, 100, 0.5); //grayed out
+	--daleofmerchants-wrap-default-a: rgb(100, 100, 100, 0.15);
 
 	--daleofmerchants-dawn: rgb(0, 163, 158, 0.25);
 	--daleofmerchants-dawn-a: rgb(0, 163, 158, 0.05);
 	--daleofmerchants-day: rgb(230, 71, 36, 0.25);
-	--daleofmerchants-day-a:rgb(230, 71, 36, 0.05);
+	--daleofmerchants-day-a: rgb(230, 71, 36, 0.05);
 	--daleofmerchants-night: rgb(115, 46, 132, 0.25);
 	--daleofmerchants-night-a: rgb(115, 46, 132, 0.05);
 }
-  
+
 body {
 	background: url('https://stories.daimyria.fi/img/background-page.jpg');
 }
@@ -1092,150 +1459,181 @@ body {
 	flex-grow: 0;
 	min-width: 35%; //js overrides this to 3x card width
 	transition: padding 0.5s, min-width 0.5s; //should match the js for "daleofmerchants-hidden-transitioning"
+
 	&.daleofmerchants-hidden-transitioning {
 		min-width: 0;
 		padding: 0;
+
 		.daleofmerchants-label {
 			color: transparent;
 			padding: 0px 0px;
 			width: 0px;
 		}
 	}
+
 	&.daleofmerchants-hidden {
 		display: none;
 		min-width: 0;
 		padding: 0;
+
 		.daleofmerchants-label {
 			display: none;
 		}
 	}
 }
 
-.daleofmerchants-wrap-technique { 
+.daleofmerchants-wrap-technique {
 	&.daleofmerchants-arc-stock {
-		outline: 3px solid var(--daleofmerchants-wrap-technique); 
+		outline: 3px solid var(--daleofmerchants-wrap-technique);
 	}
-	.daleofmerchants-label { 
-		background-color: var(--daleofmerchants-wrap-technique); 
+
+	.daleofmerchants-label {
+		background-color: var(--daleofmerchants-wrap-technique);
 	}
+
 	.daleofmerchants-card.daleofmerchants-selected {
 		outline: 3px solid var(--daleofmerchants-wrap-technique);
 		background-color: var(--daleofmerchants-wrap-technique-a);
 		background-blend-mode: overlay;
+
 		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
 			background-color: var(--daleofmerchants-wrap-technique-a);
 			background-blend-mode: overlay;
 		}
 	}
+
 	.daleofmerchants-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-technique);
 	}
+
 	.daleofmerchants-pile-selected-size {
 		color: var(--daleofmerchants-wrap-technique);
 	}
 }
 
-.daleofmerchants-wrap-purchase { 
+.daleofmerchants-wrap-purchase {
 	&.daleofmerchants-arc-stock {
-		outline: 3px solid var(--daleofmerchants-wrap-purchase); 
+		outline: 3px solid var(--daleofmerchants-wrap-purchase);
 	}
-	.daleofmerchants-label { 
-		background-color: var(--daleofmerchants-wrap-purchase); 
+
+	.daleofmerchants-label {
+		background-color: var(--daleofmerchants-wrap-purchase);
 	}
+
 	.daleofmerchants-card.daleofmerchants-selected {
 		outline: 3px solid var(--daleofmerchants-wrap-purchase);
 		background-color: var(--daleofmerchants-wrap-purchase-a);
 		background-blend-mode: overlay;
+
 		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
 			background-color: var(--daleofmerchants-wrap-purchase-a);
 			background-blend-mode: overlay;
 		}
+
 		//hard-coded case: build icon overrides the purchase color
 		&:has(.daleofmerchants-build-icon) {
 			outline: 3px solid var(--daleofmerchants-wrap-build);
 			background-color: var(--daleofmerchants-wrap-build-a);
 			background-blend-mode: overlay;
+
 			.daleofmerchants-card.daleofmerchants-chameleon-overlay {
 				background-color: var(--daleofmerchants-wrap-build-a);
 				background-blend-mode: overlay;
 			}
 		}
 	}
+
 	.daleofmerchants-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-purchase);
 	}
+
 	.daleofmerchants-pile-selected-size {
 		color: var(--daleofmerchants-wrap-purchase);
 	}
 }
 
-.daleofmerchants-wrap-build { 
+.daleofmerchants-wrap-build {
 	&.daleofmerchants-arc-stock {
-		outline: 3px solid var(--daleofmerchants-wrap-build); 
+		outline: 3px solid var(--daleofmerchants-wrap-build);
 	}
-	.daleofmerchants-label { 
-		background-color: var(--daleofmerchants-wrap-build); 
+
+	.daleofmerchants-label {
+		background-color: var(--daleofmerchants-wrap-build);
 	}
+
 	.daleofmerchants-card.daleofmerchants-selected {
 		outline: 3px solid var(--daleofmerchants-wrap-build);
 		background-color: var(--daleofmerchants-wrap-build-a);
 		background-blend-mode: overlay;
+
 		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
 			background-color: var(--daleofmerchants-wrap-build-a);
 			background-blend-mode: overlay;
 		}
 	}
+
 	.daleofmerchants-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-build);
 	}
+
 	.daleofmerchants-pile-selected-size {
 		color: var(--daleofmerchants-wrap-build);
 	}
 }
 
-.daleofmerchants-wrap-discard { 
+.daleofmerchants-wrap-discard {
 	&.daleofmerchants-arc-stock {
-		outline: 3px solid var(--daleofmerchants-wrap-discard); 
+		outline: 3px solid var(--daleofmerchants-wrap-discard);
 	}
-	.daleofmerchants-label { 
-		background-color: var(--daleofmerchants-wrap-discard); 
+
+	.daleofmerchants-label {
+		background-color: var(--daleofmerchants-wrap-discard);
 	}
+
 	.daleofmerchants-card.daleofmerchants-selected {
 		outline: 3px solid var(--daleofmerchants-wrap-discard);
 		background-color: var(--daleofmerchants-wrap-discard-a);
 		background-blend-mode: overlay;
+
 		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
 			background-color: var(--daleofmerchants-wrap-discard-a);
 			background-blend-mode: overlay;
 		}
 	}
+
 	.daleofmerchants-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-discard);
 	}
+
 	.daleofmerchants-pile-selected-size {
 		color: var(--daleofmerchants-wrap-discard);
 	}
 }
 
-.daleofmerchants-wrap-default { 
+.daleofmerchants-wrap-default {
 	&.daleofmerchants-arc-stock {
-		outline: 3px solid var(--daleofmerchants-wrap-default-g); 
+		outline: 3px solid var(--daleofmerchants-wrap-default-g);
 	}
-	.daleofmerchants-label { 
-		background-color: var(--daleofmerchants-wrap-default-g); 
+
+	.daleofmerchants-label {
+		background-color: var(--daleofmerchants-wrap-default-g);
 	}
+
 	.daleofmerchants-card.daleofmerchants-selected {
 		outline: 3px solid var(--daleofmerchants-wrap-default);
 		background-color: var(--daleofmerchants-wrap-default-a);
 		background-blend-mode: overlay;
+
 		.daleofmerchants-card.daleofmerchants-chameleon-overlay {
 			background-color: var(--daleofmerchants-wrap-default-a);
 			background-blend-mode: overlay;
 		}
 	}
+
 	.daleofmerchants-clickable:hover {
 		box-shadow: 0px 0px 8px 2px var(--daleofmerchants-wrap-default);
 	}
+
 	.daleofmerchants-pile-selected-size {
 		color: var(--daleofmerchants-wrap-default);
 	}
@@ -1253,14 +1651,15 @@ body {
 
 .daleofmerchants-schedule {
 	margin-left: 5px;
-    margin-right: 5px;
+	margin-right: 5px;
 	max-width: 100%;
-    flex-grow: 1;
+	flex-grow: 1;
 }
 
 .daleofmerchants-flat-stock {
 	.daleofmerchants-card {
 		z-index: 100;
+
 		&:hover:not(.daleofmerchants-line-source):not(.daleofmerchants-line-target) {
 			scale: 1.1;
 			z-index: 200 !important;
@@ -1283,6 +1682,7 @@ body {
 		display: inline-block;
 		margin-bottom: 20px;
 		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "daleofmerchants-hidden-transitioning"
+
 		.daleofmerchants-log-span .daleofmerchants-icon {
 			z-index: 1;
 			width: 20px;
@@ -1291,11 +1691,11 @@ body {
 	}
 
 	.daleofmerchants-card {
-		box-shadow: 0px 0px 8px rgba(0,0,0,0.5);
+		box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
 		border-radius: 10px;
 		transition: scale 0.3s ease, transform 0.5s ease;
 		z-index: 100;
-		
+
 		&:hover:not(.daleofmerchants-line-source):not(.daleofmerchants-line-target) {
 			scale: 1.1;
 			z-index: 200 !important;

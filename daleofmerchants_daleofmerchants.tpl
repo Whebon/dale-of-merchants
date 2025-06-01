@@ -15,6 +15,61 @@
 </div>
 
 <div id="daleofmerchants-page-deck-selection">
+    <!-- Filter HTML by Sami Laakso -->
+    <div class="daleofmerchants-filters">
+        <button class="reset-filters">Reset filters</button>
+        <h2>Filter decks</h2>
+        <div class="filter">
+            <h3>Complexity</h3>
+            <div class="toggle-holder">
+            <span class="toggle">Low</span>
+            <span class="toggle">Medium</span>
+            <span class="toggle">High</span>
+            <span class="toggle chosen">All decks</span>
+            </div>
+        </div>
+        <div class="filter">
+            <h3>Interactivity</h3>
+            <div class="toggle-holder">
+            <span class="toggle">Low</span>
+            <span class="toggle">Medium</span>
+            <span class="toggle">High</span>
+            <span class="toggle chosen">All decks</span>
+            </div>
+        </div>
+        <div class="filter">
+            <h3>Nastiness</h3>
+            <div class="toggle-holder">
+            <span class="toggle">None</span>
+            <span class="toggle">Low</span>
+            <span class="toggle">Medium</span>
+            <span class="toggle">High</span>
+            <span class="toggle chosen">All decks</span>
+            </div>
+        </div>
+        <div class="filter">
+            <h3>Randomness</h3>
+            <div class="toggle-holder">
+            <span class="toggle">Low</span>
+            <span class="toggle">Medium</span>
+            <span class="toggle">High</span>
+            <span class="toggle chosen">All decks</span>
+            </div>
+        </div>
+        <div class="filter">
+            <h3>Game</h3>
+            <div class="toggle-holder">
+            <span class="toggle">1</span>
+            <span class="toggle">2</span>
+            <span class="toggle">3</span>
+            <span class="toggle">4</span>
+            <span class="toggle">5</span>
+            <span class="toggle">6</span>
+            <span class="toggle chosen">All games</span>
+            </div>
+        </div>
+    </div>
+    <!-- deck portaits go inside this container -->
     <div class="daleofmerchants-deck-selection-container"></div>
 </div>
 

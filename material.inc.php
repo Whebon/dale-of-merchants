@@ -335,15 +335,23 @@ $this->AUTORESOLVE_TRIGGERS = array(
 
 //disable these animalfolks in the deck selection (and random selection)
 $this->DISABLED_ANIMALFOLK_IDS = array(
-    ANIMALFOLK_CHAMELEONS,      //... chameleons ...
-    ANIMALFOLK_PANDAS,          //effect not finalized
-    ANIMALFOLK_OCELOTS,         //effect not finalized
-    ANIMALFOLK_ECHIDNAS,        //effect not finalized
-    ANIMALFOLK_BEAVERS,         //effect not finalized
-    //ANIMALFOLK_LEMURS,        //effect not finalized (but the text is correct)
-    ANIMALFOLK_BATS,            //not implemented
-    ANIMALFOLK_OWLS,            //not implemented
-    ANIMALFOLK_TASMANIANDEVILS, //not implemented
+    ANIMALFOLK_CHAMELEONS,          //... chameleons ...
+    ANIMALFOLK_PANDAS,              //effect not finalized
+    ANIMALFOLK_OCELOTS,             //effect not finalized
+    ANIMALFOLK_ECHIDNAS,            //effect not finalized
+    ANIMALFOLK_BEAVERS,             //effect not finalized
+    //ANIMALFOLK_LEMURS,            //effect not finalized (but the text is correct)
+    ANIMALFOLK_BATS,                //not implemented
+    ANIMALFOLK_OWLS,                //not implemented
+    ANIMALFOLK_TASMANIANDEVILS,     //not implemented
+    ANIMALFOLK_DODOS,               //does not exist
+    ANIMALFOLK_CAPUCHINMONKIES,     //does not exist
+    ANIMALFOLK_MARKETMANIPULATION,  //does not exist
+    ANIMALFOLK_ENDOFTURN,           //does not exist
+    ANIMALFOLK_REPEAT,              //does not exist
+    ANIMALFOLK_GORILLA,             //does not exist
+    ANIMALFOLK_MORNING,             //does not exist
+    ANIMALFOLK_UNKNOWN              //does not exist
 );
 
 $this->card_types = array(

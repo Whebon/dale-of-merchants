@@ -257,13 +257,13 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
         Images.MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
         Images.VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
-        Images.DECK_SELECTION_S_SCALE = 0.5;
+        Images.DECK_SELECTION_S_SCALE = 0.23;
         Images.DECK_SELECTION_IMAGES_PER_ROW = 6;
         Images.DECK_SELECTION_IMAGES_PER_COLUMN = 7;
-        Images.DECK_SELECTION_CARD_WIDTH = 661 / 3;
-        Images.DECK_SELECTION_CARD_HEIGHT = 787 / 3;
-        Images.DECK_SELECTION_CARD_WIDTH_S = Images.DECK_SELECTION_CARD_WIDTH * Images.DECK_SELECTION_S_SCALE;
-        Images.DECK_SELECTION_CARD_HEIGHT_S = Images.DECK_SELECTION_CARD_HEIGHT * Images.DECK_SELECTION_S_SCALE;
+        Images.DECK_SELECTION_CARD_WIDTH = 661;
+        Images.DECK_SELECTION_CARD_HEIGHT = 787;
+        Images.DECK_SELECTION_CARD_WIDTH_S = Math.round(Images.DECK_SELECTION_CARD_WIDTH * Images.DECK_SELECTION_S_SCALE);
+        Images.DECK_SELECTION_CARD_HEIGHT_S = Math.round(Images.DECK_SELECTION_CARD_HEIGHT * Images.DECK_SELECTION_S_SCALE);
         Images.first_mono_type_id = Infinity;
         return Images;
     }());
@@ -662,7 +662,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
                 });
             };
             var this_1 = this;
-            for (var animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES; animalfolk_id++) {
+            for (var animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
                 _loop_1(animalfolk_id);
             }
             for (var _i = 0, _a = page.gamedatas.disabledAnimalfolkIds; _i < _a.length; _i++) {

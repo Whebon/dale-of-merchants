@@ -82,7 +82,7 @@ export class DaleDeckSelection {
         const n = Math.max(2, Object.values(page.gamedatas.players).length);
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(n + 1);
-        for (let animalfolk_id = 1; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES; animalfolk_id++) {
+        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;
