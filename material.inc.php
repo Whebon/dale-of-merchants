@@ -272,6 +272,14 @@ if (!defined('ANIMALFOLK_MACAWS')) {
 
     //10th anniversary
     define('ANIMALFOLK_SNOWMACAQUES', 28);
+    define('ANIMALFOLK_DODOS', 29);
+    define('ANIMALFOLK_CAPUCHINMONKIES', 30);
+    define('ANIMALFOLK_MARKETMANIPULATION', 31);
+    define('ANIMALFOLK_ENDOFTURN', 32);
+    define('ANIMALFOLK_REPEAT', 33);
+    define('ANIMALFOLK_GORILLA', 34);
+    define('ANIMALFOLK_MORNING', 35);
+    define('ANIMALFOLK_UNKNOWN', 36);
 }
 
 //define dice results

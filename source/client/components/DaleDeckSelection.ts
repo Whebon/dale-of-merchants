@@ -59,6 +59,14 @@ export class DaleDeckSelection {
 
     //10th anniversary
     static readonly ANIMALFOLK_SNOWMACAQUES: number = 28;
+    static readonly ANIMALFOLK_DODOS: number = 29;
+    static readonly ANIMALFOLK_CAPUCHINMONKIES: number = 30;
+    static readonly ANIMALFOLK_MARKETMANIPULATION: number = 31;
+    static readonly ANIMALFOLK_ENDOFTURN: number = 32;
+    static readonly ANIMALFOLK_REPEAT: number = 33;
+    static readonly ANIMALFOLK_GORILLA: number = 34;
+    static readonly ANIMALFOLK_MORNING: number = 35;
+    static readonly ANIMALFOLK_UNKNOWN: number = 36;
 
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;

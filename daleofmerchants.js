@@ -212,6 +212,8 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.setCardStyleForDeckSelection = function (div, animalfolk_id) {
             Images.setCardStyle(div, animalfolk_id - 1);
             dojo.setStyle(div, 'background-size', "".concat(Images.DECK_SELECTION_IMAGES_PER_ROW, "00% ").concat(Images.DECK_SELECTION_IMAGES_PER_COLUMN, "00%"));
+            dojo.setStyle(div, 'width', "".concat(Images.DECK_SELECTION_CARD_WIDTH_S, "px"));
+            dojo.setStyle(div, 'height', "".concat(Images.DECK_SELECTION_CARD_HEIGHT_S, "px"));
         };
         Images.getPlaceholder = function () {
             var placeholder = document.createElement('div');
@@ -255,8 +257,13 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
         Images.MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
         Images.VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
+        Images.DECK_SELECTION_S_SCALE = 0.5;
         Images.DECK_SELECTION_IMAGES_PER_ROW = 6;
-        Images.DECK_SELECTION_IMAGES_PER_COLUMN = 5;
+        Images.DECK_SELECTION_IMAGES_PER_COLUMN = 7;
+        Images.DECK_SELECTION_CARD_WIDTH = 661 / 3;
+        Images.DECK_SELECTION_CARD_HEIGHT = 787 / 3;
+        Images.DECK_SELECTION_CARD_WIDTH_S = Images.DECK_SELECTION_CARD_WIDTH * Images.DECK_SELECTION_S_SCALE;
+        Images.DECK_SELECTION_CARD_HEIGHT_S = Images.DECK_SELECTION_CARD_HEIGHT * Images.DECK_SELECTION_S_SCALE;
         Images.first_mono_type_id = Infinity;
         return Images;
     }());
@@ -718,6 +725,14 @@ define("components/DaleDeckSelection", ["require", "exports", "components/Images
         DaleDeckSelection.ANIMALFOLK_MONGOOSES = 26;
         DaleDeckSelection.ANIMALFOLK_BATS = 27;
         DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES = 28;
+        DaleDeckSelection.ANIMALFOLK_DODOS = 29;
+        DaleDeckSelection.ANIMALFOLK_CAPUCHINMONKIES = 30;
+        DaleDeckSelection.ANIMALFOLK_MARKETMANIPULATION = 31;
+        DaleDeckSelection.ANIMALFOLK_ENDOFTURN = 32;
+        DaleDeckSelection.ANIMALFOLK_REPEAT = 33;
+        DaleDeckSelection.ANIMALFOLK_GORILLA = 34;
+        DaleDeckSelection.ANIMALFOLK_MORNING = 35;
+        DaleDeckSelection.ANIMALFOLK_UNKNOWN = 36;
         return DaleDeckSelection;
     }());
     exports.DaleDeckSelection = DaleDeckSelection;

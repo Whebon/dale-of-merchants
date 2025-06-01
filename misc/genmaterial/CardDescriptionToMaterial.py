@@ -79,6 +79,8 @@ for sheet_name in xls.sheet_names:
         animalfolk = string_literal(row['animalfolk'])
         if int(row['type_id']) != type_id:
             raise Exception(f"Expected type_id {type_id}, but found {int(row['type_id'])}")
+        if type(row['name']) != str:
+            break
         UPPERNAME = row['name'].replace(' ', '').replace("'", '').upper()
         card_types[type_id] = {
             'type_id': f"CT_{UPPERNAME}", #type_id,

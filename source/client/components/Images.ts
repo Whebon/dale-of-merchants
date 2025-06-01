@@ -42,8 +42,13 @@ export class Images {
     static readonly MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
     static readonly VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
 
+    static readonly DECK_SELECTION_S_SCALE = 0.5;
     static readonly DECK_SELECTION_IMAGES_PER_ROW = 6;
-    static readonly DECK_SELECTION_IMAGES_PER_COLUMN = 5;
+    static readonly DECK_SELECTION_IMAGES_PER_COLUMN = 7;
+    static readonly DECK_SELECTION_CARD_WIDTH = 661/3;
+    static readonly DECK_SELECTION_CARD_HEIGHT = 787/3;
+    static readonly DECK_SELECTION_CARD_WIDTH_S = Images.DECK_SELECTION_CARD_WIDTH * Images.DECK_SELECTION_S_SCALE;
+    static readonly DECK_SELECTION_CARD_HEIGHT_S = Images.DECK_SELECTION_CARD_HEIGHT * Images.DECK_SELECTION_S_SCALE;
 
     /** The first card type with `is_mono == true` */
     public static first_mono_type_id = Infinity;
@@ -112,6 +117,8 @@ export class Images {
     static setCardStyleForDeckSelection(div: HTMLElement, animalfolk_id: number) {
         Images.setCardStyle(div, animalfolk_id-1);
         dojo.setStyle(div, 'background-size', `${Images.DECK_SELECTION_IMAGES_PER_ROW}00% ${Images.DECK_SELECTION_IMAGES_PER_COLUMN}00%`);
+        dojo.setStyle(div, 'width', `${Images.DECK_SELECTION_CARD_WIDTH_S}px`);
+        dojo.setStyle(div, 'height', `${Images.DECK_SELECTION_CARD_HEIGHT_S}px`);
     }
 
     /**
