@@ -134,6 +134,14 @@ class DaleDeck extends Deck {
     }
 
     /**
+     * @return bool `true` if the specified location belongs to MONO_PLAYER_ID
+     */
+    function isMonoLocation($location) {
+        $suffix = substr($location, 4);
+        return $suffix == MONO_PLAYER_ID;
+    }
+
+    /**
      * @return bool `true` if the specified location is outside the union of locations `{HAND, LIMBO, SCHEDULE}`
      */
     function isOuterLocation($location) {
@@ -172,7 +180,15 @@ class DaleDeck extends Deck {
         foreach ($card_ids as $card) {
             $this->effects->expireChameleonTarget($card); //is this really needed?
         }
-        parent::moveCards($card_ids, $location, $location_arg);
+        if ($this->isMonoLocation($location)) {
+            //new cards are placed in random order on top of Mono's facedown hand
+            $shuffled_card_ids = $card_ids;
+            shuffle($shuffled_card_ids);
+            $this->moveCardsOnTop($shuffled_card_ids, $location);
+        }
+        else {
+            parent::moveCards($card_ids, $location, $location_arg);
+        }
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModificationsMultiple($card_ids);
         }
@@ -192,7 +208,13 @@ class DaleDeck extends Deck {
      */
     function moveCard($card_id, $location, $location_arg=0) {
         $this->effects->expireChameleonTarget($card_id);
-        parent::moveCard($card_id, $location, $location_arg);
+        if ($this->isMonoLocation($location)) {
+            //a new card is placed on top of Mono's facedown hand
+            $this->moveCardOnTop($card_id, $location);
+        }
+        else {
+            parent::moveCard($card_id, $location, $location_arg);
+        }
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModifications($card_id);
         }
@@ -366,6 +388,11 @@ class DaleDeck extends Deck {
 
         //copied from deck.php
         if($card){
+            if ($this->isMonoLocation($to_location)) {
+                //a new card is placed in random order on top of Mono's facedown hand
+                $this->moveCardOnTop($card["id"], $to_location);
+                return $card;
+            }
             $sql = "UPDATE ".$this->table." SET card_location='".addslashes($to_location)."', card_location_arg='$location_arg' ";
             $sql .= "WHERE card_id='".$card['id']."'";
             self::DbQuery( $sql );
@@ -407,6 +434,15 @@ class DaleDeck extends Deck {
             foreach( $newcards as $card ){
                 $cards[] = $card;
             }
+        }
+        if ($this->isMonoLocation($to_location)) {
+            //new cards are placed in random order on top of Mono's facedown hand
+            $card_ids = array();
+            foreach ($cards as $card) {
+                $card_ids[] = $card["id"];
+            }
+            shuffle($card_ids);
+            $this->moveCardsOnTop($card_ids, $to_location);
         }
         return $cards;
     }

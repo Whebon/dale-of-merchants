@@ -1997,6 +1997,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             _this.actionLabelDefaultText = "<DefaultText>";
             _this.selectionMode = 'none';
             _this.whitelist = [];
+            _this.enableSortItems = true;
             _this._shuffle_animation = false;
             _this.duration = 500;
             _this.orderedSelection = new DaleCard_1.OrderedSelection();
@@ -2321,6 +2322,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 }
             }
             return nbr;
+        };
+        DaleStock.prototype.sortItems = function () {
+            if (this.enableSortItems) {
+                _super.prototype.sortItems.call(this);
+            }
         };
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.original_type_id, card.id, from);
@@ -4820,6 +4826,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 };
                 this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+                this.myLimbo.enableSortItems = false;
                 this.myLimbo.wrap.classList.add("daleofmerchants-hidden");
                 this.myLimbo.centerItems = true;
                 for (var i in gamedatas.limbo) {
@@ -4956,7 +4963,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _this = this;
             var _a, _b, _c, _d, _e, _f;
             console.warn('Entering state: ' + stateName);
-            if (stateName == 'turnStart') {
+            if (stateName == 'turnStart' || stateName == 'postCleanUpPhase') {
                 this.movePlayAreaOnTop(args.active_player);
             }
             if (this.isSpectator) {
@@ -4974,6 +4981,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         break;
                     case 'cleanUpPhase':
                         if (this.is_solo && this.unique_opponent_id) {
+                            this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
                             this.movePlayAreaOnTop(this.unique_opponent_id);
                         }
                         break;
@@ -10988,9 +10996,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_cunningNeighbourWatch = function (notif) {
             var _a;
+            console.warn("notif_cunningNeighbourWatch");
             if (notif.args.player_id == this.player_id) {
-                for (var i in (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
-                    var card = notif.args._private.cards[i];
+                var sortedCards = this.sortCardsByLocationArg((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards, false);
+                for (var i in sortedCards) {
+                    var card = sortedCards[i];
+                    console.warn(card);
                     this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + notif.args.opponent_id);
                 }
             }

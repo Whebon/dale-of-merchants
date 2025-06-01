@@ -303,6 +303,7 @@ class DaleOfMerchants extends Gamegui
 
 			//initialize limbo
 			this.myLimbo.init(this, $('daleofmerchants-mylimbo')!, $('daleofmerchants-mylimbo-wrap')!, _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+			this.myLimbo.enableSortItems = false; //this is needed for Mono
 			this.myLimbo.wrap!.classList.add("daleofmerchants-hidden");
 			this.myLimbo.centerItems = true;
 			for (let i in gamedatas.limbo) {
@@ -484,7 +485,7 @@ class DaleOfMerchants extends Gamegui
 	{
 		console.warn( 'Entering state: '+stateName );
 
-		if (stateName == 'turnStart') {
+		if (stateName == 'turnStart' || stateName == 'postCleanUpPhase') {
 			this.movePlayAreaOnTop(args.active_player);
 		}
 
@@ -506,6 +507,7 @@ class DaleOfMerchants extends Gamegui
 					break;
 				case 'cleanUpPhase':
 					if (this.is_solo && this.unique_opponent_id) {
+						this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
 						this.movePlayAreaOnTop(this.unique_opponent_id); //put Mono on top
 					}
 					break;
@@ -7392,9 +7394,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_cunningNeighbourWatch(notif: NotifAs<'cunningNeighbourWatch'>) {
+		console.warn("notif_cunningNeighbourWatch");
 		if (notif.args.player_id == this.player_id) {
-			for (let i in notif.args._private?.cards) {
-				let card = notif.args._private.cards[i]!;
+			const sortedCards = this.sortCardsByLocationArg(notif.args._private?.cards, false); //needed for Mono
+			for (let i in sortedCards) {
+				let card = sortedCards[i]!;
+				console.warn(card);
 				this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+notif.args.opponent_id);
 			}
 		}

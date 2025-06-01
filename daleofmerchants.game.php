@@ -324,11 +324,76 @@ class DaleOfMerchants extends DaleTableBasic
         return $this->getPlayerNameById($player_id);
     }
 
+    
+    //TODO: safely remove this
+    // /**
+    //  * Continue Mono's turn from the specified phase
+    //  * @param int $phase phase id constant of the form `MONO_PHASE_<...>`.
+    //  * @param int $arg additional argument for the phase
+    //  */
+    // function monoContinueFromPhase(int $phase, int $arg) {
+    //     switch($phase) {
+    //         case MONO_PHASE_TURN_START:
+    //             $this->monoTurnStart();
+    //             break;
+    //         default:
+    //             throw new BgaVisibleSystemException("Mono Phase ".$phase." does not exist");
+    //             break;
+    //     }
+    // }
+    // /**
+    //  * Signal the wish to enter Mono's next phase.
+    //  * @param int $phase phase id constant of the form `MONO_PHASE_<...>`.
+    //  * @param int $arg additional argument for the phase
+    //  * @return bool true if a player input is required to 
+    //  */
+    // function monoPhaseRequiresPlayerInput(int $phase, ?int $arg = null) {
+    //     $this->mono_phases_until_player_input -= 1;
+    //     if ($this->mono_phases_until_player_input > 0) {
+    //         return false;
+    //     }
+    //     $this->setGameStateValue("mono_phase", $phase);
+    //     if ($arg !== null) {
+    //         $this->setGameStateValue("mono_phase_arg", $arg);
+    //     }
+    //     return true;
+    // }
+    // function argMonoDescription() {
+    //     function argPlayerTurn()  {
+    //         return [
+    //             'i18n' => ['mono_description' ],
+    //             'mono_description' => ($description), // this should be defined in material.inc.php and with clienttranslate 
+    //             'terrain' => $terrain,
+    //         ];
+    //     }
+    // }
+    // function stMonoTurn() {
+    //     if ($this->userPreferences->get($this->getActivePlayerId(), 102) == 0) {
+    //         $this->mono_phases_until_player_input = 1;
+    //     }
+    //     else {
+    //         $this->mono_phases_until_player_input = 1000;
+    //     }
+    //     $this->monoTurnStart();
+    // }
+    // /**
+    //  * If true, automatically skip all mono passes
+    //  */
+    // var int $mono_phases_until_player_input;
+    // function actMonoNext() {
+    //     $this->checkAction("actMonoNext");
+    //     $phase = $this->getGameStateValue("mono_phase");
+    //     $arg = $this->getGameStateValue("mono_phase_arg");
+    //     $this->monoContinueFromPhase($phase, $arg);
+    //     $this->monoTurnStart();
+    // }
+
     /**
      * Automatically execute an entire turn for Mono
      */
     function monoTurnStart() {
         $this->showDebugMessage("monoTurnStart");
+        $this->monoShowHand();
         $this->obtainStoredCards(MONO_PLAYER_ID);
         $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
         $this->monoResolveCards(TRIGGER_ONTURNSTART);
@@ -340,6 +405,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->monoStallAction() || $this->monoMarketAction();
         }
         $this->delay500ms(10);
+        $this->monoHideHand();
         $this->monoCleanUpPhase();
     }
 
@@ -426,6 +492,34 @@ class DaleOfMerchants extends DaleTableBasic
         $this->showDebugMessage("monoCleanUpPhase");
         $this->refillMarket(true);
         $this->refillHand(MONO_PLAYER_ID);
+    }
+
+    /**
+     * Show Mono's hand to the player
+     */
+    function monoShowHand() {
+        $this->showDebugMessage("monoShowHand");
+        $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourWatch', '', array(
+            "player_id" => $this->getActivePlayerId(),
+            "opponent_id" => MONO_PLAYER_ID,
+            "_private" => array(
+                "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
+            )
+        ));
+    }
+
+    /**
+     * Hide Mono's hand from the player
+     */
+    function monoHideHand() {
+        $this->showDebugMessage("monoHideHand");
+        $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourReturn', '', array(
+            "player_id" => $this->getActivePlayerId(),
+            "opponent_id" => MONO_PLAYER_ID,
+            "_private" => array(
+                "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
+            )
+        ));
     }
 
     //(~mono)
@@ -8157,6 +8251,15 @@ class DaleOfMerchants extends DaleTableBasic
         );
     }
 
+    function argMonoName() {
+        //currently unused, but might be helpful later
+        $opponent_id = MONO_PLAYER_ID;
+        return array(
+            'opponent_id' => $opponent_id,
+            'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
+        );
+    }
+
     //(~arg)
 
 //////////////////////////////////////////////////////////////////////////////
@@ -8349,12 +8452,11 @@ class DaleOfMerchants extends DaleTableBasic
         $this->effects->expireAllExcept($schedule_card_ids);
 
         //5. activate the next player
-        if ($this->isSoloGame()) {
-            $this->monoTurnStart(); //execute a turn for Mono
-        }
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
-        $this->incStat(1, "number_of_turns", $next_player_id);
+        if ($this->isSoloGame()) {
+            $this->monoTurnStart();
+        }
         $this->gamestate->nextState("trNextPlayer");
     }
 

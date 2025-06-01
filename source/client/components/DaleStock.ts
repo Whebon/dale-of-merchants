@@ -499,6 +499,18 @@ export class DaleStock extends Stock implements DaleLocation {
 	//////////    Base stock methods    /////////////
 	/////////////////////////////////////////////////
 
+	/** */
+	public enableSortItems = true;
+
+	/**
+	 * Override the method that is responsible for sorting. Disabling it based on `this.enableSortItems`
+	 */
+    override sortItems(){
+		if (this.enableSortItems) {
+			super.sortItems();
+		}
+    }
+
 	/** 
 	 * Add a `DaleCard` to a stock. Always use this instead of addToStockWithID. This ensures that the type id of the card id is registered in the `DaleCard` class.
 	 * @param card card to add to the stock
