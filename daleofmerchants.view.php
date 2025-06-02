@@ -87,6 +87,7 @@ class view_daleofmerchants_daleofmerchants extends game_view
         $this->tpl['LOW'] = $this->_("Low");
         $this->tpl['MEDIUM'] = $this->_("Medium");
         $this->tpl['HIGH'] = $this->_("High");
+        $this->tpl['DECK_SELECTION_WARNING'] = $this->_("Choose one to display decks.");
 
         //Other variables
         // $this->tpl['YOUR_HAND'] = $this->_("Your hand");

@@ -189,6 +189,7 @@ export class DaleDeckSelection {
     }
 
     private setupFilters() {
+        //icons
         const icons: [string, HTMLElement][] = [
             ["daleofmerchants-filter-title-reset-filters",  DaleIcons.getResetFiltersDisabledIcon()],
             ["daleofmerchants-filter-title-complexity",     DaleIcons.getComplexityIcon()],
@@ -200,6 +201,12 @@ export class DaleDeckSelection {
         for (const [html_id, icon] of icons) {
             $(html_id)!.insertAdjacentHTML('afterbegin', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
         }
+        const warningIcon = DaleIcons.getWarningIcon();
+        this.filterContainer.querySelectorAll(".daleofmerchants-warning").forEach((elem) => {
+            elem.insertAdjacentHTML('afterbegin', `<span class="daleofmerchants-log-span">${warningIcon.outerHTML}</span>`);
+        });
+
+        //toggles
         this.filterContainer.querySelectorAll(".toggle").forEach((toggle) => {
             const rawData = (toggle as HTMLElement).dataset['filter'] ?? "";
             if (!rawData.includes(":")) {
@@ -209,6 +216,7 @@ export class DaleDeckSelection {
             }
             const [categoryName, rawValue] = rawData.split(":").map(s => s.trim());
             const value = +rawValue!;
+            const warningElement = toggle.parentElement?.parentElement?.querySelector(".daleofmerchants-warning");
             toggle.addEventListener("click", () => {
                 const columnIndex = AnimalfolkDetails.getColumnIndex(categoryName!);
                 const blacklist = this.filterBlacklists.get(columnIndex)!;
@@ -216,16 +224,27 @@ export class DaleDeckSelection {
                 if (valueIndex !== -1) {
                     blacklist.splice(valueIndex, 1);
                     toggle.classList.add("chosen");
+                    warningElement?.classList.add("daleofmerchants-hidden");
                 } else {
                     blacklist.push(value);
                     toggle.classList.remove("chosen");
+                    if (!toggle.parentElement?.querySelector(".chosen")) {
+                        warningElement?.classList.remove("daleofmerchants-hidden");
+                    }
                 }
                 this.updateResetFiltersButton();
                 this.updateFilters();
             });
         });
+
+        //reset toggles
         this.resetFiltersButton.addEventListener("click", () => {
             this.resetFilters();
+        })
+
+        //collapsible
+        this.filterContainer.querySelector("h2")?.addEventListener("click", () => {
+            this.filterContainer.classList.toggle("daleofmerchants-collapsed");
         })
     }
 

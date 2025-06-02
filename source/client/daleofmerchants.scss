@@ -77,7 +77,26 @@
 .mobile_version {
 	#daleofmerchants-page-deck-selection {
 		display: flex;
-		flex-direction: column-reverse;
+		flex-direction: column;
+	}
+	.daleofmerchants-filters-header {
+		cursor: pointer;
+	}
+
+	//collapsible
+	.daleofmerchants-filters-header::before {
+		content: "▼";
+		display: inline-block;
+		transition: transform 0.3s ease;
+		margin-right: 5px;
+	}
+	.daleofmerchants-collapsed {
+		.daleofmerchants-filters-header::before {
+			transform: rotate(-90deg);
+		}
+		.filter {
+			display: none;
+		}
 	}
 }
 
@@ -1085,10 +1104,35 @@
 		height: 20px;
 	}
 
+	.daleofmerchants-warning .daleofmerchants-log-span .daleofmerchants-icon {
+		top: -1px;
+		width: 20px;
+		height: 20px;
+	}
+
 	h3 .daleofmerchants-log-span .daleofmerchants-icon {
 		top: -2px;
 		width: 28px;
 		height: 28px;
+	}
+
+	.daleofmerchants-warning {
+		user-select: none;
+		background: none;
+		padding: 6px 12px;
+		border-radius: 8px;
+		background-color: var(--daleofmerchants-warning-yellow);
+		color: white;
+		margin-top: 8px;
+		.triangle {
+			position: absolute;
+			width: 0;
+			height: 0;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-bottom: 16px solid var(--daleofmerchants-warning-yellow);
+			transform: translateY(-35px);
+		}
 	}
 }
 
@@ -1466,6 +1510,8 @@
 	--daleofmerchants-day-a: rgb(230, 71, 36, 0.05);
 	--daleofmerchants-night: rgb(115, 46, 132, 0.25);
 	--daleofmerchants-night-a: rgb(115, 46, 132, 0.05);
+
+	--daleofmerchants-warning-yellow: rgb(213, 163, 0);
 }
 
 body {

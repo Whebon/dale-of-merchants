@@ -18,7 +18,7 @@
     <!-- Filter HTML by Sami Laakso -->
     <div class="daleofmerchants-filters">
         <button class="reset-filters" id="daleofmerchants-filter-title-reset-filters"> {RESET_FILTERS}</button>
-        <h2>{FILTER_DECKS}</h2>
+        <h2 class="daleofmerchants-filters-header">{FILTER_DECKS}</h2>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-complexity"> {COMPLEXITY}</h3>
             <div class="toggle-holder">
@@ -26,6 +26,7 @@
             <span data-filter="complexity: 2" class="toggle chosen">{MEDIUM}</span>
             <span data-filter="complexity: 3" class="toggle chosen">{HIGH}</span>
             </div>
+            <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-interactivity"> {INTERACTIVITY}</h3>
@@ -34,6 +35,7 @@
             <span data-filter="interactivity: 2" class="toggle chosen">{MEDIUM}</span>
             <span data-filter="interactivity: 3" class="toggle chosen">{HIGH}</span>
             </div>
+            <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-nastiness"> {NASTINESS}</h3>
@@ -43,6 +45,7 @@
             <span data-filter="nastiness: 2" class="toggle chosen">{MEDIUM}</span>
             <span data-filter="nastiness: 3" class="toggle chosen">{HIGH}</span>
             </div>
+            <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-randomness"> {RANDOMNESS}</h3>
@@ -51,6 +54,7 @@
             <span data-filter="randomness: 2" class="toggle chosen">{MEDIUM}</span>
             <span data-filter="randomness: 3" class="toggle chosen">{HIGH}</span>
             </div>
+            <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-game"> {GAME}</h3>
@@ -62,6 +66,7 @@
             <span data-filter="game: 5" class="toggle chosen">5</span>
             <span data-filter="game: 6" class="toggle chosen">6</span>
             </div>
+            <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
         </div>
     </div>
     <!-- deck portaits go inside this container -->

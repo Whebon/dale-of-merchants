@@ -1262,7 +1262,7 @@ interface GameStates {
 	102: {
 		'name': 'bouquets',
 		'description': 'Bouquets: ${actplayer} must choose a card to place on their deck',
-		'descriptionmyturn': 'Bouquets: ${you} must choose a card to place on their deck',
+		'descriptionmyturn': 'Bouquets: ${you} must choose a card to place on your deck',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actBouquets': [{
@@ -1278,7 +1278,7 @@ interface GameStates {
 	103: {
 		'name': 'rake',
 		'description': '${resolving_card_name}: ${actplayer} may toss 0-1 cards and discard 0-2 cards from their deck',
-		'descriptionmyturn': '${resolving_card_name}: ${you} may toss (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may toss (ICON) 0-1 cards and discard (ICON) 0-2 cards from your deck',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContentAndResolvingCardName',
 		'possibleactions': {

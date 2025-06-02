@@ -822,6 +822,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
         };
         DaleDeckSelection.prototype.setupFilters = function () {
             var _this = this;
+            var _a;
             var icons = [
                 ["daleofmerchants-filter-title-reset-filters", DaleIcons_2.DaleIcons.getResetFiltersDisabledIcon()],
                 ["daleofmerchants-filter-title-complexity", DaleIcons_2.DaleIcons.getComplexityIcon()],
@@ -831,30 +832,40 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 ["daleofmerchants-filter-title-game", DaleIcons_2.DaleIcons.getGameIcon()]
             ];
             for (var _i = 0, icons_1 = icons; _i < icons_1.length; _i++) {
-                var _a = icons_1[_i], html_id = _a[0], icon = _a[1];
+                var _b = icons_1[_i], html_id = _b[0], icon = _b[1];
                 $(html_id).insertAdjacentHTML('afterbegin', "<span class=\"daleofmerchants-log-span\">".concat(icon.outerHTML, "</span>"));
             }
+            var warningIcon = DaleIcons_2.DaleIcons.getWarningIcon();
+            this.filterContainer.querySelectorAll(".daleofmerchants-warning").forEach(function (elem) {
+                elem.insertAdjacentHTML('afterbegin', "<span class=\"daleofmerchants-log-span\">".concat(warningIcon.outerHTML, "</span>"));
+            });
             this.filterContainer.querySelectorAll(".toggle").forEach(function (toggle) {
-                var _a;
+                var _a, _b, _c;
                 var rawData = (_a = toggle.dataset['filter']) !== null && _a !== void 0 ? _a : "";
                 if (!rawData.includes(":")) {
                     console.error(toggle);
                     console.error("The toggle was expected to hold 'data-filter' of format 'category: value'");
                     return;
                 }
-                var _b = rawData.split(":").map(function (s) { return s.trim(); }), categoryName = _b[0], rawValue = _b[1];
+                var _d = rawData.split(":").map(function (s) { return s.trim(); }), categoryName = _d[0], rawValue = _d[1];
                 var value = +rawValue;
+                var warningElement = (_c = (_b = toggle.parentElement) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.querySelector(".daleofmerchants-warning");
                 toggle.addEventListener("click", function () {
+                    var _a;
                     var columnIndex = AnimalfolkDetails_1.AnimalfolkDetails.getColumnIndex(categoryName);
                     var blacklist = _this.filterBlacklists.get(columnIndex);
                     var valueIndex = blacklist.indexOf(value);
                     if (valueIndex !== -1) {
                         blacklist.splice(valueIndex, 1);
                         toggle.classList.add("chosen");
+                        warningElement === null || warningElement === void 0 ? void 0 : warningElement.classList.add("daleofmerchants-hidden");
                     }
                     else {
                         blacklist.push(value);
                         toggle.classList.remove("chosen");
+                        if (!((_a = toggle.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector(".chosen"))) {
+                            warningElement === null || warningElement === void 0 ? void 0 : warningElement.classList.remove("daleofmerchants-hidden");
+                        }
                     }
                     _this.updateResetFiltersButton();
                     _this.updateFilters();
@@ -862,6 +873,9 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             });
             this.resetFiltersButton.addEventListener("click", function () {
                 _this.resetFilters();
+            });
+            (_a = this.filterContainer.querySelector("h2")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", function () {
+                _this.filterContainer.classList.toggle("daleofmerchants-collapsed");
             });
         };
         DaleDeckSelection.prototype.resetFilters = function () {
