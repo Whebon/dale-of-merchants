@@ -3,6 +3,7 @@ import Gamegui = require("ebg/core/gamegui");
 import { DaleIcons } from "./DaleIcons"
 import { Images } from "./Images";
 import { AbstractOrderedSelection } from "./AbstractOrderedSelection";
+import { AnimalfolkDetails } from './types/AnimalfolkDetails'
 
 class OrderedDeckSelection extends AbstractOrderedSelection {
     override getDiv(card_id: number): HTMLElement | undefined {
@@ -14,8 +15,19 @@ export class DaleDeckSelection {
     private gameHTML: HTMLElement;
     private deckSelectionHTML: HTMLElement;
     private filterContainer: HTMLElement;
+    private resetFiltersButton: HTMLElement;
     private cardContainer: HTMLElement;
+    private defaultToggles: HTMLElement[] = [];
     public orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
+
+    private card_divs: Map<number, HTMLElement> = new Map();
+    private filters: Map<number, number> = new Map([
+        [AnimalfolkDetails.COMPLEXITY, -1],
+        [AnimalfolkDetails.INTERACTIVITY, -1],
+        [AnimalfolkDetails.NASTINESS, -1],
+        [AnimalfolkDetails.RANDOMNESS, -1],
+        [AnimalfolkDetails.GAME, -1]
+    ]);
 
     private tooltips: dijit.Tooltip[] = [];
 
@@ -74,6 +86,7 @@ export class DaleDeckSelection {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
         this.filterContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-filters") as HTMLElement)!;
+        this.resetFiltersButton = this.filterContainer.querySelector(".reset-filters")!;
         this.cardContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container") as HTMLElement)!;
         this.cardContainer.classList.add("daleofmerchants-wrap-technique");
         if (!inDeckSelection) {
@@ -92,6 +105,7 @@ export class DaleDeckSelection {
             card_div.classList.add("daleofmerchants-card", "daleofmerchants-relative", "daleofmerchants-clickable", "daleofmerchants-deck-selection");
             this.cardContainer.appendChild(card_div);
             Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
+            this.card_divs.set(animalfolk_id, card_div);
 
             //add tooltip
             const tooltip = new dijit.Tooltip({
@@ -150,6 +164,7 @@ export class DaleDeckSelection {
     }
 
     public setResult(animalfolk_id: number) {
+        //if not done yet, set the deck selection to 'reveal' mode (this uses the purchase wrap)
         if (this.cardContainer.classList.contains("daleofmerchants-wrap-technique")) {
             this.cardContainer.classList.remove("daleofmerchants-wrap-technique");
             this.cardContainer.classList.add("daleofmerchants-wrap-purchase");
@@ -157,15 +172,25 @@ export class DaleDeckSelection {
             this.orderedSelection.setIconType(undefined);
             this.cardContainer.querySelectorAll(".daleofmerchants-deck-selection").forEach(card_div => {
                 card_div.classList.add("daleofmerchants-deck-selection-unavailable");
+                card_div.classList.add("daleofmerchants-hidden"); //BOTCH: hide all cards!
             });
         }
-        $("deck-"+animalfolk_id)?.classList.remove("daleofmerchants-deck-selection-unavailable");
+        //reveal 1 animalfolk
+        const card_div = this.card_divs.get(animalfolk_id);
+        if (card_div) {
+            card_div.classList.remove("daleofmerchants-deck-selection-unavailable");
+            if (card_div.classList.contains("daleofmerchants-hidden")) {
+                //if the chosen card is not visible due to filters, show it and append the portait to the back
+                card_div.classList.remove("daleofmerchants-hidden");
+                this.cardContainer.append(card_div);
+            }
+        }
         this.orderedSelection.selectItem(animalfolk_id);
     }
 
-    public setupFilters() {
+    private setupFilters() {
         const icons: [string, HTMLElement][] = [
-            ["daleofmerchants-filter-title-reset-filters",  DaleIcons.getResetFiltersIcon()],
+            ["daleofmerchants-filter-title-reset-filters",  DaleIcons.getResetFiltersDisabledIcon()],
             ["daleofmerchants-filter-title-complexity",     DaleIcons.getComplexityIcon()],
             ["daleofmerchants-filter-title-interactivity",  DaleIcons.getInteractivityIcon()],
             ["daleofmerchants-filter-title-nastiness",      DaleIcons.getNastinessIcon()],
@@ -174,6 +199,61 @@ export class DaleDeckSelection {
         ]
         for (const [html_id, icon] of icons) {
             $(html_id)!.insertAdjacentHTML('afterbegin', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
+        }
+        this.filterContainer.querySelectorAll(".toggle").forEach((toggle) => {
+            const rawData = (toggle as HTMLElement).dataset['filter'] ?? "";
+            if (!rawData.includes(":")) {
+                console.error(toggle);
+                console.error("The toggle was expected to hold 'data-filter' of format 'category: value'");
+                return;
+            }
+            const [categoryName, value] = rawData.split(":").map(s => s.trim());
+            if (+value! == -1) {
+                this.defaultToggles.push(toggle as HTMLElement);
+            }
+            toggle.addEventListener("click", () => {
+                const siblings = Array.from(toggle.parentElement!.children).filter((el) => el !== toggle && el.classList.contains("toggle"));
+                siblings.forEach((sibling) => sibling.classList.remove("chosen"));
+                toggle.classList.add("chosen");
+                this.filters.set(AnimalfolkDetails.getColumnIndex(categoryName!), +value!);
+                this.updateResetFiltersButton();
+                this.updateFilters();
+            });
+        });
+        this.resetFiltersButton.addEventListener("click", () => {
+            this.resetFilters();
+        })
+    }
+
+    private resetFilters() {
+        //press all non-active default toggles
+        this.defaultToggles.forEach((toggle) => {
+            if (!toggle.classList.contains("active")) {
+                toggle.click();
+            }
+        })
+    }
+    
+    private updateResetFiltersButton() {
+        const hasActiveFilter = Array.from(this.filters.values()).some(value => value !== -1);
+        this.resetFiltersButton.classList.toggle("active", hasActiveFilter);
+        const prevIcon = this.resetFiltersButton.querySelector(".daleofmerchants-icon")!;
+        if (prevIcon) {
+            const newIcon = hasActiveFilter ? DaleIcons.getResetFiltersEnabledIcon() : DaleIcons.getResetFiltersDisabledIcon();
+            prevIcon.insertAdjacentHTML('beforebegin', `<span class="daleofmerchants-log-span">${newIcon.outerHTML}</span>`);
+            prevIcon.remove();
+        }
+    }
+
+    private updateFilters() {
+        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
+            let isHidden = false;
+            this.filters.forEach((value, category) => {
+                if (value != -1 && value != AnimalfolkDetails.get(animalfolk_id, category)) {
+                    isHidden = true;
+                }
+            });
+            this.card_divs.get(animalfolk_id)?.classList.toggle("daleofmerchants-hidden", isHidden);
         }
     }
 }

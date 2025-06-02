@@ -85,6 +85,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
+	height: max-content;
+	width: 100%;
 	margin: 5px
 }
 
@@ -600,6 +602,11 @@
 		position: relative;
 		&.daleofmerchants-deck-selection {
 			margin: 10px;
+			.daleofmerchants-icon {
+				top: 50%;
+				width: 120px;
+				height: 120px;
+			}
 		}
 	}
 
@@ -1053,6 +1060,7 @@
 		border-radius: 12px;
 
 		.toggle {
+			user-select: none;
 			background: none;
 			color: rgb(120, 62, 21);
 			cursor: pointer;

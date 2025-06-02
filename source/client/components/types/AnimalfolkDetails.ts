@@ -1,15 +1,36 @@
 /**
  * Automatically generate based on material.xlsx
  */
-class AnimalfolkDetails {
+export class AnimalfolkDetails {
     public static readonly COMPLEXITY = 1;
     public static readonly INTERACTIVITY = 2;
     public static readonly NASTINESS = 3;
     public static readonly RANDOMNESS = 4;
     public static readonly GAME = 5;
 
-    public static get(animalfolk_id: number, column: 1|2|3|4|5) {
-        return AnimalfolkDetails.table[animalfolk_id-1][column];
+    public static getColumnIndex(categoryName: string): number {
+        switch(categoryName) {
+            case 'complexity':
+                return AnimalfolkDetails.COMPLEXITY;
+            case 'interactivity':
+                return AnimalfolkDetails.INTERACTIVITY;
+            case 'nastiness':
+                return AnimalfolkDetails.NASTINESS;
+            case 'randomness':
+                return AnimalfolkDetails.RANDOMNESS;
+            case 'game':
+                return AnimalfolkDetails.GAME;
+            default:
+                throw new Error(`Category '${categoryName}' is not a valid AnimalfolkDetails category`)
+        }
+    }
+    
+    public static get(animalfolk_id: number, column: number): number {
+        const row = AnimalfolkDetails.table[animalfolk_id-1];
+        if (!row) {
+            throw new Error(`AnimalfolkDetails is missing a values for animalfolk_id = ${animalfolk_id}`);
+        }
+        return row[column]!;
     }
 
     private static readonly table = [

@@ -1,5 +1,5 @@
 export class DaleIcons {
-    private static readonly ROWS = 11;
+    private static readonly ROWS = 12;
     private static readonly COLUMNS = 6;
     
     private static readonly ICON_WIDTH = 150;
@@ -27,16 +27,8 @@ export class DaleIcons {
     ////////    ALIASES    ////////
     ///////////////////////////////
 
-    public static getResetFiltersIcon(): HTMLElement {
-        return this.getClockIcon(); //TODO: should be a 'rotating arrow' icon
-    }
-
     public static getDuplicateEntry(): HTMLElement {
         return this.getHandIcon(); //TODO: should be a 'put aside' icon (these cards are moved to limbo)
-    }
-
-    public static getNaturalSurvivorIcon(): HTMLElement {
-        return this.getHandIcon(); //TODO: should be a 'deck' icon (these cards are moved from the hand to the deck)
     }
 
     public static getTravelingEquipmentDitchIcon(): HTMLElement {
@@ -112,6 +104,14 @@ export class DaleIcons {
 
     public static getHistoryLessonIcon(): HTMLElement {
         return this.getIcon(4, 3);
+    }
+
+    public static getNaturalSurvivorIcon(): HTMLElement {
+        return this.getIcon(4, 4);
+    }
+
+    public static getBluePileFullIcon(): HTMLElement {
+        return this.getIcon(4, 5); //unused so far
     }
 
     /////////////////////////////
@@ -235,4 +235,17 @@ export class DaleIcons {
     public static getGameIcon(): HTMLElement {
         return this.getIcon(10, 4);
     }
+
+    //////////////////////////////
+    ////////    ROW 11    ////////
+    //////////////////////////////
+
+    public static getResetFiltersDisabledIcon(): HTMLElement {
+        return this.getIcon(11, 0);
+    }
+
+    public static getResetFiltersEnabledIcon(): HTMLElement {
+        return this.getIcon(11, 1);
+    }
+
 }

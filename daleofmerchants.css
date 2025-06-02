@@ -66,6 +66,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  height: max-content;
+  width: 100%;
   margin: 5px;
 }
 
@@ -458,6 +460,11 @@
 .daleofmerchants-card.daleofmerchants-relative.daleofmerchants-deck-selection {
   margin: 10px;
 }
+.daleofmerchants-card.daleofmerchants-relative.daleofmerchants-deck-selection .daleofmerchants-icon {
+  top: 50%;
+  width: 120px;
+  height: 120px;
+}
 .daleofmerchants-card.daleofmerchants-deck-selection {
   background-image: url("img/cards_selection.jpg");
 }
@@ -844,6 +851,7 @@
   border-radius: 12px;
 }
 .daleofmerchants-filters .toggle-holder .toggle {
+  user-select: none;
   background: none;
   color: rgb(120, 62, 21);
   cursor: pointer;
