@@ -27,10 +27,6 @@ export class DaleIcons {
     ////////    ALIASES    ////////
     ///////////////////////////////
 
-    public static getDuplicateEntry(): HTMLElement {
-        return this.getHandIcon(); //TODO: should be a 'put aside' icon (these cards are moved to limbo)
-    }
-
     public static getTravelingEquipmentTossIcon(): HTMLElement {
         return this.getTossIcon();
     }
@@ -76,6 +72,10 @@ export class DaleIcons {
         const icon = this.getIcon(3, 1);
         icon.classList.add("daleofmerchants-build-icon");
         return icon;
+    }
+
+    public static getDuplicateEntry(): HTMLElement {
+        return this.getIcon(3, 3);
     }
 
     public static getHandIcon(): HTMLElement {

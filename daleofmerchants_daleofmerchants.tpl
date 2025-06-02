@@ -22,53 +22,45 @@
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-complexity"> {COMPLEXITY}</h3>
             <div class="toggle-holder">
-            <span data-filter="complexity: 0" class="toggle">{NONE}</span>
-            <span data-filter="complexity: 1" class="toggle">{LOW}</span>
-            <span data-filter="complexity: 2" class="toggle">{MEDIUM}</span>
-            <span data-filter="complexity: 3" class="toggle">{HIGH}</span>
-            <span data-filter="complexity: -1" class="toggle chosen">{ALL_DECKS}</span>
+            <span data-filter="complexity: 1" class="toggle chosen">{LOW}</span>
+            <span data-filter="complexity: 2" class="toggle chosen">{MEDIUM}</span>
+            <span data-filter="complexity: 3" class="toggle chosen">{HIGH}</span>
             </div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-interactivity"> {INTERACTIVITY}</h3>
             <div class="toggle-holder">
-            <span data-filter="interactivity: 0" class="toggle">{NONE}</span>
-            <span data-filter="interactivity: 1" class="toggle">{LOW}</span>
-            <span data-filter="interactivity: 2" class="toggle">{MEDIUM}</span>
-            <span data-filter="interactivity: 3" class="toggle">{HIGH}</span>
-            <span data-filter="interactivity: -1" class="toggle chosen">{ALL_DECKS}</span>
+            <span data-filter="interactivity: 1" class="toggle chosen">{LOW}</span>
+            <span data-filter="interactivity: 2" class="toggle chosen">{MEDIUM}</span>
+            <span data-filter="interactivity: 3" class="toggle chosen">{HIGH}</span>
             </div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-nastiness"> {NASTINESS}</h3>
             <div class="toggle-holder">
-            <span data-filter="nastiness: 0" class="toggle">{NONE}</span>
-            <span data-filter="nastiness: 1" class="toggle">{LOW}</span>
-            <span data-filter="nastiness: 2" class="toggle">{MEDIUM}</span>
-            <span data-filter="nastiness: 3" class="toggle">{HIGH}</span>
-            <span data-filter="nastiness: -1" class="toggle chosen">{ALL_DECKS}</span>
+            <span data-filter="nastiness: 0" class="toggle chosen">{NONE}</span>
+            <span data-filter="nastiness: 1" class="toggle chosen">{LOW}</span>
+            <span data-filter="nastiness: 2" class="toggle chosen">{MEDIUM}</span>
+            <span data-filter="nastiness: 3" class="toggle chosen">{HIGH}</span>
             </div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-randomness"> {RANDOMNESS}</h3>
             <div class="toggle-holder">
-            <span data-filter="randomness: 0" class="toggle">{NONE}</span>
-            <span data-filter="randomness: 1" class="toggle">{LOW}</span>
-            <span data-filter="randomness: 2" class="toggle">{MEDIUM}</span>
-            <span data-filter="randomness: 3" class="toggle">{HIGH}</span>
-            <span data-filter="randomness: -1" class="toggle chosen">{ALL_DECKS}</span>
+            <span data-filter="randomness: 1" class="toggle chosen">{LOW}</span>
+            <span data-filter="randomness: 2" class="toggle chosen">{MEDIUM}</span>
+            <span data-filter="randomness: 3" class="toggle chosen">{HIGH}</span>
             </div>
         </div>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-game"> {GAME}</h3>
             <div class="toggle-holder">
-            <span data-filter="game: 1" class="toggle">1</span>
-            <span data-filter="game: 2" class="toggle">2</span>
-            <span data-filter="game: 3" class="toggle">3</span>
-            <span data-filter="game: 4" class="toggle">4</span>
-            <span data-filter="game: 5" class="toggle">5</span>
-            <span data-filter="game: 6" class="toggle">6</span>
-            <span data-filter="game: -1" class="toggle chosen">{ALL_GAMES}</span>
+            <span data-filter="game: 1" class="toggle chosen">1</span>
+            <span data-filter="game: 2" class="toggle chosen">2</span>
+            <span data-filter="game: 3" class="toggle chosen">3</span>
+            <span data-filter="game: 4" class="toggle chosen">4</span>
+            <span data-filter="game: 5" class="toggle chosen">5</span>
+            <span data-filter="game: 6" class="toggle chosen">6</span>
             </div>
         </div>
     </div>

@@ -46,9 +46,6 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
             return icon;
         };
-        DaleIcons.getDuplicateEntry = function () {
-            return this.getHandIcon();
-        };
         DaleIcons.getTravelingEquipmentTossIcon = function () {
             return this.getTossIcon();
         };
@@ -71,6 +68,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             var icon = this.getIcon(3, 1);
             icon.classList.add("daleofmerchants-build-icon");
             return icon;
+        };
+        DaleIcons.getDuplicateEntry = function () {
+            return this.getIcon(3, 3);
         };
         DaleIcons.getHandIcon = function () {
             return this.getIcon(3, 4);
@@ -717,15 +717,14 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
     }(AbstractOrderedSelection_1.AbstractOrderedSelection));
     var DaleDeckSelection = (function () {
         function DaleDeckSelection(page, deckSelectionHTML, gameHTML, inDeckSelection) {
-            this.defaultToggles = [];
             this.orderedSelection = new OrderedDeckSelection();
             this.card_divs = new Map();
-            this.filters = new Map([
-                [AnimalfolkDetails_1.AnimalfolkDetails.COMPLEXITY, -1],
-                [AnimalfolkDetails_1.AnimalfolkDetails.INTERACTIVITY, -1],
-                [AnimalfolkDetails_1.AnimalfolkDetails.NASTINESS, -1],
-                [AnimalfolkDetails_1.AnimalfolkDetails.RANDOMNESS, -1],
-                [AnimalfolkDetails_1.AnimalfolkDetails.GAME, -1]
+            this.filterBlacklists = new Map([
+                [AnimalfolkDetails_1.AnimalfolkDetails.COMPLEXITY, []],
+                [AnimalfolkDetails_1.AnimalfolkDetails.INTERACTIVITY, []],
+                [AnimalfolkDetails_1.AnimalfolkDetails.NASTINESS, []],
+                [AnimalfolkDetails_1.AnimalfolkDetails.RANDOMNESS, []],
+                [AnimalfolkDetails_1.AnimalfolkDetails.GAME, []]
             ]);
             this.tooltips = [];
             this.deckSelectionHTML = deckSelectionHTML;
@@ -840,15 +839,20 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                     console.error("The toggle was expected to hold 'data-filter' of format 'category: value'");
                     return;
                 }
-                var _b = rawData.split(":").map(function (s) { return s.trim(); }), categoryName = _b[0], value = _b[1];
-                if (+value == -1) {
-                    _this.defaultToggles.push(toggle);
-                }
+                var _b = rawData.split(":").map(function (s) { return s.trim(); }), categoryName = _b[0], rawValue = _b[1];
+                var value = +rawValue;
                 toggle.addEventListener("click", function () {
-                    var siblings = Array.from(toggle.parentElement.children).filter(function (el) { return el !== toggle && el.classList.contains("toggle"); });
-                    siblings.forEach(function (sibling) { return sibling.classList.remove("chosen"); });
-                    toggle.classList.add("chosen");
-                    _this.filters.set(AnimalfolkDetails_1.AnimalfolkDetails.getColumnIndex(categoryName), +value);
+                    var columnIndex = AnimalfolkDetails_1.AnimalfolkDetails.getColumnIndex(categoryName);
+                    var blacklist = _this.filterBlacklists.get(columnIndex);
+                    var valueIndex = blacklist.indexOf(value);
+                    if (valueIndex !== -1) {
+                        blacklist.splice(valueIndex, 1);
+                        toggle.classList.add("chosen");
+                    }
+                    else {
+                        blacklist.push(value);
+                        toggle.classList.remove("chosen");
+                    }
                     _this.updateResetFiltersButton();
                     _this.updateFilters();
                 });
@@ -858,14 +862,14 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             });
         };
         DaleDeckSelection.prototype.resetFilters = function () {
-            this.defaultToggles.forEach(function (toggle) {
-                if (!toggle.classList.contains("active")) {
+            this.filterContainer.querySelectorAll(".toggle").forEach(function (toggle) {
+                if (!toggle.classList.contains("chosen")) {
                     toggle.click();
                 }
             });
         };
         DaleDeckSelection.prototype.updateResetFiltersButton = function () {
-            var hasActiveFilter = Array.from(this.filters.values()).some(function (value) { return value !== -1; });
+            var hasActiveFilter = Array.from(this.filterBlacklists.values()).some(function (blacklist) { return blacklist.length > 0; });
             this.resetFiltersButton.classList.toggle("active", hasActiveFilter);
             var prevIcon = this.resetFiltersButton.querySelector(".daleofmerchants-icon");
             if (prevIcon) {
@@ -878,8 +882,8 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             var _a;
             var _loop_2 = function (animalfolk_id) {
                 var isHidden = false;
-                this_2.filters.forEach(function (value, category) {
-                    if (value != -1 && value != AnimalfolkDetails_1.AnimalfolkDetails.get(animalfolk_id, category)) {
+                this_2.filterBlacklists.forEach(function (blacklist, category) {
+                    if (blacklist.includes(AnimalfolkDetails_1.AnimalfolkDetails.get(animalfolk_id, category))) {
                         isHidden = true;
                     }
                 });

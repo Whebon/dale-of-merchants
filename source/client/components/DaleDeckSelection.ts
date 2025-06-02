@@ -17,16 +17,16 @@ export class DaleDeckSelection {
     private filterContainer: HTMLElement;
     private resetFiltersButton: HTMLElement;
     private cardContainer: HTMLElement;
-    private defaultToggles: HTMLElement[] = [];
     public orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
 
     private card_divs: Map<number, HTMLElement> = new Map();
-    private filters: Map<number, number> = new Map([
-        [AnimalfolkDetails.COMPLEXITY, -1],
-        [AnimalfolkDetails.INTERACTIVITY, -1],
-        [AnimalfolkDetails.NASTINESS, -1],
-        [AnimalfolkDetails.RANDOMNESS, -1],
-        [AnimalfolkDetails.GAME, -1]
+
+    private filterBlacklists: Map<number, number[]> = new Map([
+        [AnimalfolkDetails.COMPLEXITY, []],
+        [AnimalfolkDetails.INTERACTIVITY, []],
+        [AnimalfolkDetails.NASTINESS, []],
+        [AnimalfolkDetails.RANDOMNESS, []],
+        [AnimalfolkDetails.GAME, []]
     ]);
 
     private tooltips: dijit.Tooltip[] = [];
@@ -207,15 +207,19 @@ export class DaleDeckSelection {
                 console.error("The toggle was expected to hold 'data-filter' of format 'category: value'");
                 return;
             }
-            const [categoryName, value] = rawData.split(":").map(s => s.trim());
-            if (+value! == -1) {
-                this.defaultToggles.push(toggle as HTMLElement);
-            }
+            const [categoryName, rawValue] = rawData.split(":").map(s => s.trim());
+            const value = +rawValue!;
             toggle.addEventListener("click", () => {
-                const siblings = Array.from(toggle.parentElement!.children).filter((el) => el !== toggle && el.classList.contains("toggle"));
-                siblings.forEach((sibling) => sibling.classList.remove("chosen"));
-                toggle.classList.add("chosen");
-                this.filters.set(AnimalfolkDetails.getColumnIndex(categoryName!), +value!);
+                const columnIndex = AnimalfolkDetails.getColumnIndex(categoryName!);
+                const blacklist = this.filterBlacklists.get(columnIndex)!;
+                const valueIndex = blacklist.indexOf(value);
+                if (valueIndex !== -1) {
+                    blacklist.splice(valueIndex, 1);
+                    toggle.classList.add("chosen");
+                } else {
+                    blacklist.push(value);
+                    toggle.classList.remove("chosen");
+                }
                 this.updateResetFiltersButton();
                 this.updateFilters();
             });
@@ -226,16 +230,15 @@ export class DaleDeckSelection {
     }
 
     private resetFilters() {
-        //press all non-active default toggles
-        this.defaultToggles.forEach((toggle) => {
-            if (!toggle.classList.contains("active")) {
-                toggle.click();
+         this.filterContainer.querySelectorAll(".toggle").forEach((toggle) => {
+            if (!toggle.classList.contains("chosen")) {
+                (toggle as HTMLElement).click();
             }
         })
     }
     
     private updateResetFiltersButton() {
-        const hasActiveFilter = Array.from(this.filters.values()).some(value => value !== -1);
+        const hasActiveFilter = Array.from(this.filterBlacklists.values()).some(blacklist => blacklist.length > 0);
         this.resetFiltersButton.classList.toggle("active", hasActiveFilter);
         const prevIcon = this.resetFiltersButton.querySelector(".daleofmerchants-icon")!;
         if (prevIcon) {
@@ -248,8 +251,8 @@ export class DaleDeckSelection {
     private updateFilters() {
         for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
             let isHidden = false;
-            this.filters.forEach((value, category) => {
-                if (value != -1 && value != AnimalfolkDetails.get(animalfolk_id, category)) {
+            this.filterBlacklists.forEach((blacklist, category) => {
+                if (blacklist.includes(AnimalfolkDetails.get(animalfolk_id, category))) {
                     isHidden = true;
                 }
             });
