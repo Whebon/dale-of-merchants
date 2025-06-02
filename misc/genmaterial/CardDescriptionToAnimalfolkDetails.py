@@ -27,7 +27,7 @@ export class AnimalfolkDetails {
         }
     }
     
-    public static get(animalfolk_id: number, column: 1|2|3|4|5): number {
+    public static get(animalfolk_id: number, column: number): number {
         const row = AnimalfolkDetails.table[animalfolk_id-1];
         if (!row) {
             throw new Error(`AnimalfolkDetails is missing a values for animalfolk_id = ${animalfolk_id}`);

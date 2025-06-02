@@ -248,4 +248,7 @@ export class DaleIcons {
         return this.getIcon(11, 1);
     }
 
+    public static getWarningIcon(): HTMLElement {
+        return this.getIcon(11, 2);
+    }
 }

@@ -174,6 +174,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getResetFiltersEnabledIcon = function () {
             return this.getIcon(11, 1);
         };
+        DaleIcons.getWarningIcon = function () {
+            return this.getIcon(11, 2);
+        };
         DaleIcons.ROWS = 12;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
@@ -281,7 +284,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
         Images.MARKET_WIDTH_S = Images.S_SCALE * Images.MARKET_WIDTH;
         Images.MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
         Images.VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
-        Images.DECK_SELECTION_S_SCALE = 0.23;
+        Images.DECK_SELECTION_S_SCALE = 0.22;
         Images.DECK_SELECTION_IMAGES_PER_ROW = 6;
         Images.DECK_SELECTION_IMAGES_PER_COLUMN = 7;
         Images.DECK_SELECTION_CARD_WIDTH = 661;
@@ -673,7 +676,7 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
             [11, 1, 2, 0, 3, 2],
             [12, 3, 3, 0, 1, 2],
             [13, 3, 1, 0, 1, 5],
-            [14, 1, 1, 0, 0, 3],
+            [14, 1, 1, 0, 1, 3],
             [15, 1, 1, 0, 2, 3],
             [16, 3, 3, 3, 2, 3],
             [17, 2, 3, 1, 2, 3],
@@ -695,7 +698,7 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
             [33, 3, 1, 0, 1, 5],
             [34, 1, 1, 0, 1, 6],
             [35, 2, 1, 0, 1, 6],
-            [36, 0, 0, 0, 0, 6]
+            [36, 1, 1, 0, 1, 6]
         ];
         return AnimalfolkDetails;
     }());

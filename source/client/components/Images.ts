@@ -42,7 +42,7 @@ export class Images {
     static readonly MARKET_HEIGHT_S = Images.S_SCALE * Images.MARKET_HEIGHT;
     static readonly VERTICAL_STACK_OFFSET_S = Images.S_SCALE * Images.VERTICAL_STACK_OFFSET;
 
-    static readonly DECK_SELECTION_S_SCALE = 0.23;
+    static readonly DECK_SELECTION_S_SCALE = 0.22;
     static readonly DECK_SELECTION_IMAGES_PER_ROW = 6;
     static readonly DECK_SELECTION_IMAGES_PER_COLUMN = 7;
     static readonly DECK_SELECTION_CARD_WIDTH = 661;

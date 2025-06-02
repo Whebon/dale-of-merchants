@@ -601,11 +601,11 @@
 		margin: 5px;
 		position: relative;
 		&.daleofmerchants-deck-selection {
-			margin: 10px;
+			margin: 8px;
 			.daleofmerchants-icon {
-				top: 50%;
-				width: 120px;
-				height: 120px;
+				top: 33%;
+				width: 100px;
+				height: 100px;
 			}
 		}
 	}
@@ -1005,8 +1005,8 @@
 	margin: 5px;
 
 	background-color: rgba(255, 250, 220, 0.4);
-	border-radius: 20px;
-	padding: 10px;
+	border-radius: 16px;
+	padding: 8px;
 	display: inline-block;
 	font-family: "arial";
 
@@ -1037,10 +1037,10 @@
 	}
 
 	.filter {
-		margin-top: 10px;
-		padding: 10px;
+		margin-top: 8px;
+		padding: 8px;
 		background-color: rgb(255, 250, 220);
-		border-radius: 10px;
+		border-radius: 8px;
 
 		h3 {
 			margin: 0 0 0.5em;
