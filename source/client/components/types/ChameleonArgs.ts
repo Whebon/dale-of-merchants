@@ -83,7 +83,7 @@ export class ChameleonArgs {
         if (tree === this.tree) {
             this._onlyContainsGoodOldTimes = true;
             for (let target of Array.from(validTargets)) {
-                // "target instanceof HTMLElement" means the target represents the ditch ability of good old times
+                // "target instanceof HTMLElement" means the target represents the toss ability of good old times
                 if (!(target instanceof HTMLElement) && target.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
                     this._onlyContainsGoodOldTimes = false;
                     break;

@@ -216,8 +216,8 @@ $machinestates = array(
 	),
 	37 => array(
 		'name' => 'royalPrivilege',
-		'description' => clienttranslate('Royal Privilege: ${actplayer} may ditch an animalfolk card to purchase an additional card for free'),
-		'descriptionmyturn' => clienttranslate('Royal Privilege: ${you} may ditch an animalfolk card to purchase an additional card for free'),
+		'description' => clienttranslate('Royal Privilege: ${actplayer} may toss an animalfolk card to purchase an additional card for free'),
+		'descriptionmyturn' => clienttranslate('Royal Privilege: ${you} may toss an animalfolk card to purchase an additional card for free'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actRoyalPrivilege'],
 		'transitions' => array(
@@ -284,8 +284,8 @@ $machinestates = array(
 	),
 	55 => array(
 		'name' => 'sabotage',
-		'description' => clienttranslate('Sabotage: ${actplayer} must choose a card to ditch for ${opponent_name}'),
-		'descriptionmyturn' => clienttranslate('Sabotage: ${you} must choose a card to ditch for ${opponent_name}'),
+		'description' => clienttranslate('Sabotage: ${actplayer} must choose a card to toss for ${opponent_name}'),
+		'descriptionmyturn' => clienttranslate('Sabotage: ${you} must choose a card to toss for ${opponent_name}'),
 		'type' => 'activeplayer',
 		'action' => 'stSabotage',
 		'args' => 'argOpponentName',
@@ -551,8 +551,8 @@ $machinestates = array(
 	),
 	79 => array(
 		'name' => 'wheelbarrow',
-		'description' => clienttranslate('Wheelbarrow: ${actplayer} must choose to ditch or store ${card_name}'),
-		'descriptionmyturn' => clienttranslate('Wheelbarrow: ${you} must choose to ditch or store ${card_name}'),
+		'description' => clienttranslate('Wheelbarrow: ${actplayer} must choose to toss or store ${card_name}'),
+		'descriptionmyturn' => clienttranslate('Wheelbarrow: ${you} must choose to toss or store ${card_name}'),
 		'type' => 'activeplayer',
 		'action' => 'stWheelbarrow',
 		'args' => 'argCardName',
@@ -651,8 +651,8 @@ $machinestates = array(
 	),
 	88 => array(
 		'name' => 'travelingEquipment',
-		'description' => clienttranslate('Traveling Equipment: ${actplayer} must choose cards to ditch and discard'),
-		'descriptionmyturn' => clienttranslate('Traveling Equipment: ${you} must choose cards to ditch and discard'),
+		'description' => clienttranslate('Traveling Equipment: ${actplayer} must choose cards to toss and discard'),
+		'descriptionmyturn' => clienttranslate('Traveling Equipment: ${you} must choose cards to toss and discard'),
 		'type' => 'activeplayer',
 		'action' => 'stTravelingEquipment',
 		'possibleactions' => ['actTravelingEquipment'],
@@ -693,8 +693,8 @@ $machinestates = array(
 	),
 	92 => array(
 		'name' => 'badOmen',
-		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may ditch a card'),
-		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may ditch a card'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may toss a card'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may toss a card'),
 		'type' => 'activeplayer',
 		'action' => 'stBadOmen',
 		'args' => 'argResolvingCardName',
@@ -796,8 +796,8 @@ $machinestates = array(
 	),
 	103 => array(
 		'name' => 'rake',
-		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may ditch 0-1 cards and discard 0-2 cards from their deck'),
-		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may ditch (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may toss 0-1 cards and discard 0-2 cards from their deck'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may toss (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContentAndResolvingCardName',
 		'possibleactions' => ['actRake'],

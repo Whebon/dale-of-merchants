@@ -317,12 +317,12 @@ interface GameStates {
 	},
 	37: {
 		'name': 'royalPrivilege',
-		'description': 'Royal Privilege: ${actplayer} may ditch an animalfolk card to purchase an additional card for free',
-		'descriptionmyturn': 'Royal Privilege: ${you} may ditch an animalfolk card to purchase an additional card for free',
+		'description': 'Royal Privilege: ${actplayer} may toss an animalfolk card to purchase an additional card for free',
+		'descriptionmyturn': 'Royal Privilege: ${you} may toss an animalfolk card to purchase an additional card for free',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actRoyalPrivilege': [{
-				'name': 'ditch_card_id',
+				'name': 'toss_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}, {
@@ -432,8 +432,8 @@ interface GameStates {
 	},
 	55: {
 		'name': 'sabotage',
-		'description': 'Sabotage: ${actplayer} must choose a card to ditch for ${opponent_name}',
-		'descriptionmyturn': 'Sabotage: ${you} must choose a card to ditch for ${opponent_name}',
+		'description': 'Sabotage: ${actplayer} must choose a card to toss for ${opponent_name}',
+		'descriptionmyturn': 'Sabotage: ${you} must choose a card to toss for ${opponent_name}',
 		'type': 'activeplayer',
 		'action': 'stSabotage',
 		'args': 'argOpponentName',
@@ -857,14 +857,14 @@ interface GameStates {
 	},
 	79: {
 		'name': 'wheelbarrow',
-		'description': 'Wheelbarrow: ${actplayer} must choose to ditch or store ${card_name}',
-		'descriptionmyturn': 'Wheelbarrow: ${you} must choose to ditch or store ${card_name}',
+		'description': 'Wheelbarrow: ${actplayer} must choose to toss or store ${card_name}',
+		'descriptionmyturn': 'Wheelbarrow: ${you} must choose to toss or store ${card_name}',
 		'type': 'activeplayer',
 		'action': 'stWheelbarrow',
 		'args': 'argCardName',
 		'possibleactions': {
 			'actWheelbarrow': [{
-				'name': 'is_ditching',
+				'name': 'is_tossing',
 				'type': 'AT_bool',
 				'typescriptType': boolean,
 			}],
@@ -1043,13 +1043,13 @@ interface GameStates {
 	},
 	88: {
 		'name': 'travelingEquipment',
-		'description': 'Traveling Equipment: ${actplayer} must choose cards to ditch and discard',
-		'descriptionmyturn': 'Traveling Equipment: ${you} must choose cards to ditch and discard',
+		'description': 'Traveling Equipment: ${actplayer} must choose cards to toss and discard',
+		'descriptionmyturn': 'Traveling Equipment: ${you} must choose cards to toss and discard',
 		'type': 'activeplayer',
 		'action': 'stTravelingEquipment',
 		'possibleactions': {
 			'actTravelingEquipment': [{
-				'name': 'ditch_card_id',
+				'name': 'toss_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}, {
@@ -1113,14 +1113,14 @@ interface GameStates {
 	},
 	92: {
 		'name': 'badOmen',
-		'description': '${resolving_card_name}: ${actplayer} may ditch a card',
-		'descriptionmyturn': '${resolving_card_name}: ${you} may ditch a card',
+		'description': '${resolving_card_name}: ${actplayer} may toss a card',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may toss a card',
 		'type': 'activeplayer',
 		'action': 'stBadOmen',
 		'args': 'argResolvingCardName',
 		'possibleactions': {
 			'actBadOmen': [{
-				'name': 'ditch_card_id',
+				'name': 'toss_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}, {
@@ -1277,13 +1277,13 @@ interface GameStates {
 	},
 	103: {
 		'name': 'rake',
-		'description': '${resolving_card_name}: ${actplayer} may ditch 0-1 cards and discard 0-2 cards from their deck',
-		'descriptionmyturn': '${resolving_card_name}: ${you} may ditch (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck',
+		'description': '${resolving_card_name}: ${actplayer} may toss 0-1 cards and discard 0-2 cards from their deck',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may toss (ICON) 0-1 cards and discard (ICON) 0-2 cards from their deck',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContentAndResolvingCardName',
 		'possibleactions': {
 			'actRake': [{
-				'name': 'ditch_card_ids',
+				'name': 'toss_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
 			}, {

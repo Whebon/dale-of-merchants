@@ -142,18 +142,18 @@ declare global {
 				cards: {[card_id: number]: DbCard}
 			}
 		}
-		'ditchFromDiscard': {
+		'tossFromDiscard': {
 			player_id: number
 			card: DbCard
 		}
-		'ditchFromDeck': {
+		'tossFromDeck': {
 			player_id: number
 			card: DbCard
 		}
-		'ditchFromMarketDeck': {
+		'tossFromMarketDeck': {
 			card: DbCard
 		}
-		'ditchFromMarketBoard': {
+		'tossFromMarketBoard': {
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
 		}
@@ -218,14 +218,14 @@ declare global {
 			card: DbCard
 			market_card_id: number
 		}
-		'instant_ditch': {}
-		'ditch': {
+		'instant_toss': {}
+		'toss': {
 			player_id: number 
 			card: DbCard
-			from_limbo?: boolean //by default, ditch from hand. if specified, ditch from limbo instead
+			from_limbo?: boolean //by default, toss from hand. if specified, toss from limbo instead
 			ignore_card_not_found?: boolean
 		}
-		'ditchMultiple': {
+		'tossMultiple': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
 			card_ids: number[] //because ordering matters
@@ -442,7 +442,7 @@ declare global {
 		'client_triggerFizzle': { fizzle: boolean }
 		'client_choicelessTriggerTechniqueCard': { choiceless: true }
 		'client_shoppingJourney': { card_id: number }
-		'client_houseCleaningDitch': { card_id?: number }
+		'client_houseCleaningToss': { card_id?: number }
 		'client_siesta': { card_id?: number }
 		'client_spend' : { spend_card_ids: number[], spend_coins: number } //for finish cards
 		'client_spendx' : { spend_card_ids: number[], spend_coins: number } //for finish cards
@@ -481,7 +481,7 @@ declare global {
 		'client_riskyBusiness': { value: number }
 		'client_historyLesson': { card_ids: number[] }
 		'client_replacement': { card_id?: number }
-		'client_fashionHint': { ditch: boolean }
+		'client_fashionHint': { toss: boolean }
 		'client_pompousProfessional': { animalfolk_id: number }
 		'client_burglaryOpponentId': {},
 		'client_burglaryValue': { opponent_id: number, value: number }
@@ -534,7 +534,7 @@ declare global {
 		'chameleon_autobind': {}
 		'chameleon_flexibleShopkeeper': {}
 		'chameleon_reflection': {}
-		'chameleon_goodoldtimes': { mode: 'copy' | 'ditchOrCopy' | 'ditchOptional' | 'ditchMandatory' | undefined }
+		'chameleon_goodoldtimes': { mode: 'copy' | 'tossOrCopy' | 'tossOptional' | 'tossMandatory' | undefined }
 		'chameleon_trendsetting': {}
 		'chameleon_seeingdoubles': {}
 		'client_purchase' : { 
@@ -567,7 +567,7 @@ declare global {
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
 		'client_glue': ClientGameStates['client_purchase']
 		'client_houseCleaning': { technique_card_id: number, nbr_junk: number }
-		'client_replacementFizzle': { technique_card_id: number, ditch_card_id: number, ditch_card_name: string }
+		'client_replacementFizzle': { technique_card_id: number, toss_card_id: number, toss_card_name: string }
 		'client_burglaryValue': { technique_card_id: number, opponent_id: number, opponent_name: string }
 		'client_graspValue': { technique_card_id: number, opponent_id: number, opponent_name: string },
 		'client_periscopeAnimalfolkId': { technique_card_id: number, opponent_id: number, opponent_name: string },
@@ -579,7 +579,7 @@ declare global {
 		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, wrap_class?: DaleWrapClass }
 		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
-		'client_badOmen': { ditch_card_id: number, card_name: string }
+		'client_badOmen': { toss_card_id: number, card_name: string }
 		'client_selectingContracts': {technique_card_id: number, nbr: number }
 		'client_generationChange': { technique_card_id: number, nbr: number }
 	}

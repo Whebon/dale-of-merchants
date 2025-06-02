@@ -572,7 +572,7 @@ class DaleOfMerchants extends Gamegui
 				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);	
 				this.setPurchaseSelectionModes(client_essentialPurchase_args);
 				this.myHand.unselectAll();
-				this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+				this.myHand.setSelectionMode('essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
 				let junk_selected = 0;
 				let client_essentialPurchase_skip = true;
 				for (let card_id of client_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
@@ -614,7 +614,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_shatteredRelic':
-				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique',
@@ -675,7 +675,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'sabotage':
-				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'client_treasureHunter':
 				const client_treasureHunter_args = (this.mainClientState.args as ClientGameStates['client_treasureHunter']);
@@ -780,8 +780,8 @@ class DaleOfMerchants extends Gamegui
 					this.myDiscard.openPopin();
 				}
 				break;
-			case 'client_houseCleaningDitch':
-				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+			case 'client_houseCleaningToss':
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'client_siesta':
 				this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
@@ -861,7 +861,7 @@ class DaleOfMerchants extends Gamegui
 				}).bind(this), 500);
 				break;
 			case 'client_swank':
-				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'naturalSurvivor':
 				const naturalSurvivor_args = args.args as { _private: { cards: DbCard[] }, die_value: number };
@@ -875,7 +875,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('multiple', 'duplicateEntry', 'daleofmerchants-wrap-technique', 2);
 				this.myDeck.openPopin();
 				//early setup for badOmen
-				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>")); 
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>")); 
 				break;
 			case 'client_historyLesson':
 				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
@@ -900,7 +900,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to take"));
 				break;
 			case 'client_replacement':
-				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
+				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>toss</strong>"));
 				break;
 			case 'replacement':
 				const replacement_args = args.args as { value: number };
@@ -927,7 +927,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'royalPrivilege':
 				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
-				this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to ditch"));
+				this.myHand.setSelectionMode('singleAnimalfolk', 'toss', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to toss"));
 				break;
 			case 'client_carefreeSwapper':
 				const client_carefreeSwapper_args = (this.mainClientState.args as ClientGameStates['client_carefreeSwapper']);
@@ -1073,8 +1073,8 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'travelingEquipment':
 				const travelingEquipment_label = this.format_dale_icons(
-					_("Choose cards to <strong>ditch</strong> (ICON) and discard (ICON)"),
-					DaleIcons.getTravelingEquipmentDitchIcon(),
+					_("Choose cards to <strong>toss</strong> (ICON) and discard (ICON)"),
+					DaleIcons.getTravelingEquipmentTossIcon(),
 					DaleIcons.getTravelingEquipmentDiscardIcon()
 				);
 				this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
@@ -1093,7 +1093,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"))
 				break;
 			case 'badOmen':
-				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'client_badOmen':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
@@ -1145,12 +1145,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'rake':
 				this.setMainTitle(this.format_dale_icons($('pagemaintitletext')!.innerHTML,
-					DaleIcons.getDitchIcon(),
+					DaleIcons.getTossIcon(),
 					DaleIcons.getBluePileIcon(0)
 				));
 				const raket_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(raket_args._private.cards.map(DaleCard.of));
-				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
+				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'toss', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
 				this.myDeck.openPopin();
 				break;
 			case 'client_generationChange':
@@ -1343,7 +1343,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_houseCleaning':
 				this.myDiscard.setSelectionMode('none');
 				break;
-			case 'client_houseCleaningDitch':
+			case 'client_houseCleaningToss':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_siesta':
@@ -1669,7 +1669,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_essentialPurchase':
-				this.addActionButton("confirm-button", _("Ditch selected junk"), "onPurchase");
+				this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'bonusBuild':
@@ -1701,7 +1701,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_loyalPartner':
-				this.addActionButton("confirm-button", _("Ditch selected"), "onLoyalPartner");
+				this.addActionButton("confirm-button", _("Toss selected"), "onLoyalPartner");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_prepaidGood':
@@ -1819,17 +1819,17 @@ class DaleOfMerchants extends Gamegui
 						this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
 						this.addActionButtonCancelClient();
 						break;
-					case 'ditchOrCopy':
+					case 'tossOrCopy':
 						this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
-						this.addActionButton("ditch-button", _("Ditch"), "onGoodOldTimesPassive");
+						this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
 						this.addActionButtonCancelClient();
 						break;
-					case 'ditchOptional':
-						this.addActionButton("ditch-button", _("Ditch"), "onGoodOldTimesPassive");
+					case 'tossOptional':
+						this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
 						this.addActionButton("skip-button", _("Skip"), "onGoodOldTimesPassiveSkip", undefined, false, 'gray');
 						break;
-					case 'ditchMandatory':
-						this.addActionButton("ditch-button", _("Ditch"), "onGoodOldTimesPassive");
+					case 'tossMandatory':
+						this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
 						this.addActionButtonCancelClient();
 						break;
 				}
@@ -1866,7 +1866,7 @@ class DaleOfMerchants extends Gamegui
 				this.onChoicelessPassiveCard(); //immediately leave this state
 				break;
 			case 'client_marketDiscovery':
-				this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
+				this.addActionButton("toss-button", _("Toss"), "onMarketDiscoveryToss");
 				this.addActionButton("purchase-button", _("Purchase"), "onMarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
 				break;
@@ -1895,7 +1895,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", client_houseCleaning_label, "onHouseCleaning");
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_houseCleaningDitch':
+			case 'client_houseCleaningToss':
 				this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
 				this.addActionButtonCancelClient();
 				break;
@@ -1984,19 +1984,19 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_replacementFizzle':
-				this.addActionButton("fizzle-button", _("Ditch without replacement"), "onReplacementFizzle");
+				this.addActionButton("fizzle-button", _("Toss without replacement"), "onReplacementFizzle");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_fashionHint':
-				this.addActionButton("ditch-button", _("Ditch"), "onFashionHintDitch");
-				this.addActionButton("skip-button", _("Skip"), "onFashionHintDitchSkip", undefined, false, 'gray');
+				this.addActionButton("toss-button", _("Toss"), "onFashionHintToss");
+				this.addActionButton("skip-button", _("Skip"), "onFashionHintTossSkip", undefined, false, 'gray');
 				this.addActionButtonCancelClient();
 				break;
 			case 'fashionHint':
 				this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
 				break;
 			case 'royalPrivilege':
-				this.addActionButton("ditch-button", _("Purchase"), "onRoyalPrivilege");
+				this.addActionButton("toss-button", _("Purchase"), "onRoyalPrivilege");
 				this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
 				break;
 			case 'client_pompousProfessional':
@@ -2168,12 +2168,12 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'wheelbarrow':
-				this.addActionButton("wheelbarrow-ditch-button", _("Ditch"), "onWheelbarrowDitch");
+				this.addActionButton("wheelbarrow-toss-button", _("Toss"), "onWheelbarrowToss");
 				this.addActionButton("wheelbarrow-store-button", _("Store"), "onWheelbarrowStore");
-				// const wheelbarrow_ditch = $("wheelbarrow-ditch-button");
+				// const wheelbarrow_toss = $("wheelbarrow-toss-button");
 				// const wheelbarrow_or = document.createElement("span");
 				// wheelbarrow_or.textContent = _(" or");
-				// wheelbarrow_ditch?.parentNode?.insertBefore(wheelbarrow_or, wheelbarrow_ditch.nextSibling);
+				// wheelbarrow_toss?.parentNode?.insertBefore(wheelbarrow_or, wheelbarrow_toss.nextSibling);
 				break;
 			case 'tacticalMeasurement':
 				this.addActionButton("confirm-button", _("Confirm"), "onTacticalMeasurement");
@@ -2360,7 +2360,7 @@ class DaleOfMerchants extends Gamegui
 		//set the chameleon client state name and args
 		let chameleonStatename: keyof ClientGameStates;
 		let args: ClientGameStates['chameleon_goodoldtimes'] = { mode: undefined };
-		let ditchAvailable = true;
+		let tossAvailable = true;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				chameleonStatename = 'chameleon_flexibleShopkeeper'
@@ -2369,18 +2369,18 @@ class DaleOfMerchants extends Gamegui
 				chameleonStatename = 'chameleon_reflection'
 				break;
 			case DaleCard.CT_GOODOLDTIMES:
-				ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
-				if (!ditchAvailable) {
+				tossAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
+				if (!tossAvailable) {
 					args.mode = 'copy'
 				}
 				else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || this.chameleonArgs?.onlyContainsGoodOldTimes) {
-					args.mode = 'ditchOptional'
+					args.mode = 'tossOptional'
 				}
 				else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.length == 2) && this.marketDiscard.size > 0) {
-					args.mode = 'ditchOrCopy'
+					args.mode = 'tossOrCopy'
 				}
 				else {
-					args.mode = 'ditchMandatory'
+					args.mode = 'tossMandatory'
 				}
 				chameleonStatename = 'chameleon_goodoldtimes'
 				break;
@@ -2406,8 +2406,8 @@ class DaleOfMerchants extends Gamegui
 				return true;
 			}
 			else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
-				if (ditchAvailable) {
-					args.mode = 'ditchOptional'
+				if (tossAvailable) {
+					args.mode = 'tossOptional'
 					this.mainClientState.enterOnStack(chameleonStatename, args);
 					return false;
 				}
@@ -3362,7 +3362,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_marketDiscovery':
 				if (pile === this.marketDeck) {
-					this.onMarketDiscoveryDitch();
+					this.onMarketDiscoveryToss();
 				}
 				else if (pile === this.marketDiscard) {
 					this.onMarketDiscoveryPurchase();
@@ -3370,10 +3370,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_fashionHint':
 				if (pile === this.marketDeck) {
-					this.onFashionHintDitch();
+					this.onFashionHintToss();
 				}
 				else if (pile === this.marketDiscard) {
-					this.onFashionHintDitchSkip();
+					this.onFashionHintTossSkip();
 				}
 				break;
 		}
@@ -3551,8 +3551,8 @@ class DaleOfMerchants extends Gamegui
 					dojo.setStyle(client_glue_button, 'display', '');
 				}
 				break;
-			case 'client_houseCleaningDitch':
-				this.resolveTechniqueCard<'client_houseCleaningDitch'>({
+			case 'client_houseCleaningToss':
+				this.resolveTechniqueCard<'client_houseCleaningToss'>({
 					card_id: card!.id
 				})
 				break;
@@ -3586,8 +3586,8 @@ class DaleOfMerchants extends Gamegui
 					//warn the player a replacement for this card does not exist
 					this.mainClientState.enter('client_replacementFizzle', {
 						technique_card_id: (this.mainClientState.args as ClientGameStates['client_replacement']).technique_card_id,
-						ditch_card_id: card!.id,
-						ditch_card_name: card.name
+						toss_card_id: card!.id,
+						toss_card_name: card.name
 					})
 				}
 				break;
@@ -3745,7 +3745,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 				this.mainClientState.enterOnStack('client_badOmen', {
-					ditch_card_id: card.id,
+					toss_card_id: card.id,
 					card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
 				});
 				break;
@@ -3819,7 +3819,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_HOUSECLEANING:
 				fizzle = this.myHand.count() == 0;
-				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningToss', card.id);
 				break;
 			case DaleCard.CT_SIESTA:
 			case DaleCard.CT_MASTERBUILDER:
@@ -3907,7 +3907,7 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onMarketDiscoveryDitch() {
+	onMarketDiscoveryToss() {
 		this.playPassiveCard<'client_marketDiscovery'>({});
 	}
 
@@ -4856,7 +4856,7 @@ class DaleOfMerchants extends Gamegui
 					}
 					else {
 						this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
-						this.onMarketDiscoveryDitch();
+						this.onMarketDiscoveryToss();
 					}
 				}
 				else if (card.isPassiveUsed()) {
@@ -5414,7 +5414,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onHouseCleaningSkip() {
-		this.resolveTechniqueCard<'client_houseCleaningDitch'>({});
+		this.resolveTechniqueCard<'client_houseCleaningToss'>({});
 	}
 
 	//TODO: safely delete this
@@ -5662,19 +5662,19 @@ class DaleOfMerchants extends Gamegui
 	onReplacementFizzle() {
 		const args = this.mainClientState.args as ClientGameStates['client_replacementFizzle'];
 		this.playTechniqueCardWithServerState<'client_replacement'>({
-			card_id: args.ditch_card_id
+			card_id: args.toss_card_id
 		})
 	}
 
-	onFashionHintDitch() {
+	onFashionHintToss() {
 		this.playTechniqueCardWithServerState<'client_fashionHint'>({
-			ditch: true
+			toss: true
 		});
 	}
 
-	onFashionHintDitchSkip() {
+	onFashionHintTossSkip() {
 		this.playTechniqueCardWithServerState<'client_fashionHint'>({
-			ditch: false
+			toss: false
 		});
 	}
 
@@ -5692,9 +5692,9 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onRoyalPrivilege() {
-		const ditch_card_id = this.myHand.orderedSelection.get()[0];
-		if (!ditch_card_id) {
-			this.showMessage(_("Please select a hand card to ditch"), 'error');
+		const toss_card_id = this.myHand.orderedSelection.get()[0];
+		if (!toss_card_id) {
+			this.showMessage(_("Please select a hand card to toss"), 'error');
 			return;
 		}
 		const market_card_id = this.market!.getSelectedCardId();
@@ -5703,14 +5703,14 @@ class DaleOfMerchants extends Gamegui
 			return;
 		}
 		this.bgaPerformAction('actRoyalPrivilege', {
-			ditch_card_id: ditch_card_id,
+			toss_card_id: toss_card_id,
 			market_card_id: market_card_id
 		});
 	}
 
 	onRoyalPrivilegeSkip() {
 		this.bgaPerformAction('actRoyalPrivilege', {
-			ditch_card_id: -1,
+			toss_card_id: -1,
 			market_card_id: -1
 		});
 	}
@@ -5832,15 +5832,15 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onWheelbarrowDitch() {
+	onWheelbarrowToss() {
 		this.bgaPerformAction('actWheelbarrow', {
-			is_ditching: true
+			is_tossing: true
 		});
 	}
 
 	onWheelbarrowStore() {
 		this.bgaPerformAction('actWheelbarrow', {
-			is_ditching: false
+			is_tossing: false
 		});
 	}
 
@@ -6104,13 +6104,13 @@ class DaleOfMerchants extends Gamegui
 			//default case
 			const card_ids = this.myHand.orderedSelection.get(); //warning: get() does a reverse()
 			if (card_ids.length < 2) {
-				this.showMessage(_("Please choose 1 card to ditch and 1 card to discard"), 'error');
+				this.showMessage(_("Please choose 1 card to toss and 1 card to discard"), 'error');
 				return;
 			}
-			const ditch_card_id = card_ids[1]!; //we undo the reverse() here
+			const toss_card_id = card_ids[1]!; //we undo the reverse() here
 			const discard_card_id = card_ids[0]!;
 			this.bgaPerformAction('actTravelingEquipment', {
-				ditch_card_id: ditch_card_id,
+				toss_card_id: toss_card_id,
 				discard_card_id: discard_card_id
 			})
 			this.myHand.unselectAll();
@@ -6119,18 +6119,18 @@ class DaleOfMerchants extends Gamegui
 			//special case: the hand only contains 1 card (uses a quick and dirty -1 trick: to discard a card, '-1' is included in the selection)
 			const only_card_id = this.myHand.getAllItems()[0]!.id;
 			if (this.myHand.orderedSelection.getSize() == 0) {
-				this.showMessage(_("Please choose whether to ditch or discard the card in your hand"), 'error');
+				this.showMessage(_("Please choose whether to toss or discard the card in your hand"), 'error');
 				return;
 			}
 			else if (this.myHand.orderedSelection.includes(-1)) {
 				this.bgaPerformAction('actTravelingEquipment', {
-					ditch_card_id: -1,
+					toss_card_id: -1,
 					discard_card_id: only_card_id
 				})
 			}
 			else {
 				this.bgaPerformAction('actTravelingEquipment', {
-					ditch_card_id: only_card_id,
+					toss_card_id: only_card_id,
 					discard_card_id: -1
 				})
 			}
@@ -6154,25 +6154,25 @@ class DaleOfMerchants extends Gamegui
 	onBadOmenSkip() {
 		const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 		this.mainClientState.enterOnStack('client_badOmen', {
-			ditch_card_id: -1,
+			toss_card_id: -1,
 			card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
 		});
 	}
 
 	onBadOmenUndo() {
 		const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
-		if (args.ditch_card_id != -1) {
-			//undo the ditch
-			if (new DaleCard(args.ditch_card_id).isAnimalfolk()) {
+		if (args.toss_card_id != -1) {
+			//undo the toss
+			if (new DaleCard(args.toss_card_id).isAnimalfolk()) {
 				const card = this.marketDiscard.pop();
-				if (args.ditch_card_id != card.id) {
+				if (args.toss_card_id != card.id) {
 					throw new Error(`Expected card ${card.id} on top of the bin`);
 				}
 				this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
 			}
 			else {
 				//warning: if specialty/trap cards exist, this come from somewhere else
-				this.myLimbo.addDaleCardToStock(new DaleCard(args.ditch_card_id), 'overall_player_board_'+this.player_id);
+				this.myLimbo.addDaleCardToStock(new DaleCard(args.toss_card_id), 'overall_player_board_'+this.player_id);
 			}
 
 		}
@@ -6183,7 +6183,7 @@ class DaleOfMerchants extends Gamegui
 		const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
 		const deck_card_ids = this.myLimbo.orderedSelection.get();
 		this.bgaPerformAction('actBadOmen', {
-			ditch_card_id: args.ditch_card_id,
+			toss_card_id: args.toss_card_id,
 			deck_card_ids: this.arrayToNumberList(deck_card_ids)
 		});
 		this.mainClientState.leave();
@@ -6353,7 +6353,7 @@ class DaleOfMerchants extends Gamegui
 	// onRakeSkip() {
 	// 	const rake_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 	// 	this.mainClientState.enterOnStack('client_rake', {
-	// 		ditch_card_id: -1,
+	// 		toss_card_id: -1,
 	// 		card_name: rake_args.resolving_card_name ?? "MISSING CARD NAME"
 	// 	});
 	// 	this.myDeck.openPopin();
@@ -6361,11 +6361,11 @@ class DaleOfMerchants extends Gamegui
 
 	// onRakeUndo() {
 	// 	const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
-	// 	if (args.ditch_card_id != -1) {
-	// 		//undo the ditch
-	// 		if (new DaleCard(args.ditch_card_id).isAnimalfolk()) {
+	// 	if (args.toss_card_id != -1) {
+	// 		//undo the toss
+	// 		if (new DaleCard(args.toss_card_id).isAnimalfolk()) {
 	// 			const card = this.marketDiscard.pop();
-	// 			if (args.ditch_card_id != card.id) {
+	// 			if (args.toss_card_id != card.id) {
 	// 				throw new Error(`Expected card ${card.id} on top of the bin`);
 	// 			}
 	// 			this.myDeck.push(card, this.marketDiscard.placeholderHTML);
@@ -6382,25 +6382,25 @@ class DaleOfMerchants extends Gamegui
 	// 	const args = (this.mainClientState.args as ClientGameStates['client_rake']);
 	// 	const discard_card_ids = this.myDeck.orderedSelection.get();
 	// 	this.bgaPerformAction('actRake', {
-	// 		ditch_card_id: args.ditch_card_id,
+	// 		toss_card_id: args.toss_card_id,
 	// 		discard_card_ids: this.arrayToNumberList(discard_card_ids)
 	// 	});
 	// 	this.mainClientState.leave();
 	// }
 
 	onRake() {
-		const ditch_card_ids = this.myDeck.orderedSelection.get();
+		const toss_card_ids = this.myDeck.orderedSelection.get();
 		const discard_card_ids = this.myDeck.orderedSelection.get(true);
-		if (ditch_card_ids.length > 1) {
-			this.showMessage(_("Please select at most 1 card to ditch"), "error");
+		if (toss_card_ids.length > 1) {
+			this.showMessage(_("Please select at most 1 card to toss"), "error");
 			return;
 		}
 		if (discard_card_ids.length > 2) {
-			this.showMessage(_("Please select at most 2 cards to ditch"), "error");
+			this.showMessage(_("Please select at most 2 cards to toss"), "error");
 			return;
 		}
 		this.bgaPerformAction('actRake', {
-			ditch_card_ids: this.arrayToNumberList(ditch_card_ids),
+			toss_card_ids: this.arrayToNumberList(toss_card_ids),
 			discard_card_ids: this.arrayToNumberList(discard_card_ids)
 		});
 	}
@@ -6466,9 +6466,9 @@ class DaleOfMerchants extends Gamegui
 			['obtainNewJunkInHand', 				500],
 			['obtainNewJunkInDiscard',				500],
 			['obtainNewJunkOnDeck',					500],
-			['instant_ditch', 						1],
-			['ditch', 								500],
-			['ditchMultiple', 						500],
+			['instant_toss', 						1],
+			['toss', 								500],
+			['tossMultiple', 						500],
 			['discard', 							500],
 			['discardMultiple', 					750],
 			['placeOnDeck',							500, true],
@@ -6480,10 +6480,10 @@ class DaleOfMerchants extends Gamegui
 			['accidentTakeBack', 					500, true],
 			['cunningNeighbourWatch', 				500, true],
 			['cunningNeighbourReturn', 				500, true],
-			['ditchFromDiscard', 					500],
-			['ditchFromDeck', 						500],
-			['ditchFromMarketDeck', 				500],
-			['ditchFromMarketBoard', 				500],
+			['tossFromDiscard', 					500],
+			['tossFromDeck', 						500],
+			['tossFromMarketDeck', 				500],
+			['tossFromMarketBoard', 				500],
 			['instant_deckToDeck', 					1],
 			['deckToDeck', 							500],
 			['instant_discardToDeck', 				1],
@@ -6990,11 +6990,11 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_instant_ditch(notif: NotifAs<'ditch'>) {
-		this.notif_ditch(notif);
+	notif_instant_toss(notif: NotifAs<'toss'>) {
+		this.notif_toss(notif);
 	}
 
-	notif_ditch(notif: NotifAs<'ditch'>) {
+	notif_toss(notif: NotifAs<'toss'>) {
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (DaleCard.of(notif.args.card).isAnimalfolk()) {
 			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard, 0, notif.args.ignore_card_not_found);
@@ -7008,7 +7008,7 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_ditchMultiple(notif: NotifAs<'ditchMultiple'>) {
+	notif_tossMultiple(notif: NotifAs<'tossMultiple'>) {
 		let delay = 0;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		for (let id of notif.args.card_ids) {
@@ -7420,8 +7420,8 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_ditchFromDiscard(notif: NotifAs<'ditchFromDiscard'>) {
-		console.warn("notif_ditchFromDiscard");
+	notif_tossFromDiscard(notif: NotifAs<'tossFromDiscard'>) {
+		console.warn("notif_tossFromDiscard");
 		const playerDiscard = this.playerDiscards[notif.args.player_id]!;
 		const dbcard = notif.args.card;
 		const card = DaleCard.of(dbcard);
@@ -7430,11 +7430,11 @@ class DaleOfMerchants extends Gamegui
 		if (card.isAnimalfolk()) {
 			this.marketDiscard.push(card, playerDiscard.placeholderHTML);
 		}
-		//TODO: animate ditching non-animalfolk cards
+		//TODO: animate tossing non-animalfolk cards
 	}
 
-	notif_ditchFromDeck(notif: NotifAs<'ditchFromDeck'>) {
-		console.warn("notif_ditchFromDeck");
+	notif_tossFromDeck(notif: NotifAs<'tossFromDeck'>) {
+		console.warn("notif_tossFromDeck");
 		const playerDeck = this.playerDecks[notif.args.player_id]!;
 		const dbcard = notif.args.card;
 		const card = DaleCard.of(dbcard);
@@ -7443,17 +7443,17 @@ class DaleOfMerchants extends Gamegui
 			this.marketDiscard.push(card, playerDeck.placeholderHTML);
 		}
 		else {
-			//TODO: better animation for ditching non-animalfolk cards
+			//TODO: better animation for tossing non-animalfolk cards
 			playerDeck.pop('overall_player_board_'+notif.args.player_id);
 		}
 	}
 
-	notif_ditchFromMarketDeck(notif: NotifAs<'ditchFromMarketDeck'>) {
+	notif_tossFromMarketDeck(notif: NotifAs<'tossFromMarketDeck'>) {
 		this.marketDeck.pop!();
 		this.marketDiscard.push(DaleCard.of(notif.args.card), this.marketDeck.placeholderHTML);
 	}
 
-	notif_ditchFromMarketBoard(notif: NotifAs<'ditchFromMarketBoard'>) {
+	notif_tossFromMarketBoard(notif: NotifAs<'tossFromMarketBoard'>) {
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			const pos = this.market!.posOf(id);

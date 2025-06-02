@@ -73,7 +73,7 @@ export class MainClientState {
             
             //Optional purchase states
             case 'client_essentialPurchase':
-                return _("Essential Purchase: ${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+                return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected junk cards");
             case 'client_glue':
                 return _("Glue: ${you} may keep Glue in your hand");
             
@@ -86,12 +86,12 @@ export class MainClientState {
                 switch ((this._args as ClientGameStates['chameleon_goodoldtimes']).mode) {
                     case 'copy':
                         return _("Good Old Times: ${you} must copy the bin's top card");
-                    case 'ditchOrCopy':
-                        return _("Good Old Times: ${you} must copy the bin's top card or ditch the supply's top card");
-                    case 'ditchOptional':
-                        return _("Good Old Times: ${you} may ditch the supply's top card");
-                    case 'ditchMandatory':
-                        return _("Good Old Times: ${you} must ditch the supply's top card");
+                    case 'tossOrCopy':
+                        return _("Good Old Times: ${you} must copy the bin's top card or toss the supply's top card");
+                    case 'tossOptional':
+                        return _("Good Old Times: ${you} may toss the supply's top card");
+                    case 'tossMandatory':
+                        return _("Good Old Times: ${you} must toss the supply's top card");
                     default:
                         throw new Error("Unexpected CT_GOODOLDTIMES mode");
                 }
@@ -110,7 +110,7 @@ export class MainClientState {
             
             //Specific passive states
             case 'client_marketDiscovery':
-                return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
+                return _("${card_name}: ${you} may <strong>toss</strong> the supply's top card or purchase the bin's top card");
             case 'client_calculations':
                 return _("${card_name}: ${you} may rearrange any cards in the market");
             case 'client_sliceoflife':
@@ -148,13 +148,13 @@ export class MainClientState {
             case 'client_swiftBroker':
                 return _("${card_name}: ${you} may choose the order to discard your hand");
             case 'client_shatteredRelic':
-                return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
             case 'client_acorn':
                 return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
             case 'client_giftVoucher':
                 return _("${card_name}: ${you} must choose a card from the market to swap with");
             case 'client_loyalPartner':
-                return _("${card_name}: ${you} may choose to <stronger>ditch</stronger> any number of cards from the market");
+                return _("${card_name}: ${you} may choose to <stronger>toss</stronger> any number of cards from the market");
             case 'client_prepaidGood':
                 return _("${card_name}: ${you} must choose a card from the market");
             case 'client_nuisance':
@@ -166,7 +166,7 @@ export class MainClientState {
             case 'client_treasureHunter':
                 return _("${card_name}: ${you} must take a card from an opponent's discard pile");
             case 'client_newSeason':
-                return _("${card_name}: ${you} must <stronger>ditch</stronger> an animalfolk card from your discard pile");
+                return _("${card_name}: ${you} must <stronger>toss</stronger> an animalfolk card from your discard pile");
             case 'client_accident':
                 if ((this._page as any).unique_opponent_id) {
                     return _("${card_name}: ${you} may choose the order to discard your hand");
@@ -193,8 +193,8 @@ export class MainClientState {
                 } else {
                     return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
                 }
-            case 'client_houseCleaningDitch':
-                return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
+            case 'client_houseCleaningToss':
+                return _("${card_name}: ${you} may <stronger>toss</stronger> a card from your hand");
             case 'client_siesta':
                 return _("${card_name}: ${you} must take a card from your discard pile");
             case 'client_ruthlessCompetition':
@@ -206,17 +206,17 @@ export class MainClientState {
             case 'client_rareArtefact':
                 return _("${card_name}: ${you} must choose a card to multiply its value");
             case 'client_swank':
-                return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
             case 'client_riskyBusiness':
                 return _("${card_name}: ${you} must guess the top card's value from the supply");
             case 'client_historyLesson':
                 return _("${card_name}: ${you} may select up to 3 cards from the top of your discard pile");
             case 'client_replacement':
-                return _("${card_name}: ${you} must choose an animalfolk card to <stronger>ditch</stronger>");
+                return _("${card_name}: ${you} must choose an animalfolk card to <stronger>toss</stronger>");
             case 'client_replacementFizzle':
-                return _("${card_name}: Are you sure you want to ditch '${ditch_card_name}'? The market has no valid replacement for this card");
+                return _("${card_name}: Are you sure you want to toss '${toss_card_name}'? The market has no valid replacement for this card");
             case 'client_fashionHint':
-                return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from the supply");
+                return _("${card_name}: ${you} may <stronger>toss</stronger> a card from the supply");
             case 'client_pompousProfessional':
                 return _("${card_name}: ${you} must choose an animalfolk set");
             case 'client_burglaryOpponentId':
@@ -248,7 +248,7 @@ export class MainClientState {
             case 'client_goodwillpresents':
                 return _("${card_name}: ${you} must choose 1-2 players");
             case 'client_alternativePlan':
-                return _("${card_name}: ${you} must ditch a card from your discard pile");
+                return _("${card_name}: ${you} must toss a card from your discard pile");
             case 'client_anchor':
                 return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
             case 'client_manufacturedJoy':
@@ -258,23 +258,23 @@ export class MainClientState {
             case 'client_cache':
                 return _("${card_name}: ${you} must take 1 card from your discard pile");
             case 'client_groundbreakingIdea':
-                return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
             case 'client_badOmen':
                 return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
             case 'client_dramaticRomantic':
                 return _("${card_name}: ${you} move your clock");
             case 'client_selectingContracts':
                 if((this._args as ClientGameStates['client_selectingContracts']).nbr == 1) {
-                    return _("${card_name}: ${you} must <stronger>ditch</stronger> the top card of your discard");
+                    return _("${card_name}: ${you} must <stronger>toss</stronger> the top card of your discard");
                 } else {
                     return (this._page as any).format_dale_icons(
-                        _("${card_name}: ${you} must <stronger>ditch</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"),
-                        DaleIcons.getDitchIcon(),
+                        _("${card_name}: ${you} must <stronger>toss</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"),
+                        DaleIcons.getTossIcon(),
                         DaleIcons.getBluePileIcon(0)
                     )
                 }
             case 'client_windOfChange':
-                return _("${card_name}: ${you} may ditch a card from your discard");
+                return _("${card_name}: ${you} may toss a card from your discard");
             case 'client_snack':
                 return _("${card_name}: ${you} must take a card from the market");
             case 'client_bonsai':

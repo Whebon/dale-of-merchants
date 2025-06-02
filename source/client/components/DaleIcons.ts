@@ -31,8 +31,8 @@ export class DaleIcons {
         return this.getHandIcon(); //TODO: should be a 'put aside' icon (these cards are moved to limbo)
     }
 
-    public static getTravelingEquipmentDitchIcon(): HTMLElement {
-        return this.getDitchIcon();
+    public static getTravelingEquipmentTossIcon(): HTMLElement {
+        return this.getTossIcon();
     }
 
     public static getTravelingEquipmentDiscardIcon(): HTMLElement {
@@ -94,7 +94,7 @@ export class DaleIcons {
         return this.getIcon(4, 0);
     }
 
-    public static getDitchIcon(): HTMLElement {
+    public static getTossIcon(): HTMLElement {
         return this.getIcon(4, 1);
     }
 

@@ -71,8 +71,8 @@ export abstract class AbstractOrderedSelection {
             case 'pileRed':
                 icon = DaleIcons.getRedPileIcon(Math.min(index, 5));
                 break;
-            case 'ditch':
-                icon = DaleIcons.getDitchIcon();
+            case 'toss':
+                icon = DaleIcons.getTossIcon();
                 break;
             case 'build':
                 icon = DaleIcons.getBuildIcon();
@@ -102,10 +102,10 @@ export abstract class AbstractOrderedSelection {
                 icon = DaleIcons.getBluePileIcon(Math.max(4-index, 0)); //reverse pileBlue
                 break;
             case 'travelingEquipment':
-                icon = index == 0 ? DaleIcons.getTravelingEquipmentDitchIcon() : DaleIcons.getTravelingEquipmentDiscardIcon();
+                icon = index == 0 ? DaleIcons.getTravelingEquipmentTossIcon() : DaleIcons.getTravelingEquipmentDiscardIcon();
                 break;
             case 'selectingContracts':
-                icon = (index == 0) ? DaleIcons.getDitchIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                icon = (index == 0) ? DaleIcons.getTossIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
         }
         if (icon) {

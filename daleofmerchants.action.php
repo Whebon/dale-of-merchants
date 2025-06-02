@@ -159,12 +159,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var int $ditch_card_id */
-		$ditch_card_id = self::getArg('ditch_card_id', AT_int, true);
+		/** @var int $toss_card_id */
+		$toss_card_id = self::getArg('toss_card_id', AT_int, true);
 		/** @var int $market_card_id */
 		$market_card_id = self::getArg('market_card_id', AT_int, true);
 
-		$this->game->actRoyalPrivilege( $ditch_card_id, $market_card_id );
+		$this->game->actRoyalPrivilege( $toss_card_id, $market_card_id );
 		self::ajaxResponse();
 	}
 
@@ -465,10 +465,10 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var bool $is_ditching */
-		$is_ditching = self::getArg('is_ditching', AT_bool, true);
+		/** @var bool $is_tossing */
+		$is_tossing = self::getArg('is_tossing', AT_bool, true);
 
-		$this->game->actWheelbarrow( $is_ditching );
+		$this->game->actWheelbarrow( $is_tossing );
 		self::ajaxResponse();
 	}
 
@@ -565,12 +565,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var int $ditch_card_id */
-		$ditch_card_id = self::getArg('ditch_card_id', AT_int, true);
+		/** @var int $toss_card_id */
+		$toss_card_id = self::getArg('toss_card_id', AT_int, true);
 		/** @var int $discard_card_id */
 		$discard_card_id = self::getArg('discard_card_id', AT_int, true);
 
-		$this->game->actTravelingEquipment( $ditch_card_id, $discard_card_id );
+		$this->game->actTravelingEquipment( $toss_card_id, $discard_card_id );
 		self::ajaxResponse();
 	}
 
@@ -611,12 +611,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var int $ditch_card_id */
-		$ditch_card_id = self::getArg('ditch_card_id', AT_int, true);
+		/** @var int $toss_card_id */
+		$toss_card_id = self::getArg('toss_card_id', AT_int, true);
 		/** @var string $deck_card_ids */
 		$deck_card_ids = self::getArg('deck_card_ids', AT_numberlist, true);
 
-		$this->game->actBadOmen( $ditch_card_id, $deck_card_ids );
+		$this->game->actBadOmen( $toss_card_id, $deck_card_ids );
 		self::ajaxResponse();
 	}
 
@@ -705,12 +705,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $ditch_card_ids */
-		$ditch_card_ids = self::getArg('ditch_card_ids', AT_numberlist, true);
+		/** @var string $toss_card_ids */
+		$toss_card_ids = self::getArg('toss_card_ids', AT_numberlist, true);
 		/** @var string $discard_card_ids */
 		$discard_card_ids = self::getArg('discard_card_ids', AT_numberlist, true);
 
-		$this->game->actRake( $ditch_card_ids, $discard_card_ids );
+		$this->game->actRake( $toss_card_ids, $discard_card_ids );
 		self::ajaxResponse();
 	}
 

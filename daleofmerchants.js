@@ -49,8 +49,8 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getDuplicateEntry = function () {
             return this.getHandIcon();
         };
-        DaleIcons.getTravelingEquipmentDitchIcon = function () {
-            return this.getDitchIcon();
+        DaleIcons.getTravelingEquipmentTossIcon = function () {
+            return this.getTossIcon();
         };
         DaleIcons.getTravelingEquipmentDiscardIcon = function () {
             return this.getDiscardIcon();
@@ -81,7 +81,7 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getSpyglassIcon = function () {
             return this.getIcon(4, 0);
         };
-        DaleIcons.getDitchIcon = function () {
+        DaleIcons.getTossIcon = function () {
             return this.getIcon(4, 1);
         };
         DaleIcons.getCheeseIcon = function () {
@@ -431,8 +431,8 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                 case 'pileRed':
                     icon = DaleIcons_1.DaleIcons.getRedPileIcon(Math.min(index, 5));
                     break;
-                case 'ditch':
-                    icon = DaleIcons_1.DaleIcons.getDitchIcon();
+                case 'toss':
+                    icon = DaleIcons_1.DaleIcons.getTossIcon();
                     break;
                 case 'build':
                     icon = DaleIcons_1.DaleIcons.getBuildIcon();
@@ -462,10 +462,10 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.max(4 - index, 0));
                     break;
                 case 'travelingEquipment':
-                    icon = index == 0 ? DaleIcons_1.DaleIcons.getTravelingEquipmentDitchIcon() : DaleIcons_1.DaleIcons.getTravelingEquipmentDiscardIcon();
+                    icon = index == 0 ? DaleIcons_1.DaleIcons.getTravelingEquipmentTossIcon() : DaleIcons_1.DaleIcons.getTravelingEquipmentDiscardIcon();
                     break;
                 case 'selectingContracts':
-                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getDitchIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getTossIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
             }
             if (icon) {
@@ -4203,7 +4203,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_inventory':
                         return _("${you} must select any number of cards to discard");
                     case 'client_essentialPurchase':
-                        return _("Essential Purchase: ${you} may <stronger>ditch</stronger> up to 3 selected junk cards");
+                        return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected junk cards");
                     case 'client_glue':
                         return _("Glue: ${you} may keep Glue in your hand");
                     case 'chameleon_flexibleShopkeeper':
@@ -4214,12 +4214,12 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         switch (this._args.mode) {
                             case 'copy':
                                 return _("Good Old Times: ${you} must copy the bin's top card");
-                            case 'ditchOrCopy':
-                                return _("Good Old Times: ${you} must copy the bin's top card or ditch the supply's top card");
-                            case 'ditchOptional':
-                                return _("Good Old Times: ${you} may ditch the supply's top card");
-                            case 'ditchMandatory':
-                                return _("Good Old Times: ${you} must ditch the supply's top card");
+                            case 'tossOrCopy':
+                                return _("Good Old Times: ${you} must copy the bin's top card or toss the supply's top card");
+                            case 'tossOptional':
+                                return _("Good Old Times: ${you} may toss the supply's top card");
+                            case 'tossMandatory':
+                                return _("Good Old Times: ${you} must toss the supply's top card");
                             default:
                                 throw new Error("Unexpected CT_GOODOLDTIMES mode");
                         }
@@ -4234,7 +4234,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_selectPlayerPassive':
                         return _("${card_name}: ${you} must choose a player");
                     case 'client_marketDiscovery':
-                        return _("${card_name}: ${you} may <strong>ditch</strong> the supply's top card or purchase the bin's top card");
+                        return _("${card_name}: ${you} may <strong>toss</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
                         return _("${card_name}: ${you} may rearrange any cards in the market");
                     case 'client_sliceoflife':
@@ -4269,13 +4269,13 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_swiftBroker':
                         return _("${card_name}: ${you} may choose the order to discard your hand");
                     case 'client_shatteredRelic':
-                        return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                        return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_acorn':
                         return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
                     case 'client_giftVoucher':
                         return _("${card_name}: ${you} must choose a card from the market to swap with");
                     case 'client_loyalPartner':
-                        return _("${card_name}: ${you} may choose to <stronger>ditch</stronger> any number of cards from the market");
+                        return _("${card_name}: ${you} may choose to <stronger>toss</stronger> any number of cards from the market");
                     case 'client_prepaidGood':
                         return _("${card_name}: ${you} must choose a card from the market");
                     case 'client_nuisance':
@@ -4287,7 +4287,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_treasureHunter':
                         return _("${card_name}: ${you} must take a card from an opponent's discard pile");
                     case 'client_newSeason':
-                        return _("${card_name}: ${you} must <stronger>ditch</stronger> an animalfolk card from your discard pile");
+                        return _("${card_name}: ${you} must <stronger>toss</stronger> an animalfolk card from your discard pile");
                     case 'client_accident':
                         if (this._page.unique_opponent_id) {
                             return _("${card_name}: ${you} may choose the order to discard your hand");
@@ -4317,8 +4317,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         else {
                             return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
                         }
-                    case 'client_houseCleaningDitch':
-                        return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from your hand");
+                    case 'client_houseCleaningToss':
+                        return _("${card_name}: ${you} may <stronger>toss</stronger> a card from your hand");
                     case 'client_siesta':
                         return _("${card_name}: ${you} must take a card from your discard pile");
                     case 'client_ruthlessCompetition':
@@ -4330,17 +4330,17 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_rareArtefact':
                         return _("${card_name}: ${you} must choose a card to multiply its value");
                     case 'client_swank':
-                        return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                        return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_riskyBusiness':
                         return _("${card_name}: ${you} must guess the top card's value from the supply");
                     case 'client_historyLesson':
                         return _("${card_name}: ${you} may select up to 3 cards from the top of your discard pile");
                     case 'client_replacement':
-                        return _("${card_name}: ${you} must choose an animalfolk card to <stronger>ditch</stronger>");
+                        return _("${card_name}: ${you} must choose an animalfolk card to <stronger>toss</stronger>");
                     case 'client_replacementFizzle':
-                        return _("${card_name}: Are you sure you want to ditch '${ditch_card_name}'? The market has no valid replacement for this card");
+                        return _("${card_name}: Are you sure you want to toss '${toss_card_name}'? The market has no valid replacement for this card");
                     case 'client_fashionHint':
-                        return _("${card_name}: ${you} may <stronger>ditch</stronger> a card from the supply");
+                        return _("${card_name}: ${you} may <stronger>toss</stronger> a card from the supply");
                     case 'client_pompousProfessional':
                         return _("${card_name}: ${you} must choose an animalfolk set");
                     case 'client_burglaryOpponentId':
@@ -4372,7 +4372,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_goodwillpresents':
                         return _("${card_name}: ${you} must choose 1-2 players");
                     case 'client_alternativePlan':
-                        return _("${card_name}: ${you} must ditch a card from your discard pile");
+                        return _("${card_name}: ${you} must toss a card from your discard pile");
                     case 'client_anchor':
                         return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
                     case 'client_manufacturedJoy':
@@ -4382,20 +4382,20 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_cache':
                         return _("${card_name}: ${you} must take 1 card from your discard pile");
                     case 'client_groundbreakingIdea':
-                        return _("${card_name}: ${you} must choose a card to <stronger>ditch</stronger>");
+                        return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_badOmen':
                         return _("${card_name}: ${you} may choose the order to place cards on top of your deck");
                     case 'client_dramaticRomantic':
                         return _("${card_name}: ${you} move your clock");
                     case 'client_selectingContracts':
                         if (this._args.nbr == 1) {
-                            return _("${card_name}: ${you} must <stronger>ditch</stronger> the top card of your discard");
+                            return _("${card_name}: ${you} must <stronger>toss</stronger> the top card of your discard");
                         }
                         else {
-                            return this._page.format_dale_icons(_("${card_name}: ${you} must <stronger>ditch</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"), DaleIcons_8.DaleIcons.getDitchIcon(), DaleIcons_8.DaleIcons.getBluePileIcon(0));
+                            return this._page.format_dale_icons(_("${card_name}: ${you} must <stronger>toss</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"), DaleIcons_8.DaleIcons.getTossIcon(), DaleIcons_8.DaleIcons.getBluePileIcon(0));
                         }
                     case 'client_windOfChange':
-                        return _("${card_name}: ${you} may ditch a card from your discard");
+                        return _("${card_name}: ${you} may toss a card from your discard");
                     case 'client_snack':
                         return _("${card_name}: ${you} must take a card from the market");
                     case 'client_bonsai':
@@ -5246,7 +5246,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var client_essentialPurchase_args = this.mainClientState.args;
                     this.setPurchaseSelectionModes(client_essentialPurchase_args);
                     this.myHand.unselectAll();
-                    this.myHand.setSelectionMode('essentialPurchase', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>ditch</strong>"), 'pileYellow');
+                    this.myHand.setSelectionMode('essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
                     var junk_selected = 0;
                     var client_essentialPurchase_skip = true;
                     for (var _i = 0, _g = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _g.length; _i++) {
@@ -5290,7 +5290,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_shatteredRelic':
-                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_10.DaleIcons.getSpyglassIcon()));
@@ -5332,7 +5332,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
                     break;
                 case 'sabotage':
-                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'client_treasureHunter':
                     var client_treasureHunter_args_1 = this.mainClientState.args;
@@ -5414,8 +5414,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myDiscard.openPopin();
                     }
                     break;
-                case 'client_houseCleaningDitch':
-                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                case 'client_houseCleaningToss':
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'client_siesta':
                     this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
@@ -5481,7 +5481,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }).bind(this), 500);
                     break;
                 case 'client_swank':
-                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'naturalSurvivor':
                     var naturalSurvivor_args = args.args;
@@ -5494,7 +5494,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.setContent(duplicateEntry_args._private.cards.map(DaleCard_10.DaleCard.of));
                     this.myDeck.setSelectionMode('multiple', 'duplicateEntry', 'daleofmerchants-wrap-technique', 2);
                     this.myDeck.openPopin();
-                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'client_historyLesson':
                     this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
@@ -5519,7 +5519,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to take"));
                     break;
                 case 'client_replacement':
-                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>ditch</strong>"));
+                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>toss</strong>"));
                     break;
                 case 'replacement':
                     var replacement_args = args.args;
@@ -5538,7 +5538,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'royalPrivilege':
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
-                    this.myHand.setSelectionMode('singleAnimalfolk', 'ditch', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to ditch"));
+                    this.myHand.setSelectionMode('singleAnimalfolk', 'toss', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to toss"));
                     break;
                 case 'client_carefreeSwapper':
                     var client_carefreeSwapper_args_1 = this.mainClientState.args;
@@ -5676,7 +5676,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.openPopin();
                     break;
                 case 'travelingEquipment':
-                    var travelingEquipment_label = this.format_dale_icons(_("Choose cards to <strong>ditch</strong> (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getTravelingEquipmentDitchIcon(), DaleIcons_10.DaleIcons.getTravelingEquipmentDiscardIcon());
+                    var travelingEquipment_label = this.format_dale_icons(_("Choose cards to <strong>toss</strong> (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getTravelingEquipmentTossIcon(), DaleIcons_10.DaleIcons.getTravelingEquipmentDiscardIcon());
                     this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
                     break;
                 case 'fishing':
@@ -5693,7 +5693,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
                     break;
                 case 'badOmen':
-                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>ditch</strong>"));
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'client_badOmen':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
@@ -5745,10 +5745,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
                     break;
                 case 'rake':
-                    this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_10.DaleIcons.getDitchIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
+                    this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_10.DaleIcons.getTossIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     var raket_args = args.args;
                     this.myDeck.setContent(raket_args._private.cards.map(DaleCard_10.DaleCard.of));
-                    this.myDeck.setSelectionMode('multiplePrimarySecondary', 'ditch', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
+                    this.myDeck.setSelectionMode('multiplePrimarySecondary', 'toss', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
                     this.myDeck.openPopin();
                     break;
                 case 'client_generationChange':
@@ -5935,7 +5935,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_houseCleaning':
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'client_houseCleaningDitch':
+                case 'client_houseCleaningToss':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_siesta':
@@ -6261,7 +6261,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_essentialPurchase':
-                    this.addActionButton("confirm-button", _("Ditch selected junk"), "onPurchase");
+                    this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
                     this.addActionButtonCancelClient();
                     break;
                 case 'bonusBuild':
@@ -6291,7 +6291,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_loyalPartner':
-                    this.addActionButton("confirm-button", _("Ditch selected"), "onLoyalPartner");
+                    this.addActionButton("confirm-button", _("Toss selected"), "onLoyalPartner");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_prepaidGood':
@@ -6419,17 +6419,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
                             this.addActionButtonCancelClient();
                             break;
-                        case 'ditchOrCopy':
+                        case 'tossOrCopy':
                             this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
-                            this.addActionButton("ditch-button", _("Ditch"), "onGoodOldTimesPassive");
+                            this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
                             this.addActionButtonCancelClient();
                             break;
-                        case 'ditchOptional':
-                            this.addActionButton("ditch-button", _("Ditch"), "onGoodOldTimesPassive");
+                        case 'tossOptional':
+                            this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
                             this.addActionButton("skip-button", _("Skip"), "onGoodOldTimesPassiveSkip", undefined, false, 'gray');
                             break;
-                        case 'ditchMandatory':
-                            this.addActionButton("ditch-button", _("Ditch"), "onGoodOldTimesPassive");
+                        case 'tossMandatory':
+                            this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
                             this.addActionButtonCancelClient();
                             break;
                     }
@@ -6464,7 +6464,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onChoicelessPassiveCard();
                     break;
                 case 'client_marketDiscovery':
-                    this.addActionButton("ditch-button", _("Ditch"), "onMarketDiscoveryDitch");
+                    this.addActionButton("toss-button", _("Toss"), "onMarketDiscoveryToss");
                     this.addActionButton("purchase-button", _("Purchase"), "onMarketDiscoveryPurchase");
                     this.addActionButtonCancelClient();
                     break;
@@ -6493,7 +6493,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", client_houseCleaning_label, "onHouseCleaning");
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_houseCleaningDitch':
+                case 'client_houseCleaningToss':
                     this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
                     this.addActionButtonCancelClient();
                     break;
@@ -6579,19 +6579,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_replacementFizzle':
-                    this.addActionButton("fizzle-button", _("Ditch without replacement"), "onReplacementFizzle");
+                    this.addActionButton("fizzle-button", _("Toss without replacement"), "onReplacementFizzle");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_fashionHint':
-                    this.addActionButton("ditch-button", _("Ditch"), "onFashionHintDitch");
-                    this.addActionButton("skip-button", _("Skip"), "onFashionHintDitchSkip", undefined, false, 'gray');
+                    this.addActionButton("toss-button", _("Toss"), "onFashionHintToss");
+                    this.addActionButton("skip-button", _("Skip"), "onFashionHintTossSkip", undefined, false, 'gray');
                     this.addActionButtonCancelClient();
                     break;
                 case 'fashionHint':
                     this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
                     break;
                 case 'royalPrivilege':
-                    this.addActionButton("ditch-button", _("Purchase"), "onRoyalPrivilege");
+                    this.addActionButton("toss-button", _("Purchase"), "onRoyalPrivilege");
                     this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
                     break;
                 case 'client_pompousProfessional':
@@ -6758,7 +6758,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'wheelbarrow':
-                    this.addActionButton("wheelbarrow-ditch-button", _("Ditch"), "onWheelbarrowDitch");
+                    this.addActionButton("wheelbarrow-toss-button", _("Toss"), "onWheelbarrowToss");
                     this.addActionButton("wheelbarrow-store-button", _("Store"), "onWheelbarrowStore");
                     break;
                 case 'tacticalMeasurement':
@@ -6930,7 +6930,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             var chameleonStatename;
             var args = { mode: undefined };
-            var ditchAvailable = true;
+            var tossAvailable = true;
             switch (card.effective_type_id) {
                 case DaleCard_10.DaleCard.CT_FLEXIBLESHOPKEEPER:
                     chameleonStatename = 'chameleon_flexibleShopkeeper';
@@ -6939,18 +6939,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     chameleonStatename = 'chameleon_reflection';
                     break;
                 case DaleCard_10.DaleCard.CT_GOODOLDTIMES:
-                    ditchAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
-                    if (!ditchAvailable) {
+                    tossAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
+                    if (!tossAvailable) {
                         args.mode = 'copy';
                     }
                     else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || ((_a = this.chameleonArgs) === null || _a === void 0 ? void 0 : _a.onlyContainsGoodOldTimes)) {
-                        args.mode = 'ditchOptional';
+                        args.mode = 'tossOptional';
                     }
                     else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.length == 2) && this.marketDiscard.size > 0) {
-                        args.mode = 'ditchOrCopy';
+                        args.mode = 'tossOrCopy';
                     }
                     else {
-                        args.mode = 'ditchMandatory';
+                        args.mode = 'tossMandatory';
                     }
                     chameleonStatename = 'chameleon_goodoldtimes';
                     break;
@@ -6974,8 +6974,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     return true;
                 }
                 else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
-                    if (ditchAvailable) {
-                        args.mode = 'ditchOptional';
+                    if (tossAvailable) {
+                        args.mode = 'tossOptional';
                         this.mainClientState.enterOnStack(chameleonStatename, args);
                         return false;
                     }
@@ -7704,7 +7704,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_marketDiscovery':
                     if (pile === this.marketDeck) {
-                        this.onMarketDiscoveryDitch();
+                        this.onMarketDiscoveryToss();
                     }
                     else if (pile === this.marketDiscard) {
                         this.onMarketDiscoveryPurchase();
@@ -7712,10 +7712,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_fashionHint':
                     if (pile === this.marketDeck) {
-                        this.onFashionHintDitch();
+                        this.onFashionHintToss();
                     }
                     else if (pile === this.marketDiscard) {
-                        this.onFashionHintDitchSkip();
+                        this.onFashionHintTossSkip();
                     }
                     break;
             }
@@ -7881,7 +7881,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         dojo.setStyle(client_glue_button, 'display', '');
                     }
                     break;
-                case 'client_houseCleaningDitch':
+                case 'client_houseCleaningToss':
                     this.resolveTechniqueCard({
                         card_id: card.id
                     });
@@ -7915,8 +7915,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                         this.mainClientState.enter('client_replacementFizzle', {
                             technique_card_id: this.mainClientState.args.technique_card_id,
-                            ditch_card_id: card.id,
-                            ditch_card_name: card.name
+                            toss_card_id: card.id,
+                            toss_card_name: card.name
                         });
                     }
                     break;
@@ -8044,7 +8044,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     var badOmen_args = this.gamedatas.gamestate.args;
                     this.mainClientState.enterOnStack('client_badOmen', {
-                        ditch_card_id: card.id,
+                        toss_card_id: card.id,
                         card_name: (_c = badOmen_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME"
                     });
                     break;
@@ -8113,7 +8113,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_HOUSECLEANING:
                     fizzle = this.myHand.count() == 0;
-                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningDitch', card.id);
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_houseCleaningToss', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_SIESTA:
                 case DaleCard_10.DaleCard.CT_MASTERBUILDER:
@@ -8194,7 +8194,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.onMarketDiscoveryDitch = function () {
+        DaleOfMerchants.prototype.onMarketDiscoveryToss = function () {
             this.playPassiveCard({});
         };
         DaleOfMerchants.prototype.onMarketDiscoveryPurchase = function (market_discovery_card_id) {
@@ -9072,7 +9072,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                         else {
                             this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
-                            this.onMarketDiscoveryDitch();
+                            this.onMarketDiscoveryToss();
                         }
                     }
                     else if (card.isPassiveUsed()) {
@@ -9794,17 +9794,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onReplacementFizzle = function () {
             var args = this.mainClientState.args;
             this.playTechniqueCardWithServerState({
-                card_id: args.ditch_card_id
+                card_id: args.toss_card_id
             });
         };
-        DaleOfMerchants.prototype.onFashionHintDitch = function () {
+        DaleOfMerchants.prototype.onFashionHintToss = function () {
             this.playTechniqueCardWithServerState({
-                ditch: true
+                toss: true
             });
         };
-        DaleOfMerchants.prototype.onFashionHintDitchSkip = function () {
+        DaleOfMerchants.prototype.onFashionHintTossSkip = function () {
             this.playTechniqueCardWithServerState({
-                ditch: false
+                toss: false
             });
         };
         DaleOfMerchants.prototype.onFashionHintSwap = function (card_id) {
@@ -9819,9 +9819,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onRoyalPrivilege = function () {
-            var ditch_card_id = this.myHand.orderedSelection.get()[0];
-            if (!ditch_card_id) {
-                this.showMessage(_("Please select a hand card to ditch"), 'error');
+            var toss_card_id = this.myHand.orderedSelection.get()[0];
+            if (!toss_card_id) {
+                this.showMessage(_("Please select a hand card to toss"), 'error');
                 return;
             }
             var market_card_id = this.market.getSelectedCardId();
@@ -9830,13 +9830,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 return;
             }
             this.bgaPerformAction('actRoyalPrivilege', {
-                ditch_card_id: ditch_card_id,
+                toss_card_id: toss_card_id,
                 market_card_id: market_card_id
             });
         };
         DaleOfMerchants.prototype.onRoyalPrivilegeSkip = function () {
             this.bgaPerformAction('actRoyalPrivilege', {
-                ditch_card_id: -1,
+                toss_card_id: -1,
                 market_card_id: -1
             });
         };
@@ -9936,14 +9936,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.myDiscard.orderedSelection.get()
             });
         };
-        DaleOfMerchants.prototype.onWheelbarrowDitch = function () {
+        DaleOfMerchants.prototype.onWheelbarrowToss = function () {
             this.bgaPerformAction('actWheelbarrow', {
-                is_ditching: true
+                is_tossing: true
             });
         };
         DaleOfMerchants.prototype.onWheelbarrowStore = function () {
             this.bgaPerformAction('actWheelbarrow', {
-                is_ditching: false
+                is_tossing: false
             });
         };
         DaleOfMerchants.prototype.onTacticalMeasurement = function () {
@@ -10174,13 +10174,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (this.myHand.count() > 1) {
                 var card_ids = this.myHand.orderedSelection.get();
                 if (card_ids.length < 2) {
-                    this.showMessage(_("Please choose 1 card to ditch and 1 card to discard"), 'error');
+                    this.showMessage(_("Please choose 1 card to toss and 1 card to discard"), 'error');
                     return;
                 }
-                var ditch_card_id = card_ids[1];
+                var toss_card_id = card_ids[1];
                 var discard_card_id = card_ids[0];
                 this.bgaPerformAction('actTravelingEquipment', {
-                    ditch_card_id: ditch_card_id,
+                    toss_card_id: toss_card_id,
                     discard_card_id: discard_card_id
                 });
                 this.myHand.unselectAll();
@@ -10188,18 +10188,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 var only_card_id = this.myHand.getAllItems()[0].id;
                 if (this.myHand.orderedSelection.getSize() == 0) {
-                    this.showMessage(_("Please choose whether to ditch or discard the card in your hand"), 'error');
+                    this.showMessage(_("Please choose whether to toss or discard the card in your hand"), 'error');
                     return;
                 }
                 else if (this.myHand.orderedSelection.includes(-1)) {
                     this.bgaPerformAction('actTravelingEquipment', {
-                        ditch_card_id: -1,
+                        toss_card_id: -1,
                         discard_card_id: only_card_id
                     });
                 }
                 else {
                     this.bgaPerformAction('actTravelingEquipment', {
-                        ditch_card_id: only_card_id,
+                        toss_card_id: only_card_id,
                         discard_card_id: -1
                     });
                 }
@@ -10221,22 +10221,22 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _a;
             var badOmen_args = this.gamedatas.gamestate.args;
             this.mainClientState.enterOnStack('client_badOmen', {
-                ditch_card_id: -1,
+                toss_card_id: -1,
                 card_name: (_a = badOmen_args.resolving_card_name) !== null && _a !== void 0 ? _a : "MISSING CARD NAME"
             });
         };
         DaleOfMerchants.prototype.onBadOmenUndo = function () {
             var args = this.mainClientState.args;
-            if (args.ditch_card_id != -1) {
-                if (new DaleCard_10.DaleCard(args.ditch_card_id).isAnimalfolk()) {
+            if (args.toss_card_id != -1) {
+                if (new DaleCard_10.DaleCard(args.toss_card_id).isAnimalfolk()) {
                     var card = this.marketDiscard.pop();
-                    if (args.ditch_card_id != card.id) {
+                    if (args.toss_card_id != card.id) {
                         throw new Error("Expected card ".concat(card.id, " on top of the bin"));
                     }
                     this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
                 }
                 else {
-                    this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(args.ditch_card_id), 'overall_player_board_' + this.player_id);
+                    this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(args.toss_card_id), 'overall_player_board_' + this.player_id);
                 }
             }
             this.mainClientState.leave();
@@ -10245,7 +10245,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var args = this.mainClientState.args;
             var deck_card_ids = this.myLimbo.orderedSelection.get();
             this.bgaPerformAction('actBadOmen', {
-                ditch_card_id: args.ditch_card_id,
+                toss_card_id: args.toss_card_id,
                 deck_card_ids: this.arrayToNumberList(deck_card_ids)
             });
             this.mainClientState.leave();
@@ -10390,18 +10390,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onRake = function () {
-            var ditch_card_ids = this.myDeck.orderedSelection.get();
+            var toss_card_ids = this.myDeck.orderedSelection.get();
             var discard_card_ids = this.myDeck.orderedSelection.get(true);
-            if (ditch_card_ids.length > 1) {
-                this.showMessage(_("Please select at most 1 card to ditch"), "error");
+            if (toss_card_ids.length > 1) {
+                this.showMessage(_("Please select at most 1 card to toss"), "error");
                 return;
             }
             if (discard_card_ids.length > 2) {
-                this.showMessage(_("Please select at most 2 cards to ditch"), "error");
+                this.showMessage(_("Please select at most 2 cards to toss"), "error");
                 return;
             }
             this.bgaPerformAction('actRake', {
-                ditch_card_ids: this.arrayToNumberList(ditch_card_ids),
+                toss_card_ids: this.arrayToNumberList(toss_card_ids),
                 discard_card_ids: this.arrayToNumberList(discard_card_ids)
             });
         };
@@ -10456,9 +10456,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['obtainNewJunkInHand', 500],
                 ['obtainNewJunkInDiscard', 500],
                 ['obtainNewJunkOnDeck', 500],
-                ['instant_ditch', 1],
-                ['ditch', 500],
-                ['ditchMultiple', 500],
+                ['instant_toss', 1],
+                ['toss', 500],
+                ['tossMultiple', 500],
                 ['discard', 500],
                 ['discardMultiple', 750],
                 ['placeOnDeck', 500, true],
@@ -10470,10 +10470,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['accidentTakeBack', 500, true],
                 ['cunningNeighbourWatch', 500, true],
                 ['cunningNeighbourReturn', 500, true],
-                ['ditchFromDiscard', 500],
-                ['ditchFromDeck', 500],
-                ['ditchFromMarketDeck', 500],
-                ['ditchFromMarketBoard', 500],
+                ['tossFromDiscard', 500],
+                ['tossFromDeck', 500],
+                ['tossFromMarketDeck', 500],
+                ['tossFromMarketBoard', 500],
                 ['instant_deckToDeck', 1],
                 ['deckToDeck', 500],
                 ['instant_discardToDeck', 1],
@@ -10885,10 +10885,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 delay += 75;
             }
         };
-        DaleOfMerchants.prototype.notif_instant_ditch = function (notif) {
-            this.notif_ditch(notif);
+        DaleOfMerchants.prototype.notif_instant_toss = function (notif) {
+            this.notif_toss(notif);
         };
-        DaleOfMerchants.prototype.notif_ditch = function (notif) {
+        DaleOfMerchants.prototype.notif_toss = function (notif) {
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (DaleCard_10.DaleCard.of(notif.args.card).isAnimalfolk()) {
                 this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard, 0, notif.args.ignore_card_not_found);
@@ -10900,7 +10900,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.playerHandSizes[notif.args.player_id].incValue(-1);
             }
         };
-        DaleOfMerchants.prototype.notif_ditchMultiple = function (notif) {
+        DaleOfMerchants.prototype.notif_tossMultiple = function (notif) {
             var delay = 0;
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
@@ -11230,8 +11230,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.notif_ditchFromDiscard = function (notif) {
-            console.warn("notif_ditchFromDiscard");
+        DaleOfMerchants.prototype.notif_tossFromDiscard = function (notif) {
+            console.warn("notif_tossFromDiscard");
             var playerDiscard = this.playerDiscards[notif.args.player_id];
             var dbcard = notif.args.card;
             var card = DaleCard_10.DaleCard.of(dbcard);
@@ -11241,8 +11241,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.marketDiscard.push(card, playerDiscard.placeholderHTML);
             }
         };
-        DaleOfMerchants.prototype.notif_ditchFromDeck = function (notif) {
-            console.warn("notif_ditchFromDeck");
+        DaleOfMerchants.prototype.notif_tossFromDeck = function (notif) {
+            console.warn("notif_tossFromDeck");
             var playerDeck = this.playerDecks[notif.args.player_id];
             var dbcard = notif.args.card;
             var card = DaleCard_10.DaleCard.of(dbcard);
@@ -11254,11 +11254,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 playerDeck.pop('overall_player_board_' + notif.args.player_id);
             }
         };
-        DaleOfMerchants.prototype.notif_ditchFromMarketDeck = function (notif) {
+        DaleOfMerchants.prototype.notif_tossFromMarketDeck = function (notif) {
             this.marketDeck.pop();
             this.marketDiscard.push(DaleCard_10.DaleCard.of(notif.args.card), this.marketDeck.placeholderHTML);
         };
-        DaleOfMerchants.prototype.notif_ditchFromMarketBoard = function (notif) {
+        DaleOfMerchants.prototype.notif_tossFromMarketBoard = function (notif) {
             var delay = 0;
             for (var _i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
                 var id = _a[_i];
