@@ -154,11 +154,6 @@ class DaleOfMerchants extends Gamegui
 		console.warn(this.gamedatas)
 		console.warn("------------------------")
 
-		//Move play area on top
-		if (gamedatas.gamestate.type == 'activeplayer') {
-			this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
-		}
-
 		//add debug tools
 		if (gamedatas.debugMode) {
 			this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools')!, _("Spawn Card"), this.spawnCard.bind(this));
@@ -195,6 +190,14 @@ class DaleOfMerchants extends Gamegui
 					this.unique_opponent_id = player_id;
 				} 
 			}
+		}
+
+		//Set play area styling (incl mono)
+		this.setPlayAreaStyling();
+
+		//Move play area on top
+		if (gamedatas.gamestate.type == 'activeplayer') {
+			this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
 		}
 
 		//initialize the coin counters
@@ -409,10 +412,11 @@ class DaleOfMerchants extends Gamegui
 	 */
 	setupMono(gamedatas: Gamedatas) {
 		//only setup mono in solo games
-		if (gamedatas.playerorder.length > 1) {
+		if (!this.is_solo) {
 			console.warn("setupMono skipped (multiplayer game)");
 			return;
 		}
+		console.warn("setupMono !!!");
 
 		//get an existing player panel
 		const player_id = gamedatas.playerorder[0] ?? this.getActivePlayers()[0]!;
@@ -7748,13 +7752,28 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	/**
+	 * Add special styling for opponent play areas
+	 */
+	setPlayAreaStyling() {
+		if (this.getGameUserPreference(101) == 0) {
+			return; //"Rotate play areas" is off
+		}
+		for (let player_id of this.getPlayerOrderStartingWith(this.player_id)) {
+			const play_area = document.querySelector(`#daleofmerchants-play-area-${player_id}`) as HTMLElement;
+			if (player_id != this.player_id) {
+				play_area?.classList.add("daleofmerchants-play-area-opponent"); //add styling to quickly find your own play area
+			}
+		}
+	}
+
+	/**
 	 * Move the play area of the specified player above all other play areas
 	 * @param start_with_player_id 
 	 * @param duration default `1000ms` - duration of the animation in ms
 	 */
 	movePlayAreaOnTop(start_with_player_id: number, duration: number = 1000) {
 		if (this.getGameUserPreference(101) == 0) {
-			return;
+			return; //"Rotate play areas" is off
 		}
 
 		// Step 1: Record current positions
@@ -7772,9 +7791,6 @@ class DaleOfMerchants extends Gamegui
 		// Step 2: Instantly reorder the containers
 		for (let player_id of this.getPlayerOrderStartingWith(start_with_player_id)) {
 			const top = container.querySelector(`#daleofmerchants-play-area-${player_id}`) as HTMLElement;
-			if (player_id != this.player_id) {
-				top.classList.add("daleofmerchants-play-area-opponent"); //add styling to quickly find your own play area
-			}
 			container.appendChild(top);
 		}
 

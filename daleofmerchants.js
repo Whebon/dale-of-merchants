@@ -4961,9 +4961,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("------ GAME DATAS ------ !");
             console.warn(this.gamedatas);
             console.warn("------------------------");
-            if (gamedatas.gamestate.type == 'activeplayer') {
-                this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
-            }
             if (gamedatas.debugMode) {
                 this.addCardNameInputField(document.querySelector('.daleofmerchants-debugtools'), _("Spawn Card"), this.spawnCard.bind(this));
             }
@@ -4983,6 +4980,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.unique_opponent_id = player_id;
                     }
                 }
+            }
+            this.setPlayAreaStyling();
+            if (gamedatas.gamestate.type == 'activeplayer') {
+                this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
             }
             this.coinManager.init(this);
             for (var player_id in gamedatas.players) {
@@ -5139,10 +5140,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.setupMono = function (gamedatas) {
             var _a;
-            if (gamedatas.playerorder.length > 1) {
+            if (!this.is_solo) {
                 console.warn("setupMono skipped (multiplayer game)");
                 return;
             }
+            console.warn("setupMono !!!");
             var player_id = (_a = gamedatas.playerorder[0]) !== null && _a !== void 0 ? _a : this.getActivePlayers()[0];
             var player_panel = $('overall_player_board_' + player_id);
             if (!player_panel) {
@@ -11535,6 +11537,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             return __spreadArray(__spreadArray([], order.slice(startIndex), true), order.slice(0, startIndex), true);
         };
+        DaleOfMerchants.prototype.setPlayAreaStyling = function () {
+            if (this.getGameUserPreference(101) == 0) {
+                return;
+            }
+            for (var _i = 0, _a = this.getPlayerOrderStartingWith(this.player_id); _i < _a.length; _i++) {
+                var player_id = _a[_i];
+                var play_area = document.querySelector("#daleofmerchants-play-area-".concat(player_id));
+                if (player_id != this.player_id) {
+                    play_area === null || play_area === void 0 ? void 0 : play_area.classList.add("daleofmerchants-play-area-opponent");
+                }
+            }
+        };
         DaleOfMerchants.prototype.movePlayAreaOnTop = function (start_with_player_id, duration) {
             var _a;
             if (duration === void 0) { duration = 1000; }
@@ -11552,9 +11566,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var _i = 0, _b = this.getPlayerOrderStartingWith(start_with_player_id); _i < _b.length; _i++) {
                 var player_id = _b[_i];
                 var top_1 = container.querySelector("#daleofmerchants-play-area-".concat(player_id));
-                if (player_id != this.player_id) {
-                    top_1.classList.add("daleofmerchants-play-area-opponent");
-                }
                 container.appendChild(top_1);
             }
             var transitions = [];
