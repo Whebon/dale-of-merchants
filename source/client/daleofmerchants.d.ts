@@ -142,6 +142,12 @@ declare global {
 				cards: {[card_id: number]: DbCard}
 			}
 		}
+		'monoShowHand': {
+			cards: {[card_id: number]: DbCard}
+		}
+		'monoHideHand': {
+			cards: {[card_id: number]: DbCard}
+		}
 		'tossFromDiscard': {
 			player_id: number
 			card: DbCard
@@ -367,7 +373,6 @@ declare global {
 		'rearrangeMarket': {
 			card_ids: number[]
 		}
-		'moveMonoPlayAreaOnTop': {}
 		'startSlotMachine': {}
 		'advanceClock': {
 			player_id: number | string

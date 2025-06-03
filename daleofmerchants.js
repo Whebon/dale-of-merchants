@@ -4889,6 +4889,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             _this.playerSchedules = {};
             _this.playerStoredCards = {};
             _this.allDecks = { 'mark': _this.marketDeck };
+            _this.mono_hand_is_visible = false;
             _this.coinManager = new CoinManager_1.CoinManager();
             _this.market = null;
             _this.myHand = new DaleStock_1.DaleStock();
@@ -7293,6 +7294,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (ignore_card_not_found === void 0) { ignore_card_not_found = false; }
             if (+player_id == this.player_id) {
                 this.stockToPile(card, stock, pile, delay, ignore_card_not_found);
+            }
+            else if (this.mono_hand_is_visible && stock == this.myHand) {
+                this.stockToPile(card, this.myLimbo, pile, delay, ignore_card_not_found);
             }
             else {
                 this.overallPlayerBoardToPile(card, player_id, pile, delay);
@@ -10485,6 +10489,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['accidentTakeBack', 500, true],
                 ['cunningNeighbourWatch', 500, true],
                 ['cunningNeighbourReturn', 500, true],
+                ['monoShowHand', 750],
+                ['monoHideHand', 750],
                 ['tossFromDiscard', 500],
                 ['tossFromDeck', 500],
                 ['tossFromMarketDeck', 500],
@@ -10497,7 +10503,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['discardToDiscard', 500],
                 ['rollDie', 1000],
                 ['avidFinancierTakeCoin', 500],
-                ['moveMonoPlayAreaOnTop', 1],
                 ['startSlotMachine', 1],
                 ['advanceClock', 1],
                 ['updateActionButtons', 1],
@@ -10780,6 +10785,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 this.myHand.addDaleCardToStock(daleCard, slotId);
             }
+            else if (this.mono_hand_is_visible) {
+                this.market.removeCard(notif.args.pos);
+                this.myLimbo.addDaleCardToStock(daleCard, slotId);
+            }
             else {
                 this.market.removeCard(notif.args.pos, 'overall_player_board_' + notif.args.player_id);
             }
@@ -10947,8 +10956,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_discardMultiple = function (notif) {
             var _a;
-            console.warn("discardMultiple");
-            console.warn(notif.args);
+            console.warn("discardMultiple", notif.args);
             this.coinManager.setSelectionMode('none');
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
@@ -10957,6 +10965,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var _i = 0, _b = notif.args.card_ids; _i < _b.length; _i++) {
                 var id = _b[_i];
                 var card = notif.args.cards[id];
+                console.log(card);
                 this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
                 delay += 75;
             }
@@ -11226,7 +11235,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var sortedCards = this.sortCardsByLocationArg((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards, false);
                 for (var i in sortedCards) {
                     var card = sortedCards[i];
-                    console.warn(card);
                     this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + notif.args.opponent_id);
                 }
             }
@@ -11245,6 +11253,38 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + notif.args.player_id);
                 }
             }
+        };
+        DaleOfMerchants.prototype.notif_monoShowHand = function (notif) {
+            console.warn("notif_monoShowHand", notif.args);
+            if (!this.is_solo || !this.unique_opponent_id) {
+                throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
+            }
+            this.mono_hand_is_visible = true;
+            this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
+            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+            for (var i in sortedCards) {
+                var card = sortedCards[i];
+                this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + this.unique_opponent_id);
+            }
+            this.movePlayAreaOnTop(this.unique_opponent_id);
+        };
+        DaleOfMerchants.prototype.notif_monoHideHand = function (notif) {
+            console.warn("notif_monoHideHand", notif.args);
+            if (!this.is_solo || !this.unique_opponent_id) {
+                throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
+            }
+            this.mono_hand_is_visible = false;
+            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+            if (this.myLimbo.count() > sortedCards.length) {
+                throw new Error("Invariant Error: client says Mono's hand size is ".concat(this.myLimbo.count(), ", server says its ").concat(sortedCards.length));
+            }
+            for (var i in sortedCards) {
+                var card = sortedCards[i];
+                if (!this.myLimbo.containsCardId(+card.id)) {
+                    throw new Error("Invariant Error: server expected ".concat(card.id, " to be in Mono's hand."));
+                }
+            }
+            this.myLimbo.removeAllTo("overall_player_board_" + this.unique_opponent_id);
         };
         DaleOfMerchants.prototype.notif_tossFromDiscard = function (notif) {
             console.warn("notif_tossFromDiscard");
@@ -11340,12 +11380,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var parent = DaleCard_10.DaleCard.divs.get(card.id);
             if (parent) {
                 new DaleDie_2.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
-            }
-        };
-        DaleOfMerchants.prototype.notif_moveMonoPlayAreaOnTop = function (notif) {
-            if (this.is_solo && this.unique_opponent_id) {
-                this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
-                this.movePlayAreaOnTop(this.unique_opponent_id);
             }
         };
         DaleOfMerchants.prototype.notif_startSlotMachine = function (notif) {

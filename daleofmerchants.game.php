@@ -404,7 +404,6 @@ class DaleOfMerchants extends DaleTableBasic
         else {
             $this->monoStallAction() || $this->monoMarketAction();
         }
-        $this->delay500ms(10);
         $this->monoHideHand();
         $this->monoCleanUpPhase();
     }
@@ -432,55 +431,42 @@ class DaleOfMerchants extends DaleTableBasic
     function monoMarketAction(): bool {
         $this->showDebugMessage("monoMarketAction");
 
+        //fetch information from the db
+        $total_coins = $this->getCoins(MONO_PLAYER_ID);
         $hand_cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
-        $market_cards = $this->cards->getCardsInLocation(MARKET, null, 'location_arg DESC');
-
+        $market_cards_unsorted = $this->cards->getCardsInLocation(MARKET);
+        $market_cards = $this->sortCardsByLocationArg($market_cards_unsorted, false);
 
         foreach ($market_cards as $market_card) {
-            // $cost = $this->getCost($market_card);
-
-            // if ($this->monoMarketActionAttempt($hand_cards, $market_card)) {
-            //     return true;
-            // }
+            $cost = $this->getCost($market_card);
+            $fund_cards = $this->monoPickCardsOfValue($hand_cards, $cost-$total_coins);
+            if ($fund_cards !== null) {
+                //pay coin funds
+                $remaining_cost = max(0, $cost - $this->getValueSum($fund_cards));
+                $this->spendCoins(MONO_PLAYER_ID, $remaining_cost);
+                //discard card funds
+                $fund_card_ids = $this->toCardIds($fund_cards);
+                $this->cards->moveCardsOnTop($fund_card_ids, DISCARD.MONO_PLAYER_ID);
+                $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
+                    'player_id' => MONO_PLAYER_ID,
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    'card_ids' => $fund_card_ids,
+                    'cards' => $this->toAssociativeArray($fund_cards),
+                    'nbr' => count($fund_cards)
+                ));
+                //obtain the market card
+                $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
+                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name}'), array (
+                    'player_id' => MONO_PLAYER_ID,
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    'card_name' => $this->getCardName($market_card),
+                    'extended_card_name' => $this->getCardNameExt($market_card),
+                    'market_card_id' => $market_card["id"],
+                    'pos' => $market_card["location_arg"]
+                ));
+                return true;
+            }
         }
-
-        // //Verify the cost
-        // $this->verifyCost($player_id, $funds_cards, $cost, null, true);
-
-        // //Discard the funds
-        // if (count($funds_card_ids) > 0) {
-        //     $this->cards->moveCardsOnTop($funds_card_ids, DISCARD.$player_id);
-        //     $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
-        //         'player_id' => $player_id,
-        //         'player_name' => $this->getActivePlayerName(),
-        //         'card_ids' => $funds_card_ids,
-        //         'cards' => $funds_cards,
-        //         'nbr' => count($funds_cards)
-        //     ));
-        // }
-
-        // //Obtain the market card
-        // $this->cards->moveCard($market_card_id, HAND.$player_id);
-        // if ($from_bin) {
-        //     $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${extended_card_name}'), array (
-        //         'player_id' => $player_id,
-        //         'player_name' => $this->getActivePlayerName(),
-        //         'card_name' => $this->getCardName($market_card),
-        //         'extended_card_name' => $this->getCardNameExt($market_card),
-        //         'card' => $market_card,
-        //     ));
-        // }
-        // else {
-        //     $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name}'), array (
-        //         'player_id' => $player_id,
-        //         'player_name' => $this->getActivePlayerName(),
-        //         'card_name' => $this->getCardName($market_card),
-        //         'extended_card_name' => $this->getCardNameExt($market_card),
-        //         'market_card_id' => $market_card_id,
-        //         'pos' => $market_card["location_arg"]
-        //     ));
-        // }
-
         return false;
     }
 
@@ -498,13 +484,8 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoShowHand() {
         $this->showDebugMessage("monoShowHand");
-        $this->notifyAllPlayers('moveMonoPlayAreaOnTop', '', array());
-        $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourWatch', '', array(
-            "player_id" => $this->getActivePlayerId(),
-            "opponent_id" => MONO_PLAYER_ID,
-            "_private" => array(
-                "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
-            )
+        $this->notifyAllPlayers('monoShowHand', '', array(
+            "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
         ));
     }
 
@@ -513,14 +494,67 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoHideHand() {
         $this->showDebugMessage("monoHideHand");
-        $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourReturn', '', array(
-            "player_id" => $this->getActivePlayerId(),
-            "opponent_id" => MONO_PLAYER_ID,
-            "_private" => array(
-                "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
-            )
+        $this->notifyAllPlayers('monoHideHand', '', array(
+            "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
         ));
     }
+
+    /**
+     * Find the minimum subset of `$dbcards` with a value sum of least the target value.
+     * Prioritizes using the fewest number of cards.
+     * Breaks ties using a left-to-right priority.
+     * @param array $dbcards cards in Mono's hand. The card with the highest location_arg is the left-most card 
+     * @param int $value minimum value the subset should have
+     * @return array|null if possible, a minimum subset of `$dbcards` with a value sum of least the target value. `null` otherwise.
+     */
+    function monoPickCardsOfValue(array $dbcards, int $value): array|null {
+        $sorted_dbcards = $this->sortCardsByLocationArg($dbcards, false);
+        for ($n = 0; $n <= count($dbcards); $n++) { 
+            $result = $this->_monoPickCardsOfValue($sorted_dbcards, $value, $n, array(), 0);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper function for monoPickCardsOfValue
+     * @param array $sorted_cards all card to pick from, sorted by priority
+     * @param int $value target value to reach with the minimum number of cards
+     * @param int $n exact number of cards remaining to pick.
+     * @param array $subset current subset of $sorted_cards chosen
+     * @param int $start_index only add new cards from $sorted_cards starting from this index
+     * @return array|null if possible, a minimum subset of `$dbcards` with a value sum of least the target value. `null` otherwise. 
+     */
+    function _monoPickCardsOfValue(array $sorted_cards, int $value, int $n, array $subset, int $start_index) {
+        if ($n == 0) {
+            if ($value > 0) {
+                return null;
+            }
+            return $subset;
+        }
+        $highest_card_value = 0;
+        for ($i = $start_index; $i < count($sorted_cards); $i++) {
+            $card = $sorted_cards[$i];
+            $card_value = $this->getValue($card);
+            if ($card_value <= $highest_card_value) {
+                //highest_card_value optimization example {value=6, i=1, n=2, cards=[2, 2, 3, 2, 3]}.
+                //picking the first 2 already failed, so picking the second 2 will also fail.
+                continue;
+            }
+            $subset[] = $card;
+            $result = $this->_monoPickCardsOfValue($sorted_cards, $value - $card_value, $n-1, $subset, $i+1);
+            if ($result !== null) {
+                return $result;
+            }
+            array_pop($subset);
+            $highest_card_value = $card_value;
+        }
+        return null;
+    }
+
+
 
     //(~mono)
 
@@ -528,6 +562,23 @@ class DaleOfMerchants extends DaleTableBasic
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+	/**
+	 * Sorts an unordered object of dbcards by their "location_arg"
+	 * @param array $cards unsorted object of dbcards
+	 * @param bool $ascending indicates if the order should be ascending (`true`) or descending (`false`)
+     * @return array copy of $dbcards, sorted by location arg
+	 */
+	function sortCardsByLocationArg(array $dbcards, bool $ascending): array {
+        $sorted_dbcards = $dbcards;
+        uasort($sorted_dbcards, function ($a, $b) use ($ascending) {
+            if ($a['location_arg'] == $b['location_arg']) {
+                return 0;
+            }
+            return ($ascending ? $a['location_arg'] <=> $b['location_arg'] : $b['location_arg'] <=> $a['location_arg']);
+        });
+        return array_values($sorted_dbcards); //reindex array with numeric keys starting from 0
+	}
 
     /**
      * Validates that the parameter is a registered opponent (and NOT the current player)
@@ -3075,10 +3126,233 @@ class DaleOfMerchants extends DaleTableBasic
         In this space, I will put some testing functions
     */
 
+    function assertFalse(mixed $message, string $testname) {
+        die("TEST FAILED '$testname': $message");
+    }
+
     function assertEquals(mixed $expected, mixed $actual, string $testname) {
         if ($expected != $actual) {
-            die("TEST FAILED '$testname': expected: '$expected', actual: '$actual'");
+            $expected_displayed = is_array($expected) ? print_r($expected, true) : $expected;
+            $actual_displayed = is_array($actual) ? print_r($actual, true) : $actual;
+            die("TEST FAILED '$testname': expected: '$expected_displayed', actual: '$actual_displayed'");
         }
+    }
+
+    function testMonoPickCardsOfValue() {
+        $this->effects->expireAllExcept(array());
+        $tests = array(
+            array(
+                "name" => "Pay 0 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 0,
+                "expected_indices" => []
+            ),
+            array(
+                "name" => "Pay 1 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 1,
+                "expected_indices" => [0]
+            ),
+            array(
+                "name" => "Pay 2 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 2,
+                "expected_indices" => [0, 1]
+            ),
+            array(
+                "name" => "Pay 3 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 3,
+                "expected_indices" => [0, 1, 2]
+            ),
+            array(
+                "name" => "Pay 4 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 4,
+                "expected_indices" => [0, 1, 2, 3]
+            ),
+            array(
+                "name" => "Pay 5 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 5,
+                "expected_indices" => [0, 1, 2, 3, 4]
+            ),
+            array(
+                "name" => "Pay 6 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 6,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Pay 6 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 6,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Left-to-right test, easy numbers",
+                "card_values" => [1, 1, 5],
+                "value" => 6,
+                "expected_indices" => [0, 2]
+            ),
+            array(
+                "name" => "Left-to-right test, hard numbers",
+                "card_values" => [3, 2, 4, 1, 5],
+                "value" => 6,
+                "expected_indices" => [0, 2]
+            ),
+            array(
+                "name" => "Prefer 1 high valued card over 2 small valued cards, small example",
+                "card_values" => [1, 1, 3, 1, 1],
+                "value" => 2,
+                "expected_indices" => [2]
+            ),
+            array(
+                "name" => "Prefer 1 high valued card over 2 small valued cards, large example",
+                "card_values" => [1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1],
+                "value" => 2,
+                "expected_indices" => [6]
+            ),
+            array(
+                "name" => "Overpay with last two cards",
+                "card_values" => [2, 2, 2, 2, 2, 2, 4, 5],
+                "value" => 8,
+                "expected_indices" => [6, 7]
+            ),
+            array(
+                "name" => "Not enough cards, small hand",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 999,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Not enough cards, large hand",
+                "card_values" => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                "value" => 999,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Pay 10 using first and last card",
+                "card_values" => [5, 1, 2, 3, 3, 1, 2, 3, 1, 5],
+                "value" => 10,
+                "expected_indices" => [0, 9]
+            ),
+            array(
+                "name" => "Pay 10 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 10,
+                "expected_indices" => [0, 1, 2]
+            ),
+            array(
+                "name" => "Pay 6 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 6,
+                "expected_indices" => [0, 1]
+            ),
+            array(
+                "name" => "Pay 5 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 5,
+                "expected_indices" => [0]
+            ),
+            array(
+                "name" => "Pay 2 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 2,
+                "expected_indices" => [0]
+            ),
+            array(
+                "name" => "Pay 10 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 10,
+                "expected_indices" => [0, 3, 4]
+            ),
+            array(
+                "name" => "Pay 6 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 6,
+                "expected_indices" => [0, 4]
+            ),
+            array(
+                "name" => "Pay 5 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 5,
+                "expected_indices" => [4]
+            ),
+            array(
+                "name" => "Pay 2 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 2,
+                "expected_indices" => [1]
+            ),
+            array(
+                "name" => "Pay 1 using zero valued cards",
+                "card_values" => [0, 0, 0, 0, 0],
+                "value" => 1,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Pay -1 using zero valued cards",
+                "card_values" => [0, 0, 0, 0, 0],
+                "value" => -1,
+                "expected_indices" => []
+            ),
+            array(
+                "name" => "Bug-based test where the same card was used multiple times",
+                "card_values" => [0, 4, 5],
+                "value" => 8,
+                "expected_indices" => [1, 2]
+            )
+        );
+
+        foreach ($tests as $test) {
+            //stub fake cards of the specified values (using CT_BAROMETER) with random card ids
+            $dbcards = array();
+            $card_ids = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+            shuffle($card_ids);
+            $index = 0;
+            $location_arg = count($test["card_values"]);
+            foreach($test["card_values"] as $value) {
+                $card_id = array_pop($card_ids);
+                $dbcards[$card_id] = array(
+                    "index" => $index,
+                    "id" => $card_id,
+                    "type" => CT_BAROMETER,
+                    "type_arg" => CT_BAROMETER,
+                    "location" => HAND.MONO_PLAYER_ID,
+                    "location_arg" => $location_arg
+                );
+                $this->effects->insertModification($card_id, CT_BAROMETER, $value);
+                $index += 1;
+                $location_arg -= 1;
+            }
+            //execute the test
+            $result = $this->monoPickCardsOfValue($dbcards, $test["value"]);
+            if ($test["expected_indices"] === null || $result === null) {
+                $this->assertEquals($test["expected_indices"], $result, $test["name"]." @null");
+            }
+            else {
+                $this->assertEquals(count($test["expected_indices"]), count($result), $test["name"]." @length");
+                $expected_dbcards = [];
+                for ($i=0; $i < count($result); $i++) {
+                    $index = $test["expected_indices"][$i];
+                    $expected_dbcard = null;
+                    foreach ($dbcards as $dbcard) {
+                        if ($dbcard["index"] == $index) {
+                            $expected_dbcard = $dbcard;
+                            break;
+                        }
+                    }
+                    if ($expected_dbcard === null) {
+                        $dbcards_displayed = print_r($dbcards, true);
+                        $this->assertFalse("Card with index=$index not found in $dbcards_displayed", $test["name"]." @testbug");
+                    }
+                    $expected_dbcards[] = $expected_dbcard;
+                }
+                $this->assertEquals($expected_dbcards, $result, $test["name"]." @equals");
+            }
+        }
+        die("SUCCESS ! ".count($tests)." TESTS PASSED !");
     }
 
     function testDeckSelection() {
@@ -3140,34 +3414,6 @@ class DaleOfMerchants extends DaleTableBasic
         }
         die("SUCCESS ! TESTS PASSED !");
     }
-
-    //TODO: safely delete this
-    // function testUnbindChameleon() {
-    //     $this->effects->expireEndOfTurn();
-    //     $this->effects->insert(1, CT_FLEXIBLESHOPKEEPER, 23);
-    //     $this->effects->insert(2, CT_GOODOLDTIMES, 34);
-    //     $this->effects->insert(3, CT_GOODOLDTIMES, -1);
-    //     $this->effects->insert(4, CT_SEEINGDOUBLES, 63);
-    //     $this->effects->unbindChameleon(2); //has a valid target that should be unbinded
-    //     $this->effects->unbindChameleon(3); //has an invalid target, don't remove this effect
-    //     $target1 = $this->effects->getTarget(1, CT_FLEXIBLESHOPKEEPER);
-    //     $target2 = $this->effects->getTarget(2, CT_GOODOLDTIMES);
-    //     $target3 = $this->effects->getTarget(3, CT_GOODOLDTIMES);
-    //     $target4 = $this->effects->getTarget(4, CT_SEEINGDOUBLES);
-    //     if ($target1 != 23) {
-    //         die("TEST FAILED: $target1 != 23");
-    //     }
-    //     if ($target2 != null) {
-    //         die("TEST FAILED: $target2 != null, card_id 2 should have been unbounded");
-    //     }
-    //     if ($target3 != -1) {
-    //         die("TEST FAILED: $target3 != -1, card_id 3 should still have an effect with [target == -1]");
-    //     }
-    //     if ($target4 != 63) {
-    //         die("TEST FAILED: $target4 != null");
-    //     }
-    //     die("SUCCESS ! TESTS PASSED !");
-    // }
 
     function testEffects() {
         foreach (array(false, true) as $reload) { //reloading yes or no should not make a difference
@@ -3410,7 +3656,7 @@ class DaleOfMerchants extends DaleTableBasic
      * Display a message in the BGA client log
      */
     function showDebugMessage($msg) {
-        $this->notifyAllPlayers('message', 'DEBUG: '.$msg, array());
+        //$this->notifyAllPlayers('message', 'DEBUG: '.$msg, array());
     }
 
     /**
@@ -6138,7 +6384,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trTacticalMeasurement"); return;
                 break;
             case CT_GREED:
-                $this->spend($player_id, $args, 1, "Greed");
+                $this->spend($player_id, $args, 1, $this->_("Greed"));
                 $this->draw(clienttranslate('Greed: ${player_name} draws 1 card'), 1);
                 $this->effects->insertModification($passive_card_id, CT_GREED);
                 break;

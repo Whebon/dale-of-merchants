@@ -81,6 +81,9 @@ class DaleOfMerchants extends Gamegui
 	/** A hidden draw pile for each player AND the market */
 	allDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
 
+	/** Boolean that indicates if myLimbo is currently representing Mono's hand */
+	mono_hand_is_visible = false;
+
 	/** The PlayerClock component for this player */
 	get myClock(): PlayerClock {
 		return this.playerClocks[this.player_id]!;
@@ -2813,6 +2816,9 @@ class DaleOfMerchants extends Gamegui
 	playerStockToPile(card: DbCard, stock: DaleStock, player_id: number, pile: Pile, delay: number = 0, ignore_card_not_found: boolean = false) {
 		if (+player_id == this.player_id) {
 			this.stockToPile(card, stock, pile, delay, ignore_card_not_found);
+		}
+		else if (this.mono_hand_is_visible && stock == this.myHand) {
+			this.stockToPile(card, this.myLimbo, pile, delay, ignore_card_not_found);
 		}
 		else {
 			this.overallPlayerBoardToPile(card, player_id, pile, delay);
@@ -6474,9 +6480,11 @@ class DaleOfMerchants extends Gamegui
 			['accidentTakeBack', 					500, true],
 			['cunningNeighbourWatch', 				500, true],
 			['cunningNeighbourReturn', 				500, true],
+			['monoShowHand', 						750],
+			['monoHideHand', 						750],
 			['tossFromDiscard', 					500],
 			['tossFromDeck', 						500],
-			['tossFromMarketDeck', 				500],
+			['tossFromMarketDeck', 					500],
 			['tossFromMarketBoard', 				500],
 			['instant_deckToDeck', 					1],
 			['deckToDeck', 							500],
@@ -6486,7 +6494,6 @@ class DaleOfMerchants extends Gamegui
 			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
-			['moveMonoPlayAreaOnTop',				1],
 			['startSlotMachine',					1],
 			['advanceClock',						1],
 			['updateActionButtons',					1],
@@ -6843,6 +6850,11 @@ class DaleOfMerchants extends Gamegui
 			}
 			this.myHand.addDaleCardToStock(daleCard, slotId)
 		}
+		else if (this.mono_hand_is_visible) {
+			//move card to mono's hand
+			this.market!.removeCard(notif.args.pos);
+			this.myLimbo.addDaleCardToStock(daleCard, slotId);
+		}
 		else {
 			//move card to the overall player board
 			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
@@ -7035,8 +7047,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
-		console.warn("discardMultiple");
-		console.warn(notif.args);
+		console.warn("discardMultiple", notif.args);
 		this.coinManager.setSelectionMode('none'); //workaround for when the user selected 0 coins, but 'implicit' coin selection is still turned on
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
@@ -7044,6 +7055,7 @@ class DaleOfMerchants extends Gamegui
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
+			console.log(card);
 			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
 			delay += 75; //delay indicates that ordering matters
 		}
@@ -7391,10 +7403,10 @@ class DaleOfMerchants extends Gamegui
 	notif_cunningNeighbourWatch(notif: NotifAs<'cunningNeighbourWatch'>) {
 		console.warn("notif_cunningNeighbourWatch");
 		if (notif.args.player_id == this.player_id) {
-			const sortedCards = this.sortCardsByLocationArg(notif.args._private?.cards, false); //needed for Mono
+			//TODO: remove sorting the cards? This was needed for Mono. But that functionality was moved to monoShowHand
+			const sortedCards = this.sortCardsByLocationArg(notif.args._private?.cards, false);
 			for (let i in sortedCards) {
 				let card = sortedCards[i]!;
-				console.warn(card);
 				this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+notif.args.opponent_id);
 			}
 		}
@@ -7413,6 +7425,40 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+notif.args.player_id);
 			}
 		}
+	}
+
+	notif_monoShowHand(notif: NotifAs<'monoShowHand'>) {
+		console.warn("notif_monoShowHand", notif.args);
+		if (!this.is_solo || !this.unique_opponent_id) {
+			throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
+		}
+		this.mono_hand_is_visible = true;
+		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
+		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+		for (let i in sortedCards) {
+			let card = sortedCards[i]!;
+			this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+this.unique_opponent_id);
+		}
+		this.movePlayAreaOnTop(this.unique_opponent_id);
+	}
+
+	notif_monoHideHand(notif: NotifAs<'monoHideHand'>) {
+		console.warn("notif_monoHideHand", notif.args);
+		if (!this.is_solo || !this.unique_opponent_id) {
+			throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
+		}
+		this.mono_hand_is_visible = false;
+		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+		if (this.myLimbo.count() > sortedCards.length) {
+			throw new Error(`Invariant Error: client says Mono's hand size is ${this.myLimbo.count()}, server says its ${sortedCards.length}`);
+		}
+		for (let i in sortedCards) {
+			let card = sortedCards[i]!;
+			if (!this.myLimbo.containsCardId(+card.id)) {
+				throw new Error(`Invariant Error: server expected ${card.id} to be in Mono's hand.`);
+			}
+		}
+		this.myLimbo.removeAllTo("overall_player_board_"+this.unique_opponent_id);
 	}
 
 	notif_tossFromDiscard(notif: NotifAs<'tossFromDiscard'>) {
@@ -7520,13 +7566,6 @@ class DaleOfMerchants extends Gamegui
 		const parent = DaleCard.divs.get(card.id); //only show die rolls of visible cards
 		if (parent) {
 			new DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
-		}
-	}
-
-	notif_moveMonoPlayAreaOnTop(notif: NotifAs<'moveMonoPlayAreaOnTop'>) {
-		if (this.is_solo && this.unique_opponent_id) {
-			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
-			this.movePlayAreaOnTop(this.unique_opponent_id);
 		}
 	}
 
