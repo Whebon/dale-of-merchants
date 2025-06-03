@@ -2325,7 +2325,7 @@ class DaleOfMerchants extends DaleTableBasic
         //skip
         if (!$this->deckSelection->includes(ANIMALFOLK_MONGOOSES) && 
             !$this->deckSelection->includes(ANIMALFOLK_BATS)) {
-            $this->notifyAllPlayers('message', "DEBUG: clock skipped", array());
+            $this->showDebugMessage("clock skipped");
             return;
         }
         //calculate the new clock position
@@ -3478,7 +3478,7 @@ class DaleOfMerchants extends DaleTableBasic
         if (!in_array($player_id, $player_ids)) {
             $player_ids[] = $player_id;
             $this->setGameStateValuePlayerIds($player_ids);
-            $this->notifyAllPlayers('message', clienttranslate('DEBUG: ${player_name} wants to enable debug mode. To enable debug mode, all players need to press \'Enable Debug Mode\'. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
+            $this->notifyAllPlayers('message', clienttranslate('DEBUG_MODE: ${player_name} wants to enable debug mode. To enable debug mode, all players need to press \'Enable Debug Mode\'. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id)
             ));
         }
@@ -3487,7 +3487,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         if (count($player_ids) == $this->getPlayersNumber()) {
             $this->setGameStateValue("debugMode", 1);
-            $this->notifyAllPlayers('debugClient', clienttranslate('DEBUG: debug mode is enabled for this game. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
+            $this->notifyAllPlayers('debugClient', clienttranslate('DEBUG_MODE: debug mode is enabled for this game. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
                 "arg" => "enableDebugMode"
             ));
         }
@@ -3558,7 +3558,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getCurrentPlayerId();
         $cards = $this->spawn($name, $nbr);
         $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('DEBUG: deck'), array_merge( array (
+        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on deck'), array_merge( array (
             'player_id' => $this->getCurrentPlayerId(),
             'player_name' => $this->getActivePlayerName(),
             "_private" => array(
@@ -3582,7 +3582,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getCurrentPlayerId();
         $cards = $this->spawn($name, $nbr);
         $this->discardMultiple(
-            clienttranslate('DEBUG: discard'),
+            clienttranslate('SPAWN: move cards on discard'),
             $player_id, 
             $this->toCardIds($cards),
             $cards
@@ -3604,12 +3604,12 @@ class DaleOfMerchants extends DaleTableBasic
         $this->cards->createCards($cards, 'spawned');
         $cards = $this->cards->getCardsInLocation('spawned');
         $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
-        $this->notifyAllPlayers('debugClient', 'DEBUG: increase deck size', array(
+        $this->notifyAllPlayers('debugClient', 'SPAWN: increase deck size', array(
             'arg' => 'increaseDeckSize', 
             'player_id' => $player_id,
             'nbr' => count($cards)
         ));
-        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('DEBUG: spawn cards in hand'), array(
+        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('SPAWN: spawn cards in hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
             "nbr" => count($cards),
@@ -3656,7 +3656,7 @@ class DaleOfMerchants extends DaleTableBasic
      * Display a message in the BGA client log
      */
     function showDebugMessage($msg) {
-        //$this->notifyAllPlayers('message', 'DEBUG: '.$msg, array());
+        //$this->notifyAllPlayers('message', 'DEBUG_MESSAGE: '.$msg, array());
     }
 
     /**
