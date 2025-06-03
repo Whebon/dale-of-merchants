@@ -505,12 +505,6 @@ class DaleOfMerchants extends Gamegui
 					DaleCard.unbindAllChameleonsLocal();
 					this.mainClientState.leaveAll();
 					break;
-				case 'cleanUpPhase':
-					if (this.is_solo && this.unique_opponent_id) {
-						this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
-						this.movePlayAreaOnTop(this.unique_opponent_id); //put Mono on top
-					}
-					break;
 				case 'blindfold':
 					const blindfold_args = args.args as { _private?: { card_id?: number } };
 					if (blindfold_args._private?.card_id) {
@@ -6492,6 +6486,7 @@ class DaleOfMerchants extends Gamegui
 			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
+			['moveMonoPlayAreaOnTop',				1],
 			['startSlotMachine',					1],
 			['advanceClock',						1],
 			['updateActionButtons',					1],
@@ -7525,6 +7520,13 @@ class DaleOfMerchants extends Gamegui
 		const parent = DaleCard.divs.get(card.id); //only show die rolls of visible cards
 		if (parent) {
 			new DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
+		}
+	}
+
+	notif_moveMonoPlayAreaOnTop(notif: NotifAs<'moveMonoPlayAreaOnTop'>) {
+		if (this.is_solo && this.unique_opponent_id) {
+			this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
+			this.movePlayAreaOnTop(this.unique_opponent_id);
 		}
 	}
 

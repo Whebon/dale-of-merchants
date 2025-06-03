@@ -367,6 +367,7 @@ declare global {
 		'rearrangeMarket': {
 			card_ids: number[]
 		}
+		'moveMonoPlayAreaOnTop': {}
 		'startSlotMachine': {}
 		'advanceClock': {
 			player_id: number | string

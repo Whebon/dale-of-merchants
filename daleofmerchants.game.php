@@ -432,18 +432,17 @@ class DaleOfMerchants extends DaleTableBasic
     function monoMarketAction(): bool {
         $this->showDebugMessage("monoMarketAction");
 
+        $hand_cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        $market_cards = $this->cards->getCardsInLocation(MARKET, null, 'location_arg DESC');
 
-        // $hand_cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
-        // $market_cards = $this->cards->getCardsInLocation(MARKET, null, 'location_arg DESC');
 
+        foreach ($market_cards as $market_card) {
+            // $cost = $this->getCost($market_card);
 
-        // foreach ($market_cards as $market_card) {
-        //     $cost = $this->getCost($market_card);
-        //     if ($this->card)
-        //     if ($this->monoMarketActionAttempt($hand_cards, $market_card)) {
-        //         return true;
-        //     }
-        // }
+            // if ($this->monoMarketActionAttempt($hand_cards, $market_card)) {
+            //     return true;
+            // }
+        }
 
         // //Verify the cost
         // $this->verifyCost($player_id, $funds_cards, $cost, null, true);
@@ -499,6 +498,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoShowHand() {
         $this->showDebugMessage("monoShowHand");
+        $this->notifyAllPlayers('moveMonoPlayAreaOnTop', '', array());
         $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourWatch', '', array(
             "player_id" => $this->getActivePlayerId(),
             "opponent_id" => MONO_PLAYER_ID,
@@ -1316,7 +1316,7 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * @param mixed $player_id
      * @param array $hand_cards array of dbcards that are currently in the player's hand
-     * @param array $hand_cards array of dbcards that are currently in the player's stall
+     * @param array $stall_cards array of dbcards that are currently in the player's stall
      * @return int maximum hand size
      */
     function getMaximumHandSize($player_id, array $hand_cards, array $stall_cards): int {
@@ -1324,7 +1324,8 @@ class DaleOfMerchants extends DaleTableBasic
         //$cookies = $this->countTypeId($hand_cards, CT_COOKIES); //old cookies effect
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
         $displayofpowers = 2 * $this->effects->countGlobalEffects(CT_DISPLAYOFPOWER);
-        return 5 + $bribes + $sofas + $displayofpowers;
+        $monocards = $player_id == MONO_PLAYER_ID ? 0 : $this->countMonoCards($hand_cards);
+        return 5 + $bribes + $sofas + $displayofpowers + $monocards;
     }
 
     /**
@@ -1808,6 +1809,19 @@ class DaleOfMerchants extends DaleTableBasic
     */
     function isMonoCard(array $dbcard): int {
         return $this->card_types[$dbcard["type_arg"]]['is_mono'];
+    }
+
+    /**
+     * @return int number of mono cards within the array
+     */
+    function countMonoCards(array $dbcards) {
+        $count = 0;
+        foreach ($dbcards as $dbcard) {
+            if ($this->isMonoCard($dbcard)) {
+                $count += 1;
+            }
+        }
+        return $count;
     }
 
     /**

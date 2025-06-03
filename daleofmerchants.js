@@ -5209,12 +5209,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         DaleCard_10.DaleCard.unbindAllChameleonsLocal();
                         this.mainClientState.leaveAll();
                         break;
-                    case 'cleanUpPhase':
-                        if (this.is_solo && this.unique_opponent_id) {
-                            this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
-                            this.movePlayAreaOnTop(this.unique_opponent_id);
-                        }
-                        break;
                     case 'blindfold':
                         var blindfold_args = args.args;
                         if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.card_id) {
@@ -10503,6 +10497,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['discardToDiscard', 500],
                 ['rollDie', 1000],
                 ['avidFinancierTakeCoin', 500],
+                ['moveMonoPlayAreaOnTop', 1],
                 ['startSlotMachine', 1],
                 ['advanceClock', 1],
                 ['updateActionButtons', 1],
@@ -11345,6 +11340,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var parent = DaleCard_10.DaleCard.divs.get(card.id);
             if (parent) {
                 new DaleDie_2.DaleDie(notif.args.animalfolk_id, notif.args.d6, notif.args.die_label, parent);
+            }
+        };
+        DaleOfMerchants.prototype.notif_moveMonoPlayAreaOnTop = function (notif) {
+            if (this.is_solo && this.unique_opponent_id) {
+                this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
+                this.movePlayAreaOnTop(this.unique_opponent_id);
             }
         };
         DaleOfMerchants.prototype.notif_startSlotMachine = function (notif) {
