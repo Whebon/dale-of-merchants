@@ -518,6 +518,12 @@ export class DaleStock extends Stock implements DaleLocation {
 	*/
 	public addDaleCardToStock(card: DaleCard, from?: string | HTMLElement) {
 		this.addToStockWithId(card.original_type_id, card.id, from);
+		if (!this.enableSortItems) {
+			//move the new card to the left of the stock
+			const last = this.items.pop()!;
+			this.items.unshift(last);
+			this.updateDisplay();
+		}
 		this.setClickable(card.id);
 		const stockitem_div = $(this.control_name+'_item_'+card.id) as HTMLElement;
 		card.attachDiv(stockitem_div);

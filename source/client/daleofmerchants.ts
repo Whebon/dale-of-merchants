@@ -1625,6 +1625,7 @@ class DaleOfMerchants extends Gamegui
 		switch( stateName )
 		{
 			case 'deckSelection':
+				this.setMainTitle("SOLO MODE IS STILL IN EARLY DEVELOPMENT. PLEASE ONLY CONTINUE FOR TESTING PURPOSES.");
 				this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
 				this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
 				if (!this.gamedatas.debugMode) {
@@ -7404,7 +7405,7 @@ class DaleOfMerchants extends Gamegui
 		console.warn("notif_cunningNeighbourWatch");
 		if (notif.args.player_id == this.player_id) {
 			//TODO: remove sorting the cards? This was needed for Mono. But that functionality was moved to monoShowHand
-			const sortedCards = this.sortCardsByLocationArg(notif.args._private?.cards, false);
+			const sortedCards = this.sortCardsByLocationArg(notif.args._private?.cards, true);
 			for (let i in sortedCards) {
 				let card = sortedCards[i]!;
 				this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+notif.args.opponent_id);
@@ -7434,7 +7435,7 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.mono_hand_is_visible = true;
 		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
-		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		for (let i in sortedCards) {
 			let card = sortedCards[i]!;
 			this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+this.unique_opponent_id);
@@ -7448,7 +7449,7 @@ class DaleOfMerchants extends Gamegui
 			throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
 		}
 		this.mono_hand_is_visible = false;
-		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		if (this.myLimbo.count() > sortedCards.length) {
 			throw new Error(`Invariant Error: client says Mono's hand size is ${this.myLimbo.count()}, server says its ${sortedCards.length}`);
 		}

@@ -2560,6 +2560,11 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         };
         DaleStock.prototype.addDaleCardToStock = function (card, from) {
             this.addToStockWithId(card.original_type_id, card.id, from);
+            if (!this.enableSortItems) {
+                var last = this.items.pop();
+                this.items.unshift(last);
+                this.updateDisplay();
+            }
             this.setClickable(card.id);
             var stockitem_div = $(this.control_name + '_item_' + card.id);
             card.attachDiv(stockitem_div);
@@ -6238,6 +6243,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             switch (stateName) {
                 case 'deckSelection':
+                    this.setMainTitle("SOLO MODE IS STILL IN EARLY DEVELOPMENT. PLEASE ONLY CONTINUE FOR TESTING PURPOSES.");
                     this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
                     this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
                     if (!this.gamedatas.debugMode) {
@@ -11232,7 +11238,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _a;
             console.warn("notif_cunningNeighbourWatch");
             if (notif.args.player_id == this.player_id) {
-                var sortedCards = this.sortCardsByLocationArg((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards, false);
+                var sortedCards = this.sortCardsByLocationArg((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards, true);
                 for (var i in sortedCards) {
                     var card = sortedCards[i];
                     this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + notif.args.opponent_id);
@@ -11261,7 +11267,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.mono_hand_is_visible = true;
             this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
-            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             for (var i in sortedCards) {
                 var card = sortedCards[i];
                 this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + this.unique_opponent_id);
@@ -11274,7 +11280,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
             }
             this.mono_hand_is_visible = false;
-            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, false);
+            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             if (this.myLimbo.count() > sortedCards.length) {
                 throw new Error("Invariant Error: client says Mono's hand size is ".concat(this.myLimbo.count(), ", server says its ").concat(sortedCards.length));
             }
