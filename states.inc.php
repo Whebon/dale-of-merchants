@@ -233,6 +233,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trNextPlayer' => 31,
 			'trPostCleanUpPhase' => 42,
+			'trGameEnd' => 98,
 		),
 	),
 	42 => array(

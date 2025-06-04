@@ -421,7 +421,46 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoStallAction(): bool {
         $this->showDebugMessage("monoStallAction");
-        return false;
+
+        //Get the minimum stack value (simplified enforceValidStack)
+        $stack_index = $this->cards->getNextStackIndex(MONO_PLAYER_ID);
+        $nbr_nastyThreat = $this->effects->countGlobalEffectsExcludeArg(CT_NASTYTHREAT, MONO_PLAYER_ID);
+        $base_value = $stack_index + 1 + $nbr_nastyThreat;
+
+        //Get buildable cards
+        $all_hand_cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        $allow_junk = $this->effects->countGlobalEffects(CT_STASHINGMEMBER) > 0;
+        foreach($this->toCardIds($all_hand_cards) as $card_id) {
+            if ($this->isMonoCard($all_hand_cards[$card_id]) || (!$allow_junk && $this->isJunk($all_hand_cards[$card_id]))) {
+                unset($all_hand_cards[$card_id]);
+            }
+        }
+        $hand_cards = $this->monoPickCardsOfValue($all_hand_cards, $base_value);
+
+        //Mono failed to build
+        if ($hand_cards == null) {
+            return false;
+        }
+
+        //Notify players about the complete build
+        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
+            "player_id" => MONO_PLAYER_ID,
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+            "stack_index_plus_1" => $stack_index + 1,
+            "stack_index" => $stack_index,
+            "cards" => $hand_cards,
+            "from" => HAND
+        ));
+
+        //Add the cards to the stack (after the notification, so that the modified values are still shown during the animation)
+        $this->cards->moveCardsToStall($this->toCardIds($hand_cards), STALL.MONO_PLAYER_ID, $stack_index);
+
+        //Check if Mono won
+        $win = $this->updateScore(MONO_PLAYER_ID, $stack_index + 1);
+        if ($win) {
+            $this->gamestate->nextState("trGameEnd");
+        }
+        return true;
     }
 
     /**
@@ -912,6 +951,17 @@ class DaleOfMerchants extends DaleTableBasic
             $this->DbQuery($sql);
         }
         return $new_score >= MAX_STACKS;
+    }
+
+    /**
+     * Gets the score of the specified player
+     * @param mixed $player_id player to get the score of
+     */
+    function getScore(mixed $player_id) {
+        if ($player_id == MONO_PLAYER_ID) {
+            return $this->getGameStateValue("mono_score");
+        }
+        return self::getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id='$player_id'") ?? 0;
     }
 
     /**
@@ -8703,7 +8753,6 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         $this->setGameStateValue("isPostCleanUpPhase", 0);
-        $this->incStat(1, "number_of_turns", $player_id);
 
         //4. expire all effects, except global effects with their corresponding card in a schedule
         $schedule_card_ids = array();
@@ -8722,6 +8771,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($this->isSoloGame()) {
             $this->monoTurnStart();
         }
+        $this->incStat(1, "number_of_turns", $next_player_id);
         $this->gamestate->nextState("trNextPlayer");
     }
 
@@ -8736,10 +8786,19 @@ class DaleOfMerchants extends DaleTableBasic
     function stFinalStatistics() {
         $players = $this->loadPlayersBasicInfosInclMono();
         foreach($players as $player_id => $player) {
+            if ($player_id == MONO_PLAYER_ID) {
+                continue;
+            }
             $nbr = $this->cards->countCardsInLocation(HAND.$player_id);
             $nbr += $this->cards->countCardsInLocation(DISCARD.$player_id);
             $nbr += $this->cards->countCardsInLocation(DECK.$player_id);
             $this->setStat($nbr, "cards_remaining", $player_id);
+        }
+        if ($this->isSoloGame()) {
+            $score_player = $this->getScore($this->getActivePlayerId());
+            $score_mono = $this->getScore(MONO_PLAYER_ID);
+            $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"
+            $this->DbQuery("UPDATE player SET `player_score` = $score_difference, `player_score_aux` = 0");
         }
         $this->gamestate->nextState("trGameEnd");
     }

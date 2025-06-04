@@ -6771,6 +6771,15 @@ class DaleOfMerchants extends Gamegui
 							throw new Error(`Cannot build a stack. Card ${card.id} does not exist in hand.`);
 						}
 					}
+					else if (this.mono_hand_is_visible) {
+						if ($(this.myLimbo.control_name+'_item_' + card.id)) {
+							stall.insertCard(card, notif.args.stack_index, undefined, this.myLimbo.control_name+'_item_' + card.id)
+							this.myLimbo.removeFromStockByIdNoAnimation(+card.id);
+						}
+						else {
+							throw new Error(`Cannot build a stack. Card ${card.id} does not exist in Mono's hand.`);
+						}
+					}
 					else {
 						stall.insertCard(card, notif.args.stack_index, undefined, 'overall_player_board_'+notif.args.player_id)
 					}

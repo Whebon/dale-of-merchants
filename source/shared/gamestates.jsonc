@@ -275,7 +275,11 @@
 		"type": "game",
 		"action": "stCleanUpPhase",
 		"updateGameProgression": true,
-		"transitions": { "trNextPlayer": 31, "trPostCleanUpPhase": 42 }
+		"transitions": { 
+			"trNextPlayer": 31, 
+			"trPostCleanUpPhase": 42, 
+			"trGameEnd": 98 //Mono can win the game here
+		}
 	},
 
 	"42": {
