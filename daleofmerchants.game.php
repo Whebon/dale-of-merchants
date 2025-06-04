@@ -508,6 +508,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @return array|null if possible, a minimum subset of `$dbcards` with a value sum of least the target value. `null` otherwise.
      */
     function monoPickCardsOfValue(array $dbcards, int $value): array|null {
+        if ($this->getValueSum($dbcards) < $value) {
+            //optimization: if the total sum is not enough, don't bother checking subsets
+            return null;
+        }
         $sorted_dbcards = $this->sortCardsByLocationArg($dbcards, false);
         for ($n = 0; $n <= count($dbcards); $n++) { 
             $result = $this->_monoPickCardsOfValue($sorted_dbcards, $value, $n, array(), 0);
@@ -515,6 +519,7 @@ class DaleOfMerchants extends DaleTableBasic
                 return $result;
             }
         }
+        $this->warn("Mono failed to pick a subset of cards valued $value, but it should have been possible: ".print_r($dbcards, true));
         return null;
     }
 
