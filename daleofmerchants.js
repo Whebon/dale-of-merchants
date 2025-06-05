@@ -1831,6 +1831,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DIE_PANGOLIN2')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin2'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin2'), "<br style=\"line-height: 10px\" />");
             }
+            if (text.includes(_('Acquire')) || text.includes(_('acquire'))) {
+                legend += '<strong> ' + _('Acquire') + ' : </strong> ' +
+                    _('If Mono played a Mono card with the acquire keyword and Mono has more stacks than you, it prioritises the market action.')
+                    + '<br><br style="line-height: 10px" />';
+            }
             if (text.includes(_('Store')) || text.includes(_('store'))) {
                 legend += '<strong> ' + _('Store') + ' : </strong> ' +
                     _('At the start of your next turn, place stored cards into your hand.')
@@ -4913,6 +4918,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     throw new Error("monoDiscard is only defined in solo games");
                 }
                 return this.playerDiscards[this.unique_opponent_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(DaleOfMerchants.prototype, "monoSchedule", {
+            get: function () {
+                if (!this.is_solo || !this.unique_opponent_id) {
+                    throw new Error("monoSchedule is only defined in solo games");
+                }
+                return this.playerSchedules[this.unique_opponent_id];
             },
             enumerable: false,
             configurable: true
@@ -10597,6 +10612,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     return;
                 }
             }
+            else if (this.mono_hand_is_visible) {
+                var card_id = +notif.args.card.id;
+                if ($(this.myLimbo.control_name + '_item_' + card_id)) {
+                    this.monoSchedule.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), this.myLimbo.control_name + '_item_' + card_id);
+                    this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
+                }
+                else {
+                    console.warn("Mono: SKIP scheduling the technique: already done by client");
+                    return;
+                }
+            }
             else {
                 var schedule = this.playerSchedules[notif.args.player_id];
                 schedule.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
@@ -10960,7 +10986,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 this.playerStockRemove(notif.args.card, stock, notif.args.player_id, notif.args.ignore_card_not_found);
             }
-            if (stock === this.myHand) {
+            if (!notif.args.from_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(-1);
             }
         };
@@ -10981,7 +11007,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 delay += 75;
             }
-            if (stock === this.myHand) {
+            if (!notif.args.from_limbo) {
                 var nbr = Object.keys(notif.args.cards).length;
                 this.playerHandSizes[notif.args.player_id].incValue(-nbr);
             }
@@ -11026,7 +11052,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 this.allDecks[notif.args.deck_player_id].push(new DaleCard_10.DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
             }
-            if (stock === this.myHand) {
+            if (!notif.args.from_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(-1);
             }
         };
@@ -11047,7 +11073,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.allDecks[notif.args.deck_player_id].push(new DaleCard_10.DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
                 }
             }
-            if (stock === this.myHand) {
+            if (!notif.args.from_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
             }
         };
@@ -11058,7 +11084,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("notif_marketDiscardToHand");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
-            if (stock === this.myHand) {
+            if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(1);
             }
         };
@@ -11071,7 +11097,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
-            if (stock === this.myHand) {
+            if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(1);
             }
         };
@@ -11085,7 +11111,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card = dbcards_desc_2[_i];
                 this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
             }
-            if (stock === this.myHand) {
+            if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
             }
         };
@@ -11106,7 +11132,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 deck.pop('overall_player_board_' + notif.args.player_id);
             }
-            if (stock === this.myHand) {
+            if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(1);
             }
         };
@@ -11129,7 +11155,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     deck.pop('overall_player_board_' + notif.args.player_id);
                 }
             }
-            if (stock === this.myHand) {
+            if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
             }
         };

@@ -295,7 +295,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * @return int `getPlayersNumber`, but also counts "Mono" in a solo-game
+     * @return int `getPlayersNumber`, but also counts Mono in a solo-game
      */
     function getPlayersNumberInclMono(): int {
         return max(2, $this->getPlayersNumber());
@@ -317,7 +317,7 @@ class DaleOfMerchants extends DaleTableBasic
             $players[MONO_PLAYER_ID] = array(
                 'player_id' => MONO_PLAYER_ID,
                 'player_color' => "9f4488",
-                'player_name' => "Mono",
+                'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                 'player_zombie' => 0,
                 'player_no' => 2,
                 'player_eliminated' => 0
@@ -373,29 +373,32 @@ class DaleOfMerchants extends DaleTableBasic
         switch($technique_result) {
             case MONO_TECHNIQUE_NONE:
                 $msg = clienttranslate('${player_name} didn\'t play a card, so it prioritises the stall action');
-                $technique_result = MONO_TECHNIQUE_NO_AQUIRE;
+                $technique_result = MONO_TECHNIQUE_NO_ACQUIRE;
                 break;
-            case MONO_TECHNIQUE_NO_AQUIRE:
+            case MONO_TECHNIQUE_NO_ACQUIRE:
                 $msg = clienttranslate('${player_name} played a card without the <strong>acquire</strong> keyword, so it prioritises the stall action');
                 break;
-            case MONO_TECHNIQUE_AQUIRE:
+            case MONO_TECHNIQUE_ACQUIRE:
                 if ($this->monoHasMostStacks()) {
                     $msg = clienttranslate('${player_name} played a card with the <strong>acquire</strong> keyword and it has more stacks than you, so it prioritises the market action');
                 }
                 else {
                     $msg = clienttranslate('${player_name} played a card with the <strong>acquire</strong> keyword but it\'s behind you in stacks, so it prioritises the stall action');
-                    $technique_result = MONO_TECHNIQUE_NO_AQUIRE;
+                    $technique_result = MONO_TECHNIQUE_NO_ACQUIRE;
                 }
                 break;
             case MONO_TECHNIQUE_NO_PLUS:
                 $msg = '';
+                break;
+            default:
+                throw new BgaVisibleSystemException("Unexpected return value from monoPlayTechnique()");
                 break;
         }
         $this->notifyAllPlayers('message', $msg, array(
             "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
         ));
 
-        if ($technique_result == MONO_TECHNIQUE_AQUIRE) {
+        if ($technique_result == MONO_TECHNIQUE_ACQUIRE) {
             if (!$this->monoMarketAction()) {
                 $this->notifyAllPlayers('message', clienttranslate('${player_name} failed to purchase, so it now tries to build'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
@@ -407,7 +410,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
             }
         }
-        else if ($technique_result == MONO_TECHNIQUE_NO_AQUIRE) {
+        else if ($technique_result == MONO_TECHNIQUE_NO_ACQUIRE) {
             if (!$this->monoStallAction()) {
                 $this->notifyAllPlayers('message', clienttranslate('${player_name} failed to build, so it now tries to purchase') , array(
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
@@ -434,12 +437,54 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * @return int representing the result of playing Mono card techniques.
      * * `MONO_TECHNIQUE_NONE` if Mono didn't play a card.
-     * * `MONO_TECHNIQUE_AQUIRE` if Mono played a card with a "plus", and "aquire".
-     * * `MONO_TECHNIQUE_NO_AQUIRE` if Mono played a card with a "plus", but without "aquire".
+     * * `MONO_TECHNIQUE_ACQUIRE` if Mono played a card with a "plus", and "acquire".
+     * * `MONO_TECHNIQUE_NO_ACQUIRE` if Mono played a card with a "plus", but without "acquire".
      * * `MONO_TECHNIQUE_NO_PLUS` if Mono played a card without a "plus".
      */
     function monoPlayTechnique(): int {
-        return MONO_TECHNIQUE_NONE;
+        //get the leftmost mono card
+        $unsorted_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        $dbcards = $this->sortCardsByLocationArg($unsorted_dbcards, false);
+        $technique_card = null;
+        foreach ($dbcards as $dbcard) {
+            if ($this->isMonoCard($dbcard)) {
+                $technique_card = $dbcard;
+                $technique_type_id = $this->getTypeId($technique_card);
+                break;
+            }
+        }
+        if ($technique_card == null) {
+            return MONO_TECHNIQUE_NONE;
+        }
+
+        //resolve the technique
+        $this->scheduleCard(MONO_PLAYER_ID, $technique_card);
+        switch($technique_type_id) {
+            case CT_SWIFTMEMBER:
+                $this->draw(clienttranslate('Swift Member: ${player_name} draws ${nbr} cards'), 
+                    3, 
+                    false, 
+                    MONO_PLAYER_ID, 
+                    MONO_PLAYER_ID
+                );
+                break;
+            default:
+                $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO CARD NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
+                    "card_name" => $this->getCardName($technique_card)
+                ));
+                break;
+        }
+        //(~mono technique)
+
+        //fully resolve the card and apply the state transition
+        $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card);
+        if (!$this->card_types[$technique_type_id]["has_plus"]) {
+            return MONO_TECHNIQUE_NO_PLUS;
+        }
+        if (!$this->card_types[$technique_type_id]["has_ability"]) {
+            return MONO_TECHNIQUE_NO_ACQUIRE;
+        }
+        return MONO_TECHNIQUE_ACQUIRE;
     }
 
     /**
@@ -540,25 +585,7 @@ class DaleOfMerchants extends DaleTableBasic
         return false;
     }
 
-    /**
-     * Automatically executes a clean-up phase for Mono
-     */
-    function monoCleanUpPhase() {
-        $this->showDebugMessage("monoCleanUpPhase");
-        $this->refillMarket(true);
-        $this->refillHand(MONO_PLAYER_ID);
-    }
-
-    /**
-     * Show Mono's hand to the player
-     */
-    function monoShowHand() {
-        $this->showDebugMessage("monoShowHand");
-        $this->notifyAllPlayers('monoShowHand', '', array(
-            "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
-        ));
-    }
-
+    
     /**
      * Discard any junk left in Mono's hand
      */
@@ -582,10 +609,34 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Automatically executes a clean-up phase for Mono
+     */
+    function monoCleanUpPhase() {
+        $this->showDebugMessage("monoCleanUpPhase");
+        $this->refillMarket(true);
+        $this->refillHand(MONO_PLAYER_ID);
+    }
+
+    /** Boolean that indicates if Mono's hand is currently open information*/
+    var $mono_hand_is_visible = false;
+
+    /**
+     * Show Mono's hand to the player
+     */
+    function monoShowHand() {
+        $this->showDebugMessage("monoShowHand");
+        $this->mono_hand_is_visible = true;
+        $this->notifyAllPlayers('monoShowHand', '', array(
+            "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
+        ));
+    }
+
+    /**
      * Hide Mono's hand from the player
      */
     function monoHideHand() {
         $this->showDebugMessage("monoHideHand");
+        $this->mono_hand_is_visible = false;
         $this->notifyAllPlayers('monoHideHand', '', array(
             "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
         ));
@@ -650,10 +701,6 @@ class DaleOfMerchants extends DaleTableBasic
         }
         return null;
     }
-
-
-
-    //(~mono)
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1029,13 +1076,23 @@ class DaleOfMerchants extends DaleTableBasic
 
         //the active player receives the notification with the private arguments
         $private_player_id = $args["player_id"];
-        $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+        if ($private_player_id == MONO_PLAYER_ID && $this->mono_hand_is_visible) {
+            $private_player_id = $this->getActivePlayerId(); //Mono cannot get private messages, the player receives it instead
+        }
+        if ($private_player_id != MONO_PLAYER_ID) {
+            $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+        }
 
         //(optional) the involved opponent also receives the notification with the private arguments
         $private_opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : null;
         if ($private_opponent_id) {
             $private_opponent_id = $args["opponent_id"];
-            $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+            if ($private_opponent_id == MONO_PLAYER_ID && $this->mono_hand_is_visible) {
+                $private_opponent_id = $this->getActivePlayerId(); //Mono cannot get private messages, the player receives it instead
+            }
+            if ($private_opponent_id != MONO_PLAYER_ID) {
+                $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+            }
         }
 
         //all players receive the notification without the private arguments. (the player and opponent will ignore this on the client-side)
@@ -2971,7 +3028,7 @@ class DaleOfMerchants extends DaleTableBasic
             }
             $this->notifyAllPlayers('resolveTechnique', clienttranslate('${player_name} fully resolves their ${card_name}'), array(
                 'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
                 'card_name' => $card_name,
                 'card' => $technique_card,
                 'to_prefix' => $to_prefix,
@@ -2986,6 +3043,11 @@ class DaleOfMerchants extends DaleTableBasic
 
         //refill the market if needed (10th anniversary rule change)
         $this->refillMarket(true);
+
+        //skip state transition for Mono
+        if ($player_id == MONO_PLAYER_ID) {
+            return;
+        }
 
         //add the onresolve trigger
         if ($resolve_to_location == DISCARD.$player_id) {

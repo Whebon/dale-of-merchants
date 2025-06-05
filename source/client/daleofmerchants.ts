@@ -92,6 +92,14 @@ class DaleOfMerchants extends Gamegui
 		return this.playerDiscards[this.unique_opponent_id]!;
 	}
 
+	/** Mono player's schedule */
+	get monoSchedule(): DaleStock {
+		if (!this.is_solo || !this.unique_opponent_id) {
+			throw new Error("monoSchedule is only defined in solo games");
+		}
+		return this.playerSchedules[this.unique_opponent_id]!;
+	}
+
 	/** The PlayerClock component for this player */
 	get myClock(): PlayerClock {
 		return this.playerClocks[this.player_id]!;
@@ -6572,6 +6580,18 @@ class DaleOfMerchants extends Gamegui
 				return;
 			}
 		}
+		else if (this.mono_hand_is_visible) {
+			//animate from my limbo
+			const card_id = +notif.args.card.id;
+			if ($(this.myLimbo.control_name+'_item_' + card_id)) {
+				this.monoSchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myLimbo.control_name+'_item_'+card_id)
+				this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				console.warn("Mono: SKIP scheduling the technique: already done by client")
+				return;
+			}
+		}
 		else {
 			//animate from player board
 			const schedule = this.playerSchedules[notif.args.player_id]!;
@@ -7004,7 +7024,7 @@ class DaleOfMerchants extends Gamegui
 			this.playerStockRemove(notif.args.card, stock, notif.args.player_id, notif.args.ignore_card_not_found);
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.from_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(-1);
 		}
 	}
@@ -7026,7 +7046,7 @@ class DaleOfMerchants extends Gamegui
 			delay += 75; //delay indicates that ordering matters
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.from_limbo) {
 			const nbr = Object.keys(notif.args.cards).length;
 			this.playerHandSizes[notif.args.player_id]!.incValue(-nbr);
 		}
@@ -7075,7 +7095,7 @@ class DaleOfMerchants extends Gamegui
 			this.allDecks[notif.args.deck_player_id!]!.push(new DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.from_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(-1);
 		}
 	}
@@ -7098,7 +7118,7 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.from_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
 		}
 	}
@@ -7112,7 +7132,7 @@ class DaleOfMerchants extends Gamegui
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
 		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(1);
 		}
 	}
@@ -7127,7 +7147,7 @@ class DaleOfMerchants extends Gamegui
 		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(1);
 		}
 	}
@@ -7141,7 +7161,7 @@ class DaleOfMerchants extends Gamegui
 			this.pileToPlayerStock(card, discardPile, stock, notif.args.player_id, +card.location_arg);
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
 		}
 	}
@@ -7165,7 +7185,7 @@ class DaleOfMerchants extends Gamegui
 			deck.pop('overall_player_board_'+notif.args.player_id);
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(1);
 		}
 	}
@@ -7191,7 +7211,7 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 		//update the hand sizes
-		if (stock === this.myHand) {
+		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(notif.args.nbr);
 		}
 	}

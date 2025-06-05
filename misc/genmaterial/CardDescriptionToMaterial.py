@@ -44,7 +44,7 @@ def has_plus(row):
 def has_ability(row):
     if (row['has_ability'] == "X"):
         if (row['is_technique'] == "X"):
-            #"has_ability on techniques" == "aquire"
+            #"has_ability on techniques" == "acquire"
             pass #raise Exception("Techniques cannot have an active ability")
         return "true"
     return "false"

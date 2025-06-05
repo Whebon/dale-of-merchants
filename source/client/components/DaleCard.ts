@@ -1044,6 +1044,11 @@ export class DaleCard {
         if (text.includes('DIE_PANGOLIN2')) {
             legend += `${DaleDie.get3DDieTpl('pangolin2')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin2')}<br style="line-height: 10px" />`
         }
+        if (text.includes(_('Acquire')) || text.includes(_('acquire'))) {
+            legend += '<strong> ' + _('Acquire') + ' : </strong> ' + 
+            _('If Mono played a Mono card with the acquire keyword and Mono has more stacks than you, it prioritises the market action.')
+            +'<br><br style="line-height: 10px" />';
+        }
         if (text.includes(_('Store')) || text.includes(_('store'))) {
             legend += '<strong> ' + _('Store') + ' : </strong> ' + 
             _('At the start of your next turn, place stored cards into your hand.')
