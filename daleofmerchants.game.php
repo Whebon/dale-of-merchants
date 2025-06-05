@@ -1163,7 +1163,15 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function toss(string $msg, array $dbcard, bool $from_limbo = false, $msg_args = array()) {
         $player_id = $this->getActivePlayerId();
-        $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+        if ($this->isJunk($dbcard)) {
+            $destination = JUNKRESERVE;
+        }
+        else if ($this->isMonoCard($dbcard)) {
+            $destination = DISCARD.MONO_PLAYER_ID;
+        }
+        else {
+            $destination = DISCARD.MARKET;
+        }
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
         $this->notifyAllPlayers(isset($msg_args['instant_toss']) ? 'instant_toss' : 'toss', $msg, array_merge(array(
             "player_id" => $player_id,

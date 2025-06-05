@@ -1052,6 +1052,7 @@ export class DaleCard {
         if (text.includes(_('Toss')) || text.includes(_('toss'))) {
             legend += '<strong> ' + _('Toss') + ' : </strong> ' + 
             _('Tossed animalfolk cards are placed in the bin. Tossed junk cards are removed from the game.')
+            + (DaleCard.page!.is_solo ? ' '+_('Tossed Mono cards are placed on Mono\'s discard.') : '')
             +'<br><br style="line-height: 10px" />';
         }
         if (text.includes(_('Finish'))) {

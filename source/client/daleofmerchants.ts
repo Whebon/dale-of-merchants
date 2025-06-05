@@ -84,6 +84,14 @@ class DaleOfMerchants extends Gamegui
 	/** Boolean that indicates if myLimbo is currently representing Mono's hand */
 	mono_hand_is_visible = false;
 
+	/** Mono player's discard pile */
+	get monoDiscard(): Pile {
+		if (!this.is_solo || !this.unique_opponent_id) {
+			throw new Error("monoDiscard is only defined in solo games");
+		}
+		return this.playerDiscards[this.unique_opponent_id]!;
+	}
+
 	/** The PlayerClock component for this player */
 	get myClock(): PlayerClock {
 		return this.playerClocks[this.player_id]!;
@@ -94,7 +102,7 @@ class DaleOfMerchants extends Gamegui
 		return this.playerHandSizes[this.player_id]!;
 	}
 
-	/** Current player's draw pile (this client's draw pil) */
+	/** Current player's draw pile (this client's draw pile) */
 	get myDeck(): HiddenPile {
 		return this.playerDecks[this.player_id]!;
 	}
@@ -309,7 +317,6 @@ class DaleOfMerchants extends Gamegui
 
 			//initialize limbo
 			this.myLimbo.init(this, $('daleofmerchants-mylimbo')!, $('daleofmerchants-mylimbo-wrap')!, _("Limbo"), onLimboItemCreate, onLimboItemDelete);
-			this.myLimbo.enableSortItems = false; //this is needed for Mono
 			this.myLimbo.wrap!.classList.add("daleofmerchants-hidden");
 			this.myLimbo.centerItems = true;
 			for (let i in gamedatas.limbo) {
@@ -3746,8 +3753,11 @@ class DaleOfMerchants extends Gamegui
 				if (card.isAnimalfolk()) {
 					this.stockToPile(card, this.myLimbo, this.marketDiscard);
 				}
-				else {
+				else if (card.isMonoCard()) {
 					//warning: if specialty/trap cards exist, this should go somewhere else
+					this.stockToPile(card, this.myLimbo, this.monoDiscard);
+				}
+				else {
 					this.myLimbo.removeFromStockById(card.id);
 				}
 				const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
@@ -6177,8 +6187,15 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
 			}
-			else {
+			else if (new DaleCard(args.toss_card_id).isMonoCard()) {
 				//warning: if specialty/trap cards exist, this come from somewhere else
+				const card = this.monoDiscard.pop();
+				if (args.toss_card_id != card.id) {
+					throw new Error(`Expected card ${card.id} on top of Mono's discard`);
+				}
+				this.myLimbo.addDaleCardToStock(card, this.monoDiscard.placeholderHTML);
+			}
+			else {
 				this.myLimbo.addDaleCardToStock(new DaleCard(args.toss_card_id), 'overall_player_board_'+this.player_id);
 			}
 
@@ -6356,45 +6373,6 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
-	//safely remove this
-	// onRakeSkip() {
-	// 	const rake_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
-	// 	this.mainClientState.enterOnStack('client_rake', {
-	// 		toss_card_id: -1,
-	// 		card_name: rake_args.resolving_card_name ?? "MISSING CARD NAME"
-	// 	});
-	// 	this.myDeck.openPopin();
-	// }
-
-	// onRakeUndo() {
-	// 	const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
-	// 	if (args.toss_card_id != -1) {
-	// 		//undo the toss
-	// 		if (new DaleCard(args.toss_card_id).isAnimalfolk()) {
-	// 			const card = this.marketDiscard.pop();
-	// 			if (args.toss_card_id != card.id) {
-	// 				throw new Error(`Expected card ${card.id} on top of the bin`);
-	// 			}
-	// 			this.myDeck.push(card, this.marketDiscard.placeholderHTML);
-	// 		}
-	// 		else {
-	// 			//warning: if specialty/trap cards exist, this come from somewhere else
-	// 			this.myDeck.pushHiddenCards(1);
-	// 		}
-	// 	}
-	// 	this.mainClientState.leave();
-	// }
-
-	// onRakeDiscard() {
-	// 	const args = (this.mainClientState.args as ClientGameStates['client_rake']);
-	// 	const discard_card_ids = this.myDeck.orderedSelection.get();
-	// 	this.bgaPerformAction('actRake', {
-	// 		toss_card_id: args.toss_card_id,
-	// 		discard_card_ids: this.arrayToNumberList(discard_card_ids)
-	// 	});
-	// 	this.mainClientState.leave();
-	// }
-
 	onRake() {
 		const toss_card_ids = this.myDeck.orderedSelection.get();
 		const discard_card_ids = this.myDeck.orderedSelection.get(true);
@@ -6487,7 +6465,7 @@ class DaleOfMerchants extends Gamegui
 			['accidentTakeBack', 					500, true],
 			['cunningNeighbourWatch', 				500, true],
 			['cunningNeighbourReturn', 				500, true],
-			['monoShowHand', 						750],
+			['monoShowHand', 						1500], //extra long delay: let the player predict what will happen
 			['monoHideHand', 						750],
 			['tossFromDiscard', 					500],
 			['tossFromDeck', 						500],
@@ -7022,6 +7000,9 @@ class DaleOfMerchants extends Gamegui
 		if (DaleCard.of(notif.args.card).isAnimalfolk()) {
 			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard, 0, notif.args.ignore_card_not_found);
 		}
+		else if (DaleCard.of(notif.args.card).isMonoCard()) {
+			this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.monoDiscard, 0, notif.args.ignore_card_not_found);
+		}
 		else {
 			this.playerStockRemove(notif.args.card, stock, notif.args.player_id, notif.args.ignore_card_not_found);
 		}
@@ -7038,6 +7019,9 @@ class DaleOfMerchants extends Gamegui
 			const card = notif.args.cards[id]!;
 			if (DaleCard.of(card).isAnimalfolk()) {
 				this.playerStockToPile(card, stock, notif.args.player_id, this.marketDiscard, delay);
+			}
+			else if (DaleCard.of(card).isMonoCard()) {
+				this.playerStockToPile(card, stock, notif.args.player_id, this.monoDiscard, delay);
 			}
 			else {
 				this.playerStockRemove(card, stock, notif.args.player_id);
@@ -7448,6 +7432,7 @@ class DaleOfMerchants extends Gamegui
 		if (!this.is_solo || !this.unique_opponent_id) {
 			throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
 		}
+		this.myLimbo.enableSortItems = false; //important: this is needed to enable the left-to-right ordering! (on Mono's turn)
 		this.mono_hand_is_visible = true;
 		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
 		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
@@ -7463,6 +7448,7 @@ class DaleOfMerchants extends Gamegui
 		if (!this.is_solo || !this.unique_opponent_id) {
 			throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
 		}
+		this.myLimbo.enableSortItems = true; //important: this is needed to disable the left-to-right ordering! (on the players turn)
 		this.mono_hand_is_visible = false;
 		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		if (this.myLimbo.count() > sortedCards.length) {

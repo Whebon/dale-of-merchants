@@ -1839,6 +1839,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes(_('Toss')) || text.includes(_('toss'))) {
                 legend += '<strong> ' + _('Toss') + ' : </strong> ' +
                     _('Tossed animalfolk cards are placed in the bin. Tossed junk cards are removed from the game.')
+                    + (DaleCard.page.is_solo ? ' ' + _('Tossed Mono cards are placed on Mono\'s discard.') : '')
                     + '<br><br style="line-height: 10px" />';
             }
             if (text.includes(_('Finish'))) {
@@ -4906,6 +4907,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn('dale constructor');
             return _this;
         }
+        Object.defineProperty(DaleOfMerchants.prototype, "monoDiscard", {
+            get: function () {
+                if (!this.is_solo || !this.unique_opponent_id) {
+                    throw new Error("monoDiscard is only defined in solo games");
+                }
+                return this.playerDiscards[this.unique_opponent_id];
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(DaleOfMerchants.prototype, "myClock", {
             get: function () {
                 return this.playerClocks[this.player_id];
@@ -5063,7 +5074,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 };
                 this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
-                this.myLimbo.enableSortItems = false;
                 this.myLimbo.wrap.classList.add("daleofmerchants-hidden");
                 this.myLimbo.centerItems = true;
                 for (var i in gamedatas.limbo) {
@@ -8068,6 +8078,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (card.isAnimalfolk()) {
                         this.stockToPile(card, this.myLimbo, this.marketDiscard);
                     }
+                    else if (card.isMonoCard()) {
+                        this.stockToPile(card, this.myLimbo, this.monoDiscard);
+                    }
                     else {
                         this.myLimbo.removeFromStockById(card.id);
                     }
@@ -10264,6 +10277,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
                 }
+                else if (new DaleCard_10.DaleCard(args.toss_card_id).isMonoCard()) {
+                    var card = this.monoDiscard.pop();
+                    if (args.toss_card_id != card.id) {
+                        throw new Error("Expected card ".concat(card.id, " on top of Mono's discard"));
+                    }
+                    this.myLimbo.addDaleCardToStock(card, this.monoDiscard.placeholderHTML);
+                }
                 else {
                     this.myLimbo.addDaleCardToStock(new DaleCard_10.DaleCard(args.toss_card_id), 'overall_player_board_' + this.player_id);
                 }
@@ -10499,7 +10519,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['accidentTakeBack', 500, true],
                 ['cunningNeighbourWatch', 500, true],
                 ['cunningNeighbourReturn', 500, true],
-                ['monoShowHand', 750],
+                ['monoShowHand', 1500],
                 ['monoHideHand', 750],
                 ['tossFromDiscard', 500],
                 ['tossFromDeck', 500],
@@ -10937,6 +10957,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (DaleCard_10.DaleCard.of(notif.args.card).isAnimalfolk()) {
                 this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.marketDiscard, 0, notif.args.ignore_card_not_found);
             }
+            else if (DaleCard_10.DaleCard.of(notif.args.card).isMonoCard()) {
+                this.playerStockToPile(notif.args.card, stock, notif.args.player_id, this.monoDiscard, 0, notif.args.ignore_card_not_found);
+            }
             else {
                 this.playerStockRemove(notif.args.card, stock, notif.args.player_id, notif.args.ignore_card_not_found);
             }
@@ -10952,6 +10975,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card = notif.args.cards[id];
                 if (DaleCard_10.DaleCard.of(card).isAnimalfolk()) {
                     this.playerStockToPile(card, stock, notif.args.player_id, this.marketDiscard, delay);
+                }
+                else if (DaleCard_10.DaleCard.of(card).isMonoCard()) {
+                    this.playerStockToPile(card, stock, notif.args.player_id, this.monoDiscard, delay);
                 }
                 else {
                     this.playerStockRemove(card, stock, notif.args.player_id);
@@ -11278,6 +11304,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!this.is_solo || !this.unique_opponent_id) {
                 throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
             }
+            this.myLimbo.enableSortItems = false;
             this.mono_hand_is_visible = true;
             this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
             var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
@@ -11292,6 +11319,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!this.is_solo || !this.unique_opponent_id) {
                 throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
             }
+            this.myLimbo.enableSortItems = true;
             this.mono_hand_is_visible = false;
             var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             if (this.myLimbo.count() > sortedCards.length) {
