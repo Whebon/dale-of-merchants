@@ -1636,9 +1636,6 @@ class DaleOfMerchants extends Gamegui
 		switch( stateName )
 		{
 			case 'deckSelection':
-				if (this.is_solo) {
-					this.setMainTitle("SOLO MODE IS STILL IN EARLY DEVELOPMENT. PLEASE DO NOT CONTINUE.");
-				}
 				this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
 				this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
 				if (!this.gamedatas.debugMode) {
