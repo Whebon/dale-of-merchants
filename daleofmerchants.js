@@ -4932,6 +4932,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             enumerable: false,
             configurable: true
         });
+        DaleOfMerchants.prototype.isMonoPlayer = function (player_id) {
+            return this.is_solo && player_id == this.unique_opponent_id;
+        };
         Object.defineProperty(DaleOfMerchants.prototype, "myClock", {
             get: function () {
                 return this.playerClocks[this.player_id];
@@ -4970,13 +4973,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         Object.defineProperty(DaleOfMerchants.prototype, "mySchedule", {
             get: function () {
                 return this.playerSchedules[this.player_id];
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(DaleOfMerchants.prototype, "myStoredCards", {
-            get: function () {
-                return this.playerStoredCards[this.player_id];
             },
             enumerable: false,
             configurable: true
@@ -10495,7 +10491,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['storedCardsToHand', 500, true],
                 ['buildStack', 500],
                 ['rearrangeMarket', 500],
-                ['fillEmptyMarketSlots', 1],
+                ['fillEmptyMarketSlots', 500],
                 ['marketSlideRight', 500],
                 ['marketToHand', 500],
                 ['swapHandStall', 1],
@@ -10570,7 +10566,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                         var args = notif.args;
                         var isPublic = args._private === undefined;
-                        var alreadyReceivedPrivate = (player_id_1 == args.player_id || player_id_1 == args.opponent_id);
+                        var alreadyReceivedPrivate = (player_id_1 == args.player_id || player_id_1 == args.opponent_id || (_this.isMonoPlayer(args.player_id) && _this.mono_hand_is_visible));
                         return isPublic && alreadyReceivedPrivate;
                     });
                 }
@@ -10670,11 +10666,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.notif_handToStoredCards = function (notif) {
-            if (notif.args.player_id == this.player_id) {
-                var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+            if (notif.args.player_id == this.player_id || this.isMonoPlayer(notif.args.player_id)) {
+                var stock = notif.args.from_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
                 var card_id = +notif.args._private.card.id;
                 if ($(stock.control_name + '_item_' + card_id)) {
-                    this.myStoredCards.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args._private.card), stock.control_name + '_item_' + card_id);
+                    this.playerStoredCards[notif.args.player_id].addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args._private.card), stock.control_name + '_item_' + card_id);
                     stock.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -10699,12 +10695,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             deck.pop();
         };
         DaleOfMerchants.prototype.notif_storedCardsToHand = function (notif) {
-            if (notif.args.player_id == this.player_id) {
+            if (notif.args.player_id == this.player_id || this.isMonoPlayer(notif.args.player_id)) {
                 for (var card_id in notif.args._private.cards) {
                     var dbcard = notif.args._private.cards[card_id];
-                    if ($(this.myStoredCards.control_name + '_item_' + card_id)) {
-                        this.myHand.addDaleCardToStock(DaleCard_10.DaleCard.of(dbcard), this.myStoredCards.control_name + '_item_' + card_id);
-                        this.myStoredCards.removeFromStockByIdNoAnimation(+card_id);
+                    var stock = this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
+                    var storedCards = this.playerStoredCards[notif.args.player_id];
+                    if ($(storedCards.control_name + '_item_' + card_id)) {
+                        stock.addDaleCardToStock(DaleCard_10.DaleCard.of(dbcard), storedCards.control_name + '_item_' + card_id);
+                        storedCards.removeFromStockByIdNoAnimation(+card_id);
                     }
                     else {
                         throw new Error("storedCardsToHand failed. Stored card ".concat(card_id, " does not exist among the stored cards."));
@@ -11014,6 +11012,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_discard = function (notif) {
             var _a;
+            console.warn("discard", notif.args);
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -11118,7 +11117,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_draw = function (notif) {
             var _a;
             console.warn("notif_draw");
-            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+            var stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
             var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             if (notif.args._private) {
                 var card = notif.args._private.card;
@@ -11140,7 +11139,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _a, _b;
             console.warn("notif_drawMultiple");
             console.warn(notif.args);
-            var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+            var stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
             var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             console.warn(deck.size);
             if (notif.args._private) {

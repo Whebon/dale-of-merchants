@@ -269,10 +269,11 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Remove all mono cards from the player hand
+     * @param mixed $hand_player_id (optional) if provided, specify who owns the $hand_dbcards
      * @param ?array $hand_dbcards (optional) if provided, skip fetching cards from the db and use these instead. This may be a subset of the hand cards. 
      */
-    function removeMonoCardsFromPlayerHand(?array $hand_dbcards = null) {
-        if (!$this->isSoloGame()) {
+    function removeMonoCardsFromPlayerHand(mixed $hand_player_id = null, ?array $hand_dbcards = null) {
+        if (!$this->isSoloGame() || $hand_player_id == MONO_PLAYER_ID) {
             return;
         }
         $player_id = $this->getActivePlayerId();
@@ -458,15 +459,10 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //resolve the technique
-        $this->scheduleCard(MONO_PLAYER_ID, $technique_card);
+        $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);
         switch($technique_type_id) {
             case CT_SWIFTMEMBER:
-                $this->draw(clienttranslate('Swift Member: ${player_name} draws ${nbr} cards'), 
-                    3, 
-                    false, 
-                    MONO_PLAYER_ID, 
-                    MONO_PLAYER_ID
-                );
+                $this->draw(clienttranslate('Swift Member: ${player_name} draws ${nbr} cards'), 3, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO CARD NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -1207,7 +1203,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "deck_player_id" => $from_player_id,
                     "to_limbo" => $to_limbo
                 ), $msg_args), $private_message);
-                $this->removeMonoCardsFromPlayerHand(array($card));
+                $this->removeMonoCardsFromPlayerHand($to_player_id, array($card));
                 return 1;
             }
             return 0;
@@ -1227,7 +1223,7 @@ class DaleOfMerchants extends DaleTableBasic
                 "deck_player_id" => $from_player_id,
                 "to_limbo" => $to_limbo
             ), $msg_args), $private_message);
-            $this->removeMonoCardsFromPlayerHand($cards);
+            $this->removeMonoCardsFromPlayerHand($to_player_id, $cards);
             return $actual_nbr;
         }
     }
@@ -9000,7 +8996,7 @@ class DaleOfMerchants extends DaleTableBasic
                 "card_name" => $this->getCardName($card)
             )
         ), clienttranslate('Dirty Exchange: ${player_name} takes a ${card_name} from ${opponent_name}'));
-        $this->removeMonoCardsFromPlayerHand(array($card));
+        $this->removeMonoCardsFromPlayerHand($player_id, array($card));
         if ($this->isSoloGame() && $this->cards->countCardInLocation(HAND.$player_id) == 0) {
             //player is unable to give back a card
             $this->notifyAllPlayers('message', clienttranslate('Dirty Exchange: ${player_name} is unable to give back a card'), array(

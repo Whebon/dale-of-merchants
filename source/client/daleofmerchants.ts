@@ -100,6 +100,11 @@ class DaleOfMerchants extends Gamegui
 		return this.playerSchedules[this.unique_opponent_id]!;
 	}
 
+	/** @returns boolean indicating if the specified player is Mono */
+	isMonoPlayer(player_id: number): boolean {
+		return this.is_solo && player_id == this.unique_opponent_id;
+	}
+
 	/** The PlayerClock component for this player */
 	get myClock(): PlayerClock {
 		return this.playerClocks[this.player_id]!;
@@ -128,11 +133,6 @@ class DaleOfMerchants extends Gamegui
 	/** Current player's schedule (this client's schedule) */
 	get mySchedule(): DaleStock {
 		return this.playerSchedules[this.player_id]!;
-	}
-
-	/** Current player's schedule (this client's stored cards) */
-	get myStoredCards(): DaleStock {
-		return this.playerStoredCards[this.player_id]!;
 	}
 
 	/** Manages everything related to coins and spending */
@@ -6434,7 +6434,7 @@ class DaleOfMerchants extends Gamegui
 			['storedCardsToHand',					500, true],
 			['buildStack', 							500],
 			['rearrangeMarket', 					500],
-			['fillEmptyMarketSlots', 				1],
+			['fillEmptyMarketSlots', 				500],
 			['marketSlideRight', 					500],
 			['marketToHand', 						500],
 			['swapHandStall', 						1],
@@ -6511,7 +6511,7 @@ class DaleOfMerchants extends Gamegui
 					//"_private" and "opponent_id" are lost args in "history_history" notifications
 					const args = notif.args as PrivateNotification;
 					const isPublic = args._private === undefined;
-					const alreadyReceivedPrivate = (player_id == args.player_id || player_id == args.opponent_id)
+					const alreadyReceivedPrivate = (player_id == args.player_id || player_id == args.opponent_id || (this.isMonoPlayer(args.player_id) && this.mono_hand_is_visible))
 					return isPublic && alreadyReceivedPrivate;
 				});
 			}
@@ -6653,12 +6653,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_handToStoredCards(notif: NotifAs<'handToStoredCards'>) {
-		if (notif.args.player_id == this.player_id) {
+		if (notif.args.player_id == this.player_id || this.isMonoPlayer(notif.args.player_id)) {
 			//animate from my hand
-			const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+			const stock = notif.args.from_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
 			const card_id = +notif.args._private!.card.id;
 			if ($(stock.control_name+'_item_' + card_id)) {
-				this.myStoredCards.addDaleCardToStock(DaleCard.of(notif.args._private!.card), stock.control_name+'_item_'+card_id)
+				this.playerStoredCards[notif.args.player_id]!.addDaleCardToStock(DaleCard.of(notif.args._private!.card), stock.control_name+'_item_'+card_id)
 				stock.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -6686,13 +6686,15 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_storedCardsToHand(notif: NotifAs<'storedCardsToHand'>) {
-		if (notif.args.player_id == this.player_id) {
+		if (notif.args.player_id == this.player_id || this.isMonoPlayer(notif.args.player_id)) {
 			//animate from my hand
 			for (let card_id in notif.args._private!.cards) {
 				const dbcard = notif.args._private!.cards[card_id]!
-				if ($(this.myStoredCards.control_name+'_item_' + card_id)) {
-					this.myHand.addDaleCardToStock(DaleCard.of(dbcard), this.myStoredCards.control_name+'_item_' + card_id)
-					this.myStoredCards.removeFromStockByIdNoAnimation(+card_id);
+				const stock = this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
+				const storedCards = this.playerStoredCards[notif.args.player_id]!;
+				if ($(storedCards.control_name+'_item_' + card_id)) {
+					stock.addDaleCardToStock(DaleCard.of(dbcard), storedCards.control_name+'_item_' + card_id)
+					storedCards.removeFromStockByIdNoAnimation(+card_id);
 				}
 				else {
 					throw new Error(`storedCardsToHand failed. Stored card ${card_id} does not exist among the stored cards.`);
@@ -7053,6 +7055,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_discard(notif: NotifAs<'discard'>) {
+		console.warn("discard", notif.args);
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -7168,7 +7171,7 @@ class DaleOfMerchants extends Gamegui
 
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.warn("notif_draw");
-		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+		const stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
 		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		if (notif.args._private) {
 			//you drew the card
@@ -7193,7 +7196,7 @@ class DaleOfMerchants extends Gamegui
 	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
 		console.warn("notif_drawMultiple");
 		console.warn(notif.args);
-		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
+		const stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
 		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		console.warn(deck.size);
 		if (notif.args._private) {
