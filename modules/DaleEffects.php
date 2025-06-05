@@ -124,10 +124,10 @@ class DaleEffects {
 
     /**
      * Applies all card modifications to calculate the additional cost card in the market (CT_SCARYGUNFIGHT only)
+     * @param mixed $player_id the player that attempts to make a purchase
      */
-    function getAdditionalCost() {
+    function getAdditionalCost(mixed $player_id) {
         $additional_cost = 0;
-        $player_id = $this->game->getActivePlayerId();
         foreach ($this->cache as $row) {
             if ($row["effect_class"] == EC_GLOBAL) {
                 switch($row["type_id"]) {

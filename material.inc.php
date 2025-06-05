@@ -325,6 +325,11 @@ if (!defined('CLOCK_DAWN')) {
 //define constants for Mono
 if (!defined('MONO_PLAYER_ID')) {
     define('MONO_PLAYER_ID', 1);
+
+    define('MONO_TECHNIQUE_NONE', 0);
+    define('MONO_TECHNIQUE_AQUIRE', 1);
+    define('MONO_TECHNIQUE_NO_AQUIRE', 2);
+    define('MONO_TECHNIQUE_NO_PLUS', 3);
 }
 
 //automatically resolve these choiceless triggers if they are the only one that needs to be resolved

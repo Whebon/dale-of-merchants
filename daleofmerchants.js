@@ -11007,7 +11007,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var _i = 0, _b = notif.args.card_ids; _i < _b.length; _i++) {
                 var id = _b[_i];
                 var card = notif.args.cards[id];
-                console.log(card);
                 this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
                 delay += 75;
             }
@@ -11320,7 +11319,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.mono_hand_is_visible = false;
             var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             if (this.myLimbo.count() > sortedCards.length) {
-                throw new Error("Invariant Error: client says Mono's hand size is ".concat(this.myLimbo.count(), ", server says its ").concat(sortedCards.length));
+                throw new Error("Invariant Error: Mono's hand size. Client says it's ".concat(this.myLimbo.count(), ", server says it's ").concat(sortedCards.length));
             }
             for (var i in sortedCards) {
                 var card = sortedCards[i];

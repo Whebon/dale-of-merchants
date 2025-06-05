@@ -7052,7 +7052,6 @@ class DaleOfMerchants extends Gamegui
 		let delay = 0;
 		for (let id of notif.args.card_ids) {
 			let card = notif.args.cards[id]!;
-			console.log(card);
 			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
 			delay += 75; //delay indicates that ordering matters
 		}
@@ -7449,7 +7448,7 @@ class DaleOfMerchants extends Gamegui
 		this.mono_hand_is_visible = false;
 		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		if (this.myLimbo.count() > sortedCards.length) {
-			throw new Error(`Invariant Error: client says Mono's hand size is ${this.myLimbo.count()}, server says its ${sortedCards.length}`);
+			throw new Error(`Invariant Error: Mono's hand size. Client says it's ${this.myLimbo.count()}, server says it's ${sortedCards.length}`);
 		}
 		for (let i in sortedCards) {
 			let card = sortedCards[i]!;

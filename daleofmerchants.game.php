@@ -352,6 +352,14 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * @return bool indicating if mono has more stacks than the human player (solo-mode only)
+     */
+    function monoHasMostStacks() {
+        $player_id = $this->getActivePlayerId();
+        return $this->cards->getNextStackIndex(MONO_PLAYER_ID) > $this->cards->getNextStackIndex($player_id);
+    }
+
+    /**
      * Automatically execute an entire turn for Mono
      */
     function monoTurnStart() {
@@ -360,13 +368,58 @@ class DaleOfMerchants extends DaleTableBasic
         $this->obtainStoredCards(MONO_PLAYER_ID);
         $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
         $this->monoResolveCards(TRIGGER_ONTURNSTART);
-        $aquire = false;
-        if ($aquire) {
-            $this->monoMarketAction() || $this->monoStallAction();
+        $technique_result = $this->monoPlayTechnique();
+
+        switch($technique_result) {
+            case MONO_TECHNIQUE_NONE:
+                $msg = clienttranslate('${player_name} didn\'t play a card, so it prioritises the stall action');
+                $technique_result = MONO_TECHNIQUE_NO_AQUIRE;
+                break;
+            case MONO_TECHNIQUE_NO_AQUIRE:
+                $msg = clienttranslate('${player_name} played a card without the <strong>acquire</strong> keyword, so it prioritises the stall action');
+                break;
+            case MONO_TECHNIQUE_AQUIRE:
+                if ($this->monoHasMostStacks()) {
+                    $msg = clienttranslate('${player_name} played a card with the <strong>acquire</strong> keyword and it has more stacks than you, so it prioritises the market action');
+                }
+                else {
+                    $msg = clienttranslate('${player_name} played a card with the <strong>acquire</strong> keyword but it\'s behind you in stacks, so it prioritises the stall action');
+                    $technique_result = MONO_TECHNIQUE_NO_AQUIRE;
+                }
+                break;
+            case MONO_TECHNIQUE_NO_PLUS:
+                $msg = '';
+                break;
         }
-        else {
-            $this->monoStallAction() || $this->monoMarketAction();
+        $this->notifyAllPlayers('message', $msg, array(
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+        ));
+
+        if ($technique_result == MONO_TECHNIQUE_AQUIRE) {
+            if (!$this->monoMarketAction()) {
+                $this->notifyAllPlayers('message', clienttranslate('${player_name} failed to purchase, so it now tries to build'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                ));
+                if (!$this->monoStallAction()) {
+                    $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to build') , array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                    ));
+                }
+            }
         }
+        else if ($technique_result == MONO_TECHNIQUE_NO_AQUIRE) {
+            if (!$this->monoStallAction()) {
+                $this->notifyAllPlayers('message', clienttranslate('${player_name} failed to build, so it now tries to purchase') , array(
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                ));
+                if (!$this->monoMarketAction()) {
+                    $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to purchase') , array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                    ));
+                }
+            }
+        }
+        $this->monoDiscardJunk();
         $this->monoHideHand();
         $this->monoCleanUpPhase();
     }
@@ -376,6 +429,17 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoResolveCards($trigger) {
         $this->showDebugMessage("monoResolveCards");
+    }
+
+    /**
+     * @return int representing the result of playing Mono card techniques.
+     * * `MONO_TECHNIQUE_NONE` if Mono didn't play a card.
+     * * `MONO_TECHNIQUE_AQUIRE` if Mono played a card with a "plus", and "aquire".
+     * * `MONO_TECHNIQUE_NO_AQUIRE` if Mono played a card with a "plus", but without "aquire".
+     * * `MONO_TECHNIQUE_NO_PLUS` if Mono played a card without a "plus".
+     */
+    function monoPlayTechnique(): int {
+        return MONO_TECHNIQUE_NONE;
     }
 
     /**
@@ -406,7 +470,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Notify players about the complete build
-        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
+        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1} with as few cards as possible'), array(
             "player_id" => MONO_PLAYER_ID,
             "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
             "stack_index_plus_1" => $stack_index + 1,
@@ -440,7 +504,7 @@ class DaleOfMerchants extends DaleTableBasic
         $market_cards = $this->sortCardsByLocationArg($market_cards_unsorted, false);
 
         foreach ($market_cards as $market_card) {
-            $cost = $this->getCost($market_card);
+            $cost = $this->getCost(MONO_PLAYER_ID, $market_card);
             $fund_cards = $this->monoPickCardsOfValue($hand_cards, $cost-$total_coins);
             if ($fund_cards !== null) {
                 //pay coin funds
@@ -448,6 +512,9 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->spendCoins(MONO_PLAYER_ID, $remaining_cost);
                 //discard card funds
                 $fund_card_ids = $this->toCardIds($fund_cards);
+                $this->notifyAllPlayers('message', clienttranslate('${player_name} purchases the leftmost card it can afford with as few cards as possible'), array(
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                ));
                 $this->cards->moveCardsOnTop($fund_card_ids, DISCARD.MONO_PLAYER_ID);
                 $this->notifyAllPlayers('discardMultiple', clienttranslate('${player_name} pays with ${nbr} card(s)'), array(
                     'player_id' => MONO_PLAYER_ID,
@@ -458,13 +525,14 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 //obtain the market card
                 $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name}'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name} for ${cost}'), array (
                     'player_id' => MONO_PLAYER_ID,
                     'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                     'card_name' => $this->getCardName($market_card),
                     'extended_card_name' => $this->getCardNameExt($market_card),
                     'market_card_id' => $market_card["id"],
-                    'pos' => $market_card["location_arg"]
+                    'pos' => $market_card["location_arg"],
+                    'cost' => $cost
                 ));
                 return true;
             }
@@ -489,6 +557,28 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers('monoShowHand', '', array(
             "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
         ));
+    }
+
+    /**
+     * Discard any junk left in Mono's hand
+     */
+    function monoDiscardJunk() {
+        $this->showDebugMessage("monoDiscardJunk");
+        $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        $junk_ids = array();
+        $junk_cards = array();
+        foreach ($dbcards as $dbcard) {
+            if ($this->isJunk($dbcard)) {
+                $junk_ids[] = (int)$dbcard["id"];
+                $junk_cards[$dbcard["id"]] = $dbcard;
+            }
+        }
+        $this->discardMultiple(
+            clienttranslate('${player_name} discards ${nbr} junk left in its hand'),
+            MONO_PLAYER_ID,
+            $junk_ids,
+            $junk_cards
+        );
     }
 
     /**
@@ -1278,7 +1368,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.$player_id);
             $this->notifyAllPlayers('discardMultiple', '', array (
                 'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
                 'card_ids' => $unordered_card_ids,
                 'cards' => $unordered_cards,
                 'nbr' => $nbr_unordered_cards,
@@ -1288,11 +1378,11 @@ class DaleOfMerchants extends DaleTableBasic
         }
         
         //2: move the ordered cards to the discard pile
-        if ($cards) {
+        if ($cards && count($cards) > 0) {
             $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
             $this->notifyAllPlayers('discardMultiple', '', array (
                 'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
                 'card_ids' => $card_ids,
                 'cards' => $cards,
                 'nbr' => count($cards),
@@ -1304,7 +1394,7 @@ class DaleOfMerchants extends DaleTableBasic
         //only leave a single log message to the players
         $this->notifyAllPlayers('message', $msg, array (
             'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'nbr' => count($cards) + $nbr_unordered_cards,
         ));
     }
@@ -1756,15 +1846,16 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Returns the effective cost of a given dbcard. Asserts that the card is at the market.
+     * @param mixed $player_id the player that attempts to make a purchase
      * @param array $dbcard card to calculate the cost of
     */
-    function getCost(array $dbcard) {
+    function getCost(mixed $player_id, array $dbcard) {
         $type_id = $this->getTypeId($dbcard);
         $base_cost = $this->card_types[$type_id]['value'];
         if ($dbcard['location'] != MARKET) {
             return $base_cost;
         }
-        return $base_cost + $dbcard['location_arg'] + $this->effects->getAdditionalCost();
+        return $base_cost + $dbcard['location_arg'] + $this->effects->getAdditionalCost($player_id);
     }
 
     /**
@@ -3847,7 +3938,7 @@ class DaleOfMerchants extends DaleTableBasic
                 throw new BgaUserException($this->_("To purchase from the bin, 'Market Discovery' must be included in the funds"));
             }
         }
-        $cost = $this->getCost($market_card);
+        $cost = $this->getCost($player_id, $market_card);
 
         //Verify the cost
         $this->verifyCost($player_id, $funds_cards, $cost, null, true);
@@ -3901,22 +3992,24 @@ class DaleOfMerchants extends DaleTableBasic
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
         if ($from_bin) {
-            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${extended_card_name}'), array (
+            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
                 'extended_card_name' => $this->getCardNameExt($market_card),
                 'card' => $market_card,
+                'cost' => $cost
             ));
         }
         else {
-            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name}'), array (
+            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
                 'extended_card_name' => $this->getCardNameExt($market_card),
                 'market_card_id' => $market_card_id,
-                'pos' => $market_card["location_arg"]
+                'pos' => $market_card["location_arg"],
+                'cost' => $cost
             ));
         }
 
@@ -3953,13 +4046,13 @@ class DaleOfMerchants extends DaleTableBasic
             //purchase the additional market card
             $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
             $this->cards->moveCard($market_card_id, HAND.$player_id);
-            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought a ${extended_card_name}'), array(
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought a ${extended_card_name} for free'), array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
                 'extended_card_name' => $this->getCardNameExt($market_card),
                 'market_card_id' => $market_card_id,
-                'pos' => $market_card["location_arg"],
+                'pos' => $market_card["location_arg"]
             ));
         }
 
