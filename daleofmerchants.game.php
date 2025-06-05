@@ -268,6 +268,33 @@ class DaleOfMerchants extends DaleTableBasic
 ////////////    
 
     /**
+     * Remove all mono cards from the player hand
+     * @param ?array $hand_dbcards (optional) if provided, skip fetching cards from the db and use these instead. This may be a subset of the hand cards. 
+     */
+    function removeMonoCardsFromPlayerHand(?array $hand_dbcards = null) {
+        if (!$this->isSoloGame()) {
+            return;
+        }
+        $player_id = $this->getActivePlayerId();
+        if ($hand_dbcards === null) {
+            $hand_dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
+        }
+        foreach($hand_dbcards as $dbcard) {
+            if ($this->isMonoCard($dbcard)) {
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MONO_PLAYER_ID);
+                $this->notifyAllPlayers('discard', clienttranslate('${player_name} places ${card_name} back on ${opponent_name}\'s discard pile'), array(
+                    "player_id" => $player_id,
+                    "discard_id" => MONO_PLAYER_ID,
+                    "card" => $dbcard,
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "card_name" => $this->getCardName($dbcard)
+                ));
+            }
+        }
+    }
+
+    /**
      * @return int `getPlayersNumber`, but also counts "Mono" in a solo-game
      */
     function getPlayersNumberInclMono(): int {
@@ -323,70 +350,6 @@ class DaleOfMerchants extends DaleTableBasic
         }
         return $this->getPlayerNameById($player_id);
     }
-
-    
-    //TODO: safely remove this
-    // /**
-    //  * Continue Mono's turn from the specified phase
-    //  * @param int $phase phase id constant of the form `MONO_PHASE_<...>`.
-    //  * @param int $arg additional argument for the phase
-    //  */
-    // function monoContinueFromPhase(int $phase, int $arg) {
-    //     switch($phase) {
-    //         case MONO_PHASE_TURN_START:
-    //             $this->monoTurnStart();
-    //             break;
-    //         default:
-    //             throw new BgaVisibleSystemException("Mono Phase ".$phase." does not exist");
-    //             break;
-    //     }
-    // }
-    // /**
-    //  * Signal the wish to enter Mono's next phase.
-    //  * @param int $phase phase id constant of the form `MONO_PHASE_<...>`.
-    //  * @param int $arg additional argument for the phase
-    //  * @return bool true if a player input is required to 
-    //  */
-    // function monoPhaseRequiresPlayerInput(int $phase, ?int $arg = null) {
-    //     $this->mono_phases_until_player_input -= 1;
-    //     if ($this->mono_phases_until_player_input > 0) {
-    //         return false;
-    //     }
-    //     $this->setGameStateValue("mono_phase", $phase);
-    //     if ($arg !== null) {
-    //         $this->setGameStateValue("mono_phase_arg", $arg);
-    //     }
-    //     return true;
-    // }
-    // function argMonoDescription() {
-    //     function argPlayerTurn()  {
-    //         return [
-    //             'i18n' => ['mono_description' ],
-    //             'mono_description' => ($description), // this should be defined in material.inc.php and with clienttranslate 
-    //             'terrain' => $terrain,
-    //         ];
-    //     }
-    // }
-    // function stMonoTurn() {
-    //     if ($this->userPreferences->get($this->getActivePlayerId(), 102) == 0) {
-    //         $this->mono_phases_until_player_input = 1;
-    //     }
-    //     else {
-    //         $this->mono_phases_until_player_input = 1000;
-    //     }
-    //     $this->monoTurnStart();
-    // }
-    // /**
-    //  * If true, automatically skip all mono passes
-    //  */
-    // var int $mono_phases_until_player_input;
-    // function actMonoNext() {
-    //     $this->checkAction("actMonoNext");
-    //     $phase = $this->getGameStateValue("mono_phase");
-    //     $arg = $this->getGameStateValue("mono_phase_arg");
-    //     $this->monoContinueFromPhase($phase, $arg);
-    //     $this->monoTurnStart();
-    // }
 
     /**
      * Automatically execute an entire turn for Mono
@@ -1097,6 +1060,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "deck_player_id" => $from_player_id,
                     "to_limbo" => $to_limbo
                 ), $msg_args), $private_message);
+                $this->removeMonoCardsFromPlayerHand(array($card));
                 return 1;
             }
             return 0;
@@ -1116,6 +1080,7 @@ class DaleOfMerchants extends DaleTableBasic
                 "deck_player_id" => $from_player_id,
                 "to_limbo" => $to_limbo
             ), $msg_args), $private_message);
+            $this->removeMonoCardsFromPlayerHand($cards);
             return $actual_nbr;
         }
     }
@@ -2896,6 +2861,7 @@ class DaleOfMerchants extends DaleTableBasic
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
+        $this->removeMonoCardsFromPlayerHand(); //covers hand/market/deck/discard to hand effects
 
         //get card information about the card before chameleon effects expire
         $type_id = $this->getTypeId($technique_card);
@@ -8729,6 +8695,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
         $hasDrawnCards = $this->refillHand($player_id, $isPostCleanUpPhase);
+        $this->removeMonoCardsFromPlayerHand();
 
         //3. check for post clean-up phase
         if ($hasDrawnCards || !$isPostCleanUpPhase) {
@@ -8878,6 +8845,15 @@ class DaleOfMerchants extends DaleTableBasic
                 "card_name" => $this->getCardName($card)
             )
         ), clienttranslate('Dirty Exchange: ${player_name} takes a ${card_name} from ${opponent_name}'));
+        $this->removeMonoCardsFromPlayerHand(array($card));
+        if ($this->isSoloGame() && $this->cards->countCardInLocation(HAND.$player_id) == 0) {
+            //player is unable to give back a card
+            $this->notifyAllPlayers('message', clienttranslate('Dirty Exchange: ${player_name} is unable to give back a card'), array(
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id)
+            ));
+            $this->fullyResolveCard($player_id);
+            return;
+        }
     }
 
     function stSabotage() {
