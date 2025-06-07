@@ -102,6 +102,12 @@
 #player_name_1 a {
   pointer-events: none;
 }
+#player_name_1 .daleofmerchants-icon {
+  top: -1px;
+  width: 20px;
+  height: 20px;
+  z-index: 1;
+}
 
 .daleofmerchants-component-name {
   text-align: center;

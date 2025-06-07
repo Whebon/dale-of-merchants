@@ -471,6 +471,14 @@ class DaleOfMerchants extends Gamegui
 			avatar.classList.add("daleofmerchants-mono-avatar");
 			this.updateTagName(avatar, "div");
 		}
+		//TODO: enable a toggle for preference 102 (automate Mono's turn) in Mono's panel
+		// const name = $(`player_name_${mono.id}`);
+		// if (name) {
+		// 	const icon = DaleIcons.getResetFiltersEnabledIcon();
+		// 	icon.id = "daleofmerchants-mono-automatic";
+		// 	name.insertAdjacentHTML('beforeend', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
+		// 	this.addTooltip(icon.id, _("Mono's turn is automatic"), '');
+		// }
 	}
 
 	/**
