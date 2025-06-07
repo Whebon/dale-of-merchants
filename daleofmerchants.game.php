@@ -510,7 +510,7 @@ class DaleOfMerchants extends DaleTableBasic
                 else {
                     //fizzle
                     $this->notifyAllPlayers('message', clienttranslate('Loyal Member: ${player_name} fails to take a card from the market'), array(
-                        "card_name" => $this->getCardName($technique_card)
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
                 }
                 break;
