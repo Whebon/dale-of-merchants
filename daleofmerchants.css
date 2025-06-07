@@ -99,6 +99,10 @@
   background-position-y: 17.4%;
 }
 
+#player_name_1 a {
+  pointer-events: none;
+}
+
 .daleofmerchants-component-name {
   text-align: center;
   margin: 10px;
