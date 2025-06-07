@@ -2729,12 +2729,16 @@ class DaleOfMerchants extends Gamegui
 	 * Same as `setMainTitle`, but uses args
 	 * Code copied from https://studio.boardgamearena.com/doc/BGA_Studio_Cookbook
 	 * @param text new string to display at the main title
+	 * @param args (optional) additional arguments to use in the template
 	 */
-	setDescriptionOnMyTurn(text: string) {
+	setDescriptionOnMyTurn(text: string, args?: object) {
 		this.gamedatas.gamestate.descriptionmyturn = text;
 		var tpl = dojo.clone(this.gamedatas.gamestate.args) as any;
 		if (tpl === null) {
 			tpl = {};
+		}
+		if (args !== null) {
+			tpl = { ...tpl, ...args };
 		}
 		var title = "";
 		if (this.isCurrentPlayerActive() && text !== null) {
@@ -6470,8 +6474,8 @@ class DaleOfMerchants extends Gamegui
 			['accidentTakeBack', 					500, true],
 			['cunningNeighbourWatch', 				500, true],
 			['cunningNeighbourReturn', 				500, true],
-			['monoShowHand', 						1500], //extra long delay: let the player predict what will happen
-			['monoHideHand', 						750],
+			['monoShowHand', 						500],
+			['monoHideHand', 						500],
 			['tossFromDiscard', 					500],
 			['tossFromDeck', 						500],
 			['tossFromMarketDeck', 					500],
@@ -6515,6 +6519,13 @@ class DaleOfMerchants extends Gamegui
 					return isPublic && alreadyReceivedPrivate;
 				});
 			}
+		});
+
+		//auto-plug all 'promise_notif_' notifications
+		this.bgaSetupPromiseNotifications({
+			prefix: 'promise_notif_',
+			minDuration: 1,
+			minDurationNoText: 1
 		});
 		
 		console.warn( 'notifications subscriptions setup done' );
@@ -7729,6 +7740,24 @@ class DaleOfMerchants extends Gamegui
 		else {
 			throw new Error(`Unknown argument ${notif.args.arg}`)
 		}	
+	}
+
+	///////////////////////////////////////////////////
+	//// Promise notifications (these notifications are auto-plugged using the new bgaSetupPromiseNotifications system)
+
+	async promise_notif_monoConfirmAction(args: NotifTypes['monoConfirmAction']){
+		console.warn("monoConfirmAction", args);
+		await new Promise<void>(resolve => {
+			this.removeActionButtons();
+			this.setDescriptionOnMyTurn(args.msg, args);
+			dojo.removeClass("ebd-body", "lockedInterface");
+			this.addActionButton("mono-confirm-action-button", _("Confirm"), () => {
+				this.removeActionButtons();
+				this.restoreMainTitle();
+				dojo.addClass("ebd-body", "lockedInterface");
+				resolve();
+			});
+		});
 	}
 
 	///////////////////////////////////////////////////

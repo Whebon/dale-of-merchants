@@ -373,7 +373,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         switch($technique_result) {
             case MONO_TECHNIQUE_NONE:
-                $msg = clienttranslate('${player_name} didn\'t play a card, so it prioritises the stall action');
+                $msg = clienttranslate('${player_name} can\'t play a card, so it prioritises the stall action');
                 $technique_result = MONO_TECHNIQUE_NO_ACQUIRE;
                 break;
             case MONO_TECHNIQUE_NO_ACQUIRE:
@@ -395,15 +395,11 @@ class DaleOfMerchants extends DaleTableBasic
                 throw new BgaVisibleSystemException("Unexpected return value from monoPlayTechnique()");
                 break;
         }
-        $this->notifyAllPlayers('message', $msg, array(
-            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
-        ));
+        $this->monoConfirmAction($msg);
 
         if ($technique_result == MONO_TECHNIQUE_ACQUIRE) {
             if (!$this->monoMarketAction()) {
-                $this->notifyAllPlayers('message', clienttranslate('${player_name} failed to purchase, so it now tries to build'), array(
-                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
-                ));
+                $this->monoConfirmAction('${player_name} failed to purchase, so it now tries to build');
                 if (!$this->monoStallAction()) {
                     $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to build') , array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
@@ -413,9 +409,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         else if ($technique_result == MONO_TECHNIQUE_NO_ACQUIRE) {
             if (!$this->monoStallAction()) {
-                $this->notifyAllPlayers('message', clienttranslate('${player_name} failed to build, so it now tries to purchase') , array(
-                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
-                ));
+                $this->monoConfirmAction('${player_name} failed to build, so it now tries to purchase');
                 if (!$this->monoMarketAction()) {
                     $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to purchase') , array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
@@ -426,6 +420,25 @@ class DaleOfMerchants extends DaleTableBasic
         $this->monoDiscardJunk();
         $this->monoHideHand();
         $this->monoCleanUpPhase();
+    }
+    
+    /**
+     * Mono is about the take an action, let the player press the confirm button
+     */
+    function monoConfirmAction($msg) {
+        $automatic = $this->userPreferences->get($this->getActivePlayerId(), 102) == 1;
+        if ($automatic) {
+            $this->notifyAllPlayers('message', $msg, array(
+                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('monoConfirmAction', $msg, array(
+                "msg" => $msg,
+                "i18n" => array("msg"),
+                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+            ));
+        }
     }
 
     /**
@@ -457,6 +470,9 @@ class DaleOfMerchants extends DaleTableBasic
         if ($technique_card == null) {
             return MONO_TECHNIQUE_NONE;
         }
+
+        //confirm
+        $this->monoConfirmAction(clienttranslate('${player_name} plays its leftmost Mono card'));
 
         //resolve the technique
         $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);

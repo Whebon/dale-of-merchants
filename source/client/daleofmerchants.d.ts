@@ -393,6 +393,10 @@ declare global {
 			player_id: number,
 			card_id: number
 		}
+		'monoConfirmAction': {
+			msg: string,
+			opponent_name: string
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
