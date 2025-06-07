@@ -145,6 +145,7 @@ declare global {
 		'monoShowHand': {
 			cards: {[card_id: number]: DbCard}
 		}
+		'instant_monoHideHand': {}
 		'monoHideHand': {
 			cards: {[card_id: number]: DbCard}
 		}
@@ -394,8 +395,12 @@ declare global {
 			card_id: number
 		}
 		'monoConfirmAction': {
-			msg: string,
-			opponent_name: string
+			description: string, //main title description
+			opponent_name: string,
+			highlight_limbo_cards?: {[card_id: number]: DbCard},
+			highlight_market_pos?: number
+			wrap_class?: DaleWrapClass
+			automatic?: boolean
 		}
 	}
 

@@ -369,7 +369,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->obtainStoredCards(MONO_PLAYER_ID);
         $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
         $this->monoResolveCards(TRIGGER_ONTURNSTART);
-        $technique_result = $this->monoPlayTechnique();
+        $technique_result = $this->monoPlayTechnique(clienttranslate('${player_name} plays its leftmost Mono card'));
 
         switch($technique_result) {
             case MONO_TECHNIQUE_NONE:
@@ -395,12 +395,11 @@ class DaleOfMerchants extends DaleTableBasic
                 throw new BgaVisibleSystemException("Unexpected return value from monoPlayTechnique()");
                 break;
         }
-        $this->monoConfirmAction($msg);
-
+        
         if ($technique_result == MONO_TECHNIQUE_ACQUIRE) {
-            if (!$this->monoMarketAction()) {
-                $this->monoConfirmAction('${player_name} failed to purchase, so it now tries to build');
-                if (!$this->monoStallAction()) {
+            if (!$this->monoMarketAction($msg)) {
+                $msg = clienttranslate('${player_name} failed to purchase, so it now tries to build');
+                if (!$this->monoStallAction($msg)) {
                     $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to build') , array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
@@ -408,37 +407,42 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         else if ($technique_result == MONO_TECHNIQUE_NO_ACQUIRE) {
-            if (!$this->monoStallAction()) {
-                $this->monoConfirmAction('${player_name} failed to build, so it now tries to purchase');
-                if (!$this->monoMarketAction()) {
+            if (!$this->monoStallAction($msg)) {
+                $msg = clienttranslate('${player_name} failed to build, so it now tries to purchase');
+                if (!$this->monoMarketAction($msg)) {
                     $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to purchase') , array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
                 }
             }
         }
+        if ($this->getScore(MONO_PLAYER_ID) >= MAX_STACKS) {
+            return; //game ended
+        }
+        $this->refillMarket(true);
         $this->monoDiscardJunk();
         $this->monoHideHand();
-        $this->monoCleanUpPhase();
+        $this->refillHand(MONO_PLAYER_ID);
     }
     
     /**
      * Mono is about the take an action, let the player press the confirm button
+     * @param string $msg log message
+     * @param array $args (optional) - additional args to display in the notification
      */
-    function monoConfirmAction($msg) {
+    function monoConfirmAction(string $msg, array $args = array()) {
+        if ($msg == null | $msg == '') {
+            return;
+        }
+        if (!isset($args["description"])) {
+            $args["description"] = $msg; //this (typically shorter) description will be displayed in the main title bar
+        }
         $automatic = $this->userPreferences->get($this->getActivePlayerId(), 102) == 1;
-        if ($automatic) {
-            $this->notifyAllPlayers('message', $msg, array(
-                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
-            ));
-        }
-        else {
-            $this->notifyAllPlayers('monoConfirmAction', $msg, array(
-                "msg" => $msg,
-                "i18n" => array("msg"),
-                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
-            ));
-        }
+        $this->notifyAllPlayers('monoConfirmAction', $msg, array_merge($args, array(
+            "i18n" => array("description"),
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+            "automatic" => $automatic
+        ), $args));
     }
 
     /**
@@ -449,13 +453,14 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * @param string $msg display this message in monoConfirmAction
      * @return int representing the result of playing Mono card techniques.
      * * `MONO_TECHNIQUE_NONE` if Mono didn't play a card.
      * * `MONO_TECHNIQUE_ACQUIRE` if Mono played a card with a "plus", and "acquire".
      * * `MONO_TECHNIQUE_NO_ACQUIRE` if Mono played a card with a "plus", but without "acquire".
      * * `MONO_TECHNIQUE_NO_PLUS` if Mono played a card without a "plus".
      */
-    function monoPlayTechnique(): int {
+    function monoPlayTechnique($msg): int {
         //get the leftmost mono card
         $unsorted_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
         $dbcards = $this->sortCardsByLocationArg($unsorted_dbcards, false);
@@ -471,8 +476,11 @@ class DaleOfMerchants extends DaleTableBasic
             return MONO_TECHNIQUE_NONE;
         }
 
-        //confirm
-        $this->monoConfirmAction(clienttranslate('${player_name} plays its leftmost Mono card'));
+        //Confirm action
+        $this->monoConfirmAction($msg, array(
+            "highlight_limbo_cards" => array($technique_card),
+            "wrap_class" => "daleofmerchants-wrap-technique"
+        ));
 
         //resolve the technique
         $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);
@@ -501,9 +509,10 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Automatically executes a stall action for Mono
+     * @param string $msg display this message in monoConfirmAction
      * @return bool indicating if the action was successful
      */
-    function monoStallAction(): bool {
+    function monoStallAction(string $msg): bool {
         $this->showDebugMessage("monoStallAction");
 
         //Get the minimum stack value (simplified enforceValidStack)
@@ -523,8 +532,21 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Mono failed to build
         if ($hand_cards == null) {
+            $this->monoConfirmAction($msg, array(
+                "wrap_class" => "daleofmerchants-wrap-build",
+                "description" => '${player_name} fails to build stack ${stack_index_plus_1}',
+                "stack_index_plus_1" => $stack_index + 1
+            ));
             return false;
         }
+
+        //Confirm action
+        $this->monoConfirmAction($msg, array(
+            "highlight_limbo_cards" => $hand_cards,
+            "wrap_class" => "daleofmerchants-wrap-build",
+            "description" => '${player_name} builds stack ${stack_index_plus_1}',
+            "stack_index_plus_1" => $stack_index + 1
+        ));
 
         //Notify players about the complete build
         $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1} with as few cards as possible'), array(
@@ -549,9 +571,10 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Automatically executes a market action for Mono
+     * @param string $msg display this message in monoConfirmAction
      * @return bool indicating if the action was successful
      */
-    function monoMarketAction(): bool {
+    function monoMarketAction(string $msg): bool {
         $this->showDebugMessage("monoMarketAction");
 
         //fetch information from the db
@@ -564,6 +587,14 @@ class DaleOfMerchants extends DaleTableBasic
             $cost = $this->getCost(MONO_PLAYER_ID, $market_card);
             $fund_cards = $this->monoPickCardsOfValue($hand_cards, $cost-$total_coins);
             if ($fund_cards !== null) {
+                //confirm action
+                $this->monoConfirmAction($msg, array(
+                    "highlight_limbo_cards" => array_reverse($fund_cards),
+                    "highlight_market_pos" => $market_card["location_arg"],
+                    "wrap_class" => "daleofmerchants-wrap-purchase",
+                    "description" => '${player_name} purchases a ${card_name}',
+                    "card_name" => $this->getCardName($market_card)
+                ));
                 //pay coin funds
                 $remaining_cost = max(0, $cost - $this->getValueSum($fund_cards));
                 $this->spendCoins(MONO_PLAYER_ID, $remaining_cost);
@@ -594,6 +625,10 @@ class DaleOfMerchants extends DaleTableBasic
                 return true;
             }
         }
+        $this->monoConfirmAction($msg, array(
+            "wrap_class" => "daleofmerchants-wrap-purchase",
+            "description" => '${player_name} fails to purchase'
+        ));
         return false;
     }
 
@@ -604,6 +639,7 @@ class DaleOfMerchants extends DaleTableBasic
     function monoDiscardJunk() {
         $this->showDebugMessage("monoDiscardJunk");
         $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        $dbcards = $this->sortCardsByLocationArg($dbcards, false);
         $junk_ids = array();
         $junk_cards = array();
         foreach ($dbcards as $dbcard) {
@@ -612,21 +648,16 @@ class DaleOfMerchants extends DaleTableBasic
                 $junk_cards[$dbcard["id"]] = $dbcard;
             }
         }
+        $this->monoConfirmAction(clienttranslate('${player_name} discards any junk left in its hand'), array(
+            "highlight_limbo_cards" => $this->sortCardsByLocationArg($junk_cards, true),
+            "wrap_class" => "daleofmerchants-wrap-discard"
+        ));
         $this->discardMultiple(
-            clienttranslate('${player_name} discards ${nbr} junk left in its hand'),
+            '',
             MONO_PLAYER_ID,
             $junk_ids,
             $junk_cards
         );
-    }
-
-    /**
-     * Automatically executes a clean-up phase for Mono
-     */
-    function monoCleanUpPhase() {
-        $this->showDebugMessage("monoCleanUpPhase");
-        $this->refillMarket(true);
-        $this->refillHand(MONO_PLAYER_ID);
     }
 
     /** Boolean that indicates if Mono's hand is currently open information*/
@@ -649,8 +680,9 @@ class DaleOfMerchants extends DaleTableBasic
     function monoHideHand() {
         $this->showDebugMessage("monoHideHand");
         $this->mono_hand_is_visible = false;
-        $this->notifyAllPlayers('monoHideHand', '', array(
-            "cards" => $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID)
+        $cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        $this->notifyAllPlayers(count($cards) == 0 ? 'instant_monoHideHand' : 'monoHideHand', '', array(
+            "cards" => $cards
         ));
     }
 

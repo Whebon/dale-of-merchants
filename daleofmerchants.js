@@ -10568,6 +10568,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['cunningNeighbourWatch', 500, true],
                 ['cunningNeighbourReturn', 500, true],
                 ['monoShowHand', 500],
+                ['instant_monoHideHand', 1],
                 ['monoHideHand', 500],
                 ['tossFromDiscard', 500],
                 ['tossFromDeck', 500],
@@ -11372,13 +11373,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.myLimbo.enableSortItems = false;
             this.mono_hand_is_visible = true;
-            this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
+            this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Mono's hand"));
             var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             for (var i in sortedCards) {
                 var card = sortedCards[i];
                 this.myLimbo.addDaleCardToStock(DaleCard_10.DaleCard.of(card), "overall_player_board_" + this.unique_opponent_id);
             }
             this.movePlayAreaOnTop(this.unique_opponent_id);
+        };
+        DaleOfMerchants.prototype.notif_instant_monoHideHand = function (notif) {
+            this.notif_monoHideHand(notif);
         };
         DaleOfMerchants.prototype.notif_monoHideHand = function (notif) {
             console.warn("notif_monoHideHand", notif.args);
@@ -11628,8 +11632,36 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         case 0:
                             console.warn("monoConfirmAction", args);
                             return [4, new Promise(function (resolve) {
+                                    if (args.highlight_market_pos !== undefined) {
+                                        _this.market.setSelected(args.highlight_market_pos);
+                                    }
+                                    if (args.wrap_class !== undefined) {
+                                        var icon = undefined;
+                                        switch (args.wrap_class) {
+                                            case 'daleofmerchants-wrap-build':
+                                                icon = 'build';
+                                                break;
+                                            case 'daleofmerchants-wrap-purchase':
+                                                icon = 'pileYellow';
+                                                break;
+                                            case 'daleofmerchants-wrap-discard':
+                                                icon = 'pileRed';
+                                                break;
+                                        }
+                                        _this.myLimbo.setSelectionMode('none', icon, args.wrap_class, _("Mono's hand"), undefined, Infinity);
+                                    }
+                                    if (args.highlight_limbo_cards !== undefined) {
+                                        for (var card_id in args.highlight_limbo_cards) {
+                                            var dbcard = args.highlight_limbo_cards[card_id];
+                                            _this.myLimbo.selectItem(+dbcard.id);
+                                        }
+                                    }
+                                    if (args.automatic) {
+                                        resolve();
+                                        return;
+                                    }
                                     _this.removeActionButtons();
-                                    _this.setDescriptionOnMyTurn(args.msg, args);
+                                    _this.setDescriptionOnMyTurn(args.description, args);
                                     dojo.removeClass("ebd-body", "lockedInterface");
                                     _this.addActionButton("mono-confirm-action-button", _("Confirm"), function () {
                                         _this.removeActionButtons();

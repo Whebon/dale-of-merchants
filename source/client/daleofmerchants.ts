@@ -38,6 +38,7 @@ import { CoinManager } from './components/CoinManager';
 import { PlayerClock } from './components/PlayerClock';
 import { PrivateNotification } from './components/types/PrivateNotification'
 import { TranslatableStrings } from './components/types/TranslatableStrings'
+import { SelectionIconType } from './components/SelectionIconType'
 
 /** The root for all of your game code. */
 class DaleOfMerchants extends Gamegui
@@ -6478,6 +6479,7 @@ class DaleOfMerchants extends Gamegui
 			['cunningNeighbourWatch', 				500, true],
 			['cunningNeighbourReturn', 				500, true],
 			['monoShowHand', 						500],
+			['instant_monoHideHand', 				1],
 			['monoHideHand', 						500],
 			['tossFromDiscard', 					500],
 			['tossFromDeck', 						500],
@@ -7467,13 +7469,17 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.myLimbo.enableSortItems = false; //important: this is needed to enable the left-to-right ordering! (on Mono's turn)
 		this.mono_hand_is_visible = true;
-		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-build', _("Mono's hand"));
+		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Mono's hand"));
 		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		for (let i in sortedCards) {
 			let card = sortedCards[i]!;
 			this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+this.unique_opponent_id);
 		}
 		this.movePlayAreaOnTop(this.unique_opponent_id);
+	}
+
+	notif_instant_monoHideHand(notif: NotifAs<'monoHideHand'>) {
+		this.notif_monoHideHand(notif);
 	}
 
 	notif_monoHideHand(notif: NotifAs<'monoHideHand'>) {
@@ -7752,8 +7758,36 @@ class DaleOfMerchants extends Gamegui
 	async promise_notif_monoConfirmAction(args: NotifTypes['monoConfirmAction']){
 		console.warn("monoConfirmAction", args);
 		await new Promise<void>(resolve => {
+			if (args.highlight_market_pos !== undefined) {
+				this.market!.setSelected(args.highlight_market_pos);
+			}
+			if (args.wrap_class !== undefined) {
+				let icon: SelectionIconType = undefined;
+				switch (args.wrap_class) {
+					case 'daleofmerchants-wrap-build':
+						icon = 'build';
+						break;
+					case 'daleofmerchants-wrap-purchase':
+						icon = 'pileYellow';
+						break;
+					case 'daleofmerchants-wrap-discard':
+						icon = 'pileRed';
+						break;
+				}
+				this.myLimbo.setSelectionMode('none', icon, args.wrap_class, _("Mono's hand"), undefined, Infinity);
+			}
+			if (args.highlight_limbo_cards !== undefined) {
+				for (let card_id in args.highlight_limbo_cards) {
+					const dbcard = args.highlight_limbo_cards[card_id]!
+					this.myLimbo.selectItem(+dbcard.id);
+				}
+			}
+			if (args.automatic) {
+				resolve();
+				return;
+			}
 			this.removeActionButtons();
-			this.setDescriptionOnMyTurn(args.msg, args);
+			this.setDescriptionOnMyTurn(args.description, args);
 			dojo.removeClass("ebd-body", "lockedInterface");
 			this.addActionButton("mono-confirm-action-button", _("Confirm"), () => {
 				this.removeActionButtons();
