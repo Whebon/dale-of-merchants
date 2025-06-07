@@ -1,6 +1,6 @@
 $this->card_types = array(
   0 => array(
-      'type_id' => CT_CARDBACK,
+      'type_id' => 0,
       'name' => clienttranslate("Cardback"),
       'text' => clienttranslate("No Text."),
       'type_displayed' => clienttranslate("Rubbish"),
@@ -16,7 +16,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   1 => array(
-      'type_id' => CT_JUNK,
+      'type_id' => 1,
       'name' => clienttranslate("Junk"),
       'text' => clienttranslate("This CARD cannot usually be included in a stack."),
       'type_displayed' => clienttranslate("Rubbish"),
@@ -32,7 +32,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   2 => array(
-      'type_id' => CT_JUNK,
+      'type_id' => 2,
       'name' => clienttranslate("Junk"),
       'text' => clienttranslate("This CARD cannot usually be included in a stack."),
       'type_displayed' => clienttranslate("Rubbish"),
@@ -48,7 +48,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   3 => array(
-      'type_id' => CT_JUNK,
+      'type_id' => 3,
       'name' => clienttranslate("Junk"),
       'text' => clienttranslate("This CARD cannot usually be included in a stack."),
       'type_displayed' => clienttranslate("Rubbish"),
@@ -64,7 +64,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   4 => array(
-      'type_id' => CT_JUNK,
+      'type_id' => 4,
       'name' => clienttranslate("Junk"),
       'text' => clienttranslate("This CARD cannot usually be included in a stack."),
       'type_displayed' => clienttranslate("Rubbish"),
@@ -80,7 +80,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   5 => array(
-      'type_id' => CT_JUNK,
+      'type_id' => 5,
       'name' => clienttranslate("Junk"),
       'text' => clienttranslate("This CARD cannot usually be included in a stack."),
       'type_displayed' => clienttranslate("Rubbish"),
@@ -96,7 +96,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   6 => array(
-      'type_id' => CT_SWIFTBROKER,
+      'type_id' => 6,
       'name' => clienttranslate("Swift Broker"),
       'text' => clienttranslate("Discard your hand. Draw as many CARDS3."),
       'type_displayed' => clienttranslate("Technique"),
@@ -112,7 +112,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   7 => array(
-      'type_id' => CT_COOKIES,
+      'type_id' => 7,
       'name' => clienttranslate("Cookies"),
       'text' => clienttranslate("At the end of your turn, draw 1 CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -128,7 +128,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   8 => array(
-      'type_id' => CT_SHATTEREDRELIC,
+      'type_id' => 8,
       'name' => clienttranslate("Shattered Relic"),
       'text' => clienttranslate("Toss 1 CARD. Draw 1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -144,7 +144,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   9 => array(
-      'type_id' => CT_SPYGLASS,
+      'type_id' => 9,
       'name' => clienttranslate("Spyglass"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of your deck and take 1 of them. You may reorder the rest."),
       'type_displayed' => clienttranslate("Technique"),
@@ -160,7 +160,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   10 => array(
-      'type_id' => CT_FLASHYSHOW,
+      'type_id' => 10,
       'name' => clienttranslate("Flashy Show"),
       'text' => clienttranslate("CARDS3 you use this turn get +1 to their value."),
       'type_displayed' => clienttranslate("Technique"),
@@ -176,7 +176,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   11 => array(
-      'type_id' => CT_FAVORITETOY,
+      'type_id' => 11,
       'name' => clienttranslate("Favorite Toy"),
       'text' => clienttranslate("Take the top CARD of your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -192,7 +192,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   12 => array(
-      'type_id' => CT_LOYALPARTNER,
+      'type_id' => 12,
       'name' => clienttranslate("Loyal Partner"),
       'text' => clienttranslate("Toss any CARDS3 in the market."),
       'type_displayed' => clienttranslate("Technique"),
@@ -208,7 +208,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   13 => array(
-      'type_id' => CT_PREPAIDGOOD,
+      'type_id' => 13,
       'name' => clienttranslate("Prepaid Good"),
       'text' => clienttranslate("Take 1 CARD from the market."),
       'type_displayed' => clienttranslate("Technique"),
@@ -224,7 +224,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   14 => array(
-      'type_id' => CT_ESSENTIALPURCHASE,
+      'type_id' => 14,
       'name' => clienttranslate("Essential Purchase"),
       'text' => clienttranslate("When purchased, toss 1-3 junk CARDS3 used in the purchase."),
       'type_displayed' => clienttranslate("Passive"),
@@ -240,7 +240,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   15 => array(
-      'type_id' => CT_GIFTVOUCHER,
+      'type_id' => 15,
       'name' => clienttranslate("Gift Voucher"),
       'text' => clienttranslate("Take 1 CARD from the market. Place this CARD in its place."),
       'type_displayed' => clienttranslate("Technique"),
@@ -256,7 +256,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   16 => array(
-      'type_id' => CT_SPECIALOFFER,
+      'type_id' => 16,
       'name' => clienttranslate("Special Offer"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of the supply and take 1 of them. Toss the rest."),
       'type_displayed' => clienttranslate("Technique"),
@@ -272,7 +272,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   17 => array(
-      'type_id' => CT_STOCKCLEARANCE,
+      'type_id' => 17,
       'name' => clienttranslate("Stock Clearance"),
       'text' => clienttranslate("CARDS3 in the market have +2 cost for this turn. Hand size +2 for this turn."),
       'type_displayed' => clienttranslate("Passive"),
@@ -288,7 +288,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   18 => array(
-      'type_id' => CT_WILYFELLOW,
+      'type_id' => 18,
       'name' => clienttranslate("Wily Fellow"),
       'text' => clienttranslate("Flip your deck and discard. Swap them. Shuffle your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -304,7 +304,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   19 => array(
-      'type_id' => CT_NUISANCE,
+      'type_id' => 19,
       'name' => clienttranslate("Nuisance"),
       'text' => clienttranslate("Discard 1 random CARD from 1-2 other players."),
       'type_displayed' => clienttranslate("Technique"),
@@ -320,7 +320,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   20 => array(
-      'type_id' => CT_ROTTENFOOD,
+      'type_id' => 20,
       'name' => clienttranslate("Rotten Food"),
       'text' => clienttranslate("Place 1 CARD on another player's deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -336,7 +336,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   21 => array(
-      'type_id' => CT_DIRTYEXCHANGE,
+      'type_id' => 21,
       'name' => clienttranslate("Dirty Exchange"),
       'text' => clienttranslate("Take 1 random CARD from another player. Give 1 CARD back."),
       'type_displayed' => clienttranslate("Technique"),
@@ -352,7 +352,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   22 => array(
-      'type_id' => CT_SABOTAGE,
+      'type_id' => 22,
       'name' => clienttranslate("Sabotage"),
       'text' => clienttranslate("Discard 2 CARDS2 from another player's deck. Toss 1 of them."),
       'type_displayed' => clienttranslate("Technique"),
@@ -368,7 +368,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   23 => array(
-      'type_id' => CT_TREASUREHUNTER,
+      'type_id' => 23,
       'name' => clienttranslate("Treasure Hunter"),
       'text' => clienttranslate("Take the top CARD of another player's deck or discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -384,7 +384,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   24 => array(
-      'type_id' => CT_STASHINGVENDOR,
+      'type_id' => 24,
       'name' => clienttranslate("Stashing vendor"),
       'text' => clienttranslate("When used to build, you can include junk CARDS3."),
       'type_displayed' => clienttranslate("Passive"),
@@ -400,7 +400,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   25 => array(
-      'type_id' => CT_EMPTYCHEST,
+      'type_id' => 25,
       'name' => clienttranslate("Empty Chest"),
       'text' => clienttranslate("When used to build, you can include any animalfolk CARDS3."),
       'type_displayed' => clienttranslate("Passive"),
@@ -416,7 +416,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   26 => array(
-      'type_id' => CT_NOSTALGICITEM,
+      'type_id' => 26,
       'name' => clienttranslate("Nostalgic Item"),
       'text' => clienttranslate("When used to build, you can include 1 junk CARD or any 1 animalfolk CARD from your discard."),
       'type_displayed' => clienttranslate("Passive"),
@@ -432,7 +432,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   27 => array(
-      'type_id' => CT_ACORN,
+      'type_id' => 27,
       'name' => clienttranslate("Acorn"),
       'text' => clienttranslate("Take 1 CARD from an opponent's stall. Place this CARD in its place."),
       'type_displayed' => clienttranslate("Technique"),
@@ -448,7 +448,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   28 => array(
-      'type_id' => CT_ACCORDION,
+      'type_id' => 28,
       'name' => clienttranslate("Accordion"),
       'text' => clienttranslate("When used to build, you may +1 or -1 from this CARD value."),
       'type_displayed' => clienttranslate("Passive"),
@@ -464,7 +464,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   29 => array(
-      'type_id' => CT_WINTERISCOMING,
+      'type_id' => 29,
       'name' => clienttranslate("Winter is coming"),
       'text' => clienttranslate("When used to build, you may immediately build another stack."),
       'type_displayed' => clienttranslate("Passive"),
@@ -480,7 +480,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   30 => array(
-      'type_id' => CT_BOLDHAGGLER,
+      'type_id' => 30,
       'name' => clienttranslate("Bold Haggler"),
       'text' => clienttranslate("Roll DIE_OCELOT. Add the rolled value to this CARD value for this turn."),
       'type_displayed' => clienttranslate("Passive"),
@@ -496,7 +496,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   31 => array(
-      'type_id' => CT_NEWSEASON,
+      'type_id' => 31,
       'name' => clienttranslate("New Season"),
       'text' => clienttranslate("Toss any 1 animalfolk CARD from your discard to draw 1 CARD from the supply."),
       'type_displayed' => clienttranslate("Technique"),
@@ -512,7 +512,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   32 => array(
-      'type_id' => CT_WHIRLIGIG,
+      'type_id' => 32,
       'name' => clienttranslate("Whirligig"),
       'text' => clienttranslate("Roll DIE_OCELOT. Swap that many CARDS3 between the tops of your and another player's decks."),
       'type_displayed' => clienttranslate("Technique"),
@@ -528,7 +528,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   33 => array(
-      'type_id' => CT_CHARM,
+      'type_id' => 33,
       'name' => clienttranslate("Charm"),
       'text' => clienttranslate("Look at the top CARD of the supply. Build a stack with only that CARD if you can or toss it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -544,7 +544,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   34 => array(
-      'type_id' => CT_GAMBLE,
+      'type_id' => 34,
       'name' => clienttranslate("Gamble"),
       'text' => clienttranslate("Roll DIE_OCELOT. Swap that many random CARDS3 with another player."),
       'type_displayed' => clienttranslate("Technique"),
@@ -560,7 +560,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   35 => array(
-      'type_id' => CT_BLINDFOLD,
+      'type_id' => 35,
       'name' => clienttranslate("Blindfold"),
       'text' => clienttranslate("If you guess the top CARD value of your deck, take it and decide its value (1-5). Otherwise discard it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -576,7 +576,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   36 => array(
-      'type_id' => CT_FLEXIBLESHOPKEEPER,
+      'type_id' => 36,
       'name' => clienttranslate("Flexible Shopkeeper"),
       'text' => clienttranslate("Copy 1 CARD in your rightmost stack."),
       'type_displayed' => clienttranslate("Passive"),
@@ -592,7 +592,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   37 => array(
-      'type_id' => CT_REFLECTION,
+      'type_id' => 37,
       'name' => clienttranslate("Reflection"),
       'text' => clienttranslate("Discard 0-1 CARD from another player's deck. Copy the top CARD of their discard."),
       'type_displayed' => clienttranslate("Passive"),
@@ -608,7 +608,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   38 => array(
-      'type_id' => CT_GOODOLDTIMES,
+      'type_id' => 38,
       'name' => clienttranslate("Good Old Times"),
       'text' => clienttranslate("Toss 0-1 CARD from the supply. Copy of the top CARD of the bin."),
       'type_displayed' => clienttranslate("Passive"),
@@ -624,7 +624,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   39 => array(
-      'type_id' => CT_SOUNDDETECTORS,
+      'type_id' => 39,
       'name' => clienttranslate("Sound Detectors"),
       'text' => clienttranslate("Look at 2 random CARD cards from another player. Copy 1 of them."),
       'type_displayed' => clienttranslate("Passive"),
@@ -640,7 +640,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   40 => array(
-      'type_id' => CT_TRENDSETTING,
+      'type_id' => 40,
       'name' => clienttranslate("Trendsetting"),
       'text' => clienttranslate("Copy 1 CARD in the market."),
       'type_displayed' => clienttranslate("Passive"),
@@ -656,7 +656,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   41 => array(
-      'type_id' => CT_SEEINGDOUBLES,
+      'type_id' => 41,
       'name' => clienttranslate("Seeing Doubles"),
       'text' => clienttranslate("Show 1 CARD and copy it."),
       'type_displayed' => clienttranslate("Passive"),
@@ -672,7 +672,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   42 => array(
-      'type_id' => CT_TIRELESSTINKERER,
+      'type_id' => 42,
       'name' => clienttranslate("Tireless Tinkerer"),
       'text' => clienttranslate("Place the top CARD of your discard on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -688,7 +688,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   43 => array(
-      'type_id' => CT_CALCULATIONS,
+      'type_id' => 43,
       'name' => clienttranslate("Calculations"),
       'text' => clienttranslate("Before used to purchase, rearrange any CARDS3 in the market."),
       'type_displayed' => clienttranslate("Passive"),
@@ -704,7 +704,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   44 => array(
-      'type_id' => CT_SAFETYPRECAUTION,
+      'type_id' => 44,
       'name' => clienttranslate("Safety Precaution"),
       'text' => clienttranslate("Take 1 CARD from your stall. Place this CARD in its place."),
       'type_displayed' => clienttranslate("Technique"),
@@ -720,7 +720,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   45 => array(
-      'type_id' => CT_MAGNET,
+      'type_id' => 45,
       'name' => clienttranslate("Magnet"),
       'text' => clienttranslate("Search your deck for 1 CARD. Shuffle your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -736,7 +736,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   46 => array(
-      'type_id' => CT_DANGEROUSTEST,
+      'type_id' => 46,
       'name' => clienttranslate("Dangerous Test"),
       'text' => clienttranslate("Draw 3 CARDS3. Discard 3 CARDS3."),
       'type_displayed' => clienttranslate("Technique"),
@@ -752,7 +752,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   47 => array(
-      'type_id' => CT_GLUE,
+      'type_id' => 47,
       'name' => clienttranslate("Glue"),
       'text' => clienttranslate("When used to purchase, you may keep this CARD in your hand."),
       'type_displayed' => clienttranslate("Passive"),
@@ -768,7 +768,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   48 => array(
-      'type_id' => CT_STEADYACHIEVER,
+      'type_id' => 48,
       'name' => clienttranslate("Steady Achiever"),
       'text' => clienttranslate("At the start of your next turn, draw 1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -784,7 +784,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   49 => array(
-      'type_id' => CT_SHOPPINGJOURNEY,
+      'type_id' => 49,
       'name' => clienttranslate("Shopping Journey"),
       'text' => clienttranslate("At the start of your next turn, take 1 CARD from the market."),
       'type_displayed' => clienttranslate("Technique"),
@@ -800,7 +800,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   50 => array(
-      'type_id' => CT_HOUSECLEANING,
+      'type_id' => 50,
       'name' => clienttranslate("Housecleaning"),
       'text' => clienttranslate("Take 0-3 junk CARD from your discard. At the start of your next turn, toss 0-1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -816,7 +816,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   51 => array(
-      'type_id' => CT_SIESTA,
+      'type_id' => 51,
       'name' => clienttranslate("Siesta"),
       'text' => clienttranslate("At the start of your next turn, take any 1 CARD from your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -832,7 +832,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   52 => array(
-      'type_id' => CT_LUNCHBREAK,
+      'type_id' => 52,
       'name' => clienttranslate("Lunch Break"),
       'text' => clienttranslate("Draw 1 CARD. At the start of your next turn, draw 1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -848,7 +848,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   53 => array(
-      'type_id' => CT_IRONING,
+      'type_id' => 53,
       'name' => clienttranslate("Ironing"),
       'text' => clienttranslate("At the start of your next turn, CARDS3 you use get +1 to their value for that turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -864,7 +864,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   54 => array(
-      'type_id' => CT_LITTLEVILLAIN,
+      'type_id' => 54,
       'name' => clienttranslate("Little Villain"),
       'text' => clienttranslate("Opponents discard 2 CARDS2 from their decks one by one."),
       'type_displayed' => clienttranslate("Technique"),
@@ -880,7 +880,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   55 => array(
-      'type_id' => CT_SCARYGUNFIGHT,
+      'type_id' => 55,
       'name' => clienttranslate("Scary Gunfight"),
       'text' => clienttranslate("CARDS3 in the market have +2 cost for opponents until the start of your next turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -896,7 +896,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   56 => array(
-      'type_id' => CT_NIGHTSHIFT,
+      'type_id' => 56,
       'name' => clienttranslate("Night Shift"),
       'text' => clienttranslate("Draw 1 CARD from each player's deck. Place 1 of them back on each player's deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -912,7 +912,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   57 => array(
-      'type_id' => CT_RUTHLESSCOMPETITION,
+      'type_id' => 57,
       'name' => clienttranslate("Ruthless Competition"),
       'text' => clienttranslate("Draw 1 CARD from another player's deck. Place 1 CARD back."),
       'type_displayed' => clienttranslate("Technique"),
@@ -928,7 +928,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   58 => array(
-      'type_id' => CT_NASTYTHREAT,
+      'type_id' => 58,
       'name' => clienttranslate("Nasty Threat"),
       'text' => clienttranslate("Stacks opponents build require +1 value until the start of your next turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -944,7 +944,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   59 => array(
-      'type_id' => CT_LOSTSHIPMENTS,
+      'type_id' => 59,
       'name' => clienttranslate("Lost Shipments"),
       'text' => clienttranslate("Opponents can draw at most 1 CARD while filling their hands until the start of your next turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -960,7 +960,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   60 => array(
-      'type_id' => CT_CUNNINGNEIGHBOUR,
+      'type_id' => 60,
       'name' => clienttranslate("Cunning Neighbour"),
       'text' => clienttranslate("Look at another player's hand."),
       'type_displayed' => clienttranslate("Passive"),
@@ -976,7 +976,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   61 => array(
-      'type_id' => CT_CHEER,
+      'type_id' => 61,
       'name' => clienttranslate("Cheer"),
       'text' => clienttranslate("Each player places the top CARD of their discard on their deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -992,7 +992,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   62 => array(
-      'type_id' => CT_RAFFLE,
+      'type_id' => 62,
       'name' => clienttranslate("Raffle"),
       'text' => clienttranslate("Choose left or right. Each player takes 1 random CARD from a player in the chosen direction."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1008,7 +1008,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   63 => array(
-      'type_id' => CT_CHARITY,
+      'type_id' => 63,
       'name' => clienttranslate("Charity"),
       'text' => clienttranslate("Take 1 random CARD from each player. Give 1 of those back to each player."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1024,7 +1024,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   64 => array(
-      'type_id' => CT_TASTERS,
+      'type_id' => 64,
       'name' => clienttranslate("Tasters"),
       'text' => clienttranslate("Give 1 CARD from the market to each player."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1040,7 +1040,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   65 => array(
-      'type_id' => CT_RUMOURS,
+      'type_id' => 65,
       'name' => clienttranslate("Rumours"),
       'text' => clienttranslate("Look at the top CARD of each player's deck and give 1 of them to each player."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1056,7 +1056,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   66 => array(
-      'type_id' => CT_DARINGADVENTURER,
+      'type_id' => 66,
       'name' => clienttranslate("Daring Adventurer"),
       'text' => clienttranslate("Roll DIE_POLECAT. Draw that many CARDS3. Discard that many CARDS3."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1072,7 +1072,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   67 => array(
-      'type_id' => CT_RAREARTEFACT,
+      'type_id' => 67,
       'name' => clienttranslate("Rare Artefact"),
       'text' => clienttranslate("Show 1 CARD. Roll DIE_POLECAT and multiply the shown CARD value by the rolled value."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1088,7 +1088,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   68 => array(
-      'type_id' => CT_SWANK,
+      'type_id' => 68,
       'name' => clienttranslate("Swank"),
       'text' => clienttranslate("Toss 1 CARD. If it was an animalfolk CARD, draw 1 CARD from the supply."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1104,7 +1104,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   69 => array(
-      'type_id' => CT_RISKYBUSINESS,
+      'type_id' => 69,
       'name' => clienttranslate("Risky Business"),
       'text' => clienttranslate("If you guess the top CARD value of the supply, take it. Otherwise toss it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1120,7 +1120,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   70 => array(
-      'type_id' => CT_NATURALSURVIVOR,
+      'type_id' => 70,
       'name' => clienttranslate("Natural Survivor"),
       'text' => clienttranslate("Roll DIE_POLECAT. Search your deck and swap that many CARDS3 between your hand and deck. Shuffle your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1136,7 +1136,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   71 => array(
-      'type_id' => CT_SOFA,
+      'type_id' => 71,
       'name' => clienttranslate("Sofa"),
       'text' => clienttranslate("While in your stall, hand size +1."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1152,7 +1152,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   72 => array(
-      'type_id' => CT_WISESPY,
+      'type_id' => 72,
       'name' => clienttranslate("Wise Spy"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of your deck. You may reorder them."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1168,7 +1168,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   73 => array(
-      'type_id' => CT_ANCIENTKNOWLEDGE,
+      'type_id' => 73,
       'name' => clienttranslate("Ancient Knowledge"),
       'text' => clienttranslate("After another player has played a technique, draw 2 CARDS2 and discard this CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1184,7 +1184,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   74 => array(
-      'type_id' => CT_QUALITYINSPECTION,
+      'type_id' => 74,
       'name' => clienttranslate("Quality Inspection"),
       'text' => clienttranslate("After this CARD gets into your hand, toss 1 CARD and draw 1 CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1200,7 +1200,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   75 => array(
-      'type_id' => CT_BINOCULARS,
+      'type_id' => 75,
       'name' => clienttranslate("Binoculars"),
       'text' => clienttranslate("After another player has purchased, search your deck for 2 CARDS2. Shuffle your deck and discard this CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1216,7 +1216,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   76 => array(
-      'type_id' => CT_BALANCING,
+      'type_id' => 76,
       'name' => clienttranslate("Balancing"),
       'text' => clienttranslate("After another player has built, take any 2 CARDS2 from your discard and discard this CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1232,7 +1232,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   77 => array(
-      'type_id' => CT_EXTRAREMARKS,
+      'type_id' => 77,
       'name' => clienttranslate("Extra Remarks"),
       'text' => clienttranslate("At the end of your turn, draw 2 CARDS2 and discard this CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1248,7 +1248,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   78 => array(
-      'type_id' => CT_MASTERBUILDER,
+      'type_id' => 78,
       'name' => clienttranslate("Master Builder"),
       'text' => clienttranslate("Next time you have gained a new CARD from the market, take any 1 CARD from your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1264,7 +1264,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   79 => array(
-      'type_id' => CT_SNACK,
+      'type_id' => 79,
       'name' => clienttranslate("Snack"),
       'text' => clienttranslate("Next time before you build, take 1 CARD from the market."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1280,7 +1280,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   80 => array(
-      'type_id' => CT_WINDOFCHANGE,
+      'type_id' => 80,
       'name' => clienttranslate("Wind of Change"),
       'text' => clienttranslate("Next time you have purchased, toss any 0-1 CARD from your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1296,7 +1296,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   81 => array(
-      'type_id' => CT_OVERTIME,
+      'type_id' => 81,
       'name' => clienttranslate("Overtime"),
       'text' => clienttranslate("Next time you build, you can include CARDS3 from your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1312,7 +1312,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   82 => array(
-      'type_id' => CT_ORDERINCHAOS,
+      'type_id' => 82,
       'name' => clienttranslate("Order in Chaos"),
       'text' => clienttranslate("Next time you have taken the inventory action, take 1 CARD from the market and get a bonus action."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1328,7 +1328,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   83 => array(
-      'type_id' => CT_PRACTICE,
+      'type_id' => 83,
       'name' => clienttranslate("Practice"),
       'text' => clienttranslate("Next time you discard a resolved technique CARD, you may take it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1344,7 +1344,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   84 => array(
-      'type_id' => CT_RIGOROUSCHRONICLER,
+      'type_id' => 84,
       'name' => clienttranslate("Rigorous Chronicler"),
       'text' => clienttranslate("When used to purchase, decide this CARD value (1-3)."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1360,7 +1360,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   85 => array(
-      'type_id' => CT_REFRESHINGDRINK,
+      'type_id' => 85,
       'name' => clienttranslate("Refreshing Drink"),
       'text' => clienttranslate("Draw 1 CARD. Discard 1 CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1376,7 +1376,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   86 => array(
-      'type_id' => CT_DUPLICATEENTRY,
+      'type_id' => 86,
       'name' => clienttranslate("Duplicate Entry"),
       'text' => clienttranslate("Search your deck for 2 CARDS2 to put aside. Shuffle your deck. Toss 0-1 of them. Place the rest on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1392,7 +1392,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   87 => array(
-      'type_id' => CT_HISTORYLESSON,
+      'type_id' => 87,
       'name' => clienttranslate("History Lesson"),
       'text' => clienttranslate("Shuffle any of the top 3 CARDS3 of your discard into your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1408,7 +1408,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   88 => array(
-      'type_id' => CT_CULTURALPRESERVATION,
+      'type_id' => 88,
       'name' => clienttranslate("Cultural Preservation"),
       'text' => clienttranslate("Search your deck for 1 CARD to take and 2 CARDS2 to discard. Shuffle your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1424,7 +1424,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   89 => array(
-      'type_id' => CT_SLICEOFLIFE,
+      'type_id' => 89,
       'name' => clienttranslate("Slice of Life"),
       'text' => clienttranslate("Discard 2 CARDS2 to draw 2 CARDS2."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1440,7 +1440,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   90 => array(
-      'type_id' => CT_VORACIOUSCONSUMER,
+      'type_id' => 90,
       'name' => clienttranslate("Voracious Consumer"),
       'text' => clienttranslate("Shuffle your discard into your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1456,7 +1456,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   91 => array(
-      'type_id' => CT_DELIGHTFULSURPRISE,
+      'type_id' => 91,
       'name' => clienttranslate("Delightful Surprise"),
       'text' => clienttranslate("Look at the top 2 CARDS2 of the supply and take 1 of them. Toss the other and this CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1472,7 +1472,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   92 => array(
-      'type_id' => CT_FORTUNATEUPGRADE,
+      'type_id' => 92,
       'name' => clienttranslate("Fortunate Upgrade"),
       'text' => clienttranslate("Toss 1 CARD. Draw 1 CARD from the supply."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1488,7 +1488,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   93 => array(
-      'type_id' => CT_REPLACEMENT,
+      'type_id' => 93,
       'name' => clienttranslate("Replacement"),
       'text' => clienttranslate("Toss 1 animalfolk CARD. Take 1 CARD from the market within 1 of that CARD value."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1504,7 +1504,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   94 => array(
-      'type_id' => CT_FASHIONHINT,
+      'type_id' => 94,
       'name' => clienttranslate("Fashion Hint"),
       'text' => clienttranslate("You may toss 1 CARD from the supply. You may swap 1 animalfolk CARD with the top CARD of the bin."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1520,7 +1520,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   95 => array(
-      'type_id' => CT_ROYALPRIVILEGE,
+      'type_id' => 95,
       'name' => clienttranslate("Royal Privilege"),
       'text' => clienttranslate("When used to purchase, you may toss 1 animalfolk CARD to take another CARD from the market."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1536,7 +1536,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   96 => array(
-      'type_id' => CT_POMPOUSPROFESSIONAL,
+      'type_id' => 96,
       'name' => clienttranslate("Pompous Professional"),
       'text' => clienttranslate("Name a set. Discard 3 CARDS3 and take 1 CARD of the named set from those."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1552,7 +1552,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   97 => array(
-      'type_id' => CT_BRIBE,
+      'type_id' => 97,
       'name' => clienttranslate("Bribe"),
       'text' => clienttranslate("When purchased or used to purchase, hand size +1 for this turn."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1568,7 +1568,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   98 => array(
-      'type_id' => CT_BURGLARY,
+      'type_id' => 98,
       'name' => clienttranslate("Burglary"),
       'text' => clienttranslate("If you guess the top CARD value from another player's deck, take it. Otherwise discard it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1584,7 +1584,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   99 => array(
-      'type_id' => CT_GRASP,
+      'type_id' => 99,
       'name' => clienttranslate("Grasp"),
       'text' => clienttranslate("If you guess the value of 1 random CARD from another player, take it. Otherwise discard it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1600,7 +1600,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   100 => array(
-      'type_id' => CT_PERISCOPE,
+      'type_id' => 100,
       'name' => clienttranslate("Periscope"),
       'text' => clienttranslate("Name a set and value. Discard 2 CARDS2 from another player's deck one by one, taking matching cards."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1616,7 +1616,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   101 => array(
-      'type_id' => CT_SUDDENNAP,
+      'type_id' => 101,
       'name' => clienttranslate("Sudden Nap"),
       'text' => clienttranslate("Toss 1 random CARD from another player."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1632,7 +1632,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   102 => array(
-      'type_id' => CT_CAREFREESWAPPER,
+      'type_id' => 102,
       'name' => clienttranslate("Carefree Swapper"),
       'text' => clienttranslate("Swap this CARD with the top CARD from another player's discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1648,7 +1648,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   103 => array(
-      'type_id' => CT_BARGAINSEEKER,
+      'type_id' => 103,
       'name' => clienttranslate("Bargain Seeker"),
       'text' => clienttranslate("Toss the rightmost CARD from the market and fill the empty market slot from the supply."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1664,7 +1664,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   104 => array(
-      'type_id' => CT_DELICACY,
+      'type_id' => 104,
       'name' => clienttranslate("Delicacy"),
       'text' => clienttranslate("Look at the top 2 CARDS2 of another player's deck. You may swap this CARD with 1 of them. Shuffle the 2 CARDS2 into their deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1680,7 +1680,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   105 => array(
-      'type_id' => CT_UMBRELLA,
+      'type_id' => 105,
       'name' => clienttranslate("Umbrella"),
       'text' => clienttranslate("Look at 2 random CARDS2 from another player. You may swap this CARD with 1 of them."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1696,7 +1696,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   106 => array(
-      'type_id' => CT_VELOCIPEDE,
+      'type_id' => 106,
       'name' => clienttranslate("Velocipede"),
       'text' => clienttranslate("Swap this CARD with any 1 CARD from another player's discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1712,7 +1712,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   107 => array(
-      'type_id' => CT_MATCHINGCOLOURS,
+      'type_id' => 107,
       'name' => clienttranslate("Matching Colours"),
       'text' => clienttranslate("Swap an animalfolk CARD with 1 CARD of equal value from an opponent's stall."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1728,7 +1728,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   108 => array(
-      'type_id' => CT_ARCANESCHOLAR,
+      'type_id' => 108,
       'name' => clienttranslate("Arcane Scholar"),
       'text' => clienttranslate("Roll DIE_HARE. Take the top CARD of [COMET: your discard] [PLANET: your deck] [STARS: nowhere]."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1744,7 +1744,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   109 => array(
-      'type_id' => CT_BAROMETER,
+      'type_id' => 109,
       'name' => clienttranslate("Barometer"),
       'text' => clienttranslate("Toss 1 CARD from the supply to change this CARD value to be equal to the tossed CARD value."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1760,7 +1760,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   110 => array(
-      'type_id' => CT_BADOMEN,
+      'type_id' => 110,
       'name' => clienttranslate("Bad Omen"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of your deck. Toss 0-1 of them and reorder the rest."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1776,7 +1776,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   111 => array(
-      'type_id' => CT_FESTIVAL,
+      'type_id' => 111,
       'name' => clienttranslate("Festival"),
       'text' => clienttranslate("Roll DIE_HARE. Draw 1 CARD from [COMET: the supply] [PLANET: your deck] [STARS: nowhere]."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1792,7 +1792,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   112 => array(
-      'type_id' => CT_CELESTIALGUIDANCE,
+      'type_id' => 112,
       'name' => clienttranslate("Celestial Guidance"),
       'text' => clienttranslate("Roll DIE_HARE. Take any 1 CARD from [COMET: the market] [PLANET: your discard pile] [STARS: nowhere]."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1808,7 +1808,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   113 => array(
-      'type_id' => CT_CALENDAR,
+      'type_id' => 113,
       'name' => clienttranslate("Calendar"),
       'text' => clienttranslate("Shuffle the top CARD of your discard into your deck."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1824,7 +1824,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   114 => array(
-      'type_id' => CT_CLEVERGUARDIAN,
+      'type_id' => 114,
       'name' => clienttranslate("Clever Guardian"),
       'text' => clienttranslate("Store 1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1840,7 +1840,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   115 => array(
-      'type_id' => CT_BARRICADE,
+      'type_id' => 115,
       'name' => clienttranslate("Barricade"),
       'text' => clienttranslate("At the end of your turn, take 1-2 CARDS2 junk from your discard."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1856,7 +1856,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   116 => array(
-      'type_id' => CT_WHEELBARROW,
+      'type_id' => 116,
       'name' => clienttranslate("Wheelbarrow"),
       'text' => clienttranslate("Look at the top CARD of your deck. Toss or store it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1872,7 +1872,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   117 => array(
-      'type_id' => CT_VIGILANCE,
+      'type_id' => 117,
       'name' => clienttranslate("Vigilance"),
       'text' => clienttranslate("Search your deck for 1 CARD to store. Shuffle your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1888,7 +1888,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   118 => array(
-      'type_id' => CT_SUPPLYDEPOT,
+      'type_id' => 118,
       'name' => clienttranslate("Supply Depot"),
       'text' => clienttranslate("Store the top 2 CARDS2 of your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1904,7 +1904,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   119 => array(
-      'type_id' => CT_TACTICALMEASUREMENT,
+      'type_id' => 119,
       'name' => clienttranslate("Tactical Measurement"),
       'text' => clienttranslate("Draw 2 CARDS2. Place 2 CARDS2 on your deck."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1920,7 +1920,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   120 => array(
-      'type_id' => CT_RESOURCEFULALLY,
+      'type_id' => 120,
       'name' => clienttranslate("Resourceful Ally"),
       'text' => clienttranslate("Spend 2 to place any 2 CARDS2 from your discard on the bottom of your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1936,7 +1936,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   121 => array(
-      'type_id' => CT_ICETRADE,
+      'type_id' => 121,
       'name' => clienttranslate("Ice Trade"),
       'text' => clienttranslate("Spend X (1+) to draw 1 CARD from the supply."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1952,7 +1952,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   122 => array(
-      'type_id' => CT_TRAVELINGEQUIPMENT,
+      'type_id' => 122,
       'name' => clienttranslate("Traveling Equipment"),
       'text' => clienttranslate("Spend 1 to draw 2 CARDS2. Toss 1 CARD and discard 1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -1968,7 +1968,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   123 => array(
-      'type_id' => CT_STOVE,
+      'type_id' => 123,
       'name' => clienttranslate("Stove"),
       'text' => clienttranslate("When used to build, spend X (1+) to change this CARD value to X/2 (rounded up)."),
       'type_displayed' => clienttranslate("Passive"),
@@ -1984,7 +1984,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   124 => array(
-      'type_id' => CT_FISHING,
+      'type_id' => 124,
       'name' => clienttranslate("Fishing"),
       'text' => clienttranslate("Spend 1 to place any 1-3 CARDS3 from your discard on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2000,7 +2000,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   125 => array(
-      'type_id' => CT_PRACTICALVALUES,
+      'type_id' => 125,
       'name' => clienttranslate("Practical Values"),
       'text' => clienttranslate("Each CARD valued 1 you use is valued 5, each 2 is 4, and vice versa, for this turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2016,7 +2016,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   126 => array(
-      'type_id' => CT_AVIDFINANCIER,
+      'type_id' => 126,
       'name' => clienttranslate("Avid Financier"),
       'text' => clienttranslate("Gain 2 COIN on this CARD. Your next 2 turns, take 1 COIN from this CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2032,7 +2032,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   127 => array(
-      'type_id' => CT_GREED,
+      'type_id' => 127,
       'name' => clienttranslate("Greed"),
       'text' => clienttranslate("Spend 1 to draw 1 CARD."),
       'type_displayed' => clienttranslate("Passive"),
@@ -2048,7 +2048,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   128 => array(
-      'type_id' => CT_GOLDENOPPORTUNITY,
+      'type_id' => 128,
       'name' => clienttranslate("Golden Opportunity"),
       'text' => clienttranslate("Toss 1 CARD. Gain 1 COIN."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2064,7 +2064,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   129 => array(
-      'type_id' => CT_CACHE,
+      'type_id' => 129,
       'name' => clienttranslate("Cache"),
       'text' => clienttranslate("Spend 2 to take any 1 CARD from your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2080,7 +2080,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   130 => array(
-      'type_id' => CT_DISPLAYOFPOWER,
+      'type_id' => 130,
       'name' => clienttranslate("Display of Power"),
       'text' => clienttranslate("Spend 2 to get hand size +2 for this turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2096,7 +2096,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   131 => array(
-      'type_id' => CT_SAFEPROFITS,
+      'type_id' => 131,
       'name' => clienttranslate("Safe Profits"),
       'text' => clienttranslate("Spend X (1-10) to gain x/2 COIN (rounded up)."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2112,7 +2112,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   132 => array(
-      'type_id' => CT_IMPULSIVEVISIONARY,
+      'type_id' => 132,
       'name' => clienttranslate("Impulsive Visionary"),
       'text' => clienttranslate("Finish 1: Draw 1 CARD."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2128,7 +2128,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   133 => array(
-      'type_id' => CT_COLLECTORSDESIRE,
+      'type_id' => 133,
       'name' => clienttranslate("Collector's Desire"),
       'text' => clienttranslate("Finish 2: Take the leftmost CARD from the market."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2144,7 +2144,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   134 => array(
-      'type_id' => CT_GROUNDBREAKINGIDEA,
+      'type_id' => 134,
       'name' => clienttranslate("Groundbreaking Idea"),
       'text' => clienttranslate("Toss any 1 CARD from your discard. Finish 2: place any 1 CARD from your discard on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2160,7 +2160,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   135 => array(
-      'type_id' => CT_INSPIRATION,
+      'type_id' => 135,
       'name' => clienttranslate("Inspiration"),
       'text' => clienttranslate("Finish 2: Draw 2 CARDS2."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2176,7 +2176,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   136 => array(
-      'type_id' => CT_INSIGHT,
+      'type_id' => 136,
       'name' => clienttranslate("Insight"),
       'text' => clienttranslate("Look at the top 2 CARDS2 of your deck. You may reorder them. Finish 2: Draw 2 CARDS2."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2192,7 +2192,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   137 => array(
-      'type_id' => CT_PERFECTMOVE,
+      'type_id' => 137,
       'name' => clienttranslate("Perfect Move"),
       'text' => clienttranslate("Finish 3: CARDS3 you use this turn get +1 to their value."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2208,7 +2208,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   138 => array(
-      'type_id' => CT_SHREWDTRICKSTER,
+      'type_id' => 138,
       'name' => clienttranslate("Shrewd Trickster"),
       'text' => clienttranslate("Look at the top CARD of any player's deck. You may discard it."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2224,7 +2224,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   139 => array(
-      'type_id' => CT_DISRUPTIVESPEECH,
+      'type_id' => 139,
       'name' => clienttranslate("Disruptive Speech"),
       'text' => clienttranslate("Discard 2 random CARDS2 from any player. They draw as many CARDS2."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2240,7 +2240,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   140 => array(
-      'type_id' => CT_TITFORTAT,
+      'type_id' => 140,
       'name' => clienttranslate("Tit for Tat"),
       'text' => clienttranslate("Shuffle any 2 CARDS2 from any player's discard into their deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2256,7 +2256,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   141 => array(
-      'type_id' => CT_SHAMELESSRUMMAGE,
+      'type_id' => 141,
       'name' => clienttranslate("Shameless Rummage"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of any player's deck and discard any of them. Shuffle their deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2272,7 +2272,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   142 => array(
-      'type_id' => CT_PUBLICHUMILIATION,
+      'type_id' => 142,
       'name' => clienttranslate("Public Humiliation"),
       'text' => clienttranslate("Discard 1 random CARD from any player."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2288,9 +2288,9 @@ $this->card_types = array(
       'is_mono' => false
   ),
   143 => array(
-      'type_id' => CT_EQUALITY,
+      'type_id' => 143,
       'name' => clienttranslate("Equality"),
-      'text' => clienttranslate("Shuffle any player’s discard. They swap 2 random CARDS2 with the top 2 CARDS2 of their discard."),
+      'text' => clienttranslate("Shuffle any player's discard. They swap 2 random CARDS2 with the top 2 CARDS2 of their discard."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -2304,7 +2304,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   144 => array(
-      'type_id' => CT_FUMBLINGDREAMER,
+      'type_id' => 144,
       'name' => clienttranslate("Fumbling Dreamer"),
       'text' => clienttranslate("Roll DIE_PANGOLIN1 and DIE_PANGOLIN2 until you have different results. Move 1 CARD from any player's SOURCE into their DESTINATION."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2320,7 +2320,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   145 => array(
-      'type_id' => CT_COFFEEGRINDER,
+      'type_id' => 145,
       'name' => clienttranslate("Coffee Grinder"),
       'text' => clienttranslate("Discard 1-2 CARDS2 from any player's deck one by one."),
       'type_displayed' => clienttranslate("Passive"),
@@ -2336,7 +2336,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   146 => array(
-      'type_id' => CT_ACCIDENT,
+      'type_id' => 146,
       'name' => clienttranslate("Accident"),
       'text' => clienttranslate("Discard your hand. Draw as many CARD and shuffle them with another player's hand. Randomly give both their original number back."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2352,7 +2352,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   147 => array(
-      'type_id' => CT_LOOSEMARBLES,
+      'type_id' => 147,
       'name' => clienttranslate("Loose Marbles"),
       'text' => clienttranslate("Roll DIE_PANGOLIN1 and DIE_PANGOLIN2. Place 1 CARD from any player's SOURCE into a different player's DESTINATION."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2368,7 +2368,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   148 => array(
-      'type_id' => CT_ANOTHERFINEMESS,
+      'type_id' => 148,
       'name' => clienttranslate("Another Fine Mess"),
       'text' => clienttranslate("Roll DIE_PANGOLIN1 and DIE_PANGOLIN2. Shuffle 2 cards from any player's SOURCE into a different player's DESTINATION. Repeat reversed without shuffling."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2384,7 +2384,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   149 => array(
-      'type_id' => CT_FRESHSTART,
+      'type_id' => 149,
       'name' => clienttranslate("Fresh Start"),
       'text' => clienttranslate("Shuffle any player's discard into their deck. Draw 1 CARD from their deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2400,7 +2400,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   150 => array(
-      'type_id' => CT_MEDDLINGMARKETEER,
+      'type_id' => 150,
       'name' => clienttranslate("Meddling Marketeer"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of your deck and discard any of them. You may reorder the rest."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2416,7 +2416,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   151 => array(
-      'type_id' => CT_GOODWILLPRESENTS,
+      'type_id' => 151,
       'name' => clienttranslate("Goodwill Presents"),
       'text' => clienttranslate("Place 1 junk CARD from the junkyard on any 1-2 players' discards."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2432,7 +2432,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   152 => array(
-      'type_id' => CT_ALTERNATIVEPLAN,
+      'type_id' => 152,
       'name' => clienttranslate("Alternative Plan"),
       'text' => clienttranslate("Toss any 1 CARD from your discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2448,7 +2448,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   153 => array(
-      'type_id' => CT_ANCHOR,
+      'type_id' => 153,
       'name' => clienttranslate("Anchor"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of your deck and place 1 of them on any player's discard. You may reorder the rest."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2464,7 +2464,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   154 => array(
-      'type_id' => CT_MANUFACTUREDJOY,
+      'type_id' => 154,
       'name' => clienttranslate("Manufactured Joy"),
       'text' => clienttranslate("Search your deck for 1 CARD. Shuffle your deck. Place 1 CARD on any player's discard."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2480,7 +2480,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   155 => array(
-      'type_id' => CT_SHAKYENTERPRISE,
+      'type_id' => 155,
       'name' => clienttranslate("Shaky Enterprise"),
       'text' => clienttranslate("Take any of the top 3 CARDS3 of your discard. Place 1 on any player's discard and the rest on your deck in any order."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2496,7 +2496,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   156 => array(
-      'type_id' => CT_DRAMATICROMANTIC,
+      'type_id' => 156,
       'name' => clienttranslate("Dramatic Romantic"),
       'text' => clienttranslate("Move your CLOCK 1 forward or backward."),
       'type_displayed' => clienttranslate("Passive"),
@@ -2512,7 +2512,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   157 => array(
-      'type_id' => CT_BOUQUETS,
+      'type_id' => 157,
       'name' => clienttranslate("Bouquets"),
       'text' => clienttranslate("Draw [DAWN 1 CARD] [DAY 2 CARDS2] [NIGHT 1 CARD]. Place 1 CARD on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2528,7 +2528,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   158 => array(
-      'type_id' => CT_SELECTINGCONTRACTS,
+      'type_id' => 158,
       'name' => clienttranslate("Selecting Contracts"),
       'text' => clienttranslate("Toss any 1 CARD of the top [DAWN 2 CARDS2] [DAY 4 CARDS3] [NIGHT 1 CARD] of your discard. Place the rest on your deck in any order."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2544,7 +2544,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   159 => array(
-      'type_id' => CT_SERENADE,
+      'type_id' => 159,
       'name' => clienttranslate("Serenade"),
       'text' => clienttranslate("Take 1 CARD from [DAWN your stall] [DAY an opponent's stall] [NIGHT the market]. Place this CARD in its place."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2560,7 +2560,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   160 => array(
-      'type_id' => CT_SPINNINGWHEEL,
+      'type_id' => 160,
       'name' => clienttranslate("Spinning Wheel"),
       'text' => clienttranslate("Discard X (1-3) CARDS3. Draw [DAWN 1 CARD] [DAY X CARDS3] [NIGHT 1 CARD]."),
       'type_displayed' => clienttranslate("Passive"),
@@ -2576,7 +2576,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   161 => array(
-      'type_id' => CT_INHERITANCE,
+      'type_id' => 161,
       'name' => clienttranslate("Inheritance"),
       'text' => clienttranslate("Look at the top [DAWN 2 CARDS2] [DAY 5 CARDS3] [NIGHT 1 CARD] of the supply and take 1 CARD of them. Toss the rest."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2592,7 +2592,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   162 => array(
-      'type_id' => CT_SNEAKYSCOUT,
+      'type_id' => 162,
       'name' => clienttranslate("Sneaky Scout"),
       'text' => clienttranslate("Look at the top 3 CARDS3 of your [NIGHT or another player's] deck. You may reorder them."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2608,7 +2608,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   163 => array(
-      'type_id' => CT_FALSEALARM,
+      'type_id' => 163,
       'name' => clienttranslate("False Alarm"),
       'text' => clienttranslate("Draw 1 CARD [NIGHT or take the top CARD of your discard]."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2624,7 +2624,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   164 => array(
-      'type_id' => CT_HEROICDEED,
+      'type_id' => 164,
       'name' => clienttranslate("Heroic Deed"),
       'text' => clienttranslate("Draw 1 CARD from your [NIGHT or another player's] deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2640,7 +2640,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   165 => array(
-      'type_id' => CT_SECRETMISSION,
+      'type_id' => 165,
       'name' => clienttranslate("Secret Mission"),
       'text' => clienttranslate("Draw 1 CARD [NIGHT or take 1 random CARD from another player]."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2656,7 +2656,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   166 => array(
-      'type_id' => CT_CAPTURE,
+      'type_id' => 166,
       'name' => clienttranslate("Capture"),
       'text' => clienttranslate("Look at the top 2 CARDS2 of your [NIGHT or another player's] deck and take 1 of them. Discard the other."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2672,7 +2672,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   167 => array(
-      'type_id' => CT_PROVOCATION,
+      'type_id' => 167,
       'name' => clienttranslate("Provocation"),
       'text' => clienttranslate("Choose 1 CARD [NIGHT and look at 1 random CARD from another player]. Toss 1 of them."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2688,7 +2688,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   168 => array(
-      'type_id' => CT_PRISTINEOWNER,
+      'type_id' => 168,
       'name' => clienttranslate("Pristine Owner"),
       'text' => clienttranslate("Draw 2 CARDS2. Place 1 CARD junk from the junkyard on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2704,7 +2704,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   169 => array(
-      'type_id' => CT_BONSAI,
+      'type_id' => 169,
       'name' => clienttranslate("Bonsai"),
       'text' => clienttranslate("At the end of your turn, discard 2 junk CARDS2 to draw 3 CARDS3."),
       'type_displayed' => clienttranslate("Passive"),
@@ -2720,7 +2720,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   170 => array(
-      'type_id' => CT_RAKE,
+      'type_id' => 170,
       'name' => clienttranslate("Rake"),
       'text' => clienttranslate("Search your deck for 0-1 CARD to toss and 0-2 CARDS2 to discard. Shuffle your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2736,7 +2736,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   171 => array(
-      'type_id' => CT_SLOTMACHINE,
+      'type_id' => 171,
       'name' => clienttranslate("Slot Machine"),
       'text' => clienttranslate("Draw CARDS3 until you draw 1 non-junk CARD. Discard any junk CARDS3 drawn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2752,7 +2752,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   172 => array(
-      'type_id' => CT_GENERATIONCHANGE,
+      'type_id' => 172,
       'name' => clienttranslate("Generation Change"),
       'text' => clienttranslate("Take any 2 CARDS2 from your discard. Place 2 junk CARDS2 from the junkyard on your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2768,7 +2768,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   173 => array(
-      'type_id' => CT_WARMEMBRACE,
+      'type_id' => 173,
       'name' => clienttranslate("Warm Embrace"),
       'text' => clienttranslate("While in your stall, you can include 1 junk CARD in each new stack."),
       'type_displayed' => clienttranslate("Passive"),
@@ -2784,7 +2784,7 @@ $this->card_types = array(
       'is_mono' => false
   ),
   174 => array(
-      'type_id' => CT_SWIFTMEMBER,
+      'type_id' => 174,
       'name' => clienttranslate("Swift Member"),
       'text' => clienttranslate("Mono draws 3 CARDS3. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2800,7 +2800,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   175 => array(
-      'type_id' => CT_LOYALMEMBER,
+      'type_id' => 175,
       'name' => clienttranslate("Loyal Member"),
       'text' => clienttranslate("Mono takes the highest printed valued CARD from the market."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2816,7 +2816,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   176 => array(
-      'type_id' => CT_WILYMEMBER,
+      'type_id' => 176,
       'name' => clienttranslate("Wily Member"),
       'text' => clienttranslate("You discard 1 random CARD. If it is an animalfolk CARD, Mono takes it. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2832,7 +2832,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   177 => array(
-      'type_id' => CT_STASHINGMEMBER,
+      'type_id' => 177,
       'name' => clienttranslate("Stashing Member"),
       'text' => clienttranslate("Mono can use junk CARDS3 to build this turn."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2848,9 +2848,9 @@ $this->card_types = array(
       'is_mono' => true
   ),
   178 => array(
-      'type_id' => CT_BOLDMEMBER,
+      'type_id' => 178,
       'name' => clienttranslate("Bold Member"),
-      'text' => clienttranslate("Roll DIE_OCELOT. Swap that many CARDS3 between the tops of your and Mono’s decks. Acquire."),
+      'text' => clienttranslate("Roll DIE_OCELOT. Swap that many CARDS3 between the tops of your and Mono's decks. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -2864,9 +2864,9 @@ $this->card_types = array(
       'is_mono' => true
   ),
   179 => array(
-      'type_id' => CT_FLEXIBLEMEMBER,
+      'type_id' => 179,
       'name' => clienttranslate("Flexible Member"),
-      'text' => clienttranslate("If Mono's discard has no Mono CARDS3, discard Mono’s deck. Mono plays 1 Mono CARD from its discard."),
+      'text' => clienttranslate("If Mono's discard has no Mono CARDS3, discard Mono's deck. Mono plays 1 Mono CARD from its discard."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -2880,7 +2880,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   180 => array(
-      'type_id' => CT_TIRELESSMEMBER,
+      'type_id' => 180,
       'name' => clienttranslate("Tireless Member"),
       'text' => clienttranslate("Mono swaps its lowest valued animalfolk CARD with the highest valued CARD in its stall. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2896,9 +2896,9 @@ $this->card_types = array(
       'is_mono' => true
   ),
   181 => array(
-      'type_id' => CT_STEADYMEMBER,
+      'type_id' => 181,
       'name' => clienttranslate("Steady Member"),
-      'text' => clienttranslate("At the start of Mono’s next turn, it takes the leftmost CARD from the market."),
+      'text' => clienttranslate("At the start of Mono's next turn, it takes the leftmost CARD from the market."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -2912,7 +2912,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   182 => array(
-      'type_id' => CT_LITTLEMEMBER,
+      'type_id' => 182,
       'name' => clienttranslate("Little Member"),
       'text' => clienttranslate("Mono draws 1 CARD from your deck. It places back its lowest CARD. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2928,7 +2928,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   183 => array(
-      'type_id' => CT_CUNNINGMEMBER,
+      'type_id' => 183,
       'name' => clienttranslate("Cunning Member"),
       'text' => clienttranslate("Mono draws 1 CARD from its and your deck. It gives you the lower valued CARD of those. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2944,7 +2944,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   184 => array(
-      'type_id' => CT_DARINGMEMBER,
+      'type_id' => 184,
       'name' => clienttranslate("Daring Member"),
       'text' => clienttranslate("Roll DIE_POLECAT. Multiply the value of each CARD Mono uses this turn by the rolled value. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2960,7 +2960,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   185 => array(
-      'type_id' => CT_WISEMEMBER,
+      'type_id' => 185,
       'name' => clienttranslate("Wise Member"),
       'text' => clienttranslate("If you purchased on your last turn, Mono draws 5 CARDS3. Otherwise, it draws 1 CARD. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2976,7 +2976,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   186 => array(
-      'type_id' => CT_MASTERMEMBER,
+      'type_id' => 186,
       'name' => clienttranslate("Master Member"),
       'text' => clienttranslate("Next time Mono fails to build, it takes 2 rightmost CARDS2 from the market and ends its action phase."),
       'type_displayed' => clienttranslate("Technique"),
@@ -2992,7 +2992,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   187 => array(
-      'type_id' => CT_RIGOROUSMEMBER,
+      'type_id' => 187,
       'name' => clienttranslate("Rigorous Member"),
       'text' => clienttranslate("Mono discards all junk CARDS3. It draws as many CARDS3 +1. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3008,7 +3008,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   188 => array(
-      'type_id' => CT_VORACIOUSMEMBER,
+      'type_id' => 188,
       'name' => clienttranslate("Voracious Member"),
       'text' => clienttranslate("Mono tosses its lowest valued animalfolk CARD. Mono takes the highest valued CARD from the market.  Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3024,7 +3024,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   189 => array(
-      'type_id' => CT_POMPOUSMEMBER,
+      'type_id' => 189,
       'name' => clienttranslate("Pompous Member"),
       'text' => clienttranslate("Discard 1 random CARD from your hand. If the CARD value matches any CARDS3 in the market, Mono takes it. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3040,7 +3040,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   190 => array(
-      'type_id' => CT_CAREFREEMEMBER,
+      'type_id' => 190,
       'name' => clienttranslate("Carefree Member"),
       'text' => clienttranslate("Swap 1 animalfolk CARD from Mono with 1 random animalfolk CARD from you. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3056,7 +3056,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   191 => array(
-      'type_id' => CT_ARCANEMEMBER,
+      'type_id' => 191,
       'name' => clienttranslate("Arcane Member"),
       'text' => clienttranslate("Roll DIE_HARE. Mono draws 1 CARD from [COMET: nowhere] [PLANET: the supply] [STARS: its deck]. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3072,9 +3072,9 @@ $this->card_types = array(
       'is_mono' => true
   ),
   192 => array(
-      'type_id' => CT_CLEVERMEMBER,
+      'type_id' => 192,
       'name' => clienttranslate("Clever Member"),
-      'text' => clienttranslate("Store the top 3 CARDS3 of Mono’s deck. Acquire."),
+      'text' => clienttranslate("Store the top 3 CARDS3 of Mono's deck. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -3088,9 +3088,9 @@ $this->card_types = array(
       'is_mono' => true
   ),
   193 => array(
-      'type_id' => CT_RESOURCEFULMEMBER,
+      'type_id' => 193,
       'name' => clienttranslate("Resourceful Member"),
-      'text' => clienttranslate("Add +1 to Mono’s highest valued CARD for each junk CARD in its hand."),
+      'text' => clienttranslate("Add +1 to Mono's highest valued CARD for each junk CARD in its hand."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -3104,7 +3104,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   194 => array(
-      'type_id' => CT_AVIDMEMBER,
+      'type_id' => 194,
       'name' => clienttranslate("Avid Member"),
       'text' => clienttranslate("Mono gains 10 COIN. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3120,7 +3120,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   195 => array(
-      'type_id' => CT_IMPULSIVEMEMBER,
+      'type_id' => 195,
       'name' => clienttranslate("Impulsive Member"),
       'text' => clienttranslate("Next time Mono fails to build, it draws 3 CARDS3 and tries to build again. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3136,7 +3136,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   196 => array(
-      'type_id' => CT_SHREWDMEMBER,
+      'type_id' => 196,
       'name' => clienttranslate("Shrewd Member"),
       'text' => clienttranslate("Discard 1 random CARD. Shuffle 2 junk CARDS2 from your discard into your deck."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3152,7 +3152,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   197 => array(
-      'type_id' => CT_FUMBLINGMEMBER,
+      'type_id' => 197,
       'name' => clienttranslate("Fumbling Member"),
       'text' => clienttranslate("Roll DIE_PANGOLIN1 and DIE_PANGOLIN2. Look at 1 CARD from your SOURCE. If it is not junk, move it into Mono's DESTINATION. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3168,9 +3168,9 @@ $this->card_types = array(
       'is_mono' => true
   ),
   198 => array(
-      'type_id' => CT_MEDDLINGMEMBER,
+      'type_id' => 198,
       'name' => clienttranslate("Meddling Member"),
-      'text' => clienttranslate("Place 1 junk CARD from Mono’s discard and 1 junk CARD from the junkyard on your discard. Acquire."),
+      'text' => clienttranslate("Place 1 junk CARD from Mono's discard and 1 junk CARD from the junkyard on your discard. Acquire."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,
@@ -3184,7 +3184,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   199 => array(
-      'type_id' => CT_DRAMATICMEMBER,
+      'type_id' => 199,
       'name' => clienttranslate("Dramatic Member"),
       'text' => clienttranslate("[DAWN Move Mono's CLOCK 1 forward.] Mono draws [DAY 4 CARDS3] [NIGHT 1 CARD]."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3200,7 +3200,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   200 => array(
-      'type_id' => CT_STEALTHYMEMBER,
+      'type_id' => 200,
       'name' => clienttranslate("Stealthy Member"),
       'text' => clienttranslate("[DAY Move Mono's CLOCK 1 forward.] [DAWN Mono draws 1 CARD.] [NIGHT Mono takes 1 random CARD from you.] Acquire."),
       'type_displayed' => clienttranslate("Technique"),
@@ -3216,7 +3216,7 @@ $this->card_types = array(
       'is_mono' => true
   ),
   201 => array(
-      'type_id' => CT_PRISTINEMEMBER,
+      'type_id' => 201,
       'name' => clienttranslate("Pristine Member"),
       'text' => clienttranslate("Mono takes 1 junk CARD from the junkyard and draws 5 CARDS3. Acquire."),
       'type_displayed' => clienttranslate("Technique"),

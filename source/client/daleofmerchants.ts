@@ -401,7 +401,6 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	limboTransitionUpdateDisplay() {
-		console.warn("limboTransitionUpdateDisplay REWORK");
 		setTimeout(() => {this.myLimbo.updateDisplay()}, 1)
 		setTimeout(() => {this.myHand.updateDisplay()}, 1)
 	}

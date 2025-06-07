@@ -514,6 +514,12 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 break;
+            case CT_STASHINGMEMBER:
+                $this->notifyAllPlayers('message', clienttranslate('Stashing Member: ${player_name} can use junk to build this turn'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                ));
+                $this->effects->insertGlobal(0, CT_STASHINGMEMBER);
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO CARD NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -1652,17 +1658,20 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * @param mixed $player_id
+     * @param mixed $player_id the player that wants to refill their hand
      * @param array $hand_cards array of dbcards that are currently in the player's hand
      * @param array $stall_cards array of dbcards that are currently in the player's stall
      * @return int maximum hand size
      */
-    function getMaximumHandSize($player_id, array $hand_cards, array $stall_cards): int {
+    function getMaximumHandSize(mixed $player_id, array $hand_cards, array $stall_cards): int {
+        if ($player_id == MONO_PLAYER_ID) {
+            return 5;
+        }
         $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
         //$cookies = $this->countTypeId($hand_cards, CT_COOKIES); //old cookies effect
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
         $displayofpowers = 2 * $this->effects->countGlobalEffects(CT_DISPLAYOFPOWER);
-        $monocards = $player_id == MONO_PLAYER_ID ? 0 : $this->countMonoCards($hand_cards);
+        $monocards = $this->countMonoCards($hand_cards);
         return 5 + $bribes + $sofas + $displayofpowers + $monocards;
     }
 
@@ -3843,17 +3852,39 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * Spawn a Mono card in Mono's hand
+     * Discard the current player's hand
+     * @param $player_id (optional) discard this player's hand instead
+     */
+    function debugDiscard(mixed $player_id) {
+        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
+        $cards = $this->cards->getCardsInLocation(HAND.$player_id);
+        $this->discardMultiple('', $player_id, array(), array(), $cards);
+    }
+
+    /**
+     * Discard Mono's hand
+     */
+    function debugDiscardMono() {
+        $this->debugDiscard(MONO_PLAYER_ID);
+    }
+
+    /**
+     * Spawn a card in Mono's hand
      * @param string $name prefix of the card name
      * @param int $nbr (optional) amount of cards to spawn
      * @return array spawned cards
      */
     function spawnMono(string $name, int $nbr = 1) {
-        $type_id = $this->nameToTypeId($name, true);
-        $name = $this->card_types[$type_id]['name'];
-        $cards = $this->spawn($name, $nbr, MONO_PLAYER_ID);;
-        $this->cards->moveCards($this->toCardIds($cards), HAND.MONO_PLAYER_ID); //spawn on the left
-        return $cards;
+        try {
+            //When using a prefix, prioritize Mono cards
+            $type_id = $this->nameToTypeId($name, true);
+            $name = $this->card_types[$type_id]['name'];
+        }
+        finally {
+            $cards = $this->spawn($name, $nbr, MONO_PLAYER_ID);
+            $this->cards->moveCards($this->toCardIds($cards), HAND.MONO_PLAYER_ID); //spawn on the left
+            return $cards;
+        }
     }
 
     /**

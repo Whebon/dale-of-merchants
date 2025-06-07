@@ -3,6 +3,7 @@ import numbers
 
 def format_emojis(text: str):
     return text.replace("–", "-") \
+                .replace("’", "'") \
                 .replace("🃏🃏🃏", "CARDS3") \
                 .replace("🃏🃏", "CARDS2") \
                 .replace("🃏", "CARD") \
@@ -81,9 +82,9 @@ for sheet_name in xls.sheet_names:
             raise Exception(f"Expected type_id {type_id}, but found {int(row['type_id'])}")
         if type(row['name']) != str:
             break
-        UPPERNAME = row['name'].replace(' ', '').replace("'", '').upper()
+        UPPERNAME = row['name'].replace(' ', '').replace("'", '').upper() #warning: CT_JUNK != CT_JUNK2
         card_types[type_id] = {
-            'type_id': f"CT_{UPPERNAME}", #type_id,
+            'type_id': type_id,
             'name': f"clienttranslate(\"{row['name']}\")",
             'text': f"clienttranslate(\"{format_emojis(row['text'])}\")",
             'type_displayed': type_displayed(row),

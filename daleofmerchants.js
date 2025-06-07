@@ -5173,7 +5173,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.limboTransitionUpdateDisplay = function () {
             var _this = this;
-            console.warn("limboTransitionUpdateDisplay REWORK");
             setTimeout(function () { _this.myLimbo.updateDisplay(); }, 1);
             setTimeout(function () { _this.myHand.updateDisplay(); }, 1);
         };
