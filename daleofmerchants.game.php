@@ -492,6 +492,28 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SWIFTMEMBER:
                 $this->draw(clienttranslate('Swift Member: ${player_name} draws ${nbr} cards'), 3, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
+            case CT_LOYALMEMBER:
+                $market_cards = $this->cards->getCardsInLocation(MARKET);
+                $market_card = $this->monoPickHighestValuedCard($market_cards);
+                if ($market_card) {
+                    //obtain the market card
+                    $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
+                    $this->notifyAllPlayers('marketToHand', clienttranslate('Loyal Member: ${player_name} takes a ${extended_card_name}'), array (
+                        'player_id' => MONO_PLAYER_ID,
+                        'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        'card_name' => $this->getCardName($market_card),
+                        'extended_card_name' => $this->getCardNameExt($market_card),
+                        'market_card_id' => $market_card["id"],
+                        'pos' => $market_card["location_arg"]
+                    ));
+                }
+                else {
+                    //fizzle
+                    $this->notifyAllPlayers('message', clienttranslate('Loyal Member: ${player_name} fails to take a card from the market'), array(
+                        "card_name" => $this->getCardName($technique_card)
+                    ));
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO CARD NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -688,6 +710,48 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers(count($cards) == 0 ? 'instant_monoHideHand' : 'monoHideHand', '', array(
             "cards" => $cards
         ));
+    }
+
+    /**
+     * @param $dbcards dbcards to pick from
+     * @return ?array return the topmost (=leftmost) highest printed valued card
+     */
+    function monoPickHighestValuedCard($dbcards) {
+        if (count($dbcards) == 0) {
+            return null;
+        }
+        $sorted_dbcards = $this->sortCardsByLocationArg($dbcards, false);
+        $highest_value = -INF;
+        $highest_card = $sorted_dbcards[0];
+        foreach ($sorted_dbcards as $dbcard) {
+            $value = $this->getOriginalValue($dbcard);
+            if ($value > $highest_value) {
+                $highest_value = $value;
+                $highest_card = $dbcard;
+            }
+        }
+        return $highest_card;
+    }
+
+    /**
+     * @param $dbcards dbcards to pick from
+     * @return ?array return the topmost (=leftmost) lowest printed valued card. prioritizes junk.
+     */
+    function monoPickLowestValuedCard($dbcards) {
+        if (count($dbcards) == 0) {
+            return null;
+        }
+        $sorted_dbcards = $this->sortCardsByLocationArg($dbcards, false);
+        $lowest_value = INF;
+        $lowest_card = $sorted_dbcards[0];
+        foreach ($sorted_dbcards as $dbcard) {
+            $value = $this->isJunk($dbcard) ? -INF : $this->getOriginalValue($dbcard); //junk is the absolute lowest value
+            if ($value < $lowest_value) {
+                $lowest_value = $value;
+                $lowest_card = $dbcard;
+            }
+        }
+        return $lowest_card;
     }
 
     /**
@@ -3779,6 +3843,20 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Spawn a Mono card in Mono's hand
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnMono(string $name, int $nbr = 1) {
+        $type_id = $this->nameToTypeId($name, true);
+        $name = $this->card_types[$type_id]['name'];
+        $cards = $this->spawn($name, $nbr, MONO_PLAYER_ID);;
+        $this->cards->moveCards($this->toCardIds($cards), HAND.MONO_PLAYER_ID); //spawn on the left
+        return $cards;
+    }
+
+    /**
      * Spawn cards on top of the current player's deck
      * @param string $name prefix of the card name
      * @param int $nbr (optional) amount of cards to spawn
@@ -3824,11 +3902,12 @@ class DaleOfMerchants extends DaleTableBasic
      * Spawn a number of new cards out of thin air and place it in the current player's hand
      * @param string $name prefix of the card name
      * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
      * @return array spawned cards
      */
-    function spawn(string $name, int $nbr = 1) {
+    function spawn(string $name, int $nbr = 1, mixed $player_id = null) {
         //spawn a card in hand (warning: breaks deck size counter)
-        $player_id = $this->getCurrentPlayerId();
+        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
         $type_id = $this->nameToTypeId($name);
         $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $nbr));
         $this->cards->createCards($cards, 'spawned');
@@ -3852,10 +3931,12 @@ class DaleOfMerchants extends DaleTableBasic
 
     /**
      * Return the first type id of a card type with the given prefix
+     * @param string $prefix prefix of the english card name
+     * @param bool $mono_only (optional) - default false. If true, only search for mono cards
      * @example example
      * nameToTypeId("coo") = CT_COOKIES
      */
-    function nameToTypeId(string $prefix): int {
+    function nameToTypeId(string $prefix, bool $mono_only = false): int {
         $len = strlen($prefix);
         $f = function($name) use ($len) {
             $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
@@ -3864,6 +3945,9 @@ class DaleOfMerchants extends DaleTableBasic
         foreach ($this->card_types as $type_id => $card) {
             //spawn filter
             if ($type_id <= 4) {
+                continue;
+            }
+            if ($mono_only && !$card['is_mono']) {
                 continue;
             }
             if ($f($card['name']) == $f($prefix)) {
