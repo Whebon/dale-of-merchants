@@ -7781,6 +7781,10 @@ class DaleOfMerchants extends Gamegui
 					this.myLimbo.selectItem(+dbcard.id);
 				}
 			}
+			if (args.highlight_schedule_card !== undefined) {
+				this.monoSchedule.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique", undefined, undefined, Infinity);
+				this.monoSchedule.selectItem(+args.highlight_schedule_card["id"]);
+			}
 			if (args.automatic) {
 				resolve();
 				return;

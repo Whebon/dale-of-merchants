@@ -11655,6 +11655,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                             _this.myLimbo.selectItem(+dbcard.id);
                                         }
                                     }
+                                    if (args.highlight_schedule_card !== undefined) {
+                                        _this.monoSchedule.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique", undefined, undefined, Infinity);
+                                        _this.monoSchedule.selectItem(+args.highlight_schedule_card["id"]);
+                                    }
                                     if (args.automatic) {
                                         resolve();
                                         return;

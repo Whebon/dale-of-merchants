@@ -455,6 +455,50 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function monoResolveCards($trigger) {
         $this->showDebugMessage("monoResolveCards");
+        $unsorted_dbcards = $this->cards->getCardsInLocation(SCHEDULE.MONO_PLAYER_ID);
+        $dbcards = $this->sortCardsByLocationArg($unsorted_dbcards, false);
+        foreach ($dbcards as $technique_card) {
+            if ($this->getTrigger($technique_card) != $trigger) {
+                continue;
+            }
+            $technique_type_id = $this->getTypeId($technique_card);
+            $this->monoConfirmAction(clienttranslate('${player_name} resolves their ${card_name}'), array(
+                "highlight_schedule_card" => $technique_card,
+                "card_name" => $this->getCardName($technique_card)
+            ));
+            switch($technique_type_id) {
+                case CT_STEADYMEMBER:
+                    $market_cards_unsorted = $this->cards->getCardsInLocation(MARKET);
+                    $market_cards = $this->sortCardsByLocationArg($market_cards_unsorted, false);
+                    if (count($market_cards) > 0) {
+                        $market_card = $market_cards[0];
+                        $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
+                        $this->notifyAllPlayers('marketToHand', clienttranslate('Steady Member: ${player_name} takes a ${extended_card_name} from the market'), array (
+                            'player_id' => MONO_PLAYER_ID,
+                            'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            'card_name' => $this->getCardName($market_card),
+                            'extended_card_name' => $this->getCardNameExt($market_card),
+                            'market_card_id' => $market_card["id"],
+                            'pos' => $market_card["location_arg"],
+                        ));
+                    }
+                    else {
+                        //fizzle
+                        $this->notifyAllPlayers('message', clienttranslate('Steady Member: ${player_name} fails to take a card from the market'), array(
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                        ));
+                    }
+                    break;
+                default:
+                    $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TRIGGER NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
+                        "card_name" => $this->getCardName($technique_card)
+                    ));
+                    break;
+            }
+            //(~mono resolve)
+
+            $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card);
+        }
     }
 
     /**
@@ -506,7 +550,7 @@ class DaleOfMerchants extends DaleTableBasic
                 if ($market_card) {
                     //obtain the market card
                     $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                    $this->notifyAllPlayers('marketToHand', clienttranslate('Loyal Member: ${player_name} takes a ${extended_card_name}'), array (
+                    $this->notifyAllPlayers('marketToHand', clienttranslate('Loyal Member: ${player_name} takes a ${extended_card_name} from the market'), array (
                         'player_id' => MONO_PLAYER_ID,
                         'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         'card_name' => $this->getCardName($market_card),
@@ -559,16 +603,26 @@ class DaleOfMerchants extends DaleTableBasic
                     "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
                 ));
                 break;
+            case CT_STEADYMEMBER:
+                //no immediate effects
+                break;
             default:
-                $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO CARD NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
+                $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
                 ));
                 break;
         }
         //(~mono technique)
 
-        //fully resolve the card and apply the state transition
-        $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card);
+        //resolve the card
+        if ($this->getTrigger($technique_card) == null)  {
+            $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card);
+        }
+        else {
+             $this->resolveImmediateEffects(MONO_PLAYER_ID, $technique_card);
+        }
+
+        //apply the state transition
         if (!$this->card_types[$technique_type_id]["has_plus"]) {
             return MONO_TECHNIQUE_NO_PLUS;
         }
@@ -3099,6 +3153,11 @@ class DaleOfMerchants extends DaleTableBasic
         //advance the clock if the technique
         $this->advanceClock($player_id, 1, clienttranslate('${player_name} reaches ${clock}'));
 
+        //skip state transition for Mono
+        if ($player_id == MONO_PLAYER_ID) {
+            return;
+        }
+
         //decide if the player can go again
         if ($this->card_types[$type_id]["has_plus"]) {
             if ($this->getActivePlayerId() != $player_id) {
@@ -4715,10 +4774,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} places a ${card_name} into their hand'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} takes a ${extended_card_name} from the market'), array (
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
+                    'extended_card_name' => $this->getCardNameExt($card),
                     'market_card_id' => $card_id,
                     'pos' => $card["location_arg"],
                 ));
@@ -6432,10 +6492,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} places a ${card_name} into their hand'), array(
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} takes a ${extended_card_name} from the market'), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
+                    'extended_card_name' => $this->getCardNameExt($card),
                     'market_card_id' => $card_id,
                     'pos' => $card["location_arg"],
                 ));

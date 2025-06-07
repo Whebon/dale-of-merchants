@@ -399,6 +399,7 @@ declare global {
 			opponent_name: string,
 			highlight_limbo_cards?: {[card_id: number]: DbCard},
 			highlight_market_pos?: number
+			highlight_schedule_card?: DbCard,
 			wrap_class?: DaleWrapClass
 			automatic?: boolean
 		}
