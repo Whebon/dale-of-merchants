@@ -10566,7 +10566,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['accidentTakeBack', 500, true],
                 ['cunningNeighbourWatch', 500, true],
                 ['cunningNeighbourReturn', 500, true],
-                ['monoShowHand', 500],
+                ['monoShowHand', 750],
                 ['instant_monoHideHand', 1],
                 ['monoHideHand', 500],
                 ['tossFromDiscard', 500],
