@@ -297,34 +297,11 @@ class DaleOfMerchants extends Gamegui
 			dojo.connect(this.myHand.orderedSelection, 'onSelect', this, 'onSelectHandCard');
 			dojo.connect(this.myHand.orderedSelection, 'onUnselect', this, 'onUnselectHandCard');
 
-			//limbo transition
-			const thiz = this;
-			const limboTransitionUpdateDisplay = () => {
-				console.warn("limboTransitionUpdateDisplay");
-				setTimeout(function() {thiz.myLimbo.updateDisplay()}, 1)
-				setTimeout(function() {thiz.myHand.updateDisplay()}, 1)
-			}
-			const onLimboItemCreate = () => {
-				const classList = thiz.myLimbo.wrap!.classList;
-				if (classList.contains("daleofmerchants-hidden")) {
-					classList.remove("daleofmerchants-hidden");
-					limboTransitionUpdateDisplay();
-				}
-			}
-			const onLimboItemDelete = () => {
-				const classList = thiz.myLimbo.wrap!.classList;
-				if (thiz.myLimbo.count() <= 1) {
-					setTimeout(() => {
-						if (!classList.contains("daleofmerchants-hidden")) {
-							classList.add("daleofmerchants-hidden");
-							limboTransitionUpdateDisplay();
-						}
-					}, thiz.myLimbo.duration);
-				}
-			}
-
 			//initialize limbo
-			this.myLimbo.init(this, $('daleofmerchants-mylimbo')!, $('daleofmerchants-mylimbo-wrap')!, _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+			this.myLimbo.init(this, $('daleofmerchants-mylimbo')!, $('daleofmerchants-mylimbo-wrap')!, _("Limbo"), 
+				this.onLimboItemCreate.bind(this), 
+				this.onLimboItemDelete.bind(this)
+			);
 			this.myLimbo.wrap!.classList.add("daleofmerchants-hidden");
 			this.myLimbo.centerItems = true;
 			for (let i in gamedatas.limbo) {
@@ -420,6 +397,32 @@ class DaleOfMerchants extends Gamegui
 		this.setupNotifications();
 
 		console.warn( "Ending game setup" );
+	}
+
+	limboTransitionUpdateDisplay() {
+		console.warn("limboTransitionUpdateDisplay REWORK");
+		setTimeout(() => {this.myLimbo.updateDisplay()}, 1)
+		setTimeout(() => {this.myHand.updateDisplay()}, 1)
+	}
+
+	onLimboItemCreate() {
+		const classList = this.myLimbo.wrap!.classList;
+		if (classList.contains("daleofmerchants-hidden")) {
+			classList.remove("daleofmerchants-hidden");
+			this.limboTransitionUpdateDisplay();
+		}
+	}
+
+	onLimboItemDelete() {
+		const classList = this.myLimbo.wrap!.classList;
+		if (this.myLimbo.count() <= 1 && !this.mono_hand_is_visible) {
+			setTimeout(() => {
+				if (!classList.contains("daleofmerchants-hidden")) {
+					classList.add("daleofmerchants-hidden");
+					this.limboTransitionUpdateDisplay();
+				}
+			}, this.myLimbo.duration);
+		}
 	}
 
 	/**
@@ -7480,6 +7483,7 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.myLimbo.enableSortItems = true; //important: this is needed to disable the left-to-right ordering! (on the players turn)
 		this.mono_hand_is_visible = false;
+		this.onLimboItemDelete(); //make sure to hide limbo now (limbo was forced open while mono_hand_is_visible == true)
 		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		if (this.myLimbo.count() > sortedCards.length) {
 			throw new Error(`Invariant Error: Mono's hand size. Client says it's ${this.myLimbo.count()}, server says it's ${sortedCards.length}`);

@@ -5096,31 +5096,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 dojo.connect(this.myHand, 'onClick', this, 'onSelectHandCard');
                 dojo.connect(this.myHand.orderedSelection, 'onSelect', this, 'onSelectHandCard');
                 dojo.connect(this.myHand.orderedSelection, 'onUnselect', this, 'onUnselectHandCard');
-                var thiz_5 = this;
-                var limboTransitionUpdateDisplay_1 = function () {
-                    console.warn("limboTransitionUpdateDisplay");
-                    setTimeout(function () { thiz_5.myLimbo.updateDisplay(); }, 1);
-                    setTimeout(function () { thiz_5.myHand.updateDisplay(); }, 1);
-                };
-                var onLimboItemCreate = function () {
-                    var classList = thiz_5.myLimbo.wrap.classList;
-                    if (classList.contains("daleofmerchants-hidden")) {
-                        classList.remove("daleofmerchants-hidden");
-                        limboTransitionUpdateDisplay_1();
-                    }
-                };
-                var onLimboItemDelete = function () {
-                    var classList = thiz_5.myLimbo.wrap.classList;
-                    if (thiz_5.myLimbo.count() <= 1) {
-                        setTimeout(function () {
-                            if (!classList.contains("daleofmerchants-hidden")) {
-                                classList.add("daleofmerchants-hidden");
-                                limboTransitionUpdateDisplay_1();
-                            }
-                        }, thiz_5.myLimbo.duration);
-                    }
-                };
-                this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), onLimboItemCreate, onLimboItemDelete);
+                this.myLimbo.init(this, $('daleofmerchants-mylimbo'), $('daleofmerchants-mylimbo-wrap'), _("Limbo"), this.onLimboItemCreate.bind(this), this.onLimboItemDelete.bind(this));
                 this.myLimbo.wrap.classList.add("daleofmerchants-hidden");
                 this.myLimbo.centerItems = true;
                 for (var i in gamedatas.limbo) {
@@ -5194,6 +5170,31 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.showAnimalfolkSpecificGameComponents();
             this.setupNotifications();
             console.warn("Ending game setup");
+        };
+        DaleOfMerchants.prototype.limboTransitionUpdateDisplay = function () {
+            var _this = this;
+            console.warn("limboTransitionUpdateDisplay REWORK");
+            setTimeout(function () { _this.myLimbo.updateDisplay(); }, 1);
+            setTimeout(function () { _this.myHand.updateDisplay(); }, 1);
+        };
+        DaleOfMerchants.prototype.onLimboItemCreate = function () {
+            var classList = this.myLimbo.wrap.classList;
+            if (classList.contains("daleofmerchants-hidden")) {
+                classList.remove("daleofmerchants-hidden");
+                this.limboTransitionUpdateDisplay();
+            }
+        };
+        DaleOfMerchants.prototype.onLimboItemDelete = function () {
+            var _this = this;
+            var classList = this.myLimbo.wrap.classList;
+            if (this.myLimbo.count() <= 1 && !this.mono_hand_is_visible) {
+                setTimeout(function () {
+                    if (!classList.contains("daleofmerchants-hidden")) {
+                        classList.add("daleofmerchants-hidden");
+                        _this.limboTransitionUpdateDisplay();
+                    }
+                }, this.myLimbo.duration);
+            }
         };
         DaleOfMerchants.prototype.setupMono = function (gamedatas) {
             var _a;
@@ -11386,6 +11387,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.myLimbo.enableSortItems = true;
             this.mono_hand_is_visible = false;
+            this.onLimboItemDelete();
             var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             if (this.myLimbo.count() > sortedCards.length) {
                 throw new Error("Invariant Error: Mono's hand size. Client says it's ".concat(this.myLimbo.count(), ", server says it's ").concat(sortedCards.length));
