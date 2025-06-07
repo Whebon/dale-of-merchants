@@ -7795,7 +7795,6 @@ class DaleOfMerchants extends Gamegui
 			this.addActionButton("mono-confirm-action-button", _("Confirm"), () => {
 				this.removeActionButtons();
 				this.restoreMainTitle();
-				dojo.addClass("ebd-body", "lockedInterface");
 				resolve();
 			});
 		});

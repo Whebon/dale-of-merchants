@@ -11669,7 +11669,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                     _this.addActionButton("mono-confirm-action-button", _("Confirm"), function () {
                                         _this.removeActionButtons();
                                         _this.restoreMainTitle();
-                                        dojo.addClass("ebd-body", "lockedInterface");
                                         resolve();
                                     });
                                 })];
