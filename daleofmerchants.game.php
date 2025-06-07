@@ -473,6 +473,10 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         if ($technique_card == null) {
+            $this->monoConfirmAction($msg, array(
+                "wrap_class" => "daleofmerchants-wrap-technique",
+                "description" => '${player_name} has no Mono cards to play'
+            ));
             return MONO_TECHNIQUE_NONE;
         }
 
