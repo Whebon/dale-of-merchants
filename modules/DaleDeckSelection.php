@@ -60,6 +60,9 @@ class DaleDeckSelection {
             if (in_array($random_id, $this->game->DISABLED_ANIMALFOLK_IDS)) {
                 continue;
             }
+            if ($this->game->isSoloGame() && in_array($random_id, $this->game->DISABLED_SOLO_ANIMALFOLK_IDS)) {
+                continue;
+            }
             if (!in_array($random_id, $animalfolk_ids)) {
                 $animalfolk_ids[] = $random_id;
             }

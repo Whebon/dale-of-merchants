@@ -237,7 +237,12 @@ class DaleOfMerchants extends DaleTableBasic
         $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
         $result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
         $result['debugMode'] = $this->getGameStateValue("debugMode") == '1';
-        $result['disabledAnimalfolkIds'] = $this->DISABLED_ANIMALFOLK_IDS;
+
+        //disabled animalfolk
+        $result['disabledAnimalfolkIds'] = $this->isSoloGame() ? array_merge(
+            $this->DISABLED_ANIMALFOLK_IDS,
+            $this->DISABLED_SOLO_ANIMALFOLK_IDS
+        ) : $this->DISABLED_ANIMALFOLK_IDS;
   
         return $result;
     }
@@ -4076,6 +4081,9 @@ class DaleOfMerchants extends DaleTableBasic
             }
             if (in_array($animalfolk_id, $this->DISABLED_ANIMALFOLK_IDS)) {
                 throw new BgaSystemException("The vote includes a disabled animalfolk: ".$animalfolk_id);
+            }
+            if ($this->isSoloGame() && in_array($animalfolk_id, $this->DISABLED_SOLO_ANIMALFOLK_IDS)) {
+                throw new BgaSystemException("The vote includes a disabled animalfolk (solo-mode): ".$animalfolk_id);
             }
         }
 
