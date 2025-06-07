@@ -491,6 +491,9 @@ class DaleOfMerchants extends DaleTableBasic
             "wrap_class" => "daleofmerchants-wrap-technique"
         ));
 
+        //Get basic information
+        $opponent_id = $this->getActivePlayerId();
+
         //resolve the technique
         $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);
         switch($technique_type_id) {
@@ -524,6 +527,37 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                 ));
                 $this->effects->insertGlobal(0, CT_STASHINGMEMBER);
+                break;
+            case CT_BOLDMEMBER:
+                $nbr = $this->rollDie(
+                    clienttranslate('Bold Member: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_OCELOTS,
+                    $technique_card,
+                    array(),
+                    null,
+                    MONO_PLAYER_ID
+                );
+                $nbr = min(
+                    $nbr,
+                    $this->cards->countCardsInDrawAndDiscardOfPlayer(MONO_PLAYER_ID),
+                    $this->cards->countCardsInDrawAndDiscardOfPlayer($opponent_id)
+                );
+                $cards_for_mono = $this->cards->pickCardsForLocation($nbr, DECK.MONO_PLAYER_ID, 'boldmember1');
+                $cards_for_player = $this->cards->pickCardsForLocation($nbr, DECK.$opponent_id, 'boldmember2');
+                $this->cards->moveCardsOnTop($this->toCardIds($cards_for_mono), DECK.MONO_PLAYER_ID);
+                $this->cards->moveCardsOnTop($this->toCardIds($cards_for_player), DECK.$opponent_id);
+                $this->notifyAllPlayers('instant_deckToDeck', '', array(
+                    "from_player_id" => MONO_PLAYER_ID,
+                    "to_player_id" => $opponent_id,
+                    "nbr" => $nbr
+                ));
+                $this->notifyAllPlayers('deckToDeck', clienttranslate('Bold Member: ${player_name} and ${opponent_name} swap ${nbr} card(s) between the tops of their decks'), array(
+                    "from_player_id" => $opponent_id,
+                    "to_player_id" => MONO_PLAYER_ID,
+                    "nbr" => $nbr,
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
+                ));
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO CARD NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -2442,9 +2476,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $dbcard the card to land the die on (for the client)
      * @param array $msg_args (optional) additional args
      * @param int $d6 (optional) by default randomize a value in range [0, 5]. Otherwise, use the value provided by $d6
+     * @param mixed $player_id (optional) by default, it is assumed the active player rolls the die
      * @return int result of the die roll
      */
-    function rollDie(string $msg, int $animalfolk_id, array $dbcard, array $msg_args = array(), $d6 = null) {
+    function rollDie(string $msg, int $animalfolk_id, array $dbcard, array $msg_args = array(), $d6 = null, $player_id = null) {
         if ($d6 === null) {
             $d6 = rand(0, 5);
         }
@@ -2454,7 +2489,7 @@ class DaleOfMerchants extends DaleTableBasic
         $die_value = null;
         $die_label = null;
         $die_icon = null;
-        $player_id = $this->getActivePlayerId();
+        $player_id = $player_id === null ? $this->getActivePlayerId() : $player_id;
         switch($animalfolk_id) {
             case ANIMALFOLK_OCELOTS:
                 switch($d6) {
@@ -4855,7 +4890,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "to_player_id" => $opponent_id,
                     "nbr" => $nbr
                 ));
-                $this->notifyAllPlayers('deckToDeck', clienttranslate('${player_name} and ${opponent_name} swap ${nbr} card(s) between the tops of their decks'), array(
+                $this->notifyAllPlayers('deckToDeck', clienttranslate('Whirligig: ${player_name} and ${opponent_name} swap ${nbr} card(s) between the tops of their decks'), array(
                     "from_player_id" => $opponent_id,
                     "to_player_id" => $player_id,
                     "nbr" => $nbr,
