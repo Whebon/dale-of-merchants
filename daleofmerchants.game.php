@@ -442,11 +442,9 @@ class DaleOfMerchants extends DaleTableBasic
         if (!isset($args["description"])) {
             $args["description"] = $msg; //this (typically shorter) description will be displayed in the main title bar
         }
-        $automatic = $this->userPreferences->get($this->getActivePlayerId(), 102) == 1;
         $this->notifyAllPlayers('monoConfirmAction', $msg, array_merge($args, array(
             "i18n" => array("description"),
-            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-            "automatic" => $automatic
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
         ), $args));
     }
 

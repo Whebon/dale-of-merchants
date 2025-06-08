@@ -7798,8 +7798,8 @@ class DaleOfMerchants extends Gamegui
 				this.monoSchedule.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique", undefined, undefined, Infinity);
 				this.monoSchedule.selectItem(+args.highlight_schedule_card["id"]);
 			}
-			if (args.automatic) {
-				resolve();
+			if (this.getGameUserPreference(102) == 1) {
+				resolve(); //Mono's turn style: automatic
 				return;
 			}
 			this.removeActionButtons();

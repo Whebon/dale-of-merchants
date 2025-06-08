@@ -11660,7 +11660,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                         _this.monoSchedule.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique", undefined, undefined, Infinity);
                                         _this.monoSchedule.selectItem(+args.highlight_schedule_card["id"]);
                                     }
-                                    if (args.automatic) {
+                                    if (_this.getGameUserPreference(102) == 1) {
                                         resolve();
                                         return;
                                     }
