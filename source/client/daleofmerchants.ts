@@ -7787,6 +7787,8 @@ class DaleOfMerchants extends Gamegui
 				for (let card_id in args.highlight_limbo_cards) {
 					const dbcard = args.highlight_limbo_cards[card_id]!
 					this.myLimbo.selectItem(+dbcard.id);
+					//The card(s) could have one of the animations, like the one where its scale pulses a bit //Sami
+					DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority"); 
 				}
 			}
 			if (args.highlight_schedule_card !== undefined) {

@@ -11653,6 +11653,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                         for (var card_id in args.highlight_limbo_cards) {
                                             var dbcard = args.highlight_limbo_cards[card_id];
                                             _this.myLimbo.selectItem(+dbcard.id);
+                                            DaleCard_10.DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority");
                                         }
                                     }
                                     if (args.highlight_schedule_card !== undefined) {

@@ -322,7 +322,7 @@ class DaleOfMerchants extends DaleTableBasic
         if (count($players) == 1) {
             $players[MONO_PLAYER_ID] = array(
                 'player_id' => MONO_PLAYER_ID,
-                'player_color' => "9f4488",
+                'player_color' => "5E1F91",
                 'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                 'player_zombie' => 0,
                 'player_no' => 2,

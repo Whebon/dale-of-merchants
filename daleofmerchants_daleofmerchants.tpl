@@ -120,7 +120,7 @@
                     <span id="daleofmerchants-clock-label-{PLAYER_ID}" class="daleofmerchants-clock-label">Clock</span>
                 </span>
             </span>
-            <h3 class="daleofmerchants-play-area-title"><span style="color:#{PLAYER_COLOR};">{PLAYER_NAME_POSSESSIVE}</span> {PLAY_AREA} </h3>
+            <div class="daleofmerchants-play-area-title" style="background-color:#{PLAYER_COLOR};"><strong>{PLAYER_NAME_POSSESSIVE}</strong> {PLAY_AREA} </div>
             <div class="daleofmerchants-horizontal-flex">
                 <div id="daleofmerchants-deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
                 <div id="daleofmerchants-discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>

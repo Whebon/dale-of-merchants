@@ -43,14 +43,14 @@
 
 	"102": {
 		//unused, but might be helpful later
-		"name": "Automate Mono's turn (solo-mode only)",
+		"name": "Mono's turn style (solo-mode)",
 		"needReload": false,
 		"values": {
 		  "0": {
-			"name": "Disabled"
+			"name": "Stepped"
 		  },
 		  "1": {
-			"name": "Enabled"
+			"name": "Automated"
 		  }
 		},
 		"default": 0
