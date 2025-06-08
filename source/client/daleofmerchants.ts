@@ -4041,9 +4041,12 @@ class DaleOfMerchants extends Gamegui
 			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
-		}).then(
-			() => this.mainClientState.leave()
-		);
+		})
+		this.mainClientState.leave();
+		//leaving the client state using Promise resolution leads to re-entering an already resolved client_state (such as 'client_acorn')
+		// .then(
+		// 	() => this.mainClientState.leave()
+		// );
 	}
 
 	/**

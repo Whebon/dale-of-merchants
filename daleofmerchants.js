@@ -8357,12 +8357,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.mainClientState.leaveAndDontReturn();
         };
         DaleOfMerchants.prototype.playTechniqueCard = function (args) {
-            var _this = this;
             this.bgaPerformAction('actPlayTechniqueCard', {
                 card_id: this.mainClientState.args.technique_card_id,
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
-            }).then(function () { return _this.mainClientState.leave(); });
+            });
+            this.mainClientState.leave();
         };
         DaleOfMerchants.prototype.clientScheduleTechnique = function (stateName, technique_card_id, args) {
             if (args === void 0) { args = {}; }
