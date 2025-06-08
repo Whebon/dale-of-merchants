@@ -250,8 +250,8 @@ $machinestates = array(
 	),
 	52 => array(
 		'name' => 'spyglass',
-		'description' => clienttranslate('Spyglass: ${actplayer} must choose a card to place into their hand'),
-		'descriptionmyturn' => clienttranslate('Spyglass: ${you} must choose a card to place into your hand'),
+		'description' => clienttranslate('Spyglass: ${actplayer} must choose 1 card to take and reorder the rest'),
+		'descriptionmyturn' => clienttranslate('Spyglass: ${you} must choose 1 card to take and reorder the rest'),
 		'type' => 'activeplayer',
 		'action' => 'stSpyglass',
 		'possibleactions' => ['actSpyglass'],
@@ -261,8 +261,8 @@ $machinestates = array(
 	),
 	53 => array(
 		'name' => 'specialOffer',
-		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must choose a card to take'),
-		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must choose a card to take'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must choose 1 card to take and toss the rest'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must choose 1 card to take and toss the rest'),
 		'type' => 'activeplayer',
 		'action' => 'stSpecialOffer',
 		'args' => 'argResolvingCardName',

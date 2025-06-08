@@ -380,8 +380,8 @@ interface GameStates {
 	},
 	52: {
 		'name': 'spyglass',
-		'description': 'Spyglass: ${actplayer} must choose a card to place into their hand',
-		'descriptionmyturn': 'Spyglass: ${you} must choose a card to place into your hand',
+		'description': 'Spyglass: ${actplayer} must choose 1 card to take and reorder the rest',
+		'descriptionmyturn': 'Spyglass: ${you} must choose 1 card to take and reorder the rest',
 		'type': 'activeplayer',
 		'action': 'stSpyglass',
 		'possibleactions': {
@@ -397,8 +397,8 @@ interface GameStates {
 	},
 	53: {
 		'name': 'specialOffer',
-		'description': '${resolving_card_name}: ${actplayer} must choose a card to take',
-		'descriptionmyturn': '${resolving_card_name}: ${you} must choose a card to take',
+		'description': '${resolving_card_name}: ${actplayer} must choose 1 card to take and toss the rest',
+		'descriptionmyturn': '${resolving_card_name}: ${you} must choose 1 card to take and toss the rest',
 		'type': 'activeplayer',
 		'action': 'stSpecialOffer',
 		'args': 'argResolvingCardName',

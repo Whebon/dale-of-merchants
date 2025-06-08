@@ -645,7 +645,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique',
-					this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons.getSpyglassIcon())
+					this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons.getSpyglassIcon(), DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'client_acorn':
@@ -687,7 +687,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'specialOffer':
 				this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', 
-					this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons.getCheeseIcon())
+					this.format_dale_icons(_("Choose cards to take (ICON) and toss (ICON)"), DaleIcons.getCheeseIcon(), DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'client_rottenFood':

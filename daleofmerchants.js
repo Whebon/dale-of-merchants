@@ -5373,7 +5373,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'spyglass':
-                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_10.DaleIcons.getSpyglassIcon()));
+                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons_10.DaleIcons.getSpyglassIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     break;
                 case 'client_acorn':
                 case 'client_velocipede':
@@ -5397,7 +5397,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'specialOffer':
-                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose a card to take (ICON)"), DaleIcons_10.DaleIcons.getCheeseIcon()));
+                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and toss (ICON)"), DaleIcons_10.DaleIcons.getCheeseIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     break;
                 case 'client_rottenFood':
                     for (var _k = 0, _l = Object.entries(this.allDecks); _k < _l.length; _k++) {
