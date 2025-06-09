@@ -7396,6 +7396,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (+player_id == this.player_id) {
                 this.pileToStock(card, pile, stock, location_arg);
             }
+            else if (this.mono_hand_is_visible && stock == this.myHand) {
+                this.pileToStock(card, pile, this.myLimbo, location_arg);
+            }
             else {
                 pile.pop('overall_player_board_' + player_id);
             }
@@ -10967,7 +10970,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("opponentHandToPlayerHand");
             console.warn(notif);
             if (notif.args._private) {
-                if (this.player_id == notif.args.opponent_id) {
+                if (this.mono_hand_is_visible) {
+                    var card_id = +notif.args._private.card.id;
+                    var from = (this.player_id == notif.args.opponent_id) ? this.myHand : this.myLimbo;
+                    var to = (this.player_id == notif.args.opponent_id) ? this.myLimbo : this.myHand;
+                    to.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args._private.card), from.control_name + '_item_' + card_id);
+                    from.removeFromStockByIdNoAnimation(card_id);
+                }
+                else if (this.player_id == notif.args.opponent_id) {
                     var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
                     var card = DaleCard_10.DaleCard.of(notif.args._private.card);
                     stock.removeFromStockById(card.id, 'overall_player_board_' + notif.args.player_id);

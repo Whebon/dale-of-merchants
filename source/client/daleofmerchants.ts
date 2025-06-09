@@ -2912,6 +2912,9 @@ class DaleOfMerchants extends Gamegui
 		if (+player_id == this.player_id) {
 			this.pileToStock(card, pile, stock, location_arg);
 		}
+		else if (this.mono_hand_is_visible && stock == this.myHand) {
+			this.pileToStock(card, pile, this.myLimbo, location_arg);
+		}
 		else {
 			pile.pop('overall_player_board_'+player_id);
 		}
@@ -6982,7 +6985,15 @@ class DaleOfMerchants extends Gamegui
 		console.warn(notif);
 		//Move a card from an `opponent_id`'s hand/limbo to a `player_id`'s hand/limbo
 		if (notif.args._private) {
-			if (this.player_id == notif.args.opponent_id) {
+			if (this.mono_hand_is_visible) {
+				//Mono, special case: hand <-> limbo
+				const card_id = +notif.args._private.card.id;
+				const from = (this.player_id == notif.args.opponent_id) ? this.myHand : this.myLimbo;
+				const to = (this.player_id == notif.args.opponent_id) ? this.myLimbo : this.myHand;
+				to.addDaleCardToStock(DaleCard.of(notif.args._private.card), from.control_name+'_item_' + card_id)
+				from.removeFromStockByIdNoAnimation(card_id);
+			}
+			else if (this.player_id == notif.args.opponent_id) {
 				//opponent's view
 				const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 				const card = DaleCard.of(notif.args._private.card);

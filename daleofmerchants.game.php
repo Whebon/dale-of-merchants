@@ -688,6 +688,58 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unexpected ANIMALFOLK_HARES die roll: ".$value);
                 }
                 break;
+            case CT_FUMBLINGMEMBER:
+                $this->rollPangolinDice(
+                    clienttranslate('Fumbling Dreamer: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
+                    $technique_card
+                );
+                $dice = $this->argPangolinDice();
+                $dbcard = $this->_actPangolinDice($opponent_id, MONO_PLAYER_ID,
+                    '', //private information will be revealed in the next message
+                    clienttranslate('Fumbling Member: ${opponent_name} moves a card from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+                    clienttranslate('Fumbling Member: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+                );
+                if ($dbcard !== null && $this->isJunk($dbcard)) {
+                    //swap the die values
+                    $die_value1 = $dice["die_value1"];
+                    switch($dice["die_value2"]) {
+                        case DIE_DISCARD2:
+                            $dice["die_value1"] = DIE_DISCARD;
+                            break;
+                        case DIE_DECK2:
+                            $dice["die_value1"] = DIE_DECK;
+                            break;
+                        case DIE_HAND2:
+                            $dice["die_value1"] = DIE_HAND;
+                            break;
+                    }
+                    switch($die_value1) {
+                        case DIE_DISCARD:
+                            $dice["die_value2"] = DIE_DISCARD2;
+                            break;
+                        case DIE_DECK:
+                            $dice["die_value2"] = DIE_DECK2;
+                            break;
+                        case DIE_HAND:
+                            $dice["die_value2"] = DIE_HAND2;
+                            break;
+                    }
+                    $this->_actPangolinDice(MONO_PLAYER_ID, $opponent_id,
+                        clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                        clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                        '', //impossible, the junk card must be there
+                        $dice,
+                        $dbcard["id"]
+                    );
+                }
+                else if ($dbcard !== null) {
+                    $this->notifyAllPlayers('message', clienttranslate('Fumbling Member: ${player_name} stole ${opponent_name}\'s ${card_name} this way'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($technique_card)
+                    ));
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -8425,9 +8477,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @param mixed $message_without_card_name message describing the action EXCLUDING the name of the moved card (`${card_name}`
      * @param mixed $message_empty_source message descibing that the action failed because the source is empty
      * @param array $msg_args (optional) - additional args to display in the messages
+     * @param ?array $hand_source_card_id (optional) - if provided, prioritize the card when picking a random card from a hand
      * @return ?array $dbcard that was moved
      */
-    function _actPangolinDice($source_id, $destination_id, $message, $message_without_card_name, $message_empty_source, $msg_args = array()) {
+    function _actPangolinDice($source_id, $destination_id, $message, $message_without_card_name, $message_empty_source, $msg_args = array(), $hand_source_card_id = null) {
         //_actPangolinDice(2371803,2371802,'move ${card_name}','move <CARD_NAME_HIDDEN>','fail')
         $args = array_merge(
             $this->argPangolinDice(), //includes 'die_value1' and 'die_value2'
@@ -8507,7 +8560,10 @@ class DaleOfMerchants extends DaleTableBasic
             $dbcards = $this->cards->getCardsInLocation(HAND.$source_id);
             $dbcard = null;
             if (count($dbcards) > 0) {
-                $card_id = array_rand($dbcards);
+                $card_id = $hand_source_card_id === null ? array_rand($dbcards) : $hand_source_card_id;
+                if (!isset($dbcards[$card_id])) {
+                    throw new BgaVisibleSystemException("Unexpected error in _actPangolinDice: card $card_id was not found in the hand source");
+                }
                 $dbcard = $dbcards[$card_id];
             }
             if ($dbcard === null) {
@@ -8617,7 +8673,7 @@ class DaleOfMerchants extends DaleTableBasic
                 default:
                     throw new BgaVisibleSystemException("Another Fine Mess: error during shuffling, unexpected destination: ".$dice["die_value2"]);
             }
-            //swap the dice values
+            //swap the die values
             $die_value1 = $dice["die_value1"];
             switch($dice["die_value2"]) {
                 case DIE_DISCARD2:
