@@ -940,16 +940,18 @@ class DaleOfMerchants extends DaleTableBasic
                 $junk_cards[$dbcard["id"]] = $dbcard;
             }
         }
-        $this->monoConfirmAction(clienttranslate('${player_name} discards any junk left in its hand'), array(
-            "highlight_limbo_cards" => $this->sortCardsByLocationArg($junk_cards, true),
-            "wrap_class" => "daleofmerchants-wrap-discard"
-        ));
-        $this->discardMultiple(
-            '',
-            MONO_PLAYER_ID,
-            $junk_ids,
-            $junk_cards
-        );
+        if (count($junk_cards) > 0) {
+            $this->monoConfirmAction(clienttranslate('${player_name} discards any junk left in its hand'), array(
+                "highlight_limbo_cards" => $this->sortCardsByLocationArg($junk_cards, true),
+                "wrap_class" => "daleofmerchants-wrap-discard"
+            ));
+            $this->discardMultiple(
+                '',
+                MONO_PLAYER_ID,
+                $junk_ids,
+                $junk_cards
+            );
+        }
     }
 
     /** Boolean that indicates if Mono's hand is currently open information*/
