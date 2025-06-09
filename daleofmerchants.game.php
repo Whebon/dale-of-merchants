@@ -658,6 +658,36 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->draw(clienttranslate('Rigorous Member: ${player_name} draws ${nbr} card(s)'), count($junk_ids)+1, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
+            case CT_ARCANEMEMBER:
+                $value = $this->rollDie(
+                    clienttranslate('Arcane Member: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_HARES,
+                    $technique_card
+                );
+                switch($value) {
+                    case DIE_COMET:
+                        $this->notifyAllPlayers('message', clienttranslate('Arcane Member: ${player_name} does not take a card'), array(
+                            "player_name" => $this->getActivePlayerName()
+                        ));
+                        break;
+                    case DIE_PLANET:
+                        $this->draw(
+                            clienttranslate('Arcane Member: ${player_name} draws a card from the supply'), 
+                            1, false, MARKET, MONO_PLAYER_ID, 
+                            clienttranslate('Arcane Member: ${player_name} draws a ${card_name} from the supply')
+                        );
+                        break;
+                    case DIE_STARS:
+                        $this->draw(
+                            clienttranslate('Arcane Member: ${player_name} draws a card from their deck'), 
+                            1, false, MONO_PLAYER_ID, MONO_PLAYER_ID, 
+                            clienttranslate('Arcane Member: ${player_name} draws a ${card_name} from their deck')
+                        );
+                        break;
+                    default:
+                        throw new BgaVisibleSystemException("Unexpected ANIMALFOLK_HARES die roll: ".$value);
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
