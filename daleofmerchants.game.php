@@ -691,53 +691,57 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_FUMBLINGMEMBER:
                 $this->rollPangolinDice(
                     clienttranslate('Fumbling Dreamer: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
-                    $technique_card
+                    $technique_card,
+                    false,
+                    array(),
+                    MONO_PLAYER_ID
                 );
                 $dice = $this->argPangolinDice();
+                $die_value1 = $dice["die_value1"];
+                $die_value2 = $dice["die_value2"];
+                $dice["die_value2"] = DIE_HAND2;
                 $dbcard = $this->_actPangolinDice($opponent_id, MONO_PLAYER_ID,
-                    '', //private information will be revealed in the next message
-                    clienttranslate('Fumbling Member: ${opponent_name} moves a card from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
-                    clienttranslate('Fumbling Member: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
+                    clienttranslate('Fumbling Member: ${opponent_name} takes ${card_name} from ${player_name}\'s ${die_label_source} (${die_icon_source})'),
+                    clienttranslate('Fumbling Member: ${opponent_name} takes a card from ${player_name}\'s ${die_label_source} (${die_icon_source})'),
+                    clienttranslate('Fumbling Member: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty'),
+                    $dice
                 );
-                if ($dbcard !== null && $this->isJunk($dbcard)) {
-                    //swap the die values
-                    $die_value1 = $dice["die_value1"];
-                    switch($dice["die_value2"]) {
-                        case DIE_DISCARD2:
-                            $dice["die_value1"] = DIE_DISCARD;
-                            break;
-                        case DIE_DECK2:
-                            $dice["die_value1"] = DIE_DECK;
-                            break;
-                        case DIE_HAND2:
-                            $dice["die_value1"] = DIE_HAND;
-                            break;
+                if ($dbcard !== null) {
+                    $dice["die_value1"] = DIE_HAND;
+                    if ($this->isJunk($dbcard)) {
+                        //return the Junk card from Mono's hand to the source
+                        switch($die_value1) {
+                            case DIE_DISCARD:
+                                $dice["die_value2"] = DIE_DISCARD2;
+                                break;
+                            case DIE_DECK:
+                                $dice["die_value2"] = DIE_DECK2;
+                                break;
+                            case DIE_HAND:
+                                $dice["die_value2"] = DIE_HAND2;
+                                break;
+                        }
+                        $this->delay500ms();
+                        $this->_actPangolinDice(MONO_PLAYER_ID, $opponent_id,
+                            clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                            clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                            '', //impossible, the junk card must be there
+                            $dice,
+                            $dbcard["id"]
+                        );
                     }
-                    switch($die_value1) {
-                        case DIE_DISCARD:
-                            $dice["die_value2"] = DIE_DISCARD2;
-                            break;
-                        case DIE_DECK:
-                            $dice["die_value2"] = DIE_DECK2;
-                            break;
-                        case DIE_HAND:
-                            $dice["die_value2"] = DIE_HAND2;
-                            break;
+                    else if ($die_value2 != DIE_HAND2) {
+                        //place the card from Mono's hand to the correct target destination
+                        $dice["die_value2"] = $die_value2;
+                        $this->delay500ms();
+                        $this->_actPangolinDice(MONO_PLAYER_ID, MONO_PLAYER_ID,
+                            clienttranslate('Fumbling Member: ${player_name} places ${card_name} on ${player_name}\'s ${die_label} (${die_icon})'),
+                            clienttranslate('Fumbling Member: ${player_name} places the card on ${player_name}\'s ${die_label} (${die_icon})'),
+                            '', //impossible, the junk card must be there
+                            $dice,
+                            $dbcard["id"]
+                        );
                     }
-                    $this->_actPangolinDice(MONO_PLAYER_ID, $opponent_id,
-                        clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
-                        clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
-                        '', //impossible, the junk card must be there
-                        $dice,
-                        $dbcard["id"]
-                    );
-                }
-                else if ($dbcard !== null) {
-                    $this->notifyAllPlayers('message', clienttranslate('Fumbling Member: ${player_name} stole ${opponent_name}\'s ${card_name} this way'), array(
-                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                        "card_name" => $this->getCardName($technique_card)
-                    ));
                 }
                 break;
             default:
@@ -1432,15 +1436,13 @@ class DaleOfMerchants extends DaleTableBasic
      * @param string $private_message (optional) by default, send the public message - if provided, send a special private message
      */
     function notifyAllPlayersWithPrivateArguments(string $type, string $message, array $args, string $private_message = null) {
-        $suffix = ""; //clienttranslate(" (private information)");
-
         //the active player receives the notification with the private arguments
         $private_player_id = $args["player_id"];
         if ($private_player_id == MONO_PLAYER_ID && $this->mono_hand_is_visible) {
             $private_player_id = $this->getActivePlayerId(); //Mono cannot get private messages, the player receives it instead
         }
         if ($private_player_id != MONO_PLAYER_ID) {
-            $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+            $this->notifyPlayer($private_player_id, $type, $private_message ? $private_message : $message, array_merge($args, $args["_private"]));
         }
 
         //(optional) the involved opponent also receives the notification with the private arguments
@@ -1451,7 +1453,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $private_opponent_id = $this->getActivePlayerId(); //Mono cannot get private messages, the player receives it instead
             }
             if ($private_opponent_id != MONO_PLAYER_ID && $private_opponent_id != $private_player_id) {
-                $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
+                $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message : $message, array_merge($args, $args["_private"]));
             }
         }
 
@@ -2657,16 +2659,18 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $dbcard the card to land the die on (for the client)
      * @param bool $unique_results (optional) keep rerolling the dice until the results are different
      * @param array $msg_args (optional) additional args
+     * @param mixed $played_id (optional) by default, it is assumed the active player rolls the die
      * @return array result of the 2 dice rolls
      */
-    function rollPangolinDice(string $msg, array $dbcard, bool $unique_results = false, array $msg_args = array()) {
+    function rollPangolinDice(string $msg, array $dbcard, bool $unique_results = false, array $msg_args = array(), mixed $played_id = null) {
         $map = array(0 => DIE_DISCARD, 1 => DIE_DISCARD, 2 => DIE_DECK, 3 => DIE_DECK, 4 => DIE_DECK, 5 => DIE_HAND);
         do {
             $d6_1 = rand(0, 5);
             $d6_2 = rand(0, 5);
         } while($unique_results && $map[$d6_1] == $map[$d6_2]);
-        $value_1 = $this->rollDie('', ANIMALFOLK_PANGOLINS, $dbcard, $msg_args, $d6_1);
-        $value_2 = $this->rollDie($msg, ANIMALFOLK_PANGOLINS+1, $dbcard, array_merge($msg_args, array("die_icon_source" => $value_1)), $d6_2);
+        $played_id = $played_id === null ? $this->getActivePlayerId() : $played_id;
+        $value_1 = $this->rollDie('', ANIMALFOLK_PANGOLINS, $dbcard, $msg_args, $d6_1, $played_id);
+        $value_2 = $this->rollDie($msg, ANIMALFOLK_PANGOLINS+1, $dbcard, array_merge($msg_args, array("die_icon_source" => $value_1)), $d6_2, $played_id);
         $this->setGameStateValue("die_value", $value_1);
         $this->setGameStateValue("die_value2", $value_2);
         return [$value_1, $value_2];
