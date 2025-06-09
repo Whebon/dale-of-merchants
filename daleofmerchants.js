@@ -11091,7 +11091,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (notif.args._private) {
                 var card = notif.args._private.card;
                 var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
-                this.stockToPile(card, stock, deck);
+                this.playerStockToPile(card, stock, notif.args.player_id, deck);
             }
             else {
                 this.allDecks[notif.args.deck_player_id].push(new DaleCard_10.DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);

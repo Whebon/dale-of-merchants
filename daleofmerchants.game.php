@@ -604,6 +604,24 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_STEADYMEMBER:
                 //no immediate effects
                 break;
+            case CT_LITTLEMEMBER:
+                $this->draw(clienttranslate('Little Member: ${player_name} draws a ${card_name} from ${opponent_name}\' deck'), 1, false, $opponent_id, MONO_PLAYER_ID);
+                $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $dbcard = $this->monoPickLowestValuedCard($dbcards);
+                if ($dbcard) {
+                    $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
+                    $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Little Member: ${player_name} places a ${card_name} on ${opponent_name}\' deck'), array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "deck_player_id" => $opponent_id,
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "_private" => array(
+                            "card" => $dbcard,
+                            "card_name" => $this->getCardName($dbcard)
+                        )
+                    ));
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -1299,7 +1317,7 @@ class DaleOfMerchants extends DaleTableBasic
             if ($private_opponent_id == MONO_PLAYER_ID && $this->mono_hand_is_visible) {
                 $private_opponent_id = $this->getActivePlayerId(); //Mono cannot get private messages, the player receives it instead
             }
-            if ($private_opponent_id != MONO_PLAYER_ID) {
+            if ($private_opponent_id != MONO_PLAYER_ID && $private_opponent_id != $private_player_id) {
                 $this->notifyPlayer($private_opponent_id, $type, $private_message ? $private_message.$suffix : $message, array_merge($args, $args["_private"]));
             }
         }

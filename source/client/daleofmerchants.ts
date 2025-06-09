@@ -7114,10 +7114,10 @@ class DaleOfMerchants extends Gamegui
 		console.warn("placeOnDeck");
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (notif.args._private) {
-			//you GIVE the card
+			//you GIVE the card (or Mono gives the card)
 			const card = notif.args._private.card;
 			const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!;
-			this.stockToPile(card, stock, deck);
+			this.playerStockToPile(card, stock, notif.args.player_id, deck);
 		}
 		else  {
 			//animate card to deck
