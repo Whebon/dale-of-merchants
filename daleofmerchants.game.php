@@ -639,6 +639,25 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->effects->insertGlobal($technique_card["id"], CT_DARINGMEMBER, $die_value);
                 break;
+            case CT_RIGOROUSMEMBER:
+                $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $dbcards = $this->sortCardsByLocationArg($dbcards, false);
+                $junk_ids = array();
+                $junk_cards = array();
+                foreach ($dbcards as $dbcard) {
+                    if ($this->isJunk($dbcard)) {
+                        $junk_ids[] = (int)$dbcard["id"];
+                        $junk_cards[$dbcard["id"]] = $dbcard;
+                    }
+                }
+                $this->discardMultiple(
+                    clienttranslate('Rigorous Member: ${player_name} discards ${nbr} junk card(s)'),
+                    MONO_PLAYER_ID,
+                    $junk_ids,
+                    $junk_cards
+                );
+                $this->draw(clienttranslate('Rigorous Member: ${player_name} draws ${nbr} card(s)'), count($junk_ids)+1, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
