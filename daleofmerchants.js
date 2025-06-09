@@ -11487,6 +11487,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_discardToDiscard = function (notif) {
             var discard1 = this.playerDiscards[notif.args.from_player_id];
             var discard2 = this.playerDiscards[notif.args.to_player_id];
+            if (notif.args.card) {
+                discard1.moveToTop(DaleCard_10.DaleCard.of(notif.args.card));
+            }
             var topCard = discard1.pop();
             discard2.push(topCard, discard1.placeholderHTML);
             if (topCard.id != +notif.args.card.id) {

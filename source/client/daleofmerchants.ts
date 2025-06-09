@@ -7608,6 +7608,9 @@ class DaleOfMerchants extends Gamegui
 	notif_discardToDiscard(notif: NotifAs<'discardToDiscard'>) {
 		const discard1 = this.playerDiscards[notif.args.from_player_id]!;
 		const discard2 = this.playerDiscards[notif.args.to_player_id]!;
+		if (notif.args.card) {
+			discard1.moveToTop(DaleCard.of(notif.args.card));
+		}
 		const topCard = discard1.pop();
 		discard2.push(topCard, discard1.placeholderHTML);
 		if (topCard.id != +notif.args.card.id) {

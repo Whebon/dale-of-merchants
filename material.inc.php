@@ -372,9 +372,7 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     // ANIMALFOLK_DESERTMONITORS,
     // ANIMALFOLK_HARES,
     // ANIMALFOLK_PANGOLINS,
-
-    //not implemented
-    ANIMALFOLK_GULLS,
+    // ANIMALFOLK_GULLS,
 
     //effect not finalized
     ANIMALFOLK_RACCOONS,

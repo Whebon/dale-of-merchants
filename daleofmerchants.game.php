@@ -744,6 +744,35 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                 }
                 break;
+            case CT_MEDDLINGMEMBER:
+                $discard_cards_unsorted = $this->cards->getCardsInLocation(DISCARD.MONO_PLAYER_ID);
+                $discard_cards = $this->sortCardsByLocationArg($discard_cards_unsorted, false);
+                foreach ($discard_cards as $dbcard) {
+                    if ($this->isJunk($dbcard)) {
+                        $this->cards->removeCardFromPile($dbcard["id"], DISCARD.MONO_PLAYER_ID);
+                        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                        $this->notifyAllPlayers('discardToDiscard', clienttranslate('Meddling Member: ${player_name} places 1 junk from their discard on ${opponent_name}\'s discard'), array(
+                            "from_player_id" => MONO_PLAYER_ID,
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            "to_player_id" => $opponent_id,
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card" => $dbcard
+                        ));
+                        break;
+                    }
+                }
+                $junk_cards = $this->cards->getJunk();
+                $junk_id = key($junk_cards);
+                $this->cards->moveCardOnTop($junk_id, DISCARD.$opponent_id);
+                $this->notifyAllPlayers('obtainNewJunkInDiscard', clienttranslate('Meddling Member: ${player_name} places 1 junk from the junkyard on ${opponent_name}\'s discard'), array(
+                    "from_player_id" => MONO_PLAYER_ID,
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "player_id" => $opponent_id,
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                    "cards" => $junk_cards,
+                    "nbr" => 1,
+                ));
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -6078,7 +6107,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $junk_cards = $this->cards->getJunk();
                     $junk_id = key($junk_cards);
                     $this->cards->moveCardOnTop($junk_id, DISCARD.$opponent_id);
-                    $this->notifyAllPlayers('obtainNewJunkInDiscard', clienttranslate('Goodwill Presents: ${player_name} gives ${opponent_name} a Junk'), array(
+                    $this->notifyAllPlayers('obtainNewJunkInDiscard', clienttranslate('Goodwill Presents: ${player_name} gives ${opponent_name} a junk from the junkyard'), array(
                         "from_player_id" => $player_id,
                         "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                         "player_id" => $opponent_id,
