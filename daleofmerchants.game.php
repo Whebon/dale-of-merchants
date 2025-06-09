@@ -472,7 +472,7 @@ class DaleOfMerchants extends DaleTableBasic
                     if (count($market_cards) > 0) {
                         $market_card = $market_cards[0];
                         $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                        $this->notifyAllPlayers('marketToHand', clienttranslate('Steady Member: ${player_name} takes a ${extended_card_name} from the market'), array (
+                        $this->notifyAllPlayers('marketToHand', clienttranslate('Steady Member: ${player_name} takes ${extended_card_name} from the market'), array (
                             'player_id' => MONO_PLAYER_ID,
                             'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                             'card_name' => $this->getCardName($market_card),
@@ -549,7 +549,7 @@ class DaleOfMerchants extends DaleTableBasic
                 if ($market_card) {
                     //obtain the market card
                     $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                    $this->notifyAllPlayers('marketToHand', clienttranslate('Loyal Member: ${player_name} takes a ${extended_card_name} from the market'), array (
+                    $this->notifyAllPlayers('marketToHand', clienttranslate('Loyal Member: ${player_name} takes ${extended_card_name} from the market'), array (
                         'player_id' => MONO_PLAYER_ID,
                         'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         'card_name' => $this->getCardName($market_card),
@@ -609,13 +609,13 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(
                     clienttranslate('Little Member: ${player_name} draws a card from ${opponent_name}\' deck'), 
                     1, false, $opponent_id, MONO_PLAYER_ID, 
-                    clienttranslate('Little Member: ${player_name} draws a ${card_name} from ${opponent_name}\' deck')
+                    clienttranslate('Little Member: ${player_name} draws ${card_name} from ${opponent_name}\' deck')
                 );
                 $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
                 $dbcard = $this->monoPickLowestValuedCard($dbcards);
                 if ($dbcard) {
                     $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
-                    $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Little Member: ${player_name} places a ${card_name} on ${opponent_name}\' deck'), array(
+                    $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Little Member: ${player_name} places ${card_name} on ${opponent_name}\' deck'), array(
                         "player_id" => MONO_PLAYER_ID,
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         "deck_player_id" => $opponent_id,
@@ -674,14 +674,14 @@ class DaleOfMerchants extends DaleTableBasic
                         $this->draw(
                             clienttranslate('Arcane Member: ${player_name} draws a card from the supply'), 
                             1, false, MARKET, MONO_PLAYER_ID, 
-                            clienttranslate('Arcane Member: ${player_name} draws a ${card_name} from the supply')
+                            clienttranslate('Arcane Member: ${player_name} draws ${card_name} from the supply')
                         );
                         break;
                     case DIE_STARS:
                         $this->draw(
                             clienttranslate('Arcane Member: ${player_name} draws a card from their deck'), 
                             1, false, MONO_PLAYER_ID, MONO_PLAYER_ID, 
-                            clienttranslate('Arcane Member: ${player_name} draws a ${card_name} from their deck')
+                            clienttranslate('Arcane Member: ${player_name} draws ${card_name} from their deck')
                         );
                         break;
                     default:
@@ -820,7 +820,7 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 //obtain the market card
                 $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name} for ${cost}'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought ${extended_card_name} for ${cost}'), array (
                     'player_id' => MONO_PLAYER_ID,
                     'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                     'card_name' => $this->getCardName($market_card),
@@ -3102,7 +3102,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $curr_card_id = $chameleon_target_id;
                         $curr_type_id = $target_type_id;
                     }
-                    $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} copy a ${target_card_name}'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} copy ${target_card_name}'), array(
                         'chameleon_card_name' => $this->card_types[$type_id]['name'],
                         'target_card_name' => $this->getCardName($dbcard),
                         'player_name' => $this->getActivePlayerName()
@@ -4416,7 +4416,7 @@ class DaleOfMerchants extends DaleTableBasic
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
         if ($from_bin) {
-            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought a ${extended_card_name} for ${cost}'), array (
+            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -4426,7 +4426,7 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         else {
-            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought a ${extended_card_name} for ${cost}'), array (
+            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -4470,7 +4470,7 @@ class DaleOfMerchants extends DaleTableBasic
             //purchase the additional market card
             $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
             $this->cards->moveCard($market_card_id, HAND.$player_id);
-            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought a ${extended_card_name} for free'), array(
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought ${extended_card_name} for free'), array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -4777,7 +4777,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     $card_id = $args["card_id"];
                     $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('Shattered Relic: ${player_name} tosses a ${card_name}'), $card);
+                    $this->toss(clienttranslate('Shattered Relic: ${player_name} tosses ${card_name}'), $card);
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to toss'), array(
@@ -4818,7 +4818,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                 $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandStall', clienttranslate('Acorn: ${player_name} swaps with a ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Acorn: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
@@ -4833,7 +4833,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
                 $this->cards->moveCard($technique_card_id, MARKET, $market_card["location_arg"]);
                 $this->cards->moveCard($market_card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandMarket', clienttranslate('Gift Voucher: ${player_name} swaps with a ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandMarket', clienttranslate('Gift Voucher: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($market_card),
                     "player_id" => $player_id,
@@ -4871,7 +4871,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} takes a ${extended_card_name} from the market'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Prepaid Good: ${player_name} takes ${extended_card_name} from the market'), array (
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -4976,7 +4976,7 @@ class DaleOfMerchants extends DaleTableBasic
                     throw new BgaVisibleSystemException("CT_TREASUREHUNTER can only take the top card of a discard pile (card $card_id is not on top)");
                 }
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('discardToHand', clienttranslate('Treasure Hunter: ${player_name} takes a ${card_name} from ${opponent_name}\'s discard pile'), array(
+                $this->notifyAllPlayers('discardToHand', clienttranslate('Treasure Hunter: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'), array(
                     "player_id" => $player_id,
                     "discard_id" => $opponent_id,
                     "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
@@ -4989,7 +4989,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_NEWSEASON:
                 $card_id = $args["card_id"];
                 $this->tossFromDiscard(
-                    clienttranslate('New Season: ${player_name} tosses a ${card_name}'),
+                    clienttranslate('New Season: ${player_name} tosses ${card_name}'),
                     $card_id
                 );
                 $this->draw(
@@ -5148,7 +5148,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card" => $player_card,
                                 "card_name" => $this->getCardName($player_card)
                             )
-                        ), clienttranslate('Gamble: ${player_name} takes a ${card_name} from ${opponent_name}'));
+                        ), clienttranslate('Gamble: ${player_name} takes ${card_name} from ${opponent_name}'));
                     }
                     //opponent -> player
                     for ($i = 0; $i < $nbr; $i++) { 
@@ -5165,7 +5165,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card" => $opponent_card,
                                 "card_name" => $this->getCardName($opponent_card)
                             )
-                        ), clienttranslate('Gamble: ${opponent_name} takes a ${card_name} from ${player_name}'));
+                        ), clienttranslate('Gamble: ${opponent_name} takes ${card_name} from ${player_name}'));
                     }
                 }
                 else {
@@ -5203,7 +5203,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $stall_card = $this->cards->getCardFromLocation($card_id, STALL.$player_id);
                 $this->cards->moveCard($technique_card_id, STALL.$player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandStall', clienttranslate('Safety Precaution: ${player_name} swaps with a ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Safety Precaution: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
@@ -5364,7 +5364,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card" => $card,
                                 "card_name" => $this->getCardName($card)
                             )
-                        ), clienttranslate('Raffle: ${player_name} takes a ${card_name} from ${opponent_name}'));
+                        ), clienttranslate('Raffle: ${player_name} takes ${card_name} from ${opponent_name}'));
                     }
                 }
                 $this->delay500ms(); //add a delay to compensate for 'instant_' notifications
@@ -5479,7 +5479,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SWANK:
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                $this->toss(clienttranslate('Swank: ${player_name} tosses a ${card_name}'), $card);
+                $this->toss(clienttranslate('Swank: ${player_name} tosses ${card_name}'), $card);
                 if ($this->isAnimalfolk($card)) {
                     $this->draw(
                         clienttranslate('Swank: ${player_name} draws a card from the supply'),
@@ -5615,7 +5615,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     $card_id = $args["card_id"];
                     $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('Fortunate Upgrade: ${player_name} tosses a ${card_name}'), $card);
+                    $this->toss(clienttranslate('Fortunate Upgrade: ${player_name} tosses ${card_name}'), $card);
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('Fortunate Upgrade: ${player_name} has no cards to toss'), array(
@@ -5654,7 +5654,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_FASHIONHINT:
                 $toss = $args["toss"];
                 if ($toss) {
-                    $this->tossFromMarketDeck(clienttranslate('Fashion Hint: ${player_name} tosses a ${card_name} from the supply'));
+                    $this->tossFromMarketDeck(clienttranslate('Fashion Hint: ${player_name} tosses ${card_name} from the supply'));
                 }
                 else {
                     $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
@@ -5701,7 +5701,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $printed_value = $this->card_types[$topCard['type_arg']]['value'];
                 $this->cards->moveCardOnTop($topCard["id"], DECK.$opponent_id); //put it back on top
                 if ($value == $printed_value) {
-                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} correctly guessed ${value} and draws a ${card_name} from ${opponent_name}\'s deck'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('Burglary: ${player_name} correctly guessed ${value} and draws ${card_name} from ${opponent_name}\'s deck'), array(
                         'player_name' => $this->getActivePlayerName(),
                         'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id),
                         'value' => $value,
@@ -5751,7 +5751,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $cards[$card_id];
                 $printed_value = $this->card_types[$card['type_arg']]['value'];
                 if ($value == $printed_value) {
-                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} correctly guessed ${value} and takes a ${card_name} from ${opponent_name}\'s hand'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('Grasp: ${player_name} correctly guessed ${value} and takes ${card_name} from ${opponent_name}\'s hand'), array(
                         'player_name' => $this->getActivePlayerName(),
                         'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id),
                         'value' => $value,
@@ -5807,7 +5807,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $dbcard = $cards[$card_id];
                 $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
                 $this->cards->moveCardOnTop($dbcard["id"], $destination);
-                $this->notifyAllPlayers('toss', clienttranslate('Sudden Nap: ${player_name} tossed a ${card_name} from ${opponent_name}\'s hand'), array(
+                $this->notifyAllPlayers('toss', clienttranslate('Sudden Nap: ${player_name} tossed ${card_name} from ${opponent_name}\'s hand'), array(
                     "player_id" => $opponent_id, #we toss a card from the OPPONENT, not the active player
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                     "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
@@ -5845,7 +5845,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
                     if ($dbcard) {
                         $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
-                        $this->notifyAllPlayers('deckToDiscard', clienttranslate('Periscope: ${player_name} discards a ${card_name} from ${opponent_name}\'s deck'), array(
+                        $this->notifyAllPlayers('deckToDiscard', clienttranslate('Periscope: ${player_name} discards ${card_name} from ${opponent_name}\'s deck'), array(
                             "player_id" => $opponent_id,
                             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                             "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
@@ -5854,7 +5854,7 @@ class DaleOfMerchants extends DaleTableBasic
                         ));
                         if ($this->getValue($dbcard) == $named_value && $this->getAnimalfolk($dbcard) == $named_animalfolk_id) {
                             $this->cards->moveCard($dbcard["id"], HAND.$player_id);
-                            $this->notifyAllPlayers('discardToHand', clienttranslate('Periscope: ${player_name} takes a ${card_name} from ${opponent_name}\'s discard pile'), array(
+                            $this->notifyAllPlayers('discardToHand', clienttranslate('Periscope: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'), array(
                                 "player_id" => $player_id,
                                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                                 "discard_id" => $opponent_id,
@@ -5880,7 +5880,7 @@ class DaleOfMerchants extends DaleTableBasic
                     throw new BgaVisibleSystemException("CT_CAREFREESWAPPER can only take the top card of a discard pile (card $card_id is not on top)");
                 }
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('instant_discardToHand', clienttranslate('Carefree Swapper: ${player_name} swaps with a ${card_name} from ${opponent_name}\'s discard pile'), array(
+                $this->notifyAllPlayers('instant_discardToHand', clienttranslate('Carefree Swapper: ${player_name} swaps with ${card_name} from ${opponent_name}\'s discard pile'), array(
                     "player_id" => $player_id,
                     "discard_id" => $opponent_id,
                     "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
@@ -5916,7 +5916,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                 $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandStall', clienttranslate('Velocipede: ${player_name} swaps with a ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Velocipede: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
@@ -5947,7 +5947,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //swap the cards
                 $this->cards->moveCard($hand_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandStall', clienttranslate('Matching Colours: ${player_name} swaps with a ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Matching Colours: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
@@ -5969,7 +5969,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "card_name" => $this->getCardName($dbcard),
                         "card" => $dbcard
                     )
-                ), clienttranslate('Clever Guardian: ${player_name} stores a ${card_name}'));
+                ), clienttranslate('Clever Guardian: ${player_name} stores ${card_name}'));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_WHEELBARROW:
@@ -6002,7 +6002,7 @@ class DaleOfMerchants extends DaleTableBasic
                             "card" => $dbcard,
                             "card_name" => $this->getCardName($dbcard)
                         )
-                    ), clienttranslate('Supply Depot: ${player_name} stores a ${card_name} from their deck'));
+                    ), clienttranslate('Supply Depot: ${player_name} stores ${card_name} from their deck'));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -6022,7 +6022,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $junk_cards = $this->cards->getJunk();
                     $junk_id = key($junk_cards);
                     $this->cards->moveCardOnTop($junk_id, DISCARD.$opponent_id);
-                    $this->notifyAllPlayers('obtainNewJunkInDiscard', clienttranslate('Goodwill Presents: ${player_name} gives a ${opponent_name} a Junk'), array(
+                    $this->notifyAllPlayers('obtainNewJunkInDiscard', clienttranslate('Goodwill Presents: ${player_name} gives ${opponent_name} a Junk'), array(
                         "from_player_id" => $player_id,
                         "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                         "player_id" => $opponent_id,
@@ -6037,7 +6037,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card_id = intval($args["card_id"]);
                 $dbcard = $this->cards->getCardFromLocation($card_id, DISCARD.$player_id);
                 $this->tossFromDiscard(
-                    clienttranslate('Alternative Plan: ${player_name} tosses a ${card_name}'),
+                    clienttranslate('Alternative Plan: ${player_name} tosses ${card_name}'),
                     $card_id
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
@@ -6078,7 +6078,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     $card_id = $args["card_id"];
                     $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('Golden Opportunity: ${player_name} tosses a ${card_name}'), $card);
+                    $this->toss(clienttranslate('Golden Opportunity: ${player_name} tosses ${card_name}'), $card);
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('Golden Opportunity: ${player_name} has no cards to toss'), array(
@@ -6127,7 +6127,7 @@ class DaleOfMerchants extends DaleTableBasic
                     false, 
                     MARKET, 
                     $player_id,
-                    clienttranslate('Ice Trade: ${player_name} draws a ${card_name} from the supply')
+                    clienttranslate('Ice Trade: ${player_name} draws ${card_name} from the supply')
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -6163,7 +6163,7 @@ class DaleOfMerchants extends DaleTableBasic
                     //toss a card
                     $card_id = intval($args["card_id"]);
                     $this->tossFromDiscard(
-                        clienttranslate('Groundbreaking Idea: ${player_name} tosses a ${card_name}'),
+                        clienttranslate('Groundbreaking Idea: ${player_name} tosses ${card_name}'),
                         $card_id
                     );
                 }
@@ -6198,7 +6198,7 @@ class DaleOfMerchants extends DaleTableBasic
                 switch($value) {
                     case DIE_COMET:
                         $this->draw(clienttranslate('Festival: ${player_name} draws a card from the supply'), 1, false, MARKET, $player_id, 
-                            clienttranslate('Festival: ${player_name} draws a ${card_name} from the supply')
+                            clienttranslate('Festival: ${player_name} draws ${card_name} from the supply')
                         );
                         break;
                     case DIE_PLANET:
@@ -6302,7 +6302,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(
                     clienttranslate('Fresh Start: ${player_name} draws a card from ${opponent_name}\'s deck'), 
                     1, false, $opponent_id, $player_id,
-                    clienttranslate('Fresh Start: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+                    clienttranslate('Fresh Start: ${player_name} draws ${card_name} from ${opponent_name}\'s deck')
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -6380,7 +6380,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $stall_card = $this->cards->getCardFromLocation($card_id, STALL.$player_id);
                         $this->cards->moveCard($technique_card_id, STALL.$player_id, $stall_card["location_arg"]);
                         $this->cards->moveCard($card_id, HAND.$player_id);
-                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with a ${card_name}'), array(
+                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with ${card_name}'), array(
                             "player_name" => $this->getActivePlayerName(),
                             "card_name" => $this->getCardName($stall_card),
                             "player_id" => $player_id,
@@ -6398,7 +6398,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                         $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                         $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with a ${card_name}'), array(
+                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with ${card_name}'), array(
                             "player_name" => $this->getActivePlayerName(),
                             "card_name" => $this->getCardName($stall_card),
                             "player_id" => $player_id,
@@ -6414,7 +6414,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
                         $this->cards->moveCard($technique_card_id, MARKET, $market_card["location_arg"]);
                         $this->cards->moveCard($market_card_id, HAND.$player_id);
-                        $this->notifyAllPlayers('swapHandMarket', clienttranslate('Serenade: ${player_name} swaps with a ${card_name}'), array(
+                        $this->notifyAllPlayers('swapHandMarket', clienttranslate('Serenade: ${player_name} swaps with ${card_name}'), array(
                             "player_name" => $this->getActivePlayerName(),
                             "card_name" => $this->getCardName($market_card),
                             "player_id" => $player_id,
@@ -6489,7 +6489,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card_name" => $this->getCardName($card)
                             ),
                             "to_limbo" => false
-                        ), clienttranslate('Slotmachine: ${player_name} draws a ${card_name}'));
+                        ), clienttranslate('Slotmachine: ${player_name} draws ${card_name}'));
                         break;
                     }
                 }
@@ -6517,7 +6517,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 //take 2 cards the discard pile to your hand (show 1 message per card)
                 $this->discardToHandMultiple(
-                    clienttranslate('Generation Change: ${player_name} takes a ${card_name} from their discard to their hand'),
+                    clienttranslate('Generation Change: ${player_name} takes ${card_name} from their discard to their hand'),
                     $player_id,
                     $card_ids
                 );
@@ -6589,7 +6589,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //Place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} takes a ${extended_card_name} from the market'), array(
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Shopping Journey: ${player_name} takes ${extended_card_name} from the market'), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -6604,7 +6604,7 @@ class DaleOfMerchants extends DaleTableBasic
                 if (isset($args["card_id"])) {
                     $card_id = $args["card_id"];
                     $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('House Cleaning: ${player_name} tosses a ${card_name}'), $dbcard);
+                    $this->toss(clienttranslate('House Cleaning: ${player_name} tosses ${card_name}'), $dbcard);
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('House Cleaning: ${player_name} does not toss a card'), array(
@@ -6699,7 +6699,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 //Place the card into the player's hand
                 $this->cards->moveCard($leftmostcard["id"], HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Collector\'s Desire: ${player_name} places a ${card_name} into their hand'), array(
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Collector\'s Desire: ${player_name} places ${card_name} into their hand'), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($leftmostcard),
@@ -6741,7 +6741,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card = $this->cards->getCardFromLocation($card_id, MARKET);
                 //place the card into the player's hand
                 $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('Snack: ${player_name} places a ${card_name} into their hand'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('Snack: ${player_name} places ${card_name} into their hand'), array (
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'card_name' => $this->getCardName($card),
@@ -6753,7 +6753,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_WINDOFCHANGE:
                 if (isset($args["card_id"])) {
                     $card_id = $args["card_id"];
-                    $this->tossFromDiscard(clienttranslate('Wind of Change: ${player_name} tosses a ${card_name}'), $card_id);
+                    $this->tossFromDiscard(clienttranslate('Wind of Change: ${player_name} tosses ${card_name}'), $card_id);
                 }
                 else {
                     $this->notifyAllPlayers('message', clienttranslate('Wind of Change: ${player_name} does not toss a card'), array(
@@ -7186,7 +7186,7 @@ class DaleOfMerchants extends DaleTableBasic
                 "card" => $card,
                 "card_name" => $this->getCardName($card)
             )
-        ), clienttranslate('Dirty Exchange: ${player_name} gives a ${card_name} to ${opponent_name}')
+        ), clienttranslate('Dirty Exchange: ${player_name} gives ${card_name} to ${opponent_name}')
         );
 
         $this->fullyResolveCard($player_id);
@@ -7455,7 +7455,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "card" => $card,
                         "card_name" => $this->getCardName($card)
                     )
-                ), clienttranslate('${resolving_card_name}: ${player_name} gives a ${card_name} to themselves'));
+                ), clienttranslate('${resolving_card_name}: ${player_name} gives ${card_name} to themselves'));
             }
             else {
                 $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('${resolving_card_name}: ${player_name} gives a card to ${opponent_name}'), array(
@@ -7469,7 +7469,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "card_name" => $this->getCardName($card)
                     ),
                     "from_limbo" => true
-                ), clienttranslate('${resolving_card_name}: ${player_name} gives a ${card_name} to ${opponent_name}'));
+                ), clienttranslate('${resolving_card_name}: ${player_name} gives ${card_name} to ${opponent_name}'));
             }
         }
         //update the remaining player_ids
@@ -7486,7 +7486,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, MARKET);
         $this->cards->moveCard($card_id, HAND.$player_id);
-        $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} places a ${card_name} into their hand'), array (
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} places ${card_name} into their hand'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $this->getCardName($card),
@@ -7528,7 +7528,7 @@ class DaleOfMerchants extends DaleTableBasic
             $card_id = $card_ids[$i];
             $card = $this->cards->getCardFromLocation($card_id, MARKET);
             $this->cards->moveCard($card_id, HAND.$other_player_id);
-            $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} places a ${card_name} into their hand'), array (
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Tasters: ${player_name} places ${card_name} into their hand'), array (
                 'player_id' => $other_player_id,
                 'player_name' => $this->getPlayerNameByIdInclMono($other_player_id),
                 'card_name' => $this->getCardName($card),
@@ -7706,7 +7706,7 @@ class DaleOfMerchants extends DaleTableBasic
             "_private" => array(
                 "card" => $limbo_cards[$card_id]
             ),
-            clienttranslate('Delightful Surprise: ${player_name} places a ${card_name} into their hand')
+            clienttranslate('Delightful Surprise: ${player_name} places ${card_name} into their hand')
         ));
 
         //toss the other card
@@ -7716,7 +7716,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         else if (count($limbo_cards) == 1) {
             $this->toss(
-                clienttranslate('Delightful Surprise: ${player_name} tosses a ${card_name}'),
+                clienttranslate('Delightful Surprise: ${player_name} tosses ${card_name}'),
                 current($limbo_cards), 
                 true
             );
@@ -7740,7 +7740,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Place the card into the player's hand
         $this->cards->moveCard($card_id, HAND.$player_id);
-        $this->notifyAllPlayers('marketToHand', clienttranslate('Replacement: ${player_name} places a ${card_name} into their hand'), array (
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Replacement: ${player_name} places ${card_name} into their hand'), array (
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $this->getCardName($card),
@@ -7770,7 +7770,7 @@ class DaleOfMerchants extends DaleTableBasic
                 'player_id' => $player_id,
                 'card' => $topCard
             ));
-            $this->toss(clienttranslate('Fashion Hint: ${player_name} swaps their ${card_name} with a ${bin_card_name}'), $card, false, array(
+            $this->toss(clienttranslate('Fashion Hint: ${player_name} swaps their ${card_name} with ${bin_card_name}'), $card, false, array(
                 'bin_card_name' => $this->getCardName($topCard)
             ));
         }
@@ -7849,7 +7849,7 @@ class DaleOfMerchants extends DaleTableBasic
                 throw new BgaUserException($this->_("You can only take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
             }
             $this->cards->moveCard($card_id, HAND.$player_id);
-            $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Pompous Professional: ${player_name} places a ${card_name} into their hand'), array(
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Pompous Professional: ${player_name} places ${card_name} into their hand'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "card_name" => $this->getCardName($dbcard),
@@ -8023,7 +8023,7 @@ class DaleOfMerchants extends DaleTableBasic
         $dbcard = reset($dbcards);
         if ($is_tossing) {
             $this->toss(
-                clienttranslate('Wheelbarrow: ${player_name} tosses a ${card_name}'),
+                clienttranslate('Wheelbarrow: ${player_name} tosses ${card_name}'),
                 $dbcard,
                 true
             );
@@ -8038,7 +8038,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "card" => $dbcard
                 ),
                 "from_limbo" => true
-            ), clienttranslate('Wheelbarrow: ${player_name} stores a ${card_name}'));
+            ), clienttranslate('Wheelbarrow: ${player_name} stores ${card_name}'));
         }
         $this->fullyResolveCard($player_id);
     }
@@ -8056,7 +8056,7 @@ class DaleOfMerchants extends DaleTableBasic
                 "card" => $dbcard,
                 "card_name" => $this->getCardName($dbcard)
             )
-        ), clienttranslate('Vigilance: ${player_name} stores a ${card_name} from their deck'));
+        ), clienttranslate('Vigilance: ${player_name} stores ${card_name} from their deck'));
         $this->cards->shuffle(DECK.$player_id);
         $this->fullyResolveCard($player_id);
     }
@@ -8392,7 +8392,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $dbcard = $this->cards->getCardFromLocation($card_id, MARKET);
         $this->cards->moveCard($card_id, HAND.$player_id);
-        $this->notifyAllPlayers('marketToHand', clienttranslate('Celestial Guidance: ${player_name} places a ${card_name} into their hand'), array(
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Celestial Guidance: ${player_name} places ${card_name} into their hand'), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'card_name' => $this->getCardName($dbcard),
@@ -9355,7 +9355,7 @@ class DaleOfMerchants extends DaleTableBasic
                 "card" => $card,
                 "card_name" => $this->getCardName($card)
             )
-        ), clienttranslate('Dirty Exchange: ${player_name} takes a ${card_name} from ${opponent_name}'));
+        ), clienttranslate('Dirty Exchange: ${player_name} takes ${card_name} from ${opponent_name}'));
         $this->removeMonoCardsFromPlayerHand($player_id, array($card));
         if ($this->isSoloGame() && $this->cards->countCardInLocation(HAND.$player_id) == 0) {
             //player is unable to give back a card
@@ -9408,7 +9408,7 @@ class DaleOfMerchants extends DaleTableBasic
                 true,
                 $player_id,
                 $this->getActivePlayerId(),
-                clienttranslate('Night Shift: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+                clienttranslate('Night Shift: ${player_name} draws ${card_name} from ${opponent_name}\'s deck')
             );
         }
     }
@@ -9422,7 +9422,7 @@ class DaleOfMerchants extends DaleTableBasic
             false,
             $opponent_id,
             $player_id,
-            clienttranslate('Ruthless Competition: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+            clienttranslate('Ruthless Competition: ${player_name} draws ${card_name} from ${opponent_name}\'s deck')
         );
     }
 
@@ -9479,7 +9479,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "card" => $card,
                         "card_name" => $this->getCardName($card)
                     )
-                ), clienttranslate('Charity: ${player_name} takes a ${card_name} from themselves'));
+                ), clienttranslate('Charity: ${player_name} takes ${card_name} from themselves'));
             }
             else {
                 $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Charity: ${player_name} takes a card from ${opponent_name}'), array(
@@ -9492,7 +9492,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "card_name" => $this->getCardName($card)
                     ),
                     "to_limbo" => true
-                ), clienttranslate('Charity: ${player_name} takes a ${card_name} from ${opponent_name}'));
+                ), clienttranslate('Charity: ${player_name} takes ${card_name} from ${opponent_name}'));
             }
         }
     }
