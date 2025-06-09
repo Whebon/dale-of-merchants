@@ -1508,6 +1508,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                 value = effect.arg;
                                 break;
                             case DaleCard.CT_RAREARTEFACT:
+                            case DaleCard.CT_DARINGMEMBER:
                                 value *= effect.arg;
                                 break;
                             case DaleCard.CT_STOVE:
@@ -1845,9 +1846,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('CLOCK')) {
                 text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_5.DaleIcons.getClockIcon().outerHTML, "</span>"));
             }
-            if (text.includes('<div data-clock="2"')) {
-                console.log(text);
-            }
             return text;
         };
         DaleCard.prototype.getLegend = function (text) {
@@ -1938,19 +1936,21 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
-            var _a, _b, _c;
+            var _a, _b;
             var value = this.original_value;
             if (card_div.dataset['location'] == 'market') {
                 value = this.effective_cost;
             }
-            else if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && ((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()))) {
+            else if ((DaleCard.page.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
+                (card_div.dataset['location'] == 'moving') ||
+                ((DaleCard.page.mono_hand_is_visible && card_div.id.includes("limbo")))) {
                 value = this.effective_value;
             }
             if (value == this.original_value) {
-                (_b = card_div.querySelector(".daleofmerchants-effective-value")) === null || _b === void 0 ? void 0 : _b.remove();
+                (_a = card_div.querySelector(".daleofmerchants-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
             }
             else {
-                var value_div = (_c = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
+                var value_div = (_b = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _b !== void 0 ? _b : document.createElement('div');
                 value_div.classList.add("daleofmerchants-effective-value");
                 value_div.innerHTML = String(value);
                 card_div.append(value_div);

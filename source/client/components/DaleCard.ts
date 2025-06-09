@@ -591,6 +591,7 @@ export class DaleCard {
                         value = effect.arg!;
                         break;
                     case DaleCard.CT_RAREARTEFACT:
+                    case DaleCard.CT_DARINGMEMBER:
                         value *= effect.arg!;
                         break;
                     case DaleCard.CT_STOVE:
@@ -1017,9 +1018,6 @@ export class DaleCard {
         if (text.includes('CLOCK')) {
             text = text.replaceAll('CLOCK', `<span class="daleofmerchants-log-span">${DaleIcons.getClockIcon().outerHTML}</span>`);
         }
-        if (text.includes('<div data-clock="2"')) {
-            console.log(text);
-        }
         return text;
     }
 
@@ -1135,7 +1133,11 @@ export class DaleCard {
         if (card_div.dataset['location'] == 'market') {
             value = this.effective_cost;
         }
-        else if (card_div.dataset['location'] == 'moving' || (card_div.dataset['location'] == 'stock' && DaleCard.page?.isCurrentPlayerActive())) {
+        else if (
+            (DaleCard.page!.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
+            (card_div.dataset['location'] == 'moving') ||
+            (((DaleCard.page as any)!.mono_hand_is_visible && card_div.id.includes("limbo")))
+        ) {
             value = this.effective_value;
         }
         if (value == this.original_value) {

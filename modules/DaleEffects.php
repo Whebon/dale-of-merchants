@@ -175,6 +175,7 @@ class DaleEffects {
                         $value = $row["arg"];
                         break;
                     case CT_RAREARTEFACT:
+                    case CT_DARINGMEMBER:
                         $value *= $row["arg"];
                         break;
                     case CT_STOVE:

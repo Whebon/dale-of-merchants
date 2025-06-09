@@ -428,6 +428,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->monoDiscardJunk();
         $this->monoHideHand();
         $this->refillHand(MONO_PLAYER_ID);
+        $this->expireEffectsAtTheEndOfTurn();
     }
     
     /**
@@ -605,7 +606,11 @@ class DaleOfMerchants extends DaleTableBasic
                 //no immediate effects
                 break;
             case CT_LITTLEMEMBER:
-                $this->draw(clienttranslate('Little Member: ${player_name} draws a ${card_name} from ${opponent_name}\' deck'), 1, false, $opponent_id, MONO_PLAYER_ID);
+                $this->draw(
+                    clienttranslate('Little Member: ${player_name} draws a card from ${opponent_name}\' deck'), 
+                    1, false, $opponent_id, MONO_PLAYER_ID, 
+                    clienttranslate('Little Member: ${player_name} draws a ${card_name} from ${opponent_name}\' deck')
+                );
                 $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
                 $dbcard = $this->monoPickLowestValuedCard($dbcards);
                 if ($dbcard) {
@@ -615,12 +620,24 @@ class DaleOfMerchants extends DaleTableBasic
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         "deck_player_id" => $opponent_id,
                         "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($dbcard), //not in _private, because we use it in the public message
                         "_private" => array(
-                            "card" => $dbcard,
-                            "card_name" => $this->getCardName($dbcard)
+                            "card" => $dbcard
                         )
                     ));
                 }
+                break;
+            case CT_DARINGMEMBER:
+                $die_value = $this->rollDie(
+                    clienttranslate('Daring Member: ${player_name} rolls ${die_icon}'),
+                    ANIMALFOLK_POLECATS,
+                    $technique_card,
+                );
+                $this->notifyAllPlayers('message', clienttranslate('Daring Member: ${player_name} multiplies the value of cards it uses by ${die_value} this turn'), array(
+                    'player_name' => $this->getActivePlayerName(),
+                    'die_value' => $die_value
+                ));
+                $this->effects->insertGlobal($technique_card["id"], CT_DARINGMEMBER, $die_value);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -733,7 +750,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "highlight_limbo_cards" => array_reverse($fund_cards),
                     "highlight_market_pos" => $market_card["location_arg"],
                     "wrap_class" => "daleofmerchants-wrap-purchase",
-                    "description" => '${player_name} purchases a ${card_name}',
+                    "description" => '${player_name} purchases ${card_name}',
                     "card_name" => $this->getCardName($market_card)
                 ));
                 //pay coin funds
@@ -933,6 +950,21 @@ class DaleOfMerchants extends DaleTableBasic
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+    /**
+     * Expire all effects, except global effects with their corresponding card in a schedule
+     */
+    function expireEffectsAtTheEndOfTurn() {
+        $schedule_card_ids = array();
+        $players = $this->loadPlayersBasicInfosInclMono();
+        foreach($players as $player_id => $player) {
+            $schedule_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+            foreach ($schedule_dbcards as $dbcard) {
+                $schedule_card_ids[] = $dbcard["id"];
+            }
+        }
+        $this->effects->expireAllExcept($schedule_card_ids);
+    }
 
 	/**
 	 * Sorts an unordered object of dbcards by their "location_arg"
@@ -9168,15 +9200,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateValue("isPostCleanUpPhase", 0);
 
         //4. expire all effects, except global effects with their corresponding card in a schedule
-        $schedule_card_ids = array();
-        $players = $this->loadPlayersBasicInfosInclMono();
-        foreach($players as $player_id => $player) {
-            $schedule_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
-            foreach ($schedule_dbcards as $dbcard) {
-                $schedule_card_ids[] = $dbcard["id"];
-            }
-        }
-        $this->effects->expireAllExcept($schedule_card_ids);
+        $this->expireEffectsAtTheEndOfTurn();
 
         //5. activate the next player
         $next_player_id = $this->activeNextPlayer();
