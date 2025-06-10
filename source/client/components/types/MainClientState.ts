@@ -296,6 +296,7 @@ export class MainClientState {
      * Leave the client state
      */
     public leaveAndDontReturn() {
+        console.warn("mainClientState: leaveAndDontReturn");
         const previous = this._stack.pop();
         this._name = 'client_technique';
         this._args = {};
@@ -311,6 +312,7 @@ export class MainClientState {
      * Leave the client state and return to the previous client state
      */
     public leave() {
+        console.warn("mainClientState: leave");
         const previous = this._stack.pop();
         this.setPassiveSelected(false);
         this._name = 'client_technique';
@@ -330,6 +332,7 @@ export class MainClientState {
      * Leave all client states and return to the default client state
      */
     public leaveAll() {
+        console.warn("mainClientState: leaveAll");
         while (this._stack.length > 0) {
             this.leave(); //see issue #97.2 and #97.3
         }

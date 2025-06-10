@@ -1528,10 +1528,6 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.myHand.setSelectionMode('none');
 				TargetingLine.remove();
-				//edge case: in replay, on an empty deck, 'manufacturedJoy' -> 'client_manufacturedJoy', without leaving the client state
-				if (this.mainClientState.name == 'client_manufacturedJoy') {
-					this.mainClientState.leaveAndDontReturn();
-				}
 				break;
 			case 'client_shakyEnterprise':
 				this.myDiscard.setSelectionMode('none');
@@ -7110,6 +7106,10 @@ class DaleOfMerchants extends Gamegui
 
 	notif_discard(notif: NotifAs<'discard'>) {
 		console.warn("discard", notif.args);
+		//edge case: in replay, on an empty deck, 'manufacturedJoy' -> 'client_manufacturedJoy', without leaving the client state
+		if (this.mainClientState.name == 'client_manufacturedJoy') {
+			this.mainClientState.leaveAndDontReturn();
+		}
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;

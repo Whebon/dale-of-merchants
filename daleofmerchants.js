@@ -4484,6 +4484,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             configurable: true
         });
         MainClientState.prototype.leaveAndDontReturn = function () {
+            console.warn("mainClientState: leaveAndDontReturn");
             var previous = this._stack.pop();
             this._name = 'client_technique';
             this._args = {};
@@ -4495,6 +4496,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             }
         };
         MainClientState.prototype.leave = function () {
+            console.warn("mainClientState: leave");
             var previous = this._stack.pop();
             this.setPassiveSelected(false);
             this._name = 'client_technique';
@@ -4510,6 +4512,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             }
         };
         MainClientState.prototype.leaveAll = function () {
+            console.warn("mainClientState: leaveAll");
             while (this._stack.length > 0) {
                 this.leave();
             }
@@ -6177,9 +6180,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.myHand.setSelectionMode('none');
                     TargetingLine_1.TargetingLine.remove();
-                    if (this.mainClientState.name == 'client_manufacturedJoy') {
-                        this.mainClientState.leaveAndDontReturn();
-                    }
                     break;
                 case 'client_shakyEnterprise':
                     this.myDiscard.setSelectionMode('none');
@@ -11077,6 +11077,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_discard = function (notif) {
             var _a;
             console.warn("discard", notif.args);
+            if (this.mainClientState.name == 'client_manufacturedJoy') {
+                this.mainClientState.leaveAndDontReturn();
+            }
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
