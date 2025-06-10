@@ -7438,20 +7438,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler, include_player, suffix) {
+        DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler, include_player, suffix, player_ids) {
             if (include_player === void 0) { include_player = false; }
             if (suffix === void 0) { suffix = ""; }
+            player_ids = player_ids !== null && player_ids !== void 0 ? player_ids : this.gamedatas.playerorder;
             var _loop_12 = function (opponent_id) {
                 if (include_player || opponent_id != this_10.player_id) {
                     var name_1 = this_10.gamedatas.players[opponent_id].name;
                     var color = this_10.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1).concat(suffix, "</span>");
-                    this_10.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(opponent_id); }, undefined, false, 'gray');
+                    this_10.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
                 }
             };
             var this_10 = this;
-            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
-                var opponent_id = _a[_i];
+            for (var _i = 0, player_ids_1 = player_ids; _i < player_ids_1.length; _i++) {
+                var opponent_id = player_ids_1[_i];
                 _loop_12(opponent_id);
             }
         };
@@ -7951,6 +7952,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.setMainTitle(label);
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
                     new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
+                    this.removeActionButtons();
+                    this.addActionButtonsOpponent(function (opponent_id) { _this.onRottenFood(card.id, opponent_id); }, false, _("\'s deck"));
+                    this.addActionButtonCancelClient();
                     break;
                 case 'dirtyExchange':
                     this.bgaPerformAction('actDirtyExchange', {
@@ -8040,6 +8044,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_manufacturedJoy_label);
                     new TargetingLine_1.TargetingLine(card, client_manufacturedJoy_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onManufacturedJoyCancelTargetingLine(); }, function (source_id, target_id) { return _this.onManufacturedJoy(source_id, target_id); });
                     this.removeActionButtons();
+                    this.addActionButtonsOpponent(function (opponent_id) { _this.onManufacturedJoy(card.id, opponent_id); }, true, _("\'s discard"));
                     this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, 'gray');
                     break;
                 case 'client_spend':
@@ -8088,6 +8093,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var label = _("Place '") + card.name + _("' on a deck");
                         this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
                         new TargetingLine_1.TargetingLine(card, nightShift_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
+                        this.removeActionButtons();
+                        this.addActionButtonsOpponent(function (opponent_id) { _this.onNightShift(card.id, opponent_id); }, true, _("\'s deck"), nightShift_args.player_ids);
                     }
                     break;
                 case 'delightfulSurprise':
@@ -8122,6 +8129,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.setMainTitle(anchor_label);
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', anchor_label);
                     new TargetingLine_1.TargetingLine(card, anchor_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onAnchorCancelTargetingLine(); }, function (source_id, target_id) { return _this.onAnchor(source_id, target_id); });
+                    this.addActionButtonsOpponent(function (opponent_id) { _this.onAnchor(card.id, opponent_id); }, true, _("\'s discard"));
                     this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
                     break;
                 case 'badOmen':
@@ -9706,6 +9714,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onNightShiftNext = function () {
             TargetingLine_1.TargetingLine.remove();
+            this.removeActionButtons();
             var label = _("Choose another card to place back");
             this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', label);
         };
