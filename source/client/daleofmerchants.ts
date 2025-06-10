@@ -1651,8 +1651,11 @@ class DaleOfMerchants extends Gamegui
 		switch( stateName )
 		{
 			case 'deckSelection':
-				this.addActionButton("submit-button", _("Vote"), "onSubmitPreference");
-				this.addActionButton("abstain-button", _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
+				if (this.is_solo) {
+                    this.setDescriptionOnMyTurn("${you} may choose up to ${n_plus_1} animalfolk sets to play with");
+                }
+				this.addActionButton("submit-button", this.is_solo ? _("Confirm") : _("Vote"), "onSubmitPreference");
+				this.addActionButton("abstain-button", this.is_solo ? _("Skip") : _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
 				if (!this.gamedatas.debugMode) {
 					this.addActionButton("debug-button", _("Enable Debug Mode"), "onEnableDebugMode", undefined, false, 'red');
 				}
