@@ -8801,7 +8801,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_NATURALSURVIVOR:
-                    fizzle = this.myDeck.size == 0 || this.myHand.count() <= 1;
+                    fizzle = this.myDeck.size + this.myDiscard.size == 0 || this.myHand.count() <= 1;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }

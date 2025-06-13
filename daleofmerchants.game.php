@@ -586,8 +586,8 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $nbr = min(
                     $nbr,
-                    $this->cards->countCardsInDrawAndDiscardOfPlayer(MONO_PLAYER_ID),
-                    $this->cards->countCardsInDrawAndDiscardOfPlayer($opponent_id)
+                    $this->cards->countCardsInDeckAndDiscardOfPlayer(MONO_PLAYER_ID),
+                    $this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id)
                 );
                 $cards_for_mono = $this->cards->pickCardsForLocation($nbr, DECK.MONO_PLAYER_ID, 'boldmember1');
                 $cards_for_player = $this->cards->pickCardsForLocation($nbr, DECK.$opponent_id, 'boldmember2');
@@ -4695,9 +4695,9 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_NATURALSURVIVOR:
-                    $decksize = $this->cards->countCardInLocation(DECK.$player_id);
+                    $deckdiscardsize = $this->cards->countCardsInDeckAndDiscardOfPlayer($player_id);
                     $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                    if ($decksize >= 1 && $handsize >= 2) {
+                    if ($deckdiscardsize >= 1 && $handsize >= 2) {
                         throw new BgaVisibleSystemException("Unable to fizzle CT_NATURALSURVIVOR. There exists a card in the hand AND the deck.");
                     }
                     break;
@@ -5126,8 +5126,8 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $nbr = min(
                     $nbr,
-                    $this->cards->countCardsInDrawAndDiscardOfPlayer($player_id),
-                    $this->cards->countCardsInDrawAndDiscardOfPlayer($opponent_id)
+                    $this->cards->countCardsInDeckAndDiscardOfPlayer($player_id),
+                    $this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id)
                 );
                 $cards_for_player = $this->cards->pickCardsForLocation($nbr, DECK.$opponent_id, 'whirligig1');
                 $cards_for_opponent = $this->cards->pickCardsForLocation($nbr, DECK.$player_id, 'whirligig2');
@@ -5543,7 +5543,7 @@ class DaleOfMerchants extends DaleTableBasic
                     ANIMALFOLK_POLECATS,
                     $technique_card,
                 );
-                $die_value = min($die_value, $this->cards->countCardsInDrawAndDiscardOfPlayer($player_id)); //the die value is restricted by the number of available cards
+                $die_value = min($die_value, $this->cards->countCardsInDeckAndDiscardOfPlayer($player_id)); //the die value is restricted by the number of available cards
                 $this->setGameStateValue("die_value", $die_value);
                 $this->gamestate->nextState("trDaringAdventurer");
                 break;
@@ -5616,12 +5616,13 @@ class DaleOfMerchants extends DaleTableBasic
                     ANIMALFOLK_POLECATS,
                     $technique_card,
                 );
-                $decksize = $this->cards->countCardsInLocation(DECK.$player_id);
+                $deckdiscardsize = $this->cards->countCardsInDeckAndDiscardOfPlayer($player_id);
                 $handsize = $this->cards->countCardsInLocation(HAND.$player_id);
-                $die_value = min($die_value, $decksize, $handsize);
-                if ($decksize == 0 || $handsize == 0) {
+                $die_value = min($die_value, $deckdiscardsize, $handsize);
+                if ($deckdiscardsize == 0 || $handsize == 0) {
                     throw new BgaVisibleSystemException("Unable to resolve CT_NATURALSURVIVOR. The card should have fizzled instead");
                 }
+                $this->reshuffleDeckForSearch($player_id, $die_value);
                 $this->setGameStateValue("die_value", $die_value);
                 $this->gamestate->nextState("trNaturalSurvivor");
                 break;
@@ -7122,7 +7123,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //mark this passive as used
                 $this->effects->insertModification($passive_card_id, CT_COFFEEGRINDER);
                 //move to another state to discard the 2nd card
-                if ($this->cards->countCardsInDrawAndDiscardOfPlayer($opponent_id) > 0) {
+                if ($this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id) > 0) {
                     $this->setGameStateValue("opponent_id", $opponent_id);
                     $this->setGameStateValue("passive_card_id", $passive_card_id);
                     $this->gamestate->nextState("trCoffeeGrinder"); return;

@@ -38,7 +38,7 @@ class DaleDeck extends Deck {
      * Count the sum of cards from the specified player's deck- and discard piles
      * @param mixed $player_id specified player
      */
-    function countCardsInDrawAndDiscardOfPlayer($player_id) {
+    function countCardsInDeckAndDiscardOfPlayer($player_id) {
         return $this->countCardsInLocation(DECK.$player_id) + $this->countCardsInLocation(DISCARD.$player_id);
     }
 
