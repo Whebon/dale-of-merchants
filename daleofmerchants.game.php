@@ -385,7 +385,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $msg = clienttranslate('${player_name} played a card without the <strong>acquire</strong> keyword, so it prioritises the stall action');
                 break;
             case MONO_TECHNIQUE_ACQUIRE:
-                if ($this->monoHasMostStacks()) {
+                if ($this->cards->getNextStackIndex(MONO_PLAYER_ID) >= 7) {
+                    $msg = clienttranslate('${player_name} has 7 stacks, so it prioritises the stall action');
+                    $technique_result = MONO_TECHNIQUE_NO_ACQUIRE;
+                }
+                else if ($this->monoHasMostStacks()) {
                     $msg = clienttranslate('${player_name} played a card with the <strong>acquire</strong> keyword and it has more stacks than you, so it prioritises the market action');
                 }
                 else {
