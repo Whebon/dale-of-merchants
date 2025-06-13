@@ -5627,7 +5627,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DUPLICATEENTRY:
                 $this->beginResolvingCard($technique_card_id);
-                $this->reshuffleDeckForSearch($player_id, 1);
+                $this->reshuffleDeckForSearch($player_id, 2);
                 if ($this->cards->countCardInLocation(DECK.$player_id) > 2) {
                     $this->gamestate->nextState("trDuplicateEntry"); //let the player choose 2 cards
                 }
