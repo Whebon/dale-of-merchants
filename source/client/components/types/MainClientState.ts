@@ -164,7 +164,7 @@ export class MainClientState {
             case 'client_dirtyExchange':
                 return _("${card_name}: ${you} must choose an opponent to take a card from");
             case 'client_treasureHunter':
-                return _("${card_name}: ${you} must take a card from an opponent's discard pile");
+                return _("${card_name}: ${you} must take the top card of another player's deck or discard");
             case 'client_newSeason':
                 return _("${card_name}: ${you} must <stronger>toss</stronger> an animalfolk card from your discard pile");
             case 'client_accident':

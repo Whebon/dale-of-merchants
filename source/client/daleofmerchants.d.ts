@@ -480,7 +480,7 @@ declare global {
 		'client_nuisance': { opponent_ids: number[] }
 		'client_rottenFood': { card_id: number, opponent_id: number }
 		'client_dirtyExchange': { opponent_id: number }
-		'client_treasureHunter': { card_id: number }
+		'client_treasureHunter': { opponent_id: number, from_deck: boolean }
 		'client_newSeason': { card_id: number }
 		'client_accident': { card_ids: number[], opponent_id: number }
 		'client_whirligig': {opponent_id: number }

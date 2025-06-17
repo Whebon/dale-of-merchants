@@ -4615,6 +4615,13 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_TREASUREHUNTER:
+                    $players = $this->loadPlayersBasicInfosInclMono();
+                    foreach ($players as $opponent_id => $opponent) {
+                        if ($player_id != $opponent_id && $this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id) > 0) {
+                            throw new BgaVisibleSystemException("Unable to fizzle. There exists a card to take.");
+                        }
+                    }
+                    break;
                 case CT_CAREFREESWAPPER:
                     $players = $this->loadPlayersBasicInfosInclMono();
                     foreach ($players as $opponent_id => $opponent) {
@@ -5055,26 +5062,31 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trSabotage");
                 break;
             case CT_TREASUREHUNTER:
-                $card_id = $args["card_id"];
-                $card = $this->cards->getCard($card_id);
-                $prefix = substr($card["location"], 0, 4);
-                $opponent_id = substr($card["location"], 4);
-                if ($prefix != DISCARD || $opponent_id == MARKET) {
-                    throw new BgaVisibleSystemException("CT_TREASUREHUNTER can only take cards from player discard piles");
+                $from_deck = (bool)$args["from_deck"];
+                $opponent_id = $args["opponent_id"];
+                $this->validateOpponentId($opponent_id);
+                if ($from_deck) {
+                    $this->draw(
+                        clienttranslate('Treasure Hunter: ${player_name} draws a card from ${opponent_name}\'s deck'), 
+                        1,
+                        false,
+                        $opponent_id,
+                        $player_id,
+                        clienttranslate('Treasure Hunter: ${player_name} draws ${card_name} from ${opponent_name}\'s deck')
+                    );
                 }
-                $top_card = $this->cards->getCardOnTop(DISCARD.$opponent_id);
-                if ($card["id"] != $top_card["id"]) {
-                    throw new BgaVisibleSystemException("CT_TREASUREHUNTER can only take the top card of a discard pile (card $card_id is not on top)");
+                else {
+                    $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id);
+                    $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+                    $this->notifyAllPlayers('discardToHand', clienttranslate('Treasure Hunter: ${player_name} takes ${card_name} from ${opponent_name}\'s discard'), array(
+                        "player_id" => $player_id,
+                        "discard_id" => $opponent_id,
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "card_name" => $this->getCardName($dbcard),
+                        "card" => $dbcard
+                    ));
                 }
-                $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->notifyAllPlayers('discardToHand', clienttranslate('Treasure Hunter: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'), array(
-                    "player_id" => $player_id,
-                    "discard_id" => $opponent_id,
-                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                    "card_name" => $this->getCardName($card),
-                    "card" => $card
-                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_NEWSEASON:

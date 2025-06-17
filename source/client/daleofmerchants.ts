@@ -706,11 +706,21 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_treasureHunter':
 				const client_treasureHunter_args = (this.mainClientState.args as ClientGameStates['client_treasureHunter']);
-				const client_treasureHunter_targets: DaleCard[] = [];
-				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
-					if (+player_id != +this.player_id && pile.size > 0) {
-						pile.setSelectionMode('noneCantViewContent');
-						client_treasureHunter_targets.push(pile.peek()!);
+				const client_treasureHunter_targets: (DaleCard|HTMLElement)[] = [];
+				for (const player_id of this.gamedatas.playerorder) {
+					const deck = this.playerDecks[player_id]!;
+					const discard = this.playerDiscards[player_id]!;
+					if (player_id != this.player_id && deck.size + discard.size > 0) {
+						const deck = this.playerDecks[player_id]!;
+						deck.setSelectionMode('noneCantViewContent');
+						const client_treasureHunter_target = deck.topCardHTML ?? deck.placeholderHTML;
+						client_treasureHunter_targets.push(client_treasureHunter_target);
+						client_treasureHunter_target.dataset['target_id'] = String(-player_id); // negation is important here (see onTreasureHunter)
+						if (discard.size > 0 && discard.topCardHTML) {
+							discard.setSelectionMode('noneCantViewContent');
+							client_treasureHunter_targets.push(discard.topCardHTML);
+							discard.topCardHTML.dataset['target_id'] = String(player_id);
+						}
 					}
 				}
 				if (client_treasureHunter_targets.length == 0) {
@@ -1304,6 +1314,14 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'client_treasureHunter':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
+				TargetingLine.remove();
+				break;
 			case 'client_carefreeSwapper':
 				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
 					if (+player_id != +this.player_id && pile.size > 0) {
@@ -4312,9 +4330,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_TREASUREHUNTER:
 				fizzle = true;
-				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
-					if (+player_id != +this.player_id && pile.size > 0) {
+				for (const player_id of this.gamedatas.playerorder) {
+					if (+player_id != +this.player_id && this.playerDecks[+player_id]!.size+this.playerDiscards[+player_id]!.size > 0) {
 						fizzle = false;
+						break;
 					}
 				}
 				if (fizzle) {
@@ -5311,10 +5330,14 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onTreasureHunter(card_id: number) {
+	onTreasureHunter(opponent_id: number) {
+		//uses a small botch that assumes player_ids are positive
+		// -123		->	draw a card from 123's deck 
+		// 123 		->	take the top card of 123's discard
 		this.playTechniqueCard<'client_treasureHunter'>({
-			card_id: card_id,
-		})
+			opponent_id: Math.abs(opponent_id),
+			from_deck: opponent_id < 0
+		});
 	}
 
 	onAccident() {
