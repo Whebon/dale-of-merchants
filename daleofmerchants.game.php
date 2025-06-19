@@ -1604,7 +1604,9 @@ class DaleOfMerchants extends DaleTableBasic
                     "deck_player_id" => $from_player_id,
                     "to_limbo" => $to_limbo
                 ), $msg_args), $private_message);
-                $this->removeMonoCardsFromPlayerHand($to_player_id, array($card));
+                if (!$to_limbo) {
+                    $this->removeMonoCardsFromPlayerHand($to_player_id, array($card));
+                }
                 return 1;
             }
             return 0;
@@ -1624,7 +1626,9 @@ class DaleOfMerchants extends DaleTableBasic
                 "deck_player_id" => $from_player_id,
                 "to_limbo" => $to_limbo
             ), $msg_args), $private_message);
-            $this->removeMonoCardsFromPlayerHand($to_player_id, $cards);
+            if (!$to_limbo) {
+                $this->removeMonoCardsFromPlayerHand($to_player_id, $cards);
+            }
             return $actual_nbr;
         }
     }
