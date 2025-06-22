@@ -663,6 +663,10 @@
   left: 82%;
   top: 5%;
 }
+.daleofmerchants-stall-container .daleofmerchants-stack-container .daleofmerchants-stack-index.daleofmerchants-effective-value {
+  justify-content: normal;
+  color: lightcoral;
+}
 
 .daleofmerchants-pile-container {
   display: flex;

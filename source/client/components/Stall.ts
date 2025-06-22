@@ -33,6 +33,7 @@ export class Stall implements CardSlotManager, DaleLocation {
     private selectionMode: StallSelectionMode;
     private slots: CardSlot[][];
     private numberOfStacks;
+    private firstStackValue;
 
     constructor(page: Gamegui, player_id: number) {
         this.page = page;
@@ -46,6 +47,7 @@ export class Stall implements CardSlotManager, DaleLocation {
         this.selectionMode = 'none';
         this.slots = [];
         this.numberOfStacks = 0;
+        this.firstStackValue = 1;
         for (let i = 0; i < Stall.MAX_STACKS; i++) {
             this.createNewStack();
         }
@@ -429,6 +431,20 @@ export class Stall implements CardSlotManager, DaleLocation {
             }
         }
         return false;
+    }
+
+    /**
+     * Increase the required stack value of all stacks by `nbr`, then update the HTML numbers for them
+     */
+    public increaseStackValue(nbr: number) {
+        this.firstStackValue += nbr
+        let i = this.firstStackValue;
+        const isEffectiveValue = this.firstStackValue != 1
+        console.log("isEffectiveValue = ",isEffectiveValue);
+        this.container.querySelectorAll(".daleofmerchants-stack-index").forEach(stackIndexDiv => {
+            stackIndexDiv.classList.toggle("daleofmerchants-effective-value", isEffectiveValue);
+            (stackIndexDiv as HTMLElement).innerText = String(i++);
+        })
     }
 
     /**

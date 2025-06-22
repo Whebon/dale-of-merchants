@@ -1343,10 +1343,18 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                         anim.play();
                     }
                     break;
+                case DaleCard.CT_NASTYTHREAT:
+                    for (var _i = 0, _a = this.page.gamedatas.playerorder; _i < _a.length; _i++) {
+                        var player_id = _a[_i];
+                        if (effect.arg != player_id) {
+                            this.page.playerStalls[+player_id].increaseStackValue(1);
+                        }
+                    }
+                    break;
             }
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
-                for (var _i = 0, _a = Array.from(DaleCard.divs.keys()); _i < _a.length; _i++) {
-                    var card_id = _a[_i];
+                for (var _b = 0, _c = Array.from(DaleCard.divs.keys()); _b < _c.length; _b++) {
+                    var card_id = _c[_b];
                     try {
                         DaleCard.updateHTML(card_id);
                     }
@@ -1399,8 +1407,17 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                             });
                         }
                         break;
+                    case DaleCard.CT_NASTYTHREAT:
+                        for (var _a = 0, _b = this_3.page.gamedatas.playerorder; _a < _b.length; _a++) {
+                            var player_id = _b[_a];
+                            if (effect.arg != player_id) {
+                                this_3.page.playerStalls[+player_id].increaseStackValue(-1);
+                            }
+                        }
+                        break;
                 }
             };
+            var this_3 = this;
             for (var _i = 0, effects_1 = effects; _i < effects_1.length; _i++) {
                 var effect = effects_1[_i];
                 _loop_3(effect);
@@ -3093,19 +3110,19 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var _loop_4 = function (card) {
                 var div = card.toDiv(container_id, 'stock');
                 div.classList.add("daleofmerchants-relative");
-                if (this_3.isClickable(card)) {
+                if (this_4.isClickable(card)) {
                     div.classList.add("daleofmerchants-clickable");
-                    var thiz_3 = this_3;
+                    var thiz_3 = this_4;
                     dojo.connect(div, 'onclick', function () {
                         thiz_3.onClickCard(card, div);
                     });
                 }
-                else if (this_3.isGrayedOut(card)) {
+                else if (this_4.isGrayedOut(card)) {
                     div.classList.add("daleofmerchants-card-grayed-out");
                 }
-                this_3.cardIdToPopinDiv.set(card.id, div);
+                this_4.cardIdToPopinDiv.set(card.id, div);
             };
-            var this_3 = this;
+            var this_4 = this;
             for (var _i = 0, _h = this.cards.slice().reverse(); _i < _h.length; _i++) {
                 var card = _h[_i];
                 _loop_4(card);
@@ -3879,6 +3896,7 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             this.selectionMode = 'none';
             this.slots = [];
             this.numberOfStacks = 0;
+            this.firstStackValue = 1;
             for (var i = 0; i < Stall.MAX_STACKS; i++) {
                 this.createNewStack();
             }
@@ -4176,6 +4194,16 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
                 }
             }
             return false;
+        };
+        Stall.prototype.increaseStackValue = function (nbr) {
+            this.firstStackValue += nbr;
+            var i = this.firstStackValue;
+            var isEffectiveValue = this.firstStackValue != 1;
+            console.log("isEffectiveValue = ", isEffectiveValue);
+            this.container.querySelectorAll(".daleofmerchants-stack-index").forEach(function (stackIndexDiv) {
+                stackIndexDiv.classList.toggle("daleofmerchants-effective-value", isEffectiveValue);
+                stackIndexDiv.innerText = String(i++);
+            });
         };
         Stall.prototype.onResize = function () {
             if (window.innerWidth < 1250) {
@@ -4628,17 +4656,17 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard"]
             this.onTargets = [];
             var _loop_5 = function (targetCard) {
                 var card_div = targetCard instanceof DaleCard_8.DaleCard ? targetCard.div : targetCard;
-                card_div.classList.add("daleofmerchants-line-target", this_4.targetClass);
-                this_4.targetDivs.push(card_div);
+                card_div.classList.add("daleofmerchants-line-target", this_5.targetClass);
+                this_5.targetDivs.push(card_div);
                 var target_id = targetCard instanceof DaleCard_8.DaleCard ? targetCard.id : +targetCard.dataset['target_id'];
                 var finalOnTarget = function () {
                     _this.remove();
                     onTarget(source_id, target_id);
                 };
-                this_4.onTargets.push(finalOnTarget);
+                this_5.onTargets.push(finalOnTarget);
                 card_div.addEventListener("click", finalOnTarget);
             };
-            var this_4 = this;
+            var this_5 = this;
             for (var _i = 0, targets_1 = targets; _i < targets_1.length; _i++) {
                 var targetCard = targets_1[_i];
                 _loop_5(targetCard);
@@ -6478,10 +6506,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         else {
                             blindfold_label = "".concat(blindfold_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
                         }
-                        this_5.addActionButton("button-" + value, blindfold_label, (function () { return _this.onBlindfoldGuess(value); }).bind(this_5));
+                        this_6.addActionButton("button-" + value, blindfold_label, (function () { return _this.onBlindfoldGuess(value); }).bind(this_6));
                         blindfold_baseValue += 1;
                     };
-                    var this_5 = this;
+                    var this_6 = this;
                     for (var _i = 0, _d = blindfold_args.possible_values; _i < _d.length; _i++) {
                         var value = _d[_i];
                         _loop_7(value);
@@ -6498,10 +6526,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         else {
                             blindfoldDecideValue_label = "".concat(blindfoldDecideValue_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
                         }
-                        this_6.addActionButton("button-" + value, blindfoldDecideValue_label, (function () { return _this.onBlindfoldDecideValue(value); }).bind(this_6));
+                        this_7.addActionButton("button-" + value, blindfoldDecideValue_label, (function () { return _this.onBlindfoldDecideValue(value); }).bind(this_7));
                         blindfoldDecideValue_baseValue += 1;
                     };
-                    var this_6 = this;
+                    var this_7 = this;
                     for (var _e = 0, _f = blindfoldDecideValue_args.possible_values; _e < _f.length; _e++) {
                         var value = _f[_e];
                         _loop_8(value);
@@ -6700,9 +6728,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_pompousProfessional':
                     var _loop_9 = function (animalfolk_id) {
                         var callback = function () { return _this.onPompousProfessional(animalfolk_id); };
-                        this_7.addActionButton("animalfolk-button-" + animalfolk_id, this_7.getAnimalfolkName(animalfolk_id), callback.bind(this_7));
+                        this_8.addActionButton("animalfolk-button-" + animalfolk_id, this_8.getAnimalfolkName(animalfolk_id), callback.bind(this_8));
                     };
-                    var this_7 = this;
+                    var this_8 = this;
                     for (var _g = 0, _h = this.gamedatas.animalfolkIds; _g < _h.length; _g++) {
                         var animalfolk_id = _h[_g];
                         _loop_9(animalfolk_id);
@@ -6808,9 +6836,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_periscopeAnimalfolkId':
                     var _loop_10 = function (animalfolk_id) {
                         var callback = function () { return _this.onPeriscopeAnimalfolkId(animalfolk_id); };
-                        this_8.addActionButton("animalfolk-button-" + animalfolk_id, this_8.getAnimalfolkName(animalfolk_id), callback.bind(this_8));
+                        this_9.addActionButton("animalfolk-button-" + animalfolk_id, this_9.getAnimalfolkName(animalfolk_id), callback.bind(this_9));
                     };
-                    var this_8 = this;
+                    var this_9 = this;
                     for (var _j = 0, _k = this.gamedatas.animalfolkIds; _j < _k.length; _j++) {
                         var animalfolk_id = _k[_j];
                         _loop_10(animalfolk_id);
@@ -6820,9 +6848,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_periscopeValue':
                     var _loop_11 = function (value) {
                         var callback = function () { return _this.onPeriscopeValue(value); };
-                        this_9.addActionButton("animalfolk-button-" + value, value.toString(), callback.bind(this_9));
+                        this_10.addActionButton("animalfolk-button-" + value, value.toString(), callback.bind(this_10));
                     };
-                    var this_9 = this;
+                    var this_10 = this;
                     for (var _l = 0, _m = [1, 2, 3, 4, 5]; _l < _m.length; _l++) {
                         var value = _m[_l];
                         _loop_11(value);
@@ -7466,14 +7494,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (suffix === void 0) { suffix = ""; }
             player_ids = player_ids !== null && player_ids !== void 0 ? player_ids : this.gamedatas.playerorder;
             var _loop_12 = function (opponent_id) {
-                if (include_player || opponent_id != this_10.player_id) {
-                    var name_1 = this_10.gamedatas.players[opponent_id].name;
-                    var color = this_10.gamedatas.players[opponent_id].color;
+                if (include_player || opponent_id != this_11.player_id) {
+                    var name_1 = this_11.gamedatas.players[opponent_id].name;
+                    var color = this_11.gamedatas.players[opponent_id].color;
                     var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1).concat(suffix, "</span>");
-                    this_10.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
+                    this_11.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
                 }
             };
-            var this_10 = this;
+            var this_11 = this;
             for (var _i = 0, player_ids_1 = player_ids; _i < player_ids_1.length; _i++) {
                 var opponent_id = player_ids_1[_i];
                 _loop_12(opponent_id);

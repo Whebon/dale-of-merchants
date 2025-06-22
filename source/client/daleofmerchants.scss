@@ -851,6 +851,11 @@
 			font-weight: bold;
 			left: 82%;
 			top: 5%;
+			
+			&.daleofmerchants-effective-value {
+				justify-content: normal;
+				color: lightcoral;
+			}
 		}
 	}
 }

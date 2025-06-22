@@ -356,6 +356,13 @@ export class DaleCard {
                     anim.play();
                 }
                 break;
+            case DaleCard.CT_NASTYTHREAT:
+                for (const player_id of this.page!.gamedatas.playerorder) {
+                    if (effect.arg != player_id) {
+                        (this.page as any).playerStalls[+player_id].increaseStackValue(1)
+                    }
+                }
+                break;
         }
 
         //update card affected divs
@@ -419,6 +426,13 @@ export class DaleCard {
                         avid_financier_card.querySelectorAll(".daleofmerchants-avid-financier-coin-icon").forEach( icon => {
                             icon.remove();
                         })
+                    }
+                    break;
+                case DaleCard.CT_NASTYTHREAT:
+                    for (const player_id of this.page!.gamedatas.playerorder) {
+                        if (effect.arg != player_id) {
+                            (this.page as any).playerStalls[+player_id].increaseStackValue(-1)
+                        }
                     }
                     break;
             }
