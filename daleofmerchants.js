@@ -86,7 +86,7 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             return this.getTossIcon();
         };
         DaleIcons.getTravelingEquipmentDiscardIcon = function () {
-            return this.getDiscardIcon();
+            return this.getBluePileIcon(0);
         };
         DaleIcons.getBluePileIcon = function (index) {
             return this.getIcon(0, index);

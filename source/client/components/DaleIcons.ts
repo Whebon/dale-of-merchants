@@ -32,7 +32,7 @@ export class DaleIcons {
     }
 
     public static getTravelingEquipmentDiscardIcon(): HTMLElement {
-        return this.getDiscardIcon();
+        return this.getBluePileIcon(0);
     }
 
 
