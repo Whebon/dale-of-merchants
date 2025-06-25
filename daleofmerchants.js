@@ -8427,7 +8427,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_id: prev_args.technique_card_id,
                 chameleons_json: DaleCard_10.DaleCard.getLocalChameleonsJSON(),
                 args: JSON.stringify(args)
-            }).catch(function () { return _this.mainClientState.enter(prev_name, prev_args); });
+            }).catch(function () {
+                if (_this.mainClientState.name != prev_name) {
+                    _this.mainClientState.enter(prev_name, prev_args);
+                }
+            });
         };
         DaleOfMerchants.prototype.clientScheduleTechnique = function (stateName, technique_card_id, args) {
             if (args === void 0) { args = {}; }
@@ -9548,6 +9552,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onNuisance = function () {
+            if (this.opponent_ids.length == 0) {
+                this.showMessage(_("Please select at least 1 target"), "error");
+                return;
+            }
             this.playTechniqueCard({
                 opponent_ids: this.opponent_ids
             });

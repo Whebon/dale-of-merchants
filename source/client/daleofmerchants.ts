@@ -4080,9 +4080,11 @@ class DaleOfMerchants extends Gamegui
 			card_id: prev_args.technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
-		}).catch(
-			() => this.mainClientState.enter(prev_name, prev_args) // Fixes resolving nuisance on 0 targets
-		)
+		}).catch(() => {
+			if (this.mainClientState.name != prev_name) {
+				this.mainClientState.enter(prev_name, prev_args)
+			}
+		})
 		//leaving the client state using Promise resolution leads to re-entering an already resolved client_state (such as 'client_acorn')
 		// .then(
 		// 	() => this.mainClientState.leave()
@@ -5292,6 +5294,10 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onNuisance() {
+		if (this.opponent_ids.length == 0) {
+			this.showMessage(_("Please select at least 1 target"), "error")
+			return
+		}
 		this.playTechniqueCard<'client_nuisance'>({
 			opponent_ids: this.opponent_ids
 		})
