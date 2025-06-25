@@ -4073,12 +4073,16 @@ class DaleOfMerchants extends Gamegui
 	 * @param args result of the open-infomation choice to send to the server
 	 */
 	playTechniqueCard<K extends keyof ClientTechniqueChoice>(args: ClientTechniqueChoice[K]) {
+		const prev_name = this.mainClientState.name as K
+		const prev_args = this.mainClientState.args as ClientGameStates[K]
+		this.mainClientState.leave();
 		this.bgaPerformAction('actPlayTechniqueCard', {
-			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
+			card_id: prev_args.technique_card_id,
 			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
-		})
-		this.mainClientState.leave();
+		}).catch(
+			() => this.mainClientState.enter(prev_name, prev_args) // Fixes resolving nuisance on 0 targets
+		)
 		//leaving the client state using Promise resolution leads to re-entering an already resolved client_state (such as 'client_acorn')
 		// .then(
 		// 	() => this.mainClientState.leave()
