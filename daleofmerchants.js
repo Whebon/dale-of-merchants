@@ -9249,6 +9249,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id_last: client_calculations_card_ids[0]
                     });
                     break;
+                case DaleCard_10.DaleCard.CT_REFRESHINGDRINK:
+                    this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id, keep_passive_selected: true });
+                    break;
                 case DaleCard_10.DaleCard.CT_SLICEOFLIFE:
                     if (this.myHand.count() < 2) {
                         this.showMessage(_("Not enough cards to discard"), 'error');

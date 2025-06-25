@@ -6969,6 +6969,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->setGameStateValue("isPostCleanUpPhase", 1);
                 }
                 $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
+                $this->setGameStateValue("passive_card_id", $passive_card_id);
                 $this->gamestate->nextState("trRefreshingDrink"); return;
                 break;
             case CT_SLICEOFLIFE:
@@ -6992,7 +6993,7 @@ class DaleOfMerchants extends DaleTableBasic
                     throw new BgaUserException($this->_("You must discard exactly 1-3 cards"));
                 }
                 $this->discardMultiple(
-                    clienttranslate('Slice of Life: ${player_name} discards ${nbr} cards'),
+                    clienttranslate('Spinning Wheel: ${player_name} discards ${nbr} cards'),
                     $player_id,
                     $card_ids,
                     $this->cards->getCardsFromLocation($card_ids, HAND.$player_id)
@@ -7782,7 +7783,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
-        $this->notifyAllPlayers('discard', clienttranslate('Slice of Life: ${player_name} discards ${card_name}'), array(
+        $this->notifyAllPlayers('discard', clienttranslate('Refreshing Drink: ${player_name} discards ${card_name}'), array(
             "player_id" => $player_id,
             "card" => $card,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
@@ -8993,6 +8994,13 @@ class DaleOfMerchants extends DaleTableBasic
         );
     }
 
+    function argPassiveCardId() {
+        $passive_card_id = $this->getGameStateValue("passive_card_id");
+        return array(
+            'passive_card_id' => $passive_card_id
+        );
+    }
+
     function argOpponentNameAndPassiveCardId() {
         $opponent_id = $this->getGameStateValue("opponent_id");
         $passive_card_id = $this->getGameStateValue("passive_card_id");
@@ -9640,7 +9648,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stRefreshingDrink() {
-        $this->draw(clienttranslate('Slice of Life: ${player_name} draws a card'));
+        $this->draw(clienttranslate('Refreshing Drink: ${player_name} draws a card'));
     }
 
     function stDelightfulSurprise() {

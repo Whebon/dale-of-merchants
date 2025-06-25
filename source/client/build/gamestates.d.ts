@@ -700,6 +700,7 @@ interface GameStates {
 		'descriptionmyturn': 'Refreshing Drink: ${you} must discard a card',
 		'type': 'activeplayer',
 		'action': 'stRefreshingDrink',
+		'args': 'argPassiveCardId',
 		'possibleactions': {
 			'actRefreshingDrink': [{
 				'name': 'card_id',
