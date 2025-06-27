@@ -3320,13 +3320,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.updateHTML();
         };
         Pile.prototype.isGrayedOut = function (card) {
-            switch (this.selectionMode) {
-                case 'multipleFromTopWithGaps':
-                case 'multipleFromTopNoGaps':
-                    return !this.isClickable(card);
-                default:
-                    return false;
-            }
+            return !this.isClickable(card);
         };
         Pile.prototype.isClickable = function (card) {
             switch (this.selectionMode) {
