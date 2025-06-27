@@ -751,7 +751,15 @@ export class Pile implements DaleLocation {
 	 * @returns `true` if the card should be grayed out in the current selection mode (popin only!)
 	 */
     private isGrayedOut(card: DaleCard) {
-        return !this.isClickable(card);
+		switch (this.selectionMode) {
+            case 'singleAnimalfolk':
+            case 'multipleFromTopWithGaps':
+            case 'multipleFromTopNoGaps':
+            case 'multipleJunk':
+                return !this.isClickable(card);
+            default:
+                return false;
+        }
     }
 
     /**

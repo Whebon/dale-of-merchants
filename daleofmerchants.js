@@ -3320,7 +3320,15 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.updateHTML();
         };
         Pile.prototype.isGrayedOut = function (card) {
-            return !this.isClickable(card);
+            switch (this.selectionMode) {
+                case 'singleAnimalfolk':
+                case 'multipleFromTopWithGaps':
+                case 'multipleFromTopNoGaps':
+                case 'multipleJunk':
+                    return !this.isClickable(card);
+                default:
+                    return false;
+            }
         };
         Pile.prototype.isClickable = function (card) {
             switch (this.selectionMode) {
