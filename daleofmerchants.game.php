@@ -5887,8 +5887,8 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                     //discard the card from the opponent's hand
                     $this->cards->moveCardOnTop($card["id"], DISCARD.$opponent_id);
-                    $this->notifyAllPlayers('discard', clienttranslate('Sabotage: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
-                        "player_id" => $player_id,
+                    $this->notifyAllPlayers('discard', clienttranslate('Grasp: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                        "player_id" => $opponent_id,
                         "discard_id" => $opponent_id,
                         "from_limbo" => false,
                         "card" => $card,
