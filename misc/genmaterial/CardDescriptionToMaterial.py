@@ -26,7 +26,7 @@ def format_emojis(text: str):
 def type_displayed(row):
     if (row['is_technique'] == "X"):
         return 'clienttranslate("Technique")'
-    if (string_literal(row['animalfolk']) == "null"):
+    if (int(row['animalfolk_id']) == 0):
         return 'clienttranslate("Rubbish")'
     return 'clienttranslate("Passive")'
 

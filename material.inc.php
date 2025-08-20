@@ -415,7 +415,7 @@ $this->card_types = array(
       'trigger' => null,
       'value' => 0,
       'nbr' => 0,
-      'animalfolk_displayed' => "",
+      'animalfolk_displayed' => clienttranslate("Junk"),
       'animalfolk_id' => 0,
       'is_mono' => false
   ),
@@ -431,7 +431,7 @@ $this->card_types = array(
       'trigger' => null,
       'value' => 1,
       'nbr' => 0,
-      'animalfolk_displayed' => "",
+      'animalfolk_displayed' => clienttranslate("Junk"),
       'animalfolk_id' => 0,
       'is_mono' => false
   ),
@@ -447,7 +447,7 @@ $this->card_types = array(
       'trigger' => null,
       'value' => 1,
       'nbr' => 0,
-      'animalfolk_displayed' => "",
+      'animalfolk_displayed' => clienttranslate("Junk"),
       'animalfolk_id' => 0,
       'is_mono' => false
   ),
@@ -463,7 +463,7 @@ $this->card_types = array(
       'trigger' => null,
       'value' => 1,
       'nbr' => 0,
-      'animalfolk_displayed' => "",
+      'animalfolk_displayed' => clienttranslate("Junk"),
       'animalfolk_id' => 0,
       'is_mono' => false
   ),
@@ -479,7 +479,7 @@ $this->card_types = array(
       'trigger' => null,
       'value' => 1,
       'nbr' => 0,
-      'animalfolk_displayed' => "",
+      'animalfolk_displayed' => clienttranslate("Junk"),
       'animalfolk_id' => 0,
       'is_mono' => false
   ),
@@ -495,7 +495,7 @@ $this->card_types = array(
       'trigger' => null,
       'value' => 1,
       'nbr' => 0,
-      'animalfolk_displayed' => "",
+      'animalfolk_displayed' => clienttranslate("Junk"),
       'animalfolk_id' => 0,
       'is_mono' => false
   ),
@@ -2502,7 +2502,7 @@ $this->card_types = array(
   131 => array(
       'type_id' => 131,
       'name' => clienttranslate("Safe Profits"),
-      'text' => clienttranslate("Spend X (1-10) to gain x/2�COIN (rounded up)."),
+      'text' => clienttranslate("Spend X (1-10) to gain x/2 COIN (rounded up)."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
       'has_plus' => true,

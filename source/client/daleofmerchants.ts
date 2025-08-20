@@ -2044,9 +2044,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
 				break;
 			case 'client_pompousProfessional':
+				this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), () => this.onPompousProfessional(0));
 				for (let animalfolk_id of this.gamedatas.animalfolkIds) {
-					const callback = () => this.onPompousProfessional(animalfolk_id);
-					this.addActionButton("animalfolk-button-"+animalfolk_id, this.getAnimalfolkName(animalfolk_id), callback.bind(this));
+					const animalfolk_name = this.getAnimalfolkName(animalfolk_id)
+					this.addActionButton("animalfolk-button-"+animalfolk_id, animalfolk_name, () => this.onPompousProfessional(animalfolk_id));
 				}
 				this.addActionButtonCancelClient();
 				break;
@@ -2156,9 +2157,10 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_periscopeAnimalfolkId':
+				this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), () => this.onPeriscopeAnimalfolkId(0));
 				for (let animalfolk_id of this.gamedatas.animalfolkIds) {
-					const callback = () => this.onPeriscopeAnimalfolkId(animalfolk_id);
-					this.addActionButton("animalfolk-button-"+animalfolk_id, this.getAnimalfolkName(animalfolk_id), callback.bind(this));
+					const animalfolk_name = this.getAnimalfolkName(animalfolk_id)
+					this.addActionButton("animalfolk-button-"+animalfolk_id, animalfolk_name, () => this.onPeriscopeAnimalfolkId(animalfolk_id));
 				}
 				//this.addCardNameInputField($("pagemaintitletext")! as HTMLElement, "Confirm", this.onPeriscopeAnimalfolkId.bind(this));
 				this.addActionButtonCancelClient();

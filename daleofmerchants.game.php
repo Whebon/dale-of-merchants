@@ -7958,7 +7958,7 @@ class DaleOfMerchants extends DaleTableBasic
             $dbcard = $dbcards[$card_id];
             unset($dbcards[$card_id]);
             if ($animalfolk_id != $this->getAnimalfolk($dbcard)) {
-                throw new BgaUserException($this->_("You can only take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                throw new BgaUserException($this->_("You can only take a card of the chosen set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
             }
             $this->cards->moveCard($card_id, HAND.$player_id);
             $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Pompous Professional: ${player_name} places ${card_name} into their hand'), array(
@@ -7974,7 +7974,7 @@ class DaleOfMerchants extends DaleTableBasic
             //otherwise, confirm the player can indeed not draw any card of the chosen animalfolk
             foreach ($dbcards as $dbcard) {
                 if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
-                    throw new BgaUserException($this->_("You must take a card of the chosen animalfolk set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                    throw new BgaUserException($this->_("You must take a card of the chosen set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
                 }
             }
         }

@@ -4443,7 +4443,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_fashionHint':
                         return _("${card_name}: ${you} may <stronger>toss</stronger> a card from the supply");
                     case 'client_pompousProfessional':
-                        return _("${card_name}: ${you} must choose an animalfolk set");
+                        return _("${card_name}: ${you} must choose a set");
                     case 'client_burglaryOpponentId':
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_burglaryValue':
@@ -4455,7 +4455,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_periscopeOpponentId':
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_periscopeAnimalfolkId':
-                        return _("${card_name}: ${you} must choose an animalfolk set");
+                        return _("${card_name}: ${you} must choose a set");
                     case 'client_periscopeValue':
                         return _("${card_name}: ${you} must choose a value");
                     case 'client_suddenNap':
@@ -6731,9 +6731,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
                     break;
                 case 'client_pompousProfessional':
+                    this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), function () { return _this.onPompousProfessional(0); });
                     var _loop_9 = function (animalfolk_id) {
-                        var callback = function () { return _this.onPompousProfessional(animalfolk_id); };
-                        this_8.addActionButton("animalfolk-button-" + animalfolk_id, this_8.getAnimalfolkName(animalfolk_id), callback.bind(this_8));
+                        var animalfolk_name = this_8.getAnimalfolkName(animalfolk_id);
+                        this_8.addActionButton("animalfolk-button-" + animalfolk_id, animalfolk_name, function () { return _this.onPompousProfessional(animalfolk_id); });
                     };
                     var this_8 = this;
                     for (var _g = 0, _h = this.gamedatas.animalfolkIds; _g < _h.length; _g++) {
@@ -6839,9 +6840,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_periscopeAnimalfolkId':
+                    this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), function () { return _this.onPeriscopeAnimalfolkId(0); });
                     var _loop_10 = function (animalfolk_id) {
-                        var callback = function () { return _this.onPeriscopeAnimalfolkId(animalfolk_id); };
-                        this_9.addActionButton("animalfolk-button-" + animalfolk_id, this_9.getAnimalfolkName(animalfolk_id), callback.bind(this_9));
+                        var animalfolk_name = this_9.getAnimalfolkName(animalfolk_id);
+                        this_9.addActionButton("animalfolk-button-" + animalfolk_id, animalfolk_name, function () { return _this.onPeriscopeAnimalfolkId(animalfolk_id); });
                     };
                     var this_9 = this;
                     for (var _j = 0, _k = this.gamedatas.animalfolkIds; _j < _k.length; _j++) {

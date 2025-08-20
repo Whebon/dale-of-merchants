@@ -218,7 +218,7 @@ export class MainClientState {
             case 'client_fashionHint':
                 return _("${card_name}: ${you} may <stronger>toss</stronger> a card from the supply");
             case 'client_pompousProfessional':
-                return _("${card_name}: ${you} must choose an animalfolk set");
+                return _("${card_name}: ${you} must choose a set");
             case 'client_burglaryOpponentId':
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_burglaryValue':
@@ -230,7 +230,7 @@ export class MainClientState {
             case 'client_periscopeOpponentId':
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_periscopeAnimalfolkId':
-                return _("${card_name}: ${you} must choose an animalfolk set");
+                return _("${card_name}: ${you} must choose a set");
             case 'client_periscopeValue':
                 return _("${card_name}: ${you} must choose a value");
             case 'client_suddenNap':
