@@ -22,7 +22,7 @@ if (!defined('HAND')) {
     define('MAX_STACKS', 8); //must be the same as on the client side
 }
 
-class DaleDeck extends Deck {
+class DaleDeck extends \Bga\GameFramework\Components\Deck {
     private $game;
     private DaleEffects $effects;
     public string $on_location_exhausted_method;
@@ -176,7 +176,7 @@ class DaleDeck extends Deck {
     /**
      * Move cards to specific location
      */
-    function moveCards($card_ids, $location, $location_arg=0) {
+    function moveCards($card_ids, $location, $location_arg=0): void {
         foreach ($card_ids as $card) {
             $this->effects->expireChameleonTarget($card); //is this really needed?
         }
@@ -206,7 +206,7 @@ class DaleDeck extends Deck {
     /**
      * Move a card to specific location
      */
-    function moveCard($card_id, $location, $location_arg=0) {
+    function moveCard($card_id, $location, $location_arg=0): void {
         $this->effects->expireChameleonTarget($card_id);
         if ($this->isOrderedLocation($location)) {
             //a new card is placed on top of Mono's facedown hand
@@ -287,7 +287,7 @@ class DaleDeck extends Deck {
      * Verifies that the cards come from the top $nbr of the discard pile
      * IMPORTANT: the cards still exists in the table should be moved to a different location by another function.
      * @param array $card_ids cards to get from the top of the given pile
-     * @param array $nbr maximum depth to look within the top of the given pile
+     * @param int $nbr maximum depth to look within the top of the given pile
      * @param string $location pile
      */
     function removeCardsFromTop(array $card_ids, int $nbr, string $location) {
@@ -372,7 +372,7 @@ class DaleDeck extends Deck {
     * Pick the first card on top of specified deck and give it to specified player
     * Return card infos or null if no card in the specified location
     */
-    function pickCardForLocation($from_location, $to_location, $location_arg=0) {
+    function pickCardForLocation($from_location, $to_location, $location_arg=0): ?array {
         $card = self::getCardOnTop($from_location);
 
         //hook
@@ -408,7 +408,7 @@ class DaleDeck extends Deck {
      * Override the original pickCardsForLocation method, but with the $on_location_exhausted_method hook
      * Pick the first "$nbr" cards on top of specified deck and place it in target location
      */
-    function pickCardsForLocation($nbr, $from_location, $to_location, $location_arg=0, $no_deck_reform=false){
+    function pickCardsForLocation($nbr, $from_location, $to_location, $location_arg=0, $no_deck_reform=false): ?array {
         //copied from deck.php
         $cards = self::getCardsOnTop( $nbr, $from_location );
         $cards_ids = array();
@@ -460,7 +460,4 @@ class DaleDeck extends Deck {
             $n++;
         }
     }
-
-    function pickCard($location, $player_id) { die("DISABLED"); }
-    function pickCards($nbr, $location, $player_id) { die("DISABLED"); }
 }
