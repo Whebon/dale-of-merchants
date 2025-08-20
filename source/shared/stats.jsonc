@@ -182,8 +182,13 @@
 			"name": "Inventory actions",
 			"type": "int"
 		},
-		"cards_remaining": {
+		"actions_passive": {
 			"id": 15,
+			"name": "Passives used (activatable passives only)",
+			"type": "int"
+		},
+		"cards_remaining": {
+			"id": 16,
 			"name": "Cards remaining (discard/deck/hand)",
 			"type": "int"
 		}

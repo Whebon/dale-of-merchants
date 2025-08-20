@@ -142,6 +142,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->initStat("player", "actions_technique", 0);
         $this->initStat("player", "actions_build", 0);
         $this->initStat("player", "actions_inventory", 0);
+        $this->initStat("player", "actions_passive", 0);
         $this->initStat("player", "cards_remaining", 0);
 
         /************ End of the game initialization *****/
@@ -6916,6 +6917,8 @@ class DaleOfMerchants extends DaleTableBasic
         if ($this->effects->isPassiveUsed($passive_card) && ($type_id != CT_GOODOLDTIMES || $this->effects->getArg($passive_card_id, $type_id) == null)) {
             throw new BgaUserException($this->_("That card's ability has already been used this turn!"));
         }
+
+        $this->incStat(1, "actions_passive", $player_id);
 
         //Check triggers
         $isPostCleanUpPhase = $this->gamestate->state()['name'] == 'postCleanUpPhase';
