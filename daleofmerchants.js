@@ -4201,10 +4201,13 @@ define("components/Stall", ["require", "exports", "components/DaleCard", "compon
             this.firstStackValue += nbr;
             var i = this.firstStackValue;
             var isEffectiveValue = this.firstStackValue != 1;
-            console.log("isEffectiveValue = ", isEffectiveValue);
-            this.container.querySelectorAll(".daleofmerchants-stack-index").forEach(function (stackIndexDiv) {
-                stackIndexDiv.classList.toggle("daleofmerchants-effective-value", isEffectiveValue);
-                stackIndexDiv.innerText = String(i++);
+            this.stackContainers.forEach(function (stack) {
+                var stackIndexDiv = stack.querySelector(".daleofmerchants-stack-index");
+                if (stackIndexDiv) {
+                    stackIndexDiv.classList.toggle("daleofmerchants-effective-value", isEffectiveValue);
+                    stackIndexDiv.innerText = String(i);
+                }
+                i++;
             });
         };
         Stall.prototype.onResize = function () {

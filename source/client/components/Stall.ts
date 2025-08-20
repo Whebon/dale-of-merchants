@@ -440,10 +440,13 @@ export class Stall implements CardSlotManager, DaleLocation {
         this.firstStackValue += nbr
         let i = this.firstStackValue;
         const isEffectiveValue = this.firstStackValue != 1
-        console.log("isEffectiveValue = ",isEffectiveValue);
-        this.container.querySelectorAll(".daleofmerchants-stack-index").forEach(stackIndexDiv => {
-            stackIndexDiv.classList.toggle("daleofmerchants-effective-value", isEffectiveValue);
-            (stackIndexDiv as HTMLElement).innerText = String(i++);
+        this.stackContainers.forEach(stack => {
+            const stackIndexDiv = stack.querySelector(".daleofmerchants-stack-index")
+            if (stackIndexDiv) {
+                stackIndexDiv.classList.toggle("daleofmerchants-effective-value", isEffectiveValue);
+                (stackIndexDiv as HTMLElement).innerText = String(i);
+            }
+            i++
         })
     }
 
