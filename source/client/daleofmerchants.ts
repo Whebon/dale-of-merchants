@@ -6010,11 +6010,12 @@ class DaleOfMerchants extends Gamegui
 		const nbr_cards_remaining = this.myLimbo.count() - 1;
 		this.stockToPile(new DaleCard(card_id), this.myLimbo, this.playerDiscards[opponent_id]!);
 		if (nbr_cards_remaining >= 1) {
+			const anchor_args = this.gamedatas.gamestate.args as { resolving_card_name: string }
 			this.mainClientState.enterOnStack('client_anchor', {
 				opponent_id: opponent_id,
 				opponent_name: this.gamedatas.players[opponent_id]!.name!,
 				discard_card_id: card_id,
-				card_name: "Anchor"
+				card_name: anchor_args.resolving_card_name
 			});
 		}
 		else {

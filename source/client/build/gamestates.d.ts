@@ -932,10 +932,11 @@ interface GameStates {
 	},
 	83: {
 		'name': 'anchor',
-		'description': 'Anchor: ${actplayer} must place a card on any player\\\'s discard pile',
-		'descriptionmyturn': 'Anchor: ${you} must place a card on any player\\\'s discard pile',
+		'description': '${resolving_card_name}: ${actplayer} must place a card on any player\\\'s discard pile',
+		'descriptionmyturn': '${resolving_card_name}: ${you} must place a card on any player\\\'s discard pile',
 		'type': 'activeplayer',
 		'action': 'stAnchor',
+		'args': 'argResolvingCardName',
 		'possibleactions': {
 			'actAnchor': [{
 				'name': 'opponent_id',
@@ -982,9 +983,10 @@ interface GameStates {
 	},
 	85: {
 		'name': 'shakyEnterprise',
-		'description': 'Shaky Enterprise: ${actplayer} must place a card on any player\\\'s discard pile',
-		'descriptionmyturn': 'Shaky Enterprise: ${you} must place a card on any player\\\'s discard pile',
+		'description': '${resolving_card_name}: ${actplayer} must place a card on any player\\\'s discard pile',
+		'descriptionmyturn': '${resolving_card_name}: ${you} must place a card on any player\\\'s discard pile',
 		'type': 'activeplayer',
+		'args': 'argResolvingCardName',
 		'possibleactions': {
 			'actAnchor': [{
 				'name': 'opponent_id',

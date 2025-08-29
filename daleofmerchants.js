@@ -10181,11 +10181,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var nbr_cards_remaining = this.myLimbo.count() - 1;
             this.stockToPile(new DaleCard_10.DaleCard(card_id), this.myLimbo, this.playerDiscards[opponent_id]);
             if (nbr_cards_remaining >= 1) {
+                var anchor_args = this.gamedatas.gamestate.args;
                 this.mainClientState.enterOnStack('client_anchor', {
                     opponent_id: opponent_id,
                     opponent_name: this.gamedatas.players[opponent_id].name,
                     discard_card_id: card_id,
-                    card_name: "Anchor"
+                    card_name: anchor_args.resolving_card_name
                 });
             }
             else {

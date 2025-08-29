@@ -598,10 +598,11 @@ $machinestates = array(
 	),
 	83 => array(
 		'name' => 'anchor',
-		'description' => clienttranslate('Anchor: ${actplayer} must place a card on any player\'s discard pile'),
-		'descriptionmyturn' => clienttranslate('Anchor: ${you} must place a card on any player\'s discard pile'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must place a card on any player\'s discard pile'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must place a card on any player\'s discard pile'),
 		'type' => 'activeplayer',
 		'action' => 'stAnchor',
+		'args' => 'argResolvingCardName',
 		'possibleactions' => ['actAnchor'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
@@ -620,9 +621,10 @@ $machinestates = array(
 	),
 	85 => array(
 		'name' => 'shakyEnterprise',
-		'description' => clienttranslate('Shaky Enterprise: ${actplayer} must place a card on any player\'s discard pile'),
-		'descriptionmyturn' => clienttranslate('Shaky Enterprise: ${you} must place a card on any player\'s discard pile'),
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must place a card on any player\'s discard pile'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must place a card on any player\'s discard pile'),
 		'type' => 'activeplayer',
+		'args' => 'argResolvingCardName',
 		'possibleactions' => ['actAnchor'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
