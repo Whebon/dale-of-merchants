@@ -642,7 +642,7 @@ class DaleOfMerchants extends DaleTableBasic
                     MONO_PLAYER_ID,
                 );
                 $this->notifyAllPlayers('message', clienttranslate('Daring Member: ${player_name} multiplies the value of cards it uses by ${die_value} this turn'), array(
-                    'player_name' => $this->getActivePlayerName(),
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                     'die_value' => $die_value
                 ));
                 $this->effects->insertGlobal($technique_card["id"], CT_DARINGMEMBER, $die_value);
@@ -2864,7 +2864,7 @@ class DaleOfMerchants extends DaleTableBasic
         //animate the roll
         $this->notifyAllPlayers('rollDie', '', array_merge( array(
             'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'animalfolk_id' => $animalfolk_id,
             'die_value' => $die_value,
             'die_label' => $die_label,
@@ -2875,7 +2875,7 @@ class DaleOfMerchants extends DaleTableBasic
         //show the log after the animation finished (otherwise the result is spoiled)
         $this->notifyAllPlayers('message', $msg, array_merge( array(
             'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'animalfolk_id' => $animalfolk_id,
             'die_value' => $die_value,
             'die_label' => $die_label,
