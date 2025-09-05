@@ -637,6 +637,9 @@ class DaleOfMerchants extends DaleTableBasic
                     clienttranslate('Daring Member: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_POLECATS,
                     $technique_card,
+                    array(),
+                    null,
+                    MONO_PLAYER_ID,
                 );
                 $this->notifyAllPlayers('message', clienttranslate('Daring Member: ${player_name} multiplies the value of cards it uses by ${die_value} this turn'), array(
                     'player_name' => $this->getActivePlayerName(),
@@ -667,7 +670,10 @@ class DaleOfMerchants extends DaleTableBasic
                 $value = $this->rollDie(
                     clienttranslate('Arcane Member: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_HARES,
-                    $technique_card
+                    $technique_card,
+                    array(),
+                    null,
+                    MONO_PLAYER_ID,
                 );
                 switch($value) {
                     case DIE_COMET:
