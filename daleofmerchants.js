@@ -259,7 +259,7 @@ define("components/Images", ["require", "exports"], function (require, exports) 
                 }
                 var image_index = card_type_id % (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
                 var sheet_index = (card_type_id - image_index) / (Images.IMAGES_PER_ROW * Images.IMAGES_PER_COLUMN);
-                if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 4) {
+                if (image_index >= 0 && sheet_index >= 0 && sheet_index <= 5) {
                     var x = card_type_id % Images.IMAGES_PER_ROW;
                     var y = (card_type_id - x) / Images.IMAGES_PER_ROW;
                     dojo.setStyle(div, 'background-position', "-".concat(x, "00% -").concat(y, "00%"));
@@ -711,30 +711,30 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
             [10, 3, 3, 2, 2, 2],
             [11, 1, 2, 0, 3, 2],
             [12, 3, 3, 0, 1, 2],
-            [13, 3, 1, 0, 1, 5],
-            [14, 1, 1, 0, 1, 3],
-            [15, 1, 1, 0, 2, 3],
-            [16, 3, 3, 3, 2, 3],
-            [17, 2, 3, 1, 2, 3],
-            [18, 2, 1, 0, 3, 3],
-            [19, 2, 1, 0, 1, 3],
+            [13, 1, 1, 0, 1, 3],
+            [14, 1, 1, 0, 2, 3],
+            [15, 3, 3, 3, 2, 3],
+            [16, 2, 3, 1, 2, 3],
+            [17, 2, 1, 0, 3, 3],
+            [18, 2, 1, 0, 1, 3],
+            [19, 2, 1, 0, 1, 4],
             [20, 2, 1, 0, 1, 4],
-            [21, 2, 1, 0, 1, 4],
-            [22, 3, 1, 0, 1, 4],
-            [23, 2, 3, 1, 2, 6],
-            [24, 3, 3, 3, 3, 5],
-            [25, 1, 2, 1, 1, 5],
-            [26, 3, 1, 0, 1, 6],
-            [27, 3, 3, 3, 2, 6],
-            [28, 2, 1, 0, 2, 5],
-            [29, 2, 1, 0, 1, 4],
-            [30, 2, 3, 3, 1, 4],
-            [31, 2, 3, 2, 2, 4],
-            [32, 2, 1, 0, 1, 5],
-            [33, 3, 1, 0, 1, 5],
-            [34, 1, 1, 0, 1, 6],
-            [35, 2, 1, 0, 1, 6],
-            [36, 1, 1, 0, 1, 6]
+            [21, 2, 3, 3, 1, 4],
+            [22, 2, 3, 2, 2, 4],
+            [23, 2, 1, 0, 1, 4],
+            [24, 3, 1, 0, 1, 4],
+            [25, 2, 1, 0, 1, 5],
+            [26, 3, 1, 0, 1, 5],
+            [27, 2, 1, 0, 2, 5],
+            [28, 1, 2, 1, 1, 5],
+            [29, 3, 3, 3, 3, 5],
+            [30, 3, 1, 0, 1, 5],
+            [31, 1, 1, 0, 1, 6],
+            [32, 1, 2, 0, 1, 6],
+            [33, 2, 3, 1, 2, 6],
+            [34, 2, 1, 0, 1, 6],
+            [35, 3, 1, 0, 1, 6],
+            [36, 3, 3, 3, 2, 6]
         ];
         return AnimalfolkDetails;
     }());
@@ -813,7 +813,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 });
             };
             var this_1 = this;
-            for (var animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
+            for (var animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
                 _loop_1(animalfolk_id);
             }
             for (var _i = 0, _a = page.gamedatas.disabledAnimalfolkIds; _i < _a.length; _i++) {
@@ -943,7 +943,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 (_a = this_2.card_divs.get(animalfolk_id)) === null || _a === void 0 ? void 0 : _a.classList.toggle("daleofmerchants-hidden", isHidden);
             };
             var this_2 = this;
-            for (var animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
+            for (var animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
                 _loop_2(animalfolk_id);
             }
         };
@@ -960,30 +960,30 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
         DaleDeckSelection.ANIMALFOLK_FOXES = 10;
         DaleDeckSelection.ANIMALFOLK_POLECATS = 11;
         DaleDeckSelection.ANIMALFOLK_OWLS = 12;
-        DaleDeckSelection.ANIMALFOLK_BEAVERS = 13;
-        DaleDeckSelection.ANIMALFOLK_DESERTMONITORS = 14;
-        DaleDeckSelection.ANIMALFOLK_LEMURS = 15;
-        DaleDeckSelection.ANIMALFOLK_MAGPIES = 16;
-        DaleDeckSelection.ANIMALFOLK_ECHIDNAS = 17;
-        DaleDeckSelection.ANIMALFOLK_HARES = 18;
-        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 19;
-        DaleDeckSelection.ANIMALFOLK_PENGUINS = 20;
-        DaleDeckSelection.ANIMALFOLK_TUATARAS = 21;
-        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 22;
-        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 23;
-        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 24;
-        DaleDeckSelection.ANIMALFOLK_GULLS = 25;
-        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 26;
-        DaleDeckSelection.ANIMALFOLK_BATS = 27;
-        DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES = 28;
-        DaleDeckSelection.ANIMALFOLK_DODOS = 29;
-        DaleDeckSelection.ANIMALFOLK_CAPUCHINMONKIES = 30;
-        DaleDeckSelection.ANIMALFOLK_MARKETMANIPULATION = 31;
-        DaleDeckSelection.ANIMALFOLK_ENDOFTURN = 32;
-        DaleDeckSelection.ANIMALFOLK_REPEAT = 33;
-        DaleDeckSelection.ANIMALFOLK_GORILLA = 34;
-        DaleDeckSelection.ANIMALFOLK_MORNING = 35;
-        DaleDeckSelection.ANIMALFOLK_UNKNOWN = 36;
+        DaleDeckSelection.ANIMALFOLK_DESERTMONITORS = 13;
+        DaleDeckSelection.ANIMALFOLK_LEMURS = 14;
+        DaleDeckSelection.ANIMALFOLK_MAGPIES = 15;
+        DaleDeckSelection.ANIMALFOLK_ECHIDNAS = 16;
+        DaleDeckSelection.ANIMALFOLK_HARES = 17;
+        DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS = 18;
+        DaleDeckSelection.ANIMALFOLK_TUATARAS = 19;
+        DaleDeckSelection.ANIMALFOLK_DODOS = 20;
+        DaleDeckSelection.ANIMALFOLK_CAPUCHINS = 21;
+        DaleDeckSelection.ANIMALFOLK_OLMS = 22;
+        DaleDeckSelection.ANIMALFOLK_PENGUINS = 23;
+        DaleDeckSelection.ANIMALFOLK_WOODTURTLES = 24;
+        DaleDeckSelection.ANIMALFOLK_SKINKS = 25;
+        DaleDeckSelection.ANIMALFOLK_BEAVERS = 26;
+        DaleDeckSelection.ANIMALFOLK_SNOWMACAQUES = 27;
+        DaleDeckSelection.ANIMALFOLK_GULLS = 28;
+        DaleDeckSelection.ANIMALFOLK_PANGOLINS = 29;
+        DaleDeckSelection.ANIMALFOLK_GLASSFROGS = 30;
+        DaleDeckSelection.ANIMALFOLK_GORILLAS = 31;
+        DaleDeckSelection.ANIMALFOLK_WALRUSES = 32;
+        DaleDeckSelection.ANIMALFOLK_TASMANIANDEVILS = 33;
+        DaleDeckSelection.ANIMALFOLK_JUNGLEFOWLS = 34;
+        DaleDeckSelection.ANIMALFOLK_MONGOOSES = 35;
+        DaleDeckSelection.ANIMALFOLK_BATS = 36;
         return DaleDeckSelection;
     }());
     exports.DaleDeckSelection = DaleDeckSelection;
@@ -2131,133 +2131,189 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_BINOCULARS = 75;
         DaleCard.CT_BALANCING = 76;
         DaleCard.CT_EXTRAREMARKS = 77;
-        DaleCard.CT_MASTERBUILDER = 78;
-        DaleCard.CT_SNACK = 79;
-        DaleCard.CT_WINDOFCHANGE = 80;
-        DaleCard.CT_OVERTIME = 81;
-        DaleCard.CT_ORDERINCHAOS = 82;
-        DaleCard.CT_PRACTICE = 83;
-        DaleCard.CT_RIGOROUSCHRONICLER = 84;
-        DaleCard.CT_REFRESHINGDRINK = 85;
-        DaleCard.CT_DUPLICATEENTRY = 86;
-        DaleCard.CT_HISTORYLESSON = 87;
-        DaleCard.CT_CULTURALPRESERVATION = 88;
-        DaleCard.CT_SLICEOFLIFE = 89;
-        DaleCard.CT_VORACIOUSCONSUMER = 90;
-        DaleCard.CT_DELIGHTFULSURPRISE = 91;
-        DaleCard.CT_FORTUNATEUPGRADE = 92;
-        DaleCard.CT_REPLACEMENT = 93;
-        DaleCard.CT_FASHIONHINT = 94;
-        DaleCard.CT_ROYALPRIVILEGE = 95;
-        DaleCard.CT_POMPOUSPROFESSIONAL = 96;
-        DaleCard.CT_BRIBE = 97;
-        DaleCard.CT_BURGLARY = 98;
-        DaleCard.CT_GRASP = 99;
-        DaleCard.CT_PERISCOPE = 100;
-        DaleCard.CT_SUDDENNAP = 101;
-        DaleCard.CT_CAREFREESWAPPER = 102;
-        DaleCard.CT_BARGAINSEEKER = 103;
-        DaleCard.CT_DELICACY = 104;
-        DaleCard.CT_UMBRELLA = 105;
-        DaleCard.CT_VELOCIPEDE = 106;
-        DaleCard.CT_MATCHINGCOLOURS = 107;
-        DaleCard.CT_ARCANESCHOLAR = 108;
-        DaleCard.CT_BAROMETER = 109;
-        DaleCard.CT_BADOMEN = 110;
-        DaleCard.CT_FESTIVAL = 111;
-        DaleCard.CT_CELESTIALGUIDANCE = 112;
-        DaleCard.CT_CALENDAR = 113;
-        DaleCard.CT_CLEVERGUARDIAN = 114;
-        DaleCard.CT_BARRICADE = 115;
-        DaleCard.CT_WHEELBARROW = 116;
-        DaleCard.CT_VIGILANCE = 117;
-        DaleCard.CT_SUPPLYDEPOT = 118;
-        DaleCard.CT_TACTICALMEASUREMENT = 119;
-        DaleCard.CT_RESOURCEFULALLY = 120;
-        DaleCard.CT_ICETRADE = 121;
-        DaleCard.CT_TRAVELINGEQUIPMENT = 122;
-        DaleCard.CT_STOVE = 123;
-        DaleCard.CT_FISHING = 124;
-        DaleCard.CT_PRACTICALVALUES = 125;
-        DaleCard.CT_AVIDFINANCIER = 126;
-        DaleCard.CT_GREED = 127;
-        DaleCard.CT_GOLDENOPPORTUNITY = 128;
-        DaleCard.CT_CACHE = 129;
-        DaleCard.CT_DISPLAYOFPOWER = 130;
-        DaleCard.CT_SAFEPROFITS = 131;
-        DaleCard.CT_IMPULSIVEVISIONARY = 132;
-        DaleCard.CT_COLLECTORSDESIRE = 133;
-        DaleCard.CT_GROUNDBREAKINGIDEA = 134;
-        DaleCard.CT_INSPIRATION = 135;
-        DaleCard.CT_INSIGHT = 136;
-        DaleCard.CT_PERFECTMOVE = 137;
-        DaleCard.CT_SHREWDTRICKSTER = 138;
-        DaleCard.CT_DISRUPTIVESPEECH = 139;
-        DaleCard.CT_TITFORTAT = 140;
-        DaleCard.CT_SHAMELESSRUMMAGE = 141;
-        DaleCard.CT_PUBLICHUMILIATION = 142;
-        DaleCard.CT_EQUALITY = 143;
-        DaleCard.CT_FUMBLINGDREAMER = 144;
-        DaleCard.CT_COFFEEGRINDER = 145;
-        DaleCard.CT_ACCIDENT = 146;
-        DaleCard.CT_LOOSEMARBLES = 147;
-        DaleCard.CT_ANOTHERFINEMESS = 148;
-        DaleCard.CT_FRESHSTART = 149;
-        DaleCard.CT_MEDDLINGMARKETEER = 150;
-        DaleCard.CT_GOODWILLPRESENTS = 151;
-        DaleCard.CT_ALTERNATIVEPLAN = 152;
-        DaleCard.CT_ANCHOR = 153;
-        DaleCard.CT_MANUFACTUREDJOY = 154;
-        DaleCard.CT_SHAKYENTERPRISE = 155;
-        DaleCard.CT_DRAMATICROMANTIC = 156;
-        DaleCard.CT_BOUQUETS = 157;
-        DaleCard.CT_SELECTINGCONTRACTS = 158;
-        DaleCard.CT_SERENADE = 159;
-        DaleCard.CT_SPINNINGWHEEL = 160;
-        DaleCard.CT_INHERITANCE = 161;
-        DaleCard.CT_SNEAKYSCOUT = 162;
-        DaleCard.CT_FALSEALARM = 163;
-        DaleCard.CT_HEROICDEED = 164;
-        DaleCard.CT_SECRETMISSION = 165;
-        DaleCard.CT_CAPTURE = 166;
-        DaleCard.CT_PROVOCATION = 167;
-        DaleCard.CT_PRISTINEOWNER = 168;
-        DaleCard.CT_BONSAI = 169;
-        DaleCard.CT_RAKE = 170;
-        DaleCard.CT_SLOTMACHINE = 171;
-        DaleCard.CT_GENERATIONCHANGE = 172;
-        DaleCard.CT_WARMEMBRACE = 173;
-        DaleCard.CT_SWIFTMEMBER = 174;
-        DaleCard.CT_LOYALMEMBER = 175;
-        DaleCard.CT_WILYMEMBER = 176;
-        DaleCard.CT_STASHINGMEMBER = 177;
-        DaleCard.CT_BOLDMEMBER = 178;
-        DaleCard.CT_FLEXIBLEMEMBER = 179;
-        DaleCard.CT_TIRELESSMEMBER = 180;
-        DaleCard.CT_STEADYMEMBER = 181;
-        DaleCard.CT_LITTLEMEMBER = 182;
-        DaleCard.CT_CUNNINGMEMBER = 183;
-        DaleCard.CT_DARINGMEMBER = 184;
-        DaleCard.CT_WISEMEMBER = 185;
-        DaleCard.CT_MASTERMEMBER = 186;
-        DaleCard.CT_RIGOROUSMEMBER = 187;
-        DaleCard.CT_VORACIOUSMEMBER = 188;
-        DaleCard.CT_POMPOUSMEMBER = 189;
-        DaleCard.CT_CAREFREEMEMBER = 190;
-        DaleCard.CT_ARCANEMEMBER = 191;
-        DaleCard.CT_CLEVERMEMBER = 192;
-        DaleCard.CT_RESOURCEFULMEMBER = 193;
-        DaleCard.CT_AVIDMEMBER = 194;
-        DaleCard.CT_IMPULSIVEMEMBER = 195;
-        DaleCard.CT_SHREWDMEMBER = 196;
-        DaleCard.CT_FUMBLINGMEMBER = 197;
-        DaleCard.CT_MEDDLINGMEMBER = 198;
-        DaleCard.CT_DRAMATICMEMBER = 199;
-        DaleCard.CT_STEALTHYMEMBER = 200;
-        DaleCard.CT_PRISTINEMEMBER = 201;
-        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 202;
-        DaleCard.CT_DEPRECATED_CHEER = 203;
-        DaleCard.CT_DEPRECATED_TASTERS = 204;
+        DaleCard.CT_RIGOROUSCHRONICLER = 78;
+        DaleCard.CT_REFRESHINGDRINK = 79;
+        DaleCard.CT_DUPLICATEENTRY = 80;
+        DaleCard.CT_HISTORYLESSON = 81;
+        DaleCard.CT_CULTURALPRESERVATION = 82;
+        DaleCard.CT_SLICEOFLIFE = 83;
+        DaleCard.CT_VORACIOUSCONSUMER = 84;
+        DaleCard.CT_DELIGHTFULSURPRISE = 85;
+        DaleCard.CT_FORTUNATEUPGRADE = 86;
+        DaleCard.CT_REPLACEMENT = 87;
+        DaleCard.CT_FASHIONHINT = 88;
+        DaleCard.CT_ROYALPRIVILEGE = 89;
+        DaleCard.CT_POMPOUSPROFESSIONAL = 90;
+        DaleCard.CT_BRIBE = 91;
+        DaleCard.CT_BURGLARY = 92;
+        DaleCard.CT_GRASP = 93;
+        DaleCard.CT_PERISCOPE = 94;
+        DaleCard.CT_SUDDENNAP = 95;
+        DaleCard.CT_CAREFREESWAPPER = 96;
+        DaleCard.CT_BARGAINSEEKER = 97;
+        DaleCard.CT_DELICACY = 98;
+        DaleCard.CT_UMBRELLA = 99;
+        DaleCard.CT_VELOCIPEDE = 100;
+        DaleCard.CT_MATCHINGCOLOURS = 101;
+        DaleCard.CT_ARCANESCHOLAR = 102;
+        DaleCard.CT_BAROMETER = 103;
+        DaleCard.CT_BADOMEN = 104;
+        DaleCard.CT_FESTIVAL = 105;
+        DaleCard.CT_CELESTIALGUIDANCE = 106;
+        DaleCard.CT_CALENDAR = 107;
+        DaleCard.CT_CLEVERGUARDIAN = 108;
+        DaleCard.CT_BARRICADE = 109;
+        DaleCard.CT_WHEELBARROW = 110;
+        DaleCard.CT_VIGILANCE = 111;
+        DaleCard.CT_SUPPLYDEPOT = 112;
+        DaleCard.CT_TACTICALMEASUREMENT = 113;
+        DaleCard.CT_AVIDFINANCIER = 114;
+        DaleCard.CT_GREED = 115;
+        DaleCard.CT_GOLDENOPPORTUNITY = 116;
+        DaleCard.CT_CACHE = 117;
+        DaleCard.CT_DISPLAYOFPOWER = 118;
+        DaleCard.CT_SAFEPROFITS = 119;
+        DaleCard.CT_DODOS1 = 120;
+        DaleCard.CT_DODOS2 = 121;
+        DaleCard.CT_DODOS3 = 122;
+        DaleCard.CT_DODOS4 = 123;
+        DaleCard.CT_DODOS5A = 124;
+        DaleCard.CT_DODOS5B = 125;
+        DaleCard.CT_CAPUCHINS1 = 126;
+        DaleCard.CT_CAPUCHINS2 = 127;
+        DaleCard.CT_CAPUCHINS3 = 128;
+        DaleCard.CT_CAPUCHINS4 = 129;
+        DaleCard.CT_CAPUCHINS5A = 130;
+        DaleCard.CT_CAPUCHINS5B = 131;
+        DaleCard.CT_OLMS1 = 132;
+        DaleCard.CT_OLMS2 = 133;
+        DaleCard.CT_OLMS3 = 134;
+        DaleCard.CT_OLMS4 = 135;
+        DaleCard.CT_OLMS5A = 136;
+        DaleCard.CT_OLMS5B = 137;
+        DaleCard.CT_RESOURCEFULALLY = 138;
+        DaleCard.CT_ICETRADE = 139;
+        DaleCard.CT_TRAVELINGEQUIPMENT = 140;
+        DaleCard.CT_STOVE = 141;
+        DaleCard.CT_FISHING = 142;
+        DaleCard.CT_PRACTICALVALUES = 143;
+        DaleCard.CT_IMPULSIVEVISIONARY = 144;
+        DaleCard.CT_COLLECTORSDESIRE = 145;
+        DaleCard.CT_GROUNDBREAKINGIDEA = 146;
+        DaleCard.CT_INSPIRATION = 147;
+        DaleCard.CT_INSIGHT = 148;
+        DaleCard.CT_PERFECTMOVE = 149;
+        DaleCard.CT_SKINKS1 = 150;
+        DaleCard.CT_SKINKS2 = 151;
+        DaleCard.CT_SKINKS3 = 152;
+        DaleCard.CT_SKINKS4 = 153;
+        DaleCard.CT_SKINKS5A = 154;
+        DaleCard.CT_SKINKS5B = 155;
+        DaleCard.CT_MASTERBUILDER = 156;
+        DaleCard.CT_SNACK = 157;
+        DaleCard.CT_WINDOFCHANGE = 158;
+        DaleCard.CT_OVERTIME = 159;
+        DaleCard.CT_ORDERINCHAOS = 160;
+        DaleCard.CT_PRACTICE = 161;
+        DaleCard.CT_PRISTINEOWNER = 162;
+        DaleCard.CT_BONSAI = 163;
+        DaleCard.CT_RAKE = 164;
+        DaleCard.CT_SLOTMACHINE = 165;
+        DaleCard.CT_GENERATIONCHANGE = 166;
+        DaleCard.CT_WARMEMBRACE = 167;
+        DaleCard.CT_MEDDLINGMARKETEER = 168;
+        DaleCard.CT_GOODWILLPRESENTS = 169;
+        DaleCard.CT_ALTERNATIVEPLAN = 170;
+        DaleCard.CT_ANCHOR = 171;
+        DaleCard.CT_MANUFACTUREDJOY = 172;
+        DaleCard.CT_SHAKYENTERPRISE = 173;
+        DaleCard.CT_FUMBLINGDREAMER = 174;
+        DaleCard.CT_COFFEEGRINDER = 175;
+        DaleCard.CT_ACCIDENT = 176;
+        DaleCard.CT_LOOSEMARBLES = 177;
+        DaleCard.CT_ANOTHERFINEMESS = 178;
+        DaleCard.CT_FRESHSTART = 179;
+        DaleCard.CT_GLASSFROGS1 = 180;
+        DaleCard.CT_GLASSFROGS2 = 181;
+        DaleCard.CT_GLASSFROGS3 = 182;
+        DaleCard.CT_GLASSFROGS4 = 183;
+        DaleCard.CT_GLASSFROGS5A = 184;
+        DaleCard.CT_GLASSFROGS5B = 185;
+        DaleCard.CT_GORILLAS1 = 186;
+        DaleCard.CT_GORILLAS2 = 187;
+        DaleCard.CT_GORILLAS3 = 188;
+        DaleCard.CT_GORILLAS4 = 189;
+        DaleCard.CT_GORILLAS5A = 190;
+        DaleCard.CT_GORILLAS5B = 191;
+        DaleCard.CT_WALRUSES1 = 192;
+        DaleCard.CT_WALRUSES2 = 193;
+        DaleCard.CT_WALRUSES3 = 194;
+        DaleCard.CT_WALRUSES4 = 195;
+        DaleCard.CT_WALRUSES5A = 196;
+        DaleCard.CT_WALRUSES5B = 197;
+        DaleCard.CT_TASMANIANDEVILS1 = 198;
+        DaleCard.CT_TASMANIANDEVILS2 = 199;
+        DaleCard.CT_TASMANIANDEVILS3 = 200;
+        DaleCard.CT_TASMANIANDEVILS4 = 201;
+        DaleCard.CT_TASMANIANDEVILS5A = 202;
+        DaleCard.CT_TASMANIANDEVILS5B = 203;
+        DaleCard.CT_JUNGLEFOWLS1 = 204;
+        DaleCard.CT_JUNGLEFOWLS2 = 205;
+        DaleCard.CT_JUNGLEFOWLS3 = 206;
+        DaleCard.CT_JUNGLEFOWLS4 = 207;
+        DaleCard.CT_JUNGLEFOWLS5A = 208;
+        DaleCard.CT_JUNGLEFOWLS5B = 209;
+        DaleCard.CT_DRAMATICROMANTIC = 210;
+        DaleCard.CT_BOUQUETS = 211;
+        DaleCard.CT_SELECTINGCONTRACTS = 212;
+        DaleCard.CT_SERENADE = 213;
+        DaleCard.CT_SPINNINGWHEEL = 214;
+        DaleCard.CT_INHERITANCE = 215;
+        DaleCard.CT_SNEAKYSCOUT = 216;
+        DaleCard.CT_FALSEALARM = 217;
+        DaleCard.CT_HEROICDEED = 218;
+        DaleCard.CT_SECRETMISSION = 219;
+        DaleCard.CT_CAPTURE = 220;
+        DaleCard.CT_PROVOCATION = 221;
+        DaleCard.CT_SWIFTMEMBER = 222;
+        DaleCard.CT_LOYALMEMBER = 223;
+        DaleCard.CT_WILYMEMBER = 224;
+        DaleCard.CT_STASHINGMEMBER = 225;
+        DaleCard.CT_BOLDMEMBER = 226;
+        DaleCard.CT_FLEXIBLEMEMBER = 227;
+        DaleCard.CT_TIRELESSMEMBER = 228;
+        DaleCard.CT_STEADYMEMBER = 229;
+        DaleCard.CT_LITTLEMEMBER = 230;
+        DaleCard.CT_CUNNINGMEMBER = 231;
+        DaleCard.CT_DARINGMEMBER = 232;
+        DaleCard.CT_WISEMEMBER = 233;
+        DaleCard.CT_RIGOROUSMEMBER = 234;
+        DaleCard.CT_VORACIOUSMEMBER = 235;
+        DaleCard.CT_POMPOUSMEMBER = 236;
+        DaleCard.CT_CAREFREEMEMBER = 237;
+        DaleCard.CT_ARCANEMEMBER = 238;
+        DaleCard.CT_CLEVERMEMBER = 239;
+        DaleCard.CT_AVIDMEMBER = 240;
+        DaleCard.CT_DODOSMONO = 241;
+        DaleCard.CT_CAPUCHINSMONO = 242;
+        DaleCard.CT_OLMSMONO = 243;
+        DaleCard.CT_RESOURCEFULMEMBER = 244;
+        DaleCard.CT_IMPULSIVEMEMBER = 245;
+        DaleCard.CT_SKINKSMONO = 246;
+        DaleCard.CT_MASTERMEMBER = 247;
+        DaleCard.CT_PRISTINEMEMBER = 248;
+        DaleCard.CT_MEDDLINGMEMBER = 249;
+        DaleCard.CT_FUMBLINGMEMBER = 250;
+        DaleCard.CT_GLASSFROGSMONO = 251;
+        DaleCard.CT_GORILLASMONO = 252;
+        DaleCard.CT_WALRUSESMONO = 253;
+        DaleCard.CT_TASMANIANDEVILSMONO = 254;
+        DaleCard.CT_JUNGLEFOWLSMONO = 255;
+        DaleCard.CT_DRAMATICMEMBER = 256;
+        DaleCard.CT_STEALTHYMEMBER = 257;
+        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 258;
+        DaleCard.CT_DEPRECATED_CHEER = 259;
+        DaleCard.CT_DEPRECATED_TASTERS = 260;
         DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());

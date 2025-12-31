@@ -4375,8 +4375,8 @@ class DaleOfMerchants extends DaleTableBasic
         $animalfolk_ids = $this->numberListToArray($animalfolk_ids);
         //check if the selected animalfolks are not disabled
         foreach ($animalfolk_ids as $animalfolk_id) {
-            //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_UNKNOWN are not the last anymore)
-            if ($animalfolk_id < ANIMALFOLK_MACAWS || $animalfolk_id > ANIMALFOLK_UNKNOWN) {
+            //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_BATS is not the last anymore)
+            if ($animalfolk_id < ANIMALFOLK_MACAWS || $animalfolk_id > ANIMALFOLK_BATS) {
                 throw new BgaSystemException($animalfolk_id." is not a valid animalfolk_id");
             }
             if (in_array($animalfolk_id, $this->DISABLED_ANIMALFOLK_IDS)) {

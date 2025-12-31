@@ -50,37 +50,37 @@ export class DaleDeckSelection {
     static readonly ANIMALFOLK_POLECATS: number = 11;
     static readonly ANIMALFOLK_OWLS: number = 12;
 
-    //Beavers
-    static readonly ANIMALFOLK_BEAVERS: number = 13;
-
     //DoM3
-    static readonly ANIMALFOLK_DESERTMONITORS: number = 14;
-    static readonly ANIMALFOLK_LEMURS: number = 15;
-    static readonly ANIMALFOLK_MAGPIES: number = 16;
-    static readonly ANIMALFOLK_ECHIDNAS: number = 17;
-    static readonly ANIMALFOLK_HARES: number = 18;
-    static readonly ANIMALFOLK_TREEKANGAROOS: number = 19;
+    static readonly ANIMALFOLK_DESERTMONITORS: number = 13;
+    static readonly ANIMALFOLK_LEMURS: number = 14;
+    static readonly ANIMALFOLK_MAGPIES: number = 15;
+    static readonly ANIMALFOLK_ECHIDNAS: number = 16;
+    static readonly ANIMALFOLK_HARES: number = 17;
+    static readonly ANIMALFOLK_TREEKANGAROOS: number = 18;
 
-    //DoMC
-    static readonly ANIMALFOLK_PENGUINS: number = 20;
-    static readonly ANIMALFOLK_TUATARAS: number = 21;
-    static readonly ANIMALFOLK_WOODTURTLES: number = 22;
-    static readonly ANIMALFOLK_TASMANIANDEVILS: number = 23;
-    static readonly ANIMALFOLK_PANGOLINS: number = 24;
-    static readonly ANIMALFOLK_GULLS: number = 25;
-    static readonly ANIMALFOLK_MONGOOSES: number = 26;
-    static readonly ANIMALFOLK_BATS: number = 27;
+    //DoM4
+    static readonly ANIMALFOLK_TUATARAS: number = 19;
+    static readonly ANIMALFOLK_DODOS: number = 20;
+    static readonly ANIMALFOLK_CAPUCHINS: number = 21;
+    static readonly ANIMALFOLK_OLMS: number = 22;
+    static readonly ANIMALFOLK_PENGUINS: number = 23;
+    static readonly ANIMALFOLK_WOODTURTLES: number = 24;
 
-    //10th anniversary
-    static readonly ANIMALFOLK_SNOWMACAQUES: number = 28;
-    static readonly ANIMALFOLK_DODOS: number = 29;
-    static readonly ANIMALFOLK_CAPUCHINMONKIES: number = 30;
-    static readonly ANIMALFOLK_MARKETMANIPULATION: number = 31;
-    static readonly ANIMALFOLK_ENDOFTURN: number = 32;
-    static readonly ANIMALFOLK_REPEAT: number = 33;
-    static readonly ANIMALFOLK_GORILLA: number = 34;
-    static readonly ANIMALFOLK_MORNING: number = 35;
-    static readonly ANIMALFOLK_UNKNOWN: number = 36;
+    //DoM5
+    static readonly ANIMALFOLK_SKINKS: number = 25;
+    static readonly ANIMALFOLK_BEAVERS: number = 26;
+    static readonly ANIMALFOLK_SNOWMACAQUES: number = 27;
+    static readonly ANIMALFOLK_GULLS: number = 28;
+    static readonly ANIMALFOLK_PANGOLINS: number = 29;
+    static readonly ANIMALFOLK_GLASSFROGS: number = 30;
+
+    //DoM6
+    static readonly ANIMALFOLK_GORILLAS: number = 31;
+    static readonly ANIMALFOLK_WALRUSES: number = 32;
+    static readonly ANIMALFOLK_TASMANIANDEVILS: number = 33;
+    static readonly ANIMALFOLK_JUNGLEFOWLS: number = 34;
+    static readonly ANIMALFOLK_MONGOOSES: number = 35;
+    static readonly ANIMALFOLK_BATS: number = 36;
 
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
         this.deckSelectionHTML = deckSelectionHTML;
@@ -98,7 +98,7 @@ export class DaleDeckSelection {
         const n = Math.max(2, Object.values(page.gamedatas.players).length);
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(n + 1);
-        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
+        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;
@@ -268,7 +268,7 @@ export class DaleDeckSelection {
     }
 
     private updateFilters() {
-        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_UNKNOWN; animalfolk_id++) {
+        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
             let isHidden = false;
             this.filterBlacklists.forEach((blacklist, category) => {
                 if (blacklist.includes(AnimalfolkDetails.get(animalfolk_id, category))) {

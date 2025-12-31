@@ -76,82 +76,122 @@
 		},
 		"deck_selection_13": {
 			"id": 63,
-			"name": "Deck selected: Beavers",
+			"name": "Deck selected: Desert Monitors",
 			"type": "boolean"
 		},
 		"deck_selection_14": {
 			"id": 64,
-			"name": "Deck selected: Desert Monitors",
+			"name": "Deck selected: Lemurs",
 			"type": "boolean"
 		},
 		"deck_selection_15": {
 			"id": 65,
-			"name": "Deck selected: Lemurs",
+			"name": "Deck selected: Magpies",
 			"type": "boolean"
 		},
 		"deck_selection_16": {
 			"id": 66,
-			"name": "Deck selected: Magpies",
+			"name": "Deck selected: Echidnas",
 			"type": "boolean"
 		},
 		"deck_selection_17": {
 			"id": 67,
-			"name": "Deck selected: Echidnas",
+			"name": "Deck selected: Hares",
 			"type": "boolean"
 		},
 		"deck_selection_18": {
 			"id": 68,
-			"name": "Deck selected: Hares",
+			"name": "Deck selected: Tree Kangaroos",
 			"type": "boolean"
 		},
 		"deck_selection_19": {
 			"id": 69,
-			"name": "Deck selected: Tree Kangaroos",
+			"name": "Deck selected: Tuataras",
 			"type": "boolean"
 		},
 		"deck_selection_20": {
 			"id": 70,
-			"name": "Deck selected: Penguins",
+			"name": "Deck selected: Dodos",
 			"type": "boolean"
 		},
 		"deck_selection_21": {
 			"id": 71,
-			"name": "Deck selected: Tuataras",
+			"name": "Deck selected: Capuchins",
 			"type": "boolean"
 		},
 		"deck_selection_22": {
 			"id": 72,
-			"name": "Deck selected: Wood Turtles",
+			"name": "Deck selected: Olms",
 			"type": "boolean"
 		},
 		"deck_selection_23": {
 			"id": 73,
-			"name": "Deck selected: Tasmanian Devils",
+			"name": "Deck selected: Penguins",
 			"type": "boolean"
 		},
 		"deck_selection_24": {
 			"id": 74,
-			"name": "Deck selected: Pangolins",
+			"name": "Deck selected: Wood Turtles",
 			"type": "boolean"
 		},
 		"deck_selection_25": {
 			"id": 75,
-			"name": "Deck selected: Gulls",
+			"name": "Deck selected: Skinks",
 			"type": "boolean"
 		},
 		"deck_selection_26": {
 			"id": 76,
-			"name": "Deck selected: Mongooses",
+			"name": "Deck selected: Beavers",
 			"type": "boolean"
 		},
 		"deck_selection_27": {
 			"id": 77,
-			"name": "Deck selected: Bats",
+			"name": "Deck selected: Snow Macaques",
 			"type": "boolean"
 		},
 		"deck_selection_28": {
 			"id": 78,
-			"name": "Deck selected: Snow Macaques",
+			"name": "Deck selected: Gulls",
+			"type": "boolean"
+		},
+		"deck_selection_29": {
+			"id": 79,
+			"name": "Deck selected: Pangolins",
+			"type": "boolean"
+		},
+		"deck_selection_30": {
+			"id": 80,
+			"name": "Deck selected: Glassfrogs",
+			"type": "boolean"
+		},
+		"deck_selection_31": {
+			"id": 81,
+			"name": "Deck selected: Gorillas",
+			"type": "boolean"
+		},
+		"deck_selection_32": {
+			"id": 82,
+			"name": "Deck selected: Walruses",
+			"type": "boolean"
+		},
+		"deck_selection_33": {
+			"id": 83,
+			"name": "Deck selected: Tasmanian Devils",
+			"type": "boolean"
+		},
+		"deck_selection_34": {
+			"id": 84,
+			"name": "Deck selected: Junglefowls",
+			"type": "boolean"
+		},
+		"deck_selection_35": {
+			"id": 85,
+			"name": "Deck selected: Mongooses",
+			"type": "boolean"
+		},
+		"deck_selection_36": {
+			"id": 86,
+			"name": "Deck selected: Bats",
 			"type": "boolean"
 		}
 	},

@@ -42,7 +42,7 @@ export class AnimalfolkDetails {
 """
 
 # Load the Excel file
-file_path = 'material_10thanniversary.xlsx'
+file_path = 'material_11thanniversary.xlsx'
 xls = pd.ExcelFile(file_path)
 df = pd.read_excel(xls, sheet_name="Mono")
 
