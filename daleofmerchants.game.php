@@ -6595,7 +6595,7 @@ class DaleOfMerchants extends DaleTableBasic
                     else {
                         //move non-junk to hand
                         $this->cards->moveCard($card["id"], HAND.$player_id);
-                        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Slotmachine: ${player_name} draws a non-junk card'), array(
+                        $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Slot Machine: ${player_name} draws a non-junk card'), array(
                             "player_id" => $player_id,
                             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                             "nbr" => 1,
@@ -6604,15 +6604,15 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card_name" => $this->getCardName($card)
                             ),
                             "to_limbo" => false
-                        ), clienttranslate('Slotmachine: ${player_name} draws ${card_name}'));
+                        ), clienttranslate('Slot Machine: ${player_name} draws ${card_name}'));
                         break;
                     }
                 }
                 //discard limbo cards
                 if (count($discard_cards) > 0) {
                     $msg = count($discard_cards) == 1 ? 
-                            clienttranslate('Slotmachine: ${player_name} discards 1 junk card') :
-                            clienttranslate('Slotmachine: ${player_name} discards ${nbr} junk cards');
+                            clienttranslate('Slot Machine: ${player_name} discards 1 junk card') :
+                            clienttranslate('Slot Machine: ${player_name} discards ${nbr} junk cards');
                     $this->discardMultiple(
                         $msg,
                         $player_id,
