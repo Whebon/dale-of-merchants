@@ -2500,8 +2500,9 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function gainCoins(mixed $player_id, int $nbr, string $msg_prefix = null) {
         $this->addCoins($player_id, $nbr);
-        $msg = clienttranslate('${player_name} gains ${nbr} ${coin_icon}');
-        $this->notifyAllPlayers('gainCoins', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
+        $msg = clienttranslate('${msg_prefix}${player_name} gains ${nbr} ${coin_icon}');
+        $this->notifyAllPlayers('gainCoins', $msg, array(
+            'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'nbr' => $nbr,
@@ -2530,8 +2531,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->addCoins($player_id, -$nbr);
 
         //notify players
-        $msg = clienttranslate('${player_name} spends ${positive_nbr} ${coin_icon}');
-        $this->notifyAllPlayers('gainCoins', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
+        $msg = clienttranslate('${msg_prefix}${player_name} spends ${positive_nbr} ${coin_icon}');
+        $this->notifyAllPlayers('gainCoins', $msg, array(
+            'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'positive_nbr' => $nbr,
@@ -2579,9 +2581,10 @@ class DaleOfMerchants extends DaleTableBasic
         if (count($spend_card_ids) > 0) {
             $this->cards->moveCardsOnTop($spend_card_ids, DISCARD.$player_id);
             $msg = count($spend_cards) == 1 ? 
-                clienttranslate('${player_name} spends 1 card') : 
-                clienttranslate('${player_name} spends ${nbr} cards');
-            $this->notifyAllPlayers('discardMultiple', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
+                clienttranslate('${msg_prefix}${player_name} spends 1 card') : 
+                clienttranslate('${msg_prefix}${player_name} spends ${nbr} cards');
+            $this->notifyAllPlayers('discardMultiple', $msg, array(
+                'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $spend_card_ids,
@@ -2593,7 +2596,10 @@ class DaleOfMerchants extends DaleTableBasic
         //Notify the player about the value of x
         $x = $x_without_coins + $spend_coins;
         if ($x > 0) {
-            $this->notifyAllPlayers('message', ($msg_prefix ? $msg_prefix.": " : "")."x = ".$x, array());
+            $this->notifyAllPlayers('message', '${msg_prefix}x = ${x}', array(
+                'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
+                'x' => $x
+            ));
         }
         return $x;
     }
@@ -2629,9 +2635,10 @@ class DaleOfMerchants extends DaleTableBasic
         if (count($spend_card_ids) > 0) {
             $this->cards->moveCardsOnTop($spend_card_ids, DISCARD.$player_id);
             $msg = count($spend_cards) == 1 ? 
-                clienttranslate('${player_name} spends 1 card') : 
-                clienttranslate('${player_name} spends ${nbr} cards');
-            $this->notifyAllPlayers('discardMultiple', $msg_prefix ? $msg_prefix.": ".$msg : $msg, array(
+                clienttranslate('${msg_prefix}${player_name} spends 1 card') : 
+                clienttranslate('${msg_prefix}${player_name} spends ${nbr} cards');
+            $this->notifyAllPlayers('discardMultiple', $msg, array(
+                'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $spend_card_ids,
