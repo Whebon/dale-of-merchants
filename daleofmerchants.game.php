@@ -4294,6 +4294,114 @@ class DaleOfMerchants extends DaleTableBasic
         return -1;
     }
 
+     /**
+     * Spawn the 1-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn1(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 1);
+        $this->spawn($name, $nbr, $player_id);
+    }
+    
+    /**
+     * Spawn the 2-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn2(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 2);
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 3-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn3(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 3);
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 4-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn4(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 4);
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 5a-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn5a(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, "5A");
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 5b-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn5b(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, "5B");
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Return the first animalfolk id of a card type with the given prefix
+     * @param string $prefix prefix of the card's english animalfolk name
+     * @param int $value value of the animal
+     * @example example
+     * nameToTypeId("coo") = CT_COOKIES
+     */
+    function animalfolkNamePlusValueToCardName(string $prefix, int|string $value): string {
+        if ($value == "5A") {
+            $value = 5;
+        }
+        else if ($value == "5B") {
+            $value = 6;
+        }
+        else if (!is_numeric($value)) {
+            throw new BgaUserException("animalfolkNamePlusValueToCardName failed: invalid value: '$value'");
+        }
+        else if ($value < 0 or $value > 6) {
+            throw new BgaUserException("animalfolkNamePlusValueToCardName failed: value out of range [0, 6]: '$value'");
+        }
+
+        $len = strlen($prefix);
+        $f = function($name) use ($len) {
+            $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
+            return substr($uppercase, 0, $len);
+        };
+        foreach ($this->card_types as $type_id => $card) {
+            if ($f($card['animalfolk_displayed']) == $f($prefix)) {
+                $offset = $value - 1; // This assumes [1, 2, 3, 4, 5a, 5b] of the same animalfolk are adjacently defined in $this->card_types
+                return $this->card_types[$type_id + $offset]["name"];
+            }
+        }
+        throw new BgaUserException("No animalfolk name matches prefix '$prefix'");
+        return "";
+    }
+
     /**
      * Information about the card that is currently being resolving
      */
