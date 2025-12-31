@@ -67,7 +67,7 @@ class DaleOfMerchants extends DaleTableBasic
         ) );
 
         $this->effects = new DaleEffects($this);
-        $this->cards = new DaleDeck($this, $this->effects, "onLocationExhausted");
+        $this->cards = new DaleDeck($this->getNew("module.common.deck"), $this, $this->effects, "onLocationExhausted");
         $this->cards->init("card");
         $this->deckSelection = new DaleDeckSelection($this);
 	}
@@ -157,7 +157,7 @@ class DaleOfMerchants extends DaleTableBasic
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas()
+    protected function getAllDatas(): array
     {
         $result = array();
         $current_player_id = $this->getCurrentPlayerId();

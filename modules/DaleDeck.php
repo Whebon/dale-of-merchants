@@ -22,13 +22,15 @@ if (!defined('HAND')) {
     define('MAX_STACKS', 8); //must be the same as on the client side
 }
 
-class DaleDeck extends \Bga\GameFramework\Components\Deck {
+class DaleDeck {
+    private \Bga\GameFramework\Components\Deck $deck; ## Thoun suggested to refactor away from "extends \Bga\GameFramework\Components\Deck"
     private $game;
     private DaleEffects $effects;
     public string $on_location_exhausted_method;
+    
 
-    function __construct($game, $effects, string $on_location_exhausted_method) {
-        parent::__construct();
+    function __construct($deck, $game, $effects, string $on_location_exhausted_method) {
+        $this->deck = $deck;
         $this->game = $game;
         $this->effects = $effects;
         $this->on_location_exhausted_method = $on_location_exhausted_method;
@@ -58,11 +60,11 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
         $result = array();
 
         $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
-        $sql .= "FROM " . $this->table;
+        $sql .= "FROM " . $this->deck->table;
         $sql .= " WHERE card_location='" . addslashes($stall_location) . "' ";
         $sql .= " AND card_location_arg >= $min AND card_location_arg < $max ";
         $sql .= " ORDER BY $order_by";
-        $dbres = self::DbQuery($sql);
+        $dbres = $this->game->DbQuery($sql);
         while ($row = mysql_fetch_assoc($dbres)) {
             $result[$row['id']] = $row;
         }
@@ -125,11 +127,11 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
     function removeCardFromPile(mixed $card_id, string $location) {
         $card = $this->getCardFromLocation($card_id, $location);
         $location_arg = $card["location_arg"];
-        $sql = "UPDATE ".$this->table." ";
+        $sql = "UPDATE ".$this->deck->table." ";
         $sql .= "SET card_location_arg=card_location_arg-1 ";
         $sql .= "WHERE card_location='".addslashes( $location )."' ";
         $sql .= "AND card_location_arg>".$location_arg;
-        self::DbQuery( $sql );
+        $this->game->DbQuery( $sql );
         return $card;
     }
 
@@ -187,7 +189,7 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
             $this->moveCardsOnTop($shuffled_card_ids, $location);
         }
         else {
-            parent::moveCards($card_ids, $location, $location_arg);
+            $this->deck->moveCards($card_ids, $location, $location_arg); // SUPER METHOD
         }
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModificationsMultiple($card_ids);
@@ -200,7 +202,7 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
      * IMPORTANT: The caller is responsible for ensuring the card is already in location `$location`
      */
     function moveCardWithinLocation($card_id, $location, $location_arg) {
-        parent::moveCard($card_id, $location, $location_arg);
+        $this->deck->moveCard($card_id, $location, $location_arg); // SUPER METHOD
     }
 
     /**
@@ -213,7 +215,7 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
             $this->moveCardOnTop($card_id, $location);
         }
         else {
-            parent::moveCard($card_id, $location, $location_arg);
+            $this->deck->moveCard($card_id, $location, $location_arg); // SUPER METHOD
         }
         if ($this->isOuterLocation($location)) {
             $this->effects->expireModifications($card_id);
@@ -233,10 +235,10 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
 
         //shift cards
         $bottom_location_arg = $this->getExtremePosition(false, $location);
-        $sql = "UPDATE ".$this->table." ";
+        $sql = "UPDATE ".$this->deck->table." ";
         $sql .= "SET card_location_arg=card_location_arg+1 ";
         $sql .= "WHERE card_location='".addslashes( $location )."' ";
-        self::DbQuery( $sql );
+        $this->game->DbQuery( $sql );
 
         //when starting a new pile, make sure it is 1-indexed
         if ($bottom_location_arg <= 0) {
@@ -373,7 +375,7 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
     * Return card infos or null if no card in the specified location
     */
     function pickCardForLocation($from_location, $to_location, $location_arg=0): ?array {
-        $card = self::getCardOnTop($from_location);
+        $card = $this->getCardOnTop($from_location);
 
         //hook
         if($card == null) {
@@ -383,7 +385,7 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
             $obj->$method($from_location);
 
             //try again
-            $card = self::getCardOnTop($from_location);
+            $card = $this->getCardOnTop($from_location);
         }
 
         //copied from deck.php
@@ -393,9 +395,9 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
                 $this->moveCardOnTop($card["id"], $to_location);
                 return $card;
             }
-            $sql = "UPDATE ".$this->table." SET card_location='".addslashes($to_location)."', card_location_arg='$location_arg' ";
+            $sql = "UPDATE ".$this->deck->table." SET card_location='".addslashes($to_location)."', card_location_arg='$location_arg' ";
             $sql .= "WHERE card_id='".$card['id']."'";
-            self::DbQuery( $sql );
+            $this->game->DbQuery( $sql );
             $card['location'] = $to_location;
             $card['location_arg'] = $location_arg;
             unset( $card['res'] );
@@ -410,16 +412,16 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
      */
     function pickCardsForLocation($nbr, $from_location, $to_location, $location_arg=0, $no_deck_reform=false): ?array {
         //copied from deck.php
-        $cards = self::getCardsOnTop( $nbr, $from_location );
+        $cards = $this->getCardsOnTop( $nbr, $from_location );
         $cards_ids = array();
         foreach($cards as $i => $card) {
             $cards_ids[] = $card['id'];
             $cards[$i]['location'] = $to_location;
             $cards[$i]['location_arg'] = $location_arg;
         }
-        $sql = "UPDATE ".$this->table." SET card_location='".addslashes($to_location)."', card_location_arg='$location_arg' ";
+        $sql = "UPDATE ".$this->deck->table." SET card_location='".addslashes($to_location)."', card_location_arg='$location_arg' ";
         $sql .= "WHERE card_id IN ('".implode( "','", $cards_ids )."') ";
-        self::DbQuery( $sql );
+        $this->game->DbQuery( $sql );
 
         //hook
         if (count($cards) < $nbr && !$no_deck_reform) {
@@ -430,7 +432,7 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
 
             //try again
             $nbr_card_missing = $nbr - count($cards);
-            $newcards = self::pickCardsForLocation($nbr_card_missing, $from_location, $to_location, $location_arg, true ); // Note: block another deck reform
+            $newcards = $this->deck->pickCardsForLocation($nbr_card_missing, $from_location, $to_location, $location_arg, true ); // SUPER METHOD (Note: block another deck reform)
             foreach( $newcards as $card ){
                 $cards[] = $card;
             }
@@ -452,12 +454,190 @@ class DaleDeck extends \Bga\GameFramework\Components\Deck {
      * Overrides the parent::shuffle, the only difference is that the resulting pile is 1-indexed, not 0-indexed
      */
     function shuffle($location) {
-        $card_ids = self::getObjectListFromDB("SELECT card_id FROM ".$this->table." WHERE card_location='$location'", true);
-        shuffle($card_ids);
+        $card_ids = $this->game->getObjectListFromDB("SELECT card_id FROM ".$this->deck->table." WHERE card_location='$location'", true);
+        $this->deck->shuffle($location); // SUPER METHOD
         $n=1; //$n=0; This is the only difference compared to the parent::shuffle
         foreach($card_ids as $card_id){
-            self::DbQuery("UPDATE ".$this->table." SET card_location_arg='$n' WHERE card_id='$card_id'");
+            $this->game->DbQuery("UPDATE ".$this->deck->table." SET card_location_arg='$n' WHERE card_id='$card_id'");
             $n++;
         }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Inherited functions
+    ////////////   
+    // Wrapper functions around the underlying deck class 
+
+    /**
+     * Set the databasetable name.
+     * MUST be called before any other method.
+     */
+    function init(string $table) {
+        $this->deck->init($table);
+    }
+
+    /**
+     * This is the way cards are created and should not be called during the game.
+     * Cards are added to the deck (not shuffled)
+     * Cards is an array of "card types" with at least the followin fields:
+     * array( 
+     *      array(                              // This is my first card type
+     *          "type" => "name of this type"   // Note: <10 caracters
+     *          "type_arg" => <type arg>        // Argument that should be applied to all card of this card type
+     *          "nbr" => <nbr>                  // Number of cards with this card type to create in game
+     *
+     * If location_arg is not specified, cards are placed at location extreme position
+     */
+    function createCards(array $cards, string $location = 'deck', ?int $location_arg = null) {
+        $this->deck->createCards($cards, $location, $location_arg);
+    }
+    
+    /**
+     * Get position of extreme cards (top or back) on the specific location.
+     */
+    function getExtremePosition(bool $getMax , string $location): int {
+        return $this->deck->getExtremePosition($getMax, $location);
+    }
+    
+    /**
+     * Pick the first card on top of specified deck and give it to specified player.
+     * Return card infos or null if no card in the specified location.
+     */
+    function pickCard(string $location, int $player_id): ?array {
+        return $this->deck->pickCard($location, $player_id);
+    }
+    
+    /**
+     * Pick the "nbr" first cards on top of specified deck and give it to specified player.
+     * Return card infos (array) or null if no card in the specified location.
+     */
+    function pickCards(int $nbr, string $location, int $player_id): ?array {
+        return $this->deck->pickCards($nbr, $location, $player_id);
+    }
+
+    
+    /**
+     * Return card on top of this location.
+     */
+    function getCardOnTop(string $location): ?array {
+        return $this->deck->getCardOnTop($location);
+    }
+
+    /**
+     * Return "$nbr" cards on top of this location.
+     */
+    function getCardsOnTop(int $nbr, string $location): ?array {
+        return $this->deck->getCardsOnTop($nbr, $location);
+    }
+    
+    /**
+     * Move a card to a specific location where card are ordered. If location_arg place is already taken, increment
+     * all cards after location_arg in order to insert new card at this precise location.
+     */
+    function insertCard(int $card_id, string $location, int $location_arg): void {
+        $this->deck->insertCard($card_id, $location, $location_arg);
+    }
+
+    /**
+     * Move a card on top or at bottom of given "pile" type location. (Lower numbers: bottom of the deck. Higher numbers: top of the deck.)
+     */
+    function insertCardOnExtremePosition(int $card_id, string $location, bool $bOnTop): void {
+        $this->deck->insertCardOnExtremePosition($card_id, $location, $bOnTop);
+    }
+
+    /**
+     * Move all cards from a location to another.
+     * !!! location arg is reseted to 0 or specified value !!!
+     * if "from_location" and "from_location_arg" are null: move ALL cards to specific location
+     */
+    function moveAllCardsInLocation(?string $from_location, ?string $to_location, ?int $from_location_arg=null, int $to_location_arg=0 ): void {
+        $this->deck->moveAllCardsInLocation($from_location, $to_location, $from_location_arg, $to_location_arg);
+    }
+
+    /**
+     * Move all cards from a location to another.
+     * location arg stays with the same value
+     */
+    function moveAllCardsInLocationKeepOrder(string $from_location, string $to_location): void {
+        $this->deck->moveAllCardsInLocationKeepOrder($from_location, $to_location);
+    }
+    
+    /**
+     * Return all cards in specific location.
+     * note: if "order by" is used, result object is NOT indexed by card ids
+     */
+    function getCardsInLocation(string|array $location, ?int $location_arg = null, ?string $order_by = null ): array {
+        return $this->deck->getCardsInLocation($location, $location_arg, $order_by);
+    }
+    
+    /**
+     * Get all cards in given player hand.
+     * Note: This is an alias for: getCardsInLocation( "hand", $player_id ) 
+     */
+    function getPlayerHand(int $player_id): array {
+        return $this->deck->getPlayerHand($player_id);
+    }
+    
+    /**
+     * Get specific card infos
+     */ 
+    function getCard(int $card_id ): ?array {
+        return $this->deck->getCard($card_id);
+    }
+    
+    /**
+     * Get specific cards infos
+     */ 
+    function getCards(array $cards_array ): array{
+        return $this->deck->getCards($cards_array);
+    }
+    
+    /**
+     * Get cards from their IDs (same as getCards), but with a location specified. Raises an exception if the cards are not in the specified location.
+     */
+    function getCardsFromLocation(array $cards_array, string $location, ?int $location_arg = null ): array{
+        return $this->deck->getCardsFromLocation($cards_array, $location, $location_arg);
+    }
+    
+    /**
+     * Get card of a specific type.
+     */
+    function getCardsOfType(mixed $type, ?int $type_arg=null ): array{
+        return $this->deck->getCardsOfType($type, $type_arg);
+    }
+    
+    /**
+     * Get cards of a specific type in a specific location.
+     */
+    function getCardsOfTypeInLocation(mixed $type, ?int $type_arg=null, string $location, ?int $location_arg = null ): array{
+        return $this->deck->getCardsOfTypeInLocation($type, $type_arg, $location, $location_arg);
+    }
+    
+    /**
+     * Return the number of cards in specified location. 
+     */
+    function countCardInLocation(string $location, ?int $location_arg=null): int|string{
+        return $this->deck->countCardInLocation($location, $location_arg);
+    }
+    
+    /**
+     * Return the number of cards in specified location. 
+     */
+    function countCardsInLocation(string $location, ?int $location_arg=null): int|string{
+        return $this->deck->countCardsInLocation($location, $location_arg);
+    }
+    
+    /**
+     * Return an array "location" => number of cards.
+     */
+    function countCardsInLocations(): array{
+        return $this->deck->countCardsInLocations();
+    }
+    
+    /**
+     * Return an array "location_arg" => number of cards (for this location).
+     */
+    function countCardsByLocationArgs(string $location): array{
+        return $this->deck->countCardsByLocationArgs($location);
     }
 }
