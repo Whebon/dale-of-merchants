@@ -6538,18 +6538,6 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SERENADE:
-                switch($this->getClock($player_id)) {
-                    case CLOCK_DAWN:
-                        $nbr = 1;
-                        break;
-                    case CLOCK_DAY:
-                        $nbr = 2;
-                        break;
-                    case CLOCK_NIGHT:
-                        $nbr = 1;
-                        break;
-                }
-                $this->draw(clienttranslate('Serenade: ${player_name} draws ${nbr} card(s)'), $nbr);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSerenade");
                 break;
@@ -8899,7 +8887,6 @@ class DaleOfMerchants extends DaleTableBasic
         }
         else {
             throw new BgaUserException($this->_("This passive has no effect on that player"));
-            return;
         }
         
         // Check if we can leave this state
@@ -8912,10 +8899,14 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function actSerenade($card_id) {
+    function actSerenade($card_ids) {
         $this->checkAction("actSerenade");
         $player_id = $this->getActivePlayerId();
-        $card_ids = array($card_id);
+        $card_ids = $this->numberListToArray($card_ids);
+        $nbr = min(2, $this->cards->countCardInLocation(HAND.$player_id));
+        if (count($card_ids) < $nbr) {
+            throw new BgaUserException($this->_("You must choose exactly ").$nbr.$this->_(" cards"));
+        }
         $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->placeOnDeckMultiple($player_id, clienttranslate('Serenade: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
         $this->fullyResolveCard($player_id);
@@ -8952,8 +8943,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-
-    //(~acts)
+    // ^
+    // |
+     //(~acts)
 
     function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard, $args) {
         $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
@@ -9942,6 +9934,22 @@ class DaleOfMerchants extends DaleTableBasic
         //     $this->fullyResolveCard($this->getActivePlayerId());
         // }
     }
+    
+    function stSerenade() {
+        $player_id = $this->getActivePlayerId();
+        switch($this->getClock($player_id)) {
+            case CLOCK_DAWN:
+                $nbr = 2;
+                break;
+            case CLOCK_DAY:
+                $nbr = 3;
+                break;
+            case CLOCK_NIGHT:
+                $nbr = 1;
+                break;
+        }
+        $this->draw(clienttranslate('Serenade: ${player_name} draws ${nbr} card(s)'), $nbr);
+    }
 
     function stTasters() {
         $remaining_player_ids = $this->getGameStateValuePlayerIds();
@@ -9952,6 +9960,9 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    
+    // ^
+    // |
     //(~st)
 
 

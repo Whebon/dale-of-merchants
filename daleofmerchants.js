@@ -5902,7 +5902,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'serenade':
-                    this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place on your deck"));
+                    this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to place on your deck"));
                     break;
                 case 'client_selectingContracts':
                     this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'selectingContracts', "daleofmerchants-wrap-technique", this.mainClientState.args.nbr);
@@ -7096,6 +7096,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Confirm"), "onGenerationChange");
                     this.addActionButtonCancelClient();
                     break;
+                case 'serenade':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSerenade");
+                    break;
             }
         };
         DaleOfMerchants.prototype.verifyChameleon = function (card, pile) {
@@ -8150,11 +8153,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'charmStove':
                     this.updateStoveButton();
-                    break;
-                case 'serenade':
-                    this.bgaPerformAction('actSerenade', {
-                        card_id: card.id
-                    });
                     break;
                 case 'travelingEquipment':
                     this.bgaPerformAction('actTravelingEquipment', {
@@ -10610,6 +10608,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.playTechniqueCard({
                 card_ids: card_ids
+            });
+        };
+        DaleOfMerchants.prototype.onSerenade = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            this.bgaPerformAction('actSerenade', {
+                card_ids: this.arrayToNumberList(card_ids)
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

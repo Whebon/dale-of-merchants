@@ -1262,14 +1262,15 @@ interface GameStates {
 	},
 	102: {
 		'name': 'serenade',
-		'description': 'Serenade: ${actplayer} must choose a card to place on their deck',
-		'descriptionmyturn': 'Serenade: ${you} must choose a card to place on your deck',
+		'description': 'Serenade: ${actplayer} must choose 2 cards to place on their deck',
+		'descriptionmyturn': 'Serenade: ${you} must choose 2 cards to place on your deck',
 		'type': 'activeplayer',
+		'action': 'stSerenade',
 		'possibleactions': {
 			'actSerenade': [{
-				'name': 'card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

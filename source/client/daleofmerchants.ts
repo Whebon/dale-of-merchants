@@ -1159,7 +1159,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'serenade':
-				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place on your deck"));
+				this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to place on your deck"));
 				break;
 			case 'client_selectingContracts':
 				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'selectingContracts', "daleofmerchants-wrap-technique", 
@@ -2364,6 +2364,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_generationChange':
 				this.addActionButton("confirm-button", _("Confirm"), "onGenerationChange");
 				this.addActionButtonCancelClient();
+				break;
+			case 'serenade':
+				this.addActionButton("confirm-button", _("Confirm"), "onSerenade");
 				break;
 		}
 		//(~actionbuttons)
@@ -3700,11 +3703,6 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'charmStove':
 				this.updateStoveButton();
-				break;
-			case 'serenade':
-				this.bgaPerformAction('actSerenade', {
-					card_id: card.id
-				})
 				break;
 			case 'travelingEquipment':
 				this.bgaPerformAction('actTravelingEquipment', {
@@ -6439,6 +6437,13 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCard<'client_generationChange'>({
 			card_ids: card_ids
 		});
+	}
+
+	onSerenade() {
+		const card_ids = this.myHand.orderedSelection.get();
+		this.bgaPerformAction('actSerenade', {
+			card_ids: this.arrayToNumberList(card_ids)
+		})
 	}
 
 	//(~on)

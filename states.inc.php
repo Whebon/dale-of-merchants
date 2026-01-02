@@ -53,6 +53,7 @@ if (false) {
 	$game->stInsight();
 	$game->stBadOmen();
 	$game->stFinalStatistics();
+	$game->stSerenade();
 	$game->stDeprecatedCheer();
 }
 
@@ -791,9 +792,10 @@ $machinestates = array(
 	),
 	102 => array(
 		'name' => 'serenade',
-		'description' => clienttranslate('Serenade: ${actplayer} must choose a card to place on their deck'),
-		'descriptionmyturn' => clienttranslate('Serenade: ${you} must choose a card to place on your deck'),
+		'description' => clienttranslate('Serenade: ${actplayer} must choose 2 cards to place on their deck'),
+		'descriptionmyturn' => clienttranslate('Serenade: ${you} must choose 2 cards to place on your deck'),
 		'type' => 'activeplayer',
+		'action' => 'stSerenade',
 		'possibleactions' => ['actSerenade'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
