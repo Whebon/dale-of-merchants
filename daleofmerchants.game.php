@@ -6344,7 +6344,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_RESOURCEFULALLY:
                 $this->beginResolvingCard($technique_card_id);
-                $this->spend($player_id, $args, 2, $this->_("Resourceful Ally"));
+                $this->spend($player_id, $args, 1, $this->_("Resourceful Ally"));
                 $this->gamestate->nextState("trResourcefulAlly");
                 break;
             case CT_ICETRADE:
@@ -8469,9 +8469,12 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actResourcefulAlly");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
-        $nbr = min(2, $this->cards->countCardInLocation(DISCARD.$player_id));
-        if (count($card_ids) != $nbr) {
-            throw new BgaUserException($this->_("Please select exactly ").$nbr.$this->_(" cards"));
+        $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
+        if (count($card_ids) == 0 && $discard_size != 0) {
+            throw new BgaUserException($this->_("Please select at least 1 card"));
+        }
+        else if (count($card_ids) > 2) {
+            throw new BgaUserException($this->_("Please select at most 2 cards"));
         }
         foreach ($card_ids as $card_id) {
             $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
@@ -9296,8 +9299,9 @@ class DaleOfMerchants extends DaleTableBasic
 
     function argResourcefulAlly() {
         $player_id = $this->getActivePlayerId();
+        $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
         return array(
-            'nbr' => min(2, $this->cards->countCardInLocation(DISCARD.$player_id))
+            'nbr' => $discard_size >= 2 ? "1-2" : $discard_size
         );
     }
 

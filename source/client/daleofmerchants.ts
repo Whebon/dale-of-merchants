@@ -4809,7 +4809,7 @@ class DaleOfMerchants extends Gamegui
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, 10);
 				break;
 			case DaleCard.CT_RESOURCEFULALLY:
-				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
+				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
 				break;
 			case DaleCard.CT_ICETRADE:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
