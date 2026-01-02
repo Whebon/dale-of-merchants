@@ -232,9 +232,9 @@ if (!defined('CT_CARDBACK')) {
     define('CT_JUNGLEFOWLS5A', 208);
     define('CT_JUNGLEFOWLS5B', 209);
     define('CT_DRAMATICROMANTIC', 210);
-    define('CT_BOUQUETS', 211);
+    define('CT_SERENADE', 211);
     define('CT_SELECTINGCONTRACTS', 212);
-    define('CT_SERENADE', 213);
+    define('CT_BOUQUETS', 213);
     define('CT_SPINNINGWHEEL', 214);
     define('CT_INHERITANCE', 215);
     define('CT_SNEAKYSCOUT', 216);
@@ -3842,7 +3842,7 @@ $this->card_types = array(
   ),
   211 => array(
       'type_id' => 211,
-      'name' => clienttranslate("Bouquets"),
+      'name' => clienttranslate("Serenade"),
       'text' => clienttranslate("Draw [DAWN 1 CARD] [DAY 2 CARDS2] [NIGHT 1 CARD]. Place 1 CARD on your deck."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
@@ -3874,7 +3874,7 @@ $this->card_types = array(
   ),
   213 => array(
       'type_id' => 213,
-      'name' => clienttranslate("Serenade"),
+      'name' => clienttranslate("Bouquets"),
       'text' => clienttranslate("Take 1 CARD from [DAWN your stall] [DAY an opponent's stall] [NIGHT the market]. Place this CARD in its place."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
@@ -4593,4 +4593,3 @@ $this->card_types = array(
       'is_mono' => true
   )
 );
-

@@ -232,7 +232,7 @@ interface GameStates {
 			'trLooseMarbles': 96,
 			'trAnotherFineMess': 97,
 			'trCoffeeGrinder': 101,
-			'trBouquets': 102,
+			'trSerenade': 102,
 			'trRake': 103,
 		},
 	},
@@ -1261,12 +1261,12 @@ interface GameStates {
 		},
 	},
 	102: {
-		'name': 'bouquets',
-		'description': 'Bouquets: ${actplayer} must choose a card to place on their deck',
-		'descriptionmyturn': 'Bouquets: ${you} must choose a card to place on your deck',
+		'name': 'serenade',
+		'description': 'Serenade: ${actplayer} must choose a card to place on their deck',
+		'descriptionmyturn': 'Serenade: ${you} must choose a card to place on your deck',
 		'type': 'activeplayer',
 		'possibleactions': {
-			'actBouquets': [{
+			'actSerenade': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

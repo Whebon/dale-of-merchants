@@ -1,4 +1,5 @@
 import pandas as pd
+import pyperclip
 
 # Load the Excel file
 file_path = 'material_11thanniversary.xlsx'
@@ -25,6 +26,9 @@ with open("deprecated_card_types.txt") as f:
 
 # Print the output
 print(output)
+
+# Optionally, copy the output to the clipboard
+pyperclip.copy(output)
 
 # # Optionally, write the output to a PHP file
 # with open('define_card_types.php', 'w') as f:

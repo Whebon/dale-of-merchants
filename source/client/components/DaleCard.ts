@@ -258,9 +258,9 @@ export class DaleCard {
     static readonly CT_JUNGLEFOWLS5A: number = 208;
     static readonly CT_JUNGLEFOWLS5B: number = 209;
     static readonly CT_DRAMATICROMANTIC: number = 210;
-    static readonly CT_BOUQUETS: number = 211;
+    static readonly CT_SERENADE: number = 211;
     static readonly CT_SELECTINGCONTRACTS: number = 212;
-    static readonly CT_SERENADE: number = 213;
+    static readonly CT_BOUQUETS: number = 213;
     static readonly CT_SPINNINGWHEEL: number = 214;
     static readonly CT_INHERITANCE: number = 215;
     static readonly CT_SNEAKYSCOUT: number = 216;

@@ -4909,7 +4909,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_MANUFACTUREDJOY:
-                case CT_BOUQUETS:
+                case CT_SERENADE:
                     $counts = $this->cards->countCardsInLocations();
                     if (isset($counts[DECK.$player_id]) || isset($counts[DISCARD.$player_id]) || $counts[HAND.$player_id] >= 2) {
                         throw new BgaVisibleSystemException("Unable to fizzle. There exists a card in deck, discard OR hand");
@@ -4929,7 +4929,7 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle '$name'. The player still has other cards in their hand.");
                     }
                     break;
-                case CT_SERENADE:
+                case CT_BOUQUETS:
                     switch($this->getClock($player_id)) {
                         case CLOCK_DAWN:
                             if ($this->cards->countCardsInLocation(STALL.$player_id) >= 1) {
@@ -4960,7 +4960,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Schedule Technique
-        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_VELOCIPEDE && $technique_type_id != CT_SERENADE) {
+        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_VELOCIPEDE && $technique_type_id != CT_BOUQUETS) {
             $choiceless = isset($args["choiceless"]) ? $args["choiceless"] : false;
             $this->scheduleCard($player_id, $technique_card, $choiceless);
         }
@@ -6537,7 +6537,7 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_BOUQUETS:
+            case CT_SERENADE:
                 switch($this->getClock($player_id)) {
                     case CLOCK_DAWN:
                         $nbr = 1;
@@ -6549,9 +6549,9 @@ class DaleOfMerchants extends DaleTableBasic
                         $nbr = 1;
                         break;
                 }
-                $this->draw(clienttranslate('Bouquets: ${player_name} draws ${nbr} card(s)'), $nbr);
+                $this->draw(clienttranslate('Serenade: ${player_name} draws ${nbr} card(s)'), $nbr);
                 $this->beginResolvingCard($technique_card_id);
-                $this->gamestate->nextState("trBouquets");
+                $this->gamestate->nextState("trSerenade");
                 break;
             case CT_SELECTINGCONTRACTS:
                 //1. get the top of cards of the discard pile
@@ -6603,7 +6603,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_SERENADE:
+            case CT_BOUQUETS:
                 switch($this->getClock($player_id)) {
                     case CLOCK_DAWN:
                         //Hard copy from CT_SAFETYPRECAUTION
@@ -6611,7 +6611,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $stall_card = $this->cards->getCardFromLocation($card_id, STALL.$player_id);
                         $this->cards->moveCard($technique_card_id, STALL.$player_id, $stall_card["location_arg"]);
                         $this->cards->moveCard($card_id, HAND.$player_id);
-                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with ${card_name}'), array(
+                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Bouquets: ${player_name} swaps with ${card_name}'), array(
                             "player_name" => $this->getActivePlayerName(),
                             "card_name" => $this->getCardName($stall_card),
                             "player_id" => $player_id,
@@ -6629,7 +6629,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                         $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                         $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Serenade: ${player_name} swaps with ${card_name}'), array(
+                        $this->notifyAllPlayers('swapHandStall', clienttranslate('Bouquets: ${player_name} swaps with ${card_name}'), array(
                             "player_name" => $this->getActivePlayerName(),
                             "card_name" => $this->getCardName($stall_card),
                             "player_id" => $player_id,
@@ -6645,7 +6645,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
                         $this->cards->moveCard($technique_card_id, MARKET, $market_card["location_arg"]);
                         $this->cards->moveCard($market_card_id, HAND.$player_id);
-                        $this->notifyAllPlayers('swapHandMarket', clienttranslate('Serenade: ${player_name} swaps with ${card_name}'), array(
+                        $this->notifyAllPlayers('swapHandMarket', clienttranslate('Bouquets: ${player_name} swaps with ${card_name}'), array(
                             "player_name" => $this->getActivePlayerName(),
                             "card_name" => $this->getCardName($market_card),
                             "player_id" => $player_id,
@@ -8912,12 +8912,12 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function actBouquets($card_id) {
-        $this->checkAction("actBouquets");
+    function actSerenade($card_id) {
+        $this->checkAction("actSerenade");
         $player_id = $this->getActivePlayerId();
         $card_ids = array($card_id);
         $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
-        $this->placeOnDeckMultiple($player_id, clienttranslate('Bouquets: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
+        $this->placeOnDeckMultiple($player_id, clienttranslate('Serenade: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
         $this->fullyResolveCard($player_id);
     }
 

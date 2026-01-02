@@ -2255,9 +2255,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_JUNGLEFOWLS5A = 208;
         DaleCard.CT_JUNGLEFOWLS5B = 209;
         DaleCard.CT_DRAMATICROMANTIC = 210;
-        DaleCard.CT_BOUQUETS = 211;
+        DaleCard.CT_SERENADE = 211;
         DaleCard.CT_SELECTINGCONTRACTS = 212;
-        DaleCard.CT_SERENADE = 213;
+        DaleCard.CT_BOUQUETS = 213;
         DaleCard.CT_SPINNINGWHEEL = 214;
         DaleCard.CT_INHERITANCE = 215;
         DaleCard.CT_SNEAKYSCOUT = 216;
@@ -5901,7 +5901,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
-                case 'bouquets':
+                case 'serenade':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to place on your deck"));
                     break;
                 case 'client_selectingContracts':
@@ -6367,7 +6367,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var coffeeGrinder_args = this.gamedatas.gamestate.args;
                     this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('none');
                     break;
-                case 'bouquets':
+                case 'serenade':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_selectingContracts':
@@ -8151,8 +8151,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'charmStove':
                     this.updateStoveButton();
                     break;
-                case 'bouquets':
-                    this.bgaPerformAction('actBouquets', {
+                case 'serenade':
+                    this.bgaPerformAction('actSerenade', {
                         card_id: card.id
                     });
                     break;
@@ -9120,7 +9120,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_MANUFACTUREDJOY:
-                case DaleCard_10.DaleCard.CT_BOUQUETS:
+                case DaleCard_10.DaleCard.CT_SERENADE:
                     fizzle = (this.myDiscard.size + this.myDeck.size + this.myHand.count()) <= 1;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9195,15 +9195,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_selectingContracts', card.id, { nbr: client_selectingContracts_nbr });
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_SERENADE:
+                case DaleCard_10.DaleCard.CT_BOUQUETS:
                     switch (this.myClock.getClock()) {
                         case PlayerClock_2.PlayerClock.CLOCK_DAWN:
-                            console.warn("Dawn: DaleCard.CT_SERENADE == DaleCard.CT_SAFETYPRECAUTION");
-                            for (var player_id in this.gamedatas.players) {
-                                if (this.playerStalls[player_id].getNumberOfStacks() > 0) {
-                                    fizzle = false;
-                                    break;
-                                }
+                            console.warn("Dawn: DaleCard.CT_BOUQUETS == DaleCard.CT_SAFETYPRECAUTION");
+                            fizzle = true;
+                            if (this.myStall.getNumberOfStacks() > 0) {
+                                fizzle = false;
                             }
                             if (fizzle) {
                                 this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9213,9 +9211,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             }
                             break;
                         case PlayerClock_2.PlayerClock.CLOCK_DAY:
-                            console.warn("Day: DaleCard.CT_SERENADE == DaleCard.CT_ACORN");
-                            if (this.myStall.getNumberOfStacks() > 0) {
-                                fizzle = false;
+                            console.warn("Day: DaleCard.CT_BOUQUETS == DaleCard.CT_ACORN");
+                            fizzle = true;
+                            for (var player_id in this.gamedatas.players) {
+                                if (+player_id != +this.player_id && this.playerStalls[player_id].getNumberOfStacks() > 0) {
+                                    fizzle = false;
+                                    break;
+                                }
                             }
                             if (fizzle) {
                                 this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9225,7 +9227,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             }
                             break;
                         case PlayerClock_2.PlayerClock.CLOCK_NIGHT:
-                            console.warn("Night: DaleCard.CT_SERENADE == DaleCard.CT_GIFTVOUCHER");
+                            console.warn("Night: DaleCard.CT_BOUQUETS == DaleCard.CT_GIFTVOUCHER");
                             fizzle = this.market.getCards().length == 0;
                             if (fizzle) {
                                 this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9235,7 +9237,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             }
                             break;
                         default:
-                            throw new Error("Serenade played with an invalid clock");
+                            throw new Error("Bouquets played with an invalid clock");
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_GENERATIONCHANGE:
@@ -9478,7 +9480,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card_id = this.mainClientState.args.technique_card_id;
                 var card = new DaleCard_10.DaleCard(card_id);
                 var type_id = card.effective_type_id;
-                if ((type_id != DaleCard_10.DaleCard.CT_ACORN && type_id != DaleCard_10.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_10.DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard_10.DaleCard.CT_VELOCIPEDE && type_id != DaleCard_10.DaleCard.CT_SERENADE) || this.mainClientState.name == 'client_fizzle') {
+                if ((type_id != DaleCard_10.DaleCard.CT_ACORN && type_id != DaleCard_10.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_10.DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard_10.DaleCard.CT_VELOCIPEDE && type_id != DaleCard_10.DaleCard.CT_BOUQUETS) || this.mainClientState.name == 'client_fizzle') {
                     this.myHand.addDaleCardToStock(card, this.mySchedule.control_name + '_item_' + card_id);
                     this.mySchedule.removeFromStockByIdNoAnimation(card_id);
                     this.myHandSize.incValue(1);

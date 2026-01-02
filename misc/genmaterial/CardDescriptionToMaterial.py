@@ -1,5 +1,6 @@
 import pandas as pd
 import numbers
+import pyperclip
 
 def format_emojis(text: str):
     return text.replace("–", "-") \
@@ -112,6 +113,9 @@ output = output.rstrip(',\n') + "\n);\n"
 
 # Print the output
 print(output)
+
+# Optionally, copy the output to the clipboard
+pyperclip.copy(output)
 
 # # Optionally, write the output to a PHP file
 # with open('output.php', 'w') as f:
