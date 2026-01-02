@@ -113,6 +113,6 @@ output = output.rstrip(',\n') + "\n);\n"
 # Print the output
 print(output)
 
-# Optionally, write the output to a PHP file
-with open('output.php', 'w') as f:
-    f.write(output)
+# # Optionally, write the output to a PHP file
+# with open('output.php', 'w') as f:
+#     f.write(output)

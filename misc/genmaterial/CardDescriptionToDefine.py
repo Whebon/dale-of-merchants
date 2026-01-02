@@ -26,6 +26,6 @@ with open("deprecated_card_types.txt") as f:
 # Print the output
 print(output)
 
-# Optionally, write the output to a PHP file
-with open('define_card_types.php', 'w') as f:
-    f.write(output)
+# # Optionally, write the output to a PHP file
+# with open('define_card_types.php', 'w') as f:
+#     f.write(output)

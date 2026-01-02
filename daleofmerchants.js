@@ -7631,11 +7631,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var cards = [];
             var values = new Set();
             for (var player_id in this.gamedatas.players) {
-                if (+player_id != this.player_id) {
-                    for (var _i = 0, _a = this.playerStalls[player_id].getCardsInStall(); _i < _a.length; _i++) {
-                        var stallCard = _a[_i];
-                        values.add(stallCard.original_value);
-                    }
+                for (var _i = 0, _a = this.playerStalls[player_id].getCardsInStall(); _i < _a.length; _i++) {
+                    var stallCard = _a[_i];
+                    values.add(stallCard.original_value);
                 }
             }
             for (var _b = 0, _c = this.myHand.getAllItems(); _b < _c.length; _b++) {
@@ -7657,12 +7655,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.getMatchingColoursStallTargets = function (handCard) {
             var stallCards = [];
             for (var player_id in this.gamedatas.players) {
-                if (+player_id != this.player_id) {
-                    for (var _i = 0, _a = this.playerStalls[player_id].getCardsInStall(); _i < _a.length; _i++) {
-                        var stallCard = _a[_i];
-                        if (stallCard.original_value == handCard.effective_value) {
-                            stallCards.push(stallCard);
-                        }
+                for (var _i = 0, _a = this.playerStalls[player_id].getCardsInStall(); _i < _a.length; _i++) {
+                    var stallCard = _a[_i];
+                    if (stallCard.original_value == handCard.effective_value) {
+                        stallCards.push(stallCard);
                     }
                 }
             }

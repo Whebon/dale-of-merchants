@@ -4875,13 +4875,11 @@ class DaleOfMerchants extends DaleTableBasic
                     //get the possible values
                     $players = $this->loadPlayersBasicInfosInclMono();
                     $values = [];
-                    foreach ($players as $other_player_id => $player) {
-                        if ($other_player_id != $player_id) {
-                            foreach($this->cards->getCardsInLocation(STALL.$other_player_id) as $stallCard) {
-                                $value = $this->getOriginalValue($stallCard);
-                                if (!in_array($value, $values)) {
-                                    $values[] = $value;
-                                }
+                    foreach ($players as $any_player_id => $player) {
+                        foreach($this->cards->getCardsInLocation(STALL.$any_player_id) as $stallCard) {
+                            $value = $this->getOriginalValue($stallCard);
+                            if (!in_array($value, $values)) {
+                                $values[] = $value;
                             }
                         }
                     }

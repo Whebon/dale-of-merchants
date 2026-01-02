@@ -3101,10 +3101,8 @@ class DaleOfMerchants extends Gamegui
 		const cards: DaleCard[] = [];
 		const values: Set<number> = new Set();
 		for (let player_id in this.gamedatas.players) {
-			if (+player_id != this.player_id) {
-				for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
-					values.add(stallCard.original_value); //notice that we use the ORIGINAL value of the stall card...
-				}
+			for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
+				values.add(stallCard.original_value); //notice that we use the ORIGINAL value of the stall card...
 			}
 		}
 		for (let item of this.myHand.getAllItems()) {
@@ -3129,11 +3127,9 @@ class DaleOfMerchants extends Gamegui
 	getMatchingColoursStallTargets(handCard: DaleCard): DaleCard[] {
 		const stallCards = [];
 		for (let player_id in this.gamedatas.players) {
-			if (+player_id != this.player_id) {
-				for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
-					if (stallCard.original_value == handCard.effective_value) { //original value of the stallCard, effective value of the handCard
-						stallCards.push(stallCard);
-					}
+			for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
+				if (stallCard.original_value == handCard.effective_value) { //original value of the stallCard, effective value of the handCard
+					stallCards.push(stallCard);
 				}
 			}
 		}
