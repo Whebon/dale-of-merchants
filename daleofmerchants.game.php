@@ -6361,7 +6361,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_TRAVELINGEQUIPMENT:
                 $this->beginResolvingCard($technique_card_id);
-                $this->spend($player_id, $args, 1, $this->_("Traveling Equipment"));
+                $this->spend($player_id, $args, 2, $this->_("Traveling Equipment"));
                 $this->gamestate->nextState("trTravelingEquipment");
                 break;
             case CT_FISHING:
@@ -8490,35 +8490,11 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actTravelingEquipment($toss_card_id, $discard_card_id) {
+    function actTravelingEquipment($toss_card_id) {
         $this->checkAction("actTravelingEquipment");
         $player_id = $this->getActivePlayerId();
-        $handsize = $this->cards->countCardsInLocation(HAND.$player_id);
-        if ($toss_card_id == -1 && $discard_card_id == -1) {
-            throw new BgaVisibleSystemException("actTravelingEquipment does not allow a full fizzle");
-        }
-        if (($toss_card_id == -1 || $discard_card_id == -1) && $handsize > 2) {
-            throw new BgaUserException($this->_("Please select a card to toss and a card to discard"));
-        }
-
-        //toss a card
-        if ($toss_card_id != -1) {
-            $toss_dbcard = $this->cards->getCardFromLocation($toss_card_id, HAND.$player_id);
-            $this->toss(clienttranslate('Traveling Equipment: ${player_name} tosses their ${card_name}'), $toss_dbcard);
-        }
-
-        //discard a card
-        if ($discard_card_id != -1) {
-            $discard_dbcard = $this->cards->getCardFromLocation($discard_card_id, HAND.$player_id);
-            $this->cards->moveCardOnTop($discard_card_id, DISCARD.$player_id);
-            $this->notifyAllPlayers('discard', clienttranslate('Traveling Equipment: ${player_name} discards their ${card_name}'), array(
-                "player_id" => $player_id,
-                "card" => $discard_dbcard,
-                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                "card_name" => $this->getCardName($discard_dbcard)
-            ));
-        }
-
+        $toss_dbcard = $this->cards->getCardFromLocation($toss_card_id, HAND.$player_id);
+        $this->toss(clienttranslate('Traveling Equipment: ${player_name} tosses their ${card_name}'), $toss_dbcard);
         $this->fullyResolveCard($player_id);
     }
 

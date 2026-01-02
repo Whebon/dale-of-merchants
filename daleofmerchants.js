@@ -82,12 +82,6 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             icon.setAttribute('style', "\n            background-size: ".concat(DaleIcons.COLUMNS, "00% ").concat(DaleIcons.ROWS, "00%;\n            background-position: -").concat(col, "00% -").concat(row, "00%;\n        "));
             return icon;
         };
-        DaleIcons.getTravelingEquipmentTossIcon = function () {
-            return this.getTossIcon();
-        };
-        DaleIcons.getTravelingEquipmentDiscardIcon = function () {
-            return this.getBluePileIcon(0);
-        };
         DaleIcons.getBluePileIcon = function (index) {
             return this.getIcon(0, index);
         };
@@ -499,9 +493,6 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'resourcefulAlly':
                     icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.max(4 - index, 0));
-                    break;
-                case 'travelingEquipment':
-                    icon = index == 0 ? DaleIcons_1.DaleIcons.getTravelingEquipmentTossIcon() : DaleIcons_1.DaleIcons.getTravelingEquipmentDiscardIcon();
                     break;
                 case 'selectingContracts':
                     icon = (index == 0) ? DaleIcons_1.DaleIcons.getTossIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
@@ -5858,8 +5849,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.openPopin();
                     break;
                 case 'travelingEquipment':
-                    var travelingEquipment_label = this.format_dale_icons(_("Choose cards to <strong>toss</strong> (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getTravelingEquipmentTossIcon(), DaleIcons_10.DaleIcons.getTravelingEquipmentDiscardIcon());
-                    this.myHand.setSelectionMode('multiple2', 'travelingEquipment', 'daleofmerchants-wrap-technique', travelingEquipment_label);
+                    this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'fishing':
                     this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
@@ -7013,9 +7003,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'resourcefulAlly':
                     this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
                     break;
-                case 'travelingEquipment':
-                    this.addActionButton("confirm-button", _("Confirm"), "onTravelingEquipment");
-                    break;
                 case 'fishing':
                     this.addActionButton("confirm-button", _("Confirm"), "onFishing");
                     break;
@@ -7999,12 +7986,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'charmStove':
                     this.updateStoveButton();
                     break;
-                case 'travelingEquipment':
-                    if (this.myHand.count() == 1 && card_id != -1) {
-                        this.myHand.orderedSelection.toggle(-1);
-                        this.myHand.selectItem(card_id);
-                    }
-                    break;
             }
         };
         DaleOfMerchants.prototype.onSelectHandCard = function (card_id) {
@@ -8172,6 +8153,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'bouquets':
                     this.bgaPerformAction('actBouquets', {
                         card_id: card.id
+                    });
+                    break;
+                case 'travelingEquipment':
+                    this.bgaPerformAction('actTravelingEquipment', {
+                        toss_card_id: card.id,
                     });
                     break;
                 case null:
@@ -9173,7 +9159,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1, Infinity);
                     break;
                 case DaleCard_10.DaleCard.CT_TRAVELINGEQUIPMENT:
-                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
                     break;
                 case DaleCard_10.DaleCard.CT_FISHING:
                     this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
@@ -10397,41 +10383,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.bgaPerformAction('actResourcefulAlly', {
                 card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
             });
-        };
-        DaleOfMerchants.prototype.onTravelingEquipment = function () {
-            if (this.myHand.count() > 1) {
-                var card_ids = this.myHand.orderedSelection.get();
-                if (card_ids.length < 2) {
-                    this.showMessage(_("Please choose 1 card to toss and 1 card to discard"), 'error');
-                    return;
-                }
-                var toss_card_id = card_ids[1];
-                var discard_card_id = card_ids[0];
-                this.bgaPerformAction('actTravelingEquipment', {
-                    toss_card_id: toss_card_id,
-                    discard_card_id: discard_card_id
-                });
-                this.myHand.unselectAll();
-            }
-            else {
-                var only_card_id = this.myHand.getAllItems()[0].id;
-                if (this.myHand.orderedSelection.getSize() == 0) {
-                    this.showMessage(_("Please choose whether to toss or discard the card in your hand"), 'error');
-                    return;
-                }
-                else if (this.myHand.orderedSelection.includes(-1)) {
-                    this.bgaPerformAction('actTravelingEquipment', {
-                        toss_card_id: -1,
-                        discard_card_id: only_card_id
-                    });
-                }
-                else {
-                    this.bgaPerformAction('actTravelingEquipment', {
-                        toss_card_id: only_card_id,
-                        discard_card_id: -1
-                    });
-                }
-            }
         };
         DaleOfMerchants.prototype.onFishing = function () {
             var _this = this;

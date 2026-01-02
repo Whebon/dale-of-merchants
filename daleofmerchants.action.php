@@ -567,10 +567,8 @@ class action_daleofmerchants extends APP_GameAction
 
 		/** @var int $toss_card_id */
 		$toss_card_id = self::getArg('toss_card_id', AT_int, true);
-		/** @var int $discard_card_id */
-		$discard_card_id = self::getArg('discard_card_id', AT_int, true);
 
-		$this->game->actTravelingEquipment( $toss_card_id, $discard_card_id );
+		$this->game->actTravelingEquipment( $toss_card_id );
 		self::ajaxResponse();
 	}
 

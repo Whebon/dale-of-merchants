@@ -23,18 +23,6 @@ export class DaleIcons {
         return icon;
     }
 
-    ///////////////////////////////
-    ////////    ALIASES    ////////
-    ///////////////////////////////
-
-    public static getTravelingEquipmentTossIcon(): HTMLElement {
-        return this.getTossIcon();
-    }
-
-    public static getTravelingEquipmentDiscardIcon(): HTMLElement {
-        return this.getBluePileIcon(0);
-    }
-
 
     /////////////////////////////
     ////////    ROW 0    ////////

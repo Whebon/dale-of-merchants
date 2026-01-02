@@ -1047,17 +1047,13 @@ interface GameStates {
 	},
 	88: {
 		'name': 'travelingEquipment',
-		'description': 'Traveling Equipment: ${actplayer} must choose cards to toss and discard',
-		'descriptionmyturn': 'Traveling Equipment: ${you} must choose cards to toss and discard',
+		'description': 'Traveling Equipment: ${actplayer} must choose a card to toss',
+		'descriptionmyturn': 'Traveling Equipment: ${you} must choose a card to toss',
 		'type': 'activeplayer',
 		'action': 'stTravelingEquipment',
 		'possibleactions': {
 			'actTravelingEquipment': [{
 				'name': 'toss_card_id',
-				'type': 'AT_int',
-				'typescriptType': number,
-			}, {
-				'name': 'discard_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
 			}],

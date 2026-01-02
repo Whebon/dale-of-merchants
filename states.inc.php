@@ -655,8 +655,8 @@ $machinestates = array(
 	),
 	88 => array(
 		'name' => 'travelingEquipment',
-		'description' => clienttranslate('Traveling Equipment: ${actplayer} must choose cards to toss and discard'),
-		'descriptionmyturn' => clienttranslate('Traveling Equipment: ${you} must choose cards to toss and discard'),
+		'description' => clienttranslate('Traveling Equipment: ${actplayer} must choose a card to toss'),
+		'descriptionmyturn' => clienttranslate('Traveling Equipment: ${you} must choose a card to toss'),
 		'type' => 'activeplayer',
 		'action' => 'stTravelingEquipment',
 		'possibleactions' => ['actTravelingEquipment'],
