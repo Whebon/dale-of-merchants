@@ -7268,6 +7268,7 @@ class DaleOfMerchants extends DaleTableBasic
                 if ($this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id) > 0) {
                     $this->setGameStateValue("opponent_id", $opponent_id);
                     $this->setGameStateValue("passive_card_id", $passive_card_id);
+                    $this->setGameStateValue("die_value", 2); //not actually a die value, but we will use this state to keep track how many cards may still be discarded
                     $this->gamestate->nextState("trCoffeeGrinder"); return;
                 }
                 break;
@@ -8883,6 +8884,7 @@ class DaleOfMerchants extends DaleTableBasic
             return;
         }
         $opponent_id = $this->getGameStateValue("opponent_id");
+
         //discard 1 card
         $topCard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
         if ($topCard) {
@@ -8895,7 +8897,19 @@ class DaleOfMerchants extends DaleTableBasic
                 'card_name' => $this->getCardName($topCard)
             ));
         }
-        $this->gamestate->nextState("trSamePlayer");
+        else {
+            throw new BgaUserException($this->_("This passive has no effect on that player"));
+            return;
+        }
+        
+        // Check if we can leave this state
+        $discards_left = $this->getGameStateValue("die_value") - 1;
+        if ($discards_left > 0 && $this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id) > 0) {
+            $this->setGameStateValue("die_value", $discards_left);
+        }
+        else {
+            $this->gamestate->nextState("trSamePlayer");
+        }
     }
 
     function actBouquets($card_id) {
