@@ -9789,7 +9789,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stPompousProfessional() {
-        $this->draw('', 3, true); //draw 3 without a message
+        $this->draw('', 4, true); //draw 4 without a message
         $player_id = $this->getActivePlayerId();
         $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
         foreach ($dbcards as $dbcard) {
