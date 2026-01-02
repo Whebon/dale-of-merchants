@@ -1112,7 +1112,8 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'fishing':
-				this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
+				const fishing_args = args.args as {die_value: number};
+				this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', fishing_args.die_value);
 				this.myDiscard.openPopin();
 				break;
 			case 'client_groundbreakingIdea':
@@ -4809,7 +4810,7 @@ class DaleOfMerchants extends Gamegui
 				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
 				break;
 			case DaleCard.CT_FISHING:
-				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+				this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1, Infinity);
 				break;
 			case DaleCard.CT_GROUNDBREAKINGIDEA:
 				if (this.myDiscard.size > 0) {
@@ -6185,6 +6186,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onFishing() {
+		const fishing_args = this.gamedatas.gamestate.args as { die_value: number }
+		if (fishing_args.die_value != this.myDiscard.orderedSelection.get().length) {
+			this.showMessage(_("Please select exactly ")+fishing_args.die_value+_(" card(s) from your discard"), 'error');
+			this.myDiscard.openPopin(); // sets openPopinRequested = true
+			return;
+		}
 		this.bgaPerformAction('actFishing', {
 			card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
 		})

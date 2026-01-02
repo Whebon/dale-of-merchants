@@ -1064,9 +1064,10 @@ interface GameStates {
 	},
 	89: {
 		'name': 'fishing',
-		'description': 'Fishing: ${actplayer} must place 1-3 cards from your discard on your deck',
-		'descriptionmyturn': 'Fishing: ${you} must place 1-3 cards from your discard on your deck',
+		'description': 'Fishing: ${actplayer} must place exactly ${die_value} cards from your discard on your deck',
+		'descriptionmyturn': 'Fishing: ${you} must place exactly ${die_value} cards from your discard on your deck',
 		'type': 'activeplayer',
+		'args': 'argDie',
 		'possibleactions': {
 			'actFishing': [{
 				'name': 'card_ids',

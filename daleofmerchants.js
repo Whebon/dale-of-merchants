@@ -5852,7 +5852,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'fishing':
-                    this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', 3);
+                    var fishing_args = args.args;
+                    this.myDiscard.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', fishing_args.die_value);
                     this.myDiscard.openPopin();
                     break;
                 case 'client_groundbreakingIdea':
@@ -9162,7 +9163,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
                     break;
                 case DaleCard_10.DaleCard.CT_FISHING:
-                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1);
+                    this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 1, Infinity);
                     break;
                 case DaleCard_10.DaleCard.CT_GROUNDBREAKINGIDEA:
                     if (this.myDiscard.size > 0) {
@@ -10386,6 +10387,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onFishing = function () {
             var _this = this;
+            var fishing_args = this.gamedatas.gamestate.args;
+            if (fishing_args.die_value != this.myDiscard.orderedSelection.get().length) {
+                this.showMessage(_("Please select exactly ") + fishing_args.die_value + _(" card(s) from your discard"), 'error');
+                this.myDiscard.openPopin();
+                return;
+            }
             this.bgaPerformAction('actFishing', {
                 card_ids: this.arrayToNumberList(this.myDiscard.orderedSelection.get())
             })

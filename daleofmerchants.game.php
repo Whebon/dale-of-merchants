@@ -6365,11 +6365,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trTravelingEquipment");
                 break;
             case CT_FISHING:
-                $this->spend($player_id, $args, 1, $this->_("Fishing"));
-                if ($this->cards->countCardInLocation(DISCARD.$player_id) == 0) {
+                $x = $this->spendX($player_id, $args, 1, 1000, $this->_("Fishing"));
+                $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
+                if ($discard_size == 0) {
                     $this->fullyResolveCard($player_id, $technique_card); //fizzle
                     return;
                 }
+                $x = min($x, $discard_size);
+                $this->setGameStateValue("die_value", $x); //not actually a die value, but we will use this state to store x
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trFishing");
                 break;
@@ -8502,11 +8505,10 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actFishing");
         $player_id = $this->getActivePlayerId();
         $card_ids = $this->numberListToArray($card_ids);
-        if (count($card_ids) == 0) {
-            throw new BgaUserException($this->_("Please select at least 1 card"));
-        }
-        if (count($card_ids) > 3) {
-            throw new BgaUserException($this->_("Please select at most 3 cards"));
+        $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
+        $x = min($discard_size, $this->getGameStateValue("die_value"));
+        if (count($card_ids) != $x) {
+            throw new BgaUserException($this->_("Please select exactly ").$x.(" card(s)"));
         }
         foreach ($card_ids as $card_id) {
             $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);

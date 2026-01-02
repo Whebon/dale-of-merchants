@@ -666,9 +666,10 @@ $machinestates = array(
 	),
 	89 => array(
 		'name' => 'fishing',
-		'description' => clienttranslate('Fishing: ${actplayer} must place 1-3 cards from your discard on your deck'),
-		'descriptionmyturn' => clienttranslate('Fishing: ${you} must place 1-3 cards from your discard on your deck'),
+		'description' => clienttranslate('Fishing: ${actplayer} must place exactly ${die_value} cards from your discard on your deck'),
+		'descriptionmyturn' => clienttranslate('Fishing: ${you} must place exactly ${die_value} cards from your discard on your deck'),
 		'type' => 'activeplayer',
+		'args' => 'argDie',
 		'possibleactions' => ['actFishing'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
