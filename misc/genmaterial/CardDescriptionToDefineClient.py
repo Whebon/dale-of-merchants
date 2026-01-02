@@ -19,9 +19,12 @@ for sheet_name in xls.sheet_names:
         output += f"    static readonly CT_{upper}: number = {type_id};\n"
 
 # Add deprecated card types
-with open("deprecated_card_types.txt") as f:
+with open("deprecated_card_types.txt", encoding="utf-8") as f:
     for deprecated_card_type in f.readlines():
+        if deprecated_card_type == "":
+            continue
         deprecated_card_type = deprecated_card_type.replace("\n", "")
+        deprecated_card_type = deprecated_card_type.split("//", 1)[0].strip()
         if deprecated_card_type != "":
             type_id += 1
             output += f"    static readonly {deprecated_card_type}: number = {type_id};\n"

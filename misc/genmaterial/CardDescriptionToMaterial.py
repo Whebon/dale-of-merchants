@@ -11,6 +11,7 @@ def format_emojis(text: str):
                 .replace("🐱", "DIE_OCELOT") \
                 .replace("💈", "DIE_POLECAT") \
                 .replace("🐰", "DIE_HARE") \
+                .replace("❇️✳️", "DIE_PANGOLINS") \
                 .replace("❇️", "DIE_PANGOLIN1") \
                 .replace("✳️", "DIE_PANGOLIN2") \
                 .replace("[source]", "SOURCE") \

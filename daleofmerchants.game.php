@@ -4294,6 +4294,22 @@ class DaleOfMerchants extends DaleTableBasic
         return -1;
     }
 
+    /**
+     * Spawn all cards from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawnAll(string $animalfolk_prefix) {
+        $this->spawn1($animalfolk_prefix);
+        $this->spawn2($animalfolk_prefix);
+        $this->spawn3($animalfolk_prefix);
+        $this->spawn4($animalfolk_prefix);
+        $this->spawn5a($animalfolk_prefix);
+        $this->spawn5b($animalfolk_prefix);
+    }
+
      /**
      * Spawn the 1-valued card from the given animalfolk
      * @param string $animalfolk_prefix prefix of the card's english animalfolk name

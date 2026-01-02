@@ -1809,6 +1809,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DIE_HARE')) {
                 text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_5.DaleIcons.get3DDieHareIcon().outerHTML, "</span>"));
             }
+            if (text.includes('DIE_PANGOLINS')) {
+                text = text.replaceAll('DIE_PANGOLINS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_5.DaleIcons.get3DDiePangolin1Icon().outerHTML).concat(DaleIcons_5.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
+            }
             if (text.includes('DIE_PANGOLIN1')) {
                 text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_5.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>"));
             }
@@ -1867,10 +1870,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (text.includes('DIE_HARE')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('hare'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('hare'), "<br style=\"line-height: 10px\" />");
             }
-            if (text.includes('DIE_PANGOLIN1')) {
+            if (text.includes('DIE_PANGOLIN1') || text.includes('DIE_PANGOLINS')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin1'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin1'), "<br style=\"line-height: 10px\" />");
             }
-            if (text.includes('DIE_PANGOLIN2')) {
+            if (text.includes('DIE_PANGOLIN2') || text.includes('DIE_PANGOLINS')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin2'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin2'), "<br style=\"line-height: 10px\" />");
             }
             if (text.includes(_('Acquire')) || text.includes(_('acquire'))) {
@@ -2305,6 +2308,20 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 258;
         DaleCard.CT_DEPRECATED_CHEER = 259;
         DaleCard.CT_DEPRECATED_TASTERS = 260;
+        DaleCard.CT_DEPRECATED_ESSENTIALPURCHASE = 261;
+        DaleCard.CT_DEPRECATED_STOCKCLEARANCE = 262;
+        DaleCard.CT_DEPRECATED_BLINDFOLD = 263;
+        DaleCard.CT_DEPRECATED_RIGOROUSCHRONICLER = 264;
+        DaleCard.CT_DEPRECATED_HISTORYLESSON = 265;
+        DaleCard.CT_DEPRECATED_CULTURALPRESERVATION = 266;
+        DaleCard.CT_DEPRECATED_SLICEOFLIFE = 267;
+        DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER = 268;
+        DaleCard.CT_DEPRECATED_FASHIONHINT = 269;
+        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 270;
+        DaleCard.CT_DEPRECATED_VELOCIPEDE = 271;
+        DaleCard.CT_DEPRECATED_INSIGHT = 272;
+        DaleCard.CT_DEPRECATED_WHIRLIGIG = 273;
+        DaleCard.CT_DEPRECATED_FRESHSTART = 274;
         DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());
@@ -5326,11 +5343,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var stored_cards_wrap = $('daleofmerchants-stored-cards-wrap-' + player_id);
                     stored_cards_wrap.classList.remove("daleofmerchants-hidden");
                 }
-                if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_TUATARAS)) {
+                if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_TUATARAS) ||
+                    this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_DODOS) ||
+                    this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_CAPUCHINS)) {
                     var coins_wrap = $('daleofmerchants-coins-wrap-' + player_id);
                     coins_wrap.classList.remove("daleofmerchants-hidden");
                 }
-                if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_MONGOOSES) ||
+                if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_JUNGLEFOWLS) ||
+                    this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_MONGOOSES) ||
                     this.gamedatas.animalfolkIds.includes(DaleDeckSelection_2.DaleDeckSelection.ANIMALFOLK_BATS)) {
                     var clock_wrap = $('daleofmerchants-clock-wrap-' + player_id);
                     clock_wrap.classList.remove("daleofmerchants-hidden");

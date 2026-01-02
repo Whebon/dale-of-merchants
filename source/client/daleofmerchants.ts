@@ -497,12 +497,16 @@ class DaleOfMerchants extends Gamegui
 				stored_cards_wrap.classList.remove("daleofmerchants-hidden");
 			}
 			//show coins if coin-based animalfolk are in play
-			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TUATARAS)) {
+			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TUATARAS) ||
+				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_DODOS) ||
+				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_CAPUCHINS)
+			) {
 				const coins_wrap = $('daleofmerchants-coins-wrap-'+player_id)!;
 				coins_wrap.classList.remove("daleofmerchants-hidden");
 			}
 			//show clock if coin-based animalfolk are in play
-			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_MONGOOSES) ||
+			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_JUNGLEFOWLS) ||
+				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_MONGOOSES) ||
 				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_BATS)) {
 				const clock_wrap = $('daleofmerchants-clock-wrap-'+player_id)!;
 				clock_wrap.classList.remove("daleofmerchants-hidden");

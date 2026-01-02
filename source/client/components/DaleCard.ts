@@ -308,6 +308,20 @@ export class DaleCard {
     static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 258;
     static readonly CT_DEPRECATED_CHEER: number = 259;
     static readonly CT_DEPRECATED_TASTERS: number = 260;
+    static readonly CT_DEPRECATED_ESSENTIALPURCHASE: number = 261;
+    static readonly CT_DEPRECATED_STOCKCLEARANCE: number = 262;
+    static readonly CT_DEPRECATED_BLINDFOLD: number = 263;
+    static readonly CT_DEPRECATED_RIGOROUSCHRONICLER: number = 264;
+    static readonly CT_DEPRECATED_HISTORYLESSON: number = 265;
+    static readonly CT_DEPRECATED_CULTURALPRESERVATION: number = 266;
+    static readonly CT_DEPRECATED_SLICEOFLIFE: number = 267;
+    static readonly CT_DEPRECATED_VORACIOUSCONSUMER: number = 268;
+    static readonly CT_DEPRECATED_FASHIONHINT: number = 269;
+    static readonly CT_DEPRECATED_ROYALPRIVILEGE: number = 270;
+    static readonly CT_DEPRECATED_VELOCIPEDE: number = 271;
+    static readonly CT_DEPRECATED_INSIGHT: number = 272;
+    static readonly CT_DEPRECATED_WHIRLIGIG: number = 273;
+    static readonly CT_DEPRECATED_FRESHSTART: number = 274;
 
     public id: number
 
@@ -1043,6 +1057,10 @@ export class DaleCard {
         if (text.includes('DIE_HARE')) {
             text = text.replaceAll('DIE_HARE', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDieHareIcon().outerHTML}</span>`);
         }
+        if (text.includes('DIE_PANGOLINS')) {
+            //TODO: text = text.replaceAll('DIE_PANGOLINS', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolinsIcon().outerHTML}</span>`);
+            text = text.replaceAll('DIE_PANGOLINS', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolin1Icon().outerHTML}${DaleIcons.get3DDiePangolin2Icon().outerHTML}</span>`);
+        }
         if (text.includes('DIE_PANGOLIN1')) {
             text = text.replaceAll('DIE_PANGOLIN1', `<span class="daleofmerchants-log-span">${DaleIcons.get3DDiePangolin1Icon().outerHTML}</span>`);
         }
@@ -1106,10 +1124,10 @@ export class DaleCard {
         if (text.includes('DIE_HARE')) {
             legend += `${DaleDie.get3DDieTpl('hare')} <strong>:</strong> ${DaleDie.getAllFacesTpl('hare')}<br style="line-height: 10px" />`
         }
-        if (text.includes('DIE_PANGOLIN1')) {
+        if (text.includes('DIE_PANGOLIN1') || text.includes('DIE_PANGOLINS')) {
             legend += `${DaleDie.get3DDieTpl('pangolin1')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin1')}<br style="line-height: 10px" />`
         }
-        if (text.includes('DIE_PANGOLIN2')) {
+        if (text.includes('DIE_PANGOLIN2') || text.includes('DIE_PANGOLINS')) {
             legend += `${DaleDie.get3DDieTpl('pangolin2')} <strong>:</strong> ${DaleDie.getAllFacesTpl('pangolin2')}<br style="line-height: 10px" />`
         }
         if (text.includes(_('Acquire')) || text.includes(_('acquire'))) {
