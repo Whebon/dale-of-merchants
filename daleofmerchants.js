@@ -117,7 +117,7 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCheeseIcon = function () {
             return this.getIcon(4, 2);
         };
-        DaleIcons.getHistoryLessonIcon = function () {
+        DaleIcons.getDEPRECATED_HistoryLessonIcon = function () {
             return this.getIcon(4, 3);
         };
         DaleIcons.getNaturalSurvivorIcon = function () {
@@ -488,8 +488,8 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                 case 'duplicateEntry':
                     icon = DaleIcons_1.DaleIcons.getDuplicateEntry();
                     break;
-                case 'historyLesson':
-                    icon = DaleIcons_1.DaleIcons.getHistoryLessonIcon();
+                case 'DEPRECATED_historyLesson':
+                    icon = DaleIcons_1.DaleIcons.getDEPRECATED_HistoryLessonIcon();
                     break;
                 case 'resourcefulAlly':
                     icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.max(4 - index, 0));
@@ -4498,7 +4498,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_riskyBusiness':
                         return _("${card_name}: ${you} must guess the top card's value from the supply");
-                    case 'client_historyLesson':
+                    case 'client_DEPRECATED_historyLesson':
                         return _("${card_name}: ${you} may select up to 3 cards from the top of your discard pile");
                     case 'client_replacement':
                         return _("${card_name}: ${you} must choose an animalfolk card to <stronger>toss</stronger>");
@@ -5689,8 +5689,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.openPopin();
                     this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
-                case 'client_historyLesson':
-                    this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+                case 'client_DEPRECATED_historyLesson':
+                    this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'DEPRECATED_historyLesson', 'daleofmerchants-wrap-technique', 3);
                     this.myDiscard.openPopin();
                     break;
                 case 'culturalPreservation':
@@ -6199,7 +6199,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
-                case 'client_historyLesson':
+                case 'client_DEPRECATED_historyLesson':
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'culturalPreservation':
@@ -6763,8 +6763,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'duplicateEntry':
                     this.addActionButton("confirm-button", _("Confirm"), "onDuplicateEntry");
                     break;
-                case 'client_historyLesson':
-                    this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
+                case 'client_DEPRECATED_historyLesson':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_HistoryLesson");
                     this.addActionButtonCancelClient();
                     break;
                 case 'culturalPreservation':
@@ -8938,13 +8938,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_HISTORYLESSON:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_HISTORYLESSON:
                     fizzle = this.myDiscard.size == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_historyLesson', card.id);
+                        this.clientScheduleTechnique('client_DEPRECATED_historyLesson', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_CULTURALPRESERVATION:
@@ -9991,7 +9991,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
             });
         };
-        DaleOfMerchants.prototype.onHistoryLesson = function () {
+        DaleOfMerchants.prototype.onDEPRECATED_HistoryLesson = function () {
             this.playTechniqueCard({
                 card_ids: this.myDiscard.orderedSelection.get()
             });

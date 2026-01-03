@@ -95,8 +95,8 @@ export abstract class AbstractOrderedSelection {
             case 'duplicateEntry':
                 icon = DaleIcons.getDuplicateEntry();
                 break;
-            case 'historyLesson':
-                icon = DaleIcons.getHistoryLessonIcon();
+            case 'DEPRECATED_historyLesson':
+                icon = DaleIcons.getDEPRECATED_HistoryLessonIcon();
                 break;
             case 'resourcefulAlly':
                 icon = DaleIcons.getBluePileIcon(Math.max(4-index, 0)); //reverse pileBlue

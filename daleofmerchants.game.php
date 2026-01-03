@@ -4796,7 +4796,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_TIRELESSTINKERER:
-                case CT_HISTORYLESSON:
+                case CT_DEPRECATED_HISTORYLESSON:
                 case CT_ALTERNATIVEPLAN:
                 case CT_SELECTINGCONTRACTS:
                     $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
@@ -5788,7 +5788,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->gamestate->nextState("trBadOmen"); //exactly the same as badOmen
                 }
                 break;
-            case CT_HISTORYLESSON:
+            case CT_DEPRECATED_HISTORYLESSON:
                 $card_ids = $args["card_ids"];
                 $nbr = count($card_ids);
                 if ($nbr == 0) {

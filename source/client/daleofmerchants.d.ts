@@ -494,7 +494,7 @@ declare global {
 		'client_rareArtefact': { card_id: number }
 		'client_swank': { card_id: number }
 		'client_riskyBusiness': { value: number }
-		'client_historyLesson': { card_ids: number[] }
+		'client_DEPRECATED_historyLesson': { card_ids: number[] }
 		'client_replacement': { card_id?: number }
 		'client_fashionHint': { toss: boolean }
 		'client_pompousProfessional': { animalfolk_id: number }

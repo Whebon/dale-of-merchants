@@ -918,8 +918,8 @@ class DaleOfMerchants extends Gamegui
 				//early setup for badOmen
 				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>")); 
 				break;
-			case 'client_historyLesson':
-				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'historyLesson', 'daleofmerchants-wrap-technique', 3);
+			case 'client_DEPRECATED_historyLesson':
+				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'DEPRECATED_historyLesson', 'daleofmerchants-wrap-technique', 3);
 				this.myDiscard.openPopin();
 				break;
 			case 'culturalPreservation':
@@ -1447,7 +1447,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
-			case 'client_historyLesson':
+			case 'client_DEPRECATED_historyLesson':
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'culturalPreservation':
@@ -2009,8 +2009,8 @@ class DaleOfMerchants extends Gamegui
 			case 'duplicateEntry':
 				this.addActionButton("confirm-button", _("Confirm"), "onDuplicateEntry");
 				break;
-			case 'client_historyLesson':
-				this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
+			case 'client_DEPRECATED_historyLesson':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_HistoryLesson");
 				this.addActionButtonCancelClient();
 				break;
 			case 'culturalPreservation':
@@ -4566,13 +4566,13 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
-			case DaleCard.CT_HISTORYLESSON:
+			case DaleCard.CT_DEPRECATED_HISTORYLESSON:
 				fizzle = this.myDiscard.size == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_historyLesson', card.id);
+					this.clientScheduleTechnique('client_DEPRECATED_historyLesson', card.id);
 				}
 				break;
 			case DaleCard.CT_CULTURALPRESERVATION:
@@ -5710,8 +5710,8 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
-	onHistoryLesson() {
-		this.playTechniqueCard<'client_historyLesson'>({
+	onDEPRECATED_HistoryLesson() {
+		this.playTechniqueCard<'client_DEPRECATED_historyLesson'>({
 			card_ids: this.myDiscard.orderedSelection.get()
 		})
 	}
