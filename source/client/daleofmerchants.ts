@@ -966,7 +966,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('noneCantViewContent');
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+DEPRECATED_fashionHint_args.card_name);
 				break;
-			case 'royalPrivilege':
+			case 'DEPRECATED_royalPrivilege':
 				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
 				this.myHand.setSelectionMode('singleAnimalfolk', 'toss', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to toss"));
 				break;
@@ -1481,7 +1481,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
-			case 'royalPrivilege':
+			case 'DEPRECATED_royalPrivilege':
 				this.market!.setSelectionMode(0);
 				this.myHand.setSelectionMode('none');
 				break;
@@ -2039,9 +2039,9 @@ class DaleOfMerchants extends Gamegui
 			case 'DEPRECATED_fashionHint':
 				this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_FashionHintSwapSkip", undefined, false, 'gray');
 				break;
-			case 'royalPrivilege':
-				this.addActionButton("toss-button", _("Purchase"), "onRoyalPrivilege");
-				this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
+			case 'DEPRECATED_royalPrivilege':
+				this.addActionButton("toss-button", _("Purchase"), "onDEPRECATED_RoyalPrivilege");
+				this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_RoyalPrivilegeSkip", undefined, false, 'gray');
 				break;
 			case 'client_pompousProfessional':
 				this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), () => this.onPompousProfessional(0));
@@ -3308,10 +3308,10 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break;
-			case 'royalPrivilege':
-				const royalPrivilege_selected = this.market!.getSelected(pos);
+			case 'DEPRECATED_royalPrivilege':
+				const DEPRECATED_royalPrivilege_selected = this.market!.getSelected(pos);
 				this.market!.unselectAll();
-				if (!royalPrivilege_selected) {
+				if (!DEPRECATED_royalPrivilege_selected) {
 					this.market!.setSelected(pos);
 				}
 				break;
@@ -5780,7 +5780,7 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
-	onRoyalPrivilege() {
+	onDEPRECATED_RoyalPrivilege() {
 		const toss_card_id = this.myHand.orderedSelection.get()[0];
 		if (!toss_card_id) {
 			this.showMessage(_("Please select a hand card to toss"), 'error');
@@ -5791,14 +5791,14 @@ class DaleOfMerchants extends Gamegui
 			this.showMessage(_("Please select a market card to purchase"), 'error');
 			return;
 		}
-		this.bgaPerformAction('actRoyalPrivilege', {
+		this.bgaPerformAction('actDEPRECATED_RoyalPrivilege', {
 			toss_card_id: toss_card_id,
 			market_card_id: market_card_id
 		});
 	}
 
-	onRoyalPrivilegeSkip() {
-		this.bgaPerformAction('actRoyalPrivilege', {
+	onDEPRECATED_RoyalPrivilegeSkip() {
+		this.bgaPerformAction('actDEPRECATED_RoyalPrivilege', {
 			toss_card_id: -1,
 			market_card_id: -1
 		});

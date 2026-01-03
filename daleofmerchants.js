@@ -5729,7 +5729,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('noneCantViewContent');
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + DEPRECATED_fashionHint_args.card_name);
                     break;
-                case 'royalPrivilege':
+                case 'DEPRECATED_royalPrivilege':
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
                     this.myHand.setSelectionMode('singleAnimalfolk', 'toss', 'daleofmerchants-wrap-purchase', _("Choose an animalfolk card to toss"));
                     break;
@@ -6233,7 +6233,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
                     break;
-                case 'royalPrivilege':
+                case 'DEPRECATED_royalPrivilege':
                     this.market.setSelectionMode(0);
                     this.myHand.setSelectionMode('none');
                     break;
@@ -6793,9 +6793,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'DEPRECATED_fashionHint':
                     this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_FashionHintSwapSkip", undefined, false, 'gray');
                     break;
-                case 'royalPrivilege':
-                    this.addActionButton("toss-button", _("Purchase"), "onRoyalPrivilege");
-                    this.addActionButton("skip-button", _("Skip"), "onRoyalPrivilegeSkip", undefined, false, 'gray');
+                case 'DEPRECATED_royalPrivilege':
+                    this.addActionButton("toss-button", _("Purchase"), "onDEPRECATED_RoyalPrivilege");
+                    this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_RoyalPrivilegeSkip", undefined, false, 'gray');
                     break;
                 case 'client_pompousProfessional':
                     this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), function () { return _this.onPompousProfessional(0); });
@@ -7810,10 +7810,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'royalPrivilege':
-                    var royalPrivilege_selected = this.market.getSelected(pos);
+                case 'DEPRECATED_royalPrivilege':
+                    var DEPRECATED_royalPrivilege_selected = this.market.getSelected(pos);
                     this.market.unselectAll();
-                    if (!royalPrivilege_selected) {
+                    if (!DEPRECATED_royalPrivilege_selected) {
                         this.market.setSelected(pos);
                     }
                     break;
@@ -10052,7 +10052,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_id: -1
             });
         };
-        DaleOfMerchants.prototype.onRoyalPrivilege = function () {
+        DaleOfMerchants.prototype.onDEPRECATED_RoyalPrivilege = function () {
             var toss_card_id = this.myHand.orderedSelection.get()[0];
             if (!toss_card_id) {
                 this.showMessage(_("Please select a hand card to toss"), 'error');
@@ -10063,13 +10063,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.showMessage(_("Please select a market card to purchase"), 'error');
                 return;
             }
-            this.bgaPerformAction('actRoyalPrivilege', {
+            this.bgaPerformAction('actDEPRECATED_RoyalPrivilege', {
                 toss_card_id: toss_card_id,
                 market_card_id: market_card_id
             });
         };
-        DaleOfMerchants.prototype.onRoyalPrivilegeSkip = function () {
-            this.bgaPerformAction('actRoyalPrivilege', {
+        DaleOfMerchants.prototype.onDEPRECATED_RoyalPrivilegeSkip = function () {
+            this.bgaPerformAction('actDEPRECATED_RoyalPrivilege', {
                 toss_card_id: -1,
                 market_card_id: -1
             });

@@ -4537,8 +4537,8 @@ class DaleOfMerchants extends DaleTableBasic
         $market_card = $this->cards->getCard($market_card_id);
         $this->incStat(1, "actions_purchase", $player_id);
 
-        //Check for CT_ROYALPRIVILEGE (before chameleons expire)
-        $royal_privilege = $this->containsTypeId($funds_cards, CT_ROYALPRIVILEGE);
+        //Check for CT_DEPRECATED_ROYALPRIVILEGE (before chameleons expire)
+        $royal_privilege = $this->containsTypeId($funds_cards, CT_DEPRECATED_ROYALPRIVILEGE);
 
         //Apply CT_Bribe
         $bribes = 0;
@@ -4670,10 +4670,10 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
 
-        //Apply CT_ROYALPRIVILEGE (this effect does not stack: it's too rare to be worth tracking)
+        //Apply CT_DEPRECATED_ROYALPRIVILEGE (this effect does not stack: it's too rare to be worth tracking)
         if ($royal_privilege) {
             $this->setGameStateValue("card_id", $market_card_id);
-            $this->nextStateViaTriggers("trRoyalPrivilege", TRIGGER_ONPURCHASE, TRIGGER_ONMARKETCARD);
+            $this->nextStateViaTriggers("trDEPRECATED_RoyalPrivilege", TRIGGER_ONPURCHASE, TRIGGER_ONMARKETCARD);
             return;
         }
 
@@ -4681,8 +4681,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->nextStateViaTriggers("trNextPlayer", TRIGGER_ONPURCHASE, TRIGGER_ONMARKETCARD);
     }
 
-    function actRoyalPrivilege($toss_card_id, $market_card_id) {
-        $this->checkAction("actRoyalPrivilege");
+    function actDEPRECATED_RoyalPrivilege($toss_card_id, $market_card_id) {
+        $this->checkAction("actDEPRECATED_RoyalPrivilege");
         $player_id = $this->getActivePlayerId();
 
         if ($toss_card_id != -1 && $market_card_id != -1) {
