@@ -4584,7 +4584,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
-			case DaleCard.CT_VORACIOUSCONSUMER:
+			case DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER:
 				fizzle = this.myDeck.size + this.myDiscard.size == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);

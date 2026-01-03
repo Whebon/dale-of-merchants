@@ -4857,7 +4857,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_SUPPLYDEPOT:
                 case CT_DUPLICATEENTRY:
                 case CT_DEPRECATED_CULTURALPRESERVATION:
-                case CT_VORACIOUSCONSUMER:
+                case CT_DEPRECATED_VORACIOUSCONSUMER:
                 case CT_POMPOUSPROFESSIONAL:
                 case CT_MEDDLINGMARKETEER:
                 case CT_ANCHOR:
@@ -5832,7 +5832,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->reshuffleDeckForSearch($player_id, 3);
                 $this->gamestate->nextState("trDEPRECATED_CulturalPreservation");
                 break;
-            case CT_VORACIOUSCONSUMER:
+            case CT_DEPRECATED_VORACIOUSCONSUMER:
                 $deck_nbr = $this->cards->countCardsInLocation(DECK.$player_id);
                 $discard_nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
                 if ($discard_nbr > 0) {
