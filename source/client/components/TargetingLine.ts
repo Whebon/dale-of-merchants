@@ -91,7 +91,7 @@ export class TargetingLine {
         //setup line
         this.updateLine = function(this: Window, evt: MouseEvent) {
             if (!document.body.contains(thiz.cardDiv) && source instanceof DaleCard) {
-                //the source is lost (this sometimes happens in 'fashionHint')
+                //the source is lost (this sometimes happens in 'DEPRECATED_fashionHint')
                 if (!DaleCard.divs.has(source.id)) {
                     return;
                 }

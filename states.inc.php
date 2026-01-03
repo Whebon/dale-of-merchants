@@ -148,7 +148,7 @@ $machinestates = array(
 			'trRefreshingDrink' => 70,
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
-			'trFashionHint' => 73,
+			'trDEPRECATED_FashionHint' => 73,
 			'trAccident' => 74,
 			'trPompousProfessional' => 75,
 			'trDelicacy' => 76,
@@ -483,12 +483,12 @@ $machinestates = array(
 		),
 	),
 	73 => array(
-		'name' => 'fashionHint',
+		'name' => 'DEPRECATED_fashionHint',
 		'description' => clienttranslate('Fashion Hint: ${actplayer} may choose an animalfolk card from their hand to swap with ${card_name}'),
 		'descriptionmyturn' => clienttranslate('Fashion Hint: ${you} may choose an animalfolk card from your hand to swap with ${card_name}'),
 		'type' => 'activeplayer',
 		'args' => 'argTopCardBin',
-		'possibleactions' => ['actFashionHint'],
+		'possibleactions' => ['actDEPRECATED_FashionHint'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

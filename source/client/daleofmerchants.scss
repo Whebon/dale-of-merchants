@@ -543,10 +543,10 @@
 		//note that the slot is selected, not the card
 		&.daleofmerchants-wrap-technique {
 			.daleofmerchants-card {
-				box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-technique); //for CT_FASHIONHINT
-				outline: 3px solid var(--daleofmerchants-wrap-technique); //for CT_FASHIONHINT
-				background-color: var(--daleofmerchants-wrap-technique-a); //for CT_FASHIONHINT
-				background-blend-mode: overlay; //for CT_FASHIONHINT
+				box-shadow: 0px 2px 8px var(--daleofmerchants-wrap-technique); //for CT_DEPRECATED_FASHIONHINT
+				outline: 3px solid var(--daleofmerchants-wrap-technique); //for CT_DEPRECATED_FASHIONHINT
+				background-color: var(--daleofmerchants-wrap-technique-a); //for CT_DEPRECATED_FASHIONHINT
+				background-blend-mode: overlay; //for CT_DEPRECATED_FASHIONHINT
 			}
 		}
 

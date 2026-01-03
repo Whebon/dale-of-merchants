@@ -4504,7 +4504,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an animalfolk card to <stronger>toss</stronger>");
                     case 'client_replacementFizzle':
                         return _("${card_name}: Are you sure you want to toss '${toss_card_name}'? The market has no valid replacement for this card");
-                    case 'client_fashionHint':
+                    case 'client_DEPRECATED_fashionHint':
                         return _("${card_name}: ${you} may <stronger>toss</stronger> a card from the supply");
                     case 'client_pompousProfessional':
                         return _("${card_name}: ${you} must choose a set");
@@ -5719,15 +5719,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-technique');
                     this.market.setClickableForReplacement(replacement_args.value);
                     break;
-                case 'client_fashionHint':
+                case 'client_DEPRECATED_fashionHint':
                     this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
                     this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
                     break;
-                case 'fashionHint':
-                    var fashionHint_args = args.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onFashionHintSwapSkip(); }, function (source_id, target_id) { return _this.onFashionHintSwap(target_id); });
+                case 'DEPRECATED_fashionHint':
+                    var DEPRECATED_fashionHint_args = args.args;
+                    new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(DEPRECATED_fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_10.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onDEPRECATED_FashionHintSwapSkip(); }, function (source_id, target_id) { return _this.onDEPRECATED_FashionHintSwap(target_id); });
                     this.myDiscard.setSelectionMode('noneCantViewContent');
-                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + fashionHint_args.card_name);
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + DEPRECATED_fashionHint_args.card_name);
                     break;
                 case 'royalPrivilege':
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
@@ -6224,11 +6224,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'replacement':
                     this.market.setSelectionMode(0);
                     break;
-                case 'client_fashionHint':
+                case 'client_DEPRECATED_fashionHint':
                     this.marketDeck.setSelectionMode('none');
                     this.marketDiscard.setSelectionMode('none');
                     break;
-                case 'fashionHint':
+                case 'DEPRECATED_fashionHint':
                     TargetingLine_1.TargetingLine.remove();
                     this.myDiscard.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
@@ -6785,13 +6785,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("fizzle-button", _("Toss without replacement"), "onReplacementFizzle");
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_fashionHint':
-                    this.addActionButton("toss-button", _("Toss"), "onFashionHintToss");
-                    this.addActionButton("skip-button", _("Skip"), "onFashionHintTossSkip", undefined, false, 'gray');
+                case 'client_DEPRECATED_fashionHint':
+                    this.addActionButton("toss-button", _("Toss"), "onDEPRECATED_FashionHintToss");
+                    this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_FashionHintTossSkip", undefined, false, 'gray');
                     this.addActionButtonCancelClient();
                     break;
-                case 'fashionHint':
-                    this.addActionButton("skip-button", _("Skip"), "onFashionHintSwapSkip", undefined, false, 'gray');
+                case 'DEPRECATED_fashionHint':
+                    this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_FashionHintSwapSkip", undefined, false, 'gray');
                     break;
                 case 'royalPrivilege':
                     this.addActionButton("toss-button", _("Purchase"), "onRoyalPrivilege");
@@ -7921,12 +7921,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.onMarketDiscoveryPurchase();
                     }
                     break;
-                case 'client_fashionHint':
+                case 'client_DEPRECATED_fashionHint':
                     if (pile === this.marketDeck) {
-                        this.onFashionHintToss();
+                        this.onDEPRECATED_FashionHintToss();
                     }
                     else if (pile === this.marketDiscard) {
-                        this.onFashionHintTossSkip();
+                        this.onDEPRECATED_FashionHintTossSkip();
                     }
                     break;
             }
@@ -8973,13 +8973,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_replacement', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_FASHIONHINT:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_FASHIONHINT:
                     fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_fashionHint', card.id);
+                        this.clientScheduleTechnique('client_DEPRECATED_fashionHint', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_POMPOUSPROFESSIONAL:
@@ -10031,24 +10031,24 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_id: args.toss_card_id
             });
         };
-        DaleOfMerchants.prototype.onFashionHintToss = function () {
+        DaleOfMerchants.prototype.onDEPRECATED_FashionHintToss = function () {
             this.playTechniqueCardWithServerState({
                 toss: true
             });
         };
-        DaleOfMerchants.prototype.onFashionHintTossSkip = function () {
+        DaleOfMerchants.prototype.onDEPRECATED_FashionHintTossSkip = function () {
             this.playTechniqueCardWithServerState({
                 toss: false
             });
         };
-        DaleOfMerchants.prototype.onFashionHintSwap = function (card_id) {
-            this.bgaPerformAction('actFashionHint', {
+        DaleOfMerchants.prototype.onDEPRECATED_FashionHintSwap = function (card_id) {
+            this.bgaPerformAction('actDEPRECATED_FashionHint', {
                 card_id: card_id
             });
         };
-        DaleOfMerchants.prototype.onFashionHintSwapSkip = function () {
-            console.warn("onFashionHintSwapSkip");
-            this.bgaPerformAction('actFashionHint', {
+        DaleOfMerchants.prototype.onDEPRECATED_FashionHintSwapSkip = function () {
+            console.warn("onDEPRECATED_FashionHintSwapSkip");
+            this.bgaPerformAction('actDEPRECATED_FashionHint', {
                 card_id: -1
             });
         };
