@@ -2691,7 +2691,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($cost_max === null) {
             $cost_max = $cost;
         }
-        if (($total_value - $lowest_value) >= $cost_max && !$this->containsTypeId($funds_cards, CT_STOCKCLEARANCE)) {
+        if (($total_value - $lowest_value) >= $cost_max && !$this->containsTypeId($funds_cards, CT_DEPRECATED_STOCKCLEARANCE)) {
             throw new BgaUserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
         }
         return $total_value;
