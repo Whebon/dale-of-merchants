@@ -81,8 +81,8 @@
 		"action": "stChangeActivePlayer",
 		"transitions": {
 			"trSamePlayer": 30,
-			"trBlindfold": 56,
-			"trBlindfoldIncorrectGuess": 57,
+			"trDEPRECATED_Blindfold": 56,
+			"trDEPRECATED_BlindfoldIncorrectGuess": 57,
 			"trFullyResolve": 33,
 			"trDeprecatedTasters": 6500
 		}
@@ -366,14 +366,14 @@
 	},
 
 	"56": {
-		"name": "blindfold",
-		"description": "Blindfold: ${actplayer} must guess the value of ${opponent_name}\\'s card",
-		"descriptionmyturn": "Blindfold: ${you} must guess the value of ${opponent_name}\\'s card",
+		"name": "DEPRECATED_blindfold",
+		"description": "DEPRECATED_Blindfold: ${actplayer} must guess the value of ${opponent_name}\\'s card",
+		"descriptionmyturn": "DEPRECATED_Blindfold: ${you} must guess the value of ${opponent_name}\\'s card",
 		"type": "activeplayer",
-		"action": "stBlindfold",
-		"args": "argBlindfold",
+		"action": "stDEPRECATED_Blindfold",
+		"args": "argDEPRECATED_Blindfold",
 		"possibleactions": {
-			"actBlindfold": [
+			"actDEPRECATED_Blindfold": [
 				{"name": "value", "type": "AT_int"}
 			]
 		},
@@ -381,13 +381,13 @@
 	},
 
 	"57": {
-		"name": "blindfoldDecideValue",
-		"description": "Blindfold: ${actplayer} must decide the value of ${card_name}",
-		"descriptionmyturn": "Blindfold: ${you} must decide the value of ${card_name}",
+		"name": "DEPRECATED_blindfoldDecideValue",
+		"description": "DEPRECATED_Blindfold: ${actplayer} must decide the value of ${card_name}",
+		"descriptionmyturn": "DEPRECATED_Blindfold: ${you} must decide the value of ${card_name}",
 		"type": "activeplayer",
-		"args": "argBlindfoldDecideValue",
+		"args": "argDEPRECATED_BlindfoldDecideValue",
 		"possibleactions": {
-			"actBlindfoldDecideValue": [
+			"actDEPRECATED_BlindfoldDecideValue": [
 				{"name": "value", "type": "AT_int"}
 			]
 		},

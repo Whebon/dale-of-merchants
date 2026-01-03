@@ -4935,7 +4935,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break; //this card may always fizzle!
                 case CT_ROTTENFOOD:
                 case CT_ACCIDENT:
-                case CT_BLINDFOLD:
+                case CT_DEPRECATED_BLINDFOLD:
                 case CT_RAREARTEFACT:
                 case CT_SWANK:
                 case CT_CLEVERGUARDIAN:
@@ -5416,7 +5416,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_BLINDFOLD:
+            case CT_DEPRECATED_BLINDFOLD:
                 $this->beginResolvingCard($technique_card_id);
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
@@ -5425,7 +5425,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->addChameleonBindings($chameleons_json, $card_id); //the opponent will be notified of this, but that's ok I guess (see issue #92)
                 $this->setGameStateValue("opponent_id", $player_id); //player_id is the opponent_id from the opponent's perspective
                 $this->setGameStateValue("card_id", $card_id);
-                $this->nextStateChangeActivePlayer("trBlindfold", $opponent_id);
+                $this->nextStateChangeActivePlayer("trDEPRECATED_Blindfold", $opponent_id);
                 break;
             case CT_TIRELESSTINKERER:
                 $dbcard = $this->cards->getCardOnTop(DISCARD.$player_id);
@@ -7461,8 +7461,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actBlindfold($value) {
-        $this->checkAction("actBlindfold");
+    function actDEPRECATED_Blindfold($value) {
+        $this->checkAction("actDEPRECATED_Blindfold");
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $card_id = $this->getGameStateValue("card_id");
@@ -7471,12 +7471,12 @@ class DaleOfMerchants extends DaleTableBasic
         if ($value == $actual_value) {
             //the guess was correct: discard the card
             $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
-            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} correctly guessed ${value}'), array(
+            $this->notifyAllPlayers('message', clienttranslate('DEPRECATED_Blindfold: ${player_name} correctly guessed ${value}'), array(
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "card_name" => $this->getCardName($dbcard),
                 "value" => $value
             ));
-            $this->notifyAllPlayers('discard', clienttranslate('Blindfold: ${player_name} discards their ${card_name}'), array(
+            $this->notifyAllPlayers('discard', clienttranslate('DEPRECATED_Blindfold: ${player_name} discards their ${card_name}'), array(
                 "player_id" => $opponent_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                 "card" => $dbcard,
@@ -7486,27 +7486,27 @@ class DaleOfMerchants extends DaleTableBasic
         }
         else {
             //the guess was correct: modify the card value
-            $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} guessed ${value}, but the actual value was ${actual_value}'), array(
+            $this->notifyAllPlayers('message', clienttranslate('DEPRECATED_Blindfold: ${player_name} guessed ${value}, but the actual value was ${actual_value}'), array(
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "card_name" => $this->getCardName($dbcard),
                 "value" => $value,
                 "actual_value" => $actual_value
             ));
-            $this->nextStateChangeActivePlayer("trBlindfoldIncorrectGuess", $opponent_id);
+            $this->nextStateChangeActivePlayer("trDEPRECATED_BlindfoldIncorrectGuess", $opponent_id);
         }
     }
 
-    function actBlindfoldDecideValue($value) {
-        $this->checkAction("actBlindfoldDecideValue");
+    function actDEPRECATED_BlindfoldDecideValue($value) {
+        $this->checkAction("actDEPRECATED_BlindfoldDecideValue");
         $values = $this->getBaseEffectiveValues();
         if (!in_array($value, $values)) {
-            throw new BgaVisibleSystemException("actBlindfoldDecideValue: value $value is not a valid value");
+            throw new BgaVisibleSystemException("actDEPRECATED_BlindfoldDecideValue: value $value is not a valid value");
         }
         $player_id = $this->getActivePlayerId();
         $card_id = $this->getGameStateValue("card_id");
         $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-        $this->effects->insertModification($card_id, CT_BLINDFOLD, $value);
-        $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} sets their ${card_name}\'s value to ${value}'), array(
+        $this->effects->insertModification($card_id, CT_DEPRECATED_BLINDFOLD, $value);
+        $this->notifyAllPlayers('message', clienttranslate('DEPRECATED_Blindfold: ${player_name} sets their ${card_name}\'s value to ${value}'), array(
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
             "card_name" => $this->getCardName($dbcard),
             "value" => $value,
@@ -9136,7 +9136,7 @@ class DaleOfMerchants extends DaleTableBasic
         );
     }
 
-    function argBlindfold() {
+    function argDEPRECATED_Blindfold() {
         //only the opponent gets the card_id
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
@@ -9153,7 +9153,7 @@ class DaleOfMerchants extends DaleTableBasic
         );
     }
 
-    function argBlindfoldDecideValue() {
+    function argDEPRECATED_BlindfoldDecideValue() {
         $card_id = $this->getGameStateValue("card_id");
         $dbcard = $this->cards->getCard($card_id);
         return array(
@@ -9622,19 +9622,19 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function stBlindfold() {
+    function stDEPRECATED_Blindfold() {
         $opponent_id = $this->getGameStateValue("opponent_id");
         $card_id = $this->getGameStateValue("card_id");
         $dbcard = $this->cards->getCard($card_id);
-        $this->notifyAllPlayersWithPrivateArguments('selectBlindfold', 
-            clienttranslate('Blindfold: ${player_name} secretly selected a card'), array(
+        $this->notifyAllPlayersWithPrivateArguments('selectDEPRECATED_Blindfold', 
+            clienttranslate('DEPRECATED_Blindfold: ${player_name} secretly selected a card'), array(
             "player_id" => $opponent_id,
             "player_name" => $this->getPlayerNameByIdInclMono($opponent_id),
             "_private" => array(
                 "card_id" => $card_id,
                 "card_name" =>$this->getCardName($dbcard)
             )
-        ), clienttranslate('Blindfold: ${player_name} secretly selected ${card_name}'));
+        ), clienttranslate('DEPRECATED_Blindfold: ${player_name} secretly selected ${card_name}'));
     }
 
     function stDangerousTest() {
@@ -10005,11 +10005,11 @@ class DaleOfMerchants extends DaleTableBasic
     	
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
-                case 'blindfold':
+                case 'DEPRECATED_blindfold':
                     $values = $this->getPossibleEffectiveValues();
                     $key = array_rand($values);
                     $value = $values[$key];
-                    $this->actBlindfold($value);
+                    $this->actDEPRECATED_Blindfold($value);
                     break;
                 case 'deprecated_tasters':
                     $cards = $this->cards->getCardsInLocation(MARKET);

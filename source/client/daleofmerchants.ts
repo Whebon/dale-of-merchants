@@ -542,13 +542,13 @@ class DaleOfMerchants extends Gamegui
 					DaleCard.unbindAllChameleonsLocal();
 					this.mainClientState.leaveAll();
 					break;
-				case 'blindfold':
-					const blindfold_args = args.args as { _private?: { card_id?: number } };
-					if (blindfold_args._private?.card_id) {
-						const card = new DaleCard(blindfold_args._private.card_id);
+				case 'DEPRECATED_blindfold':
+					const DEPRECATED_blindfold_args = args.args as { _private?: { card_id?: number } };
+					if (DEPRECATED_blindfold_args._private?.card_id) {
+						const card = new DaleCard(DEPRECATED_blindfold_args._private.card_id);
 						this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default', _("Your opponent is guessing the value of ")+card.name);
 						this.myHand.orderedSelection.setMaxSize(1);
-						this.myHand.selectItem(blindfold_args._private.card_id);
+						this.myHand.selectItem(DEPRECATED_blindfold_args._private.card_id);
 					}
 					break;
 			}
@@ -748,7 +748,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_accident':
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
-			case 'client_blindfold':
+			case 'client_DEPRECATED_blindfold':
 				if (this.unique_opponent_id) {
 					this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				}
@@ -1336,10 +1336,10 @@ class DaleOfMerchants extends Gamegui
 			case 'client_accident':
 				this.myHand.setSelectionMode('none');
 				break;
-			case 'client_blindfold':
+			case 'client_DEPRECATED_blindfold':
 				this.myHand.setSelectionMode('none');
 				break;
-			case 'blindfoldDecideValue':
+			case 'DEPRECATED_blindfoldDecideValue':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'chameleon_reflection':
@@ -1419,7 +1419,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
-			case 'client_blindfold':
+			case 'client_DEPRECATED_blindfold':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'charity':
@@ -1808,48 +1808,48 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponent(this.onGamble.bind(this));
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_blindfold':
+			case 'client_DEPRECATED_blindfold':
 				if (!this.unique_opponent_id) {
 					this.addActionButtonsOpponentSelection(1);
-					this.addActionButton("confirm-button", _("Confirm"), "onBlindfold"); //confirm opponent and card
+					this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_Blindfold"); //confirm opponent and card
 				}
 				this.addActionButtonCancelClient();
 				break;
-			case 'blindfold':
-				const blindfold_args = (args as { possible_values: number[] });
-				let blindfold_label = '';
-				let blindfold_baseValue = 1;
-				for (let value of blindfold_args.possible_values) {
-					if (blindfold_baseValue > 5) {
-						blindfold_label = `<span style='color:lightgreen'>${value}</span>`;
+			case 'DEPRECATED_blindfold':
+				const DEPRECATED_blindfold_args = (args as { possible_values: number[] });
+				let DEPRECATED_blindfold_label = '';
+				let DEPRECATED_blindfold_baseValue = 1;
+				for (let value of DEPRECATED_blindfold_args.possible_values) {
+					if (DEPRECATED_blindfold_baseValue > 5) {
+						DEPRECATED_blindfold_label = `<span style='color:lightgreen'>${value}</span>`;
 					}
-					else if (value == blindfold_baseValue) {
-						blindfold_label = String(value);
+					else if (value == DEPRECATED_blindfold_baseValue) {
+						DEPRECATED_blindfold_label = String(value);
 					}
 					else {
-						blindfold_label = `${blindfold_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
+						DEPRECATED_blindfold_label = `${DEPRECATED_blindfold_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
 					}
-					this.addActionButton("button-"+value, blindfold_label, (() => this.onBlindfoldGuess(value)).bind(this));
-					blindfold_baseValue += 1;
+					this.addActionButton("button-"+value, DEPRECATED_blindfold_label, (() => this.onDEPRECATED_BlindfoldGuess(value)).bind(this));
+					DEPRECATED_blindfold_baseValue += 1;
 				}
 				break;
-			case 'blindfoldDecideValue':
-				const blindfoldDecideValue_args = (args as { possible_values: number[], card_id: number });
-				let blindfoldDecideValue_label = '';
-				let blindfoldDecideValue_baseValue = 1;
-				for (let value of blindfoldDecideValue_args.possible_values) {
-					if (value == blindfoldDecideValue_baseValue) {
-						blindfoldDecideValue_label = String(value);
+			case 'DEPRECATED_blindfoldDecideValue':
+				const DEPRECATED_blindfoldDecideValue_args = (args as { possible_values: number[], card_id: number });
+				let DEPRECATED_blindfoldDecideValue_label = '';
+				let DEPRECATED_blindfoldDecideValue_baseValue = 1;
+				for (let value of DEPRECATED_blindfoldDecideValue_args.possible_values) {
+					if (value == DEPRECATED_blindfoldDecideValue_baseValue) {
+						DEPRECATED_blindfoldDecideValue_label = String(value);
 					}
 					else {
-						blindfoldDecideValue_label = `${blindfoldDecideValue_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
+						DEPRECATED_blindfoldDecideValue_label = `${DEPRECATED_blindfoldDecideValue_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
 					}
-					this.addActionButton("button-"+value, blindfoldDecideValue_label, (() => this.onBlindfoldDecideValue(value)).bind(this));
-					blindfoldDecideValue_baseValue += 1;
+					this.addActionButton("button-"+value, DEPRECATED_blindfoldDecideValue_label, (() => this.onDEPRECATED_BlindfoldDecideValue(value)).bind(this));
+					DEPRECATED_blindfoldDecideValue_baseValue += 1;
 				}
 				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
 				this.myHand.orderedSelection.setMaxSize(1);
-				this.myHand.selectItem(blindfoldDecideValue_args.card_id);
+				this.myHand.selectItem(DEPRECATED_blindfoldDecideValue_args.card_id);
 				break;
 			case 'chameleon_flexibleShopkeeper':
 				this.addActionButtonCancelClient();
@@ -3593,10 +3593,10 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break;
-			case 'client_blindfold':
+			case 'client_DEPRECATED_blindfold':
 				if (this.verifyChameleon(new DaleCard(card_id))) {
 					if (this.unique_opponent_id) {
-						this.onBlindfold(card.id);
+						this.onDEPRECATED_Blindfold(card.id);
 					}
 				}
 				break;
@@ -4391,13 +4391,13 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_gamble', card.id);
 				}
 				break;
-			case DaleCard.CT_BLINDFOLD:
+			case DaleCard.CT_DEPRECATED_BLINDFOLD:
 				fizzle = this.myHand.count() == 1;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_blindfold', card.id);
+					this.clientScheduleTechnique('client_DEPRECATED_blindfold', card.id);
 				}
 				break;
 			case DaleCard.CT_TIRELESSTINKERER:
@@ -5380,7 +5380,7 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onBlindfold(card_id?: number) {
+	onDEPRECATED_Blindfold(card_id?: number) {
 		var opponent_id;
 		if (this.unique_opponent_id) {
 			opponent_id = this.unique_opponent_id;
@@ -5396,21 +5396,21 @@ class DaleOfMerchants extends Gamegui
 			this.showMessage(_("Please select a card from your hand"), 'error');
 			return;
 		}
-		this.playTechniqueCardWithServerState<'client_blindfold'>({
+		this.playTechniqueCardWithServerState<'client_DEPRECATED_blindfold'>({
 			opponent_id: opponent_id,
 			card_id: card_id
 		})
 	}
 
-	onBlindfoldGuess(value: number) {
-		this.bgaPerformAction('actBlindfold', {
+	onDEPRECATED_BlindfoldGuess(value: number) {
+		this.bgaPerformAction('actDEPRECATED_Blindfold', {
 			value: value
 		});
 	}
 
-	onBlindfoldDecideValue(value: number) {
-		console.warn("onBlindfoldDecideValue "+value);
-		this.bgaPerformAction('actBlindfoldDecideValue', {
+	onDEPRECATED_BlindfoldDecideValue(value: number) {
+		console.warn("onDEPRECATED_BlindfoldDecideValue "+value);
+		this.bgaPerformAction('actDEPRECATED_BlindfoldDecideValue', {
 			value: value
 		});
 	}
@@ -6532,7 +6532,7 @@ class DaleOfMerchants extends Gamegui
 			['updateActionButtons',					1],
 			['deselectPassive',						1],
 			['gainCoins',							1],
-			['selectBlindfold', 					1, true],
+			['selectDEPRECATED_Blindfold', 					1, true],
 			['addEffect', 							1],
 			['updateEffect', 						1],
 			['expireEffects', 						1],
@@ -7705,8 +7705,8 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_selectBlindfold(notif: NotifAs<'selectBlindfold'>) {
-		console.warn("notif_selectBlindfold");
+	notif_selectDEPRECATED_Blindfold(notif: NotifAs<'selectDEPRECATED_Blindfold'>) {
+		console.warn("notif_selectDEPRECATED_Blindfold");
 		//TODO: refactor this to a 'message'
 	}
 

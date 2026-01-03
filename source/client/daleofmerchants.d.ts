@@ -195,7 +195,7 @@ declare global {
 			die_label: string,
 			d6: 0|1|2|3|4|5
 		}
-		'selectBlindfold': {
+		'selectDEPRECATED_Blindfold': {
 			player_id: number,
 			_private: {
 				card_id: number
@@ -485,7 +485,7 @@ declare global {
 		'client_accident': { card_ids: number[], opponent_id: number }
 		'client_whirligig': {opponent_id: number }
 		'client_gamble': { opponent_id: number }
-		'client_blindfold': { card_id: number, opponent_id: number }
+		'client_DEPRECATED_blindfold': { card_id: number, opponent_id: number }
 		'client_safetyPrecaution': { card_id: number }
 		'client_houseCleaning': {card_ids: number[] }
 		'client_ruthlessCompetition': { opponent_id: number }

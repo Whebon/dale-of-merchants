@@ -4464,7 +4464,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose another player to swap cards with");
                     case 'client_gamble':
                         return _("${card_name}: ${you} must choose an opponent");
-                    case 'client_blindfold':
+                    case 'client_DEPRECATED_blindfold':
                         if (this._page.unique_opponent_id) {
                             return _("${card_name}: ${you} must choose a card");
                         }
@@ -5377,13 +5377,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         DaleCard_10.DaleCard.unbindAllChameleonsLocal();
                         this.mainClientState.leaveAll();
                         break;
-                    case 'blindfold':
-                        var blindfold_args = args.args;
-                        if ((_a = blindfold_args._private) === null || _a === void 0 ? void 0 : _a.card_id) {
-                            var card = new DaleCard_10.DaleCard(blindfold_args._private.card_id);
+                    case 'DEPRECATED_blindfold':
+                        var DEPRECATED_blindfold_args = args.args;
+                        if ((_a = DEPRECATED_blindfold_args._private) === null || _a === void 0 ? void 0 : _a.card_id) {
+                            var card = new DaleCard_10.DaleCard(DEPRECATED_blindfold_args._private.card_id);
                             this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default', _("Your opponent is guessing the value of ") + card.name);
                             this.myHand.orderedSelection.setMaxSize(1);
-                            this.myHand.selectItem(blindfold_args._private.card_id);
+                            this.myHand.selectItem(DEPRECATED_blindfold_args._private.card_id);
                         }
                         break;
                 }
@@ -5550,7 +5550,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_accident':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
-                case 'client_blindfold':
+                case 'client_DEPRECATED_blindfold':
                     if (this.unique_opponent_id) {
                         this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     }
@@ -6085,10 +6085,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_accident':
                     this.myHand.setSelectionMode('none');
                     break;
-                case 'client_blindfold':
+                case 'client_DEPRECATED_blindfold':
                     this.myHand.setSelectionMode('none');
                     break;
-                case 'blindfoldDecideValue':
+                case 'DEPRECATED_blindfoldDecideValue':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'chameleon_reflection':
@@ -6171,7 +6171,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
-                case 'client_blindfold':
+                case 'client_DEPRECATED_blindfold':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'charity':
@@ -6557,58 +6557,58 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonsOpponent(this.onGamble.bind(this));
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_blindfold':
+                case 'client_DEPRECATED_blindfold':
                     if (!this.unique_opponent_id) {
                         this.addActionButtonsOpponentSelection(1);
-                        this.addActionButton("confirm-button", _("Confirm"), "onBlindfold");
+                        this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_Blindfold");
                     }
                     this.addActionButtonCancelClient();
                     break;
-                case 'blindfold':
-                    var blindfold_args = args;
-                    var blindfold_label = '';
-                    var blindfold_baseValue = 1;
+                case 'DEPRECATED_blindfold':
+                    var DEPRECATED_blindfold_args = args;
+                    var DEPRECATED_blindfold_label = '';
+                    var DEPRECATED_blindfold_baseValue = 1;
                     var _loop_7 = function (value) {
-                        if (blindfold_baseValue > 5) {
-                            blindfold_label = "<span style='color:lightgreen'>".concat(value, "</span>");
+                        if (DEPRECATED_blindfold_baseValue > 5) {
+                            DEPRECATED_blindfold_label = "<span style='color:lightgreen'>".concat(value, "</span>");
                         }
-                        else if (value == blindfold_baseValue) {
-                            blindfold_label = String(value);
+                        else if (value == DEPRECATED_blindfold_baseValue) {
+                            DEPRECATED_blindfold_label = String(value);
                         }
                         else {
-                            blindfold_label = "".concat(blindfold_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
+                            DEPRECATED_blindfold_label = "".concat(DEPRECATED_blindfold_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
                         }
-                        this_6.addActionButton("button-" + value, blindfold_label, (function () { return _this.onBlindfoldGuess(value); }).bind(this_6));
-                        blindfold_baseValue += 1;
+                        this_6.addActionButton("button-" + value, DEPRECATED_blindfold_label, (function () { return _this.onDEPRECATED_BlindfoldGuess(value); }).bind(this_6));
+                        DEPRECATED_blindfold_baseValue += 1;
                     };
                     var this_6 = this;
-                    for (var _i = 0, _d = blindfold_args.possible_values; _i < _d.length; _i++) {
+                    for (var _i = 0, _d = DEPRECATED_blindfold_args.possible_values; _i < _d.length; _i++) {
                         var value = _d[_i];
                         _loop_7(value);
                     }
                     break;
-                case 'blindfoldDecideValue':
-                    var blindfoldDecideValue_args = args;
-                    var blindfoldDecideValue_label = '';
-                    var blindfoldDecideValue_baseValue = 1;
+                case 'DEPRECATED_blindfoldDecideValue':
+                    var DEPRECATED_blindfoldDecideValue_args = args;
+                    var DEPRECATED_blindfoldDecideValue_label = '';
+                    var DEPRECATED_blindfoldDecideValue_baseValue = 1;
                     var _loop_8 = function (value) {
-                        if (value == blindfoldDecideValue_baseValue) {
-                            blindfoldDecideValue_label = String(value);
+                        if (value == DEPRECATED_blindfoldDecideValue_baseValue) {
+                            DEPRECATED_blindfoldDecideValue_label = String(value);
                         }
                         else {
-                            blindfoldDecideValue_label = "".concat(blindfoldDecideValue_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
+                            DEPRECATED_blindfoldDecideValue_label = "".concat(DEPRECATED_blindfoldDecideValue_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
                         }
-                        this_7.addActionButton("button-" + value, blindfoldDecideValue_label, (function () { return _this.onBlindfoldDecideValue(value); }).bind(this_7));
-                        blindfoldDecideValue_baseValue += 1;
+                        this_7.addActionButton("button-" + value, DEPRECATED_blindfoldDecideValue_label, (function () { return _this.onDEPRECATED_BlindfoldDecideValue(value); }).bind(this_7));
+                        DEPRECATED_blindfoldDecideValue_baseValue += 1;
                     };
                     var this_7 = this;
-                    for (var _e = 0, _f = blindfoldDecideValue_args.possible_values; _e < _f.length; _e++) {
+                    for (var _e = 0, _f = DEPRECATED_blindfoldDecideValue_args.possible_values; _e < _f.length; _e++) {
                         var value = _f[_e];
                         _loop_8(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
                     this.myHand.orderedSelection.setMaxSize(1);
-                    this.myHand.selectItem(blindfoldDecideValue_args.card_id);
+                    this.myHand.selectItem(DEPRECATED_blindfoldDecideValue_args.card_id);
                     break;
                 case 'chameleon_flexibleShopkeeper':
                     this.addActionButtonCancelClient();
@@ -8076,10 +8076,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'client_blindfold':
+                case 'client_DEPRECATED_blindfold':
                     if (this.verifyChameleon(new DaleCard_10.DaleCard(card_id))) {
                         if (this.unique_opponent_id) {
-                            this.onBlindfold(card.id);
+                            this.onDEPRECATED_Blindfold(card.id);
                         }
                     }
                     break;
@@ -8760,13 +8760,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_gamble', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_BLINDFOLD:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_BLINDFOLD:
                     fizzle = this.myHand.count() == 1;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_blindfold', card.id);
+                        this.clientScheduleTechnique('client_DEPRECATED_blindfold', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_TIRELESSTINKERER:
@@ -9695,7 +9695,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id
             });
         };
-        DaleOfMerchants.prototype.onBlindfold = function (card_id) {
+        DaleOfMerchants.prototype.onDEPRECATED_Blindfold = function (card_id) {
             var opponent_id;
             if (this.unique_opponent_id) {
                 opponent_id = this.unique_opponent_id;
@@ -9716,14 +9716,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_id: card_id
             });
         };
-        DaleOfMerchants.prototype.onBlindfoldGuess = function (value) {
-            this.bgaPerformAction('actBlindfold', {
+        DaleOfMerchants.prototype.onDEPRECATED_BlindfoldGuess = function (value) {
+            this.bgaPerformAction('actDEPRECATED_Blindfold', {
                 value: value
             });
         };
-        DaleOfMerchants.prototype.onBlindfoldDecideValue = function (value) {
-            console.warn("onBlindfoldDecideValue " + value);
-            this.bgaPerformAction('actBlindfoldDecideValue', {
+        DaleOfMerchants.prototype.onDEPRECATED_BlindfoldDecideValue = function (value) {
+            console.warn("onDEPRECATED_BlindfoldDecideValue " + value);
+            this.bgaPerformAction('actDEPRECATED_BlindfoldDecideValue', {
                 value: value
             });
         };
@@ -10709,7 +10709,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['updateActionButtons', 1],
                 ['deselectPassive', 1],
                 ['gainCoins', 1],
-                ['selectBlindfold', 1, true],
+                ['selectDEPRECATED_Blindfold', 1, true],
                 ['addEffect', 1],
                 ['updateEffect', 1],
                 ['expireEffects', 1],
@@ -11672,8 +11672,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.coinManager.addCoins(+notif.args.player_id, 1);
             }
         };
-        DaleOfMerchants.prototype.notif_selectBlindfold = function (notif) {
-            console.warn("notif_selectBlindfold");
+        DaleOfMerchants.prototype.notif_selectDEPRECATED_Blindfold = function (notif) {
+            console.warn("notif_selectDEPRECATED_Blindfold");
         };
         DaleOfMerchants.prototype.notif_addEffect = function (notif) {
             console.warn("notif_addEffect");

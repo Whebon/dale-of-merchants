@@ -29,7 +29,7 @@ if (false) {
 	$game->stSpecialOffer();
 	$game->stDirtyExchange();
 	$game->stSabotage();
-	$game->stBlindfold();
+	$game->stDEPRECATED_Blindfold();
 	$game->stDangerousTest();
 	$game->stNightShift();
 	$game->stRuthlessCompetition();
@@ -108,8 +108,8 @@ $machinestates = array(
 		'action' => 'stChangeActivePlayer',
 		'transitions' => array(
 			'trSamePlayer' => 30,
-			'trBlindfold' => 56,
-			'trBlindfoldIncorrectGuess' => 57,
+			'trDEPRECATED_Blindfold' => 56,
+			'trDEPRECATED_BlindfoldIncorrectGuess' => 57,
 			'trFullyResolve' => 33,
 			'trDeprecatedTasters' => 6500,
 		),
@@ -297,24 +297,24 @@ $machinestates = array(
 		),
 	),
 	56 => array(
-		'name' => 'blindfold',
-		'description' => clienttranslate('Blindfold: ${actplayer} must guess the value of ${opponent_name}\'s card'),
-		'descriptionmyturn' => clienttranslate('Blindfold: ${you} must guess the value of ${opponent_name}\'s card'),
+		'name' => 'DEPRECATED_blindfold',
+		'description' => clienttranslate('DEPRECATED_Blindfold: ${actplayer} must guess the value of ${opponent_name}\'s card'),
+		'descriptionmyturn' => clienttranslate('DEPRECATED_Blindfold: ${you} must guess the value of ${opponent_name}\'s card'),
 		'type' => 'activeplayer',
-		'action' => 'stBlindfold',
-		'args' => 'argBlindfold',
-		'possibleactions' => ['actBlindfold'],
+		'action' => 'stDEPRECATED_Blindfold',
+		'args' => 'argDEPRECATED_Blindfold',
+		'possibleactions' => ['actDEPRECATED_Blindfold'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
 		),
 	),
 	57 => array(
-		'name' => 'blindfoldDecideValue',
-		'description' => clienttranslate('Blindfold: ${actplayer} must decide the value of ${card_name}'),
-		'descriptionmyturn' => clienttranslate('Blindfold: ${you} must decide the value of ${card_name}'),
+		'name' => 'DEPRECATED_blindfoldDecideValue',
+		'description' => clienttranslate('DEPRECATED_Blindfold: ${actplayer} must decide the value of ${card_name}'),
+		'descriptionmyturn' => clienttranslate('DEPRECATED_Blindfold: ${you} must decide the value of ${card_name}'),
 		'type' => 'activeplayer',
-		'args' => 'argBlindfoldDecideValue',
-		'possibleactions' => ['actBlindfoldDecideValue'],
+		'args' => 'argDEPRECATED_BlindfoldDecideValue',
+		'possibleactions' => ['actDEPRECATED_BlindfoldDecideValue'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

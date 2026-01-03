@@ -223,25 +223,25 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actBlindfold()
+	public function actDEPRECATED_Blindfold()
 	{
 		self::setAjaxMode();
 
 		/** @var int $value */
 		$value = self::getArg('value', AT_int, true);
 
-		$this->game->actBlindfold( $value );
+		$this->game->actDEPRECATED_Blindfold( $value );
 		self::ajaxResponse();
 	}
 
-	public function actBlindfoldDecideValue()
+	public function actDEPRECATED_BlindfoldDecideValue()
 	{
 		self::setAjaxMode();
 
 		/** @var int $value */
 		$value = self::getArg('value', AT_int, true);
 
-		$this->game->actBlindfoldDecideValue( $value );
+		$this->game->actDEPRECATED_BlindfoldDecideValue( $value );
 		self::ajaxResponse();
 	}
 
