@@ -189,7 +189,7 @@
 			"trTravelingEquipment": 88,
 			"trFishing": 89,
 			"trGroundbreakingIdea": 90,
-			"trInsight": 91,
+			"trDEPRECATED_Insight": 91,
 			"trBadOmen": 92,
 			"trCelestialGuidanceMarket": 93,
 			"trCelestialGuidanceDiscard": 94,
@@ -897,13 +897,13 @@
 	},
 
 	"91": {
-		"name": "insight",
-		"description": "Insight: ${actplayer} must choose the order to place all cards back on top of their deck",
-		"descriptionmyturn": "Insight: ${you} must choose the order to place all cards back on top of your deck",
+		"name": "DEPRECATED_insight",
+		"description": "DEPRECATED_Insight: ${actplayer} must choose the order to place all cards back on top of their deck",
+		"descriptionmyturn": "DEPRECATED_Insight: ${you} must choose the order to place all cards back on top of your deck",
 		"type": "activeplayer",
-		"action": "stInsight",
+		"action": "stDEPRECATED_Insight",
 		"possibleactions": {
-			"actInsight": [
+			"actDEPRECATED_Insight": [
 				{"name": "card_ids", "type": "AT_numberlist"}
 			]
 		},

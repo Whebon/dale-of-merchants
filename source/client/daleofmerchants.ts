@@ -1126,7 +1126,7 @@ class DaleOfMerchants extends Gamegui
 			case 'groundbreakingIdea':
 				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
-			case 'insight':
+			case 'DEPRECATED_insight':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"))
 				break;
 			case 'badOmen':
@@ -1587,7 +1587,7 @@ class DaleOfMerchants extends Gamegui
 			case 'groundbreakingIdea':
 				this.myDiscard.setSelectionMode('none');
 				break;
-			case 'insight':
+			case 'DEPRECATED_insight':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'badOmen':
@@ -2285,8 +2285,8 @@ class DaleOfMerchants extends Gamegui
 			case 'client_groundbreakingIdea':
 				this.addActionButtonCancelClient();
 				break;
-			case 'insight':
-				this.addActionButton("confirm-button", _("Confirm"), "onInsight");
+			case 'DEPRECATED_insight':
+				this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_Insight");
 				break;
 			case 'badOmen':
 				this.addActionButton("skip-button", _("Skip"), "onBadOmenSkip", undefined, false, 'gray');
@@ -3872,7 +3872,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_INSPIRATION:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
 				break;
-			case DaleCard.CT_INSIGHT:
+			case DaleCard.CT_DEPRECATED_INSIGHT:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
 				break;
 			case DaleCard.CT_PERFECTMOVE:
@@ -6202,8 +6202,8 @@ class DaleOfMerchants extends Gamegui
 		.then(() => this.myDiscard.setSelectionMode('none')); //fixes the zindex for the discardToDeck animation
 	}
 
-	onInsight() {
-		this.bgaPerformAction('actInsight', {
+	onDEPRECATED_Insight() {
+		this.bgaPerformAction('actDEPRECATED_Insight', {
 			card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
 		});
 	}

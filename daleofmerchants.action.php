@@ -594,14 +594,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actInsight()
+	public function actDEPRECATED_Insight()
 	{
 		self::setAjaxMode();
 
 		/** @var string $card_ids */
 		$card_ids = self::getArg('card_ids', AT_numberlist, true);
 
-		$this->game->actInsight( $card_ids );
+		$this->game->actDEPRECATED_Insight( $card_ids );
 		self::ajaxResponse();
 	}
 

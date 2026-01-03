@@ -50,7 +50,7 @@ if (false) {
 	$game->stAnchor();
 	$game->stCharmStove();
 	$game->stTravelingEquipment();
-	$game->stInsight();
+	$game->stDEPRECATED_Insight();
 	$game->stBadOmen();
 	$game->stFinalStatistics();
 	$game->stSerenade();
@@ -166,7 +166,7 @@ $machinestates = array(
 			'trTravelingEquipment' => 88,
 			'trFishing' => 89,
 			'trGroundbreakingIdea' => 90,
-			'trInsight' => 91,
+			'trDEPRECATED_Insight' => 91,
 			'trBadOmen' => 92,
 			'trCelestialGuidanceMarket' => 93,
 			'trCelestialGuidanceDiscard' => 94,
@@ -687,12 +687,12 @@ $machinestates = array(
 		),
 	),
 	91 => array(
-		'name' => 'insight',
-		'description' => clienttranslate('Insight: ${actplayer} must choose the order to place all cards back on top of their deck'),
-		'descriptionmyturn' => clienttranslate('Insight: ${you} must choose the order to place all cards back on top of your deck'),
+		'name' => 'DEPRECATED_insight',
+		'description' => clienttranslate('DEPRECATED_Insight: ${actplayer} must choose the order to place all cards back on top of their deck'),
+		'descriptionmyturn' => clienttranslate('DEPRECATED_Insight: ${you} must choose the order to place all cards back on top of your deck'),
 		'type' => 'activeplayer',
-		'action' => 'stInsight',
-		'possibleactions' => ['actInsight'],
+		'action' => 'stDEPRECATED_Insight',
+		'possibleactions' => ['actDEPRECATED_Insight'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

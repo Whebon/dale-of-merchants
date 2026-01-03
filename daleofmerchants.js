@@ -5882,7 +5882,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'groundbreakingIdea':
                     this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
-                case 'insight':
+                case 'DEPRECATED_insight':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
                     break;
                 case 'badOmen':
@@ -6341,7 +6341,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'groundbreakingIdea':
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'insight':
+                case 'DEPRECATED_insight':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'badOmen':
@@ -7030,8 +7030,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_groundbreakingIdea':
                     this.addActionButtonCancelClient();
                     break;
-                case 'insight':
-                    this.addActionButton("confirm-button", _("Confirm"), "onInsight");
+                case 'DEPRECATED_insight':
+                    this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_Insight");
                     break;
                 case 'badOmen':
                     this.addActionButton("skip-button", _("Skip"), "onBadOmenSkip", undefined, false, 'gray');
@@ -8316,7 +8316,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_INSPIRATION:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
-                case DaleCard_10.DaleCard.CT_INSIGHT:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_INSIGHT:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
                 case DaleCard_10.DaleCard.CT_PERFECTMOVE:
@@ -10418,8 +10418,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             })
                 .then(function () { return _this.myDiscard.setSelectionMode('none'); });
         };
-        DaleOfMerchants.prototype.onInsight = function () {
-            this.bgaPerformAction('actInsight', {
+        DaleOfMerchants.prototype.onDEPRECATED_Insight = function () {
+            this.bgaPerformAction('actDEPRECATED_Insight', {
                 card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
             });
         };

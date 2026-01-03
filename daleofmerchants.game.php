@@ -6425,9 +6425,9 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_INSPIRATION:
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
-            case CT_INSIGHT:
+            case CT_DEPRECATED_INSIGHT:
                 $this->resolveImmediateEffects($player_id, $technique_card);
-                $this->gamestate->nextState("trInsight");
+                $this->gamestate->nextState("trDEPRECATED_Insight");
                 break;
             case CT_PERFECTMOVE:
                 $this->resolveImmediateEffects($player_id, $technique_card);
@@ -6958,9 +6958,9 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Inspiration: ${player_name} draws ${nbr} cards'), 2);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_INSIGHT:
-                $this->spend($player_id, $args, 2, $this->_("Insight"));
-                $this->draw(clienttranslate('Insight: ${player_name} draws ${nbr} cards'), 2);
+            case CT_DEPRECATED_INSIGHT:
+                $this->spend($player_id, $args, 2, $this->_("DEPRECATED_Insight"));
+                $this->draw(clienttranslate('DEPRECATED_Insight: ${player_name} draws ${nbr} cards'), 2);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_PERFECTMOVE:
@@ -8542,8 +8542,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
-    function actInsight($card_ids) {
-        $this->checkAction("actInsight");
+    function actDEPRECATED_Insight($card_ids) {
+        $this->checkAction("actDEPRECATED_Insight");
         $player_id = $this->getActivePlayerId();
         $card_ids = $this->numberListToArray($card_ids);
 
@@ -8557,7 +8557,7 @@ class DaleOfMerchants extends DaleTableBasic
         //place cards on top of the deck
         $this->placeOnDeckMultiple(
             $player_id, 
-            clienttranslate('Insight: ${player_name} places ${nbr} cards back on top of their deck'),
+            clienttranslate('DEPRECATED_Insight: ${player_name} places ${nbr} cards back on top of their deck'),
             $card_ids, 
             $selected_cards, 
             $non_selected_cards,
@@ -9900,10 +9900,10 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function stInsight() {
-        $nbr = $this->draw(clienttranslate('Insight: ${player_name} looks at the top ${nbr} cards of their deck'), 2, true);
+    function stDEPRECATED_Insight() {
+        $nbr = $this->draw(clienttranslate('DEPRECATED_Insight: ${player_name} looks at the top ${nbr} cards of their deck'), 2, true);
         if ($nbr == 0) {
-            //insight has no effect (but since it is a finish technique, do not fully resolve it)
+            //DEPRECATED_insight has no effect (but since it is a finish technique, do not fully resolve it)
             $this->gamestate->nextState("trSamePlayer");
         }
     }
