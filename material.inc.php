@@ -122,7 +122,7 @@ if (!defined('CT_CARDBACK')) {
     define('CT_DELICACY', 98);
     define('CT_UMBRELLA', 99);
     define('CT_VELOCIPEDE', 100);
-    define('CT_MATCHINGCOLOURS', 101);
+    define('CT_COLOURSWAP', 101);
     define('CT_ARCANESCHOLAR', 102);
     define('CT_BAROMETER', 103);
     define('CT_BADOMEN', 104);
@@ -200,7 +200,7 @@ if (!defined('CT_CARDBACK')) {
     define('CT_ACCIDENT', 176);
     define('CT_LOOSEMARBLES', 177);
     define('CT_ANOTHERFINEMESS', 178);
-    define('CT_FRESHSTART', 179);
+    define('CT_SOUVENIRS', 179);
     define('CT_GLASSFROGS1', 180);
     define('CT_GLASSFROGS2', 181);
     define('CT_GLASSFROGS3', 182);
@@ -2100,7 +2100,7 @@ $this->card_types = array(
   ),
   101 => array(
       'type_id' => 101,
-      'name' => clienttranslate("Matching Colours"),
+      'name' => clienttranslate("Colour Swap"),
       'text' => clienttranslate("Swap 1 animalfolk CARD with 1 CARD of equal value from any player's stall."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,

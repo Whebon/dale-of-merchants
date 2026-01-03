@@ -2148,7 +2148,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DELICACY = 98;
         DaleCard.CT_UMBRELLA = 99;
         DaleCard.CT_VELOCIPEDE = 100;
-        DaleCard.CT_MATCHINGCOLOURS = 101;
+        DaleCard.CT_COLOURSWAP = 101;
         DaleCard.CT_ARCANESCHOLAR = 102;
         DaleCard.CT_BAROMETER = 103;
         DaleCard.CT_BADOMEN = 104;
@@ -2226,7 +2226,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_ACCIDENT = 176;
         DaleCard.CT_LOOSEMARBLES = 177;
         DaleCard.CT_ANOTHERFINEMESS = 178;
-        DaleCard.CT_FRESHSTART = 179;
+        DaleCard.CT_SOUVENIRS = 179;
         DaleCard.CT_GLASSFROGS1 = 180;
         DaleCard.CT_GLASSFROGS2 = 181;
         DaleCard.CT_GLASSFROGS3 = 182;
@@ -4528,7 +4528,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
                     case 'client_DEPRECATED_velocipede':
                         return _("${card_name}: ${you} must choose a card from any stall to swap with");
-                    case 'client_matchingColours':
+                    case 'client_colourSwap':
                         return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");
                     case 'client_cleverGuardian':
                         return _("${card_name}: ${you} must choose a card to <stronger>store</stronger>");
@@ -5750,7 +5750,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         new TargetingLine_1.TargetingLine(new DaleCard_10.DaleCard(client_carefreeSwapper_args_1.technique_card_id), client_carefreeSwapper_targets_1, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onCarefreeSwapper(target_id); });
                     }).bind(this), 500);
                     break;
-                case 'client_matchingColours':
+                case 'client_colourSwap':
                     this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap"));
                     break;
                 case 'client_cleverGuardian':
@@ -6248,7 +6248,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_DEPRECATED_velocipede':
                     TargetingLine_1.TargetingLine.remove();
                     break;
-                case 'client_matchingColours':
+                case 'client_colourSwap':
                     this.myHand.setSelectionMode('none');
                     TargetingLine_1.TargetingLine.remove();
                     break;
@@ -6952,7 +6952,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_DEPRECATED_velocipede':
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_matchingColours':
+                case 'client_colourSwap':
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_cleverGuardian':
@@ -7638,7 +7638,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.getAnimalfolkName = function (animalfolk_id) {
             return DaleCard_10.DaleCard.cardTypes[6 * animalfolk_id].animalfolk_displayed;
         };
-        DaleOfMerchants.prototype.getMatchingColoursHandTargets = function (matchingColours_card_id) {
+        DaleOfMerchants.prototype.getColourSwapHandTargets = function (colourSwap_card_id) {
             var cards = [];
             var values = new Set();
             for (var player_id in this.gamedatas.players) {
@@ -7655,7 +7655,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 for (var _d = 0, chameleonTargets_1 = chameleonTargets; _d < chameleonTargets_1.length; _d++) {
                     var handCard = chameleonTargets_1[_d];
-                    var isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != matchingColours_card_id;
+                    var isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != colourSwap_card_id;
                     if (isOtherAnimalfolk && values.has(handCard.effective_value)) {
                         cards.push(handCard);
                     }
@@ -7663,7 +7663,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             return cards;
         };
-        DaleOfMerchants.prototype.getMatchingColoursStallTargets = function (handCard) {
+        DaleOfMerchants.prototype.getColourSwapStallTargets = function (handCard) {
             var stallCards = [];
             for (var player_id in this.gamedatas.players) {
                 for (var _i = 0, _a = this.playerStalls[player_id].getCardsInStall(); _i < _a.length; _i++) {
@@ -8128,17 +8128,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         });
                     }
                     break;
-                case 'client_matchingColours':
+                case 'client_colourSwap':
                     if (this.verifyChameleon(card)) {
-                        var client_matchingColours_targets = this.getMatchingColoursStallTargets(card);
-                        if (client_matchingColours_targets.length == 0) {
+                        var client_colourSwap_targets = this.getColourSwapStallTargets(card);
+                        if (client_colourSwap_targets.length == 0) {
                             this.showMessage(_("No card in any oppponent's stall matches this card's value") + " (".concat(card.effective_value, ")"), "error");
                             return;
                         }
-                        var client_matchingColours_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
-                        this.setMainTitle(client_matchingColours_label);
-                        this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_matchingColours_label);
-                        new TargetingLine_1.TargetingLine(card, client_matchingColours_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onMatchingColours(source_id, target_id); });
+                        var client_colourSwap_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
+                        this.setMainTitle(client_colourSwap_label);
+                        this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_colourSwap_label);
+                        new TargetingLine_1.TargetingLine(card, client_colourSwap_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onColourSwap(source_id, target_id); });
                     }
                     break;
                 case 'client_cleverGuardian':
@@ -9109,13 +9109,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.mainClientState.enterOnStack('client_DEPRECATED_velocipede', { technique_card_id: card.id });
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_MATCHINGCOLOURS:
-                    fizzle = this.getMatchingColoursHandTargets(card.id).length == 0;
+                case DaleCard_10.DaleCard.CT_COLOURSWAP:
+                    fizzle = this.getColourSwapHandTargets(card.id).length == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_matchingColours', card.id);
+                        this.clientScheduleTechnique('client_colourSwap', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_CLEVERGUARDIAN:
@@ -10152,7 +10152,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
             TargetingLine_1.TargetingLine.remove();
         };
-        DaleOfMerchants.prototype.onMatchingColours = function (card_id, target_id) {
+        DaleOfMerchants.prototype.onColourSwap = function (card_id, target_id) {
             for (var _i = 0, _a = Object.entries(this.playerStalls); _i < _a.length; _i++) {
                 var _b = _a[_i], player_id = _b[0], player_stall = _b[1];
                 if (player_stall.contains(target_id)) {

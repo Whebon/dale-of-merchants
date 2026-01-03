@@ -994,10 +994,10 @@ class DaleOfMerchants extends Gamegui
 					)
 				}).bind(this), 500);
 				break;
-			case 'client_matchingColours':
+			case 'client_colourSwap':
 				//TODO: safely remove the 'whitelist' idea. It is better to let the player click on ANY card, not just the valid cards. The error message will guide them.
-				//const client_matchingColours_args = (this.mainClientState.args as ClientGameStates['client_matchingColours']);
-				//this.myHand.setWhitelist(this.getMatchingColoursHandTargets(client_matchingColours_args.technique_card_id));
+				//const client_colourSwap_args = (this.mainClientState.args as ClientGameStates['client_colourSwap']);
+				//this.myHand.setWhitelist(this.getColourSwapHandTargets(client_colourSwap_args.technique_card_id));
 				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap"));
 				break;
 			case 'client_cleverGuardian':
@@ -1496,7 +1496,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_DEPRECATED_velocipede':
 				TargetingLine.remove();
 				break;
-			case 'client_matchingColours':
+			case 'client_colourSwap':
 				this.myHand.setSelectionMode('none');
 				TargetingLine.remove();
 				break;
@@ -2203,7 +2203,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_DEPRECATED_velocipede':
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_matchingColours':
+			case 'client_colourSwap':
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_cleverGuardian':
@@ -3094,10 +3094,10 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	/**
-	 * Returns all cards in the current player's hand that can possibly be swapped using the "Matching Colous" technique card
-	 * @param matchingColours_card_id the matching colors card that will be played. Should be excluded from the targets.
+	 * Returns all cards in the current player's hand that can possibly be swapped using the "Colour Swap" technique card
+	 * @param colourSwap_card_id the "Colour Swap" card that will be played. Should be excluded from the targets.
 	 */
-	getMatchingColoursHandTargets(matchingColours_card_id: number): DaleCard[] {
+	getColourSwapHandTargets(colourSwap_card_id: number): DaleCard[] {
 		const cards: DaleCard[] = [];
 		const values: Set<number> = new Set();
 		for (let player_id in this.gamedatas.players) {
@@ -3111,7 +3111,7 @@ class DaleOfMerchants extends Gamegui
 				chameleonTargets = this.getChameleonTargets(chameleonTargets[0]!, true).filter(target => target instanceof DaleCard);
 			}
 			for (let handCard of chameleonTargets) {
-				const isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != matchingColours_card_id;
+				const isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != colourSwap_card_id;
 				if (isOtherAnimalfolk && values.has(handCard.effective_value)) { //...and the EFFECTIVE value of the hand card
 					cards.push(handCard);
 				}
@@ -3122,9 +3122,9 @@ class DaleOfMerchants extends Gamegui
 
 	/**
 	 * Returns all cards in any opponent's stall that have the same value as the given hand card
-	 * @param matchingColours_card_id the matching colors card that will be played. Should be excluded from the targets.
+	 * @param colourSwap_card_id the "Colour Swap" card that will be played. Should be excluded from the targets.
 	 */
-	getMatchingColoursStallTargets(handCard: DaleCard): DaleCard[] {
+	getColourSwapStallTargets(handCard: DaleCard): DaleCard[] {
 		const stallCards = [];
 		for (let player_id in this.gamedatas.players) {
 			for (let stallCard of this.playerStalls[player_id]!.getCardsInStall()) {
@@ -3646,24 +3646,24 @@ class DaleOfMerchants extends Gamegui
 					})
 				}
 				break;
-			case 'client_matchingColours':
+			case 'client_colourSwap':
 				if (this.verifyChameleon(card)) {
-					const client_matchingColours_targets = this.getMatchingColoursStallTargets(card);
-					if (client_matchingColours_targets.length == 0) {
+					const client_colourSwap_targets = this.getColourSwapStallTargets(card);
+					if (client_colourSwap_targets.length == 0) {
 						this.showMessage(_("No card in any oppponent's stall matches this card's value")+` (${card.effective_value})`, "error");
 						return;
 					}
-					const client_matchingColours_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
-					this.setMainTitle(client_matchingColours_label);
-					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_matchingColours_label);
+					const client_colourSwap_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
+					this.setMainTitle(client_colourSwap_label);
+					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_colourSwap_label);
 					new TargetingLine(
 						card,
-						client_matchingColours_targets,
+						client_colourSwap_targets,
 						"daleofmerchants-line-source-technique",
 						"daleofmerchants-line-target-technique",
 						"daleofmerchants-line-technique",
 						(source_id: number) => this.onCancelClient(),
-						(source_id: number, target_id: number) => this.onMatchingColours(source_id, target_id)
+						(source_id: number, target_id: number) => this.onColourSwap(source_id, target_id)
 					)
 				}
 				break;
@@ -4739,13 +4739,13 @@ class DaleOfMerchants extends Gamegui
 					this.mainClientState.enterOnStack('client_DEPRECATED_velocipede', { technique_card_id: card.id });
 				}
 				break;
-			case DaleCard.CT_MATCHINGCOLOURS:
-				fizzle = this.getMatchingColoursHandTargets(card.id).length == 0;
+			case DaleCard.CT_COLOURSWAP:
+				fizzle = this.getColourSwapHandTargets(card.id).length == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_matchingColours', card.id);
+					this.clientScheduleTechnique('client_colourSwap', card.id);
 				}
 				break;
 			case DaleCard.CT_CLEVERGUARDIAN:
@@ -5902,10 +5902,10 @@ class DaleOfMerchants extends Gamegui
 		TargetingLine.remove();
 	}
 	
-	onMatchingColours(card_id: number, target_id: number) {
+	onColourSwap(card_id: number, target_id: number) {
 		for (const [player_id, player_stall] of Object.entries(this.playerStalls)) {
 			if (player_stall.contains(target_id)) {
-				this.playTechniqueCard<'client_matchingColours'>({
+				this.playTechniqueCard<'client_colourSwap'>({
 					card_id: card_id,
 					stall_player_id: +player_id,
 					stall_card_id: target_id

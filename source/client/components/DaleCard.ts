@@ -148,7 +148,7 @@ export class DaleCard {
     static readonly CT_DELICACY: number = 98;
     static readonly CT_UMBRELLA: number = 99;
     static readonly CT_VELOCIPEDE: number = 100;
-    static readonly CT_MATCHINGCOLOURS: number = 101;
+    static readonly CT_COLOURSWAP: number = 101;
     static readonly CT_ARCANESCHOLAR: number = 102;
     static readonly CT_BAROMETER: number = 103;
     static readonly CT_BADOMEN: number = 104;
@@ -226,7 +226,7 @@ export class DaleCard {
     static readonly CT_ACCIDENT: number = 176;
     static readonly CT_LOOSEMARBLES: number = 177;
     static readonly CT_ANOTHERFINEMESS: number = 178;
-    static readonly CT_FRESHSTART: number = 179;
+    static readonly CT_SOUVENIRS: number = 179;
     static readonly CT_GLASSFROGS1: number = 180;
     static readonly CT_GLASSFROGS2: number = 181;
     static readonly CT_GLASSFROGS3: number = 182;

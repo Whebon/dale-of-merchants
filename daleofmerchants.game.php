@@ -4887,7 +4887,7 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_DEPRECATED_VELOCIPEDE. Some players have cards in their stall");
                     }
                     break;
-                case CT_MATCHINGCOLOURS:
+                case CT_COLOURSWAP:
                     //get the possible values
                     $players = $this->loadPlayersBasicInfosInclMono();
                     $values = [];
@@ -4915,10 +4915,10 @@ class DaleOfMerchants extends DaleTableBasic
                                 $card_name = $this->getCardName($dbCard);
                                 $target_name = $this->getCardName($handCard);
                                 if ($card_name == $target_name) {
-                                    throw new BgaVisibleSystemException("Unable to fizzle CT_MATCHINGCOLOURS. '". $card_name."' can be swapped...");
+                                    throw new BgaVisibleSystemException("Unable to fizzle CT_COLOURSWAP. '". $card_name."' can be swapped...");
                                 }
                                 else {
-                                    throw new BgaUserException(_("Matching Colours has valid targets. Try using '").$card_name."' as '".$target_name."'.");
+                                    throw new BgaUserException(_("Colour Swap has valid targets. Try using '").$card_name."' as '".$target_name."'.");
                                 } 
                             }
                         }
@@ -6170,7 +6170,7 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card, 'skip');
                 break;
-            case CT_MATCHINGCOLOURS:
+            case CT_COLOURSWAP:
                 //get the both cards that need to be swapped
                 $hand_card_id = $args["card_id"];
                 $this->addChameleonBindings($chameleons_json, $hand_card_id); //if the hand_card_id was locally bound, commit it now
@@ -6185,13 +6185,13 @@ class DaleOfMerchants extends DaleTableBasic
                     $hand_name = $this->getCardName($hand_card);
                     $stall_value = $this->getOriginalValue($stall_card);
                     $hand_value = $this->getValue($hand_card);
-                    throw new BgaUserException("Matching Colours failed: '$stall_name' and '$hand_name' have different values ($stall_value and $hand_value)");
+                    throw new BgaUserException("Colour Swap failed: '$stall_name' and '$hand_name' have different values ($stall_value and $hand_value)");
                 }
                 
                 //swap the cards
                 $this->cards->moveCard($hand_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandStall', clienttranslate('Matching Colours: ${player_name} swaps with ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('Colour Swap: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
