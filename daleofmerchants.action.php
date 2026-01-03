@@ -418,11 +418,11 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actAccident()
+	public function actDEPRECATED_Whirligig()
 	{
 		self::setAjaxMode();
 
-		$this->game->actAccident(  );
+		$this->game->actDEPRECATED_Whirligig(  );
 		self::ajaxResponse();
 	}
 

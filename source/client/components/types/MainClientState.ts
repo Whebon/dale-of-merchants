@@ -167,7 +167,7 @@ export class MainClientState {
                 return _("${card_name}: ${you} must take the top card of another player's deck or discard");
             case 'client_newSeason':
                 return _("${card_name}: ${you} must <stronger>toss</stronger> an animalfolk card from your discard pile");
-            case 'client_accident':
+            case 'client_DEPRECATED_whirligig':
                 if ((this._page as any).unique_opponent_id) {
                     return _("${card_name}: ${you} may choose the order to discard your hand");
                 } else {

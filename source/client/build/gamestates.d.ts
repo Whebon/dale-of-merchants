@@ -207,7 +207,7 @@ interface GameStates {
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
 			'trDEPRECATED_FashionHint': 73,
-			'trAccident': 74,
+			'trDEPRECATED_Whirligig': 74,
 			'trPompousProfessional': 75,
 			'trDelicacy': 76,
 			'trUmbrella': 77,
@@ -765,13 +765,13 @@ interface GameStates {
 		},
 	},
 	74: {
-		'name': 'accident',
-		'description': 'Accident: ${actplayer} may look at their drawn cards',
-		'descriptionmyturn': 'Accident: ${you} may look at your drawn cards',
+		'name': 'DEPRECATED_whirligig',
+		'description': 'Whirligig: ${actplayer} may look at their drawn cards',
+		'descriptionmyturn': 'Whirligig: ${you} may look at your drawn cards',
 		'type': 'activeplayer',
-		'action': 'stAccident',
+		'action': 'stDEPRECATED_Whirligig',
 		'possibleactions': {
-			'actAccident': [],
+			'actDEPRECATED_Whirligig': [],
 		},
 		'transitions': {
 			'trSamePlayer': 30,

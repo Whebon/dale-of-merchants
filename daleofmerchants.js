@@ -4453,7 +4453,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take the top card of another player's deck or discard");
                     case 'client_newSeason':
                         return _("${card_name}: ${you} must <stronger>toss</stronger> an animalfolk card from your discard pile");
-                    case 'client_accident':
+                    case 'client_DEPRECATED_whirligig':
                         if (this._page.unique_opponent_id) {
                             return _("${card_name}: ${you} may choose the order to discard your hand");
                         }
@@ -5547,7 +5547,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_newSeason':
                     this.myDiscard.setSelectionMode('singleAnimalfolk', undefined, 'daleofmerchants-wrap-technique');
                     break;
-                case 'client_accident':
+                case 'client_DEPRECATED_whirligig':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_DEPRECATED_blindfold':
@@ -6082,7 +6082,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_newSeason':
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'client_accident':
+                case 'client_DEPRECATED_whirligig':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_DEPRECATED_blindfold':
@@ -6536,18 +6536,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_newSeason':
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_accident':
+                case 'client_DEPRECATED_whirligig':
                     if (this.unique_opponent_id) {
-                        this.addActionButton("confirm-button", _("Discard all"), "onAccident");
+                        this.addActionButton("confirm-button", _("Discard all"), "onDEPRECATED_Whirligig");
                     }
                     else {
                         this.addActionButtonsOpponentSelection(1);
-                        this.addActionButton("confirm-button", _("Confirm"), "onAccident");
+                        this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_Whirligig");
                     }
                     this.addActionButtonCancelClient();
                     break;
-                case 'accident':
-                    this.addActionButton("whirligig-button", _("Next"), "onAccidentDoneLooking");
+                case 'DEPRECATED_whirligig':
+                    this.addActionButton("whirligig-button", _("Next"), "onDEPRECATED_WhirligigDoneLooking");
                     break;
                 case 'client_whirligig':
                     this.addActionButtonsOpponent(this.onWhirligig.bind(this));
@@ -8724,13 +8724,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_newSeason', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_ACCIDENT:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_WHIRLIGIG:
                     fizzle = this.myHand.count() == 1;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_accident', card.id);
+                        this.clientScheduleTechnique('client_DEPRECATED_whirligig', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_WHIRLIGIG:
@@ -9666,7 +9666,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 from_deck: opponent_id < 0
             });
         };
-        DaleOfMerchants.prototype.onAccident = function () {
+        DaleOfMerchants.prototype.onDEPRECATED_Whirligig = function () {
             var opponent_id;
             if (this.unique_opponent_id) {
                 opponent_id = this.unique_opponent_id;
@@ -9682,8 +9682,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.myHand.orderedSelection.get()
             });
         };
-        DaleOfMerchants.prototype.onAccidentDoneLooking = function () {
-            this.bgaPerformAction('actAccident', {});
+        DaleOfMerchants.prototype.onDEPRECATED_WhirligigDoneLooking = function () {
+            this.bgaPerformAction('actDEPRECATED_Whirligig', {});
         };
         DaleOfMerchants.prototype.onWhirligig = function (opponent_id) {
             this.playTechniqueCardWithServerState({
@@ -10685,8 +10685,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['shuffleDiscard', 500],
                 ['reshuffleDeck', 1500],
                 ['wilyFellow', 500],
-                ['accidentShuffle', 1750],
-                ['accidentTakeBack', 500, true],
+                ['DEPRECATED_whirligigShuffle', 1750],
+                ['DEPRECATED_whirligigTakeBack', 500, true],
                 ['cunningNeighbourWatch', 500, true],
                 ['cunningNeighbourReturn', 500, true],
                 ['monoShowHand', 750],
@@ -11404,13 +11404,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             dataSwap();
         };
-        DaleOfMerchants.prototype.notif_accidentShuffle = function (notif) {
+        DaleOfMerchants.prototype.notif_DEPRECATED_whirligigShuffle = function (notif) {
             var _this = this;
-            console.warn("accidentShuffle");
+            console.warn("DEPRECATED_whirligigShuffle");
             var player_nbr = notif.args.player_nbr;
             var opponent_nbr = notif.args.opponent_nbr;
             if (!this.isSpectator) {
-                this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Accident"));
+                this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Whirligig"));
                 var nbr = notif.args.opponent_nbr + notif.args.player_nbr;
                 var hand_card_ids = this.myHand.getAllItems().map(function (item) { return item.id; }).reverse();
                 for (var i = 1; i <= nbr; i++) {
@@ -11438,7 +11438,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 }
                 if (notif.args.opponent_nbr != 0 || notif.args.player_nbr != 0) {
-                    console.warn("'accidentShuffle' failed:\n\t\t\t\t\tnotif.args.opponent_nbr == ".concat(notif.args.opponent_nbr, "\n\t\t\t\t\tnotif.args.player_nbr == ").concat(notif.args.player_nbr, "\n\t\t\t\t"));
+                    console.warn("'DEPRECATED_whirligigShuffle' failed:\n\t\t\t\t\tnotif.args.opponent_nbr == ".concat(notif.args.opponent_nbr, "\n\t\t\t\t\tnotif.args.player_nbr == ").concat(notif.args.player_nbr, "\n\t\t\t\t"));
                 }
                 setTimeout((function () { _this.myLimbo.shuffleAnimation(); }).bind(this), this.myLimbo.duration);
             }
@@ -11448,14 +11448,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.notif_accidentTakeBack = function (notif) {
-            console.warn("notif_accidentTakeBack");
+        DaleOfMerchants.prototype.notif_DEPRECATED_whirligigTakeBack = function (notif) {
+            console.warn("notif_DEPRECATED_whirligigTakeBack");
             if (!this.isSpectator) {
                 var limbo_card_ids = this.myLimbo.getAllItems().map(function (item) { return item.id; }).sort(function () { return Math.random() - 0.5; });
                 if (notif.args._private) {
                     var cards = Object.values(notif.args._private.cards);
                     if (cards.length != notif.args.nbr) {
-                        throw new Error("accidentTakeBack failed: expected ".concat(notif.args.nbr, " cards, got ").concat(cards.length, " cards"));
+                        throw new Error("DEPRECATED_whirligigTakeBack failed: expected ".concat(notif.args.nbr, " cards, got ").concat(cards.length, " cards"));
                     }
                     for (var _i = 0, cards_1 = cards; _i < cards_1.length; _i++) {
                         var card = cards_1[_i];

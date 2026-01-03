@@ -39,7 +39,7 @@ if (false) {
 	$game->stDaringAdventurer();
 	$game->stRefreshingDrink();
 	$game->stDelightfulSurprise();
-	$game->stAccident();
+	$game->stDEPRECATED_Whirligig();
 	$game->stPompousProfessional();
 	$game->stDelicacy();
 	$game->stUmbrella();
@@ -149,7 +149,7 @@ $machinestates = array(
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
 			'trDEPRECATED_FashionHint' => 73,
-			'trAccident' => 74,
+			'trDEPRECATED_Whirligig' => 74,
 			'trPompousProfessional' => 75,
 			'trDelicacy' => 76,
 			'trUmbrella' => 77,
@@ -494,12 +494,12 @@ $machinestates = array(
 		),
 	),
 	74 => array(
-		'name' => 'accident',
-		'description' => clienttranslate('Accident: ${actplayer} may look at their drawn cards'),
-		'descriptionmyturn' => clienttranslate('Accident: ${you} may look at your drawn cards'),
+		'name' => 'DEPRECATED_whirligig',
+		'description' => clienttranslate('Whirligig: ${actplayer} may look at their drawn cards'),
+		'descriptionmyturn' => clienttranslate('Whirligig: ${you} may look at your drawn cards'),
 		'type' => 'activeplayer',
-		'action' => 'stAccident',
-		'possibleactions' => ['actAccident'],
+		'action' => 'stDEPRECATED_Whirligig',
+		'possibleactions' => ['actDEPRECATED_Whirligig'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
