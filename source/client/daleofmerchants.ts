@@ -784,7 +784,7 @@ class DaleOfMerchants extends Gamegui
 					this.chameleonArgs!.pile
 				)
 				break;
-			case 'client_marketDiscovery':
+			case 'client_DEPRECATED_marketDiscovery':
 				this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
 				this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
 				break;
@@ -1360,7 +1360,7 @@ class DaleOfMerchants extends Gamegui
 			case 'chameleon_seeingdoubles':
 				TargetingLine.remove();
 				break;
-			case 'client_marketDiscovery':
+			case 'client_DEPRECATED_marketDiscovery':
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
 				break;
@@ -1909,9 +1909,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_choicelessPassiveCard':
 				this.onChoicelessPassiveCard(); //immediately leave this state
 				break;
-			case 'client_marketDiscovery':
-				this.addActionButton("toss-button", _("Toss"), "onMarketDiscoveryToss");
-				this.addActionButton("purchase-button", _("Purchase"), "onMarketDiscoveryPurchase");
+			case 'client_DEPRECATED_marketDiscovery':
+				this.addActionButton("toss-button", _("Toss"), "onDEPRECATED_MarketDiscoveryToss");
+				this.addActionButton("purchase-button", _("Purchase"), "onDEPRECATED_MarketDiscoveryPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'specialOffer':
@@ -3417,12 +3417,12 @@ class DaleOfMerchants extends Gamegui
 			case 'client_purchase':
 				this.mainClientState.leave();
 				break;
-			case 'client_marketDiscovery':
+			case 'client_DEPRECATED_marketDiscovery':
 				if (pile === this.marketDeck) {
-					this.onMarketDiscoveryToss();
+					this.onDEPRECATED_MarketDiscoveryToss();
 				}
 				else if (pile === this.marketDiscard) {
-					this.onMarketDiscoveryPurchase();
+					this.onDEPRECATED_MarketDiscoveryPurchase();
 				}
 				break;
 			case 'client_DEPRECATED_fashionHint':
@@ -3972,13 +3972,13 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onMarketDiscoveryToss() {
-		this.playPassiveCard<'client_marketDiscovery'>({});
+	onDEPRECATED_MarketDiscoveryToss() {
+		this.playPassiveCard<'client_DEPRECATED_marketDiscovery'>({});
 	}
 
-	onMarketDiscoveryPurchase(market_discovery_card_id?: number | PointerEvent) {
+	onDEPRECATED_MarketDiscoveryPurchase(market_discovery_card_id?: number | PointerEvent) {
 		if (market_discovery_card_id == undefined || market_discovery_card_id instanceof PointerEvent) { //for dojo.connect
-			market_discovery_card_id = (this.mainClientState.args as ClientGameStates['client_marketDiscovery']).passive_card_id
+			market_discovery_card_id = (this.mainClientState.args as ClientGameStates['client_DEPRECATED_marketDiscovery']).passive_card_id
 		}
 		const card = this.marketDiscard.peek();
 		if (!card) {
@@ -4932,15 +4932,15 @@ class DaleOfMerchants extends Gamegui
 						this.showMessage(_("This passive's ability was already used"), 'error');
 					}
 					else {
-						this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
-						this.onMarketDiscoveryToss();
+						this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', {passive_card_id: card.id});
+						this.onDEPRECATED_MarketDiscoveryToss();
 					}
 				}
 				else if (card.isPassiveUsed()) {
-					this.onMarketDiscoveryPurchase(card.id);
+					this.onDEPRECATED_MarketDiscoveryPurchase(card.id);
 				}
 				else {
-					this.mainClientState.enterOnStack('client_marketDiscovery', {passive_card_id: card.id});
+					this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', {passive_card_id: card.id});
 				}
 				break;
 			case DaleCard.CT_CALCULATIONS:

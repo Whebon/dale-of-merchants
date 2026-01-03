@@ -109,7 +109,7 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a player"); //e.g. coffee grinder
             
             //Specific passive states
-            case 'client_marketDiscovery':
+            case 'client_DEPRECATED_marketDiscovery':
                 return _("${card_name}: ${you} may <strong>toss</strong> the supply's top card or purchase the bin's top card");
             case 'client_calculations':
                 return _("${card_name}: ${you} may rearrange any cards in the market");

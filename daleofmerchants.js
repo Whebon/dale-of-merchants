@@ -4398,7 +4398,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_selectPlayerPassive':
                         return _("${card_name}: ${you} must choose a player");
-                    case 'client_marketDiscovery':
+                    case 'client_DEPRECATED_marketDiscovery':
                         return _("${card_name}: ${you} may <strong>toss</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
                         return _("${card_name}: ${you} may rearrange any cards in the market");
@@ -5578,7 +5578,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
                     new TargetingLine_1.TargetingLine(this.chameleonArgs.firstSource, this.chameleonArgs.currentTargets, "daleofmerchants-line-source-chameleon", "daleofmerchants-line-target-chameleon", "daleofmerchants-line-chameleon", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onConfirmChameleon(target_id); }, this.chameleonArgs.pile);
                     break;
-                case 'client_marketDiscovery':
+                case 'client_DEPRECATED_marketDiscovery':
                     this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
                     this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
                     break;
@@ -6110,7 +6110,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'chameleon_seeingdoubles':
                     TargetingLine_1.TargetingLine.remove();
                     break;
-                case 'client_marketDiscovery':
+                case 'client_DEPRECATED_marketDiscovery':
                     this.marketDeck.setSelectionMode('none');
                     this.marketDiscard.setSelectionMode('none');
                     break;
@@ -6666,9 +6666,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_choicelessPassiveCard':
                     this.onChoicelessPassiveCard();
                     break;
-                case 'client_marketDiscovery':
-                    this.addActionButton("toss-button", _("Toss"), "onMarketDiscoveryToss");
-                    this.addActionButton("purchase-button", _("Purchase"), "onMarketDiscoveryPurchase");
+                case 'client_DEPRECATED_marketDiscovery':
+                    this.addActionButton("toss-button", _("Toss"), "onDEPRECATED_MarketDiscoveryToss");
+                    this.addActionButton("purchase-button", _("Purchase"), "onDEPRECATED_MarketDiscoveryPurchase");
                     this.addActionButtonCancelClient();
                     break;
                 case 'specialOffer':
@@ -7913,12 +7913,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_purchase':
                     this.mainClientState.leave();
                     break;
-                case 'client_marketDiscovery':
+                case 'client_DEPRECATED_marketDiscovery':
                     if (pile === this.marketDeck) {
-                        this.onMarketDiscoveryToss();
+                        this.onDEPRECATED_MarketDiscoveryToss();
                     }
                     else if (pile === this.marketDiscard) {
-                        this.onMarketDiscoveryPurchase();
+                        this.onDEPRECATED_MarketDiscoveryPurchase();
                     }
                     break;
                 case 'client_DEPRECATED_fashionHint':
@@ -8409,10 +8409,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.onMarketDiscoveryToss = function () {
+        DaleOfMerchants.prototype.onDEPRECATED_MarketDiscoveryToss = function () {
             this.playPassiveCard({});
         };
-        DaleOfMerchants.prototype.onMarketDiscoveryPurchase = function (market_discovery_card_id) {
+        DaleOfMerchants.prototype.onDEPRECATED_MarketDiscoveryPurchase = function (market_discovery_card_id) {
             if (market_discovery_card_id == undefined || market_discovery_card_id instanceof PointerEvent) {
                 market_discovery_card_id = this.mainClientState.args.passive_card_id;
             }
@@ -9296,15 +9296,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             this.showMessage(_("This passive's ability was already used"), 'error');
                         }
                         else {
-                            this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
-                            this.onMarketDiscoveryToss();
+                            this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', { passive_card_id: card.id });
+                            this.onDEPRECATED_MarketDiscoveryToss();
                         }
                     }
                     else if (card.isPassiveUsed()) {
-                        this.onMarketDiscoveryPurchase(card.id);
+                        this.onDEPRECATED_MarketDiscoveryPurchase(card.id);
                     }
                     else {
-                        this.mainClientState.enterOnStack('client_marketDiscovery', { passive_card_id: card.id });
+                        this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', { passive_card_id: card.id });
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_CALCULATIONS:

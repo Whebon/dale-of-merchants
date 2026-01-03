@@ -524,7 +524,7 @@ declare global {
 		'client_choicelessPassiveCard': {},
 		'client_selectOpponentPassive': { opponent_id: number }
 		'client_selectPlayerPassive': { opponent_id: number }
-		'client_marketDiscovery': {},
+		'client_DEPRECATED_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_barricade': { card_ids: number[] }
 		'client_DEPRECATED_sliceOfLife': { card_ids: number[] }
