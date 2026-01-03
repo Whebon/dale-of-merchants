@@ -7101,7 +7101,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("passive_card_id", $passive_card_id);
                 $this->gamestate->nextState("trRefreshingDrink"); return;
                 break;
-            case CT_SLICEOFLIFE:
+            case CT_DEPRECATED_SLICEOFLIFE:
                 $card_ids = $args["card_ids"];
                 if (count($card_ids) != 2) {
                     throw new BgaUserException($this->_("You must discard exactly 2 cards"));
@@ -7113,7 +7113,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->cards->getCardsFromLocation($card_ids, HAND.$player_id)
                 );
                 $this->draw(clienttranslate('Slice of Life: ${player_name} draws ${nbr} cards'), 2);
-                $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
+                $this->effects->insertModification($passive_card_id, CT_DEPRECATED_SLICEOFLIFE);
                 break;
             case CT_SPINNINGWHEEL:
                 $card_ids = $args["card_ids"];

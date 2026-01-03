@@ -113,7 +113,7 @@ export class MainClientState {
                 return _("${card_name}: ${you} may <strong>toss</strong> the supply's top card or purchase the bin's top card");
             case 'client_calculations':
                 return _("${card_name}: ${you} may rearrange any cards in the market");
-            case 'client_sliceoflife':
+            case 'client_DEPRECATED_sliceOfLife':
                 return _("${card_name}: ${you} must choose 2 cards to discard");
             case 'client_spinningWheel':
                 return _("${card_name}: ${you} must choose 1-3 cards to discard");

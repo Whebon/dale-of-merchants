@@ -527,7 +527,7 @@ declare global {
 		'client_marketDiscovery': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_barricade': { card_ids: number[] }
-		'client_sliceoflife': { card_ids: number[] }
+		'client_DEPRECATED_sliceOfLife': { card_ids: number[] }
 		'client_spinningWheel': { card_ids: number[] }
 		'client_stove': {} //choice sent as build args
 		'client_dramaticRomantic': { forward: boolean }

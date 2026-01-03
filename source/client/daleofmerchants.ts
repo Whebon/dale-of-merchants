@@ -928,7 +928,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
 				this.myDeck.openPopin();
 				break;
-			case 'client_sliceoflife':
+			case 'client_DEPRECATED_sliceOfLife':
 				this.myHand.setSelectionMode('multiple2', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 2 cards to discard"));
 				break;
 			case 'client_spinningWheel':
@@ -1454,7 +1454,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
-			case 'client_sliceoflife':
+			case 'client_DEPRECATED_sliceOfLife':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_spinningWheel':
@@ -2016,8 +2016,8 @@ class DaleOfMerchants extends Gamegui
 			case 'DEPRECATED_culturalPreservation':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_CulturalPreservation");
 				break;
-			case 'client_sliceoflife':
-				this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
+			case 'client_DEPRECATED_sliceOfLife':
+				this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_SliceOfLife");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_spinningWheel':
@@ -4954,12 +4954,12 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_REFRESHINGDRINK:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id, keep_passive_selected: true});
 				break;
-			case DaleCard.CT_SLICEOFLIFE:
+			case DaleCard.CT_DEPRECATED_SLICEOFLIFE:
 				if (this.myHand.count() < 2) {
 					this.showMessage(_("Not enough cards to discard"), 'error');
 					return;
 				}
-				this.mainClientState.enterOnStack('client_sliceoflife', { passive_card_id: card.id, disable_cancel_on_click: true });
+				this.mainClientState.enterOnStack('client_DEPRECATED_sliceOfLife', { passive_card_id: card.id, disable_cancel_on_click: true });
 				break;
 			case DaleCard.CT_SPINNINGWHEEL:
 				this.mainClientState.enterOnStack('client_spinningWheel', { passive_card_id: card.id, disable_cancel_on_click: true });
@@ -5722,13 +5722,13 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 
-	onSliceOfLife() {
+	onDEPRECATED_SliceOfLife() {
 		const card_ids = this.myHand.orderedSelection.get();
 		if (card_ids.length != 2) {
 			this.showMessage(_("Please select exactly ")+2+_(" cards from your hand"), 'error');
 			return;
 		}
-		this.playPassiveCard<'client_sliceoflife'>({
+		this.playPassiveCard<'client_DEPRECATED_sliceOfLife'>({
 			card_ids: card_ids
 		})
 	}
