@@ -6525,7 +6525,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trAnotherFineMess");
                 break;
-            case CT_FRESHSTART:
+            case CT_DEPRECATED_FRESHSTART:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validatePlayerId($opponent_id);
                 //shuffle discard into deck

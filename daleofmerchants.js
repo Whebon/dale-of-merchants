@@ -8690,7 +8690,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_selectOpponentTechnique', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_FRESHSTART:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_FRESHSTART:
                     this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_TREASUREHUNTER:

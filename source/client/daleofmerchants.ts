@@ -4323,7 +4323,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_selectOpponentTechnique', card.id);
 				}
 				break;
-			case DaleCard.CT_FRESHSTART:
+			case DaleCard.CT_DEPRECATED_FRESHSTART:
 				this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
 				break;
 			case DaleCard.CT_TREASUREHUNTER:
