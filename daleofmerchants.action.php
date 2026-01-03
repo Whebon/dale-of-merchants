@@ -723,14 +723,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actDeprecatedTasters()
+	public function actDEPRECATED_Tasters()
 	{
 		self::setAjaxMode();
 
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 
-		$this->game->actDeprecatedTasters( $card_id );
+		$this->game->actDEPRECATED_Tasters( $card_id );
 		self::ajaxResponse();
 	}
 }

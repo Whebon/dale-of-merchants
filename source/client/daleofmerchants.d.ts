@@ -490,7 +490,7 @@ declare global {
 		'client_houseCleaning': {card_ids: number[] }
 		'client_ruthlessCompetition': { opponent_id: number }
 		'client_raffle': { reverse_direction: boolean },
-		'client_deprecated_tasters': { reverse_direction: boolean }
+		'client_DEPRECATED_tasters': { reverse_direction: boolean }
 		'client_rareArtefact': { card_id: number }
 		'client_swank': { card_id: number }
 		'client_riskyBusiness': { value: number }

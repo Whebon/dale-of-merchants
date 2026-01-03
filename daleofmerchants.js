@@ -4490,7 +4490,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must draw a card from an opponent\'s deck");
                     case 'client_raffle':
                         return _("${card_name}: ${you} take a card from");
-                    case 'client_deprecated_tasters':
+                    case 'client_DEPRECATED_tasters':
                         return _("${card_name}: ${you} must choose who takes a card from the market directly after you");
                     case 'client_rareArtefact':
                         return _("${card_name}: ${you} must choose a card to multiply its value");
@@ -5655,7 +5655,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'rumours':
                     this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     break;
-                case 'deprecated_tasters':
+                case 'DEPRECATED_tasters':
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'tasters':
@@ -6178,7 +6178,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'rumours':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'deprecated_tasters':
+                case 'DEPRECATED_tasters':
                     this.market.setSelectionMode(0);
                     break;
                 case 'tasters':
@@ -6730,8 +6730,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.max_opponents = 1;
                     this.addActionButton("confirm-button", _("Confirm"), "onGiveCardsFromLimboToPlayers");
                     break;
-                case 'client_deprecated_tasters':
-                    this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
+                case 'client_DEPRECATED_tasters':
+                    this.addActionButtonsOpponentLeftRight(this.onDEPRECATED_Tasters.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'tasters':
@@ -7800,8 +7800,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'deprecated_tasters':
-                    this.bgaPerformAction('actDeprecatedTasters', {
+                case 'DEPRECATED_tasters':
+                    this.bgaPerformAction('actDEPRECATED_Tasters', {
                         card_id: card.id
                     });
                     break;
@@ -8871,16 +8871,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_DEPRECATED_TASTERS:
-                    var deprecated_tasters_nbr = this.market.getCards().length;
-                    fizzle = deprecated_tasters_nbr == 0;
+                    var DEPRECATED_tasters_nbr = this.market.getCards().length;
+                    fizzle = DEPRECATED_tasters_nbr == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
-                    else if (this.unique_opponent_id || deprecated_tasters_nbr == 1) {
+                    else if (this.unique_opponent_id || DEPRECATED_tasters_nbr == 1) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     else {
-                        this.clientScheduleTechnique('client_deprecated_tasters', card.id);
+                        this.clientScheduleTechnique('client_DEPRECATED_tasters', card.id);
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_TASTERS:
@@ -9913,8 +9913,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
             }
         };
-        DaleOfMerchants.prototype.onDeprecatedTasters = function (reverse_direction) {
-            console.warn("onDeprecatedTasters", reverse_direction ? "right" : "left");
+        DaleOfMerchants.prototype.onDEPRECATED_Tasters = function (reverse_direction) {
+            console.warn("onDEPRECATED_Tasters", reverse_direction ? "right" : "left");
             this.playTechniqueCardWithServerState({
                 reverse_direction: reverse_direction
             });

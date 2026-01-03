@@ -875,7 +875,7 @@ class DaleOfMerchants extends Gamegui
 			case 'rumours':
 				this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				break;
-			case 'deprecated_tasters':
+			case 'DEPRECATED_tasters':
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'tasters':
@@ -1426,7 +1426,7 @@ class DaleOfMerchants extends Gamegui
 			case 'rumours':
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'deprecated_tasters':
+			case 'DEPRECATED_tasters':
 				this.market!.setSelectionMode(0);
 				break;
 			case 'tasters':
@@ -1976,8 +1976,8 @@ class DaleOfMerchants extends Gamegui
 				this.max_opponents = 1; //ensure that no opponent is selected by default
 				this.addActionButton("confirm-button", _("Confirm"), "onGiveCardsFromLimboToPlayers"); //confirm the opponent and the card
 				break;
-			case 'client_deprecated_tasters':
-				this.addActionButtonsOpponentLeftRight(this.onDeprecatedTasters.bind(this));
+			case 'client_DEPRECATED_tasters':
+				this.addActionButtonsOpponentLeftRight(this.onDEPRECATED_Tasters.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'tasters':
@@ -3298,8 +3298,8 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				});
 				break;
-			case 'deprecated_tasters':
-				this.bgaPerformAction('actDeprecatedTasters', {
+			case 'DEPRECATED_tasters':
+				this.bgaPerformAction('actDEPRECATED_Tasters', {
 					card_id: card.id
 				})
 				break;
@@ -4499,16 +4499,16 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_DEPRECATED_TASTERS:
-				const deprecated_tasters_nbr = this.market!.getCards().length;
-				fizzle = deprecated_tasters_nbr == 0;
+				const DEPRECATED_tasters_nbr = this.market!.getCards().length;
+				fizzle = DEPRECATED_tasters_nbr == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
-				else if (this.unique_opponent_id || deprecated_tasters_nbr == 1) {
+				else if (this.unique_opponent_id || DEPRECATED_tasters_nbr == 1) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				else {
-					this.clientScheduleTechnique('client_deprecated_tasters', card.id);
+					this.clientScheduleTechnique('client_DEPRECATED_tasters', card.id);
 				}
 				break;
 			case DaleCard.CT_TASTERS:
@@ -5620,9 +5620,9 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onDeprecatedTasters(reverse_direction: boolean) {
-		console.warn("onDeprecatedTasters", reverse_direction ? "right" : "left");
-		this.playTechniqueCardWithServerState<'client_deprecated_tasters'>({
+	onDEPRECATED_Tasters(reverse_direction: boolean) {
+		console.warn("onDEPRECATED_Tasters", reverse_direction ? "right" : "left");
+		this.playTechniqueCardWithServerState<'client_DEPRECATED_tasters'>({
 			reverse_direction: reverse_direction
 		})
 	}

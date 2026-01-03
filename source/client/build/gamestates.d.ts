@@ -84,7 +84,7 @@ interface GameStates {
 			'trDEPRECATED_Blindfold': 56,
 			'trDEPRECATED_BlindfoldIncorrectGuess': 57,
 			'trFullyResolve': 33,
-			'trDeprecatedTasters': 6500,
+			'trDEPRECATED_Tasters': 6500,
 		},
 	},
 	30: {
@@ -197,7 +197,7 @@ interface GameStates {
 			'trCunningNeighbour': 62,
 			'trDeprecatedCheer': 6300,
 			'trCharity': 64,
-			'trDeprecatedTasters': 6500,
+			'trDEPRECATED_Tasters': 6500,
 			'trTasters': 65,
 			'trDaringAdventurer': 66,
 			'trNaturalSurvivor': 67,
@@ -1317,12 +1317,12 @@ interface GameStates {
 		},
 	},
 	6500: {
-		'name': 'deprecated_tasters',
+		'name': 'DEPRECATED_tasters',
 		'description': 'Tasters: ${actplayer} must take a card from the market',
 		'descriptionmyturn': 'Tasters: ${you} must take a card from the market',
 		'type': 'activeplayer',
 		'possibleactions': {
-			'actDeprecatedTasters': [{
+			'actDEPRECATED_Tasters': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
