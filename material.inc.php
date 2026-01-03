@@ -411,11 +411,15 @@ $this->AUTORESOLVE_TRIGGERS = array(
 //disable these animalfolks in the deck selection (and random selection)
 $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_CHAMELEONS,          //... chameleons ...
-    ANIMALFOLK_PANDAS,              //effect not finalized
-    ANIMALFOLK_OCELOTS,             //effect not finalized
-    ANIMALFOLK_ECHIDNAS,            //effect not finalized
-    ANIMALFOLK_BEAVERS,             //effect not finalized
-    //ANIMALFOLK_LEMURS,            //effect not finalized (but the text is correct)
+    ANIMALFOLK_PANDAS,              //requires rework
+    ANIMALFOLK_OCELOTS,             //requires rework
+    ANIMALFOLK_DESERTMONITORS,      //requires rework
+    ANIMALFOLK_LEMURS,              //requires rework
+    ANIMALFOLK_ECHIDNAS,            //requires rework
+    ANIMALFOLK_WOODTURTLES,         //requires rework
+    ANIMALFOLK_PANGOLINS,           //requires rework
+    ANIMALFOLK_BEAVERS,             //requires rework
+    
     ANIMALFOLK_OWLS,                //not implemented
     ANIMALFOLK_BATS,                //not implemented
     ANIMALFOLK_DODOS,               //new
@@ -444,7 +448,7 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     // ANIMALFOLK_PANGOLINS,
     // ANIMALFOLK_GULLS,
 
-    //effect not finalized
+    //TODO: implement
     ANIMALFOLK_RACCOONS,
     ANIMALFOLK_CHAMELEONS,
     
