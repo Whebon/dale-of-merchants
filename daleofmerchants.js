@@ -4923,7 +4923,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
             for (var _i = 0, funds_2 = funds; _i < funds_2.length; _i++) {
                 var card = funds_2[_i];
                 remaining -= card.effective_value;
-                if (is_purchase && card.effective_type_id == DaleCard_9.DaleCard.CT_RIGOROUSCHRONICLER) {
+                if (is_purchase && card.effective_type_id == DaleCard_9.DaleCard.CT_DEPRECATED_RIGOROUSCHRONICLER) {
                     remaining -= 2;
                 }
             }
