@@ -599,14 +599,14 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
-			case 'client_essentialPurchase':
-				const client_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_essentialPurchase']);	
-				this.setPurchaseSelectionModes(client_essentialPurchase_args);
+			case 'client_deprecated_essentialPurchase':
+				const client_deprecated_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_deprecated_essentialPurchase']);	
+				this.setPurchaseSelectionModes(client_deprecated_essentialPurchase_args);
 				this.myHand.unselectAll();
-				this.myHand.setSelectionMode('essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
+				this.myHand.setSelectionMode('deprecated_essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
 				let junk_selected = 0;
 				let client_essentialPurchase_skip = true;
-				for (let card_id of client_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
+				for (let card_id of client_deprecated_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 					if (junk_selected < 3 && new DaleCard(card_id).isJunk()) {
 						this.myHand.selectItem(card_id);
@@ -1261,7 +1261,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				this.myStall.setLeftPlaceholderClickable(false);
 				break;
-			case 'client_essentialPurchase':	
+			case 'client_deprecated_essentialPurchase':	
 				this.market!.setSelectionMode(0);
 				this.myHand.orderedSelection.secondaryToPrimary();
 				break;
@@ -1712,7 +1712,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_essentialPurchase':
+			case 'client_deprecated_essentialPurchase':
 				this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
@@ -3928,7 +3928,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_purchase':
 				args.funds_card_ids = this.myHand.orderedSelection.get();
 				break;
-			case 'client_essentialPurchase':
+			case 'client_deprecated_essentialPurchase':
 				args.optionalArgs.essential_purchase_ids = this.myHand.orderedSelection.get();
 				break;
 			case 'client_glue':
@@ -3956,8 +3956,8 @@ class DaleOfMerchants extends Gamegui
 		if (!this.mainClientState.stackIncludes('client_glue') && DaleCard.containsTypeId(args.funds_card_ids, DaleCard.CT_GLUE)) {
 			this.mainClientState.enterOnStack('client_glue', args);
 		}
-		else if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard(card_id).effective_type_id == DaleCard.CT_ESSENTIALPURCHASE) {
-			this.mainClientState.enterOnStack('client_essentialPurchase', args);
+		else if (!this.mainClientState.stackIncludes('client_deprecated_essentialPurchase') && new DaleCard(card_id).effective_type_id == DaleCard.CT_DEPRECATED_ESSENTIALPURCHASE) {
+			this.mainClientState.enterOnStack('client_deprecated_essentialPurchase', args);
 		}
 		else {
 			this.bgaPerformAction('actPurchase', {

@@ -2487,7 +2487,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'multipleExceptSecondary':
                     this.orderedSelection.setMaxSize(Infinity);
                     break;
-                case 'essentialPurchase':
+                case 'deprecated_essentialPurchase':
                     this.orderedSelection.setMaxSize(3);
                     break;
                 case 'glue':
@@ -2603,7 +2603,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.isEffectiveJunk();
                 case 'multipleExceptSecondary':
                     return !this.orderedSelection.includes(card_id, true);
-                case 'essentialPurchase':
+                case 'deprecated_essentialPurchase':
                     return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
                 case 'glue':
                     return card.effective_type_id == DaleCard_1.DaleCard.CT_GLUE && this.orderedSelection.get(true).includes(card.id);
@@ -4367,7 +4367,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${you} must select cards to build in stack ${stack_index_plus_1}");
                     case 'client_inventory':
                         return _("${you} must select any number of cards to discard");
-                    case 'client_essentialPurchase':
+                    case 'client_deprecated_essentialPurchase':
                         return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected junk cards");
                     case 'client_glue':
                         return _("Glue: ${you} may keep Glue in your hand");
@@ -5425,14 +5425,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.setLeftPlaceholderClickable(true);
                     break;
-                case 'client_essentialPurchase':
-                    var client_essentialPurchase_args = this.mainClientState.args;
-                    this.setPurchaseSelectionModes(client_essentialPurchase_args);
+                case 'client_deprecated_essentialPurchase':
+                    var client_deprecated_essentialPurchase_args = this.mainClientState.args;
+                    this.setPurchaseSelectionModes(client_deprecated_essentialPurchase_args);
                     this.myHand.unselectAll();
-                    this.myHand.setSelectionMode('essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
+                    this.myHand.setSelectionMode('deprecated_essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
                     var junk_selected = 0;
                     var client_essentialPurchase_skip = true;
-                    for (var _i = 0, _h = client_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _h.length; _i++) {
+                    for (var _i = 0, _h = client_deprecated_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _h.length; _i++) {
                         var card_id = _h[_i];
                         this.myHand.selectItem(card_id, true);
                         if (junk_selected < 3 && new DaleCard_10.DaleCard(card_id).isJunk()) {
@@ -6006,7 +6006,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     this.myStall.setLeftPlaceholderClickable(false);
                     break;
-                case 'client_essentialPurchase':
+                case 'client_deprecated_essentialPurchase':
                     this.market.setSelectionMode(0);
                     this.myHand.orderedSelection.secondaryToPrimary();
                     break;
@@ -6463,7 +6463,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_essentialPurchase':
+                case 'client_deprecated_essentialPurchase':
                     this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
                     this.addActionButtonCancelClient();
                     break;
@@ -8367,7 +8367,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_purchase':
                     args.funds_card_ids = this.myHand.orderedSelection.get();
                     break;
-                case 'client_essentialPurchase':
+                case 'client_deprecated_essentialPurchase':
                     args.optionalArgs.essential_purchase_ids = this.myHand.orderedSelection.get();
                     break;
                 case 'client_glue':
@@ -8394,8 +8394,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!this.mainClientState.stackIncludes('client_glue') && DaleCard_10.DaleCard.containsTypeId(args.funds_card_ids, DaleCard_10.DaleCard.CT_GLUE)) {
                 this.mainClientState.enterOnStack('client_glue', args);
             }
-            else if (!this.mainClientState.stackIncludes('client_essentialPurchase') && new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_ESSENTIALPURCHASE) {
-                this.mainClientState.enterOnStack('client_essentialPurchase', args);
+            else if (!this.mainClientState.stackIncludes('client_deprecated_essentialPurchase') && new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_DEPRECATED_ESSENTIALPURCHASE) {
+                this.mainClientState.enterOnStack('client_deprecated_essentialPurchase', args);
             }
             else {
                 this.bgaPerformAction('actPurchase', {

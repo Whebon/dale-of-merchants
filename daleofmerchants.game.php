@@ -4600,11 +4600,11 @@ class DaleOfMerchants extends DaleTableBasic
         //Verify the cost
         $this->verifyCost($player_id, $funds_cards, $cost, null, true);
 
-        //Apply CT_ESSENTIALPURCHASE
-        if ($this->getTypeId($market_card) == CT_ESSENTIALPURCHASE) {
+        //Apply CT_DEPRECATED_ESSENTIALPURCHASE
+        if ($this->getTypeId($market_card) == CT_DEPRECATED_ESSENTIALPURCHASE) {
             $essential_purchase_ids = $args["essential_purchase_ids"];
             if (!$this->isSubset($essential_purchase_ids, $funds_card_ids)) {
-                throw new BgaVisibleSystemException("CT_ESSENTIALPURCHASE: Selected junk cards must be a subset of the selected fund cards");
+                throw new BgaVisibleSystemException("CT_DEPRECATED_ESSENTIALPURCHASE: Selected junk cards must be a subset of the selected fund cards");
             }
             //Move cards from funds to essential purchase
             $funds_card_ids = array_values(array_diff($funds_card_ids, $essential_purchase_ids));

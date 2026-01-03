@@ -10,33 +10,33 @@ import { DaleTrigger } from './types/DaleTrigger';
 
 /**
  * Selection modes for the dale stock
- * 'none':                 		no selection possible
- * 'noneRetainSelection':  		no selection possible, the previous selection is maintained
- * 'click':                		no selection possible, cards are clickable
- * 'clickRetainSelection': 		no selection possible, cards are clickable, the previous selection is maintained
- * 'clickTechnique':       		no selection possible, PLAYABLE cards are clickable
- * 'clickAbility':		   		no selection possible, PLAYABLE non-technique cards are clickable
- * 'clickAbilityPostCleanup':   no selection possible, only specific 'post clean-up' abilities are clickable
- * 'clickOnTurnStart'			no selection possible, only cards with an 'onTurnStart' trigger are clickable, except the once on "cooldown"
- * 'clickOnTrigger'				no selection possible, only cards with a trigger are clickable, except the once on "cooldown"
- * 'clickOnFinish'				no selection possible, only cards with an 'onFinish' trigger are clickable
- * 'clickOnFinishAndSnack'		no selection possible, only CT_SNACK and cards with an 'onFinish' trigger are clickable
- * 'clickAnimalfolk':			no selection possible, only animalfolk cards are clickable
- * 'clickAnimalfolk16':			no selection possible, only cards of a specific animalfolk id are clickable
- * 'clickWhitelist':			no selection possible, only cards set using `setClickWhitelist` are clickable
- * 'clickOvertime':				no selection possible, only cards of type_id CT_OVERTIME can be clicked
- * 'single':			   		a single card can be selected
- * 'singleAnimalfolk':			a single animalfolk card can be selected
- * 'multiple':             		multiple cards can be selected
- * 'multiple2':					multiple cards can be selected, but no more than 2
- * 'multiple3':					multiple cards can be selected, but no more than 3
- * 'multipleJunk':				multiple junk cards can be selected
- * 'multipleExceptSecondary'	multiple cards can be selected, except the cards that are already selected in the secondary selection
- * 'only_card_id47':       		no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
- * 'essentialPurchase':    		up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
- * 'glue'						only CT_GLUE cards can be selected
+ * 'none':                 			no selection possible
+ * 'noneRetainSelection':  			no selection possible, the previous selection is maintained
+ * 'click':                			no selection possible, cards are clickable
+ * 'clickRetainSelection': 			no selection possible, cards are clickable, the previous selection is maintained
+ * 'clickTechnique':       			no selection possible, PLAYABLE cards are clickable
+ * 'clickAbility':		   			no selection possible, PLAYABLE non-technique cards are clickable
+ * 'clickAbilityPostCleanup':   	no selection possible, only specific 'post clean-up' abilities are clickable
+ * 'clickOnTurnStart'				no selection possible, only cards with an 'onTurnStart' trigger are clickable, except the once on "cooldown"
+ * 'clickOnTrigger'					no selection possible, only cards with a trigger are clickable, except the once on "cooldown"
+ * 'clickOnFinish'					no selection possible, only cards with an 'onFinish' trigger are clickable
+ * 'clickOnFinishAndSnack'			no selection possible, only CT_SNACK and cards with an 'onFinish' trigger are clickable
+ * 'clickAnimalfolk':				no selection possible, only animalfolk cards are clickable
+ * 'clickAnimalfolk16':				no selection possible, only cards of a specific animalfolk id are clickable
+ * 'clickWhitelist':				no selection possible, only cards set using `setClickWhitelist` are clickable
+ * 'clickOvertime':					no selection possible, only cards of type_id CT_OVERTIME can be clicked
+ * 'single':			   			a single card can be selected
+ * 'singleAnimalfolk':				a single animalfolk card can be selected
+ * 'multiple':             			multiple cards can be selected
+ * 'multiple2':						multiple cards can be selected, but no more than 2
+ * 'multiple3':						multiple cards can be selected, but no more than 3
+ * 'multipleJunk':					multiple junk cards can be selected
+ * 'multipleExceptSecondary'		multiple cards can be selected, except the cards that are already selected in the secondary selection
+ * 'only_card_id47':       			no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
+ * 'deprecated_essentialPurchase':	up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
+ * 'glue'							only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'deprecated_essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -260,7 +260,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'multipleExceptSecondary':
 				this.orderedSelection.setMaxSize(Infinity);
 				break;
-			case 'essentialPurchase':
+			case 'deprecated_essentialPurchase':
 				this.orderedSelection.setMaxSize(3);
 				break;
 			case 'glue':
@@ -397,7 +397,7 @@ export class DaleStock extends Stock implements DaleLocation {
 				return card.isEffectiveJunk();
 			case 'multipleExceptSecondary':
 				return !this.orderedSelection.includes(card_id, true);
-			case 'essentialPurchase':
+			case 'deprecated_essentialPurchase':
 				return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
 			case 'glue':
 				return card.effective_type_id == DaleCard.CT_GLUE && this.orderedSelection.get(true).includes(card.id);

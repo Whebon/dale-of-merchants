@@ -72,7 +72,7 @@ export class MainClientState {
                 return _("${you} must select any number of cards to discard");
             
             //Optional purchase states
-            case 'client_essentialPurchase':
+            case 'client_deprecated_essentialPurchase':
                 return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected junk cards");
             case 'client_glue':
                 return _("Glue: ${you} may keep Glue in your hand");

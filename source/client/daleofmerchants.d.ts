@@ -578,7 +578,7 @@ declare global {
 		 }
 		'client_inventory': {}
 		'client_selectPlayerPassive': { passive_card_id: number, via_deck?: boolean, keep_passive_selected?: boolean }
-		'client_essentialPurchase': ClientGameStates['client_purchase']
+		'client_deprecated_essentialPurchase': ClientGameStates['client_purchase']
 		'client_calculations': { passive_card_id: number, card_ids: number[], card_id_last: number }
 		'client_glue': ClientGameStates['client_purchase']
 		'client_houseCleaning': { technique_card_id: number, nbr_junk: number }
