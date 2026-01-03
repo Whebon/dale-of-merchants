@@ -155,7 +155,7 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actRoyalPrivilege()
+	public function actDEPRECATED_RoyalPrivilege()
 	{
 		self::setAjaxMode();
 
@@ -164,7 +164,7 @@ class action_daleofmerchants extends APP_GameAction
 		/** @var int $market_card_id */
 		$market_card_id = self::getArg('market_card_id', AT_int, true);
 
-		$this->game->actRoyalPrivilege( $toss_card_id, $market_card_id );
+		$this->game->actDEPRECATED_RoyalPrivilege( $toss_card_id, $market_card_id );
 		self::ajaxResponse();
 	}
 

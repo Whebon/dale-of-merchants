@@ -182,7 +182,7 @@ interface GameStates {
 			'trChangeActivePlayer': 29,
 			'trPassiveAbility': 30,
 			'trBonusBuild': 36,
-			'trRoyalPrivilege': 37,
+			'trDEPRECATED_RoyalPrivilege': 37,
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
 			'trGameEnd': 98,
@@ -316,12 +316,12 @@ interface GameStates {
 		},
 	},
 	37: {
-		'name': 'royalPrivilege',
+		'name': 'DEPRECATED_royalPrivilege',
 		'description': 'Royal Privilege: ${actplayer} may toss an animalfolk card to purchase an additional card for free',
 		'descriptionmyturn': 'Royal Privilege: ${you} may toss an animalfolk card to purchase an additional card for free',
 		'type': 'activeplayer',
 		'possibleactions': {
-			'actRoyalPrivilege': [{
+			'actDEPRECATED_RoyalPrivilege': [{
 				'name': 'toss_card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

@@ -4526,7 +4526,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_carefreeSwapper':
                         return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
-                    case 'client_velocipede':
+                    case 'client_DEPRECATED_velocipede':
                         return _("${card_name}: ${you} must choose a card from any stall to swap with");
                     case 'client_matchingColours':
                         return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");
@@ -5479,10 +5479,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons_10.DaleIcons.getSpyglassIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     break;
                 case 'client_acorn':
-                case 'client_velocipede':
+                case 'client_DEPRECATED_velocipede':
                     var client_acorn_targets = [];
                     for (var player_id in this.gamedatas.players) {
-                        if (stateName == 'client_velocipede' || +player_id != this.player_id) {
+                        if (stateName == 'client_DEPRECATED_velocipede' || +player_id != this.player_id) {
                             client_acorn_targets = client_acorn_targets.concat(this.playerStalls[player_id].getCardsInStall());
                         }
                     }
@@ -6245,7 +6245,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     TargetingLine_1.TargetingLine.remove();
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'client_velocipede':
+                case 'client_DEPRECATED_velocipede':
                     TargetingLine_1.TargetingLine.remove();
                     break;
                 case 'client_matchingColours':
@@ -6949,7 +6949,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }).bind(this), stateName === 'umbrella' ? 750 : 1);
                     this.addActionButton("skip-button", _("Skip"), function () { return delicacy_action_1(-1); }, undefined, false, "gray");
                     break;
-                case 'client_velocipede':
+                case 'client_DEPRECATED_velocipede':
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_matchingColours':
@@ -9095,7 +9095,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_carefreeSwapper', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_VELOCIPEDE:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_VELOCIPEDE:
                     for (var player_id in this.gamedatas.players) {
                         if (this.playerStalls[player_id].getNumberOfStacks() > 0) {
                             fizzle = false;
@@ -9106,7 +9106,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }
                     else {
-                        this.mainClientState.enterOnStack('client_velocipede', { technique_card_id: card.id });
+                        this.mainClientState.enterOnStack('client_DEPRECATED_velocipede', { technique_card_id: card.id });
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_MATCHINGCOLOURS:
@@ -9498,7 +9498,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var card_id = this.mainClientState.args.technique_card_id;
                 var card = new DaleCard_10.DaleCard(card_id);
                 var type_id = card.effective_type_id;
-                if ((type_id != DaleCard_10.DaleCard.CT_ACORN && type_id != DaleCard_10.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_10.DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard_10.DaleCard.CT_VELOCIPEDE && type_id != DaleCard_10.DaleCard.CT_BOUQUETS) || this.mainClientState.name == 'client_fizzle') {
+                if ((type_id != DaleCard_10.DaleCard.CT_ACORN && type_id != DaleCard_10.DaleCard.CT_GIFTVOUCHER && type_id != DaleCard_10.DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard_10.DaleCard.CT_DEPRECATED_VELOCIPEDE && type_id != DaleCard_10.DaleCard.CT_BOUQUETS) || this.mainClientState.name == 'client_fizzle') {
                     this.myHand.addDaleCardToStock(card, this.mySchedule.control_name + '_item_' + card_id);
                     this.mySchedule.removeFromStockByIdNoAnimation(card_id);
                     this.myHandSize.incValue(1);

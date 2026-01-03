@@ -237,7 +237,7 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_carefreeSwapper':
                 return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
-            case 'client_velocipede':
+            case 'client_DEPRECATED_velocipede':
                 return _("${card_name}: ${you} must choose a card from any stall to swap with");
             case 'client_matchingColours':
                 return _("${card_name}: ${you} must swap an animalfolk from your hand with a card of equal value from an opponent's stall");

@@ -124,7 +124,7 @@ $machinestates = array(
 			'trChangeActivePlayer' => 29,
 			'trPassiveAbility' => 30,
 			'trBonusBuild' => 36,
-			'trRoyalPrivilege' => 37,
+			'trDEPRECATED_RoyalPrivilege' => 37,
 			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
 			'trGameEnd' => 98,
@@ -216,11 +216,11 @@ $machinestates = array(
 		),
 	),
 	37 => array(
-		'name' => 'royalPrivilege',
+		'name' => 'DEPRECATED_royalPrivilege',
 		'description' => clienttranslate('Royal Privilege: ${actplayer} may toss an animalfolk card to purchase an additional card for free'),
 		'descriptionmyturn' => clienttranslate('Royal Privilege: ${you} may toss an animalfolk card to purchase an additional card for free'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actRoyalPrivilege'],
+		'possibleactions' => ['actDEPRECATED_RoyalPrivilege'],
 		'transitions' => array(
 			'trNextPlayer' => 41,
 		),

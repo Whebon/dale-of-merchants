@@ -653,10 +653,10 @@ class DaleOfMerchants extends Gamegui
 				);
 				break;
 			case 'client_acorn':
-			case 'client_velocipede':
+			case 'client_DEPRECATED_velocipede':
 				let client_acorn_targets: DaleCard[] = [];
 				for (let player_id in this.gamedatas.players) {
-					if (stateName == 'client_velocipede' || +player_id != this.player_id) {
+					if (stateName == 'client_DEPRECATED_velocipede' || +player_id != this.player_id) {
 						client_acorn_targets = client_acorn_targets.concat(this.playerStalls[player_id]!.getCardsInStall());
 					}
 				}
@@ -1493,7 +1493,7 @@ class DaleOfMerchants extends Gamegui
 				TargetingLine.remove();
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'client_velocipede':
+			case 'client_DEPRECATED_velocipede':
 				TargetingLine.remove();
 				break;
 			case 'client_matchingColours':
@@ -2200,7 +2200,7 @@ class DaleOfMerchants extends Gamegui
 				}).bind(this), stateName === 'umbrella' ? 750 : 1); //workaround to ensure that limbo is filled before the targeting line is created
 				this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, "gray");
 				break;
-			case 'client_velocipede':
+			case 'client_DEPRECATED_velocipede':
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_matchingColours':
@@ -4725,7 +4725,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_carefreeSwapper', card.id);
 				}
 				break;
-			case DaleCard.CT_VELOCIPEDE:
+			case DaleCard.CT_DEPRECATED_VELOCIPEDE:
 				for (let player_id in this.gamedatas.players) {
 					if (this.playerStalls[player_id]!.getNumberOfStacks() > 0) {
 						fizzle = false;
@@ -4736,7 +4736,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					this.mainClientState.enterOnStack('client_velocipede', { technique_card_id: card.id });
+					this.mainClientState.enterOnStack('client_DEPRECATED_velocipede', { technique_card_id: card.id });
 				}
 				break;
 			case DaleCard.CT_MATCHINGCOLOURS:
@@ -5142,7 +5142,7 @@ class DaleOfMerchants extends Gamegui
 			const card_id = this.mainClientState.args.technique_card_id
 			const card = new DaleCard(card_id);
 			const type_id = card.effective_type_id;
-			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER && type_id != DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard.CT_VELOCIPEDE && type_id != DaleCard.CT_BOUQUETS) || this.mainClientState.name == 'client_fizzle') {
+			if ((type_id != DaleCard.CT_ACORN && type_id != DaleCard.CT_GIFTVOUCHER && type_id != DaleCard.CT_SAFETYPRECAUTION && type_id != DaleCard.CT_DEPRECATED_VELOCIPEDE && type_id != DaleCard.CT_BOUQUETS) || this.mainClientState.name == 'client_fizzle') {
 				this.myHand.addDaleCardToStock(card, this.mySchedule.control_name+'_item_'+card_id)
 				this.mySchedule.removeFromStockByIdNoAnimation(card_id);
 				this.myHandSize.incValue(1);

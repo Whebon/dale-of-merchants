@@ -4877,14 +4877,14 @@ class DaleOfMerchants extends DaleTableBasic
                         }
                     }
                     break;
-                case CT_VELOCIPEDE:
+                case CT_DEPRECATED_VELOCIPEDE:
                     $players = $this->loadPlayersBasicInfosInclMono();
                     $cards = array();
                     foreach ($players as $other_player_id => $player) {
                         $cards = array_merge($cards, $this->cards->getCardsInLocation(STALL.$other_player_id));
                     }
                     if (count($cards) >= 1) {
-                        throw new BgaVisibleSystemException("Unable to fizzle CT_VELOCIPEDE. Some players have cards in their stall");
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_DEPRECATED_VELOCIPEDE. Some players have cards in their stall");
                     }
                     break;
                 case CT_MATCHINGCOLOURS:
@@ -4976,7 +4976,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //Schedule Technique
-        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_VELOCIPEDE && $technique_type_id != CT_BOUQUETS) {
+        if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_DEPRECATED_VELOCIPEDE && $technique_type_id != CT_BOUQUETS) {
             $choiceless = isset($args["choiceless"]) ? $args["choiceless"] : false;
             $this->scheduleCard($player_id, $technique_card, $choiceless);
         }
@@ -6154,13 +6154,13 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trUmbrella");
                 break;
-            case CT_VELOCIPEDE:
+            case CT_DEPRECATED_VELOCIPEDE:
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
                 $this->cards->moveCard($technique_card_id, STALL.$stall_player_id, $stall_card["location_arg"]);
                 $this->cards->moveCard($stall_card_id, HAND.$player_id);
-                $this->notifyAllPlayers('swapHandStall', clienttranslate('Velocipede: ${player_name} swaps with ${card_name}'), array(
+                $this->notifyAllPlayers('swapHandStall', clienttranslate('DEPRECATED_Velocipede: ${player_name} swaps with ${card_name}'), array(
                     "player_name" => $this->getActivePlayerName(),
                     "card_name" => $this->getCardName($stall_card),
                     "player_id" => $player_id,
