@@ -922,9 +922,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'DEPRECATED_historyLesson', 'daleofmerchants-wrap-technique', 3);
 				this.myDiscard.openPopin();
 				break;
-			case 'culturalPreservation':
-				const culturalPreservation_args = args.args as { _private: { cards: DbCard[] } };
-				this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard.of));
+			case 'DEPRECATED_culturalPreservation':
+				const DEPRECATED_culturalPreservation_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(DEPRECATED_culturalPreservation_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
 				this.myDeck.openPopin();
 				break;
@@ -1450,7 +1450,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_DEPRECATED_historyLesson':
 				this.myDiscard.setSelectionMode('none');
 				break;
-			case 'culturalPreservation':
+			case 'DEPRECATED_culturalPreservation':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
@@ -2013,8 +2013,8 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_HistoryLesson");
 				this.addActionButtonCancelClient();
 				break;
-			case 'culturalPreservation':
-				this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
+			case 'DEPRECATED_culturalPreservation':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_CulturalPreservation");
 				break;
 			case 'client_sliceoflife':
 				this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
@@ -4575,7 +4575,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_DEPRECATED_historyLesson', card.id);
 				}
 				break;
-			case DaleCard.CT_CULTURALPRESERVATION:
+			case DaleCard.CT_DEPRECATED_CULTURALPRESERVATION:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -5716,8 +5716,8 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onCulturalPreservation() {
-		this.bgaPerformAction('actCulturalPreservation', {
+	onDEPRECATED_CulturalPreservation() {
+		this.bgaPerformAction('actDEPRECATED_CulturalPreservation', {
 			card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
 		});
 	}

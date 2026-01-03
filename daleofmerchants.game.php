@@ -4856,7 +4856,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_VIGILANCE:
                 case CT_SUPPLYDEPOT:
                 case CT_DUPLICATEENTRY:
-                case CT_CULTURALPRESERVATION:
+                case CT_DEPRECATED_CULTURALPRESERVATION:
                 case CT_VORACIOUSCONSUMER:
                 case CT_POMPOUSPROFESSIONAL:
                 case CT_MEDDLINGMARKETEER:
@@ -5827,10 +5827,10 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_CULTURALPRESERVATION:
+            case CT_DEPRECATED_CULTURALPRESERVATION:
                 $this->beginResolvingCard($technique_card_id);
                 $this->reshuffleDeckForSearch($player_id, 3);
-                $this->gamestate->nextState("trCulturalPreservation");
+                $this->gamestate->nextState("trDEPRECATED_CulturalPreservation");
                 break;
             case CT_VORACIOUSCONSUMER:
                 $deck_nbr = $this->cards->countCardsInLocation(DECK.$player_id);
@@ -7873,8 +7873,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyPlayer($player_id, 'message', '', array()); //workaround for issue #129
     }
 
-    function actCulturalPreservation($card_ids) {
-        $this->checkAction("actCulturalPreservation");
+    function actDEPRECATED_CulturalPreservation($card_ids) {
+        $this->checkAction("actDEPRECATED_CulturalPreservation");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
         //New 10th anniversary rule: you must select 3 cards

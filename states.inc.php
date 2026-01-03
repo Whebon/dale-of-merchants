@@ -144,7 +144,7 @@ $machinestates = array(
 			'trDaringAdventurer' => 66,
 			'trNaturalSurvivor' => 67,
 			'trDuplicateEntry' => 68,
-			'trCulturalPreservation' => 69,
+			'trDEPRECATED_CulturalPreservation' => 69,
 			'trRefreshingDrink' => 70,
 			'trDelightfulSurprise' => 71,
 			'trReplacement' => 72,
@@ -437,12 +437,12 @@ $machinestates = array(
 		),
 	),
 	69 => array(
-		'name' => 'culturalPreservation',
+		'name' => 'DEPRECATED_culturalPreservation',
 		'description' => clienttranslate('Cultural Preservation: ${actplayer} must search their deck for 3 cards'),
 		'descriptionmyturn' => clienttranslate('Cultural Preservation: ${you} must search your deck for 3 cards'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
-		'possibleactions' => ['actCulturalPreservation'],
+		'possibleactions' => ['actDEPRECATED_CulturalPreservation'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

@@ -202,7 +202,7 @@ interface GameStates {
 			'trDaringAdventurer': 66,
 			'trNaturalSurvivor': 67,
 			'trDuplicateEntry': 68,
-			'trCulturalPreservation': 69,
+			'trDEPRECATED_CulturalPreservation': 69,
 			'trRefreshingDrink': 70,
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
@@ -678,13 +678,13 @@ interface GameStates {
 		},
 	},
 	69: {
-		'name': 'culturalPreservation',
+		'name': 'DEPRECATED_culturalPreservation',
 		'description': 'Cultural Preservation: ${actplayer} must search their deck for 3 cards',
 		'descriptionmyturn': 'Cultural Preservation: ${you} must search your deck for 3 cards',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContent',
 		'possibleactions': {
-			'actCulturalPreservation': [{
+			'actDEPRECATED_CulturalPreservation': [{
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,

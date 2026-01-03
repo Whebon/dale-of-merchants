@@ -5693,9 +5693,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('multipleFromTopWithGaps', 'DEPRECATED_historyLesson', 'daleofmerchants-wrap-technique', 3);
                     this.myDiscard.openPopin();
                     break;
-                case 'culturalPreservation':
-                    var culturalPreservation_args = args.args;
-                    this.myDeck.setContent(culturalPreservation_args._private.cards.map(DaleCard_10.DaleCard.of));
+                case 'DEPRECATED_culturalPreservation':
+                    var DEPRECATED_culturalPreservation_args = args.args;
+                    this.myDeck.setContent(DEPRECATED_culturalPreservation_args._private.cards.map(DaleCard_10.DaleCard.of));
                     this.myDeck.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', 3);
                     this.myDeck.openPopin();
                     break;
@@ -6202,7 +6202,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_DEPRECATED_historyLesson':
                     this.myDiscard.setSelectionMode('none');
                     break;
-                case 'culturalPreservation':
+                case 'DEPRECATED_culturalPreservation':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
@@ -6767,8 +6767,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_HistoryLesson");
                     this.addActionButtonCancelClient();
                     break;
-                case 'culturalPreservation':
-                    this.addActionButton("confirm-button", _("Confirm selected"), "onCulturalPreservation");
+                case 'DEPRECATED_culturalPreservation':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onDEPRECATED_CulturalPreservation");
                     break;
                 case 'client_sliceoflife':
                     this.addActionButton("confirm-button", _("Confirm"), "onSliceOfLife");
@@ -8947,7 +8947,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_DEPRECATED_historyLesson', card.id);
                     }
                     break;
-                case DaleCard_10.DaleCard.CT_CULTURALPRESERVATION:
+                case DaleCard_10.DaleCard.CT_DEPRECATED_CULTURALPRESERVATION:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9996,8 +9996,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: this.myDiscard.orderedSelection.get()
             });
         };
-        DaleOfMerchants.prototype.onCulturalPreservation = function () {
-            this.bgaPerformAction('actCulturalPreservation', {
+        DaleOfMerchants.prototype.onDEPRECATED_CulturalPreservation = function () {
+            this.bgaPerformAction('actDEPRECATED_CulturalPreservation', {
                 card_ids: this.arrayToNumberList(this.myDeck.orderedSelection.get())
             });
         };

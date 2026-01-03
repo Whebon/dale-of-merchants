@@ -363,14 +363,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actCulturalPreservation()
+	public function actDEPRECATED_CulturalPreservation()
 	{
 		self::setAjaxMode();
 
 		/** @var string $card_ids */
 		$card_ids = self::getArg('card_ids', AT_numberlist, true);
 
-		$this->game->actCulturalPreservation( $card_ids );
+		$this->game->actDEPRECATED_CulturalPreservation( $card_ids );
 		self::ajaxResponse();
 	}
 
