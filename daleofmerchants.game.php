@@ -5565,7 +5565,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_DEPRECATED_CHEER:
                 $this->beginResolvingCard($technique_card_id);
                 $this->setGameStateValue("active_player_id", $player_id);
-                $this->gamestate->nextState("trDeprecatedCheer");
+                $this->gamestate->nextState("trDEPRECATED_Cheer");
                 break;
             case CT_RAFFLE:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
@@ -7645,11 +7645,11 @@ class DaleOfMerchants extends DaleTableBasic
         // }
     }
     
-    function actDeprecatedCheer($card_id) {
-        $this->checkAction("actDeprecatedCheer");
+    function actDEPRECATED_Cheer($card_id) {
+        $this->checkAction("actDEPRECATED_Cheer");
         $player_id = $this->getCurrentPlayerId();
         $this->drawCardId(
-            clienttranslate('Cheer: ${player_name} draws a card from their deck'), 
+            clienttranslate('DEPRECATED_Cheer: ${player_name} draws a card from their deck'), 
             $card_id,
             false,
             $player_id,
@@ -9688,12 +9688,12 @@ class DaleOfMerchants extends DaleTableBasic
         ));
     }
 
-    function stDeprecatedCheer() {
+    function stDEPRECATED_Cheer() {
         $this->gamestate->setAllPlayersMultiactive();
         $players = $this->loadPlayersBasicInfosInclMono();
         foreach ( $players as $player_id => $player ) {
             if ($this->cards->countCardsInLocation(DECK.$player_id) == 0) {
-                $this->notifyAllPlayers('message', clienttranslate('Cheer: ${player_name} cannot search a card, their deck is empty'), array(
+                $this->notifyAllPlayers('message', clienttranslate('DEPRECATED_Cheer: ${player_name} cannot search a card, their deck is empty'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id)
                 ));
                 $this->nextStateChangeActivePlayerFromMultiActive("trFullyResolve", $player_id);

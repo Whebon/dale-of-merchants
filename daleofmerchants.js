@@ -6167,7 +6167,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'cunningNeighbour':
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'deprecated_cheer':
+                case 'DEPRECATED_cheer':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
@@ -6712,10 +6712,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'cunningNeighbour':
                     this.addActionButton("continue-button", _("Continue"), "onCunningNeighbour");
                     break;
-                case 'deprecated_cheer':
+                case 'DEPRECATED_cheer':
                     if (!this.isSpectator && this.myDeck.size > 0) {
-                        var cheer_args = args;
-                        this.myDeck.setContent(cheer_args._private.cards.map(DaleCard_10.DaleCard.of));
+                        var DEPRECATED_cheer_args = args;
+                        this.myDeck.setContent(DEPRECATED_cheer_args._private.cards.map(DaleCard_10.DaleCard.of));
                         this.myDeck.setSelectionMode('single');
                     }
                     break;
@@ -7939,8 +7939,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'deprecated_cheer':
-                    this.bgaPerformAction('actDeprecatedCheer', {
+                case 'DEPRECATED_cheer':
+                    this.bgaPerformAction('actDEPRECATED_Cheer', {
                         card_id: card.id
                     });
                     this.myDeck.setSelectionMode('none');

@@ -54,7 +54,7 @@ if (false) {
 	$game->stBadOmen();
 	$game->stFinalStatistics();
 	$game->stSerenade();
-	$game->stDeprecatedCheer();
+	$game->stDEPRECATED_Cheer();
 }
 
 $machinestates = array(
@@ -137,7 +137,7 @@ $machinestates = array(
 			'trNightShift' => 60,
 			'trRuthlessCompetition' => 61,
 			'trCunningNeighbour' => 62,
-			'trDeprecatedCheer' => 6300,
+			'trDEPRECATED_Cheer' => 6300,
 			'trCharity' => 64,
 			'trDEPRECATED_Tasters' => 6500,
 			'trTasters' => 65,
@@ -813,13 +813,13 @@ $machinestates = array(
 		),
 	),
 	6300 => array(
-		'name' => 'deprecated_cheer',
-		'description' => clienttranslate('Other players are still searching their decks'),
-		'descriptionmyturn' => clienttranslate('${you} must search your deck for a card'),
+		'name' => 'DEPRECATED_cheer',
+		'description' => clienttranslate('DEPRECATED_Cheer: Other players are still searching their decks'),
+		'descriptionmyturn' => clienttranslate('DEPRECATED_Cheer: ${you} must search your deck for a card'),
 		'type' => 'multipleactiveplayer',
-		'action' => 'stDeprecatedCheer',
+		'action' => 'stDEPRECATED_Cheer',
 		'args' => 'argDeckContent',
-		'possibleactions' => ['actDeprecatedCheer'],
+		'possibleactions' => ['actDEPRECATED_Cheer'],
 		'transitions' => array(
 			'trChangeActivePlayer' => 29,
 		),

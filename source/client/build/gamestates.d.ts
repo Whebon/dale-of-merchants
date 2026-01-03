@@ -195,7 +195,7 @@ interface GameStates {
 			'trNightShift': 60,
 			'trRuthlessCompetition': 61,
 			'trCunningNeighbour': 62,
-			'trDeprecatedCheer': 6300,
+			'trDEPRECATED_Cheer': 6300,
 			'trCharity': 64,
 			'trDEPRECATED_Tasters': 6500,
 			'trTasters': 65,
@@ -1299,14 +1299,14 @@ interface GameStates {
 		},
 	},
 	6300: {
-		'name': 'deprecated_cheer',
-		'description': 'Other players are still searching their decks',
-		'descriptionmyturn': '${you} must search your deck for a card',
+		'name': 'DEPRECATED_cheer',
+		'description': 'DEPRECATED_Cheer: Other players are still searching their decks',
+		'descriptionmyturn': 'DEPRECATED_Cheer: ${you} must search your deck for a card',
 		'type': 'multipleactiveplayer',
-		'action': 'stDeprecatedCheer',
+		'action': 'stDEPRECATED_Cheer',
 		'args': 'argDeckContent',
 		'possibleactions': {
-			'actDeprecatedCheer': [{
+			'actDEPRECATED_Cheer': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

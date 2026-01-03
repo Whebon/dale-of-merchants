@@ -1415,7 +1415,7 @@ class DaleOfMerchants extends Gamegui
 			case 'cunningNeighbour':
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'deprecated_cheer':
+			case 'DEPRECATED_cheer':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
@@ -1957,11 +1957,11 @@ class DaleOfMerchants extends Gamegui
 			case 'cunningNeighbour':
 				this.addActionButton("continue-button", _("Continue"), "onCunningNeighbour");
 				break;
-			case 'deprecated_cheer':
+			case 'DEPRECATED_cheer':
 				//this needs to be in onUpdateActionButton (see https://studio.boardgamearena.com/doc/Game_interface_logic:_yourgamename.js)
 				if (!this.isSpectator && this.myDeck.size > 0) {
-					const cheer_args = args as { _private: { cards: DbCard[] } };
-					this.myDeck.setContent(cheer_args._private.cards.map(DaleCard.of));
+					const DEPRECATED_cheer_args = args as { _private: { cards: DbCard[] } };
+					this.myDeck.setContent(DEPRECATED_cheer_args._private.cards.map(DaleCard.of));
 					this.myDeck.setSelectionMode('single');
 				}
 				break;
@@ -3444,8 +3444,8 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break
-			case 'deprecated_cheer':
-				this.bgaPerformAction('actDeprecatedCheer', {
+			case 'DEPRECATED_cheer':
+				this.bgaPerformAction('actDEPRECATED_Cheer', {
 					card_id: card!.id
 				})
 				this.myDeck.setSelectionMode('none');
