@@ -214,7 +214,6 @@ interface GameStates {
 			'trRumours': 78,
 			'trWheelbarrow': 79,
 			'trVigilance': 80,
-			'trTacticalMeasurement': 81,
 			'trMeddlingMarketeer': 82,
 			'trAnchor': 83,
 			'trManufacturedJoy': 84,
@@ -375,7 +374,7 @@ interface GameStates {
 		'transitions': {
 			'trNextPlayer': 41,
 			'trPassiveAbility': 41,
-			'trRefreshingDrink': 70,
+			'trTacticalMeasurement': 81,
 		},
 	},
 	52: {
@@ -710,7 +709,6 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
-			'trCleanUpPhase': 41,
 		},
 	},
 	71: {
@@ -906,7 +904,7 @@ interface GameStates {
 			}],
 		},
 		'transitions': {
-			'trSamePlayer': 30,
+			'trCleanUpPhase': 41,
 		},
 	},
 	82: {

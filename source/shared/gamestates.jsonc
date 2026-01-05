@@ -179,7 +179,6 @@
 			"trRumours": 78,
 			"trWheelbarrow": 79,
 			"trVigilance": 80,
-			"trTacticalMeasurement": 81,
 			"trMeddlingMarketeer": 82,
 			"trAnchor": 83,
 			"trManufacturedJoy": 84,
@@ -300,7 +299,9 @@
 		"transitions": { 
 			"trNextPlayer": 41, 
 			"trPassiveAbility": 41,
-			"trRefreshingDrink": 70 
+
+			//Hidden-information technique states
+			"trTacticalMeasurement": 81
 		}
 	},
 
@@ -599,7 +600,7 @@
 				{"name": "card_id", "type": "AT_int"}
 			]
 		},
-		"transitions": { "trSamePlayer": 30, "trCleanUpPhase": 41 }
+		"transitions": { "trSamePlayer": 30 }
 	},
 
 	"71": {
@@ -759,7 +760,7 @@
 				{"name": "card_ids", "type": "AT_numberlist"}
 			]
 		},
-		"transitions": { "trSamePlayer": 30 }
+		"transitions": { "trCleanUpPhase": 41 }
 	},
 	
 	"82": {

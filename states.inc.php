@@ -156,7 +156,6 @@ $machinestates = array(
 			'trRumours' => 78,
 			'trWheelbarrow' => 79,
 			'trVigilance' => 80,
-			'trTacticalMeasurement' => 81,
 			'trMeddlingMarketeer' => 82,
 			'trAnchor' => 83,
 			'trManufacturedJoy' => 84,
@@ -246,7 +245,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trNextPlayer' => 41,
 			'trPassiveAbility' => 41,
-			'trRefreshingDrink' => 70,
+			'trTacticalMeasurement' => 81,
 		),
 	),
 	52 => array(
@@ -457,7 +456,6 @@ $machinestates = array(
 		'possibleactions' => ['actRefreshingDrink'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
-			'trCleanUpPhase' => 41,
 		),
 	),
 	71 => array(
@@ -583,7 +581,7 @@ $machinestates = array(
 		'action' => 'stTacticalMeasurement',
 		'possibleactions' => ['actTacticalMeasurement'],
 		'transitions' => array(
-			'trSamePlayer' => 30,
+			'trCleanUpPhase' => 41,
 		),
 	),
 	82 => array(

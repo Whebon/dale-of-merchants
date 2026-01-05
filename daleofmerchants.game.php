@@ -8318,7 +8318,7 @@ class DaleOfMerchants extends DaleTableBasic
             $card_ids,
             $dbcards
         );
-        $this->gamestate->nextState("trSamePlayer");
+        $this->gamestate->nextState("trCleanUpPhase");
     }
 
     function actMeddlingMarketeer($discard_card_ids, $deck_card_ids) {
