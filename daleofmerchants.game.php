@@ -25,7 +25,6 @@ class DaleOfMerchants extends DaleTableBasic
     var DaleDeckSelection $deckSelection;
     var DaleDeck $cards;
     var DaleEffects $effects;
-    var $chameleon_targets_cache = array();
     var bool $inactUsePassiveAbility;
 
 	function __construct( )
@@ -1928,7 +1927,6 @@ class DaleOfMerchants extends DaleTableBasic
             $discard_pile = DISCARD.$player_id;
             $nbr = $this->cards->countCardsInLocation($discard_pile);
             if ($nbr > 0) {
-                $this->cards->expireChameleonTargetInDiscard($discard_pile);
                 $this->cards->moveAllCardsInLocation($discard_pile, $location);
                 $this->cards->shuffle($location);
                 if ($player_id == MARKET) {
@@ -2183,19 +2181,6 @@ class DaleOfMerchants extends DaleTableBasic
                 )
             ));
         }
-    }
-
-    /**
-     * @return bool indicating if the given `type_id` is one of the 5 chameleon type ids
-     */
-    function isChameleonTypeId(int $type_id) {
-        return (
-            $type_id == CT_FLEXIBLESHOPKEEPER ||
-            $type_id == CT_REFLECTION ||
-            $type_id == CT_GOODOLDTIMES ||
-            $type_id == CT_TRENDSETTING ||
-            $type_id == CT_SEEINGDOUBLES
-        );
     }
 
     /**
@@ -2973,6 +2958,21 @@ class DaleOfMerchants extends DaleTableBasic
     */
 
     /**
+     * Turns a $chameleon_dbcard into a copy of the $target_dbcard. INCLUDES a message to the players.
+     * @param array chameleon dbcard that is going to become a copy.
+     * @param array target dbcard that will be copied.
+     */
+    function copyCard(array $chameleon_dbcard, array $target_dbcard) {
+        $chameleon_name_before_copying = $this->getCardName($chameleon_dbcard);
+        $this->effects->copyCard($chameleon_dbcard, $target_dbcard);
+        $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} chameleon copy ${target_card_name}'), array(
+            'chameleon_card_name' => $chameleon_name_before_copying,
+            'target_card_name' => $this->getCardName($target_dbcard),
+            'player_name' => $this->getActivePlayerName()
+        ));
+    }
+
+    /**
      * Returns all the possible non-chameleon targets that can be reached by the provided card
      * @param int card_id of the card that is attempting to copy
      * @param int type_id of the card that is attempting to copy
@@ -3039,187 +3039,189 @@ class DaleOfMerchants extends DaleTableBasic
         return $targets;
     }
 
-    /**
-     * Returns true if the specified chameleon type is currently able to bind to the specified type. (does a dfs)
-     * @param int $chameleon_card_id the chameleon card id that is attempting to bind
-     * @param int $chameleon_type_id the chameleon type that is attempting to bind
-     * @param int $target_id the card_id of the card it wishes to bind to
-     * @return `true` if the target_id is valid for the specified chameleon type
-     */
-    function isValidChameleonTarget(int $chameleon_card_id, int $chameleon_type_id, int $target_id) {
-        switch($chameleon_type_id) {
-            case CT_FLEXIBLESHOPKEEPER:
-                $player_id = $this->getCurrentPlayerId();
-                $rightmost_stack_index = $this->cards->getNextStackIndex($player_id) - 1;
-                $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
-                foreach ($valid_targets as $target) {
-                    if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
-                        if ($target["id"] == $target_id) {
-                            return true;
-                        }
-                    }
-                }
-                break;
-            case CT_REFLECTION:
-                $active_player_id = $this->getActivePlayerId();
-                $players = $this->loadPlayersBasicInfosInclMono();
-                foreach ($players as $player_id => $player) {
-                    if ($player_id != $active_player_id) {
-                        $target = $this->cards->getCardOnTop(DISCARD.$player_id);
-                        if ($target) {
-                            if ($target["id"] == $target_id) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                break;
-            case CT_GOODOLDTIMES:
-                $target = $this->cards->getCardOnTop(DISCARD.MARKET);
-                if ($target) {
-                    if ($target["id"] == $target_id) {
-                        return true;
-                    }
-                }
-                $fakedbcard = array("id" => $chameleon_card_id, "type_arg" => $chameleon_type_id);
-                if (!$this->effects->isPassiveUsed($fakedbcard)) {
-                    return true;
-                }
-                break;
-            case CT_TRENDSETTING:
-                $valid_targets = $this->cards->getCardsInLocation(MARKET);
-                foreach ($valid_targets as $target) {
-                    if ($target["id"] == $target_id) {
-                        return true;
-                    }
-                }
-                break;
-            case CT_SEEINGDOUBLES:
-                $active_player_id = $this->getActivePlayerId();
-                $valid_targets = $this->cards->getCardsInLocation(HAND.$active_player_id);
-                foreach ($valid_targets as $target) {
-                    if ($target["id"] != $chameleon_card_id) { //seeing doubles cannot bind to itself
-                        if ($target["id"] == $target_id) {
-                            return true;
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
-        }
-        return false;
-    }
+    // TODO: safely remove this
+    // /**
+    //  * Returns true if the specified chameleon type is currently able to bind to the specified type. (does a dfs)
+    //  * @param int $chameleon_card_id the chameleon card id that is attempting to bind
+    //  * @param int $chameleon_type_id the chameleon type that is attempting to bind
+    //  * @param int $target_id the card_id of the card it wishes to bind to
+    //  * @return `true` if the target_id is valid for the specified chameleon type
+    //  */
+    // function isValidChameleonTarget(int $chameleon_card_id, int $chameleon_type_id, int $target_id) {
+    //     switch($chameleon_type_id) {
+    //         case CT_FLEXIBLESHOPKEEPER:
+    //             $player_id = $this->getCurrentPlayerId();
+    //             $rightmost_stack_index = $this->cards->getNextStackIndex($player_id) - 1;
+    //             $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
+    //             foreach ($valid_targets as $target) {
+    //                 if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
+    //                     if ($target["id"] == $target_id) {
+    //                         return true;
+    //                     }
+    //                 }
+    //             }
+    //             break;
+    //         case CT_REFLECTION:
+    //             $active_player_id = $this->getActivePlayerId();
+    //             $players = $this->loadPlayersBasicInfosInclMono();
+    //             foreach ($players as $player_id => $player) {
+    //                 if ($player_id != $active_player_id) {
+    //                     $target = $this->cards->getCardOnTop(DISCARD.$player_id);
+    //                     if ($target) {
+    //                         if ($target["id"] == $target_id) {
+    //                             return true;
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             break;
+    //         case CT_GOODOLDTIMES:
+    //             $target = $this->cards->getCardOnTop(DISCARD.MARKET);
+    //             if ($target) {
+    //                 if ($target["id"] == $target_id) {
+    //                     return true;
+    //                 }
+    //             }
+    //             $fakedbcard = array("id" => $chameleon_card_id, "type_arg" => $chameleon_type_id);
+    //             if (!$this->effects->isPassiveUsed($fakedbcard)) {
+    //                 return true;
+    //             }
+    //             break;
+    //         case CT_TRENDSETTING:
+    //             $valid_targets = $this->cards->getCardsInLocation(MARKET);
+    //             foreach ($valid_targets as $target) {
+    //                 if ($target["id"] == $target_id) {
+    //                     return true;
+    //                 }
+    //             }
+    //             break;
+    //         case CT_SEEINGDOUBLES:
+    //             $active_player_id = $this->getActivePlayerId();
+    //             $valid_targets = $this->cards->getCardsInLocation(HAND.$active_player_id);
+    //             foreach ($valid_targets as $target) {
+    //                 if ($target["id"] != $chameleon_card_id) { //seeing doubles cannot bind to itself
+    //                     if ($target["id"] == $target_id) {
+    //                         return true;
+    //                     }
+    //                 }
+    //             }
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    //     return false;
+    // }
 
-    /**
-     * Ensures that all used chameleon cards have a binding. Then commit those bindings.
-     * @param mixed $chameleons_json `AT_json`. representing local chameleon bindings  array of chameleon `card_id`s. Must be a subset of the 'used' cards
-     * @param string $raw_used_card_ids `AT_numberlist` or `AT_int`. representing a collection of card_ids that is being 'used' in this action
-     */
-    function addChameleonBindings(mixed $chameleons_json, string ...$raw_used_card_ids) {
-        // chameleons_json is of the following format:
-        // Array (
-        //     [0] => Array
-        //     (
-        //         [card_id] => 44
-        //         [chameleon_target_ids] => Array
-        //             (
-        //                 [0] => 1
-        //                 [1] => 2
-        //                 [2] => 3
-        //             )
+    // TODO: safely remove this
+    // /**
+    //  * Ensures that all used chameleon cards have a binding. Then commit those bindings.
+    //  * @param mixed $chameleons_json `AT_json`. representing local chameleon bindings  array of chameleon `card_id`s. Must be a subset of the 'used' cards
+    //  * @param string $raw_used_card_ids `AT_numberlist` or `AT_int`. representing a collection of card_ids that is being 'used' in this action
+    //  */
+    // function addChameleonBindings(mixed $chameleons_json, string ...$raw_used_card_ids) {
+    //     // chameleons_json is of the following format:
+    //     // Array (
+    //     //     [0] => Array
+    //     //     (
+    //     //         [card_id] => 44
+    //     //         [chameleon_target_ids] => Array
+    //     //             (
+    //     //                 [0] => 1
+    //     //                 [1] => 2
+    //     //                 [2] => 3
+    //     //             )
     
-        //         [target_type_ids] => Array
-        //             (
-        //                 [0] => 1
-        //                 [1] => 2
-        //                 [2] => 3
-        //             )
-        //     )
+    //     //         [target_type_ids] => Array
+    //     //             (
+    //     //                 [0] => 1
+    //     //                 [1] => 2
+    //     //                 [2] => 3
+    //     //             )
+    //     //     )
     
-        // [1] => Array
-        //     (
-        //         [card_id] => 45
-        //         [chameleon_target_ids] => Array
-        //             (
-        //                 [0] => 1
-        //                 [1] => 2
-        //                 [2] => 3
-        //             )
+    //     // [1] => Array
+    //     //     (
+    //     //         [card_id] => 45
+    //     //         [chameleon_target_ids] => Array
+    //     //             (
+    //     //                 [0] => 1
+    //     //                 [1] => 2
+    //     //                 [2] => 3
+    //     //             )
     
-        //         [target_type_ids] => Array
-        //             (
-        //                 [0] => 1
-        //                 [1] => 2
-        //                 [2] => 3
-        //             )
-        //     )
-        //     //...
-        // )
+    //     //         [target_type_ids] => Array
+    //     //             (
+    //     //                 [0] => 1
+    //     //                 [1] => 2
+    //     //                 [2] => 3
+    //     //             )
+    //     //     )
+    //     //     //...
+    //     // )
 
-        //iterate over all cards the player attempts to use. any chameleon with at least 1 valid target, must copy a valid target.
-        $used_card_ids = $this->numberListsToArray(...$raw_used_card_ids);
-        $dbcards = $this->cards->getCards($used_card_ids);
-        foreach ($dbcards as $dbcard) {
-            $type_id = $this->getTypeId($dbcard); //apply the existing binding for this dbcard
-            if ($type_id == CT_FLEXIBLESHOPKEEPER ||
-                $type_id == CT_REFLECTION ||
-                $type_id == CT_GOODOLDTIMES ||
-                $type_id == CT_TRENDSETTING ||
-                $type_id == CT_SEEINGDOUBLES
-            ) {
-                //get the local client-defined chameleon binding for this dbcard.
-                $card_id = $dbcard["id"];
-                $chameleon_target_ids = [];
-                $target_type_ids = [];
-                $length = 0;
-                foreach ($chameleons_json as $local_chain) {
-                    if ($local_chain["card_id"] == $card_id) {
-                        $chameleon_target_ids = $local_chain["chameleon_target_ids"];
-                        $target_type_ids = $local_chain["target_type_ids"];
-                        $length = count($local_chain["chameleon_target_ids"]);
-                        if ($length != count($local_chain["target_type_ids"])) {
-                            throw new BgaVisibleSystemException("chameleon_target_ids and target_type_ids should have an equal length");
-                        }
-                        break;
-                    }
-                }
+    //     //iterate over all cards the player attempts to use. any chameleon with at least 1 valid target, must copy a valid target.
+    //     $used_card_ids = $this->numberListsToArray(...$raw_used_card_ids);
+    //     $dbcards = $this->cards->getCards($used_card_ids);
+    //     foreach ($dbcards as $dbcard) {
+    //         $type_id = $this->getTypeId($dbcard); //apply the existing binding for this dbcard
+    //         if ($type_id == CT_FLEXIBLESHOPKEEPER ||
+    //             $type_id == CT_REFLECTION ||
+    //             $type_id == CT_GOODOLDTIMES ||
+    //             $type_id == CT_TRENDSETTING ||
+    //             $type_id == CT_SEEINGDOUBLES
+    //         ) {
+    //             //get the local client-defined chameleon binding for this dbcard.
+    //             $card_id = $dbcard["id"];
+    //             $chameleon_target_ids = [];
+    //             $target_type_ids = [];
+    //             $length = 0;
+    //             foreach ($chameleons_json as $local_chain) {
+    //                 if ($local_chain["card_id"] == $card_id) {
+    //                     $chameleon_target_ids = $local_chain["chameleon_target_ids"];
+    //                     $target_type_ids = $local_chain["target_type_ids"];
+    //                     $length = count($local_chain["chameleon_target_ids"]);
+    //                     if ($length != count($local_chain["target_type_ids"])) {
+    //                         throw new BgaVisibleSystemException("chameleon_target_ids and target_type_ids should have an equal length");
+    //                     }
+    //                     break;
+    //                 }
+    //             }
 
-                if ($length == 0) {
-                    //the client did not provide a chameleon chain, we must verify if the chameleon indeed has no valid targets
-                    $visited_chameleons = array();
-                    $targets = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
-                    $number_of_targets = count($targets);
-                    $goodoldtimes = (isset($this->inactUsePassiveAbility) && in_array(CT_GOODOLDTIMES, $visited_chameleons));
-                    if ($number_of_targets > 0 && !$goodoldtimes) {
-                        $name = $this->getCardName($dbcard);
-                        throw new BgaVisibleSystemException("Client did not provide a target for '$name', but $number_of_targets valid target(s) exist(s)");
-                    }
-                }
-                else {
-                    //verify if the non-empty chameleon chain provided the client is valid.
-                    $curr_card_id = $card_id;
-                    $curr_type_id = $type_id;
-                    for ($i=0; $i < $length; $i++) {
-                        $chameleon_target_id = $chameleon_target_ids[$i];
-                        $target_type_id = $target_type_ids[$i];
-                        if (!$this->isValidChameleonTarget($curr_card_id, $curr_type_id, $chameleon_target_id)) {
-                            $name = $this->getCardName($dbcard);
-                            throw new BgaVisibleSystemException("Unable to bind '$name' [card_id = $card_id] to [chameleon_target_id = $chameleon_target_id]");
-                        }
-                        $this->effects->insertModification($card_id, $curr_type_id, $target_type_id, $chameleon_target_id); //commit
-                        $curr_card_id = $chameleon_target_id;
-                        $curr_type_id = $target_type_id;
-                    }
-                    $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} copy ${target_card_name}'), array(
-                        'chameleon_card_name' => $this->card_types[$type_id]['name'],
-                        'target_card_name' => $this->getCardName($dbcard),
-                        'player_name' => $this->getActivePlayerName()
-                    ));
-                }
-            }
-        }
-    }
+    //             if ($length == 0) {
+    //                 //the client did not provide a chameleon chain, we must verify if the chameleon indeed has no valid targets
+    //                 $visited_chameleons = array();
+    //                 $targets = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
+    //                 $number_of_targets = count($targets);
+    //                 $goodoldtimes = (isset($this->inactUsePassiveAbility) && in_array(CT_GOODOLDTIMES, $visited_chameleons));
+    //                 if ($number_of_targets > 0 && !$goodoldtimes) {
+    //                     $name = $this->getCardName($dbcard);
+    //                     throw new BgaVisibleSystemException("Client did not provide a target for '$name', but $number_of_targets valid target(s) exist(s)");
+    //                 }
+    //             }
+    //             else {
+    //                 //verify if the non-empty chameleon chain provided the client is valid.
+    //                 $curr_card_id = $card_id;
+    //                 $curr_type_id = $type_id;
+    //                 for ($i=0; $i < $length; $i++) {
+    //                     $chameleon_target_id = $chameleon_target_ids[$i];
+    //                     $target_type_id = $target_type_ids[$i];
+    //                     if (!$this->isValidChameleonTarget($curr_card_id, $curr_type_id, $chameleon_target_id)) {
+    //                         $name = $this->getCardName($dbcard);
+    //                         throw new BgaVisibleSystemException("Unable to bind '$name' [card_id = $card_id] to [chameleon_target_id = $chameleon_target_id]");
+    //                     }
+    //                     $this->effects->insertModification($card_id, $curr_type_id, $target_type_id, $chameleon_target_id); //commit
+    //                     $curr_card_id = $chameleon_target_id;
+    //                     $curr_type_id = $target_type_id;
+    //                 }
+    //                 $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} copy ${target_card_name}'), array(
+    //                     'chameleon_card_name' => $this->card_types[$type_id]['name'],
+    //                     'target_card_name' => $this->getCardName($dbcard),
+    //                     'player_name' => $this->getActivePlayerName()
+    //                 ));
+    //             }
+    //         }
+    //     }
+    // }
 
     //TODO: safely remove this
     // /**
@@ -4192,6 +4194,30 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+     /**
+     * Spawn cards on top of the supply
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnSupply(string $name, int $nbr = 1) {
+        $player_id = $this->getCurrentPlayerId();
+        $cards = $this->spawn($name, $nbr);
+        $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.MARKET);
+        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on supply'), array_merge( array (
+            'player_id' => $this->getCurrentPlayerId(),
+            'player_name' => $this->getActivePlayerName(),
+            "_private" => array(
+                'card_ids' => $this->toCardIds($cards),
+                'cards' => $cards,
+            ),
+            'deck_player_id' => MARKET,
+            'nbr' => $nbr,
+            'from_limbo' => false
+        )));
+        return $cards;
+    }
+
     /**
      * Spawn cards on top of the current player's deck
      * @param string $name prefix of the card name
@@ -4528,8 +4554,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->setPlayerNonMultiactive($player_id, "trStartGame");
     }
 
-    function actPurchase($chameleons_json, $funds_card_ids, $market_card_id, $args) {
-        $this->addChameleonBindings($chameleons_json, $funds_card_ids);
+    function actPurchase($funds_card_ids, $market_card_id, $args) {
         $this->checkAction("actPurchase");
         $player_id = $this->getActivePlayerId();
         $funds_card_ids = $this->numberListToArray($funds_card_ids);
@@ -4717,8 +4742,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPlayTechniqueCard($chameleons_json, $technique_card_id, $args) {
-        $this->addChameleonBindings($chameleons_json, $technique_card_id);
+    function actPlayTechniqueCard($technique_card_id, $args) {
         $this->checkAction("actPlayTechniqueCard");
         $player_id = $this->getActivePlayerId();
         $technique_card = $this->cards->getCardFromLocation($technique_card_id, HAND.$player_id);
@@ -4900,27 +4924,17 @@ class DaleOfMerchants extends DaleTableBasic
                         }
                     }
                     //verify that all the hand cards do not match the possible values
-                    foreach($this->cards->getCardsInLocation(HAND.$player_id) as $dbCard) {
-                        //get the chameleon target if needed
-                        $chameleon_target_ids = $this->getChameleonTargets($dbCard["id"], $this->getTypeId($dbCard));
-                        if (count($chameleon_target_ids) == 1 && $chameleon_target_ids[0] == $dbCard["id"]) {
-                            $targets = array($dbCard);
-                        }
-                        else {
-                            $targets = $this->cards->getCards($chameleon_target_ids);
-                        }
-                        foreach ($targets as $handCard) {
-                            $isOtherAnimalfolk = $this->isAnimalfolk($handCard) && $handCard["id"] != $technique_card_id;
-                            if ($isOtherAnimalfolk && in_array($this->getValue($handCard), $values)) {
-                                $card_name = $this->getCardName($dbCard);
-                                $target_name = $this->getCardName($handCard);
-                                if ($card_name == $target_name) {
-                                    throw new BgaVisibleSystemException("Unable to fizzle CT_COLOURSWAP. '". $card_name."' can be swapped...");
-                                }
-                                else {
-                                    throw new BgaUserException(_("Colour Swap has valid targets. Try using '").$card_name."' as '".$target_name."'.");
-                                } 
+                    foreach($this->cards->getCardsInLocation(HAND.$player_id) as $handCard) {
+                        $isOtherAnimalfolk = $this->isAnimalfolk($handCard) && $handCard["id"] != $technique_card_id;
+                        if ($isOtherAnimalfolk && in_array($this->getValue($handCard), $values)) {
+                            $card_name = $this->getCardName($handCard);
+                            $target_name = $this->getCardName($handCard);
+                            if ($card_name == $target_name) {
+                                throw new BgaVisibleSystemException("Unable to fizzle CT_COLOURSWAP. '". $card_name."' can be swapped...");
                             }
+                            else {
+                                throw new BgaUserException(_("Colour Swap has valid targets. Try using '").$card_name."' as '".$target_name."'.");
+                            } 
                         }
                     }
                     break;
@@ -5308,40 +5322,41 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $dbcard = $dbcards[0];
                 try {
-                    //auto-bind a chameleon to all possible targets
-                    $type_id = $this->getTypeId($dbcard);
-                    if ($this->isChameleonTypeId($type_id)) {
-                        $target_ids = $this->getChameleonTargets($dbcard["id"], $type_id);
-                        $targets = $this->cards->getCards($target_ids);
-                        foreach ($targets as $target) {
-                            if ($this->getTypeId($target) == CT_WINTERISCOMING) {
-                                //prioritize binding to CT_WINTERISCOMING
-                                $targets = array($target['id'] => $target) + $targets; 
-                                break;
-                            }
-                        }
-                        $chameleon_failed = false;
-                        foreach ($targets as $target) {
-                            try {
-                                $this->enforceValidStack($stack_index, array($target));
-                                $target_type_id = $this->getTypeId($target);
-                                $this->effects->insertModification($dbcard["id"], $type_id, $target_type_id, $target["id"]);
-                                $this->notifyAllPlayers('message', clienttranslate('${player_name}\'s ${chameleon_card_name} automatically copies ${card_name}'), array(
-                                    'chameleon_card_name' => $this->card_types[$type_id]['name'],
-                                    'card_name' => $this->getCardName($dbcard),
-                                    'player_name' => $this->getActivePlayerName()
-                                ));
-                                $chameleon_failed = false;
-                                break;
-                            }
-                            catch(BgaUserException $e) {
-                                $chameleon_failed = true;
-                            }
-                        }
-                        if ($chameleon_failed) {
-                            throw new BgaUserException("Charm is unable to find a buildable target for the drawn chameleon card");
-                        }
-                    }
+                    // TODO: safely remove this
+                    // //auto-bind a chameleon to all possible targets
+                    // $type_id = $this->getTypeId($dbcard);
+                    // if ($this->isChameleonTypeId($type_id)) {
+                    //     $target_ids = $this->getChameleonTargets($dbcard["id"], $type_id);
+                    //     $targets = $this->cards->getCards($target_ids);
+                    //     foreach ($targets as $target) {
+                    //         if ($this->getTypeId($target) == CT_WINTERISCOMING) {
+                    //             //prioritize binding to CT_WINTERISCOMING
+                    //             $targets = array($target['id'] => $target) + $targets; 
+                    //             break;
+                    //         }
+                    //     }
+                    //     $chameleon_failed = false;
+                    //     foreach ($targets as $target) {
+                    //         try {
+                    //             $this->enforceValidStack($stack_index, array($target));
+                    //             $target_type_id = $this->getTypeId($target);
+                    //             $this->effects->insertModification($dbcard["id"], $type_id, $target_type_id, $target["id"]);
+                    //             $this->notifyAllPlayers('message', clienttranslate('${player_name}\'s ${chameleon_card_name} automatically copies ${card_name}'), array(
+                    //                 'chameleon_card_name' => $this->card_types[$type_id]['name'],
+                    //                 'card_name' => $this->getCardName($dbcard),
+                    //                 'player_name' => $this->getActivePlayerName()
+                    //             ));
+                    //             $chameleon_failed = false;
+                    //             break;
+                    //         }
+                    //         catch(BgaUserException $e) {
+                    //             $chameleon_failed = true;
+                    //         }
+                    //     }
+                    //     if ($chameleon_failed) {
+                    //         throw new BgaUserException("Charm is unable to find a buildable target for the drawn chameleon card");
+                    //     }
+                    // }
                     //check for the stove interaction
                     if ($this->getTypeId($dbcard) == CT_STOVE) {
                         $this->cards->moveCardOnTop($dbcard["id"], DECK.MARKET); //place the card back on top
@@ -5422,7 +5437,6 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->validateOpponentId($opponent_id);
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                $this->addChameleonBindings($chameleons_json, $card_id); //the opponent will be notified of this, but that's ok I guess (see issue #92)
                 $this->setGameStateValue("opponent_id", $player_id); //player_id is the opponent_id from the opponent's perspective
                 $this->setGameStateValue("card_id", $card_id);
                 $this->nextStateChangeActivePlayer("trDEPRECATED_Blindfold", $opponent_id);
@@ -5701,7 +5715,6 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_RAREARTEFACT:
                 $card_id = $args["card_id"];
-                $this->addChameleonBindings($chameleons_json, $card_id);
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 $die_value = $this->rollDie(
                     clienttranslate('Rare Artefact: ${player_name} rolls ${die_icon}'),
@@ -5871,7 +5884,6 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_REPLACEMENT:
                 $card_id = $args["card_id"];
-                $this->addChameleonBindings($chameleons_json, $card_id);
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 $value = $this->getValue($card);
                 $market_cards = $this->cards->getCardsInLocation(MARKET);
@@ -6173,7 +6185,6 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_COLOURSWAP:
                 //get the both cards that need to be swapped
                 $hand_card_id = $args["card_id"];
-                $this->addChameleonBindings($chameleons_json, $hand_card_id); //if the hand_card_id was locally bound, commit it now
                 $hand_card = $this->cards->getCardFromLocation($hand_card_id, HAND.$player_id);
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
@@ -6773,8 +6784,7 @@ class DaleOfMerchants extends DaleTableBasic
         } //(~technique)
     }
 
-    function actFullyResolveTechniqueCard($chameleons_json, $technique_card_id, $args) {
-        $this->addChameleonBindings($chameleons_json, $technique_card_id);
+    function actFullyResolveTechniqueCard($technique_card_id, $args) {
         $this->checkAction("actFullyResolveTechniqueCard");
         $player_id = $this->getActivePlayerId();
         $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
@@ -7028,9 +7038,8 @@ class DaleOfMerchants extends DaleTableBasic
         } //(~resolve)
     }
     
-    function actUsePassiveAbility($chameleons_json, $passive_card_id, $args) {
+    function actUsePassiveAbility($passive_card_id, $args) {
         $this->inactUsePassiveAbility = true;
-        $this->addChameleonBindings($chameleons_json, $passive_card_id);
         $this->checkAction("actUsePassiveAbility");
 
         $player_id = $this->getActivePlayerId();
@@ -7062,13 +7071,19 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertModification($passive_card_id, CT_COOKIES);
                 break;
             case CT_GOODOLDTIMES:
-                $dbcard = $this->tossFromMarketDeck(clienttranslate('${player_name} uses their Good Old Times to toss a card from the market deck'));
-                $target_type_id = $this->getTypeId($dbcard);
-                $chameleon_target_id = $dbcard["id"];
-                $goodoldtimes_type_id = $this->getTypeId($passive_card);
-                if ($goodoldtimes_type_id == CT_GOODOLDTIMES) {
-                    //if the chain was not broken by the toss effect, immediately copy the new card
-                    $this->effects->insertModification($passive_card_id, CT_GOODOLDTIMES, $target_type_id, $chameleon_target_id);
+                $target_id = $args["target_id"];
+                if ($target_id == 0) {
+                    // Toss and copy
+                    $dbcard = $this->tossFromMarketDeck(clienttranslate('Good Old Times: ${player_name} tosses a card from the market deck'));
+                    $this->copyCard($passive_card, $dbcard);
+                }
+                else {
+                    // Copy
+                    $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
+                    if ($dbcard == null || $dbcard["id"] != $target_id) {
+                        throw new BgaVisibleSystemException("Good Old Times: attempted to copy card_id = $target_id, but it is not on top of the bin");
+                    }
+                    $this->copyCard($passive_card, $dbcard);
                 }
                 break;
             case CT_DEPRECATED_MARKETDISCOVERY:
@@ -8963,8 +8978,7 @@ class DaleOfMerchants extends DaleTableBasic
     // |
      //(~acts)
 
-    function actBuild($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard, $args) {
-        $this->addChameleonBindings($chameleons_json, $stack_card_ids, $stack_card_ids_from_discard);
+    function actBuild($stack_card_ids, $stack_card_ids_from_discard, $args) {
         $this->checkAction("actBuild");
         $stack_card_ids = $this->numberListToArray($stack_card_ids);
         $stack_card_ids_from_discard = $this->numberListToArray($stack_card_ids_from_discard);
@@ -9061,20 +9075,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPostCleanUpPhase($chameleons_json) {
+    function actPostCleanUpPhase() {
         $this->checkAction("actPostCleanUpPhase");
-        $chameleon_ids = array();
-        foreach ($chameleons_json as $local_chain) {
-            $target_type_ids = $local_chain["target_type_ids"];
-            if ($target_type_ids > 0) {
-                $target_type_id = $target_type_ids[count($target_type_ids)-1];
-                if ($this->card_types[$target_type_id]["trigger"] == "onCleanUp") {
-                    $chameleon_ids[] = $local_chain["card_id"];
-                }
-            }
-        }
         $this->setGameStateValue("isPostCleanUpPhase", 1); //don't go into post clean-up phase again
-        $this->addChameleonBindings($chameleons_json, implode(';', $chameleon_ids));
         $this->gamestate->nextState("trNextPlayer");
     }
 

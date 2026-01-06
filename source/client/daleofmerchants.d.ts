@@ -521,6 +521,12 @@ declare global {
 	}
 
 	interface ClientPassiveChoice {
+		'chameleon_flexibleShopkeeper': { target_id: number },
+		'chameleon_reflection': { target_id: number },
+		'chameleon_goodoldtimes': { target_id: number },
+		'chameleon_trendsetting': { target_id: number },
+		'chameleon_seeingdoubles': { target_id: number },
+
 		'client_choicelessPassiveCard': {},
 		'client_selectOpponentPassive': { opponent_id: number }
 		'client_selectPlayerPassive': { opponent_id: number }
@@ -546,12 +552,6 @@ declare global {
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameStates extends TriggerTechniqueClientStates, TechniqueClientStates, PassiveClientStates {
-		'chameleon_autobind': {}
-		'chameleon_flexibleShopkeeper': {}
-		'chameleon_reflection': {}
-		'chameleon_goodoldtimes': { mode: 'copy' | 'tossOrCopy' | 'tossOptional' | 'tossMandatory' | undefined }
-		'chameleon_trendsetting': {}
-		'chameleon_seeingdoubles': {}
 		'client_purchase' : { 
 			pos: number, 
 			market_discovery_card_id: number | undefined, 

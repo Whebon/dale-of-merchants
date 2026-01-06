@@ -43,15 +43,13 @@ class DaleEffects {
      * @param int $card_id either the source of an global effect or the receiver of a modification effect
      * @param int $type_id uniquely defined by the physical card, used to determine the type of effect
      * @param int $arg (optional) additional information of the effect
-     * @param int $chameleon_target_id (optional) only used by chameleon copying effects, stores the copied card_id
      * @return array newly added effect
      */
-    private function insert(int $effect_class, int $card_id, int $type_id, ?int $arg, ?int $chameleon_target_id) {
+    private function insert(int $effect_class, int $card_id, int $type_id, ?int $arg) {
         $this->last_effect_id += 1;
         $effect_id = $this->last_effect_id;
         $nullable_arg = ($arg == null) ? "NULL" : $arg;
-        $nullable_chameleon_target_id = ($chameleon_target_id == null) ? "NULL" : $chameleon_target_id;
-        $sql = "INSERT INTO effect (effect_id, effect_class, card_id, type_id, arg, chameleon_target_id) VALUES ($effect_id, $effect_class, $card_id, $type_id, $nullable_arg, $nullable_chameleon_target_id)";
+        $sql = "INSERT INTO effect (effect_id, effect_class, card_id, type_id, arg) VALUES ($effect_id, $effect_class, $card_id, $type_id, $nullable_arg)";
         $this->game->DbQuery($sql);
         $row = array(
             "effect_id" => $effect_id,
@@ -59,7 +57,6 @@ class DaleEffects {
             "card_id" => $card_id,
             "type_id" => $type_id,
             "arg" => $arg,
-            "chameleon_target_id" => $chameleon_target_id,
         );
         $this->cache[] = $row;
         $this->game->notifyAllPlayers('addEffect', '', array("effect" => $row));
@@ -71,11 +68,10 @@ class DaleEffects {
      * @param int $card_id the card that will be modified by the effect
      * @param int $type_id the effective type of the effect (CT).
      * @param int $arg (optional) default null. additional information about the effect.
-     * @param int $chameleon_target_id (optional) only used by chameleon copying effects, stores the copied card_id
      * @return array newly added effect
      */
-    function insertModification(int $card_id, int $type_id, ?int $arg = null, ?int $chameleon_target_id = null) {
-        return $this->insert(EC_MODIFICATION, $card_id, $type_id, $arg, $chameleon_target_id);
+    function insertModification(int $card_id, int $type_id, ?int $arg = null) {
+        return $this->insert(EC_MODIFICATION, $card_id, $type_id, $arg);
     }
 
     /**
@@ -86,7 +82,7 @@ class DaleEffects {
      * @return array newly added effect
      */
     function insertGlobal(int $card_id, int $type_id, ?int $arg = null) {
-        return $this->insert(EC_GLOBAL, $card_id, $type_id, $arg, null);
+        return $this->insert(EC_GLOBAL, $card_id, $type_id, $arg);
     }
 
     //////////////////////////////////////
@@ -149,21 +145,8 @@ class DaleEffects {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
         $value = $this->game->card_types[$type_id]['value'];
-        $chameleonEffects = array();
-        $chameleonEffect = $this->getChameleonEffect($card_id);
-        while ($chameleonEffect !== null) {
-            $chameleonEffects[] = $chameleonEffect;
-            $chameleonEffect = $this->getChameleonEffect($chameleonEffect["chameleon_target_id"]);
-        }
         foreach ($this->cache as $row) {
-            $isCopiedEffect = false;
-            foreach ($chameleonEffects as $chameleonEffect) {
-                if ($row["card_id"] == $chameleonEffect["chameleon_target_id"] && $row["effect_id"] < $chameleonEffect["effect_id"]) {
-                    $isCopiedEffect = true;
-                    break;
-                }
-            }
-            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL || $isCopiedEffect) {
+            if ($row["card_id"] == $card_id || $row["effect_class"] == EC_GLOBAL) {
                 switch($row["type_id"]) {
                     case CT_FLASHYSHOW:
                         $value += 1;
@@ -186,7 +169,7 @@ class DaleEffects {
                             $value = 6 - $value;
                         }
                         break;
-                    case CT_BAROMETER:
+                    case EFFECT_CHAMELEON_VALUE:
                         $value = $row["arg"];
                         break;
                 }
@@ -218,15 +201,9 @@ class DaleEffects {
     function getTypeId(array $dbcard) {
         $card_id = $dbcard["id"];
         $type_id = $dbcard["type_arg"];
-        if (
-            $type_id == CT_FLEXIBLESHOPKEEPER || 
-            $type_id == CT_REFLECTION ||  
-            $type_id == CT_GOODOLDTIMES || 
-            $type_id == CT_TRENDSETTING || 
-            $type_id == CT_SEEINGDOUBLES
-        ) {
+        if ($this->isChameleonTypeId($type_id)) {
             foreach ($this->cache as $row) {
-                if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["chameleon_target_id"] != null && $row["chameleon_target_id"] != "NULL") {
+                if ($row["card_id"] == $card_id && $row["type_id"] == EFFECT_CHAMELEON_TYPE) {
                     $type_id = $row["arg"];
                 }
             }
@@ -237,23 +214,12 @@ class DaleEffects {
     /**
      * @return `true` if the passive ability of this card has been used already
      * @param array $dbcard
-     * @param bool $argNonNull (optional) default false. If true, only count passives with non-null args (e.g. bold haggler)
      */
-    function isPassiveUsed(array $dbcard, bool $argNonNull = false) {
+    function isPassiveUsed(array $dbcard) {
         $card_id = $dbcard["id"];
         $type_id = $this->getTypeId($dbcard);
-        $chameleonEffect = $this->getChameleonEffect($card_id);
-        if ($chameleonEffect) {
-            $fakedbcard = array("id" => $chameleonEffect["chameleon_target_id"], "type_arg" => $dbcard["type_arg"]);
-            if ($this->isPassiveUsed($fakedbcard, true)) {
-                return true;
-            }
-        }
         foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id && $row["chameleon_target_id"] == null) {
-                if ($argNonNull && ($row["arg"] == null || $row["arg"] == "NULL")) {
-                    continue;
-                }
+            if ($row["card_id"] == $card_id && $row["type_id"] == $type_id) {
                 return true;
             }
         }
@@ -299,67 +265,121 @@ class DaleEffects {
         }
     }
 
+    ////////////////////////////////////////////////////
+    ///////     Chameleon-related functions      ///////
+    ////////////////////////////////////////////////////
+
     /**
-     * Return the last chameleon copy effect that affects the specified card_id
-     * @return array|null
+     * @return bool indicating if the given `type_id` is one of the 5 chameleon type ids
      */
-    function getChameleonEffect(int $card_id) {
-        $effect = null;
-        foreach ($this->cache as $row) {
-            if ($row["card_id"] == $card_id && $row["chameleon_target_id"] != null && $row["chameleon_target_id"] != "NULL") {
-                $effect = $row;
-            }
-        }
-        return $effect;
+    function isChameleonTypeId(int $type_id) {
+        return (
+            $type_id == CT_FLEXIBLESHOPKEEPER ||
+            $type_id == CT_REFLECTION ||
+            $type_id == CT_GOODOLDTIMES ||
+            $type_id == CT_SOUNDDETECTORS ||
+            $type_id == CT_TRENDSETTING ||
+            $type_id == CT_SEEINGDOUBLES
+        );
     }
 
     /**
-     * This function should be called if the card of the given target_id becomes an invalid target.
-     * If it was the target of some chameleon card, expire all modifications made to that chameleon card during and after the copying the invalid target.
-     * @param $target_id the now invalid target
+     * Turns a $chameleon_dbcard into a copy of the $target_dbcard. EXCLUDES a message to the players.
+     * @param array chameleon dbcard that is going to become a copy.
+     * @param array target dbcard that will be copied.
      */
-    function expireChameleonTarget(int $target_id) {
-        //get all chameleon effects with this target
-        $chameleon_effects = [];
+    function copyCard(array $chameleon_dbcard, array $target_dbcard) {
+        $chameleon_card_id = $chameleon_dbcard["id"];
+        $chameleon_type_id = $chameleon_dbcard["type_arg"];
+        if (!$this->isChameleonTypeId($chameleon_type_id)) {
+            throw new BgaVisibleSystemException("type_id $chameleon_type_id should never copy another card");
+        }
+        $copied_card_id = $target_dbcard["id"];
+        $copied_type_id = $this->getTypeId($target_dbcard);
+
+        // Copy the "used"-status of passives with an arg (e.g. bold haggler, barometer, etc)
         foreach ($this->cache as $row) {
-            if ($row["chameleon_target_id"] == $target_id) {
-                $chameleon_effects[] = $row;
+            if ($row["effect_class"] == EC_MODIFICATION && 
+                $row["card_id"] == $copied_card_id && 
+                $row["type_id"] == $copied_type_id && 
+                $row["arg"] != null && $row["arg"] != "NULL" && 
+                !$this->isChameleonTypeId($copied_type_id)
+            ) {
+                $this->insertModification($chameleon_card_id, $copied_type_id, $row["arg"]);
             }
         }
-        if (count($chameleon_effects) == 0) {
-            return;
-        }
 
-        //for each found chameleon effect, expire all modifications made to that chameleon card during and after the copying the invalid target
-        foreach ($chameleon_effects as $chameleon_effect) {
-            //skip chameleons in schedules
-            $expired_effects = [];
-            $effect_id = $chameleon_effect["effect_id"];
-            $chameleon_card_id = $chameleon_effect["card_id"];
-            $dbcard = $this->game->cards->getCard($chameleon_effect["card_id"]);
-            $prefix = substr($dbcard["location"], 0, 4);
-            if ($prefix == SCHEDULE) {
-                continue; 
-            }
+        // Copy the effective value
+        $effective_value = $this->getValue($target_dbcard);
+        $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_VALUE, $effective_value);
 
-            //for the clients
-            foreach ($this->cache as $row) {
-                if ($row["effect_id"] >= $effect_id && $row["card_id"] == $chameleon_card_id && $row["effect_class"] == EC_MODIFICATION) {
-                    $expired_effects[] = $row;
-                }
-            }
-            $this->notifyExpireEffects($expired_effects);
-            //for the db
-            $sql = "DELETE FROM effect WHERE effect_id >= $effect_id AND card_id = $chameleon_card_id AND effect_class = ".EC_MODIFICATION;
-            $this->game->DbQuery($sql);
-
-            //mark the CT_GOODOLDTIMES passive as used
-            if ($chameleon_effect["type_id"] == CT_GOODOLDTIMES) {
-                $this->insertModification($chameleon_card_id, CT_GOODOLDTIMES); 
-            }
-        }
-        $this->loadFromDb();
+        // Copy the type_id
+        $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_TYPE, $copied_type_id);
     }
+
+    // TODO: safely remove this
+    // /**
+    //  * Return the last chameleon copy effect that affects the specified card_id
+    //  * @return array|null
+    //  */
+    // function getChameleonEffect(int $card_id) {
+    //     $effect = null;
+    //     foreach ($this->cache as $row) {
+    //         if ($row["card_id"] == $card_id && $row["chameleon_target_id"] != null && $row["chameleon_target_id"] != "NULL") {
+    //             $effect = $row;
+    //         }
+    //     }
+    //     return $effect;
+    // }
+
+    // TODO: safely remove this
+    // /**
+    //  * This function should be called if the card of the given target_id becomes an invalid target.
+    //  * If it was the target of some chameleon card, expire all modifications made to that chameleon card during and after the copying the invalid target.
+    //  * @param $target_id the now invalid target
+    //  */
+    // function expireChameleonTarget(int $target_id) {
+    //     //get all chameleon effects with this target
+    //     $chameleon_effects = [];
+    //     foreach ($this->cache as $row) {
+    //         if ($row["chameleon_target_id"] == $target_id) {
+    //             $chameleon_effects[] = $row;
+    //         }
+    //     }
+    //     if (count($chameleon_effects) == 0) {
+    //         return;
+    //     }
+
+    //     //for each found chameleon effect, expire all modifications made to that chameleon card during and after the copying the invalid target
+    //     foreach ($chameleon_effects as $chameleon_effect) {
+    //         //skip chameleons in schedules
+    //         $expired_effects = [];
+    //         $effect_id = $chameleon_effect["effect_id"];
+    //         $chameleon_card_id = $chameleon_effect["card_id"];
+    //         $dbcard = $this->game->cards->getCard($chameleon_effect["card_id"]);
+    //         $prefix = substr($dbcard["location"], 0, 4);
+    //         if ($prefix == SCHEDULE) {
+    //             continue; 
+    //         }
+
+    //         //for the clients
+    //         foreach ($this->cache as $row) {
+    //             if ($row["effect_id"] >= $effect_id && $row["card_id"] == $chameleon_card_id && $row["effect_class"] == EC_MODIFICATION) {
+    //                 $expired_effects[] = $row;
+    //             }
+    //         }
+    //         $this->notifyExpireEffects($expired_effects);
+    //         //for the db
+    //         $sql = "DELETE FROM effect WHERE effect_id >= $effect_id AND card_id = $chameleon_card_id AND effect_class = ".EC_MODIFICATION;
+    //         $this->game->DbQuery($sql);
+
+    //         //mark the CT_GOODOLDTIMES passive as used
+    //         if ($chameleon_effect["type_id"] == CT_GOODOLDTIMES) {
+    //             $this->insertModification($chameleon_card_id, CT_GOODOLDTIMES); 
+    //         }
+    //     }
+    //     $this->loadFromDb();
+    // }
 
     /////////////////////////////////////////////////
     ///////     Expiry-related functions      ///////

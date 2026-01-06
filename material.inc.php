@@ -298,6 +298,12 @@ if (!defined('CT_CARDBACK')) {
     define('CT_DEPRECATED_FRESHSTART', 274);
 }
 
+//define all special effects
+if (!defined('EFFECT_CHAMELEON_TYPE')) {
+    define('EFFECT_CHAMELEON_VALUE', CT_FLEXIBLESHOPKEEPER);
+    define('EFFECT_CHAMELEON_TYPE', CT_REFLECTION);
+}
+
 //define all animalfolk
 if (!defined('ANIMALFOLK_MACAWS')) {
     //Non-animalfolk

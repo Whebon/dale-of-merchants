@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `effect` (
   `card_id` int(10) unsigned NOT NULL,
   `type_id` int(10) unsigned NOT NULL,
   `arg` int(10) unsigned,
-  `chameleon_target_id` int(10) unsigned,
   PRIMARY KEY (`effect_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 

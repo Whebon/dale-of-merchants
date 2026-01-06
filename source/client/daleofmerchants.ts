@@ -24,12 +24,10 @@ import { DaleCard } from './components/DaleCard';
 import { MarketBoard } from './components/MarketBoard'
 import { Stall } from './components/Stall'
 import { DbCard } from './components/types/DbCard';
-import { ChameleonArgs } from './components/types/ChameleonArgs';
 import { CardSlot } from './components/CardSlot';
 import { MainClientState } from './components/types/MainClientState'
 import { Images } from './components/Images';
 import { TargetingLine } from './components/TargetingLine'
-import { ChameleonTree } from './components/types/ChameleonTree';
 import { DbEffect } from './components/types/DbEffect';
 import { DaleDeckSelection } from './components/DaleDeckSelection'
 import { DaleDie } from './components/DaleDie';
@@ -147,9 +145,6 @@ class DaleOfMerchants extends Gamegui
 
 	/** Cards in this client's limbo card stock */
 	myLimbo: DaleStock = new DaleStock();
-
-	/** Arguments for chameleon client states. This card needs to be highlighted while selecting a valid target for it. */
-	chameleonArgs: ChameleonArgs | undefined;
 
 	/** Current client state */
 	mainClientState: MainClientState = new MainClientState(this);
@@ -530,16 +525,10 @@ class DaleOfMerchants extends Gamegui
 			return;
 		}
 
-		if (stateName.substring(0, 6) != 'client' && stateName.substring(0, 9) != 'chameleon') {
-			console.warn("Revalidate all local chameleons");
-			this.validateChameleonsLocal();
-		}
-
 		//IMPORTANT: the following switch-case is for NON-active players
 		if (!this.isCurrentPlayerActive()) {
 			switch( stateName ){
 				case 'playerTurn':
-					DaleCard.unbindAllChameleonsLocal();
 					this.mainClientState.leaveAll();
 					break;
 				case 'DEPRECATED_blindfold':
@@ -761,10 +750,15 @@ class DaleOfMerchants extends Gamegui
 			case 'chameleon_goodoldtimes':
 			case 'chameleon_trendsetting':
 			case 'chameleon_seeingdoubles':
+				const chameleon_args = (this.mainClientState.args as ClientGameStates['chameleon_flexibleShopkeeper']);
+				const chameleon_source = new DaleCard(chameleon_args.passive_card_id);
+				const chameleon_targets = this.getChameleonTargets(chameleon_source)
 				if (stateName == 'chameleon_reflection') {
-					for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					for (const [player_id, discard_pile] of Object.entries(this.playerDiscards)) {
+						const deck = this.playerDecks[+player_id]!
 						if (+player_id != +this.player_id) {
-							pile.setSelectionMode('noneCantViewContent');
+							discard_pile.setSelectionMode('noneCantViewContent');
+							deck.setSelectionMode('noneCantViewContent')
 						}
 					}
 				}
@@ -772,16 +766,15 @@ class DaleOfMerchants extends Gamegui
 					this.marketDeck.setSelectionMode('noneCantViewContent');
 					this.marketDiscard.setSelectionMode('noneCantViewContent');
 				}
-				this.myHand.setSelectionMode('noneRetainSelection', undefined, 'previous');
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique');
 				new TargetingLine(
-					this.chameleonArgs!.firstSource,
-					this.chameleonArgs!.currentTargets,
+					chameleon_source,
+					chameleon_targets,
 					"daleofmerchants-line-source-chameleon",
 					"daleofmerchants-line-target-chameleon",
 					"daleofmerchants-line-chameleon",
 					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onConfirmChameleon(target_id),
-					this.chameleonArgs!.pile
+					(source_id: number, target_id: number) => this.onChameleon(target_id),
 				)
 				break;
 			case 'client_DEPRECATED_marketDiscovery':
@@ -1208,11 +1201,12 @@ class DaleOfMerchants extends Gamegui
 		if (this.isSpectator) {
 			return;
 		}
-		
-		if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
-			console.warn("this.chameleonArgs => don't turn off selection modes");
-			return;
-		}
+
+		// TODO: safely remove this
+		// if (this.chameleonArgs && stateName.substring(0, 9) != 'chameleon') {
+		// 	console.warn("this.chameleonArgs => don't turn off selection modes");
+		// 	return;
+		// }
 
 		if (this.gamedatas.gamestate.args && 'passive_card_id' in this.gamedatas.gamestate.args) {
 			this.setPassiveSelected((this.gamedatas.gamestate.args as any).passive_card_id, false);
@@ -1680,9 +1674,6 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'postCleanUpPhase':
 				this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
-				if (DaleCard.countChameleonsLocal() > 0) {
-					this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
-				}
 				break;
 			case 'playerTurn':
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
@@ -1695,9 +1686,6 @@ class DaleOfMerchants extends Gamegui
 				}
 				else {
 					this.addActionButton("confirm-button", _("Take an inventory action"), "onRequestInventoryAction");
-				}
-				if (DaleCard.countChameleonsLocal() > 0) {
-					this.addActionButton("undo-chameleon-button", _("Undo"), "onUnbindChameleons", undefined, false, 'gray');
 				}
 				break;
 			case 'client_purchase':
@@ -1855,28 +1843,12 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_reflection':
+				// TODO: action buttons for the optional discard effect
 				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_goodoldtimes':
-				switch ((this.mainClientState.args as ClientGameStates['chameleon_goodoldtimes']).mode) {
-					case 'copy':
-						this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
-						this.addActionButtonCancelClient();
-						break;
-					case 'tossOrCopy':
-						this.addActionButton("copy-button", _("Copy"), "onGoodOldTimesBind");
-						this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
-						this.addActionButtonCancelClient();
-						break;
-					case 'tossOptional':
-						this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
-						this.addActionButton("skip-button", _("Skip"), "onGoodOldTimesPassiveSkip", undefined, false, 'gray');
-						break;
-					case 'tossMandatory':
-						this.addActionButton("toss-button", _("Toss"), "onGoodOldTimesPassive");
-						this.addActionButtonCancelClient();
-						break;
-				}
+				// TODO: action buttons for the optional discard effect
+				this.addActionButtonCancelClient();
 				break;
 			case 'chameleon_trendsetting':
 				this.addActionButtonCancelClient();
@@ -2383,146 +2355,146 @@ class DaleOfMerchants extends Gamegui
 		Here I put all functions related to the chameleons
 	*/
 
-	/**
-	 * If the card is an unbound chameleon card, set the client state to bind the chameleon and return `false`
-	 * 
-	 * @param card the card that potentially needs to be be bound.
-	 * @param pile (optional) if provided, the chameleon card is currently inside a pile popin
-	 */
-	verifyChameleon(card: DaleCard, pile?: Pile): boolean {
-		if (!card.isChameleon()) {
-			return true;
-		}
-		if (!this.checkLock()) {
-			return false;
-		}
+	//TODO: safely remove this
+	// /**
+	// * If the card is an unbound chameleon card, set the client state to bind the chameleon and return `false`
+	// * 
+	// * @param card the card that potentially needs to be be bound.
+	// * @param pile (optional) if provided, the chameleon card is currently inside a pile popin
+	// */
+	// verifyChameleon(card: DaleCard, pile?: Pile): boolean {
+	// 	if (!card.isChameleon()) {
+	// 		return true;
+	// 	}
+	// 	if (!this.checkLock()) {
+	// 		return false;
+	// 	}
 
-		if (this.chameleonArgs) {
-			//pick a target in the pre-computed tree
-			console.warn(this.chameleonArgs); //known bug: sometimes, chameleonArgs is not cleared when it should be
-			this.chameleonArgs.pickTarget(card);
-		}
+	// 	if (this.chameleonArgs) {
+	// 		//pick a target in the pre-computed tree
+	// 		console.warn(this.chameleonArgs); //known bug: sometimes, chameleonArgs is not cleared when it should be
+	// 		this.chameleonArgs.pickTarget(card);
+	// 	}
 		
-		//set the chameleon client state name and args
-		let chameleonStatename: keyof ClientGameStates;
-		let args: ClientGameStates['chameleon_goodoldtimes'] = { mode: undefined };
-		let tossAvailable = true;
-		switch(card.effective_type_id) {
-			case DaleCard.CT_FLEXIBLESHOPKEEPER:
-				chameleonStatename = 'chameleon_flexibleShopkeeper'
-				break;
-			case DaleCard.CT_REFLECTION:
-				chameleonStatename = 'chameleon_reflection'
-				break;
-			case DaleCard.CT_GOODOLDTIMES:
-				tossAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
-				if (!tossAvailable) {
-					args.mode = 'copy'
-				}
-				else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || this.chameleonArgs?.onlyContainsGoodOldTimes) {
-					args.mode = 'tossOptional'
-				}
-				else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.length == 2) && this.marketDiscard.size > 0) {
-					args.mode = 'tossOrCopy'
-				}
-				else {
-					args.mode = 'tossMandatory'
-				}
-				chameleonStatename = 'chameleon_goodoldtimes'
-				break;
-			case DaleCard.CT_TRENDSETTING:
-				chameleonStatename = 'chameleon_trendsetting'
-				break;
-			case DaleCard.CT_SEEINGDOUBLES:
-				chameleonStatename = 'chameleon_seeingdoubles'
-				break;
-			default:
-				throw new Error(`Unknown chameleon card: '${card.name}'`)
-		}
+	// 	//set the chameleon client state name and args
+	// 	let chameleonStatename: keyof ClientGameStates;
+	// 	let args: ClientGameStates['chameleon_goodoldtimes'] = { mode: undefined };
+	// 	let tossAvailable = true;
+	// 	switch(card.effective_type_id) {
+	// 		case DaleCard.CT_FLEXIBLESHOPKEEPER:
+	// 			chameleonStatename = 'chameleon_flexibleShopkeeper'
+	// 			break;
+	// 		case DaleCard.CT_REFLECTION:
+	// 			chameleonStatename = 'chameleon_reflection'
+	// 			break;
+	// 		case DaleCard.CT_GOODOLDTIMES:
+	// 			tossAvailable = (this.chameleonArgs || !card.isPassiveUsed()) && (this.marketDeck.size > 0 || this.marketDiscard.size > 0);
+	// 			if (!tossAvailable) {
+	// 				args.mode = 'copy'
+	// 			}
+	// 			else if ((!this.chameleonArgs && this.marketDiscard.size == 0) || this.chameleonArgs?.onlyContainsGoodOldTimes) {
+	// 				args.mode = 'tossOptional'
+	// 			}
+	// 			else if ((!this.chameleonArgs || this.chameleonArgs.currentTargets.length == 2) && this.marketDiscard.size > 0) {
+	// 				args.mode = 'tossOrCopy'
+	// 			}
+	// 			else {
+	// 				args.mode = 'tossMandatory'
+	// 			}
+	// 			chameleonStatename = 'chameleon_goodoldtimes'
+	// 			break;
+	// 		case DaleCard.CT_TRENDSETTING:
+	// 			chameleonStatename = 'chameleon_trendsetting'
+	// 			break;
+	// 		case DaleCard.CT_SEEINGDOUBLES:
+	// 			chameleonStatename = 'chameleon_seeingdoubles'
+	// 			break;
+	// 		default:
+	// 			throw new Error(`Unknown chameleon card: '${card.name}'`)
+	// 	}
 
-		if (!this.chameleonArgs) {
-			//create a new chameleon tree and enter the chameleon client state on the stack
-			this.chameleonArgs = new ChameleonArgs(this.createChameleonTree(card), pile);
-			const targets = this.chameleonArgs.getAllTargets();
-			console.warn(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
-			console.warn(`'${card.name}' has ${targets.size} total target(s)`);
-			console.warn(Array.from(targets).map(target => target instanceof HTMLElement ? target : target.div));
-			if (targets.size == 0) {
-				this.chameleonArgs = undefined;
-				return true;
-			}
-			else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
-				if (tossAvailable) {
-					args.mode = 'tossOptional'
-					this.mainClientState.enterOnStack(chameleonStatename, args);
-					return false;
-				}
-				else if (card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
-					this.chameleonArgs = undefined;
-					return true;
-				}
-			}
-			else if (targets.size == 1) {
-				this.mainClientState.enterOnStack('chameleon_autobind');
-				//auto-bind to the first target in the chain
-				const target = this.chameleonArgs.currentTargets[0];
-				if (target instanceof DaleCard) {
-					this.onConfirmChameleon(target.id);
-				}
-			}
-			else {
-				this.mainClientState.enterOnStack(chameleonStatename, args);
-			}
-		}
-		else if (this.mainClientState.name == 'chameleon_autobind') {
-			//auto-bind to the next target in the chain
-			const target = this.chameleonArgs.currentTargets[0];
-			if (target instanceof DaleCard) {
-				this.onConfirmChameleon(target.id);
-			}
-		}
-		else {
-			this.mainClientState.enter(chameleonStatename, args);
-		}
-		return false;
-	}
+	// 	if (!this.chameleonArgs) {
+	// 		//create a new chameleon tree and enter the chameleon client state on the stack
+	// 		this.chameleonArgs = new ChameleonArgs(this.createChameleonTree(card), pile);
+	// 		const targets = this.chameleonArgs.getAllTargets();
+	// 		console.warn(`'${card.name}' has ${this.chameleonArgs.currentTargets.length} direct target(s)`);
+	// 		console.warn(`'${card.name}' has ${targets.size} total target(s)`);
+	// 		console.warn(Array.from(targets).map(target => target instanceof HTMLElement ? target : target.div));
+	// 		if (targets.size == 0) {
+	// 			this.chameleonArgs = undefined;
+	// 			return true;
+	// 		}
+	// 		else if (this.chameleonArgs.onlyContainsGoodOldTimes) {
+	// 			if (tossAvailable) {
+	// 				args.mode = 'tossOptional'
+	// 				this.mainClientState.enterOnStack(chameleonStatename, args);
+	// 				return false;
+	// 			}
+	// 			else if (card.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
+	// 				this.chameleonArgs = undefined;
+	// 				return true;
+	// 			}
+	// 		}
+	// 		else if (targets.size == 1) {
+	// 			//auto-bind to the first target in the chain
+	// 			const target = this.chameleonArgs.currentTargets[0];
+	// 			if (target instanceof DaleCard) {
+	// 				this.onConfirmChameleon(target.id);
+	// 			}
+	// 		}
+	// 		else {
+	// 			this.mainClientState.enterOnStack(chameleonStatename, args);
+	// 		}
+	// 	}
+	// 	else {
+	// 		this.mainClientState.enter(chameleonStatename, args);
+	// 	}
+	// 	return false;
+	// }
 
-	createChameleonTree(card: DaleCard | HTMLElement, visited_ids?: number[]): ChameleonTree {
-		const tree: ChameleonTree = {
-			card: card, 
-			children: []
-		};
-		if (card instanceof HTMLElement) {
-			return tree;
-		}
-		visited_ids = visited_ids ?? [];
-		visited_ids.push(card.id);
-		for (let target of this.getChameleonTargets(card, visited_ids.length == 1)) {
-			if (target instanceof HTMLElement || !visited_ids.includes(target.id)) {
-				const child = this.createChameleonTree(target, visited_ids);
-				tree.children.push(child);
-			}
-		}
-		visited_ids.pop();
-		return tree;
-	}
+	// createChameleonTree(card: DaleCard | HTMLElement, visited_ids?: number[]): ChameleonTree {
+	// 	const tree: ChameleonTree = {
+	// 		card: card, 
+	// 		children: []
+	// 	};
+	// 	if (card instanceof HTMLElement) {
+	// 		return tree;
+	// 	}
+	// 	visited_ids = visited_ids ?? [];
+	// 	visited_ids.push(card.id);
+	// 	for (let target of this.getChameleonTargets(card, visited_ids.length == 1)) {
+	// 		if (target instanceof HTMLElement || !visited_ids.includes(target.id)) {
+	// 			const child = this.createChameleonTree(target, visited_ids);
+	// 			tree.children.push(child);
+	// 		}
+	// 	}
+	// 	visited_ids.pop();
+	// 	return tree;
+	// }
 
 	/**
 	 * @param card chameleon card
-	 * @param isRoot is this the first chameleon in the chain? (needed for good old times)
 	 * @param type_id (optional) pretend the chameleon card has this type_id
 	 * @returns All direct targets (`DaleCard`) and/or the top card of the market discard pile (`HTMLElement`)
 	 */
-	getChameleonTargets(card: DaleCard, isRoot: boolean, type_id?: number): (DaleCard | HTMLElement)[] {
+	getChameleonTargets(card: DaleCard, type_id?: number): (DaleCard | HTMLElement)[] {
 		let targets: (DaleCard|HTMLElement)[] = [];
 		switch(type_id ?? card.effective_type_id) {
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
 				break;
 			case DaleCard.CT_REFLECTION:
-				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
-					if (+player_id != +this.player_id && pile.size > 0) {
-						targets.push(pile.peek()!)
+				for (const [player_id, discard_pile] of Object.entries(this.playerDiscards)) {
+					const deck = this.playerDecks[+player_id]!
+					if (+player_id != +this.player_id) {
+						if (discard_pile.size > 0) {
+							targets.push(discard_pile.peek()!)
+						}
+						if (deck.size > 0 || discard_pile.size > 0) {
+							const target = deck.topCardHTML ?? deck.placeholderHTML;
+							target.dataset['target_id'] = '0';
+							targets.push(target);
+						}
 					}
 				}
 				break;
@@ -2530,15 +2502,10 @@ class DaleOfMerchants extends Gamegui
 				if (this.marketDiscard.size > 0) {
 					targets.push(this.marketDiscard.peek()!);
 				}
-				if ((this.marketDeck.size > 0 || this.marketDiscard.size > 0) && (!isRoot || !card.isPassiveUsed())) {
+				if (this.marketDeck.size > 0 || this.marketDiscard.size > 0) {
 					const target = this.marketDeck.topCardHTML ?? this.marketDeck.placeholderHTML;
 					target.dataset['target_id'] = '0';
 					targets.push(target);
-					// const cardBack = this.marketDeck.peek();
-					// if (cardBack) {
-					// 	cardBack.attachDiv(this.marketDeck.topCardHTML!);
-					// 	targets.push(cardBack);
-					// }
 				}
 				break;
 			case DaleCard.CT_TRENDSETTING:
@@ -2551,45 +2518,16 @@ class DaleOfMerchants extends Gamegui
 				for (let item of items) {
 					if (item.id != card.id) {
 						const card = new DaleCard(item.id);
-						if (card.hasLocalBindingWithSeeingDoubles()) {
-							continue; //see issue #109, players should copy switch up their ordering for this
-						}
+						// TODO: safely remove this
+						// if (card.hasLocalBindingWithSeeingDoubles()) {
+						// 	continue; //see issue #109, players should copy switch up their ordering for this
+						// }
 						targets.push(card);
 					}
 				}
 				break;
 		}
 		return targets;
-	}
-
-	/**
-	 * Validate if all local chameleons are still targeting a valid target. Unbind any that lost its target.
-	 */
-	validateChameleonsLocal() {
-		for (const [chameleon_card_id, chain] of DaleCard.getLocalChameleonsEntries()) {
-			let isValid = false;
-			let isRoot = true;
-			let card_id = chameleon_card_id;
-			let type_id = new DaleCard(chameleon_card_id).effective_server_type_id;
-			for (let i = 0; i < chain.length; i++) {
-				const target_id = chain.card_ids[i]!;
-				const valid_target_ids = this.getChameleonTargets(new DaleCard(card_id), isRoot, type_id);
-				isValid = false;
-				for (let valid_target of valid_target_ids) {
-					if (target_id == valid_target.id) {
-						isValid = true;
-						break;
-					}
-				}
-				card_id = chain.card_ids[i]!; //next chameleon card_id
-				type_id = chain.type_ids[i]!; //next chameleon type_id
-				isRoot = false;
-				if (!isValid) break;
-			}
-			if (!isValid) {
-				new DaleCard(chameleon_card_id).unbindChameleonLocal();
-			}
-		}
 	}
 
 	///////////////////////////////////////////////////
@@ -3106,15 +3044,10 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 		for (let item of this.myHand.getAllItems()) {
-			let chameleonTargets = [new DaleCard(item.id)];
-			if (chameleonTargets[0]!.isUnboundChameleon()) {
-				chameleonTargets = this.getChameleonTargets(chameleonTargets[0]!, true).filter(target => target instanceof DaleCard);
-			}
-			for (let handCard of chameleonTargets) {
-				const isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != colourSwap_card_id;
-				if (isOtherAnimalfolk && values.has(handCard.effective_value)) { //...and the EFFECTIVE value of the hand card
-					cards.push(handCard);
-				}
+			const handCard = new DaleCard(item.id)
+			const isOtherAnimalfolk = handCard.isAnimalfolk() && handCard.id != colourSwap_card_id;
+			if (isOtherAnimalfolk && values.has(handCard.effective_value)) { //...and the EFFECTIVE value of the hand card
+				cards.push(handCard);
 			}
 		}
 		return cards;
@@ -3221,9 +3154,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onPostCleanUpPhase() {
-		this.bgaPerformAction('actPostCleanUpPhase', {
-			chameleons_json: DaleCard.getLocalChameleonsJSON()
-		})
+		this.bgaPerformAction('actPostCleanUpPhase', {})
 	}
 
 	onStallCardClick(stall: Stall, card: DaleCard, stack_index: number, index: number) {
@@ -3355,9 +3286,7 @@ class DaleOfMerchants extends Gamegui
 		console.warn("onSelectMyDiscardPileCard");
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_build':
-				if (this.verifyChameleon(card!, pile)) {
-					this.onBuildSelectionChanged();
-				}
+				this.onBuildSelectionChanged();
 				break;
 			case 'client_newSeason':
 				this.playTechniqueCard<'client_newSeason'>({
@@ -3527,35 +3456,25 @@ class DaleOfMerchants extends Gamegui
 
 		switch(this.gamedatas.gamestate.name) {
 			case 'postCleanUpPhase':
-				if (this.verifyChameleon(card)) {
-					this.onClickPassive(card);
-				}
+				this.onClickPassive(card);
 				break;
 			case 'client_technique':
 				//play card action (technique or active passive)
-				if (this.verifyChameleon(card)) {
-					if (card.isTechnique()) {
-						this.onClickTechnique(card);
-					}
-					else {
-						this.onClickPassive(card);
-					}
+				if (card.isTechnique()) {
+					this.onClickTechnique(card);
+				}
+				else {
+					this.onClickPassive(card);
 				}
 				break;
 			case 'client_purchase':
-				if (this.verifyChameleon(card)) {
-					this.onFundsSelectionChanged();
-				}
+				this.onFundsSelectionChanged();
 				break;
 			case 'client_build':
-				if (this.verifyChameleon(card)) {
-					this.onBuildSelectionChanged();
-				}
+				this.onBuildSelectionChanged();
 				break;
 			case 'bonusBuild':
-				if (this.verifyChameleon(card)) {
-					this.onBuildSelectionChanged();
-				}
+				this.onBuildSelectionChanged();
 				break;
 			case 'client_shatteredRelic':
 				this.playTechniqueCard<'client_shatteredRelic'>({
@@ -3594,10 +3513,8 @@ class DaleOfMerchants extends Gamegui
 				})
 				break;
 			case 'client_DEPRECATED_blindfold':
-				if (this.verifyChameleon(new DaleCard(card_id))) {
-					if (this.unique_opponent_id) {
-						this.onDEPRECATED_Blindfold(card.id);
-					}
+				if (this.unique_opponent_id) {
+					this.onDEPRECATED_Blindfold(card.id);
 				}
 				break;
 			case 'client_glue':
@@ -3627,45 +3544,41 @@ class DaleOfMerchants extends Gamegui
 				})
 				break;
 			case 'client_replacement':
-				if (this.verifyChameleon(new DaleCard(card_id))) {
-					const client_replacement_value = card.effective_value;
-					for (let market_card of this.market!.getCards()) {
-						if (Math.abs(market_card.original_value - client_replacement_value) <= 1) {
-							//a replacement for this card exists!
-							this.playTechniqueCard<'client_replacement'>({
-								card_id: card!.id
-							})
-							return;
-						}
-					}
-					//warn the player a replacement for this card does not exist
-					this.mainClientState.enter('client_replacementFizzle', {
-						technique_card_id: (this.mainClientState.args as ClientGameStates['client_replacement']).technique_card_id,
-						toss_card_id: card!.id,
-						toss_card_name: card.name
-					})
-				}
-				break;
-			case 'client_colourSwap':
-				if (this.verifyChameleon(card)) {
-					const client_colourSwap_targets = this.getColourSwapStallTargets(card);
-					if (client_colourSwap_targets.length == 0) {
-						this.showMessage(_("No card in any oppponent's stall matches this card's value")+` (${card.effective_value})`, "error");
+				const client_replacement_value = card.effective_value;
+				for (let market_card of this.market!.getCards()) {
+					if (Math.abs(market_card.original_value - client_replacement_value) <= 1) {
+						//a replacement for this card exists!
+						this.playTechniqueCard<'client_replacement'>({
+							card_id: card!.id
+						})
 						return;
 					}
-					const client_colourSwap_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
-					this.setMainTitle(client_colourSwap_label);
-					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_colourSwap_label);
-					new TargetingLine(
-						card,
-						client_colourSwap_targets,
-						"daleofmerchants-line-source-technique",
-						"daleofmerchants-line-target-technique",
-						"daleofmerchants-line-technique",
-						(source_id: number) => this.onCancelClient(),
-						(source_id: number, target_id: number) => this.onColourSwap(source_id, target_id)
-					)
 				}
+				//warn the player a replacement for this card does not exist
+				this.mainClientState.enter('client_replacementFizzle', {
+					technique_card_id: (this.mainClientState.args as ClientGameStates['client_replacement']).technique_card_id,
+					toss_card_id: card!.id,
+					toss_card_name: card.name
+				})
+				break;
+			case 'client_colourSwap':
+				const client_colourSwap_targets = this.getColourSwapStallTargets(card);
+				if (client_colourSwap_targets.length == 0) {
+					this.showMessage(_("No card in any oppponent's stall matches this card's value")+` (${card.effective_value})`, "error");
+					return;
+				}
+				const client_colourSwap_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
+				this.setMainTitle(client_colourSwap_label);
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_colourSwap_label);
+				new TargetingLine(
+					card,
+					client_colourSwap_targets,
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onColourSwap(source_id, target_id)
+				)
 				break;
 			case 'client_cleverGuardian':
 				this.playTechniqueCard<'client_cleverGuardian'>({
@@ -3963,7 +3876,6 @@ class DaleOfMerchants extends Gamegui
 			this.bgaPerformAction('actPurchase', {
 				funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
 				market_card_id: card_id,
-				chameleons_json: DaleCard.getLocalChameleonsJSON(),
 				args: JSON.stringify(args.optionalArgs)
 			})
 			while (this.gamedatas.gamestate.name != 'client_purchase') {
@@ -4032,7 +3944,6 @@ class DaleOfMerchants extends Gamegui
 	playPassiveCard<K extends keyof ClientPassiveChoice>(args: ClientPassiveChoice[K]) {
 		this.bgaPerformAction('actUsePassiveAbility', {
 			card_id: (this.mainClientState.args as ClientGameStates[K]).passive_card_id, 
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		})?.catch(() => {
 			//needed to catch the CT_COFFEEGRINDER error
@@ -4054,7 +3965,6 @@ class DaleOfMerchants extends Gamegui
 	playTechniqueCardWithServerState<K extends keyof ClientTechniqueChoice>(args: ClientTechniqueChoice[K]) {
 		this.bgaPerformAction('actPlayTechniqueCard', {
 			card_id: (this.mainClientState.args as ClientGameStates[K]).technique_card_id,
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
 		this.mainClientState.leaveAndDontReturn();
@@ -4070,7 +3980,6 @@ class DaleOfMerchants extends Gamegui
 		this.mainClientState.leave();
 		this.bgaPerformAction('actPlayTechniqueCard', {
 			card_id: prev_args.technique_card_id,
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		}).catch(() => {
 			if (this.mainClientState.name != prev_name) {
@@ -4174,7 +4083,6 @@ class DaleOfMerchants extends Gamegui
 		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
 		this.bgaPerformAction('actFullyResolveTechniqueCard', {
 			card_id: card_id,
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
 		this.mainClientState.leaveAndDontReturn();
@@ -4188,7 +4096,6 @@ class DaleOfMerchants extends Gamegui
 		const card_id = (this.mainClientState.args as ClientGameStates[K]).technique_card_id;
 		this.bgaPerformAction('actFullyResolveTechniqueCard', {
 			card_id: card_id,
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args)
 		});
 		this.mainClientState.leave();
@@ -4907,25 +4814,13 @@ class DaleOfMerchants extends Gamegui
 	 */
 	onClickPassive(card: DaleCard, postCleanUp: boolean = false) {
 		const type_id = card.effective_type_id;
-		if (type_id != DaleCard.CT_GOODOLDTIMES && type_id != DaleCard.CT_DEPRECATED_MARKETDISCOVERY) {
-			if (card.isChameleon()) {
-				this.showMessage(_("This chameleon card has no valid targets"), 'error');
-				return;
-			}
+		if (type_id != DaleCard.CT_DEPRECATED_MARKETDISCOVERY) {
 			if (card.isPassiveUsed()) {
 				this.showMessage(_("This passive's ability was already used"), 'error');
 				return;
 			}
 		}
 		switch(card.effective_type_id) {
-			case DaleCard.CT_GOODOLDTIMES:
-				if (card.isPassiveUsed()) {
-					this.showMessage(_("This passive's ability was already used"), 'error');
-				}
-				else {
-					this.showMessage(_("This passive's ability has no valid target"), 'error');
-				}
-				break;
 			case DaleCard.CT_DEPRECATED_MARKETDISCOVERY:
 				if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
 					if (card.isPassiveUsed()) {
@@ -4996,6 +4891,23 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_BONSAI:
 				this.mainClientState.enterOnStack('client_bonsai', {passive_card_id: card.id});
 				break;
+
+			case DaleCard.CT_FLEXIBLESHOPKEEPER:
+				this.mainClientState.enterOnStack('chameleon_flexibleShopkeeper', {passive_card_id: card.id});
+				break;
+			case DaleCard.CT_REFLECTION:
+				this.mainClientState.enterOnStack('chameleon_reflection', {passive_card_id: card.id});
+				break;
+			case DaleCard.CT_GOODOLDTIMES:
+				this.mainClientState.enterOnStack('chameleon_goodoldtimes', {passive_card_id: card.id});
+				break;
+			case DaleCard.CT_TRENDSETTING:
+				this.mainClientState.enterOnStack('chameleon_trendsetting', {passive_card_id: card.id});
+				break;
+			case DaleCard.CT_SEEINGDOUBLES:
+				this.mainClientState.enterOnStack('chameleon_seeingdoubles', {passive_card_id: card.id});
+				break;
+
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;
@@ -5102,7 +5014,6 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actBuild', {
 			stack_card_ids: this.arrayToNumberList(args.stack_card_ids),
 			stack_card_ids_from_discard: this.arrayToNumberList(args.stack_card_ids_from_discard),
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
 			args: JSON.stringify(args.optionalArgs)
 		}).then(() => {
 			//if the build is successful, nicely close the stack of client states
@@ -5125,17 +5036,6 @@ class DaleOfMerchants extends Gamegui
 	onCancelClient() {
 		console.warn("onCancelClient");
 		TargetingLine.removeAll();
-		if (this.chameleonArgs) {
-			//undo the chameleon state
-			this.chameleonArgs.firstSource.unbindChameleonLocal();
-			if (this.chameleonArgs.pile) {
-				this.chameleonArgs.pile.unselectItem(this.chameleonArgs.firstSource.id);
-			}
-			else {
-				this.myHand.unselectItem(this.chameleonArgs.firstSource.id);
-			}
-			this.chameleonArgs = undefined;
-		}
 		console.warn(this.mainClientState.args);
 		if ('technique_card_id' in this.mainClientState.args && !('is_trigger' in this.mainClientState.args)) {
 			//undo the technique choice state
@@ -5152,64 +5052,53 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	/**
-	 * To be called from within a chameleon client state. Confirms the user selection for the chameleon card and restores the server state.
-	 * @param target_id target card to bind to
+	 * @param target_id target card to bind to. If 0, the optional passive will be used instead.
 	 * @returns 
 	 */
-	onConfirmChameleon(target_id: number) {
-		console.warn("onConfirmChameleon");
-		const target = new DaleCard(target_id);
-		const args = this.chameleonArgs!;
-		console.warn(args);
-		
-		if (target.isCardBack()) {
-			//good old times is used for its passive ability
-			if (args.currentSource.effective_type_id != DaleCard.CT_GOODOLDTIMES) {
-				throw new Error("Only 'Good Old Times' can use the 'Good Old Times' ability");
-			}
-			this.onGoodOldTimesPassive();
+	onChameleon(target_id: number) {
+		const allowedStates = [
+			'chameleon_flexibleShopkeeper',
+			'chameleon_reflection',
+			'chameleon_goodoldtimes',
+			'chameleon_trendsetting',
+			'chameleon_seeingdoubles'
+		];
+		if (!allowedStates.includes(this.mainClientState.name)) {
+			console.error(`onChameleon should not be called in ${this.mainClientState.name}`)
+			return;
 		}
-		else if (this.verifyChameleon(target)) {
-			//chameleon targeted itself or a non-chameleon. bind the chameleon chain.
-			args.pickTarget(target);
-			TargetingLine.removeAll();
-			this.chameleonArgs = undefined;
-			this.mainClientState.leave();
-		}
+		this.playPassiveCard<'chameleon_flexibleShopkeeper'>({
+			target_id: target_id
+		})
 	}
 
-	onGoodOldTimesPassive() {
-		this.bgaPerformAction('actUsePassiveAbility', {
-			card_id: this.chameleonArgs!.firstSource.id, 
-			chameleons_json: DaleCard.getLocalChameleonsJSON(),
-			args: JSON.stringify({})
-		});
-		this.onCancelClient();
-	}
+	// TODO: safely remove this
+	// onGoodOldTimesPassive() {
+	// 	this.bgaPerformAction('actUsePassiveAbility', {
+	// 		card_id: this.chameleonArgs!.firstSource.id, 
+	// 		args: JSON.stringify({})
+	// 	});
+	// 	this.onCancelClient();
+	// }
 
-	onGoodOldTimesPassiveSkip() {
-		//the chameleon is allowed to be itself
-		TargetingLine.removeAll();
-		this.chameleonArgs?.firstSource.unbindChameleonLocal();
-		this.chameleonArgs = undefined;
-		this.mainClientState.leave();
-	}
+	// onGoodOldTimesPassiveSkip() {
+	// 	//the chameleon is allowed to be itself
+	// 	TargetingLine.removeAll();
+	// 	this.chameleonArgs?.firstSource.unbindChameleonLocal();
+	// 	this.chameleonArgs = undefined;
+	// 	this.mainClientState.leave();
+	// }
 
-	onGoodOldTimesBind() {
-		const discardTopCard = this.marketDiscard.peek();
-		if (discardTopCard) {
-			TargetingLine.removeAll();
-			this.onConfirmChameleon(discardTopCard.id);
-		}
-		else {
-			this.onCancelClient();
-		}
-	}
-
-	onUnbindChameleons() {
-		DaleCard.unbindAllChameleonsLocal();
-		this.restoreServerGameState();
-	}
+	// onGoodOldTimesBind() {
+	// 	const discardTopCard = this.marketDiscard.peek();
+	// 	if (discardTopCard) {
+	// 		TargetingLine.removeAll();
+	// 		this.onConfirmChameleon(discardTopCard.id);
+	// 	}
+	// 	else {
+	// 		this.onCancelClient();
+	// 	}
+	// }
 
 	onRequestBuildAction() {
 		//check for snacks
@@ -5672,11 +5561,9 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onRareArtefact(card_id: number) {
-		if (this.verifyChameleon(new DaleCard(card_id))) {
-			this.playTechniqueCard<'client_rareArtefact'>({
-				card_id: card_id
-			});
-		}
+		this.playTechniqueCard<'client_rareArtefact'>({
+			card_id: card_id
+		});
 	}
 	
 	onRiskyBusiness(value: number) {
@@ -7780,9 +7667,6 @@ class DaleOfMerchants extends Gamegui
 		}
 		else if (arg == 'increaseDeckSize') {
 			this.playerDecks[notif.args.player_id]!.pushHiddenCards(notif.args.nbr);
-		}
-		else if (arg == 'bindings') {
-			console.warn(DaleCard.getLocalChameleonsJSON());
 		}
 		else if (arg == 'debugDaleCard') {
 			console.warn(new DaleCard(notif.args.card_id));

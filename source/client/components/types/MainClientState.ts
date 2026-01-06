@@ -79,26 +79,15 @@ export class MainClientState {
             
             //Chameleon states
             case 'chameleon_flexibleShopkeeper':
-                return _("Flexible Shopkeeper: ${you} must copy a card from your rightmost stack");
+                return _("Flexible Shopkeeper: ${you} may copy a card from your rightmost stack");
             case 'chameleon_reflection':
-                return _("Reflection: ${you} must copy a card from the top of another player's discard pile")
+                return _("Reflection: ${you} may copy the top card of another player's discard pile.")
             case 'chameleon_goodoldtimes':
-                switch ((this._args as ClientGameStates['chameleon_goodoldtimes']).mode) {
-                    case 'copy':
-                        return _("Good Old Times: ${you} must copy the bin's top card");
-                    case 'tossOrCopy':
-                        return _("Good Old Times: ${you} must copy the bin's top card or toss the supply's top card");
-                    case 'tossOptional':
-                        return _("Good Old Times: ${you} may toss the supply's top card");
-                    case 'tossMandatory':
-                        return _("Good Old Times: ${you} must toss the supply's top card");
-                    default:
-                        throw new Error("Unexpected CT_GOODOLDTIMES mode");
-                }
+                return _("Good Old Times: ${you} may copy the top card of the bin.")
             case 'chameleon_trendsetting':
-                return _("Trendsetting: ${you} must copy a card in the market");
+                return _("Trendsetting: ${you} may copy a card in the market");
             case 'chameleon_seeingdoubles':
-                return _("Seeing Doubles: ${you} must copy another card in your hand");
+                return _("Seeing Doubles: ${you} may show and copy another card in your hand");
             
             //Generic passive states
             case 'client_choicelessPassiveCard':

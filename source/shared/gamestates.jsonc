@@ -60,7 +60,6 @@
 		"action": "stTrigger",
 		"possibleactions": {
 			"actFullyResolveTechniqueCard": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			]
@@ -98,7 +97,6 @@
 		"possibleactions": {
 			//Purchase Actions
 			"actPurchase": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "funds_card_ids", "type": "AT_numberlist"},
 				{"name": "market_card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
@@ -106,17 +104,14 @@
 
 			//Play Actions
 			"actPlayTechniqueCard": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
 			"actUsePassiveAbility": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
 			"actFullyResolveTechniqueCard": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
@@ -124,7 +119,6 @@
 			//Build Actions
 			"actBonusBuildSkip": [],
 			"actBuild": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"},
 				{"name": "args", "type": "AT_json"}
@@ -211,7 +205,6 @@
 		"action": "stTurnStart",
 		"possibleactions": {
 			"actFullyResolveTechniqueCard": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			]
@@ -240,12 +233,10 @@
 		"args": "argStackIndex",
 		"possibleactions": {
 			"actBuild": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "stack_card_ids", "type": "AT_numberlist"},
 				{"name": "stack_card_ids_from_discard", "type": "AT_numberlist"}
 			],
 			"actUsePassiveAbility": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
@@ -288,13 +279,10 @@
 		"type": "activeplayer",
 		"possibleactions": {
 			"actUsePassiveAbility": [
-				{"name": "chameleons_json", "type": "AT_json"},
 				{"name": "card_id", "type": "AT_int"},
 				{"name": "args", "type": "AT_json"}
 			],
-			"actPostCleanUpPhase": [
-				{"name": "chameleons_json", "type": "AT_json"}
-			]
+			"actPostCleanUpPhase": []
 		},
 		"transitions": { 
 			"trNextPlayer": 41, 

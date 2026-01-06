@@ -50,14 +50,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $chameleons_json */
-		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 		/** @var string $args */
 		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actFullyResolveTechniqueCard( $chameleons_json, $card_id, $args );
+		$this->game->actFullyResolveTechniqueCard( $card_id, $args );
 		self::ajaxResponse();
 	}
 
@@ -65,8 +63,6 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $chameleons_json */
-		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var string $funds_card_ids */
 		$funds_card_ids = self::getArg('funds_card_ids', AT_numberlist, true);
 		/** @var int $market_card_id */
@@ -74,7 +70,7 @@ class action_daleofmerchants extends APP_GameAction
 		/** @var string $args */
 		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actPurchase( $chameleons_json, $funds_card_ids, $market_card_id, $args );
+		$this->game->actPurchase( $funds_card_ids, $market_card_id, $args );
 		self::ajaxResponse();
 	}
 
@@ -82,14 +78,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $chameleons_json */
-		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 		/** @var string $args */
 		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actPlayTechniqueCard( $chameleons_json, $card_id, $args );
+		$this->game->actPlayTechniqueCard( $card_id, $args );
 		self::ajaxResponse();
 	}
 
@@ -97,14 +91,12 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $chameleons_json */
-		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 		/** @var string $args */
 		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actUsePassiveAbility( $chameleons_json, $card_id, $args );
+		$this->game->actUsePassiveAbility( $card_id, $args );
 		self::ajaxResponse();
 	}
 
@@ -120,8 +112,6 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $chameleons_json */
-		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
 		/** @var string $stack_card_ids */
 		$stack_card_ids = self::getArg('stack_card_ids', AT_numberlist, true);
 		/** @var string $stack_card_ids_from_discard */
@@ -129,7 +119,7 @@ class action_daleofmerchants extends APP_GameAction
 		/** @var string $args */
 		$args = self::getArg('args', AT_json, true);
 
-		$this->game->actBuild( $chameleons_json, $stack_card_ids, $stack_card_ids_from_discard, $args );
+		$this->game->actBuild( $stack_card_ids, $stack_card_ids_from_discard, $args );
 		self::ajaxResponse();
 	}
 
@@ -172,10 +162,7 @@ class action_daleofmerchants extends APP_GameAction
 	{
 		self::setAjaxMode();
 
-		/** @var string $chameleons_json */
-		$chameleons_json = self::getArg('chameleons_json', AT_json, true);
-
-		$this->game->actPostCleanUpPhase( $chameleons_json );
+		$this->game->actPostCleanUpPhase(  );
 		self::ajaxResponse();
 	}
 

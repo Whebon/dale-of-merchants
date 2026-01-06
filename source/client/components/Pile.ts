@@ -3,7 +3,6 @@ import PopInDialog = require('bga-ts-template/typescript/types/ebg/popindialog')
 import { DaleLocation } from './types/DaleLocation';
 import { Images } from './Images';
 import { DaleCard, OrderedSelection } from './DaleCard';
-import { ChameleonArgs } from './types/ChameleonArgs';
 import { SelectionIconType } from './SelectionIconType';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 
@@ -529,13 +528,6 @@ export class Pile implements DaleLocation {
      */
     public onClickCard(card: DaleCard, div: HTMLElement) {
         console.warn("Clicked on a card in the popin");
-        //when in a chameleon client state, make sure the user is directed towards selecting a target
-        const chameleonArgs: ChameleonArgs = (this.page as any).chameleonArgs!;
-        if (chameleonArgs) {
-            //DEPRECATED: this code should be unreachable
-            this.page.showMessage(_("Please select a valid target for ")+`'${chameleonArgs.currentSource.name}'`, "error");
-            return;
-        }
         //normal behavior
         switch(this.selectionMode) {
             case 'none':

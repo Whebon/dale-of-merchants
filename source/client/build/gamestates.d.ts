@@ -55,10 +55,6 @@ interface GameStates {
 		'action': 'stTrigger',
 		'possibleactions': {
 			'actFullyResolveTechniqueCard': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -94,10 +90,6 @@ interface GameStates {
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actPurchase': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'funds_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
@@ -111,10 +103,6 @@ interface GameStates {
 				'typescriptType': string,
 			}],
 			'actPlayTechniqueCard': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -124,10 +112,6 @@ interface GameStates {
 				'typescriptType': string,
 			}],
 			'actUsePassiveAbility': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -137,10 +121,6 @@ interface GameStates {
 				'typescriptType': string,
 			}],
 			'actFullyResolveTechniqueCard': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -151,10 +131,6 @@ interface GameStates {
 			}],
 			'actBonusBuildSkip': [],
 			'actBuild': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'stack_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
@@ -243,10 +219,6 @@ interface GameStates {
 		'action': 'stTurnStart',
 		'possibleactions': {
 			'actFullyResolveTechniqueCard': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -279,10 +251,6 @@ interface GameStates {
 		'args': 'argStackIndex',
 		'possibleactions': {
 			'actBuild': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'stack_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
@@ -292,10 +260,6 @@ interface GameStates {
 				'typescriptType': string,
 			}],
 			'actUsePassiveAbility': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -353,10 +317,6 @@ interface GameStates {
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actUsePassiveAbility': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}, {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
@@ -365,11 +325,7 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
-			'actPostCleanUpPhase': [{
-				'name': 'chameleons_json',
-				'type': 'AT_json',
-				'typescriptType': string,
-			}],
+			'actPostCleanUpPhase': [],
 		},
 		'transitions': {
 			'trNextPlayer': 41,
