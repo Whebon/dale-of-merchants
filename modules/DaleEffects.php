@@ -302,19 +302,21 @@ class DaleEffects {
             if ($row["effect_class"] == EC_MODIFICATION && 
                 $row["card_id"] == $copied_card_id && 
                 $row["type_id"] == $copied_type_id && 
-                $row["arg"] != null && $row["arg"] != "NULL" && 
-                !$this->isChameleonTypeId($copied_type_id)
+                $row["arg"] != null && $row["arg"] != "NULL"
             ) {
                 $this->insertModification($chameleon_card_id, $copied_type_id, $row["arg"]);
             }
         }
 
-        // Copy the effective value
-        $effective_value = $this->getValue($target_dbcard);
-        $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_VALUE, $effective_value);
-
         // Copy the type_id
         $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_TYPE, $copied_type_id);
+
+        // Copy the effective value
+        $original_value = $this->game->card_types[$copied_type_id]['value'];
+        $effective_value = $this->getValue($target_dbcard);
+        if ($original_value != $effective_value) {
+            $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_VALUE, $effective_value);
+        }
     }
 
     // TODO: safely remove this

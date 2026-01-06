@@ -804,9 +804,18 @@ export class Pile implements DaleLocation {
         for (let card of this.cards) {
             card.detachDiv();
         }
+
         //Reattach the tooltip of the top card of the pile
         this.isPopinOpen = false;
         this.updateHTML();
+
+        //Re-attach the topCard to the topCardHTML
+        const topCard = this.peek(true);
+        if (topCard && this.topCardHTML) {
+            topCard.attachDiv(this.topCardHTML)
+        }
+
+        //Move back the titlebar
         $("maintitlebar_content")?.classList.remove("daleofmerchants-transparent");
         const clone = $("maintitlebar_content_clone");
         if (clone) {

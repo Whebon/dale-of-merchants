@@ -753,29 +753,35 @@ class DaleOfMerchants extends Gamegui
 				const chameleon_args = (this.mainClientState.args as ClientGameStates['chameleon_flexibleShopkeeper']);
 				const chameleon_source = new DaleCard(chameleon_args.passive_card_id);
 				const chameleon_targets = this.getChameleonTargets(chameleon_source)
-				if (stateName == 'chameleon_reflection') {
-					for (const [player_id, discard_pile] of Object.entries(this.playerDiscards)) {
-						const deck = this.playerDecks[+player_id]!
-						if (+player_id != +this.player_id) {
-							discard_pile.setSelectionMode('noneCantViewContent');
-							deck.setSelectionMode('noneCantViewContent')
+				if (chameleon_targets.length > 0) {
+					if (stateName == 'chameleon_reflection') {
+						for (const [player_id, discard_pile] of Object.entries(this.playerDiscards)) {
+							const deck = this.playerDecks[+player_id]!
+							if (+player_id != +this.player_id) {
+								discard_pile.setSelectionMode('noneCantViewContent');
+								deck.setSelectionMode('noneCantViewContent')
+							}
 						}
 					}
+					else if (stateName == 'chameleon_goodoldtimes') {
+						this.marketDeck.setSelectionMode('noneCantViewContent');
+						this.marketDiscard.setSelectionMode('noneCantViewContent');
+					}
+					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique');
+					new TargetingLine(
+						chameleon_source,
+						chameleon_targets,
+						"daleofmerchants-line-source-chameleon",
+						"daleofmerchants-line-target-chameleon",
+						"daleofmerchants-line-chameleon",
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onChameleon(target_id),
+					)
 				}
-				else if (stateName == 'chameleon_goodoldtimes') {
-					this.marketDeck.setSelectionMode('noneCantViewContent');
-					this.marketDiscard.setSelectionMode('noneCantViewContent');
+				else {
+					this.onCancelClient();
+					this.showMessage(_("No valid targets to copy"), "error");
 				}
-				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique');
-				new TargetingLine(
-					chameleon_source,
-					chameleon_targets,
-					"daleofmerchants-line-source-chameleon",
-					"daleofmerchants-line-target-chameleon",
-					"daleofmerchants-line-chameleon",
-					(source_id: number) => this.onCancelClient(),
-					(source_id: number, target_id: number) => this.onChameleon(target_id),
-				)
 				break;
 			case 'client_DEPRECATED_marketDiscovery':
 				this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');

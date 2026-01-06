@@ -7070,6 +7070,30 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Cookies: ${player_name} draws a card'));
                 $this->effects->insertModification($passive_card_id, CT_COOKIES);
                 break;
+            case CT_FLEXIBLESHOPKEEPER:
+                $target_id = $args["target_id"];
+                $player_id = $this->getActivePlayerId();
+                $rightmost_stack_index = $this->cards->getNextStackIndex($player_id) - 1;
+                $stall_cards = $this->cards->getCardsInLocation(STALL.$player_id);
+                $target_dbcard = null;
+                foreach ($stall_cards as $stall_card) {
+                    if ($stall_card["id"] == $target_id) {
+                        if (intdiv($stall_card["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
+                            $target_dbcard = $stall_card;
+                            break;
+                        }
+                        else {
+                            throw new BgaUserException("Flexible Shopkeeper failed: card $target_id is not in the rightmost stack");
+                        }
+                    }
+                }
+                if ($target_dbcard) {
+                    $this->copyCard($passive_card, $target_dbcard);
+                }
+                else {
+                    throw new BgaUserException("Flexible Shopkeeper failed: card $target_id is not in the active player's stall");
+                }
+                break;
             case CT_GOODOLDTIMES:
                 $target_id = $args["target_id"];
                 if ($target_id == 0) {

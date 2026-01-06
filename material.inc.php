@@ -300,8 +300,8 @@ if (!defined('CT_CARDBACK')) {
 
 //define all special effects
 if (!defined('EFFECT_CHAMELEON_TYPE')) {
-    define('EFFECT_CHAMELEON_VALUE', CT_FLEXIBLESHOPKEEPER);
-    define('EFFECT_CHAMELEON_TYPE', CT_REFLECTION);
+    define('EFFECT_CHAMELEON_TYPE', 1000);
+    define('EFFECT_CHAMELEON_VALUE', 1001);
 }
 
 //define all animalfolk
@@ -762,7 +762,7 @@ $this->card_types = array(
   ),
   17 => array(
       'type_id' => 17,
-      'name' => clienttranslate("Stock Clearance"),
+      'name' => clienttranslate("Exclusive Contacts"),
       'text' => clienttranslate("CARDS3 in the market have +2 cost for you this turn. Hand size +2 for this turn."),
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
@@ -1071,7 +1071,7 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
+      'has_ability' => true,
       'playable' => true,
       'trigger' => null,
       'value' => 1,
@@ -1087,7 +1087,7 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
+      'has_ability' => true,
       'playable' => true,
       'trigger' => null,
       'value' => 2,
@@ -1119,7 +1119,7 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
+      'has_ability' => true,
       'playable' => true,
       'trigger' => null,
       'value' => 4,
@@ -1135,7 +1135,7 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
+      'has_ability' => true,
       'playable' => true,
       'trigger' => null,
       'value' => 5,
@@ -1151,7 +1151,7 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
+      'has_ability' => true,
       'playable' => true,
       'trigger' => null,
       'value' => 5,
@@ -3354,7 +3354,7 @@ $this->card_types = array(
   ),
   179 => array(
       'type_id' => 179,
-      'name' => clienttranslate("Fresh Start"),
+      'name' => clienttranslate("Souvenirs"),
       'text' => clienttranslate("Draw CARDS3 from the supply equal to the number of players. Give 1 of them to each player."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,
@@ -4617,4 +4617,3 @@ $this->card_types = array(
       'is_mono' => true
   )
 );
-

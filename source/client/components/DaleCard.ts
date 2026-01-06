@@ -324,8 +324,9 @@ export class DaleCard {
 
     public id: number
 
-    static readonly EFFECT_CHAMELEON_VALUE: number = this.CT_FLEXIBLESHOPKEEPER;
-    static readonly EFFECT_CHAMELEON_TYPE: number = this.CT_REFLECTION;
+    static readonly EFFECT_CHAMELEON_TYPE: number = 1000;
+    static readonly EFFECT_CHAMELEON_VALUE: number = 1001;
+    
 
     /** 
      * Construct a dale card of a given card id. If this is the first time this card id is constructed, the type_id MUST be provided.
@@ -678,6 +679,7 @@ export class DaleCard {
             type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
             type_id == DaleCard.CT_REFLECTION ||
             type_id == DaleCard.CT_GOODOLDTIMES ||
+            type_id == DaleCard.CT_SOUNDDETECTORS ||
             type_id == DaleCard.CT_TRENDSETTING ||
             type_id == DaleCard.CT_SEEINGDOUBLES
         );
@@ -1211,7 +1213,7 @@ export class DaleCard {
 
     /**
      * @returns a new div element representing this card.
-     * @param parent_id (optional) - if specified, the div will be immediately be "detached" to the parent
+     * @param parent_id (optional) - if specified, the div will be immediately be "attached" to the parent
      * @param dataLocation (optional) - if specified, set the data-location attribute of the div to display modified values
      */
     public toDiv(parent_id?: string | HTMLElement, dataLocation?: DataLocation): HTMLElement {

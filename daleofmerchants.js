@@ -1252,8 +1252,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     }
                     break;
                 case DaleCard.CT_NASTYTHREAT:
-                    for (var _i = 0, _b = this.page.gamedatas.playerorder; _i < _b.length; _i++) {
-                        var player_id = _b[_i];
+                    for (var _i = 0, _a = this.page.gamedatas.playerorder; _i < _a.length; _i++) {
+                        var player_id = _a[_i];
                         if (effect.arg != player_id) {
                             this.page.playerStalls[+player_id].increaseStackValue(1);
                         }
@@ -1261,8 +1261,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     break;
             }
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
-                for (var _c = 0, _d = Array.from(DaleCard.divs.keys()); _c < _d.length; _c++) {
-                    var card_id = _d[_c];
+                for (var _b = 0, _c = Array.from(DaleCard.divs.keys()); _b < _c.length; _b++) {
+                    var card_id = _c[_b];
                     try {
                         DaleCard.updateHTML(card_id);
                     }
@@ -1310,8 +1310,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                         }
                         break;
                     case DaleCard.CT_NASTYTHREAT:
-                        for (var _b = 0, _c = this_3.page.gamedatas.playerorder; _b < _c.length; _b++) {
-                            var player_id = _c[_b];
+                        for (var _a = 0, _b = this_3.page.gamedatas.playerorder; _a < _b.length; _a++) {
+                            var player_id = _b[_a];
                             if (effect.arg != player_id) {
                                 this_3.page.playerStalls[+player_id].increaseStackValue(-1);
                             }
@@ -1346,8 +1346,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (!DaleCard.cardTypes[type_id].has_ability) {
                 return true;
             }
-            for (var _i = 0, _b = DaleCard.effects; _i < _b.length; _i++) {
-                var effect = _b[_i];
+            for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                var effect = _a[_i];
                 if (effect.card_id == this.id && effect.type_id == type_id) {
                     return true;
                 }
@@ -1356,8 +1356,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         Object.defineProperty(DaleCard.prototype, "effective_type_id", {
             get: function () {
-                var _b;
-                return (_b = DaleCard.cardIdtoCopiedTypeId.get(this.id)) !== null && _b !== void 0 ? _b : this.original_type_id;
+                var _a;
+                return (_a = DaleCard.cardIdtoCopiedTypeId.get(this.id)) !== null && _a !== void 0 ? _a : this.original_type_id;
             },
             enumerable: false,
             configurable: true
@@ -1365,8 +1365,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         Object.defineProperty(DaleCard.prototype, "effective_value", {
             get: function () {
                 var value = this.original_value;
-                for (var _i = 0, _b = DaleCard.effects; _i < _b.length; _i++) {
-                    var effect = _b[_i];
+                for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                    var effect = _a[_i];
                     if (effect.card_id == this.id || effect.effect_class == DaleCard.EC_GLOBAL) {
                         switch (effect.type_id) {
                             case DaleCard.CT_FLASHYSHOW:
@@ -1406,14 +1406,14 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         });
         Object.defineProperty(DaleCard.prototype, "effective_cost", {
             get: function () {
-                var _b;
+                var _a;
                 var cost = this.original_value;
-                for (var _i = 0, _c = DaleCard.effects; _i < _c.length; _i++) {
-                    var effect = _c[_i];
+                for (var _i = 0, _b = DaleCard.effects; _i < _b.length; _i++) {
+                    var effect = _b[_i];
                     if (effect.effect_class == DaleCard.EC_GLOBAL) {
                         switch (effect.type_id) {
                             case DaleCard.CT_SCARYGUNFIGHT:
-                                if (((_b = DaleCard.page) === null || _b === void 0 ? void 0 : _b.player_id) != effect.arg) {
+                                if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id) != effect.arg) {
                                     cost += 2;
                                 }
                                 break;
@@ -1430,6 +1430,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return (type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
                 type_id == DaleCard.CT_REFLECTION ||
                 type_id == DaleCard.CT_GOODOLDTIMES ||
+                type_id == DaleCard.CT_SOUNDDETECTORS ||
                 type_id == DaleCard.CT_TRENDSETTING ||
                 type_id == DaleCard.CT_SEEINGDOUBLES);
         };
@@ -1551,8 +1552,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(DaleCard.format_string(cardType.text), "</div>\n            <div style=\"color:gray\" class=\"daleofmerchants-card-tooltip-text\">").concat(legend ? '<hr>' + legend : '<br style="line-height: 10px" />', "</div>\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
-            var _b;
-            (_b = DaleCard.tooltips.get(this.id)) === null || _b === void 0 ? void 0 : _b.destroy();
+            var _a;
+            (_a = DaleCard.tooltips.get(this.id)) === null || _a === void 0 ? void 0 : _a.destroy();
         };
         DaleCard.prototype.addTooltip = function (tooltip_parent_id) {
             if (this.id == 0)
@@ -1729,7 +1730,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
-            var _b, _c;
+            var _a, _b;
             var value = this.original_value;
             if (card_div.dataset['location'] == 'market') {
                 value = this.effective_cost;
@@ -1740,10 +1741,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 value = this.effective_value;
             }
             if (value == this.original_value) {
-                (_b = card_div.querySelector(".daleofmerchants-effective-value")) === null || _b === void 0 ? void 0 : _b.remove();
+                (_a = card_div.querySelector(".daleofmerchants-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
             }
             else {
-                var value_div = (_c = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
+                var value_div = (_b = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _b !== void 0 ? _b : document.createElement('div');
                 value_div.classList.add("daleofmerchants-effective-value");
                 value_div.innerHTML = String(value);
                 card_div.append(value_div);
@@ -1776,7 +1777,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.toDiv = function (parent_id, dataLocation) {
-            var _b;
+            var _a;
             var div = document.createElement("div");
             div.classList.add("daleofmerchants-card");
             div.id = "daleofmerchants-card-" + this.id;
@@ -1785,7 +1786,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 div.dataset['location'] = dataLocation;
             }
             if (parent_id) {
-                (_b = $(parent_id)) === null || _b === void 0 ? void 0 : _b.appendChild(div);
+                (_a = $(parent_id)) === null || _a === void 0 ? void 0 : _a.appendChild(div);
                 this.attachDiv(div);
             }
             else {
@@ -1820,8 +1821,6 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return false;
         };
-        var _a;
-        _a = DaleCard;
         DaleCard.cardIdtoTypeId = new Map();
         DaleCard.cardIdtoCopiedTypeId = new Map();
         DaleCard.tooltips = new Map();
@@ -2104,8 +2103,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DEPRECATED_INSIGHT = 272;
         DaleCard.CT_DEPRECATED_WHIRLIGIG = 273;
         DaleCard.CT_DEPRECATED_FRESHSTART = 274;
-        DaleCard.EFFECT_CHAMELEON_VALUE = _a.CT_FLEXIBLESHOPKEEPER;
-        DaleCard.EFFECT_CHAMELEON_TYPE = _a.CT_REFLECTION;
+        DaleCard.EFFECT_CHAMELEON_TYPE = 1000;
+        DaleCard.EFFECT_CHAMELEON_VALUE = 1001;
         DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());
@@ -3134,6 +3133,10 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             this.isPopinOpen = false;
             this.updateHTML();
+            var topCard = this.peek(true);
+            if (topCard && this.topCardHTML) {
+                topCard.attachDiv(this.topCardHTML);
+            }
             (_a = $("maintitlebar_content")) === null || _a === void 0 ? void 0 : _a.classList.remove("daleofmerchants-transparent");
             var clone = $("maintitlebar_content_clone");
             if (clone) {
@@ -5248,22 +5251,28 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var chameleon_args = this.mainClientState.args;
                     var chameleon_source = new DaleCard_9.DaleCard(chameleon_args.passive_card_id);
                     var chameleon_targets = this.getChameleonTargets(chameleon_source);
-                    if (stateName == 'chameleon_reflection') {
-                        for (var _r = 0, _s = Object.entries(this.playerDiscards); _r < _s.length; _r++) {
-                            var _t = _s[_r], player_id = _t[0], discard_pile = _t[1];
-                            var deck = this.playerDecks[+player_id];
-                            if (+player_id != +this.player_id) {
-                                discard_pile.setSelectionMode('noneCantViewContent');
-                                deck.setSelectionMode('noneCantViewContent');
+                    if (chameleon_targets.length > 0) {
+                        if (stateName == 'chameleon_reflection') {
+                            for (var _r = 0, _s = Object.entries(this.playerDiscards); _r < _s.length; _r++) {
+                                var _t = _s[_r], player_id = _t[0], discard_pile = _t[1];
+                                var deck = this.playerDecks[+player_id];
+                                if (+player_id != +this.player_id) {
+                                    discard_pile.setSelectionMode('noneCantViewContent');
+                                    deck.setSelectionMode('noneCantViewContent');
+                                }
                             }
                         }
+                        else if (stateName == 'chameleon_goodoldtimes') {
+                            this.marketDeck.setSelectionMode('noneCantViewContent');
+                            this.marketDiscard.setSelectionMode('noneCantViewContent');
+                        }
+                        this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique');
+                        new TargetingLine_1.TargetingLine(chameleon_source, chameleon_targets, "daleofmerchants-line-source-chameleon", "daleofmerchants-line-target-chameleon", "daleofmerchants-line-chameleon", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onChameleon(target_id); });
                     }
-                    else if (stateName == 'chameleon_goodoldtimes') {
-                        this.marketDeck.setSelectionMode('noneCantViewContent');
-                        this.marketDiscard.setSelectionMode('noneCantViewContent');
+                    else {
+                        this.onCancelClient();
+                        this.showMessage(_("No valid targets to copy"), "error");
                     }
-                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique');
-                    new TargetingLine_1.TargetingLine(chameleon_source, chameleon_targets, "daleofmerchants-line-source-chameleon", "daleofmerchants-line-target-chameleon", "daleofmerchants-line-chameleon", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onChameleon(target_id); });
                     break;
                 case 'client_DEPRECATED_marketDiscovery':
                     this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
