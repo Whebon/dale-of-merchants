@@ -7094,6 +7094,34 @@ class DaleOfMerchants extends DaleTableBasic
                     throw new BgaUserException("Flexible Shopkeeper failed: card $target_id is not in the active player's stall");
                 }
                 break;
+            case CT_REFLECTION:
+                $opponent_id = $args["opponent_id"];
+                $should_discard = $args["should_discard"];
+                if ($should_discard) {
+                    // Discard and copy
+                    $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
+                    if ($dbcard == null) {
+                        throw new BgaVisibleSystemException("Reflection failed: no card on top of $opponent_id's deck");
+                    }
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('Reflection: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                        "player_id" => $opponent_id, # <-- 'player_id' is the opponent since we are discarding an opponent's card
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card" => $dbcard,
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    $this->copyCard($passive_card, $dbcard);
+                }
+                else {
+                    // Copy
+                    $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id);
+                    if ($dbcard == null) {
+                        throw new BgaVisibleSystemException("Reflection failed: no card on top of $opponent_id's discard");
+                    }
+                    $this->copyCard($passive_card, $dbcard);
+                }
+                break;
             case CT_GOODOLDTIMES:
                 $target_id = $args["target_id"];
                 if ($target_id == 0) {

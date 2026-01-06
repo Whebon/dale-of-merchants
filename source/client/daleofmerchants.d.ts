@@ -522,7 +522,7 @@ declare global {
 
 	interface ClientPassiveChoice {
 		'chameleon_flexibleShopkeeper': { target_id: number },
-		'chameleon_reflection': { target_id: number },
+		'chameleon_reflection': { opponent_id: number, should_discard: boolean },
 		'chameleon_goodoldtimes': { target_id: number },
 		'chameleon_trendsetting': { target_id: number },
 		'chameleon_seeingdoubles': { target_id: number },

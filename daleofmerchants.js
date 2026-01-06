@@ -6790,23 +6790,28 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.getChameleonTargets = function (card, type_id) {
-            var _a, _b;
+            var _a, _b, _c;
             var targets = [];
             switch (type_id !== null && type_id !== void 0 ? type_id : card.effective_type_id) {
                 case DaleCard_9.DaleCard.CT_FLEXIBLESHOPKEEPER:
                     targets = this.myStall.getCardsInStack(this.myStall.getNumberOfStacks() - 1);
                     break;
                 case DaleCard_9.DaleCard.CT_REFLECTION:
-                    for (var _i = 0, _c = Object.entries(this.playerDiscards); _i < _c.length; _i++) {
-                        var _d = _c[_i], player_id = _d[0], discard_pile = _d[1];
+                    for (var _i = 0, _d = Object.entries(this.playerDiscards); _i < _d.length; _i++) {
+                        var _e = _d[_i], player_id = _e[0], discard_pile = _e[1];
                         var deck = this.playerDecks[+player_id];
                         if (+player_id != +this.player_id) {
+                            if (player_id == "0") {
+                                this.showMessage("CT_REFLECTION does not work properly for player_id == 0", "Error");
+                            }
                             if (discard_pile.size > 0) {
-                                targets.push(discard_pile.peek());
+                                var target = (_a = discard_pile.topCardHTML) !== null && _a !== void 0 ? _a : discard_pile.placeholderHTML;
+                                target.dataset['target_id'] = player_id;
+                                targets.push(target);
                             }
                             if (deck.size > 0 || discard_pile.size > 0) {
-                                var target = (_a = deck.topCardHTML) !== null && _a !== void 0 ? _a : deck.placeholderHTML;
-                                target.dataset['target_id'] = '0';
+                                var target = (_b = deck.topCardHTML) !== null && _b !== void 0 ? _b : deck.placeholderHTML;
+                                target.dataset['target_id'] = "-" + player_id;
                                 targets.push(target);
                             }
                         }
@@ -6817,21 +6822,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         targets.push(this.marketDiscard.peek());
                     }
                     if (this.marketDeck.size > 0 || this.marketDiscard.size > 0) {
-                        var target = (_b = this.marketDeck.topCardHTML) !== null && _b !== void 0 ? _b : this.marketDeck.placeholderHTML;
+                        var target = (_c = this.marketDeck.topCardHTML) !== null && _c !== void 0 ? _c : this.marketDeck.placeholderHTML;
                         target.dataset['target_id'] = '0';
                         targets.push(target);
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_TRENDSETTING:
-                    for (var _e = 0, _f = this.market.getCards(); _e < _f.length; _e++) {
-                        var card_1 = _f[_e];
+                    for (var _f = 0, _g = this.market.getCards(); _f < _g.length; _f++) {
+                        var card_1 = _g[_f];
                         targets.push(card_1);
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_SEEINGDOUBLES:
                     var items = this.myHand.getAllItems();
-                    for (var _g = 0, items_1 = items; _g < items_1.length; _g++) {
-                        var item = items_1[_g];
+                    for (var _h = 0, items_1 = items; _h < items_1.length; _h++) {
+                        var item = items_1[_h];
                         if (item.id != card.id) {
                             var card_2 = new DaleCard_9.DaleCard(item.id);
                             targets.push(card_2);
@@ -9001,20 +9006,27 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.mainClientState.leave();
         };
         DaleOfMerchants.prototype.onChameleon = function (target_id) {
-            var allowedStates = [
-                'chameleon_flexibleShopkeeper',
-                'chameleon_reflection',
-                'chameleon_goodoldtimes',
-                'chameleon_trendsetting',
-                'chameleon_seeingdoubles'
-            ];
-            if (!allowedStates.includes(this.mainClientState.name)) {
-                console.error("onChameleon should not be called in ".concat(this.mainClientState.name));
-                return;
+            switch (this.mainClientState.name) {
+                case 'chameleon_reflection':
+                    var opponent_id = Math.abs(target_id);
+                    var should_discard = target_id < 0;
+                    this.playPassiveCard({
+                        opponent_id: opponent_id,
+                        should_discard: should_discard
+                    });
+                    break;
+                case 'chameleon_flexibleShopkeeper':
+                case 'chameleon_goodoldtimes':
+                case 'chameleon_trendsetting':
+                case 'chameleon_seeingdoubles':
+                    this.playPassiveCard({
+                        target_id: target_id
+                    });
+                    break;
+                default:
+                    console.error("onChameleon should not be called in ".concat(this.mainClientState.name));
+                    break;
             }
-            this.playPassiveCard({
-                target_id: target_id
-            });
         };
         DaleOfMerchants.prototype.onRequestBuildAction = function () {
             var snack_cards = this.mySchedule.getAllDaleCards().filter(function (card) { return card.effective_type_id == DaleCard_9.DaleCard.CT_SNACK; });

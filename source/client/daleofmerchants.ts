@@ -2493,12 +2493,17 @@ class DaleOfMerchants extends Gamegui
 				for (const [player_id, discard_pile] of Object.entries(this.playerDiscards)) {
 					const deck = this.playerDecks[+player_id]!
 					if (+player_id != +this.player_id) {
+						if (player_id == "0") {
+							this.showMessage("CT_REFLECTION does not work properly for player_id == 0", "Error")
+						}
 						if (discard_pile.size > 0) {
-							targets.push(discard_pile.peek()!)
+							const target = discard_pile.topCardHTML ?? discard_pile.placeholderHTML;
+							target.dataset['target_id'] = player_id; // plus = copy
+							targets.push(target);
 						}
 						if (deck.size > 0 || discard_pile.size > 0) {
 							const target = deck.topCardHTML ?? deck.placeholderHTML;
-							target.dataset['target_id'] = '0';
+							target.dataset['target_id'] = "-"+player_id; // minus = copy and discard the top card of the deck
 							targets.push(target);
 						}
 					}
@@ -5062,20 +5067,29 @@ class DaleOfMerchants extends Gamegui
 	 * @returns 
 	 */
 	onChameleon(target_id: number) {
-		const allowedStates = [
-			'chameleon_flexibleShopkeeper',
-			'chameleon_reflection',
-			'chameleon_goodoldtimes',
-			'chameleon_trendsetting',
-			'chameleon_seeingdoubles'
-		];
-		if (!allowedStates.includes(this.mainClientState.name)) {
-			console.error(`onChameleon should not be called in ${this.mainClientState.name}`)
-			return;
+		switch (this.mainClientState.name) {
+			case 'chameleon_reflection':
+				const opponent_id = Math.abs(target_id);
+				const should_discard = target_id < 0;
+				this.playPassiveCard<'chameleon_reflection'>({
+					opponent_id: opponent_id,
+					should_discard: should_discard
+				})
+				break;
+			
+			case 'chameleon_flexibleShopkeeper':
+			case 'chameleon_goodoldtimes':
+			case 'chameleon_trendsetting':
+			case 'chameleon_seeingdoubles':
+				this.playPassiveCard<'chameleon_flexibleShopkeeper'>({
+					target_id: target_id
+				})
+				break;
+
+			default:
+				console.error(`onChameleon should not be called in ${this.mainClientState.name}`)
+				break;
 		}
-		this.playPassiveCard<'chameleon_flexibleShopkeeper'>({
-			target_id: target_id
-		})
 	}
 
 	// TODO: safely remove this
