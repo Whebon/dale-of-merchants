@@ -1691,7 +1691,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 legend += " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(0), ", ").concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(1), " ") + _("and") + " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(2));
                 legend += '<br><br style="line-height: 10px" />';
             }
-            if (this.isChameleon()) {
+            if (text.includes('Copy')) {
                 legend += '<strong> ' + _('Copy') + ' : </strong> ' +
                     _('During your action phase, this card may become an identical copy of one valid card for all purposes of play.')
                     + '<br><br style="line-height: 10px" />';

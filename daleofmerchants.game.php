@@ -7138,6 +7138,19 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->copyCard($passive_card, $dbcard);
                 }
                 break;
+            case CT_TRENDSETTING:
+                $target_id = $args["target_id"];
+                $dbcard = $this->cards->getCardFromLocation($target_id, MARKET);
+                $this->copyCard($passive_card, $dbcard);
+                break;
+            case CT_SEEINGDOUBLES:
+                $target_id = $args["target_id"];
+                $dbcard = $this->cards->getCardFromLocation($target_id, HAND.$player_id);
+                if ($dbcard["id"] == $passive_card["id"]) {
+                    throw new BgaVisibleSystemException("Seeing Doubles cannot copy itself");
+                }
+                $this->copyCard($passive_card, $dbcard);
+                break;
             case CT_DEPRECATED_MARKETDISCOVERY:
                 $this->tossFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to toss a card from the market deck'));
                 $this->effects->insertModification($passive_card_id, CT_DEPRECATED_MARKETDISCOVERY);

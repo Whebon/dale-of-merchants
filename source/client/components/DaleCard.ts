@@ -1093,7 +1093,7 @@ export class DaleCard {
             legend += ` ${PlayerClock.getClockLabelAndIconTpl(0)}, ${PlayerClock.getClockLabelAndIconTpl(1)} `+_("and")+` ${PlayerClock.getClockLabelAndIconTpl(2)}`;
             legend += '<br><br style="line-height: 10px" />';
         }
-        if (this.isChameleon()) {
+        if (text.includes('Copy')) {
             legend += '<strong> ' + _('Copy') + ' : </strong> ' + 
             _('During your action phase, this card may become an identical copy of one valid card for all purposes of play.')
             //_('A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.')
