@@ -589,6 +589,10 @@
 	// 	background-color: var(--daleofmerchants-wrap-technique-a);
 	// 	background-blend-mode: overlay;
 	// }
+	//Ugly edge case to add a green outline around the CT_SOUNDDETECTORS while daleofmerchants-passive-selected
+	&.daleofmerchants-sound-detector {
+		outline: 3px solid var(--daleofmerchants-chameleon-green); 
+	}
 }
 
 .daleofmerchants-overtime-selected {
@@ -628,14 +632,14 @@
 
 .daleofmerchants-line-source-chameleon {
 	scale: 1.1 !important;
-	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
-	outline: 3px solid rgba(31, 119, 44) !important;
+	box-shadow: 0px 0px 16px var(--daleofmerchants-chameleon-green) !important;
+	outline: 3px solid var(--daleofmerchants-chameleon-green) !important;
 }
 
 .daleofmerchants-line-target-chameleon {
 	scale: 1.05 !important;
-	box-shadow: 0px 0px 16px rgba(31, 119, 44) !important;
-	outline: 3px solid rgba(31, 119, 44, 0.5) !important;
+	box-shadow: 0px 0px 16px var(--daleofmerchants-chameleon-green) !important;
+	outline: 3px solid var(--daleofmerchants-chameleon-green-target) !important;
 }
 
 .daleofmerchants-line-source-technique {
@@ -1577,6 +1581,9 @@
 	--daleofmerchants-night-a: rgb(115, 46, 132, 0.05);
 
 	--daleofmerchants-warning-yellow: rgb(213, 163, 0);
+
+	--daleofmerchants-chameleon-green: rgba(31, 119, 44);
+	--daleofmerchants-chameleon-green-target: rgba(31, 119, 44, 0.5);
 }
 
 body {

@@ -41,7 +41,7 @@ export class TargetingLine {
      * @param onTarget callback function when a target is clicked
      * @param pile (optional) if provided, create a dummy source representing a card inside a pile
     */
-    constructor(source: DaleCard | HTMLElement, targets: (DaleCard | HTMLElement)[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: number) => void, onTarget: (source_id: number, target_id: number) => void, pile?: Pile) {
+    constructor(source: DaleCard | HTMLElement, targets: (DaleCard | HTMLElement)[], sourceClass: sourceClass, targetClass: targetClass, lineClass: lineClass, onSource: (source: number) => void, onTarget: (source_id: number, target_id: number) => void, pile?: Pile, enable_clicking_on_source: boolean = true) {
         TargetingLine.targetingLines.push(this);
         this.svg = $("daleofmerchants-svg-container")!.querySelector("svg")!;
         this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -66,9 +66,16 @@ export class TargetingLine {
             this.cardDiv = source.div;
         }
         this.cardDiv.classList.add("daleofmerchants-line-source", this.sourceClass);
-        this.onSource = () => {
-            this.remove();
-            onSource(source_id);
+        if (enable_clicking_on_source) {
+            this.onSource = () => {
+                this.remove();
+                onSource(source_id);
+            }
+        }
+        else {
+            this.onSource = () => {
+                onSource(source_id);
+            };
         }
         this.cardDiv.addEventListener("click", this.onSource);
 

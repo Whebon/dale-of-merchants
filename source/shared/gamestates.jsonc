@@ -193,7 +193,8 @@
 			//Hidden-information technique states (skipping some protected gamestate ids around 100)
 			"trCoffeeGrinder": 101,
 			"trSerenade": 102,
-			"trRake": 103
+			"trRake": 103,
+			"trSoundDetectors": 104
 		}
 	},
 
@@ -1023,6 +1024,21 @@
 			"actRake": [
 				{"name": "toss_card_ids", "type": "AT_numberlist"},
 				{"name": "discard_card_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"104": {
+		"name": "soundDetectors",
+		"description": "Sound Detectors: ${actplayer} must copy 1 of ${opponent_name}\\'s cards",
+		"descriptionmyturn": "Sound Detectors: ${you} must copy 1 of ${opponent_name}\\'s cards",
+		"type": "activeplayer",
+		"args": "argOpponentNameAndPassiveCardId",
+		"action": "stSoundDetectors",
+		"possibleactions": {
+			"actSoundDetectors": [
+				{"name": "card_id", "type": "AT_int"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

@@ -54,6 +54,7 @@ if (false) {
 	$game->stBadOmen();
 	$game->stFinalStatistics();
 	$game->stSerenade();
+	$game->stSoundDetectors();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -175,6 +176,7 @@ $machinestates = array(
 			'trCoffeeGrinder' => 101,
 			'trSerenade' => 102,
 			'trRake' => 103,
+			'trSoundDetectors' => 104,
 		),
 	),
 	31 => array(
@@ -806,6 +808,18 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContentAndResolvingCardName',
 		'possibleactions' => ['actRake'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	104 => array(
+		'name' => 'soundDetectors',
+		'description' => clienttranslate('Sound Detectors: ${actplayer} must copy 1 of ${opponent_name}\'s cards'),
+		'descriptionmyturn' => clienttranslate('Sound Detectors: ${you} must copy 1 of ${opponent_name}\'s cards'),
+		'type' => 'activeplayer',
+		'args' => 'argOpponentNameAndPassiveCardId',
+		'action' => 'stSoundDetectors',
+		'possibleactions' => ['actSoundDetectors'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

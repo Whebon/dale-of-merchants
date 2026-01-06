@@ -1,3 +1,5 @@
+import { DaleCard } from "./DaleCard";
+
 export class Images {
     static readonly IMAGES_PER_ROW = 6;
     static readonly IMAGES_PER_COLUMN = 7;
@@ -105,6 +107,10 @@ export class Images {
             }
             else {
                 throw new Error(`Card with type id ${card_type_id} does not exist!`);
+            }
+            //Ugly edge case to add a green outline around the CT_SOUNDDETECTORS while daleofmerchants-passive-selected
+            if (card_type_id = DaleCard.CT_SOUNDDETECTORS) {
+                div.classList.add('daleofmerchants-sound-detector');
             }
         }
     }

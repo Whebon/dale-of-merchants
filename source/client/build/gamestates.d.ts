@@ -209,6 +209,7 @@ interface GameStates {
 			'trCoffeeGrinder': 101,
 			'trSerenade': 102,
 			'trRake': 103,
+			'trSoundDetectors': 104,
 		},
 	},
 	31: {
@@ -1246,6 +1247,24 @@ interface GameStates {
 				'name': 'discard_card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	104: {
+		'name': 'soundDetectors',
+		'description': 'Sound Detectors: ${actplayer} must copy 1 of ${opponent_name}\\\'s cards',
+		'descriptionmyturn': 'Sound Detectors: ${you} must copy 1 of ${opponent_name}\\\'s cards',
+		'type': 'activeplayer',
+		'args': 'argOpponentNameAndPassiveCardId',
+		'action': 'stSoundDetectors',
+		'possibleactions': {
+			'actSoundDetectors': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

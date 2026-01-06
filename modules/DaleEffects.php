@@ -312,10 +312,15 @@ class DaleEffects {
         $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_TYPE, $copied_type_id);
 
         // Copy the effective value
-        $original_value = $this->game->card_types[$copied_type_id]['value'];
-        $effective_value = $this->getValue($target_dbcard);
-        if ($original_value != $effective_value) {
-            $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_VALUE, $effective_value);
+        $chameleon_original_value = $this->game->card_types[$chameleon_type_id]['value'];
+        $chameleon_effective_value = $this->getValue($chameleon_dbcard);
+        $copied_original_value = $this->game->card_types[$copied_type_id]['value'];
+        $copied_effective_value = $this->getValue($target_dbcard);
+        if (
+            $chameleon_original_value != $chameleon_effective_value ||  //Chameleon's value was modified and needs to be reset to the base value of the copied card
+            $copied_original_value != $copied_effective_value           //Copied card's value was modified and chameleon needs to copy this modified value
+        ) {
+            $this->insertModification($chameleon_card_id, EFFECT_CHAMELEON_VALUE, $copied_effective_value);
         }
     }
 

@@ -783,6 +783,33 @@ class DaleOfMerchants extends Gamegui
 					this.showMessage(_("No valid targets to copy"), "error");
 				}
 				break;
+			case 'soundDetectors':
+				const soundDetector_args = args.args as { passive_card_id: number, opponent_id: number, opponent_name: string };
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', soundDetector_args.opponent_name+_("'s cards"));
+				setTimeout((() => {
+					const soundDetector_source = new DaleCard(soundDetector_args.passive_card_id);
+					const soundDetector_targets = this.getChameleonTargets(soundDetector_source);
+					if (soundDetector_targets.length > 0) {
+						new TargetingLine(
+							soundDetector_source,
+							soundDetector_targets,
+							"daleofmerchants-line-source-chameleon",
+							"daleofmerchants-line-target-chameleon",
+							"daleofmerchants-line-chameleon",
+							(source_id: number) => {this.showMessage(_("This effect cannot be canceled"), 'error')},
+							(source_id: number, target_id: number) => this.onSoundDetectors(target_id),
+							undefined,
+							false // Cannot be canceled by clicking on the source
+						)
+					}
+					else {
+						//Sometimes the soundDetector_targets are not yet available due to client-server delays
+						//As a workaround, we will fall back on a click selection method
+						console.warn("No targets found in limbo, TargetingLine will not be created");
+						this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to copy"));
+					}
+				}).bind(this), 750); //workaround to ensure that limbo is filled before the targeting line is created
+				break;
 			case 'client_DEPRECATED_marketDiscovery':
 				this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
 				this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
@@ -1359,6 +1386,10 @@ class DaleOfMerchants extends Gamegui
 			case 'chameleon_trendsetting':
 			case 'chameleon_seeingdoubles':
 				TargetingLine.remove();
+				break;
+			case 'soundDetectors':
+				TargetingLine.remove();
+				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'client_DEPRECATED_marketDiscovery':
 				this.marketDeck.setSelectionMode('none');
@@ -2517,6 +2548,11 @@ class DaleOfMerchants extends Gamegui
 					const target = this.marketDeck.topCardHTML ?? this.marketDeck.placeholderHTML;
 					target.dataset['target_id'] = '0';
 					targets.push(target);
+				}
+				break;
+			case DaleCard.CT_SOUNDDETECTORS:
+				for (let card of this.myLimbo.getAllDaleCards()) {
+					targets.push(card)
 				}
 				break;
 			case DaleCard.CT_TRENDSETTING:
@@ -3696,6 +3732,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'umbrella':
 				this.onUmbrella(card.id);
+				break;
+			case 'soundDetectors':
+				this.onSoundDetectors(card.id);
 				break;
 			case 'anchor':
 			case 'shakyEnterprise':
@@ -4912,6 +4951,14 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_GOODOLDTIMES:
 				this.mainClientState.enterOnStack('chameleon_goodoldtimes', {passive_card_id: card.id});
 				break;
+			case DaleCard.CT_SOUNDDETECTORS:
+				if (this.unique_opponent_id) {
+					this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id, keep_passive_selected: true});
+				}
+				else {
+					this.mainClientState.enterOnStack('client_selectOpponentPassive', {passive_card_id: card.id, keep_passive_selected: true});
+				}
+				break;
 			case DaleCard.CT_TRENDSETTING:
 				this.mainClientState.enterOnStack('chameleon_trendsetting', {passive_card_id: card.id});
 				break;
@@ -5090,6 +5137,12 @@ class DaleOfMerchants extends Gamegui
 				console.error(`onChameleon should not be called in ${this.mainClientState.name}`)
 				break;
 		}
+	}
+
+	onSoundDetectors(target_id: number) {
+		this.bgaPerformAction('actSoundDetectors', {
+			card_id: target_id, 
+		});
 	}
 
 	// TODO: safely remove this
@@ -6940,8 +6993,12 @@ class DaleOfMerchants extends Gamegui
 		else if (this.player_id == notif.args.opponent_id || this.player_id == notif.args.player_id) {
 			throw new Error("Expected private arguments for 'opponentHandToPlayerHand'");
 		}
-		this.playerHandSizes[notif.args.opponent_id]!.incValue(-1);
-		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		if (!notif.args.from_limbo) {
+			this.playerHandSizes[notif.args.opponent_id]!.incValue(-1);
+		}
+		if (!notif.args.to_limbo) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		}
 	}
 	
 	notif_obtainNewJunkInHand(notif: NotifAs<'obtainNewJunkInHand'>) {

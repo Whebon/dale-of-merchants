@@ -2972,72 +2972,73 @@ class DaleOfMerchants extends DaleTableBasic
         ));
     }
 
-    /**
-     * Returns all the possible non-chameleon targets that can be reached by the provided card
-     * @param int card_id of the card that is attempting to copy
-     * @param int type_id of the card that is attempting to copy
-     * @param array $visited_chameleons (passed by reference) chameleon types that have already been visited and should not be searched again
-     */
-    function getChameleonTargets(int $card_id, int $type_id, array & $visited_chameleons = array()) {
-        $targets = array();
-        if (in_array($type_id, $visited_chameleons)) {
-            return $targets;
-        }
-        switch($type_id) {
-            case CT_FLEXIBLESHOPKEEPER:
-                array_push($visited_chameleons, CT_FLEXIBLESHOPKEEPER);
-                $player_id = $this->getCurrentPlayerId();
-                $rightmost_stack_index = $this->cards->getNextStackIndex($player_id) - 1;
-                $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
-                foreach ($valid_targets as $target) {
-                    if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
-                        $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
-                    }
-                }
-                break;
-            case CT_REFLECTION:
-                array_push($visited_chameleons, CT_REFLECTION);
-                $active_player_id = $this->getActivePlayerId();
-                $players = $this->loadPlayersBasicInfosInclMono();
-                foreach ($players as $player_id => $player) {
-                    if ($player_id != $active_player_id) {
-                        $target = $this->cards->getCardOnTop(DISCARD.$player_id);
-                        if ($target) {
-                            $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
-                        }
-                    }
-                }
-                break;
-            case CT_GOODOLDTIMES:
-                array_push($visited_chameleons, CT_GOODOLDTIMES);
-                $target = $this->cards->getCardOnTop(DISCARD.MARKET);
-                if ($target) {
-                    $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
-                }
-                break;
-            case CT_TRENDSETTING:
-                array_push($visited_chameleons, CT_TRENDSETTING);
-                $valid_targets = $this->cards->getCardsInLocation(MARKET);
-                foreach ($valid_targets as $target) {
-                    $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
-                }
-                break;
-            case CT_SEEINGDOUBLES:
-                array_push($visited_chameleons, CT_SEEINGDOUBLES);
-                $active_player_id = $this->getActivePlayerId();
-                $valid_targets = $this->cards->getCardsInLocation(HAND.$active_player_id);
-                foreach ($valid_targets as $target) {
-                    if ($target["id"] != $card_id) { //seeing doubles cannot bind to itself
-                        $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
-                    }
-                }
-                break;
-            default:
-                $targets[] = $card_id;
-                break;
-        }
-        return $targets;
-    }
+    // TODO: safely remove this
+    // /**
+    //  * Returns all the possible non-chameleon targets that can be reached by the provided card
+    //  * @param int card_id of the card that is attempting to copy
+    //  * @param int type_id of the card that is attempting to copy
+    //  * @param array $visited_chameleons (passed by reference) chameleon types that have already been visited and should not be searched again
+    //  */
+    // function getChameleonTargets(int $card_id, int $type_id, array & $visited_chameleons = array()) {
+    //     $targets = array();
+    //     if (in_array($type_id, $visited_chameleons)) {
+    //         return $targets;
+    //     }
+    //     switch($type_id) {
+    //         case CT_FLEXIBLESHOPKEEPER:
+    //             array_push($visited_chameleons, CT_FLEXIBLESHOPKEEPER);
+    //             $player_id = $this->getCurrentPlayerId();
+    //             $rightmost_stack_index = $this->cards->getNextStackIndex($player_id) - 1;
+    //             $valid_targets = $this->cards->getCardsInLocation(STALL.$player_id);
+    //             foreach ($valid_targets as $target) {
+    //                 if (intdiv($target["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
+    //                     $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
+    //                 }
+    //             }
+    //             break;
+    //         case CT_REFLECTION:
+    //             array_push($visited_chameleons, CT_REFLECTION);
+    //             $active_player_id = $this->getActivePlayerId();
+    //             $players = $this->loadPlayersBasicInfosInclMono();
+    //             foreach ($players as $player_id => $player) {
+    //                 if ($player_id != $active_player_id) {
+    //                     $target = $this->cards->getCardOnTop(DISCARD.$player_id);
+    //                     if ($target) {
+    //                         $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
+    //                     }
+    //                 }
+    //             }
+    //             break;
+    //         case CT_GOODOLDTIMES:
+    //             array_push($visited_chameleons, CT_GOODOLDTIMES);
+    //             $target = $this->cards->getCardOnTop(DISCARD.MARKET);
+    //             if ($target) {
+    //                 $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
+    //             }
+    //             break;
+    //         case CT_TRENDSETTING:
+    //             array_push($visited_chameleons, CT_TRENDSETTING);
+    //             $valid_targets = $this->cards->getCardsInLocation(MARKET);
+    //             foreach ($valid_targets as $target) {
+    //                 $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
+    //             }
+    //             break;
+    //         case CT_SEEINGDOUBLES:
+    //             array_push($visited_chameleons, CT_SEEINGDOUBLES);
+    //             $active_player_id = $this->getActivePlayerId();
+    //             $valid_targets = $this->cards->getCardsInLocation(HAND.$active_player_id);
+    //             foreach ($valid_targets as $target) {
+    //                 if ($target["id"] != $card_id) { //seeing doubles cannot bind to itself
+    //                     $targets = array_merge($targets, $this->getChameleonTargets($target["id"], $this->getTypeId($target), $visited_chameleons));
+    //                 }
+    //             }
+    //             break;
+    //         default:
+    //             $targets[] = $card_id;
+    //             break;
+    //     }
+    //     return $targets;
+    // }
 
     // TODO: safely remove this
     // /**
@@ -4933,7 +4934,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 throw new BgaVisibleSystemException("Unable to fizzle CT_COLOURSWAP. '". $card_name."' can be swapped...");
                             }
                             else {
-                                throw new BgaUserException(_("Colour Swap has valid targets. Try using '").$card_name."' as '".$target_name."'.");
+                                throw new BgaUserException($this->_("Colour Swap has valid targets. Try using '").$card_name."' as '".$target_name."'.");
                             } 
                         }
                     }
@@ -7095,7 +7096,8 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_REFLECTION:
-                $opponent_id = $args["opponent_id"];
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
                 $should_discard = $args["should_discard"];
                 if ($should_discard) {
                     // Discard and copy
@@ -7137,6 +7139,16 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     $this->copyCard($passive_card, $dbcard);
                 }
+                break;
+            case CT_SOUNDDETECTORS:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                if ($this->cards->countCardsInLocation(HAND.$opponent_id) == 0) {
+                    throw new BgaUserException($this->_("Sound Detector cannot be used on opponents with an empty hand"));
+                }
+                $this->setGameStateValue("passive_card_id", $passive_card_id);
+                $this->gamestate->nextState("trSoundDetectors"); return;
                 break;
             case CT_TRENDSETTING:
                 $target_id = $args["target_id"];
@@ -9039,6 +9051,47 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+
+    function actSoundDetectors($card_id) {
+        $player_id = $this->getActivePlayerId();
+        $limbo_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $target_dbcard = null;
+
+        //return the cards to the opponent's hand
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $public_msg = clienttranslate('Umbrella: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'); 
+        foreach ($limbo_cards as $dbcard) {
+            if ($dbcard["id"] == $card_id) {
+                $target_dbcard = $dbcard;
+            }
+            $this->cards->moveCard($dbcard["id"], HAND.$opponent_id);
+            $this->notifyAllPlayersWithPrivateArguments('instant_playerHandToOpponentHand', $public_msg, array(
+                "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "nbr" => count($limbo_cards),
+                "from_limbo" => true,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            )); //no private message here, to see which card was swapped, players should refer to the 'swap' message
+            $public_msg = ''; //only show the public message once
+        }
+
+        if ($target_dbcard == null) {
+            throw new BgaVisibleSystemException("Sound Detectors failed: card $card_id is not found in limbo");
+        }
+
+        $passive_card_id = $this->getGameStateValue("passive_card_id");
+        $chameleon_dbcard = $this->cards->getCardFromLocation($passive_card_id, HAND.$player_id);
+
+        $this->copyCard($chameleon_dbcard, $target_dbcard);
+        $this->gamestate->nextState("trSamePlayer");
+    }
+
+
     // ^
     // |
      //(~acts)
@@ -9918,7 +9971,7 @@ class DaleOfMerchants extends DaleTableBasic
             $dbcard = $cards[$card_id];
             unset($cards[$card_id]);
             $this->cards->moveCard($card_id, LIMBO.$player_id);
-            $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
+            $this->notifyAllPlayersWithPrivateArguments('instant_opponentHandToPlayerHand', '', array(
                 "player_id" => $player_id,
                 "opponent_id" => $opponent_id,
                 "_private" => array(
@@ -10042,6 +10095,40 @@ class DaleOfMerchants extends DaleTableBasic
             $this->fullyResolveCard($this->getActivePlayerId(), null, null, TRIGGER_ONMARKETCARD);
             return;
         }
+    }
+
+    function stSoundDetectors() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+        $nbr = 0;
+        for ($i = 0; $i < 2; $i++) {
+            if (count($cards) == 0) {
+                break;
+            }
+            $card_id = array_rand($cards);
+            $dbcard = $cards[$card_id];
+            unset($cards[$card_id]);
+            $this->cards->moveCard($card_id, LIMBO.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('instant_opponentHandToPlayerHand', '', array(
+                "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                ),
+                "to_limbo" => true
+            ));
+            $nbr += 1;
+        }
+        if ($nbr == 0) {
+            throw new BgaVisibleSystemException("Sound Detectors should have fizzled: opponent's hand is empty");
+        }
+        $this->notifyAllPlayers('message', clienttranslate('Sound Detectors: ${player_name} takes ${nbr} cards from ${opponent_name}\'s hand'), array(
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "nbr" => $nbr,
+        ));  
     }
 
     
