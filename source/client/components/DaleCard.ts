@@ -1077,12 +1077,12 @@ export class DaleCard {
             + (DaleCard.page!.is_solo ? ' '+_('Tossed Mono cards are placed on Mono\'s discard.') : '')
             +'<br><br style="line-height: 10px" />';
         }
-        if (text.includes(_('Finish'))) {
+        if (text.includes(_('Finish')) || text.includes(_('finish'))) {
             legend += '<strong> ' + _('Finish') + ' : </strong> ' + 
             _('Resolve any effects in the card text that precede finish. During your action phase, you may spend the amount listed after finish to continue resolving the card.')
             +'<br><br style="line-height: 10px" />';
         }
-        if (text.includes(_('Spend')) || text.includes(_('Finish'))) {
+        if (text.includes(_('Spend')) || text.includes(_('spend')) || text.includes(_('Finish')) || text.includes(_('finish'))) {
             legend += '<strong> ' + _('Spend') + ' : </strong> ' + 
             DaleCard.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
             +'<br><br style="line-height: 10px" />';
@@ -1093,7 +1093,7 @@ export class DaleCard {
             legend += ` ${PlayerClock.getClockLabelAndIconTpl(0)}, ${PlayerClock.getClockLabelAndIconTpl(1)} `+_("and")+` ${PlayerClock.getClockLabelAndIconTpl(2)}`;
             legend += '<br><br style="line-height: 10px" />';
         }
-        if (text.includes('Copy')) {
+        if (text.includes(_('Copy')) || text.includes(_('copy'))) {
             legend += '<strong> ' + _('Copy') + ' : </strong> ' + 
             _('During your action phase, this card may become an identical copy of one valid card for all purposes of play.')
             //_('A passive chameleon card <strong>you use</strong> is an identical copy of one valid card for all purposes of play. If there is a valid card, you <strong>must</strong> copy it before using the chameleon card.')

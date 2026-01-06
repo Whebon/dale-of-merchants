@@ -1675,12 +1675,12 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                     + (DaleCard.page.is_solo ? ' ' + _('Tossed Mono cards are placed on Mono\'s discard.') : '')
                     + '<br><br style="line-height: 10px" />';
             }
-            if (text.includes(_('Finish'))) {
+            if (text.includes(_('Finish')) || text.includes(_('finish'))) {
                 legend += '<strong> ' + _('Finish') + ' : </strong> ' +
                     _('Resolve any effects in the card text that precede finish. During your action phase, you may spend the amount listed after finish to continue resolving the card.')
                     + '<br><br style="line-height: 10px" />';
             }
-            if (text.includes(_('Spend')) || text.includes(_('Finish'))) {
+            if (text.includes(_('Spend')) || text.includes(_('spend')) || text.includes(_('Finish')) || text.includes(_('finish'))) {
                 legend += '<strong> ' + _('Spend') + ' : </strong> ' +
                     DaleCard.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
                     + '<br><br style="line-height: 10px" />';
@@ -1691,7 +1691,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 legend += " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(0), ", ").concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(1), " ") + _("and") + " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(2));
                 legend += '<br><br style="line-height: 10px" />';
             }
-            if (text.includes('Copy')) {
+            if (text.includes(_('Copy')) || text.includes(_('copy'))) {
                 legend += '<strong> ' + _('Copy') + ' : </strong> ' +
                     _('During your action phase, this card may become an identical copy of one valid card for all purposes of play.')
                     + '<br><br style="line-height: 10px" />';
