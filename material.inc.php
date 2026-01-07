@@ -38,7 +38,7 @@ if (!defined('CT_CARDBACK')) {
     define('CT_ESSENTIALPURCHASE', 14);
     define('CT_GIFTVOUCHER', 15);
     define('CT_SPECIALOFFER', 16);
-    define('CT_STOCKCLEARANCE', 17);
+    define('CT_EXCLUSIVECONTACTS', 17);
     define('CT_WILYFELLOW', 18);
     define('CT_NUISANCE', 19);
     define('CT_ROTTENFOOD', 20);
@@ -302,6 +302,7 @@ if (!defined('CT_CARDBACK')) {
 if (!defined('EFFECT_CHAMELEON_TYPE')) {
     define('EFFECT_CHAMELEON_TYPE', 1000);
     define('EFFECT_CHAMELEON_VALUE', 1001);
+    define('EFFECT_INCREASE_HAND_SIZE', 1002);
 }
 
 //define all animalfolk
@@ -1828,7 +1829,7 @@ $this->card_types = array(
       'has_plus' => false,
       'has_ability' => true,
       'playable' => true,
-      'trigger' => 'onCleanUp',
+      'trigger' => "onCleanUp",
       'value' => 5,
       'nbr' => 1,
       'animalfolk_displayed' => clienttranslate("Desert Monitors"),

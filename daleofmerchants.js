@@ -1409,10 +1409,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         });
         Object.defineProperty(DaleCard.prototype, "effective_cost", {
             get: function () {
-                var _a, _b;
+                var _a, _b, _c;
                 var cost = this.original_value;
-                for (var _i = 0, _c = DaleCard.effects; _i < _c.length; _i++) {
-                    var effect = _c[_i];
+                for (var _i = 0, _d = DaleCard.effects; _i < _d.length; _i++) {
+                    var effect = _d[_i];
                     if (effect.effect_class == DaleCard.EC_GLOBAL) {
                         switch (effect.type_id) {
                             case DaleCard.CT_SCARYGUNFIGHT:
@@ -1423,6 +1423,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                             case DaleCard.CT_ESSENTIALPURCHASE:
                                 if (((_b = DaleCard.page) === null || _b === void 0 ? void 0 : _b.player_id) == effect.arg) {
                                     cost -= 2;
+                                }
+                                break;
+                            case DaleCard.CT_EXCLUSIVECONTACTS:
+                                if (((_c = DaleCard.page) === null || _c === void 0 ? void 0 : _c.player_id) == effect.arg) {
+                                    cost += 2;
                                 }
                                 break;
                         }
@@ -1862,7 +1867,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_ESSENTIALPURCHASE = 14;
         DaleCard.CT_GIFTVOUCHER = 15;
         DaleCard.CT_SPECIALOFFER = 16;
-        DaleCard.CT_STOCKCLEARANCE = 17;
+        DaleCard.CT_EXCLUSIVECONTACTS = 17;
         DaleCard.CT_WILYFELLOW = 18;
         DaleCard.CT_NUISANCE = 19;
         DaleCard.CT_ROTTENFOOD = 20;
@@ -2122,6 +2127,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DEPRECATED_FRESHSTART = 274;
         DaleCard.EFFECT_CHAMELEON_TYPE = 1000;
         DaleCard.EFFECT_CHAMELEON_VALUE = 1001;
+        DaleCard.EFFECT_INCREASE_HAND_SIZE = 1002;
         DaleCard.scheduleCooldownCardIds = new Set();
         return DaleCard;
     }());

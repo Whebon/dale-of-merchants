@@ -89,6 +89,16 @@ class DaleEffects {
     ///////     Public Getters     ///////
     //////////////////////////////////////
 
+    function countIncreaseHandSizeEffects(): int {
+        $increase_hand_size = 0;
+        foreach ($this->cache as $row) {
+            if ($row["effect_class"] == EC_GLOBAL && $row["type_id"] == EFFECT_INCREASE_HAND_SIZE) {
+                $increase_hand_size += $row["arg"];
+            }
+        }
+        return $increase_hand_size;
+    }
+
     /**
      * Returns the amount of EC_GLOBAL effects of the given type id
      * @param int $type_id the type of effect
@@ -135,6 +145,11 @@ class DaleEffects {
                     case CT_ESSENTIALPURCHASE:
                         if ($row["arg"] == $player_id) {
                             $additional_cost -= 2;
+                        }
+                        break;
+                    case CT_EXCLUSIVECONTACTS:
+                        if ($row["arg"] == $player_id) {
+                            $additional_cost += 2;
                         }
                         break;
                 }

@@ -1985,9 +1985,9 @@ class DaleOfMerchants extends DaleTableBasic
         $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
         //$cookies = $this->countTypeId($hand_cards, CT_COOKIES); //old cookies effect
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
-        $displayofpowers = 2 * $this->effects->countGlobalEffects(CT_DISPLAYOFPOWER);
+        $increaseHandSizeEffects = $this->effects->countIncreaseHandSizeEffects();
         $monocards = $this->countMonoCards($hand_cards);
-        return 5 + $bribes + $sofas + $displayofpowers + $monocards;
+        return 5 + $bribes + $sofas + $increaseHandSizeEffects + $monocards;
     }
 
     /**
@@ -2081,18 +2081,6 @@ class DaleOfMerchants extends DaleTableBasic
         //     ));
         // }
 
-        //notify about the new cards from deck
-        if (count($new_hand_cards) > 0) {
-            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} card(s) to refill their hand'), array(
-                "player_id" => $player_id,
-                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                "nbr" => count($new_hand_cards),
-                "_private" => array(
-                    "cards" => $new_hand_cards
-                )
-            ));
-        }
-        
         //notify players about CT_LOSTSHIPMENTS (and reduce the maximum hand size to prevent drawing junk from the reserve)
         if ($lostShipmentsActive) {
             if ($maximum_hand_size > $hand_size_before + 1) {
@@ -2103,6 +2091,19 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
             }
+        }
+
+        //notify about the new cards from deck
+        if (count($new_hand_cards) > 0) {
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} card(s) to refill their hand to ${maximum_hand_size}'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "nbr" => count($new_hand_cards),
+                "_private" => array(
+                    "cards" => $new_hand_cards
+                ),
+                "maximum_hand_size" => $maximum_hand_size
+            ));
         }
 
         //draw missing cards from junk reserve
@@ -6347,8 +6348,16 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DISPLAYOFPOWER:
                 $this->spend($player_id, $args, 2, $this->_("Display of Power"));
-                $this->effects->insertGlobal($technique_card_id, CT_DISPLAYOFPOWER);
+                $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 2);
                 $this->notifyAllPlayers('message', clienttranslate('Display of Power: ${player_name} increases their hand size by 2'), array(
+                    'player_name' => $this->getActivePlayerName()
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_EXCLUSIVECONTACTS:
+                $this->effects->insertGlobal($technique_card_id, CT_EXCLUSIVECONTACTS, $player_id);
+                $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 2);
+                $this->notifyAllPlayers('message', clienttranslate('Exclusive Contacts: ${player_name} increases their hand size by 2'), array(
                     'player_name' => $this->getActivePlayerName()
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);

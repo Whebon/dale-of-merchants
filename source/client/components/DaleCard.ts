@@ -63,7 +63,7 @@ export class DaleCard {
     static readonly CT_ESSENTIALPURCHASE: number = 14;
     static readonly CT_GIFTVOUCHER: number = 15;
     static readonly CT_SPECIALOFFER: number = 16;
-    static readonly CT_STOCKCLEARANCE: number = 17;
+    static readonly CT_EXCLUSIVECONTACTS: number = 17;
     static readonly CT_WILYFELLOW: number = 18;
     static readonly CT_NUISANCE: number = 19;
     static readonly CT_ROTTENFOOD: number = 20;
@@ -326,6 +326,7 @@ export class DaleCard {
 
     static readonly EFFECT_CHAMELEON_TYPE: number = 1000;
     static readonly EFFECT_CHAMELEON_VALUE: number = 1001;
+    static readonly EFFECT_INCREASE_HAND_SIZE: number = 1002;
     
 
     /** 
@@ -663,6 +664,11 @@ export class DaleCard {
                     case DaleCard.CT_ESSENTIALPURCHASE:
                         if (DaleCard.page?.player_id == effect.arg) {
                             cost -= 2;
+                        }
+                        break;
+                    case DaleCard.CT_EXCLUSIVECONTACTS:
+                        if (DaleCard.page?.player_id == effect.arg) {
+                            cost += 2;
                         }
                         break;
                 }
