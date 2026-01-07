@@ -636,6 +636,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
 			case 'client_shatteredRelic':
+			case 'client_matches':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'spyglass':
@@ -1309,6 +1310,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_shatteredRelic':
+			case 'client_matches':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'spyglass':
@@ -1733,9 +1735,9 @@ class DaleOfMerchants extends Gamegui
 				let postCleanUpPhase_hasScheduledTechniques = false
 				for (const card of this.mySchedule.getAllDaleCards()) {
 					if (card.trigger == 'onCleanUp' && !card.inScheduleCooldown()) {
-						const label = _("Use")+" "+card.name
+						const label = _("Resolve")+" "+card.name
 						this.statusBar.addActionButton(label, () => this.onTriggerTechnique(card.id));
-						//postCleanUpPhase_hasScheduledTechniques = true // TODO: add this once ending your turn without resolving all techniques is illegal
+						postCleanUpPhase_hasScheduledTechniques = true
 					}
 				}
 
@@ -1799,6 +1801,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_shatteredRelic':
+			case 'client_matches':
 				this.addActionButtonCancelClient();
 				break;
 			case 'spyglass':
@@ -3572,6 +3575,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'client_matches':
+				this.resolveTechniqueCard<'client_matches'>({
+					card_id: card!.id
+				})
+				break;
 			case 'client_rottenFood':
 				const client_rottenFood_targets = [];
 				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
@@ -3906,6 +3914,14 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_WINDOFCHANGE:
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
+				break;
+			case DaleCard.CT_SKINKS3:
+				if (this.myHand.count() == 1) {
+					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+				}
+				else {
+					this.clientTriggerTechnique('client_matches', card.id);
+				}
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);

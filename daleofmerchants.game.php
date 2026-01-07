@@ -6772,6 +6772,10 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertGlobal(0, CT_ESSENTIALPURCHASE, $player_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_SKINKS3:
+                $this->draw(clienttranslate('Matches: ${player_name} draws 2 cards'), 2);
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -6783,6 +6787,37 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $technique_card = $this->cards->getCardFromLocation($technique_card_id, SCHEDULE.$player_id);
         $technique_type_id = $this->getTypeId($technique_card);
+
+        //Verify the card is being resolved in the correct phase
+        $current_state_name = $this->gamestate->state()["name"];
+        $type_id = $this->getTypeId($technique_card);
+        $trigger = $this->card_types[$type_id]["trigger"];
+        switch($trigger) {
+            case TRIGGER_ONTURNSTART:
+                if ($current_state_name != "turnStart") {
+                    new BgaVisibleSystemException("Start of turn cards may not resolve during '$current_state_name'");
+                }
+                break;
+            
+            case TRIGGER_ONCLEANUP:
+                if ($current_state_name != "postCleanUpPhase") {
+                    new BgaVisibleSystemException("End of turn cards may not resolve during '$current_state_name'");
+                }
+                break;
+            
+            case TRIGGER_ONFINISH:
+                if ($current_state_name != "playerTurn") {
+                    new BgaVisibleSystemException("Finish cards may not resolve during '$current_state_name'");
+                }
+                break;
+
+            default:
+                // TODO: check if this works for a mix of different beaver triggers
+                if ($current_state_name != "trigger") {
+                    new BgaVisibleSystemException("Trigger cards may not resolve during '$current_state_name'");
+                }
+                break;
+        }
 
         //Trigger Fizzle
         if (array_key_exists("fizzle", $args)) {
@@ -7024,6 +7059,10 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_OVERTIME:
                 //just resolve the card, the effect is already applied in the build action
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SKINKS3:
+                $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -9610,7 +9649,7 @@ class DaleOfMerchants extends DaleTableBasic
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
             foreach ($dbcards as $card_id => $dbcard) {
                 $type_id = $this->getTypeId($dbcard);
-                if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP && $type_id != CT_SLICEOFLIFE && !$this->effects->isPassiveUsed($dbcard)) {
+                if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP && $type_id != CT_SLICEOFLIFE && $this->card_types[$type_id]["has_ability"] && !$this->effects->isPassiveUsed($dbcard)) {
                     //the hand contains a card that uses the post clean up phase
                     $this->gamestate->nextState("trPostCleanUpPhase");
                     return;
@@ -9629,6 +9668,7 @@ class DaleOfMerchants extends DaleTableBasic
 
             $schedule_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
             foreach ($schedule_dbcards as $dbcard) {
+                $type_id = $this->getTypeId($dbcard);
                 if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP) {
                     //the schedule contains a card that uses the post clean up phase (resolving this is mandatory)
                     $this->gamestate->nextState("trPostCleanUpPhase");

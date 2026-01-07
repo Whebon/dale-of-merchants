@@ -327,9 +327,19 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
+			'actFullyResolveTechniqueCard': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'args',
+				'type': 'AT_json',
+				'typescriptType': string,
+			}],
 			'actEndTurn': [],
 		},
 		'transitions': {
+			'trSamePlayer': 41,
 			'trNextPlayer': 41,
 			'trPassiveAbility': 41,
 			'trTacticalMeasurement': 81,

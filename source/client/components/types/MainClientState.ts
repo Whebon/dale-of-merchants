@@ -138,6 +138,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may choose the order to discard your hand");
             case 'client_shatteredRelic':
                 return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
+            case 'client_matches':
+                return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
             case 'client_acorn':
                 return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
             case 'client_giftVoucher':

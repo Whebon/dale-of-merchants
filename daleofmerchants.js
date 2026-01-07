@@ -4172,6 +4172,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose the order to discard your hand");
                     case 'client_shatteredRelic':
                         return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
+                    case 'client_matches':
+                        return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_acorn':
                         return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
                     case 'client_giftVoucher':
@@ -5215,6 +5217,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
                 case 'client_shatteredRelic':
+                case 'client_matches':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'spyglass':
@@ -5789,6 +5792,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'client_shatteredRelic':
+                case 'client_matches':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'spyglass':
@@ -6230,8 +6234,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var postCleanUpPhase_hasScheduledTechniques = false;
                     var _loop_9 = function (card) {
                         if (card.trigger == 'onCleanUp' && !card.inScheduleCooldown()) {
-                            var label = _("Use") + " " + card.name;
+                            var label = _("Resolve") + " " + card.name;
                             this_8.statusBar.addActionButton(label, function () { return _this.onTriggerTechnique(card.id); });
+                            postCleanUpPhase_hasScheduledTechniques = true;
                         }
                     };
                     var this_8 = this;
@@ -6293,6 +6298,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_shatteredRelic':
+                case 'client_matches':
                     this.addActionButtonCancelClient();
                     break;
                 case 'spyglass':
@@ -7706,6 +7712,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
+                case 'client_matches':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
                 case 'client_rottenFood':
                     var client_rottenFood_targets = [];
                     for (var _i = 0, _c = Object.entries(this.playerDecks); _i < _c.length; _i++) {
@@ -7993,6 +8004,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_WINDOFCHANGE:
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
+                    break;
+                case DaleCard_9.DaleCard.CT_SKINKS3:
+                    if (this.myHand.count() == 1) {
+                        this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+                    }
+                    else {
+                        this.clientTriggerTechnique('client_matches', card.id);
+                    }
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);

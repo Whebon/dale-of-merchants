@@ -417,7 +417,6 @@ $this->AUTORESOLVE_TRIGGERS = array(
 
 //disable these animalfolks in the deck selection (and random selection)
 $this->DISABLED_ANIMALFOLK_IDS = array(
-    ANIMALFOLK_CHAMELEONS,          //... chameleons ...
     ANIMALFOLK_PANDAS,              //requires rework
     ANIMALFOLK_OCELOTS,             //requires rework
     ANIMALFOLK_DESERTMONITORS,      //requires rework
@@ -425,19 +424,21 @@ $this->DISABLED_ANIMALFOLK_IDS = array(
     ANIMALFOLK_ECHIDNAS,            //requires rework
     ANIMALFOLK_WOODTURTLES,         //requires rework
     ANIMALFOLK_PANGOLINS,           //requires rework
-    ANIMALFOLK_BEAVERS,             //requires rework
     
-    ANIMALFOLK_OWLS,                //not implemented
-    ANIMALFOLK_BATS,                //not implemented
+    ANIMALFOLK_BATS,                //new
     ANIMALFOLK_DODOS,               //new
     ANIMALFOLK_CAPUCHINS,           //new
     ANIMALFOLK_OLMS,                //new
     ANIMALFOLK_SKINKS,              //new
-    ANIMALFOLK_GLASSFROGS,          //new
     ANIMALFOLK_GORILLAS,            //new
     ANIMALFOLK_WALRUSES,            //new
     ANIMALFOLK_TASMANIANDEVILS,     //new
     ANIMALFOLK_JUNGLEFOWLS,         //new
+
+    // Won't have
+    ANIMALFOLK_BEAVERS,
+    ANIMALFOLK_OWLS,
+    ANIMALFOLK_GLASSFROGS,
 );
 
 //additionally, also disable these animalfolks in solo-mode
@@ -461,7 +462,6 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     
     ANIMALFOLK_PLATYPUSES,
     ANIMALFOLK_FOXES,
-    ANIMALFOLK_OWLS,
     ANIMALFOLK_LEMURS,
     ANIMALFOLK_MAGPIES,
     ANIMALFOLK_ECHIDNAS,
@@ -474,11 +474,8 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     ANIMALFOLK_PENGUINS,
     ANIMALFOLK_WOODTURTLES,
 
-    
     ANIMALFOLK_SKINKS,
-    ANIMALFOLK_BEAVERS,
     ANIMALFOLK_SNOWMACAQUES,
-    ANIMALFOLK_GLASSFROGS,
     
     ANIMALFOLK_GORILLAS,
     ANIMALFOLK_WALRUSES,
@@ -486,6 +483,11 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     ANIMALFOLK_JUNGLEFOWLS,
     ANIMALFOLK_MONGOOSES,
     ANIMALFOLK_BATS,
+
+    // Won't have
+    ANIMALFOLK_BEAVERS,
+    ANIMALFOLK_OWLS,
+    ANIMALFOLK_GLASSFROGS,
 );
 
 $this->card_types = array(
