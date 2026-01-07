@@ -660,6 +660,11 @@ export class DaleCard {
                             cost += 2;
                         }
                         break;
+                    case DaleCard.CT_ESSENTIALPURCHASE:
+                        if (DaleCard.page?.player_id == effect.arg) {
+                            cost -= 2;
+                        }
+                        break;
                 }
             }
         }
@@ -828,7 +833,7 @@ export class DaleCard {
      * @param pos
      */
     public getCost(pos: number) {
-        return this.effective_cost + pos;
+        return Math.max(0, this.effective_cost + pos);
     }
 
     public get trigger(): DaleTrigger {
@@ -1167,6 +1172,14 @@ export class DaleCard {
             value_div.classList.add("daleofmerchants-effective-value");
             value_div.innerHTML = String(value);
             card_div.append(value_div);
+            if (value > this.original_value) {
+                value_div.classList.add("daleofmerchants-effective-value-high");
+                value_div.classList.remove("daleofmerchants-effective-value-low");
+            }
+            else {
+                value_div.classList.remove("daleofmerchants-effective-value-high");
+                value_div.classList.add("daleofmerchants-effective-value-low");
+            }
         }
     }
 

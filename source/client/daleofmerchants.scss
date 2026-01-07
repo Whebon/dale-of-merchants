@@ -313,7 +313,12 @@
 
 .daleofmerchants-card[data-location="market"] {
 	.daleofmerchants-effective-value {
-		color: lightcoral;
+		&.daleofmerchants-effective-value-high {
+			color: lightcoral; // = expensive
+		}
+		&.daleofmerchants-effective-value-low {
+			color: lightgreen; // = cheap
+		}
 	}
 }
 
@@ -358,6 +363,12 @@
 		-2px 0px 0px #000,
 		-2px -1px 0px #000;
 	z-index: 200;
+	&.daleofmerchants-effective-value-high {
+		color: lightgreen; // = more value
+	}
+	&.daleofmerchants-effective-value-low {
+		color: lightcoral; // = less value
+	}
 }
 
 .daleofmerchants-icon {

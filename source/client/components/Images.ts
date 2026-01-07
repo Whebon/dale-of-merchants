@@ -1,5 +1,3 @@
-import { DaleCard } from "./DaleCard";
-
 export class Images {
     static readonly IMAGES_PER_ROW = 6;
     static readonly IMAGES_PER_COLUMN = 7;
@@ -109,7 +107,8 @@ export class Images {
                 throw new Error(`Card with type id ${card_type_id} does not exist!`);
             }
             //Ugly edge case to add a green outline around the CT_SOUNDDETECTORS while daleofmerchants-passive-selected
-            if (card_type_id = DaleCard.CT_SOUNDDETECTORS) {
+            //We assume that DaleCard.CT_SOUNDDETECTORS == 39, but we cannot use that, because it causes a circular dependency.
+            if (card_type_id = 39) {
                 div.classList.add('daleofmerchants-sound-detector');
             }
         }

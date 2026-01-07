@@ -1782,6 +1782,33 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Tosses 1 card from hand.
+     * @param int $player_id active player id.
+     * @param array $technique_card the card that causes the effet. (e.g. Shattered Relic, Essential Purchase, Golden Opportunity, Fortunate Upgrade, etc)
+     * @param array $args arguments send from the client. Must contain a "card_id" to toss except when the hand is empty.
+     */
+    function toss1FromHand(int $player_id, array $technique_card, array $args) {
+        $resolving_card_name = $this->getCardName($technique_card);
+        $handsize = $this->cards->countCardInLocation(HAND.$player_id);
+        if ($handsize > 0) {
+            if (!array_key_exists("card_id", $args)) {
+                throw new BgaVisibleSystemException("toss1FromHand failed: the player did not select a card to toss");
+            }
+            $card_id = $args["card_id"];
+            $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+            $this->toss(clienttranslate('${resolving_card_name}: ${player_name} tosses ${card_name}'), $card, false, array(
+                "resolving_card_name" => $resolving_card_name,
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} has no cards to toss'), array(
+                "resolving_card_name" => $resolving_card_name,
+                "player_name" => $this->getActivePlayerName()
+            ));
+        }
+    }
+
+    /**
      * Place multiple cards from a discard pile into a player's hand
      * @param string $msg_per_card this message will be displayed per retrieved card, and must contain "card_name"
      * @param int $player_id the player that will receive the card in hand
@@ -2308,7 +2335,8 @@ class DaleOfMerchants extends DaleTableBasic
         if ($dbcard['location'] != MARKET) {
             return $base_cost;
         }
-        return $base_cost + $dbcard['location_arg'] + $this->effects->getAdditionalCost($player_id);
+        $total_cost = $base_cost + $dbcard['location_arg'] + $this->effects->getAdditionalCost($player_id);
+        return max(0, $total_cost);
     }
 
     /**
@@ -5023,20 +5051,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SHATTEREDRELIC:
-                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                if ($handsize > 0) {
-                    if (!array_key_exists("card_id", $args)) {
-                        throw new BgaVisibleSystemException("Shattered Relic: the player did not select a card to toss");
-                    }
-                    $card_id = $args["card_id"];
-                    $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('Shattered Relic: ${player_name} tosses ${card_name}'), $card);
-                }
-                else {
-                    $this->notifyAllPlayers('message', clienttranslate('Shattered Relic: ${player_name} has no cards to toss'), array(
-                        "player_name" => $this->getActivePlayerName()
-                    ));
-                }
+                $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->draw(clienttranslate('Shattered Relic: ${player_name} draws 1 card'));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -5865,21 +5880,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trDelightfulSurprise");
                 break;
             case CT_FORTUNATEUPGRADE:
-                //copied from shattered relic
-                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                if ($handsize > 0) {
-                    if (!array_key_exists("card_id", $args)) {
-                        throw new BgaVisibleSystemException("Fortunate Upgrade: the player did not select a card to toss");
-                    }
-                    $card_id = $args["card_id"];
-                    $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('Fortunate Upgrade: ${player_name} tosses ${card_name}'), $card);
-                }
-                else {
-                    $this->notifyAllPlayers('message', clienttranslate('Fortunate Upgrade: ${player_name} has no cards to toss'), array(
-                        "player_name" => $this->getActivePlayerName()
-                    ));
-                }
+                $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->draw(clienttranslate('Fortunate Upgrade: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -6327,20 +6328,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_GOLDENOPPORTUNITY:
-                $handsize = $this->cards->countCardInLocation(HAND.$player_id);
-                if ($handsize > 0) {
-                    if (!array_key_exists("card_id", $args)) {
-                        throw new BgaVisibleSystemException("Golden Opportunity: the player did not select a card to toss");
-                    }
-                    $card_id = $args["card_id"];
-                    $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('Golden Opportunity: ${player_name} tosses ${card_name}'), $card);
-                }
-                else {
-                    $this->notifyAllPlayers('message', clienttranslate('Golden Opportunity: ${player_name} has no cards to toss'), array(
-                        "player_name" => $this->getActivePlayerName()
-                    ));
-                }
+                $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->gainCoins($player_id, 1, $this->_("Golden Opportunity"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -6777,6 +6765,11 @@ class DaleOfMerchants extends DaleTableBasic
                     "cards" => $junk_cards,
                     "nbr" => 2,
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_ESSENTIALPURCHASE:
+                $this->toss1FromHand($player_id, $technique_card, $args);
+                $this->effects->insertGlobal(0, CT_ESSENTIALPURCHASE, $player_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

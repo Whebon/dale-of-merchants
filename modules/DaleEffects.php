@@ -132,6 +132,11 @@ class DaleEffects {
                             $additional_cost += 2;
                         } 
                         break;
+                    case CT_ESSENTIALPURCHASE:
+                        if ($row["arg"] == $player_id) {
+                            $additional_cost -= 2;
+                        }
+                        break;
                 }
             }
         }
