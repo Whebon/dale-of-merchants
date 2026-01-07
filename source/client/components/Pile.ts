@@ -22,8 +22,9 @@ declare function $(text: string | Element): HTMLElement;
  * 'multiplePrimarySecondary':  multiple cards in both the primary and secondary selection
  * 'top':                       content popin can cannot be viewed, and only the top card of the pile can be selected.
  * 'topIncludingEmpty':         content popin can cannot be viewed, and only the top card (or the empty pile) can be selected.
+ * 'sliceOfLife':               only unused CT_SLICEOFLIFE cards may be selected from the popin
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'multiplePrimarySecondary' | 'top' | 'topIncludingEmpty';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'multiplePrimarySecondary' | 'top' | 'topIncludingEmpty' | 'sliceOfLife';
 
 /**
  * A component to display a set of cards in a pile.
@@ -467,6 +468,12 @@ export class Pile implements DaleLocation {
             div.classList.add("daleofmerchants-relative");
             if(this.isClickable(card)) {
                 div.classList.add("daleofmerchants-clickable");
+                if (this.isClickableHighPriority(card)) {
+                    div.classList.add("daleofmerchants-high-priority");
+                }
+                else {
+                    div.classList.remove("daleofmerchants-high-priority");
+                }
                 const thiz = this;
                 dojo.connect(div, 'onclick', function() {
                     thiz.onClickCard(card, div);
@@ -534,6 +541,7 @@ export class Pile implements DaleLocation {
                 return;
             case 'single':
             case 'singleAnimalfolk':
+            case 'sliceOfLife':
                 (this.page as any).onSelectPileCard(this, card.id);
                 this.closePopin();
                 break;
@@ -730,6 +738,14 @@ export class Pile implements DaleLocation {
                 this.containerHTML.classList.add("daleofmerchants-blinking");
                 this.openPopin();
                 break;
+            case 'sliceOfLife':
+                for (const card of this.cards) {
+                    if (card.effective_type_id == DaleCard.CT_SLICEOFLIFE && !card.isPassiveUsed()) {
+                        this.containerHTML.classList.add("daleofmerchants-blinking");
+                        break;
+                    }
+                }
+                break; 
             default:
                 this.containerHTML.classList.remove("daleofmerchants-blinking");
                 this.orderedSelection.unselectAll();
@@ -779,10 +795,25 @@ export class Pile implements DaleLocation {
                 return false;
             case 'multiplePrimarySecondary':
                 return true;
+            case 'sliceOfLife':
+                return card.effective_type_id == DaleCard.CT_SLICEOFLIFE
 			default:
                 return false;
 		}
 	}
+
+	/**
+	 * @returns `true` if the card should be highlighted (usually if `isClickable` is true)
+	 * "Hello, please use me!"
+	 */
+	private isClickableHighPriority(card: DaleCard): boolean {
+        switch (this.selectionMode) {
+            case 'sliceOfLife':
+                return this.isClickable(card);
+            default:
+                return false;
+        }
+    }
 
     /**
      * Close the popin

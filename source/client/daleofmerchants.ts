@@ -559,6 +559,7 @@ class DaleOfMerchants extends Gamegui
 			case 'postCleanUpPhase':
 				this.mySchedule.setSelectionMode('clickOnCleanUp', undefined, 'daleofmerchants-wrap-technique');
 				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+				this.myDiscard.setSelectionMode('sliceOfLife', undefined, 'daleofmerchants-wrap-technique')
 				break;
 			case 'playerTurn':
 				this.mainClientState.enter();
@@ -1258,6 +1259,7 @@ class DaleOfMerchants extends Gamegui
 			case 'postCleanUpPhase':
 				this.mySchedule.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
+				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'client_purchase':
 				const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
@@ -1713,10 +1715,17 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'postCleanUpPhase':
 				let postCleanUpPhase_hasPassiveAbilities = false
-				for (const card of this.myHand.getAllDaleCards()) {
-					if (card.isPlayablePostCleanUp() && !card.isPassiveUsed()) {
-						const label = _("Use")+" "+card.name
+				for (const card of this.myDiscard.getCards()) {
+					if (card.effective_type_id == DaleCard.CT_SLICEOFLIFE && !card.isPassiveUsed()) {
+						const label = _("Use")+" "+card.name+" "+_("(from discard)")
 						this.statusBar.addActionButton(label, () => this.onClickPassive(card)); 
+						postCleanUpPhase_hasPassiveAbilities = true
+					}
+				}
+				for (const card of this.myHand.getAllDaleCards()) {
+					if (card.isPlayableFromHandPostCleanUp() && !card.isPassiveUsed()) {
+						const label = _("Use")+" "+card.name
+						this.statusBar.addActionButton(label, () => this.onClickPassive(card));
 						postCleanUpPhase_hasPassiveAbilities = true
 					}
 				}
@@ -1725,21 +1734,23 @@ class DaleOfMerchants extends Gamegui
 				for (const card of this.mySchedule.getAllDaleCards()) {
 					if (card.trigger == 'onCleanUp' && !card.inScheduleCooldown()) {
 						const label = _("Use")+" "+card.name
-						this.statusBar.addActionButton(label, () => this.onTriggerTechnique(card.id)); 
+						this.statusBar.addActionButton(label, () => this.onTriggerTechnique(card.id));
 						//postCleanUpPhase_hasScheduledTechniques = true // TODO: add this once ending your turn without resolving all techniques is illegal
 					}
 				}
 
 				if (postCleanUpPhase_hasScheduledTechniques) {
+					// Resolving techniques is mandatory
 					if (postCleanUpPhase_hasPassiveAbilities) {
-						this.setDescriptionOnMyTurn(_("${you} must take an action")); // resolve scheduled techniques and/or use passives
+						this.setDescriptionOnMyTurn(_("${you} must take an action"));
 					}
 					else {
 						this.setDescriptionOnMyTurn(_("${you} must resolve scheduled techniques"));
 					}
 				}
 				else {
-					this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
+					// Player may end the turn early
+					this.addActionButton("end-turn-button", _("End turn"), "onEndTurn");
 				}
 				break;
 			case 'playerTurn':
@@ -3230,8 +3241,8 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
-	onPostCleanUpPhase() {
-		this.bgaPerformAction('actPostCleanUpPhase', {})
+	onEndTurn() {
+		this.bgaPerformAction('actEndTurn', {})
 	}
 
 	onStallCardClick(stall: Stall, card: DaleCard, stack_index: number, index: number) {
@@ -3362,6 +3373,9 @@ class DaleOfMerchants extends Gamegui
 	onSelectMyDiscardPileCard(pile: Pile, card?: DaleCard) {
 		console.warn("onSelectMyDiscardPileCard");
 		switch(this.gamedatas.gamestate.name) {
+			case 'postCleanUpPhase':
+				this.onClickPassive(card!)
+				break;
 			case 'client_build':
 				this.onBuildSelectionChanged();
 				break;
@@ -4023,16 +4037,16 @@ class DaleOfMerchants extends Gamegui
 	 * Use a passive for its ability
 	 */
 	playPassiveCard<K extends keyof ClientPassiveChoice>(args: ClientPassiveChoice[K]) {
+		const argsPassive = this.mainClientState.args as PassiveClientStates[K];
 		this.bgaPerformAction('actUsePassiveAbility', {
-			card_id: (this.mainClientState.args as ClientGameStates[K]).passive_card_id, 
+			card_id: argsPassive.passive_card_id, 
 			args: JSON.stringify(args)
 		})?.catch(() => {
 			//needed to catch the CT_COFFEEGRINDER error
 			if (argsPassive?.keep_passive_selected) {
 				this.setPassiveSelected(argsPassive.passive_card_id, false);
 			}
-		});
-		const argsPassive = this.mainClientState.args as PassiveClientStates[K];
+		})
 		this.mainClientState.leave();
 		if (argsPassive.keep_passive_selected) {
 			this.setPassiveSelected(argsPassive.passive_card_id, true);
@@ -4997,7 +5011,6 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SEEINGDOUBLES:
 				this.mainClientState.enterOnStack('chameleon_seeingdoubles', {passive_card_id: card.id});
 				break;
-
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
 				break;

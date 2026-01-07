@@ -362,7 +362,7 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickAbility':
 				return card.isPlayable() && !card.isTechnique();
 			case 'clickAbilityPostCleanup':
-				return card.isPlayablePostCleanUp();
+				return card.isPlayableFromHandPostCleanUp();
 			case 'clickRetainSelection':
 				return true;
 			case 'clickOnTurnStart':
@@ -425,7 +425,7 @@ export class DaleStock extends Stock implements DaleLocation {
 		const card = new DaleCard(card_id);
 		switch (this.selectionMode) {
 			case 'clickAbilityPostCleanup':
-				return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
+				return card.isPlayableFromHandPostCleanUp() && !card.isPassiveUsed();
 			case 'clickOnTurnStart':
 				return true;
 			case 'clickOnCleanUp':

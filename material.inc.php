@@ -382,6 +382,7 @@ if (!defined('DIE_STARS')) {
 if (!defined('TRIGGER_ONTURNSTART')) {
     define('TRIGGER_INSTANT', null);
     define('TRIGGER_ONTURNSTART', 'onTurnStart');
+    define('TRIGGER_ONCLEANUP', 'onCleanUp');
     define('TRIGGER_ONMARKETCARD', 'onMarketCard');
     define('TRIGGER_ONSHUFFLE', 'onShuffle');
     define('TRIGGER_ONPURCHASE', 'onPurchase');
@@ -1823,9 +1824,9 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
-      'playable' => false,
-      'trigger' => null,
+      'has_ability' => true,
+      'playable' => true,
+      'trigger' => 'onCleanUp',
       'value' => 5,
       'nbr' => 1,
       'animalfolk_displayed' => clienttranslate("Desert Monitors"),

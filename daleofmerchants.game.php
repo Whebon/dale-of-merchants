@@ -40,7 +40,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->initGameStateLabels( array(
             "inDeckSelection" => 10,
             "resolvingCard" => 11,
-            "isPostCleanUpPhase" => 12,
+            "skipPostCleanUpPhase" => 12,
             "opponent_id" => 13,
             "card_id" => 14,
             "changeActivePlayer_player_id" => 15,
@@ -111,7 +111,7 @@ class DaleOfMerchants extends DaleTableBasic
         // Init global values with their initial values
         $this->setGameStateInitialValue("resolvingCard", -1);
         $this->setGameStateInitialValue("inDeckSelection", 1);
-        $this->setGameStateInitialValue("isPostCleanUpPhase", 0);
+        $this->setGameStateInitialValue("skipPostCleanUpPhase", 0);
         $this->setGameStateInitialValue("opponent_id", -1);
         $this->setGameStateInitialValue("card_id", -1);
         $this->setGameStateInitialValue("changeActivePlayer_player_id", -1);
@@ -1993,10 +1993,10 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Refills your hand to the maximum hand size.
      * @param mixed $player_id
-     * @param bool $isPostCleanUpPhase indicates if this function is called an additional time (after postCleanUpPhase)
+     * @param bool $isAdditionalTime indicates if this function is called an additional time (after postCleanUpPhase)
      * @return `true` if any cards were drawn
     */
-    function refillHand($player_id, $isPostCleanUpPhase = false) {
+    function refillHand($player_id, $isAdditionalTime = false) {
         //get information about the hand
         $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
         $stall_cards = $this->cards->getCardsInLocation(STALL.$player_id);
@@ -2007,7 +2007,7 @@ class DaleOfMerchants extends DaleTableBasic
         //get hand_size_before for CT_LOSTSHIPMENTS
         $lostShipmentsActive = $this->effects->countGlobalEffectsExcludeArg(CT_LOSTSHIPMENTS, $player_id);
         if ($lostShipmentsActive) {
-            if ($isPostCleanUpPhase) {
+            if ($isAdditionalTime) {
                 $hand_size_before = $this->getGameStateValue("hand_size_before");
             }
             else {
@@ -7037,8 +7037,20 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actUsePassiveAbility");
 
         $player_id = $this->getActivePlayerId();
-        $passive_card = $this->cards->getCardFromLocation($passive_card_id, HAND.$player_id);
+        $passive_card = $this->cards->getCard($passive_card_id);
         $type_id = $this->getTypeId($passive_card);
+
+        if ($type_id == CT_SLICEOFLIFE) {
+            if ($passive_card["location"] != DISCARD.$player_id) {
+                throw new BgaVisibleSystemException("Slice of Life can only be used from discard");
+            }
+        }
+        else {
+            if ($passive_card["location"] != HAND.$player_id) {
+                throw new BgaVisibleSystemException("Passive abilities can only be used from hand");
+            }
+        }
+
         if ($this->card_types[$type_id]['has_ability'] == false) {
             throw new BgaUserException($this->_("That card has no ability!"));
         }
@@ -7051,10 +7063,10 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Check triggers
         $isPostCleanUpPhase = $this->gamestate->state()['name'] == 'postCleanUpPhase';
-        if ($isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] != "onCleanUp") {
+        if ($isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] != TRIGGER_ONCLEANUP) {
             throw new BgaUserException($this->_("This card's ability can not be used at the end of your turn"));
         }
-        if (!$isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] == "onCleanUp") {
+        if (!$isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] == TRIGGER_ONCLEANUP) {
             throw new BgaUserException($this->_("This card's ability can only be used at the end of your turn"));
         }
 
@@ -7063,6 +7075,10 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_COOKIES:
                 $this->draw(clienttranslate('Cookies: ${player_name} draws a card'));
                 $this->effects->insertModification($passive_card_id, CT_COOKIES);
+                break;
+            case CT_SLICEOFLIFE:
+                $this->draw(clienttranslate('Slice of Life: ${player_name} draws a card'));
+                $this->effects->insertModification($passive_card_id, CT_SLICEOFLIFE);
                 break;
             case CT_FLEXIBLESHOPKEEPER:
                 $target_id = $args["target_id"];
@@ -7179,9 +7195,6 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_REFRESHINGDRINK:
-                if ($this->gamestate->state()['name'] == 'postCleanUpPhase') {
-                    $this->setGameStateValue("isPostCleanUpPhase", 1);
-                }
                 $this->effects->insertModification($passive_card_id, CT_REFRESHINGDRINK);
                 $this->setGameStateValue("passive_card_id", $passive_card_id);
                 $this->gamestate->nextState("trRefreshingDrink"); return;
@@ -8004,14 +8017,7 @@ class DaleOfMerchants extends DaleTableBasic
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
             "card_name" => $this->getCardName($card)
         ));
-        $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
-        if ($isPostCleanUpPhase) {
-            $this->setGameStateValue("isPostCleanUpPhase", 0); //allows for another post clean up phase after this one
-            $this->gamestate->nextState("trCleanUpPhase");
-        }
-        else {
-            $this->gamestate->nextState("trSamePlayer");
-        }
+        $this->gamestate->nextState("trSamePlayer");
     }
 
     function actDelightfulSurprise($card_id) {
@@ -9186,9 +9192,19 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trNextPlayer");
     }
 
-    function actPostCleanUpPhase() {
-        $this->checkAction("actPostCleanUpPhase");
-        $this->setGameStateValue("isPostCleanUpPhase", 1); //don't go into post clean-up phase again
+    function actEndTurn() {
+        $this->checkAction("actEndTurn");
+        $player_id = $this->getActivePlayerId();
+        $this->setGameStateValue("skipPostCleanUpPhase", 1);
+
+        //Resolving cards is mandatory: make sure no cards need to be resolved before voluntarily ending the turn.
+        $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+        foreach ($dbcards as $dbcard) {
+            if ($this->getTrigger($dbcard) == TRIGGER_ONCLEANUP) {
+                throw new BgaUserException("Unable to end the turn: please resolve scheduled techniques first");
+            }
+        }
+
         $this->gamestate->nextState("trNextPlayer");
     }
 
@@ -9566,47 +9582,62 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    function stPostCleanUpPhase() {
+        $player_id = $this->getActivePlayerId();
+
+        //trigger cards on turn end
+        $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+        $triggeredCards = array();
+        foreach ($dbcards as $dbcard) {
+            if ($this->getTrigger($dbcard) == TRIGGER_ONTURNSTART) {
+                $triggeredCards[] = $dbcard;
+            }
+        }
+    }
+
     function stCleanUpPhase() {
         //1. fill empty market slots
         $this->refillMarket(true);
 
         //2. fill your hand to the maximum hand size
         $player_id = $this->getActivePlayerId();
-        $isPostCleanUpPhase = $this->getGameStateValue("isPostCleanUpPhase");
-        $hasDrawnCards = $this->refillHand($player_id, $isPostCleanUpPhase);
+        $skipPostCleanUpPhase = $this->getGameStateValue("skipPostCleanUpPhase");
+        $hasDrawnCards = $this->refillHand($player_id, $skipPostCleanUpPhase);
         $this->removeMonoCardsFromPlayerHand();
 
         //3. check for post clean-up phase
-        if ($hasDrawnCards || !$isPostCleanUpPhase) {
+        if ($hasDrawnCards || !$skipPostCleanUpPhase) {
             $dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
-            foreach ($dbcards as $card_id => $card) {
-                $type_id = $this->getTypeId($card);
-                if ($this->card_types[$type_id]["trigger"] == "onCleanUp" && !$this->effects->isPassiveUsed($card)) {
+            foreach ($dbcards as $card_id => $dbcard) {
+                $type_id = $this->getTypeId($dbcard);
+                if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP && $type_id != CT_SLICEOFLIFE && !$this->effects->isPassiveUsed($dbcard)) {
                     //the hand contains a card that uses the post clean up phase
                     $this->gamestate->nextState("trPostCleanUpPhase");
                     return;
                 }
-                //TODO: safely remove this (deprecated chameleons)
-                // $visited_chameleons = array();
-                // $target_ids = $this->getChameleonTargets($card_id, $type_id, $visited_chameleons);
-                // $dbtargets = $this->cards->getCards($target_ids);
-                // if (in_array(CT_GOODOLDTIMES, $visited_chameleons) && !$this->effects->isPassiveUsed($card)) {
-                //     //the chameleon can reach an CT_GOODOLDTIMES node
-                //     $this->gamestate->nextState("trPostCleanUpPhase");
-                //     return;
-                // }
-                // foreach ($dbtargets as $dbtarget) {
-                //     $target_type_id = $this->getTypeId($dbtarget);
-                //     $optional_cookies = ($target_type_id == CT_COOKIES && count($dbtargets) >= 2);
-                //     if ($optional_cookies || (in_array($target_type_id, $usesPostCleanUp) && !$this->effects->isPassiveUsed($card))) {
-                //         //the hand contains a chameleon card that can reach a card that uses the post clean up phase
-                //         $this->gamestate->nextState("trPostCleanUpPhase");
-                //         return; 
-                //     }
-                // }
+            }
+
+            $discard_dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id);
+            foreach ($discard_dbcards as $card_id => $dbcard) {
+                $type_id = $this->getTypeId($dbcard);
+                if ($type_id == CT_SLICEOFLIFE && !$this->effects->isPassiveUsed($dbcard)) {
+                    //the discard contains a card that uses the post clean up phase
+                    $this->gamestate->nextState("trPostCleanUpPhase");
+                    return;
+                }
+            }
+
+            $schedule_dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
+            foreach ($schedule_dbcards as $dbcard) {
+                if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP) {
+                    //the schedule contains a card that uses the post clean up phase (resolving this is mandatory)
+                    $this->gamestate->nextState("trPostCleanUpPhase");
+                    return;
+                }
             }
         }
-        $this->setGameStateValue("isPostCleanUpPhase", 0);
+        $this->setGameStateValue("skipPostCleanUpPhase", 0);
+        $this->removeScheduleCooldown();
 
         //4. expire all effects, except global effects with their corresponding card in a schedule
         $this->expireEffectsAtTheEndOfTurn();
@@ -10165,7 +10196,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->actDEPRECATED_Tasters($card_id);
                     break;
                 case 'postCleanUpPhase':
-                    $this->actPostCleanUpPhase(array());
+                    $this->actEndTurn();
                     break;
                 default:
                     //By default, zombies will jump to the "cleanUpPhase" (state 41) when given the chance.

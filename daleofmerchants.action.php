@@ -158,11 +158,11 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actPostCleanUpPhase()
+	public function actEndTurn()
 	{
 		self::setAjaxMode();
 
-		$this->game->actPostCleanUpPhase(  );
+		$this->game->actEndTurn(  );
 		self::ajaxResponse();
 	}
 

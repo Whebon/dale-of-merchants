@@ -316,6 +316,7 @@ interface GameStates {
 		'description': '${actplayer} must take an action',
 		'descriptionmyturn': '${you} may use passive abilities',
 		'type': 'activeplayer',
+		'action': 'stPostCleanUpPhase',
 		'possibleactions': {
 			'actUsePassiveAbility': [{
 				'name': 'card_id',
@@ -326,7 +327,7 @@ interface GameStates {
 				'type': 'AT_json',
 				'typescriptType': string,
 			}],
-			'actPostCleanUpPhase': [],
+			'actEndTurn': [],
 		},
 		'transitions': {
 			'trNextPlayer': 41,

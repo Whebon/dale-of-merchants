@@ -108,7 +108,7 @@ export class Images {
             }
             //Ugly edge case to add a green outline around the CT_SOUNDDETECTORS while daleofmerchants-passive-selected
             //We assume that DaleCard.CT_SOUNDDETECTORS == 39, but we cannot use that, because it causes a circular dependency.
-            if (card_type_id = 39) {
+            if (card_type_id == 39) {
                 div.classList.add('daleofmerchants-sound-detector');
             }
         }

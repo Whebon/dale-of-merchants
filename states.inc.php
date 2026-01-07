@@ -25,6 +25,7 @@ if (false) {
 	$game->stTurnStart();
 	$game->stFullyResolve();
 	$game->stCleanUpPhase();
+	$game->stPostCleanUpPhase();
 	$game->stSpyglass();
 	$game->stSpecialOffer();
 	$game->stDirtyExchange();
@@ -243,7 +244,8 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take an action'),
 		'descriptionmyturn' => clienttranslate('${you} may use passive abilities'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actUsePassiveAbility', 'actPostCleanUpPhase'],
+		'action' => 'stPostCleanUpPhase',
+		'possibleactions' => ['actUsePassiveAbility', 'actEndTurn'],
 		'transitions' => array(
 			'trNextPlayer' => 41,
 			'trPassiveAbility' => 41,

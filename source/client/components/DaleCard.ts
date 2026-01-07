@@ -892,8 +892,9 @@ export class DaleCard {
         return this.isTechnique() || (DaleCard.cardTypes[this.effective_type_id]!.playable && DaleCard.cardTypes[this.effective_type_id]!.trigger == null);
     }
 
-    public isPlayablePostCleanUp(): boolean {
-        return DaleCard.cardTypes[this.effective_type_id]!.playable && DaleCard.cardTypes[this.effective_type_id]!.trigger == 'onCleanUp';
+    public isPlayableFromHandPostCleanUp(): boolean {
+        const type_id = this.effective_type_id
+        return DaleCard.cardTypes[type_id]!.playable && DaleCard.cardTypes[type_id]!.trigger == 'onCleanUp' && type_id != DaleCard.CT_SLICEOFLIFE;
     }
 
     public static isPlayable(type_id: number): boolean {
