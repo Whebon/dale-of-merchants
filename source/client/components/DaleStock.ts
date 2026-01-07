@@ -17,9 +17,10 @@ import { DaleTrigger } from './types/DaleTrigger';
  * 'clickTechnique':       			no selection possible, PLAYABLE cards are clickable
  * 'clickAbility':		   			no selection possible, PLAYABLE non-technique cards are clickable
  * 'clickAbilityPostCleanup':   	no selection possible, only specific 'post clean-up' abilities are clickable
- * 'clickOnTurnStart'				no selection possible, only cards with an 'onTurnStart' trigger are clickable, except the once on "cooldown"
- * 'clickOnTrigger'					no selection possible, only cards with a trigger are clickable, except the once on "cooldown"
- * 'clickOnFinish'					no selection possible, only cards with an 'onFinish' trigger are clickable
+ * 'clickOnTurnStart':				no selection possible, only cards with an 'onTurnStart' trigger are clickable, except the ones on "cooldown"
+ * 'clickOnCleanUp':				no selection possible, only cards with an 'onCleanUp' trigger are clickable, except the ones on "cooldown"
+ * 'clickOnTrigger':				no selection possible, only cards with a trigger are clickable, except the once ones "cooldown"
+ * 'clickOnFinish':					no selection possible, only cards with an 'onFinish' trigger are clickable
  * 'clickOnFinishAndSnack'			no selection possible, only CT_SNACK and cards with an 'onFinish' trigger are clickable
  * 'clickAnimalfolk':				no selection possible, only animalfolk cards are clickable
  * 'clickAnimalfolk16':				no selection possible, only cards of a specific animalfolk id are clickable
@@ -36,7 +37,7 @@ import { DaleTrigger } from './types/DaleTrigger';
  * 'deprecated_essentialPurchase':	up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'							only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'deprecated_essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnCleanUp' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'clickOvertime' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'deprecated_essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -366,6 +367,8 @@ export class DaleStock extends Stock implements DaleLocation {
 				return true;
 			case 'clickOnTurnStart':
 				return card.trigger == 'onTurnStart' && !card.inScheduleCooldown();
+			case 'clickOnCleanUp':
+				return card.trigger == 'onCleanUp' && !card.inScheduleCooldown();
 			case 'clickOnTrigger':
 				return card.trigger != null && !card.inScheduleCooldown();
 			case 'clickOnFinish':
@@ -424,6 +427,8 @@ export class DaleStock extends Stock implements DaleLocation {
 			case 'clickAbilityPostCleanup':
 				return card.isPlayablePostCleanUp() && !card.isPassiveUsed();
 			case 'clickOnTurnStart':
+				return true;
+			case 'clickOnCleanUp':
 				return true;
 			case 'clickOnTrigger':
 				return true;

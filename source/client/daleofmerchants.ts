@@ -557,6 +557,7 @@ class DaleOfMerchants extends Gamegui
 				// }
 				break;
 			case 'postCleanUpPhase':
+				this.mySchedule.setSelectionMode('clickOnCleanUp', undefined, 'daleofmerchants-wrap-technique');
 				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
 				break;
 			case 'playerTurn':
@@ -1255,6 +1256,7 @@ class DaleOfMerchants extends Gamegui
 				this.mainClientState.leaveAndDontReturn();
 				break;
 			case 'postCleanUpPhase':
+				this.mySchedule.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_purchase':
@@ -1710,7 +1712,35 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'postCleanUpPhase':
-				this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
+				let postCleanUpPhase_hasPassiveAbilities = false
+				for (const card of this.myHand.getAllDaleCards()) {
+					if (card.isPlayablePostCleanUp() && !card.isPassiveUsed()) {
+						const label = _("Use")+" "+card.name
+						this.statusBar.addActionButton(label, () => this.onClickPassive(card)); 
+						postCleanUpPhase_hasPassiveAbilities = true
+					}
+				}
+
+				let postCleanUpPhase_hasScheduledTechniques = false
+				for (const card of this.mySchedule.getAllDaleCards()) {
+					if (card.trigger == 'onCleanUp' && !card.inScheduleCooldown()) {
+						const label = _("Use")+" "+card.name
+						this.statusBar.addActionButton(label, () => this.onTriggerTechnique(card.id)); 
+						//postCleanUpPhase_hasScheduledTechniques = true // TODO: add this once ending your turn without resolving all techniques is illegal
+					}
+				}
+
+				if (postCleanUpPhase_hasScheduledTechniques) {
+					if (postCleanUpPhase_hasPassiveAbilities) {
+						this.setDescriptionOnMyTurn(_("${you} must take an action")); // resolve scheduled techniques and/or use passives
+					}
+					else {
+						this.setDescriptionOnMyTurn(_("${you} must resolve scheduled techniques"));
+					}
+				}
+				else {
+					this.addActionButton("end-turn-button", _("End turn"), "onPostCleanUpPhase");
+				}
 				break;
 			case 'playerTurn':
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
@@ -3796,6 +3826,7 @@ class DaleOfMerchants extends Gamegui
 		const card = new DaleCard(card_id);
 
 		switch(this.gamedatas.gamestate.name) {
+			case 'postCleanUpPhase':
 			case 'turnStart':
 			case 'trigger':
 				this.onTriggerTechnique(card_id);
@@ -6409,6 +6440,14 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actSerenade', {
 			card_ids: this.arrayToNumberList(card_ids)
 		})
+	}
+
+	onClickActionButtonPostCleanUpPhase(evt: PointerEvent) {
+		var button_id = (evt.target as HTMLElement)?.id
+		if (!button_id) {
+			throw new Error(`Invalid button id: ${button_id}`)
+		}
+
 	}
 
 	//(~on)
