@@ -168,6 +168,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose another player to swap cards with");
             case 'client_gamble':
                 return _("${card_name}: ${you} must choose an opponent");
+            case 'client_blindfold':
+                return _("${card_name}: ${you} must guess the printed value of the top card of your deck");
             case 'client_DEPRECATED_blindfold':
                 if ((this._page as any).unique_opponent_id) {
                     return _("${card_name}: ${you} must choose a card");

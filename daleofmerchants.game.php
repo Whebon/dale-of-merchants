@@ -2369,6 +2369,23 @@ class DaleOfMerchants extends DaleTableBasic
         return $this->card_types[$this->getTypeId($dbCard)]['value'];
     }
 
+
+    /**
+     * @return bool true if an aura effect like CT_FLASHYSHOW or CT_PRACTICALVALUES is active
+     */
+    function isGlobalValueEffectActive(): bool {
+        for ($i=0; $i < 5; $i++) { 
+            $fakedbcard = array(
+                "id" => 0,
+                "type_arg" => CT_SWIFTBROKER + $i
+            );
+            if ($this->getValue($fakedbcard) != $i + 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @return array array of all modified base values
      * @example example no effects: `[1, 2, 3, 4, 5]`
@@ -4916,6 +4933,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_MEDDLINGMARKETEER:
                 case CT_ANCHOR:
                 case CT_BADOMEN:
+                case CT_BLINDFOLD:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -5447,6 +5465,51 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->notifyAllPlayers('message', clienttranslate('Gamble: 0 cards were exchanged'), array());
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_BLINDFOLD:
+                $value = $args["value"];
+                $dbcard = $this->cards->pickCardForLocation(DECK.$player_id, 'unstable');
+                $actual_value = $this->getOriginalValue($dbcard); // $this->getValue($dbcard);
+                if ($value == $actual_value) {
+                    //the guess was correct: take the card
+                    $this->effects->insertModification($dbcard["id"], CT_BLINDFOLD, $actual_value); // Remove global effects from the card, such as CT_FLASHYSHOW. The player will see the printed card.
+                    $this->cards->moveCard($dbcard["id"], LIMBO.$player_id);
+                    $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} correctly guessed ${value}'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "value" => $value
+                    ));
+                    $this->notifyAllPlayersWithPrivateArguments('draw', clienttranslate('Blindfold: ${player_name} takes their ${card_name}'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "nbr" => 1,
+                        "_private" => array(
+                            "card" => $dbcard,
+                        ),
+                        "card_name" => $this->getCardName($dbcard),
+                        "deck_player_id" => $player_id,
+                        "to_limbo" => true,
+                    ));
+                    $this->setGameStateValue("card_id", $dbcard["id"]);
+                    $this->beginResolvingCard($technique_card_id);
+                    $this->gamestate->nextState("trBlindfold");
+                }
+                else {
+                    //the guess was incorrect: discard the card and resolve the Blindfold
+                    $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} guessed ${value}, but the actual value was ${actual_value}'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "card_name" => $this->getCardName($dbcard),
+                        "value" => $value,
+                        "actual_value" => $actual_value
+                    ));
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$player_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('Blindfold: ${player_name} discards their ${card_name} from their deck'), array(
+                        "player_id" => $player_id,
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "card" => $dbcard,
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card);
+                }
                 break;
             case CT_DEPRECATED_BLINDFOLD:
                 $this->beginResolvingCard($technique_card_id);
@@ -7529,8 +7592,8 @@ class DaleOfMerchants extends DaleTableBasic
             unset($non_selected_cards[$card_id]);
         }
         unset($non_selected_cards[$draw_card_id]);
-        
         //1. place the selected card into the hand
+        
         $this->cards->moveCard($draw_card_id, HAND.$player_id);
         $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('${resolving_card_name}: ${player_name} places 1 card into their hand'), array(
             "resolving_card_name" => $resolving_card_name,
@@ -7607,6 +7670,40 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actBlindfold($value) {
+        $this->checkAction("actBlindfold");
+        // $values = $this->getBaseEffectiveValues();
+        // if (!in_array($value, $values)) {
+        //     throw new BgaVisibleSystemException("Blindfold: value $value is not a valid value");
+        // }
+        if ($value < 1 || $value > 5) {
+            throw new BgaVisibleSystemException("Blindfold: value $value is not a valid value");
+        }
+        $player_id = $this->getActivePlayerId();
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCardFromLocation($card_id, LIMBO.$player_id);
+        $this->effects->insertModification($card_id, CT_BLINDFOLD, $value);
+
+        // Notify the players about the new value
+        // $this->notifyAllPlayers('message', clienttranslate('Blindfold: ${player_name} sets their ${card_name}\'s value to ${value}'), array(
+        //     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+        //     "card_name" => $this->getCardName($dbcard),
+        //     "value" => $value,
+        // ));
+        // Move the card from limbo to hand (while doing so, notify the players about the new value)
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Blindfold: ${player_name} sets their ${card_name}\'s value to ${value}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "_private" => array(
+                "card" => $dbcard
+            ),
+            "card_name" => $this->getCardName($dbcard),
+            "value" => $value,
+        ));
+        $this->fullyResolveCard($player_id);
+    }
+
     function actDEPRECATED_Blindfold($value) {
         $this->checkAction("actDEPRECATED_Blindfold");
         $player_id = $this->getActivePlayerId();
@@ -7631,7 +7728,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->fullyResolveCard($opponent_id);
         }
         else {
-            //the guess was correct: modify the card value
+            //the guess was incorrect: modify the card value
             $this->notifyAllPlayers('message', clienttranslate('DEPRECATED_Blindfold: ${player_name} guessed ${value}, but the actual value was ${actual_value}'), array(
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "card_name" => $this->getCardName($dbcard),
@@ -9311,6 +9408,18 @@ class DaleOfMerchants extends DaleTableBasic
             'passive_card_id' => $passive_card_id,
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
+        );
+    }
+
+    function argBlindfold() {
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCard($card_id);
+        $prior_modifications = " (prior modifications will be overwritten)";
+        return array(
+            'card_name' => $this->getCardName($dbcard),
+            'card_id' => $card_id,
+            'prior_modifications' => $this->isGlobalValueEffectActive() ? $prior_modifications : "a"
+            //'base_effective_values' => $this->getBaseEffectiveValues(), // Not used anymore
         );
     }
 

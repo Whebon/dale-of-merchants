@@ -878,7 +878,7 @@ $this->card_types = array(
   ),
   24 => array(
       'type_id' => 24,
-      'name' => clienttranslate("Stashing vendor"),
+      'name' => clienttranslate("Stashing Vendor"),
       'text' => clienttranslate("When used to build, you can include junk CARDS3."),
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,

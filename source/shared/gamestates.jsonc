@@ -194,7 +194,8 @@
 			"trCoffeeGrinder": 101,
 			"trSerenade": 102,
 			"trRake": 103,
-			"trSoundDetectors": 104
+			"trSoundDetectors": 104,
+			"trBlindfold": 105
 		}
 	},
 
@@ -1045,6 +1046,20 @@
 		"possibleactions": {
 			"actSoundDetectors": [
 				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"105": {
+		"name": "blindfold",
+		"description": "Blindfold: ${actplayer} must decide the value of ${card_name}${prior_modifications}",
+		"descriptionmyturn": "Blindfold: ${you} must decide the value of ${card_name}${prior_modifications}",
+		"type": "activeplayer",
+		"args": "argBlindfold",
+		"possibleactions": {
+			"actBlindfold": [
+				{"name": "value", "type": "AT_int"}
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }

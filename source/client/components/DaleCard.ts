@@ -515,24 +515,33 @@ export class DaleCard {
     }
 
 
-    //TODO: safely remove this
+    // TODO: safely remove this
     // /**
     //  * Based on the known effects, return all possible effective values.
-    //  * If no effects are effective, this will be `[1, 2, 3, 4, 5]`
+    //  * If no effects are active, this will be `[1, 2, 3, 4, 5]`
+    //  * If a CT_FLASHYSHOW is active, this will be `[2, 3, 4, 5, 6]`
     //  */
-    // public static getAllPossibleEffectiveValues(): number[] {
+    // public static getBaseEffectiveValues(): number[] {
     //     const effective_values = [];
     //     for (let i = 0; i < 5; i++) {
     //         effective_values.push(new DaleCard(0, DaleCard.CT_SWIFTBROKER+i).effective_value);
     //     }
-    //     for (let effect of DaleCard.effects) {
-    //         if (effect.effect_class == DaleCard.EC_MODIFICATION) {
-    //             const value = new DaleCard(effect.card_id, effect.type_id)
-    //             modified_card_ids.add(effect.card_id);
+    //     return effective_values;
+    // }
+    // /**
+    //  * @return true if any global effect is modifying values.
+    //  */
+    // public static isGlobalValueEffectActive(): boolean {
+    //     for (let i = 0; i < 5; i++) {
+    //         const base_value = i+1
+    //         const effective_value = new DaleCard(0, DaleCard.CT_SWIFTBROKER+i).effective_value
+    //         if (base_value != effective_value) {
+    //             console.log("base_value = ", base_value);
+    //             console.log("effective_value = ", effective_value);
+    //             return true;
     //         }
     //     }
-        
-    //     return effective_values;
+    //     return false;
     // }
 
 
@@ -622,6 +631,7 @@ export class DaleCard {
                         value += effect.arg!;
                         break;
                     case DaleCard.CT_BLINDFOLD:
+                    case DaleCard.CT_DEPRECATED_BLINDFOLD:
                         value = effect.arg!;
                         break;
                     case DaleCard.CT_RAREARTEFACT:

@@ -463,21 +463,21 @@ class DaleDeck {
         return $this->deck->getExtremePosition($getMax, $location);
     }
     
-    /**
-     * Pick the first card on top of specified deck and give it to specified player.
-     * Return card infos or null if no card in the specified location.
-     */
-    function pickCard(string $location, int $player_id): ?array {
-        return $this->deck->pickCard($location, $player_id);
-    }
-    
-    /**
-     * Pick the "nbr" first cards on top of specified deck and give it to specified player.
-     * Return card infos (array) or null if no card in the specified location.
-     */
-    function pickCards(int $nbr, string $location, int $player_id): ?array {
-        return $this->deck->pickCards($nbr, $location, $player_id);
-    }
+    // TODO: safely remove this
+    // /**
+    //  * Pick the first card on top of specified deck and give it to specified player.
+    //  * Return card infos or null if no card in the specified location.
+    //  */
+    // function pickCard(string $location, int $player_id): ?array {
+    //     return $this->deck->pickCard($location, $player_id);
+    // }
+    // /**
+    //  * Pick the "nbr" first cards on top of specified deck and give it to specified player.
+    //  * Return card infos (array) or null if no card in the specified location.
+    //  */
+    // function pickCards(int $nbr, string $location, int $player_id): ?array {
+    //     return $this->deck->pickCards($nbr, $location, $player_id);
+    // }
 
     
     /**

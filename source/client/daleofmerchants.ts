@@ -1369,6 +1369,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_DEPRECATED_whirligig':
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'blindfold':
+				this.myHand.setSelectionMode('none');
+				break;
 			case 'client_DEPRECATED_blindfold':
 				this.myHand.setSelectionMode('none');
 				break;
@@ -1876,6 +1879,45 @@ class DaleOfMerchants extends Gamegui
 			case 'client_gamble':
 				this.addActionButtonsOpponent(this.onGamble.bind(this));
 				this.addActionButtonCancelClient();
+				break;
+			case 'client_blindfold':
+				for (let value of [1, 2, 3, 4, 5]) {
+					this.addActionButton("button-"+value, String(value), (() => this.onClientBlindfold(value)));
+				}
+				this.addActionButtonCancelClient();
+				break;
+			case 'blindfold':
+				const blindfold_args = (args as { card_id: number });
+				for (let value of [1, 2, 3, 4, 5]) {
+					this.addActionButton("button-"+value, String(value), (() => this.onBlindfold(value)));
+				}
+				const blindfold_cardName = new DaleCard(blindfold_args.card_id).name;
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Decide the value of ")+blindfold_cardName);
+				// this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-technique');
+				// this.myHand.orderedSelection.setMaxSize(1);
+				// this.myHand.selectItem(blindfold_args.card_id);
+				// TODO: safely remove this
+				// "base_effective_values" is deprecated
+				// the idea was that base_effective_values are [1, 2, 3, 4, 5] with global effects appied.
+				// for example, with a CT_FLASHYSHOW effect, the base_effective_values are [2, 3, 4, 5, 6]
+				// for (let value of [1, 2, 3, 4, 5]) {
+				// 	this.addActionButton("button-"+value, String(value), (() => this.onBlindfold(value)));
+				// }
+				// let blindfold_label = '';
+				// let blindfold_baseValue = 1;
+				// for (let value of blindfold_args.base_effective_values) {
+				// 	if (value == blindfold_baseValue) {
+				// 		blindfold_label = String(value);
+				// 	}
+				// 	else {
+				// 		blindfold_label = `${blindfold_baseValue} (<span style='color:lightgreen'>${value}</span>)`;
+				// 	}
+				// 	this.addActionButton("button-"+value, blindfold_label, (() => this.onBlindfold(value)).bind(this));
+				// 	blindfold_baseValue += 1;
+				// }
+				// this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-technique');
+				// this.myHand.orderedSelection.setMaxSize(1);
+				// this.myHand.selectItem(blindfold_args.card_id);
 				break;
 			case 'client_DEPRECATED_blindfold':
 				if (!this.unique_opponent_id) {
@@ -2790,7 +2832,7 @@ class DaleOfMerchants extends Gamegui
 	 * @param text new string to display at the main title
 	 * @param args (optional) additional arguments to use in the template
 	 */
-	setDescriptionOnMyTurn(text: string, args?: object) {
+	setDescriptionOnMyTurn(text: string, args?: object | null) {
 		this.gamedatas.gamestate.descriptionmyturn = text;
 		var tpl = dojo.clone(this.gamedatas.gamestate.args) as any;
 		if (tpl === null) {
@@ -4410,6 +4452,15 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_gamble', card.id);
 				}
 				break;
+			case DaleCard.CT_BLINDFOLD:
+				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_blindfold', card.id);
+				}
+				break;
 			case DaleCard.CT_DEPRECATED_BLINDFOLD:
 				fizzle = this.myHand.count() == 1;
 				if (fizzle) {
@@ -5401,6 +5452,18 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCardWithServerState<'client_gamble'>({
 			opponent_id: opponent_id
 		})
+	}
+
+	onClientBlindfold(value: number) {
+		this.playTechniqueCard<'client_blindfold'> ({
+			value: value,
+		})
+	}
+
+	onBlindfold(value: number) {
+		this.bgaPerformAction('actBlindfold', {
+			value: value
+		});
 	}
 
 	onDEPRECATED_Blindfold(card_id?: number) {

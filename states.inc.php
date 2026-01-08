@@ -178,6 +178,7 @@ $machinestates = array(
 			'trSerenade' => 102,
 			'trRake' => 103,
 			'trSoundDetectors' => 104,
+			'trBlindfold' => 105,
 		),
 	),
 	31 => array(
@@ -823,6 +824,17 @@ $machinestates = array(
 		'args' => 'argOpponentNameAndPassiveCardId',
 		'action' => 'stSoundDetectors',
 		'possibleactions' => ['actSoundDetectors'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	105 => array(
+		'name' => 'blindfold',
+		'description' => clienttranslate('Blindfold: ${actplayer} must decide the value of ${card_name}${prior_modifications}'),
+		'descriptionmyturn' => clienttranslate('Blindfold: ${you} must decide the value of ${card_name}${prior_modifications}'),
+		'type' => 'activeplayer',
+		'args' => 'argBlindfold',
+		'possibleactions' => ['actBlindfold'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
