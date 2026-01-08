@@ -56,6 +56,7 @@ if (false) {
 	$game->stFinalStatistics();
 	$game->stSerenade();
 	$game->stSoundDetectors();
+	$game->stHistoryLesson();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -179,6 +180,7 @@ $machinestates = array(
 			'trRake' => 103,
 			'trSoundDetectors' => 104,
 			'trBlindfold' => 105,
+			'trHistoryLesson' => 106,
 		),
 	),
 	31 => array(
@@ -835,6 +837,17 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argBlindfold',
 		'possibleactions' => ['actBlindfold'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	106 => array(
+		'name' => 'historyLesson',
+		'description' => clienttranslate('History Lesson: ${actplayer} must choose 1 card to take and reorder the rest'),
+		'descriptionmyturn' => clienttranslate('History Lesson: ${you} must choose 1 card to take and reorder the rest'),
+		'type' => 'activeplayer',
+		'action' => 'stHistoryLesson',
+		'possibleactions' => ['actHistoryLesson'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

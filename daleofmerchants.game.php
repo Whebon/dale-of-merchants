@@ -5079,6 +5079,10 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSpyglass");
                 break;
+            case CT_HISTORYLESSON:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trHistoryLesson");
+                break;
             case CT_FLASHYSHOW:
                 $this->effects->insertGlobal(0, CT_FLASHYSHOW);
                 $this->notifyAllPlayers('message', clienttranslate('Flashy Show: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
@@ -7554,7 +7558,7 @@ class DaleOfMerchants extends DaleTableBasic
         $draw_card_id = array_pop($card_ids); //the last index is the card to draw
         $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
 
-        //get the non-selected cards and selected cards to discard
+        //get the non-selected cards and selected cards to place on the deck
         $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
         $selected_cards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
         foreach ($selected_cards as $card_id => $card) {
@@ -7576,6 +7580,50 @@ class DaleOfMerchants extends DaleTableBasic
         $this->placeOnDeckMultiple(
             $player_id, 
             clienttranslate('Spyglass: ${player_name} places ${nbr} cards on top of their deck'),
+            $card_ids, 
+            $selected_cards, 
+            $non_selected_cards,
+            true
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
+
+    function actHistoryLesson($card_ids) {
+        $this->checkAction("actHistoryLesson");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+
+        //get the card to draw (first card from the card_ids array)
+        if (count($card_ids) == 0) {
+            throw new BgaUserException($this->_("You must select at least 1 card to place into your hand"));
+        }
+        $draw_card_id = array_pop($card_ids); //the last index is the card to draw
+        $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
+
+        //get the non-selected cards and selected cards to discard
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+        unset($non_selected_cards[$draw_card_id]);
+
+        //1. place the selected card into the hand
+        $this->cards->moveCard($draw_card_id, HAND.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('History Lesson: ${player_name} places 1 card into their hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "_private" => array(
+                "card" => $draw_card
+            )
+        ));
+
+        //2. place the rest on top of the deck
+        $this->discardMultiple(
+            clienttranslate('History Lesson: ${player_name} discards the other ${nbr} cards'),
+            $player_id, 
             $card_ids, 
             $selected_cards, 
             $non_selected_cards,
@@ -9855,6 +9903,14 @@ class DaleOfMerchants extends DaleTableBasic
         $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 cards'), 3, true);
         if ($nbr == 0) {
             //skyglass has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
+        }
+    }
+
+    function stHistoryLesson() {
+        $nbr = $this->draw(clienttranslate('History Lesson: ${player_name} draws 3 cards'), 3, true);
+        if ($nbr == 0) {
+            //history lesson has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
     }

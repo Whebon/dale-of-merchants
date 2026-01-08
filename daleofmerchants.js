@@ -117,7 +117,7 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCheeseIcon = function () {
             return this.getIcon(4, 2);
         };
-        DaleIcons.getDEPRECATED_HistoryLessonIcon = function () {
+        DaleIcons.getHistoryLessonIcon = function () {
             return this.getIcon(4, 3);
         };
         DaleIcons.getNaturalSurvivorIcon = function () {
@@ -406,6 +406,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                 case 'spyglass':
                     icon = (index == 0) ? DaleIcons_1.DaleIcons.getSpyglassIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
+                case 'historyLesson':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getHistoryLessonIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
                 case 'cheese':
                     icon = (index == 0) ? DaleIcons_1.DaleIcons.getCheeseIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
@@ -422,7 +425,7 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     icon = DaleIcons_1.DaleIcons.getDuplicateEntry();
                     break;
                 case 'DEPRECATED_historyLesson':
-                    icon = DaleIcons_1.DaleIcons.getDEPRECATED_HistoryLessonIcon();
+                    icon = DaleIcons_1.DaleIcons.getHistoryLessonIcon();
                     break;
                 case 'resourcefulAlly':
                     icon = DaleIcons_1.DaleIcons.getBluePileIcon(Math.max(4 - index, 0));
@@ -5231,6 +5234,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons_10.DaleIcons.getSpyglassIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     break;
+                case 'historyLesson':
+                    this.myLimbo.setSelectionMode('multiple', 'historyLesson', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getHistoryLessonIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
+                    break;
                 case 'client_acorn':
                 case 'client_DEPRECATED_velocipede':
                     var client_acorn_targets = [];
@@ -5806,6 +5812,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'spyglass':
                     this.myLimbo.setSelectionMode('none');
                     break;
+                case 'historyLesson':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
                 case 'client_acorn':
                     TargetingLine_1.TargetingLine.remove();
                     break;
@@ -6314,6 +6323,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'spyglass':
                     this.addActionButton("confirm-button", _("Confirm selected"), "onSpyglass");
+                    break;
+                case 'historyLesson':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
                     break;
                 case 'client_acorn':
                     this.addActionButtonCancelClient();
@@ -8497,6 +8509,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_SPYGLASS:
+                case DaleCard_9.DaleCard.CT_HISTORYLESSON:
                 case DaleCard_9.DaleCard.CT_MAGNET:
                 case DaleCard_9.DaleCard.CT_RAKE:
                 case DaleCard_9.DaleCard.CT_WHEELBARROW:
@@ -9286,12 +9300,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onSpyglass = function () {
             var card_ids = this.myLimbo.orderedSelection.get();
-            console.warn("Sending " + this.arrayToNumberList(card_ids));
             if (card_ids.length == 0) {
                 this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
                 return;
             }
             this.bgaPerformAction('actSpyglass', {
+                card_ids: this.arrayToNumberList(card_ids)
+            });
+        };
+        DaleOfMerchants.prototype.onHistoryLesson = function () {
+            var card_ids = this.myLimbo.orderedSelection.get();
+            if (card_ids.length == 0) {
+                this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
+                return;
+            }
+            this.bgaPerformAction('actHistoryLesson', {
                 card_ids: this.arrayToNumberList(card_ids)
             });
         };

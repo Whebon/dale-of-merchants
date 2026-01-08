@@ -80,6 +80,9 @@ export abstract class AbstractOrderedSelection {
             case 'spyglass':
                 icon = (index == 0) ? DaleIcons.getSpyglassIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
+            case 'historyLesson':
+                icon = (index == 0) ? DaleIcons.getHistoryLessonIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
             case 'cheese':
                 icon = (index == 0) ? DaleIcons.getCheeseIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
@@ -96,7 +99,7 @@ export abstract class AbstractOrderedSelection {
                 icon = DaleIcons.getDuplicateEntry();
                 break;
             case 'DEPRECATED_historyLesson':
-                icon = DaleIcons.getDEPRECATED_HistoryLessonIcon();
+                icon = DaleIcons.getHistoryLessonIcon();
                 break;
             case 'resourcefulAlly':
                 icon = DaleIcons.getBluePileIcon(Math.max(4-index, 0)); //reverse pileBlue

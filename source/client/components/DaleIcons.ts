@@ -90,7 +90,7 @@ export class DaleIcons {
         return this.getIcon(4, 2);
     }
 
-    public static getDEPRECATED_HistoryLessonIcon(): HTMLElement {
+    public static getHistoryLessonIcon(): HTMLElement {
         return this.getIcon(4, 3);
     }
 

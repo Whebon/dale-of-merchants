@@ -644,6 +644,11 @@ class DaleOfMerchants extends Gamegui
 					this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons.getSpyglassIcon(), DaleIcons.getBluePileIcon(0))
 				);
 				break;
+			case 'historyLesson':
+				this.myLimbo.setSelectionMode('multiple', 'historyLesson', 'daleofmerchants-wrap-technique',
+					this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons.getHistoryLessonIcon(), DaleIcons.getBluePileIcon(0))
+				);
+				break;
 			case 'client_acorn':
 			case 'client_DEPRECATED_velocipede':
 				let client_acorn_targets: DaleCard[] = [];
@@ -1316,6 +1321,9 @@ class DaleOfMerchants extends Gamegui
 			case 'spyglass':
 				this.myLimbo.setSelectionMode('none');
 				break;
+			case 'historyLesson':
+				this.myLimbo.setSelectionMode('none');
+				break;
 			case 'client_acorn':
 				TargetingLine.remove();
 				break;
@@ -1809,6 +1817,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onSpyglass");
+				break;
+			case 'historyLesson':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
 				break;
 			case 'client_acorn':
 				this.addActionButtonCancelClient();
@@ -4489,6 +4500,8 @@ class DaleOfMerchants extends Gamegui
 					this.mainClientState.enterOnStack('client_safetyPrecaution', { technique_card_id: card.id });
 				}
 				break;
+			case DaleCard.CT_SPYGLASS:
+			case DaleCard.CT_HISTORYLESSON:
 			case DaleCard.CT_MAGNET:
 			case DaleCard.CT_RAKE:
 			case DaleCard.CT_WHEELBARROW:
@@ -5337,12 +5350,22 @@ class DaleOfMerchants extends Gamegui
 
 	onSpyglass() {
 		const card_ids = this.myLimbo.orderedSelection.get();
-		console.warn("Sending "+this.arrayToNumberList(card_ids));
 		if (card_ids.length == 0) {
 			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
 			return;
 		}
 		this.bgaPerformAction('actSpyglass', {
+			card_ids: this.arrayToNumberList(card_ids)
+		})
+	}
+
+	onHistoryLesson() {
+		const card_ids = this.myLimbo.orderedSelection.get();
+		if (card_ids.length == 0) {
+			this.showMessage(_("Select at least 1 card to place into your hand"), 'error');
+			return;
+		}
+		this.bgaPerformAction('actHistoryLesson', {
 			card_ids: this.arrayToNumberList(card_ids)
 		})
 	}

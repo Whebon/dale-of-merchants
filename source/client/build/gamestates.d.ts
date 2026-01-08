@@ -211,6 +211,7 @@ interface GameStates {
 			'trRake': 103,
 			'trSoundDetectors': 104,
 			'trBlindfold': 105,
+			'trHistoryLesson': 106,
 		},
 	},
 	31: {
@@ -1294,6 +1295,23 @@ interface GameStates {
 				'name': 'value',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	106: {
+		'name': 'historyLesson',
+		'description': 'History Lesson: ${actplayer} must choose 1 card to take and reorder the rest',
+		'descriptionmyturn': 'History Lesson: ${you} must choose 1 card to take and reorder the rest',
+		'type': 'activeplayer',
+		'action': 'stHistoryLesson',
+		'possibleactions': {
+			'actHistoryLesson': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {
