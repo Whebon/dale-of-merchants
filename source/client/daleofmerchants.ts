@@ -4471,6 +4471,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_TIRELESSTINKERER:
+			case DaleCard.CT_RIGOROUSCHRONICLER:
 				fizzle = this.myDiscard.size == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -7451,51 +7452,6 @@ class DaleOfMerchants extends Gamegui
 			deck.push(newDeckTop, discard.placeholderHTML, dataSwap, duration);
 		}
 		dataSwap();
-		//TODO: safely delete this
-		// //animated swap
-		// const duration = 400;
-		// if (newDiscardTop) {
-		// 	discard.push(currentDeckCard, deck.placeholderHTML, undefined, duration);
-		// }
-		// if (animToDeck) {
-		// 	const currentDiscardCard = ;
-		// 	deck.push(currentDiscardCard, discard.placeholderHTML, undefined, duration);
-		// }
-		// setTimeout(dataSwap, duration);
-		// discard.shuffleToDrawPile(deck, undefined, discardsize);
-		// const step = 1000/size;
-		// const anim = () => {
-		// 	discard.pop(deck.placeholderHTML, () => { 
-		// 		deck.push(new DaleCard(0, 0))
-		// 		if (discardsize > 0) {
-		// 			anim();
-		// 		}
-		// 		else {
-		// 			for (let i = 0; i < decksize - 1; i++) {
-		// 				const card_id = notif.args.card_ids[i]!;
-		// 				const card = DaleCard.of(notif.args.cards[card_id]!);
-		// 				discard.push(card);
-		// 				deck.pop();
-		// 			}
-		// 			const card_id = notif.args.card_ids[decksize-1]!;
-		// 			const card = DaleCard.of(notif.args.cards[card_id]!);
-		// 			discard.push(card, deck.placeholderHTML, undefined, step);
-		// 			deck.pop();
-		// 		}
-		// 	}, step/2, step);
-		// }
-		// anim();
-		// for (let i = 0; i < discardsize; i++) {
-		// 	console.warn(deck.placeholderHTML);
-		// 	discard.pop(deck.placeholderHTML, () => { deck.push(new DaleCard(0, 0)) }, step/2, delay);
-		// 	delay += step;
-		// }
-		// for (let i = 0; i < decksize; i++) {
-		// 	const card_id = notif.args.card_ids[i]!;
-		// 	const card = DaleCard.of(notif.args.cards[card_id]!);
-		// 	discard.push(card, deck.placeholderHTML, () => { deck.pop() }, step/2, delay);
-		// 	delay += step;
-		// }
 	}
 
 	

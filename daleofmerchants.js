@@ -2115,17 +2115,16 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DEPRECATED_ESSENTIALPURCHASE = 261;
         DaleCard.CT_DEPRECATED_STOCKCLEARANCE = 262;
         DaleCard.CT_DEPRECATED_BLINDFOLD = 263;
-        DaleCard.CT_DEPRECATED_RIGOROUSCHRONICLER = 264;
-        DaleCard.CT_DEPRECATED_HISTORYLESSON = 265;
-        DaleCard.CT_DEPRECATED_CULTURALPRESERVATION = 266;
-        DaleCard.CT_DEPRECATED_SLICEOFLIFE = 267;
-        DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER = 268;
-        DaleCard.CT_DEPRECATED_FASHIONHINT = 269;
-        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 270;
-        DaleCard.CT_DEPRECATED_VELOCIPEDE = 271;
-        DaleCard.CT_DEPRECATED_INSIGHT = 272;
-        DaleCard.CT_DEPRECATED_WHIRLIGIG = 273;
-        DaleCard.CT_DEPRECATED_FRESHSTART = 274;
+        DaleCard.CT_DEPRECATED_HISTORYLESSON = 264;
+        DaleCard.CT_DEPRECATED_CULTURALPRESERVATION = 265;
+        DaleCard.CT_DEPRECATED_SLICEOFLIFE = 266;
+        DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER = 267;
+        DaleCard.CT_DEPRECATED_FASHIONHINT = 268;
+        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 269;
+        DaleCard.CT_DEPRECATED_VELOCIPEDE = 270;
+        DaleCard.CT_DEPRECATED_INSIGHT = 271;
+        DaleCard.CT_DEPRECATED_WHIRLIGIG = 272;
+        DaleCard.CT_DEPRECATED_FRESHSTART = 273;
         DaleCard.EFFECT_CHAMELEON_TYPE = 1000;
         DaleCard.EFFECT_CHAMELEON_VALUE = 1001;
         DaleCard.EFFECT_INCREASE_HAND_SIZE = 1002;
@@ -4679,7 +4678,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
             for (var _i = 0, funds_2 = funds; _i < funds_2.length; _i++) {
                 var card = funds_2[_i];
                 remaining -= card.effective_value;
-                if (is_purchase && card.effective_type_id == DaleCard_8.DaleCard.CT_DEPRECATED_RIGOROUSCHRONICLER) {
+                if (is_purchase && card.effective_type_id == DaleCard_8.DaleCard.CT_VORACIOUSCONSUMER) {
                     remaining -= 2;
                 }
             }
@@ -8480,6 +8479,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_TIRELESSTINKERER:
+                case DaleCard_9.DaleCard.CT_RIGOROUSCHRONICLER:
                     fizzle = this.myDiscard.size == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);

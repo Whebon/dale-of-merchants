@@ -518,13 +518,14 @@ class DaleDeck {
         $this->deck->moveAllCardsInLocation($from_location, $to_location, $from_location_arg, $to_location_arg);
     }
 
-    /**
-     * Move all cards from a location to another.
-     * location arg stays with the same value
-     */
-    function moveAllCardsInLocationKeepOrder(string $from_location, string $to_location): void {
-        $this->deck->moveAllCardsInLocationKeepOrder($from_location, $to_location);
-    }
+    // TODO: safely remove this
+    // /**
+    //  * Move all cards from a location to another.
+    //  * location arg stays with the same value
+    //  */
+    // function moveAllCardsInLocationKeepOrder(string $from_location, string $to_location): void {
+    //     $this->deck->moveAllCardsInLocationKeepOrder($from_location, $to_location);
+    // }
     
     /**
      * Return all cards in specific location.

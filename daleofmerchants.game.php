@@ -4867,6 +4867,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_TIRELESSTINKERER:
+                case CT_RIGOROUSCHRONICLER:
                 case CT_DEPRECATED_HISTORYLESSON:
                 case CT_ALTERNATIVEPLAN:
                 case CT_SELECTINGCONTRACTS:
@@ -6847,6 +6848,18 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SKINKS3:
                 $this->draw(clienttranslate('Matches: ${player_name} draws 2 cards'), 2);
                 $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_RIGOROUSCHRONICLER:
+                $this->cards->shuffle(DISCARD.$player_id);
+                $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id);
+                $card_ids = $this->toCardIds($dbcards);
+                $this->cards->moveCardsOnTop($card_ids, DECK.$player_id);
+                $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Rigorous Chronicler: ${player_name} shuffles their discard and places it on their deck'), array(
+                    "market" => false,
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id)
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
