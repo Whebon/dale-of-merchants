@@ -1310,4 +1310,18 @@ export class DaleCard {
         }
         return false;
     }
+
+    /**
+     * Returns the amount of EC_GLOBAL effects of the given type id
+     * @param number type_id the type of effect
+     */
+    public static countGlobalEffects(type_id: number): number {
+        let count = 0;
+        for (const effect of DaleCard.effects) {
+            if (effect.effect_class == this.EC_GLOBAL && effect.type_id == type_id) {
+                count += 1
+            }
+        }
+        return count;
+    }
 }

@@ -582,8 +582,22 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
-				this.mySchedule.setSelectionMode('clickOvertime');
 				this.onBuildSelectionChanged(); //check for nostalgic item
+				if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
+					this.myDiscard.openPopin();
+				}
+				break;
+			case 'bonusBuild':
+				const bonusBuild_args = args.args as { is_first_build: number };
+				const bonusBuildLabel = bonusBuild_args.is_first_build ? 
+					_("Click cards to <strong>build stacks</strong>") :
+					_("Click cards to <strong>build additional stacks</strong>");
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
+				this.myStall.selectLeftPlaceholder();
+				this.onBuildSelectionChanged(); //check for nostalgic item
+				if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
+					this.myDiscard.openPopin();
+				}
 				break;
 			case 'client_inventory':
 				this.myHand.setSelectionMode('multiple', 'pileRed', 'daleofmerchants-wrap-discard', _("Click cards to <strong>discard</strong>"));
@@ -622,15 +636,6 @@ class DaleOfMerchants extends Gamegui
 						this.myHand.selectItem(card_id);
 					}
 				}
-				break;
-			case 'bonusBuild':
-				const bonusBuild_args = args.args as { is_first_build: number };
-				const bonusBuildLabel = bonusBuild_args.is_first_build ? 
-					_("Click cards to <strong>build stacks</strong>") :
-					_("Click cards to <strong>build additional stacks</strong>");
-				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
-				this.myStall.selectLeftPlaceholder();
-				this.onBuildSelectionChanged(); //check for nostalgic item
 				break;
 			case 'client_swiftBroker':
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
@@ -1291,7 +1296,6 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
-				this.mySchedule.setSelectionMode('none');
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
@@ -1771,7 +1775,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_technique':
 				if (this.myHand.count() == 0) {
-					//Requested by Sami, but technically, you can still finish techniques
+					//Requested by Sami, but technically, you can still finish techniques or build with CT_CULTURALPRESERVATION
 					this.setDescriptionOnMyTurn(_("${you} must"));
 					this.addActionButton("confirm-button", _("Take an inventory action with 0 cards"), "onInventoryAction");
 				}
@@ -1787,14 +1791,6 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_inventory':
-				this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
-				this.addActionButtonCancelClient();
-				break;
-			case 'client_deprecated_essentialPurchase':
-				this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
-				this.addActionButtonCancelClient();
-				break;
 			case 'bonusBuild':
 				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
 				const bonusBuild_args = args as { is_first_build: number };
@@ -1806,6 +1802,14 @@ class DaleOfMerchants extends Gamegui
 					//the player is skipping just a bonus action
 					this.addActionButton("skip-button", _("Skip"), "onBonusBuildSkip", undefined, false, 'gray'); 
 				}
+				break;
+			case 'client_inventory':
+				this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_deprecated_essentialPurchase':
+				this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
+				this.addActionButtonCancelClient();
 				break;
 			case 'client_swiftBroker':
 				this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
@@ -3618,10 +3622,14 @@ class DaleOfMerchants extends Gamegui
 				this.onFundsSelectionChanged();
 				break;
 			case 'client_build':
-				this.onBuildSelectionChanged();
-				break;
 			case 'bonusBuild':
-				this.onBuildSelectionChanged();
+				if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
+					this.myHand.unselectItem(card_id);
+					this.showMessage(_("Cultural Preservation: you may only build using cards from your discard"), "error");
+				}
+				else {
+					this.onBuildSelectionChanged();
+				}
 				break;
 			case 'client_shatteredRelic':
 				this.playTechniqueCard<'client_shatteredRelic'>({
@@ -3917,11 +3925,6 @@ class DaleOfMerchants extends Gamegui
 					this.onTriggerTechnique(card_id); //select other finish card
 				}
 				break;
-			case 'client_build':
-				if (card.effective_type_id == DaleCard.CT_OVERTIME) {
-					this.myDiscard.openPopin();
-				}
-				break;
 		}
 	}
 
@@ -4041,10 +4044,13 @@ class DaleOfMerchants extends Gamegui
 				funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
 				market_card_id: card_id,
 				args: JSON.stringify(args.optionalArgs)
-			})
-			while (this.gamedatas.gamestate.name != 'client_purchase') {
-				this.mainClientState.leave(); //see issue #97.2 and #97.3
-			}
+			}).then(() => {
+				this.mainClientState.leaveAllAndDontReturn(); //see issue #97.2 and #97.3
+				// while (this.gamedatas.gamestate.name != 'client_purchase') {
+				// 	this.mainClientState.leave(); //see issue #97.2 and #97.3
+				// }
+			});
+
 		}
 	}
 
@@ -5115,11 +5121,16 @@ class DaleOfMerchants extends Gamegui
 	onBuildSelectionChanged(card?: DaleCard){
 		console.warn("onBuildSelectionChanged");
 		const card_ids = this.myHand.orderedSelection.get();
-		let count_nostalgic_items = 0; 
-		if (this.mySchedule.countTypeId(DaleCard.CT_OVERTIME) > 0) {
-			//when an overtime is in schedule, any number of cards may be selected
-			count_nostalgic_items = 999;
+		
+		// Apply CT_CULTURALPRESERVATION
+		if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
+			this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", 999);
+			//this.myDiscard.openPopin(); // <-- this is done on entering the state. doing it here somehow automatically closes the popin when transitioning from 'client_build' -> 'bonusBuild'
+			return;
 		}
+
+		// Apply CT_NOSTALGICITEM
+		let count_nostalgic_items = 0; 
 		for (let card_id of card_ids) {
 			const card = new DaleCard(card_id);
 			if (card.effective_type_id == DaleCard.CT_NOSTALGICITEM) {
@@ -5200,10 +5211,12 @@ class DaleOfMerchants extends Gamegui
 			stack_card_ids_from_discard: this.arrayToNumberList(args.stack_card_ids_from_discard),
 			args: JSON.stringify(args.optionalArgs)
 		}).then(() => {
+			this.mainClientState.leaveAllAndDontReturn(); //see issue #97.2 and #97.3
+			//The code below was removed because in case of CT_CULTURALPRESERVATION, it opens the discard again
 			//if the build is successful, nicely close the stack of client states
-			while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'bonusBuild') {
-				this.mainClientState.leave(); //see issue #97.2 and #97.3
-			}
+			// while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'bonusBuild') {
+			// 	this.mainClientState.leave(); //see issue #97.2 and #97.3
+			// }
 		});
 	}
 	

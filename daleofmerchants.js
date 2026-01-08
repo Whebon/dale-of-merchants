@@ -1847,6 +1847,16 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return false;
         };
+        DaleCard.countGlobalEffects = function (type_id) {
+            var count = 0;
+            for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                var effect = _a[_i];
+                if (effect.effect_class == this.EC_GLOBAL && effect.type_id == type_id) {
+                    count += 1;
+                }
+            }
+            return count;
+        };
         DaleCard.cardIdtoTypeId = new Map();
         DaleCard.cardIdtoCopiedTypeId = new Map();
         DaleCard.tooltips = new Map();
@@ -2398,8 +2408,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                         }
                     }
                     return false;
-                case 'clickOvertime':
-                    return card.effective_type_id == DaleCard_1.DaleCard.CT_OVERTIME;
                 case 'single':
                     return true;
                 case 'singleAnimalfolk':
@@ -2440,8 +2448,6 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                 case 'clickOnCleanUp':
                     return true;
                 case 'clickOnTrigger':
-                    return true;
-                case 'clickOvertime':
                     return true;
                 default:
                     return false;
@@ -4336,6 +4342,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             this._name = 'client_technique';
             this._args = {};
             if (previous instanceof PreviousState) {
+                this._page.onLeavingState(previous.name);
                 this._name = previous.name;
                 if (previous.args) {
                     this._args = previous.args;
@@ -4364,6 +4371,12 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                 this.leave();
             }
             this.enter('client_technique');
+        };
+        MainClientState.prototype.leaveAllAndDontReturn = function () {
+            console.warn("mainClientState: leaveAllAndDontReturn");
+            while (this._stack.length > 0) {
+                this.leaveAndDontReturn();
+            }
         };
         MainClientState.prototype.enter = function (name, args) {
             if (name) {
@@ -5172,8 +5185,22 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.selectLeftPlaceholder();
-                    this.mySchedule.setSelectionMode('clickOvertime');
                     this.onBuildSelectionChanged();
+                    if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
+                        this.myDiscard.openPopin();
+                    }
+                    break;
+                case 'bonusBuild':
+                    var bonusBuild_args = args.args;
+                    var bonusBuildLabel = bonusBuild_args.is_first_build ?
+                        _("Click cards to <strong>build stacks</strong>") :
+                        _("Click cards to <strong>build additional stacks</strong>");
+                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
+                    this.myStall.selectLeftPlaceholder();
+                    this.onBuildSelectionChanged();
+                    if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
+                        this.myDiscard.openPopin();
+                    }
                     break;
                 case 'client_inventory':
                     this.myHand.setSelectionMode('multiple', 'pileRed', 'daleofmerchants-wrap-discard', _("Click cards to <strong>discard</strong>"));
@@ -5214,15 +5241,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             this.myHand.selectItem(card_id);
                         }
                     }
-                    break;
-                case 'bonusBuild':
-                    var bonusBuild_args = args.args;
-                    var bonusBuildLabel = bonusBuild_args.is_first_build ?
-                        _("Click cards to <strong>build stacks</strong>") :
-                        _("Click cards to <strong>build additional stacks</strong>");
-                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
-                    this.myStall.selectLeftPlaceholder();
-                    this.onBuildSelectionChanged();
                     break;
                 case 'client_swiftBroker':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
@@ -5782,7 +5800,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
-                    this.mySchedule.setSelectionMode('none');
                     break;
                 case 'client_inventory':
                     this.market.setSelectionMode(0);
@@ -6295,14 +6312,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
                     this.addActionButtonCancelClient();
                     break;
-                case 'client_inventory':
-                    this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
-                    this.addActionButtonCancelClient();
-                    break;
-                case 'client_deprecated_essentialPurchase':
-                    this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
-                    this.addActionButtonCancelClient();
-                    break;
                 case 'bonusBuild':
                     this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
                     var bonusBuild_args = args;
@@ -6312,6 +6321,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     else {
                         this.addActionButton("skip-button", _("Skip"), "onBonusBuildSkip", undefined, false, 'gray');
                     }
+                    break;
+                case 'client_inventory':
+                    this.addActionButton("confirm-button", _("Discard selected"), "onInventoryAction");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_deprecated_essentialPurchase':
+                    this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
+                    this.addActionButtonCancelClient();
                     break;
                 case 'client_swiftBroker':
                     this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
@@ -7749,10 +7766,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onFundsSelectionChanged();
                     break;
                 case 'client_build':
-                    this.onBuildSelectionChanged();
-                    break;
                 case 'bonusBuild':
-                    this.onBuildSelectionChanged();
+                    if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
+                        this.myHand.unselectItem(card_id);
+                        this.showMessage(_("Cultural Preservation: you may only build using cards from your discard"), "error");
+                    }
+                    else {
+                        this.onBuildSelectionChanged();
+                    }
                     break;
                 case 'client_shatteredRelic':
                     this.playTechniqueCard({
@@ -8002,11 +8023,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.onTriggerTechnique(card_id);
                     }
                     break;
-                case 'client_build':
-                    if (card.effective_type_id == DaleCard_9.DaleCard.CT_OVERTIME) {
-                        this.myDiscard.openPopin();
-                    }
-                    break;
             }
         };
         DaleOfMerchants.prototype.onTriggerTechnique = function (card_id) {
@@ -8079,6 +8095,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.updateSpendXButton();
         };
         DaleOfMerchants.prototype.onPurchase = function () {
+            var _this = this;
             var args = this.mainClientState.args;
             switch (this.gamedatas.gamestate.name) {
                 case 'client_purchase':
@@ -8119,10 +8136,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     funds_card_ids: this.arrayToNumberList(args.funds_card_ids),
                     market_card_id: card_id,
                     args: JSON.stringify(args.optionalArgs)
+                }).then(function () {
+                    _this.mainClientState.leaveAllAndDontReturn();
                 });
-                while (this.gamedatas.gamestate.name != 'client_purchase') {
-                    this.mainClientState.leave();
-                }
             }
         };
         DaleOfMerchants.prototype.onDEPRECATED_MarketDiscoveryToss = function () {
@@ -9117,10 +9133,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onBuildSelectionChanged = function (card) {
             console.warn("onBuildSelectionChanged");
             var card_ids = this.myHand.orderedSelection.get();
-            var count_nostalgic_items = 0;
-            if (this.mySchedule.countTypeId(DaleCard_9.DaleCard.CT_OVERTIME) > 0) {
-                count_nostalgic_items = 999;
+            if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
+                this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", 999);
+                return;
             }
+            var count_nostalgic_items = 0;
             for (var _i = 0, card_ids_2 = card_ids; _i < card_ids_2.length; _i++) {
                 var card_id = card_ids_2[_i];
                 var card_7 = new DaleCard_9.DaleCard(card_id);
@@ -9201,9 +9218,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 stack_card_ids_from_discard: this.arrayToNumberList(args.stack_card_ids_from_discard),
                 args: JSON.stringify(args.optionalArgs)
             }).then(function () {
-                while (_this.gamedatas.gamestate.name != 'client_build' && _this.gamedatas.gamestate.name != 'bonusBuild') {
-                    _this.mainClientState.leave();
-                }
+                _this.mainClientState.leaveAllAndDontReturn();
             });
         };
         DaleOfMerchants.prototype.onBonusBuildSkip = function () {
