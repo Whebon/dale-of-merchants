@@ -111,8 +111,8 @@ export class CoinManager {
         let remaining = total;
         for (const card of funds) {
             remaining -= card.effective_value;
-            if (is_purchase && card.effective_type_id == DaleCard.CT_DEPRECATED_RIGOROUSCHRONICLER) {
-                remaining -= 2; //always use CT_DEPRECATED_RIGOROUSCHRONICLER over coins
+            if (is_purchase && card.effective_type_id == DaleCard.CT_VORACIOUSCONSUMER) {
+                remaining -= 2; //always use CT_VORACIOUSCONSUMER over coins
             }
         }
         this.setCoinsToSpend(remaining);

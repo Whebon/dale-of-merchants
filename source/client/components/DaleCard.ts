@@ -310,17 +310,16 @@ export class DaleCard {
     static readonly CT_DEPRECATED_ESSENTIALPURCHASE: number = 261;
     static readonly CT_DEPRECATED_STOCKCLEARANCE: number = 262;
     static readonly CT_DEPRECATED_BLINDFOLD: number = 263;
-    static readonly CT_DEPRECATED_RIGOROUSCHRONICLER: number = 264;
-    static readonly CT_DEPRECATED_HISTORYLESSON: number = 265;
-    static readonly CT_DEPRECATED_CULTURALPRESERVATION: number = 266;
-    static readonly CT_DEPRECATED_SLICEOFLIFE: number = 267;
-    static readonly CT_DEPRECATED_VORACIOUSCONSUMER: number = 268;
-    static readonly CT_DEPRECATED_FASHIONHINT: number = 269;
-    static readonly CT_DEPRECATED_ROYALPRIVILEGE: number = 270;
-    static readonly CT_DEPRECATED_VELOCIPEDE: number = 271;
-    static readonly CT_DEPRECATED_INSIGHT: number = 272;
-    static readonly CT_DEPRECATED_WHIRLIGIG: number = 273;
-    static readonly CT_DEPRECATED_FRESHSTART: number = 274;
+    static readonly CT_DEPRECATED_HISTORYLESSON: number = 264;
+    static readonly CT_DEPRECATED_CULTURALPRESERVATION: number = 265;
+    static readonly CT_DEPRECATED_SLICEOFLIFE: number = 266;
+    static readonly CT_DEPRECATED_VORACIOUSCONSUMER: number = 267;
+    static readonly CT_DEPRECATED_FASHIONHINT: number = 268;
+    static readonly CT_DEPRECATED_ROYALPRIVILEGE: number = 269;
+    static readonly CT_DEPRECATED_VELOCIPEDE: number = 270;
+    static readonly CT_DEPRECATED_INSIGHT: number = 271;
+    static readonly CT_DEPRECATED_WHIRLIGIG: number = 272;
+    static readonly CT_DEPRECATED_FRESHSTART: number = 273;
 
     public id: number
 

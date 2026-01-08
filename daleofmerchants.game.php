@@ -2693,8 +2693,8 @@ class DaleOfMerchants extends DaleTableBasic
     function verifyCost(mixed $player_id, array $funds_cards, int $cost, ?int $cost_max = null, bool $is_purchase = false): int {
         $optional_value = 0;
         if ($is_purchase) {
-            //Apply CT_DEPRECATED_RIGOROUSCHRONICLER
-            $optional_value = 2*$this->countTypeId($funds_cards, CT_DEPRECATED_RIGOROUSCHRONICLER);
+            //Apply CT_VORACIOUSCONSUMER
+            $optional_value = 2*$this->countTypeId($funds_cards, CT_VORACIOUSCONSUMER);
         }
 
         //Calculate the value of the cards

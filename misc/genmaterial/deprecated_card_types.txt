@@ -4,7 +4,6 @@ CT_DEPRECATED_TASTERS                   //Give 1 🃏 from the market to each pl
 CT_DEPRECATED_ESSENTIALPURCHASE         //When purchased, toss 1–3 junk 🃏🃏🃏 used in the purchase.
 CT_DEPRECATED_STOCKCLEARANCE            //When used to purchase, you may overpay as much as you want.
 CT_DEPRECATED_BLINDFOLD                 //If an opponent guesses your chosen card's value, discard it. Otherwise decide its value (1-5).
-CT_DEPRECATED_RIGOROUSCHRONICLER        //When used to purchase, decide this 🃏 value (1–3).
 CT_DEPRECATED_HISTORYLESSON             //Shuffle any of the top 3 🃏🃏🃏 of your discard into your deck.
 CT_DEPRECATED_CULTURALPRESERVATION      //Search your deck for 1 🃏 to take and 2 🃏🃏 to discard. Shuffle your deck.
 CT_DEPRECATED_SLICEOFLIFE               //Discard 2 🃏🃏 to draw 2 🃏🃏.
