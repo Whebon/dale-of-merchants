@@ -1966,7 +1966,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->cards->moveAllCardsInLocation($discard_pile, $location);
                 $this->cards->shuffle($location);
                 if ($player_id == MARKET) {
-                    $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling the market discard pile to form a new market deck'), array(
+                    $this->notifyAllPlayers('reshuffleDeck', clienttranslate('Shuffling the bin pile to form a new supply'), array(
                         "market" => true
                     ));
                 }
@@ -4115,7 +4115,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
                     $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
                     if ($nbr > 0) {
-                        throw new BgaVisibleSystemException("Unable to fizzle. The market deck/discard contains card(s).");
+                        throw new BgaVisibleSystemException("Unable to fizzle. The supply contains card(s).");
                     }
                     break;
                 case CT_TIRELESSTINKERER:
@@ -6521,7 +6521,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $target_id = $args["target_id"];
                 if ($target_id == 0) {
                     // Toss and copy
-                    $dbcard = $this->tossFromMarketDeck(clienttranslate('Good Old Times: ${player_name} tosses a card from the market deck'));
+                    $dbcard = $this->tossFromMarketDeck(clienttranslate('Good Old Times: ${player_name} tosses a card from the supply'));
                     $this->copyCard($passive_card, $dbcard);
                 }
                 else {
@@ -6557,7 +6557,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->copyCard($passive_card, $dbcard);
                 break;
             case CT_DEPRECATED_MARKETDISCOVERY:
-                $this->tossFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to toss a card from the market deck'));
+                $this->tossFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to toss a card from the supply'));
                 $this->effects->insertModification($passive_card_id, CT_DEPRECATED_MARKETDISCOVERY);
                 break;
             case CT_BOLDHAGGLER:
@@ -6696,7 +6696,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_BAROMETER:
                 $dbcards = $this->cards->pickCardsForLocation(1, DECK.MARKET, 'barometer');
                 if (count($dbcards) == 0) {
-                    throw new BgaUserException($this->_("The market deck is empty"));
+                    throw new BgaUserException($this->_("The supply is empty"));
                 }
                 $dbcard = $dbcards[0];
                 $value = $this->getOriginalValue($dbcard);
@@ -6798,7 +6798,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //set the name of the card for the client description
                 $dbcard = $this->cards->getCardOnTop(DECK.MARKET);
                 if ($dbcard == null) {
-                    throw new BgaVisibleSystemException("Fashion Hint: the deck is empty. This card should have fizzled instead");
+                    throw new BgaUserException(_("This passive has no effect because the supply is empty"));
                 }
                 $this->setGameStateValue("card_id", $dbcard["id"]);
                 $this->effects->insertModification($passive_card_id, CT_FASHIONHINT);

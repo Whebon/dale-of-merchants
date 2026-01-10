@@ -4330,6 +4330,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                             default:
                                 return _("${card_name}: ${you} must take 2 cards from your discard");
                         }
+                    case 'client_royalPrivilege':
+                        return _("${card_name}: ${you} must discard 1 animalfolk card");
                 }
                 return "MISSING DESCRIPTION";
             },
