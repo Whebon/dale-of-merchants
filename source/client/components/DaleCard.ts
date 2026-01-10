@@ -892,7 +892,8 @@ export class DaleCard {
     }
 
     public isAnimalfolk(): boolean {
-        return (this.original_animalfolk_id != 0) && !this.isMonoCard();
+        //return (this.original_animalfolk_id != 0) && !this.isMonoCard();
+        return (this.effective_animalfolk_id != 0) && !this.isMonoCard();
     }
 
     public isMonoCard(): boolean {

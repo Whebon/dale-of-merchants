@@ -1151,6 +1151,15 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Validates the given dbcard is an animalfolk card
+     */
+    function validateIsAnimalfolkCard($dbcard) {
+        if ($this->isEffectiveJunk($dbcard)) {
+            throw new BgaUserException($this->getCardName($dbcard)._(" is not an animalfolk card"));
+        }
+    }
+
+    /**
      * @return array notification args for private messages representing a single `$dbcard`
      */
     function getPrivateCardArgs($dbcard): array {
@@ -5199,6 +5208,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_REPLACEMENT:
                 $card_id = $args["card_id"];
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->validateIsAnimalfolkCard($card);
                 $value = $this->getValue($card);
                 $market_cards = $this->cards->getCardsInLocation(MARKET);
                 $replacement_fizzle = true;
@@ -5500,6 +5510,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //get the both cards that need to be swapped
                 $hand_card_id = $args["card_id"];
                 $hand_card = $this->cards->getCardFromLocation($hand_card_id, HAND.$player_id);
+                $this->validateIsAnimalfolkCard($hand_card);
                 $stall_card_id = $args["stall_card_id"];
                 $stall_player_id = $args["stall_player_id"];
                 $stall_card = $this->cards->getCardFromLocation($stall_card_id, STALL.$stall_player_id);
@@ -6793,6 +6804,20 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertModification($passive_card_id, CT_FASHIONHINT);
                 $this->gamestate->nextState("trFashionHint"); return;
                 break;
+            case CT_ROYALPRIVILEGE:
+                $card_id = $args["card_id"];
+                $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->validateIsAnimalfolkCard($dbcard);
+                $this->cards->moveCardOnTop($card_id, DISCARD.$player_id);
+                $this->notifyAllPlayers('discard', clienttranslate('Royal Privilege: ${player_name} discards their ${card_name}'), array(
+                    "player_id" => $player_id,
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                ));
+                $this->draw(clienttranslate('Royal Privilege: ${player_name} draws ${nbr} cards'), 2);
+                $this->effects->insertModification($passive_card_id, CT_ROYALPRIVILEGE);
+                break; 
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");

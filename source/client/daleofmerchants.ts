@@ -976,6 +976,9 @@ class DaleOfMerchants extends Gamegui
 			case 'refreshingDrink':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
 				break;
+			case 'client_royalPrivilege':
+				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
+				break;
 			case 'delightfulSurprise':
 				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to take"));
 				break;
@@ -1516,6 +1519,9 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'refreshingDrink':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_royalPrivilege':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'delightfulSurprise':
@@ -3713,6 +3719,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card.id
 				})
 				break;
+			case 'client_royalPrivilege':
+				this.playPassiveCard<'client_royalPrivilege'>({
+					card_id: card.id
+				})
+				break;
 			case 'client_replacement':
 				const client_replacement_value = card.effective_value;
 				for (let market_card of this.market!.getCards()) {
@@ -5107,6 +5118,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_SEEINGDOUBLES:
 				this.mainClientState.enterOnStack('chameleon_seeingdoubles', {passive_card_id: card.id});
+				break;
+			case DaleCard.CT_ROYALPRIVILEGE:
+				this.mainClientState.enterOnStack('client_royalPrivilege', {passive_card_id: card.id});
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});

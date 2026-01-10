@@ -1534,7 +1534,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             return (this.effective_type_id >= 1 && this.effective_type_id <= 5);
         };
         DaleCard.prototype.isAnimalfolk = function () {
-            return (this.original_animalfolk_id != 0) && !this.isMonoCard();
+            return (this.effective_animalfolk_id != 0) && !this.isMonoCard();
         };
         DaleCard.prototype.isMonoCard = function () {
             return DaleCard.cardTypes[this.effective_type_id].is_mono;
@@ -5511,6 +5511,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'refreshingDrink':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
                     break;
+                case 'client_royalPrivilege':
+                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to discard"));
+                    break;
                 case 'delightfulSurprise':
                     this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to take"));
                     break;
@@ -6027,6 +6030,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'refreshingDrink':
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_royalPrivilege':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'delightfulSurprise':
@@ -7849,6 +7855,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
+                case 'client_royalPrivilege':
+                    this.playPassiveCard({
+                        card_id: card.id
+                    });
+                    break;
                 case 'client_replacement':
                     var client_replacement_value = card.effective_value;
                     for (var _e = 0, _f = this.market.getCards(); _e < _f.length; _e++) {
@@ -9121,6 +9132,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_9.DaleCard.CT_SEEINGDOUBLES:
                     this.mainClientState.enterOnStack('chameleon_seeingdoubles', { passive_card_id: card.id });
+                    break;
+                case DaleCard_9.DaleCard.CT_ROYALPRIVILEGE:
+                    this.mainClientState.enterOnStack('client_royalPrivilege', { passive_card_id: card.id });
                     break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });

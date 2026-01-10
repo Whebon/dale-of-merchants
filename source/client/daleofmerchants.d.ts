@@ -540,6 +540,7 @@ declare global {
 		'client_stove': {} //choice sent as build args
 		'client_dramaticRomantic': { forward: boolean }
 		'client_bonsai': { card_ids: number[] }
+		'client_royalPrivilege': { card_id: number }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
