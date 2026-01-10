@@ -3632,25 +3632,13 @@ class DaleOfMerchants extends DaleTableBasic
         //Apply CT_EMPTYCHEST and <walrus>
         $ignore_animalfolk_rule = $this->containsTypeId($cards_all, CT_EMPTYCHEST);
         
-        
+        $nbr_nostalgic_items = 0;
         if ($from == null && $this->effects->countGlobalEffects(CT_CULTURALPRESERVATION) > 0) { // We check from == null to ignore CT_CULTURALPRESERVATION when building with CT_CHARM
             //Apply CT_CULTURALPRESERVATION
             if (count($cards_from_hand) != 0) {
                 throw new BgaUserException($this->_("Cultural Preservation: you may only build using cards from discard"));
             }
-            //Apply CT_CULTURALPRESERVATION + CT_NOSTALGICITEM interaction.
             $nbr_nostalgic_items = $this->countTypeId($cards_from_discard, CT_NOSTALGICITEM);
-            if ($nbr_nostalgic_items > 0) {
-                if (!$ignore_animalfolk_rule) {
-                    $ignore_animalfolk_rule = true;
-                    $nbr_different_animalfolk_cards = $this->countNonJunkNonSquirrel($cards_from_discard);
-                    if ($nbr_different_animalfolk_cards > $nbr_nostalgic_items) {
-                        throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set").$this->_(" (not enough nostalgic items)"));
-                    }
-                    $nbr_nostalgic_items -= $nbr_different_animalfolk_cards;
-                }
-                $max_nbr_junk += $nbr_nostalgic_items;
-            }
         }
         else if ($cards_from_discard) {
             //Apply CT_NOSTALGICITEM
@@ -3662,6 +3650,17 @@ class DaleOfMerchants extends DaleTableBasic
             if (count($cards_from_discard) > $nbr_nostalgic_items) {
                 throw new BgaUserException($this->_("You cannot include cards from your discard pile"));
             }
+        }
+        if ($nbr_nostalgic_items > 0) {
+            if (!$ignore_animalfolk_rule) {
+                $ignore_animalfolk_rule = true;
+                $nbr_different_animalfolk_cards = $this->countNonJunkNonSquirrel($cards_from_discard);
+                if ($nbr_different_animalfolk_cards > $nbr_nostalgic_items) {
+                    throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set").$this->_(" (not enough nostalgic items)"));
+                }
+                $nbr_nostalgic_items -= $nbr_different_animalfolk_cards;
+            }
+            $max_nbr_junk += $nbr_nostalgic_items;
         }
 
         //Apply junk rule
@@ -3801,789 +3800,6 @@ class DaleOfMerchants extends DaleTableBasic
         return "trNextPlayer";
     }
 
-
-//////////////////////////////////////////////////////////////////////////////
-//////////// Test functions
-////////////    
-
-    /*
-        In this space, I will put some testing functions
-    */
-
-    function assertFalse(mixed $message, string $testname) {
-        die("TEST FAILED '$testname': $message");
-    }
-
-    function assertEquals(mixed $expected, mixed $actual, string $testname) {
-        if ($expected != $actual) {
-            $expected_displayed = is_array($expected) ? print_r($expected, true) : $expected;
-            $actual_displayed = is_array($actual) ? print_r($actual, true) : $actual;
-            die("TEST FAILED '$testname': expected: '$expected_displayed', actual: '$actual_displayed'");
-        }
-    }
-
-    function testMonoPickCardsOfValue() {
-        $this->effects->expireAllExcept(array());
-        $tests = array(
-            array(
-                "name" => "Pay 0 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 0,
-                "expected_indices" => []
-            ),
-            array(
-                "name" => "Pay 1 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 1,
-                "expected_indices" => [0]
-            ),
-            array(
-                "name" => "Pay 2 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 2,
-                "expected_indices" => [0, 1]
-            ),
-            array(
-                "name" => "Pay 3 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 3,
-                "expected_indices" => [0, 1, 2]
-            ),
-            array(
-                "name" => "Pay 4 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 4,
-                "expected_indices" => [0, 1, 2, 3]
-            ),
-            array(
-                "name" => "Pay 5 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 5,
-                "expected_indices" => [0, 1, 2, 3, 4]
-            ),
-            array(
-                "name" => "Pay 6 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 6,
-                "expected_indices" => null
-            ),
-            array(
-                "name" => "Pay 6 using five 1s",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 6,
-                "expected_indices" => null
-            ),
-            array(
-                "name" => "Left-to-right test, easy numbers",
-                "card_values" => [1, 1, 5],
-                "value" => 6,
-                "expected_indices" => [0, 2]
-            ),
-            array(
-                "name" => "Left-to-right test, hard numbers",
-                "card_values" => [3, 2, 4, 1, 5],
-                "value" => 6,
-                "expected_indices" => [0, 2]
-            ),
-            array(
-                "name" => "Prefer 1 high valued card over 2 small valued cards, small example",
-                "card_values" => [1, 1, 3, 1, 1],
-                "value" => 2,
-                "expected_indices" => [2]
-            ),
-            array(
-                "name" => "Prefer 1 high valued card over 2 small valued cards, large example",
-                "card_values" => [1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1],
-                "value" => 2,
-                "expected_indices" => [6]
-            ),
-            array(
-                "name" => "Overpay with last two cards",
-                "card_values" => [2, 2, 2, 2, 2, 2, 4, 5],
-                "value" => 8,
-                "expected_indices" => [6, 7]
-            ),
-            array(
-                "name" => "Not enough cards, small hand",
-                "card_values" => [1, 1, 1, 1, 1],
-                "value" => 999,
-                "expected_indices" => null
-            ),
-            array(
-                "name" => "Not enough cards, large hand",
-                "card_values" => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                "value" => 999,
-                "expected_indices" => null
-            ),
-            array(
-                "name" => "Pay 10 using first and last card",
-                "card_values" => [5, 1, 2, 3, 3, 1, 2, 3, 1, 5],
-                "value" => 10,
-                "expected_indices" => [0, 9]
-            ),
-            array(
-                "name" => "Pay 10 using cards of descending values",
-                "card_values" => [5, 4, 3, 2, 1],
-                "value" => 10,
-                "expected_indices" => [0, 1, 2]
-            ),
-            array(
-                "name" => "Pay 6 using cards of descending values",
-                "card_values" => [5, 4, 3, 2, 1],
-                "value" => 6,
-                "expected_indices" => [0, 1]
-            ),
-            array(
-                "name" => "Pay 5 using cards of descending values",
-                "card_values" => [5, 4, 3, 2, 1],
-                "value" => 5,
-                "expected_indices" => [0]
-            ),
-            array(
-                "name" => "Pay 2 using cards of descending values",
-                "card_values" => [5, 4, 3, 2, 1],
-                "value" => 2,
-                "expected_indices" => [0]
-            ),
-            array(
-                "name" => "Pay 10 using cards of ascending values",
-                "card_values" => [1, 2, 3, 4, 5],
-                "value" => 10,
-                "expected_indices" => [0, 3, 4]
-            ),
-            array(
-                "name" => "Pay 6 using cards of ascending values",
-                "card_values" => [1, 2, 3, 4, 5],
-                "value" => 6,
-                "expected_indices" => [0, 4]
-            ),
-            array(
-                "name" => "Pay 5 using cards of ascending values",
-                "card_values" => [1, 2, 3, 4, 5],
-                "value" => 5,
-                "expected_indices" => [4]
-            ),
-            array(
-                "name" => "Pay 2 using cards of ascending values",
-                "card_values" => [1, 2, 3, 4, 5],
-                "value" => 2,
-                "expected_indices" => [1]
-            ),
-            array(
-                "name" => "Pay 1 using zero valued cards",
-                "card_values" => [0, 0, 0, 0, 0],
-                "value" => 1,
-                "expected_indices" => null
-            ),
-            array(
-                "name" => "Pay -1 using zero valued cards",
-                "card_values" => [0, 0, 0, 0, 0],
-                "value" => -1,
-                "expected_indices" => []
-            ),
-            array(
-                "name" => "Bug-based test where the same card was used multiple times",
-                "card_values" => [0, 4, 5],
-                "value" => 8,
-                "expected_indices" => [1, 2]
-            )
-        );
-
-        foreach ($tests as $test) {
-            //stub fake cards of the specified values (using CT_BAROMETER) with random card ids
-            $dbcards = array();
-            $card_ids = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-            shuffle($card_ids);
-            $index = 0;
-            $location_arg = count($test["card_values"]);
-            foreach($test["card_values"] as $value) {
-                $card_id = array_pop($card_ids);
-                $dbcards[$card_id] = array(
-                    "index" => $index,
-                    "id" => $card_id,
-                    "type" => CT_BAROMETER,
-                    "type_arg" => CT_BAROMETER,
-                    "location" => HAND.MONO_PLAYER_ID,
-                    "location_arg" => $location_arg
-                );
-                $this->effects->insertModification($card_id, CT_BAROMETER, $value);
-                $index += 1;
-                $location_arg -= 1;
-            }
-            //execute the test
-            $result = $this->monoPickCardsOfValue($dbcards, $test["value"]);
-            if ($test["expected_indices"] === null || $result === null) {
-                $this->assertEquals($test["expected_indices"], $result, $test["name"]." @null");
-            }
-            else {
-                $this->assertEquals(count($test["expected_indices"]), count($result), $test["name"]." @length");
-                $expected_dbcards = [];
-                for ($i=0; $i < count($result); $i++) {
-                    $index = $test["expected_indices"][$i];
-                    $expected_dbcard = null;
-                    foreach ($dbcards as $dbcard) {
-                        if ($dbcard["index"] == $index) {
-                            $expected_dbcard = $dbcard;
-                            break;
-                        }
-                    }
-                    if ($expected_dbcard === null) {
-                        $dbcards_displayed = print_r($dbcards, true);
-                        $this->assertFalse("Card with index=$index not found in $dbcards_displayed", $test["name"]." @testbug");
-                    }
-                    $expected_dbcards[] = $expected_dbcard;
-                }
-                $this->assertEquals($expected_dbcards, $result, $test["name"]." @equals");
-            }
-        }
-        die("SUCCESS ! ".count($tests)." TESTS PASSED !");
-    }
-
-    function testDeckSelection() {
-        $this->deckSelection->submitPreference(123124, array(
-            ANIMALFOLK_MACAWS,
-            ANIMALFOLK_PANDAS, #3
-            ANIMALFOLK_SQUIRRELS
-        ));
-        $this->deckSelection->submitPreference(231512, array(
-            ANIMALFOLK_CHAMELEONS, #2
-            ANIMALFOLK_OCELOTS, #5
-            ANIMALFOLK_PANDAS
-        ));
-        $this->deckSelection->submitPreference(345123, array(
-            ANIMALFOLK_MACAWS, #1
-            ANIMALFOLK_SQUIRRELS, #4
-            ANIMALFOLK_PANDAS
-        ));
-        $animalfolks = $this->deckSelection->getPreferences();
-        $this->assertEquals(ANIMALFOLK_MACAWS, current($animalfolks), "selection #1");
-        $this->assertEquals(ANIMALFOLK_CHAMELEONS, next($animalfolks), "selection #2");
-        $this->assertEquals(ANIMALFOLK_PANDAS, next($animalfolks), "selection #3");
-        $this->assertEquals(ANIMALFOLK_SQUIRRELS, next($animalfolks), "selection #4");
-        $this->assertEquals(ANIMALFOLK_OCELOTS, next($animalfolks), "selection #5");
-        die("SUCCESS ! TESTS PASSED !");
-    }
-    
-    function testRemoveCardsFromPile() {
-        //manual test was executed by
-        //1. manually setting up rows in the table
-        //2. looking at the rows in the table after executing this function
-        //$this->removeCardsFromPile(DISCARD.'test');
-        $player_id = $this->getCurrentPlayerId();
-        $this->destroyAll();
-        $spawned_cards = $this->spawnDiscard("nos", 10); //10 cards in the discard pile
-        $cards = $this->cards->getCardsFromLocation($this->toCardIds($spawned_cards), DISCARD.$player_id);
-        $card_ids = $this->toCardIds($cards);
-        $target_card_ids = array(
-            $card_ids[1],
-            $card_ids[5],
-            $card_ids[9],
-            $card_ids[0],
-            $card_ids[4],
-            $card_ids[8],
-        );
-        $this->cards->removeCardsFromPile($target_card_ids, DISCARD.$player_id); //remove 6 cards
-        $this->cards->moveCards($target_card_ids, 'destroyed');
-        $cards = $this->cards->getCardsInLocation(DISCARD.$player_id); //4 cards remain
-        $location_args = array(1, 2, 3, 4); //4 cards remain
-        if (count($cards) != count($location_args)) {
-            $c1 = count($cards);
-            $c2 = count($location_args);
-            die("TEST FAILED: count(cards) == $c1 != $c2 == count(location_args)");
-        }
-        foreach ($cards as $card) {
-            if(array_search($card["location_arg"], $location_args) === false) {
-                die("TEST FAILED: unexpected index ".$card["location_arg"]);
-            }
-        }
-        die("SUCCESS ! TESTS PASSED !");
-    }
-
-    function testEffects() {
-        foreach (array(false, true) as $reload) { //reloading yes or no should not make a difference
-            $reload_msg = $reload ? " (reload TRUE)" : " (reload FALSE)";
-            $this->effects->expireAllExcept([]);
-            $this->effects->insertModification(41, 1);
-            $this->effects->insertModification(42, 2);
-            if ($reload) $this->effects->loadFromDb();
-            $this->effects->insertModification(43, 3);
-            $this->effects->insertModification(44, 4, 10);
-            if ($reload) $this->effects->loadFromDb();
-            $this->effects->insertModification(45, 5);
-            $this->effects->insertModification(46, 6);
-            if ($reload) $this->effects->loadFromDb();
-
-            //getArg
-            $this->assertEquals($this->effects->getArg(43, 3),  null, "getArg(43)".$reload_msg);
-            $this->assertEquals($this->effects->getArg(44, 0),  10, "getArg(43)".$reload_msg);
-
-            //isPassiveUsed
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 43, "type_arg" => 3)), true, "passive(43, 3)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 43, "type_arg" => 4)), false, "passive(43, 4)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 44, "type_arg" => 3)), false, "passive(44, 3)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 44, "type_arg" => 4)), true, "passive(44, 4)".$reload_msg);
-
-            //expire
-            $this->effects->expireModificationsMultiple([41, 42, 46]);
-            $this->effects->expireModifications(44);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 41, "type_arg" => 1)), false, "expire(41)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 42, "type_arg" => 2)), false, "expire(42)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 43, "type_arg" => 3)), true, "expire(43)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 44, "type_arg" => 4)), false, "expire(44)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 45, "type_arg" => 5)), true, "expire(45)".$reload_msg);
-            $this->assertEquals($this->effects->isPassiveUsed(array("id"=> 46, "type_arg" => 6)), false, "expire(46)".$reload_msg);
-        }
-        die("SUCCESS ! TESTS PASSED !");
-    }
-
-    function testSchedule() {
-        $player_id = $this->getCurrentPlayerId();
-        $cards = $this->spawn("Swift");
-        $card = reset($cards);
-        $this->scheduleCard($player_id, $card);
-        $this->fullyResolveCard($player_id, $card);
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //////////// Debug functions
-    ////////////    
-
-        /*
-            In this space, you can put debugging tools
-        */
-
-    function actEnableDebugMode() {
-        $debugMode = $this->getGameStateValue("debugMode", 1);
-        if ($debugMode) {
-            throw new BgaUserException($this->_("Debug mode is already enabled for this game!"));
-        }
-        $player_id = $this->getCurrentPlayerId();
-        $player_ids = $this->getGameStateValuePlayerIds();
-        if (!in_array($player_id, $player_ids)) {
-            $player_ids[] = $player_id;
-            $this->setGameStateValuePlayerIds($player_ids);
-            $this->notifyAllPlayers('message', clienttranslate('DEBUG_MODE: ${player_name} wants to enable debug mode. To enable debug mode, all players need to press \'Enable Debug Mode\'. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
-                "player_name" => $this->getPlayerNameByIdInclMono($player_id)
-            ));
-        }
-        else {
-            throw new BgaUserException($this->_("Waiting for other players to enable debug mode..."));
-        }
-        if (count($player_ids) == $this->getPlayersNumber()) {
-            $this->setGameStateValue("debugMode", 1);
-            $this->notifyAllPlayers('debugClient', clienttranslate('DEBUG_MODE: debug mode is enabled for this game. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
-                "arg" => "enableDebugMode"
-            ));
-        }
-        $this->gamestate->setPlayersMultiactive($this->gamestate->getActivePlayerList(), "");
-    }
-
-    function actSpawn($card_name) {
-        if (!$this->getGameStateValue("debugMode")) {
-            throw new BgaUserException($this->_("Debug mode is disabled"));
-        }
-        $this->spawn($card_name);
-    }
-
-    function spawnStall(int $pos, string $name = "emptychest") {
-        //spawn a card in a stall position
-        $player_id = $this->getCurrentPlayerId();
-        $index = $pos % MAX_STACK_SIZE;
-        $stack_index = ($pos - $index) / MAX_STACK_SIZE;
-        $spawned_cards = $this->spawn($name);
-        foreach ($spawned_cards as $index => $card) {
-            $this->cards->moveCard($card["id"], STALL.$player_id, $pos);
-        }
-        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-            "stack_index_plus_1" => $stack_index + 1,
-            "stack_index" => $stack_index,
-            "cards" => $spawned_cards,
-            "from" => HAND
-        ));
-    }
-
-    function destroySchedule() {
-        //requires refresh
-        $players = $this->loadPlayersBasicInfosInclMono();
-        foreach ( $players as $player_id => $player ) {
-            $this->cards->moveAllCardsInLocation(SCHEDULE.$player_id, 'destroyed');
-        }   
-    }
-
-    function destroyHand() {
-        //requires refresh
-        $player_id = $this->getCurrentPlayerId();
-        $this->cards->moveAllCardsInLocation(HAND.$player_id, 'destroyed');
-    }
-
-    function destroyDeck() {
-        //requires refresh
-        $player_id = $this->getCurrentPlayerId();
-        $this->cards->moveAllCardsInLocation(DECK.$player_id, 'destroyed');
-    }
-
-    function destroyAll() {
-        //requires refresh
-        $location_dict = $this->cards->countCardsInLocations();
-        foreach($location_dict as $location => $count ) {
-            $this->cards->moveAllCardsInLocation($location, 'destroyed');
-        }
-    }
-
-    /**
-     * Discard the current player's hand
-     * @param $player_id (optional) discard this player's hand instead
-     */
-    function debugDiscard(mixed $player_id) {
-        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
-        $cards = $this->cards->getCardsInLocation(HAND.$player_id);
-        $this->discardMultiple('', $player_id, array(), array(), $cards);
-    }
-
-    /**
-     * Discard Mono's hand
-     */
-    function debugDiscardMono() {
-        $this->debugDiscard(MONO_PLAYER_ID);
-    }
-
-    /**
-     * Spawn a card in Mono's hand
-     * @param string $name prefix of the card name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @return array spawned cards
-     */
-    function spawnMono(string $name, int $nbr = 1) {
-        try {
-            //When using a prefix, prioritize Mono cards
-            $type_id = $this->nameToTypeId($name, true);
-            $name = $this->card_types[$type_id]['name'];
-        }
-        finally {
-            $cards = $this->spawn($name, $nbr, MONO_PLAYER_ID);
-            $this->cards->moveCards($this->toCardIds($cards), HAND.MONO_PLAYER_ID); //spawn on the left
-            return $cards;
-        }
-    }
-
-     /**
-     * Spawn cards on top of the supply
-     * @param string $name prefix of the card name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @return array spawned cards
-     */
-    function spawnSupply(string $name, int $nbr = 1) {
-        $player_id = $this->getCurrentPlayerId();
-        $cards = $this->spawn($name, $nbr);
-        $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.MARKET);
-        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on supply'), array_merge( array (
-            'player_id' => $this->getCurrentPlayerId(),
-            'player_name' => $this->getActivePlayerName(),
-            "_private" => array(
-                'card_ids' => $this->toCardIds($cards),
-                'cards' => $cards,
-            ),
-            'deck_player_id' => MARKET,
-            'nbr' => $nbr,
-            'from_limbo' => false
-        )));
-        return $cards;
-    }
-
-    /**
-     * Spawn cards on top of the current player's deck
-     * @param string $name prefix of the card name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @return array spawned cards
-     */
-    function spawnDeck(string $name, int $nbr = 1) {
-        $player_id = $this->getCurrentPlayerId();
-        $cards = $this->spawn($name, $nbr);
-        $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on deck'), array_merge( array (
-            'player_id' => $this->getCurrentPlayerId(),
-            'player_name' => $this->getActivePlayerName(),
-            "_private" => array(
-                'card_ids' => $this->toCardIds($cards),
-                'cards' => $cards,
-            ),
-            'deck_player_id' => $player_id,
-            'nbr' => $nbr,
-            'from_limbo' => false
-        )));
-        return $cards;
-    }
-
-    /**
-     * Spawn and immediately discard the spawned cards
-     * @param string $name prefix of the card name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @return array spawned cards
-     */
-    function spawnDiscard(string $name, int $nbr = 1) {
-        $player_id = $this->getCurrentPlayerId();
-        $cards = $this->spawn($name, $nbr);
-        $this->discardMultiple(
-            clienttranslate('SPAWN: move cards on discard'),
-            $player_id, 
-            $this->toCardIds($cards),
-            $cards
-        );
-        return $cards;
-    }
-
-    /**
-     * Spawn a number of new cards out of thin air and place it in the current player's hand
-     * @param string $name prefix of the card name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn(string $name, int $nbr = 1, mixed $player_id = null) {
-        //spawn a card in hand (warning: breaks deck size counter)
-        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
-        $type_id = $this->nameToTypeId($name);
-        $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $nbr));
-        $this->cards->createCards($cards, 'spawned');
-        $cards = $this->cards->getCardsInLocation('spawned');
-        $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
-        $this->notifyAllPlayers('debugClient', 'SPAWN: increase deck size', array(
-            'arg' => 'increaseDeckSize', 
-            'player_id' => $player_id,
-            'nbr' => count($cards)
-        ));
-        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('SPAWN: spawn cards in hand'), array(
-            "player_id" => $player_id,
-            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-            "nbr" => count($cards),
-            "_private" => array(
-                "cards" => $cards
-            )
-        ));
-        return $cards;
-    }
-
-    /**
-     * Return the first type id of a card type with the given prefix
-     * @param string $prefix prefix of the english card name
-     * @param bool $mono_only (optional) - default false. If true, only search for mono cards
-     * @example example
-     * nameToTypeId("coo") = CT_COOKIES
-     */
-    function nameToTypeId(string $prefix, bool $mono_only = false): int {
-        $len = strlen($prefix);
-        $f = function($name) use ($len) {
-            $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
-            return substr($uppercase, 0, $len);
-        };
-        foreach ($this->card_types as $type_id => $card) {
-            //spawn filter
-            if ($type_id <= 4) {
-                continue;
-            }
-            if ($mono_only && !$card['is_mono']) {
-                continue;
-            }
-            if ($f($card['name']) == $f($prefix)) {
-                return $type_id;
-            }
-        }
-        throw new BgaUserException("No card name matches prefix '$prefix'");
-        return -1;
-    }
-
-    /**
-     * Spawn all cards from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawnAll(string $animalfolk_prefix) {
-        $this->spawn1($animalfolk_prefix);
-        $this->spawn2($animalfolk_prefix);
-        $this->spawn3($animalfolk_prefix);
-        $this->spawn4($animalfolk_prefix);
-        $this->spawn5a($animalfolk_prefix);
-        $this->spawn5b($animalfolk_prefix);
-    }
-
-     /**
-     * Spawn the 1-valued card from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn1(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
-        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 1);
-        $this->spawn($name, $nbr, $player_id);
-    }
-    
-    /**
-     * Spawn the 2-valued card from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn2(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
-        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 2);
-        $this->spawn($name, $nbr, $player_id);
-    }
-
-    /**
-     * Spawn the 3-valued card from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn3(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
-        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 3);
-        $this->spawn($name, $nbr, $player_id);
-    }
-
-    /**
-     * Spawn the 4-valued card from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn4(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
-        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 4);
-        $this->spawn($name, $nbr, $player_id);
-    }
-
-    /**
-     * Spawn the 5a-valued card from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn5a(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
-        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, "5A");
-        $this->spawn($name, $nbr, $player_id);
-    }
-
-    /**
-     * Spawn the 5b-valued card from the given animalfolk
-     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
-     * @param int $nbr (optional) amount of cards to spawn
-     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
-     * @return array spawned cards
-     */
-    function spawn5b(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
-        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, "5B");
-        $this->spawn($name, $nbr, $player_id);
-    }
-
-    /**
-     * Return the first animalfolk id of a card type with the given prefix
-     * @param string $prefix prefix of the card's english animalfolk name
-     * @param int $value value of the animal
-     * @example example
-     * nameToTypeId("coo") = CT_COOKIES
-     */
-    function animalfolkNamePlusValueToCardName(string $prefix, int|string $value): string {
-        if ($value == "5A") {
-            $value = 5;
-        }
-        else if ($value == "5B") {
-            $value = 6;
-        }
-        else if (!is_numeric($value)) {
-            throw new BgaUserException("animalfolkNamePlusValueToCardName failed: invalid value: '$value'");
-        }
-        else if ($value < 0 or $value > 6) {
-            throw new BgaUserException("animalfolkNamePlusValueToCardName failed: value out of range [0, 6]: '$value'");
-        }
-
-        $len = strlen($prefix);
-        $f = function($name) use ($len) {
-            $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
-            return substr($uppercase, 0, $len);
-        };
-        foreach ($this->card_types as $type_id => $card) {
-            if ($f($card['animalfolk_displayed']) == $f($prefix)) {
-                $offset = $value - 1; // This assumes [1, 2, 3, 4, 5a, 5b] of the same animalfolk are adjacently defined in $this->card_types
-                return $this->card_types[$type_id + $offset]["name"];
-            }
-        }
-        throw new BgaUserException("No animalfolk name matches prefix '$prefix'");
-        return "";
-    }
-
-    /**
-     * Information about the card that is currently being resolving
-     */
-    function getResolvingCard(){
-        $resolvingCard = $this->getGameStateValue("resolvingCard");
-        return $this->cards->getCard($resolvingCard);
-    }
-
-    /**
-     * Display a message in the BGA client log
-     */
-    function showDebugMessage($msg) {
-        //$this->notifyAllPlayers('message', 'DEBUG_MESSAGE: '.$msg, array());
-    }
-
-    /**
-     * Print a message in the client's console
-     */
-    function clientConsoleLog($msg) {
-        $this->notifyAllPlayers('debugClient', 'clientConsoleLog', array('arg' => 'clientConsoleLog', 'msg' => $msg));
-    }
-
-    /**
-     * Get information about a daleofmerchants card from the client's perspective
-     */
-    function debugDaleOfMerchantsCard($card_id) {
-        $this->notifyAllPlayers('debugClient', 'debugDaleOfMerchantsCard', array('arg' => 'debugDaleOfMerchantsCard', 'card_id' => $card_id));
-    }
-
-    function d($arg) {
-        //debugClient
-        $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
-    }
-
-    function debugPlayers() {
-        die(print_r($this->loadPlayersBasicInfosInclMono()));
-    }
-
-    function debugActivePlayer() {
-        $player_id = $this->getActivePlayerId();
-        die("player_name = ".$this->getPlayerNameByIdInclMono($player_id));
-    }
-
-    function debugNotificationOrder() {
-        $player_id = $this->getActivePlayerId();
-        $this->notifyAllPlayers('message', clienttranslate('1: all'), array());
-        $this->notifyPlayer($player_id, 'message', clienttranslate('2: player'), array());
-        $this->notifyAllPlayers('message', clienttranslate('3: all'), array());
-        $this->notifyPlayer($player_id, 'message', clienttranslate('4: player'), array());
-    }
-
-    function debugUpdatingGameSituation() {
-        $player_id = $this->getActivePlayerId();
-        $this->notifyAllPlayers('delay', '1: public', array());
-        $this->notifyAllPlayers('delay', '2: public', array());
-        $this->notifyAllPlayers('delay', '3: public', array());
-        $this->notifyPlayer($player_id, 'delay', '4: private', array());
-        $this->notifyAllPlayers('delay', '5: public', array());
-        $this->notifyAllPlayers('delay', '6: public', array());
-        $this->notifyAllPlayers('delay', '7: public', array());
-        $this->notifyPlayer($player_id, 'delay', '8: private', array()); //after this notification, "Updating game situation..." disappears
-        $this->notifyAllPlayers('delay', '9: public', array());
-        $this->notifyAllPlayers('delay', '10: public', array());
-        $this->notifyAllPlayers('delay', '11: public', array());
-        //$this->notifyPlayer($player_id, 'message', '12: private', array()); //placing another private notification here extends "Updating game situation..." 
-    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -10512,5 +9728,998 @@ class DaleOfMerchants extends DaleTableBasic
 //
 
 
-    }    
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Debug functions
+    ////////////    
+
+        /*
+            In this space, you can put debugging tools
+        */
+
+    function actEnableDebugMode() {
+        $debugMode = $this->getGameStateValue("debugMode", 1);
+        if ($debugMode) {
+            throw new BgaUserException($this->_("Debug mode is already enabled for this game!"));
+        }
+        $player_id = $this->getCurrentPlayerId();
+        $player_ids = $this->getGameStateValuePlayerIds();
+        if (!in_array($player_id, $player_ids)) {
+            $player_ids[] = $player_id;
+            $this->setGameStateValuePlayerIds($player_ids);
+            $this->notifyAllPlayers('message', clienttranslate('DEBUG_MODE: ${player_name} wants to enable debug mode. To enable debug mode, all players need to press \'Enable Debug Mode\'. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id)
+            ));
+        }
+        else {
+            throw new BgaUserException($this->_("Waiting for other players to enable debug mode..."));
+        }
+        if (count($player_ids) == $this->getPlayersNumber()) {
+            $this->setGameStateValue("debugMode", 1);
+            $this->notifyAllPlayers('debugClient', clienttranslate('DEBUG_MODE: debug mode is enabled for this game. <strong>Warning:</strong> players can abuse debug mode to cheat'), array(
+                "arg" => "enableDebugMode"
+            ));
+        }
+        $this->gamestate->setPlayersMultiactive($this->gamestate->getActivePlayerList(), "");
+    }
+
+    function actSpawn($card_name) {
+        if (!$this->getGameStateValue("debugMode")) {
+            throw new BgaUserException($this->_("Debug mode is disabled"));
+        }
+        $this->spawn($card_name);
+    }
+
+    function spawnStall(int $pos, string $name = "emptychest") {
+        //spawn a card in a stall position
+        $player_id = $this->getCurrentPlayerId();
+        $index = $pos % MAX_STACK_SIZE;
+        $stack_index = ($pos - $index) / MAX_STACK_SIZE;
+        $spawned_cards = $this->spawn($name);
+        foreach ($spawned_cards as $index => $card) {
+            $this->cards->moveCard($card["id"], STALL.$player_id, $pos);
+        }
+        $this->notifyAllPlayers('buildStack', clienttranslate('${player_name} builds stack ${stack_index_plus_1}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "stack_index_plus_1" => $stack_index + 1,
+            "stack_index" => $stack_index,
+            "cards" => $spawned_cards,
+            "from" => HAND
+        ));
+    }
+
+    function destroySchedule() {
+        //requires refresh
+        $players = $this->loadPlayersBasicInfosInclMono();
+        foreach ( $players as $player_id => $player ) {
+            $this->cards->moveAllCardsInLocation(SCHEDULE.$player_id, 'destroyed');
+        }   
+    }
+
+    function destroyHand() {
+        //requires refresh
+        $player_id = $this->getCurrentPlayerId();
+        $this->cards->moveAllCardsInLocation(HAND.$player_id, 'destroyed');
+    }
+
+    function destroyDeck() {
+        //requires refresh
+        $player_id = $this->getCurrentPlayerId();
+        $this->cards->moveAllCardsInLocation(DECK.$player_id, 'destroyed');
+    }
+
+    function destroyAll() {
+        //requires refresh
+        $location_dict = $this->cards->countCardsInLocations();
+        foreach($location_dict as $location => $count ) {
+            $this->cards->moveAllCardsInLocation($location, 'destroyed');
+        }
+    }
+
+    /**
+     * Discard the current player's hand
+     * @param $player_id (optional) discard this player's hand instead
+     */
+    function debugDiscard(mixed $player_id) {
+        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
+        $cards = $this->cards->getCardsInLocation(HAND.$player_id);
+        $this->discardMultiple('', $player_id, array(), array(), $cards);
+    }
+
+    /**
+     * Discard Mono's hand
+     */
+    function debugDiscardMono() {
+        $this->debugDiscard(MONO_PLAYER_ID);
+    }
+
+    /**
+     * Spawn a card in Mono's hand
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnMono(string $name, int $nbr = 1) {
+        try {
+            //When using a prefix, prioritize Mono cards
+            $type_id = $this->nameToTypeId($name, true);
+            $name = $this->card_types[$type_id]['name'];
+        }
+        finally {
+            $cards = $this->spawn($name, $nbr, MONO_PLAYER_ID);
+            $this->cards->moveCards($this->toCardIds($cards), HAND.MONO_PLAYER_ID); //spawn on the left
+            return $cards;
+        }
+    }
+
+     /**
+     * Spawn cards on top of the supply
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnSupply(string $name, int $nbr = 1) {
+        $player_id = $this->getCurrentPlayerId();
+        $cards = $this->spawn($name, $nbr);
+        $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.MARKET);
+        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on supply'), array_merge( array (
+            'player_id' => $this->getCurrentPlayerId(),
+            'player_name' => $this->getActivePlayerName(),
+            "_private" => array(
+                'card_ids' => $this->toCardIds($cards),
+                'cards' => $cards,
+            ),
+            'deck_player_id' => MARKET,
+            'nbr' => $nbr,
+            'from_limbo' => false
+        )));
+        return $cards;
+    }
+
+    /**
+     * Spawn cards on top of the current player's deck
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnDeck(string $name, int $nbr = 1) {
+        $player_id = $this->getCurrentPlayerId();
+        $cards = $this->spawn($name, $nbr);
+        $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on deck'), array_merge( array (
+            'player_id' => $this->getCurrentPlayerId(),
+            'player_name' => $this->getActivePlayerName(),
+            "_private" => array(
+                'card_ids' => $this->toCardIds($cards),
+                'cards' => $cards,
+            ),
+            'deck_player_id' => $player_id,
+            'nbr' => $nbr,
+            'from_limbo' => false
+        )));
+        return $cards;
+    }
+
+    /**
+     * Spawn and immediately discard the spawned cards
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnDiscard(string $name, int $nbr = 1) {
+        $player_id = $this->getCurrentPlayerId();
+        $cards = $this->spawn($name, $nbr);
+        $this->discardMultiple(
+            clienttranslate('SPAWN: move cards on discard'),
+            $player_id, 
+            $this->toCardIds($cards),
+            $cards
+        );
+        return $cards;
+    }
+
+    /**
+     * Spawn a number of new cards out of thin air and place it in the current player's hand
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn(string $name, int $nbr = 1, mixed $player_id = null) {
+        //spawn a card in hand (warning: breaks deck size counter)
+        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
+        $type_id = $this->nameToTypeId($name);
+        $cards = array(array('type' => 'null', 'type_arg' => $type_id, 'nbr' => $nbr));
+        $this->cards->createCards($cards, 'spawned');
+        $cards = $this->cards->getCardsInLocation('spawned');
+        $this->cards->moveAllCardsInLocation('spawned', HAND.$player_id);
+        $this->notifyAllPlayers('debugClient', 'SPAWN: increase deck size', array(
+            'arg' => 'increaseDeckSize', 
+            'player_id' => $player_id,
+            'nbr' => count($cards)
+        ));
+        $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('SPAWN: spawn cards in hand'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "nbr" => count($cards),
+            "_private" => array(
+                "cards" => $cards
+            )
+        ));
+        return $cards;
+    }
+
+    /**
+     * Return the first type id of a card type with the given prefix
+     * @param string $prefix prefix of the english card name
+     * @param bool $mono_only (optional) - default false. If true, only search for mono cards
+     * @example example
+     * nameToTypeId("coo") = CT_COOKIES
+     */
+    function nameToTypeId(string $prefix, bool $mono_only = false): int {
+        $len = strlen($prefix);
+        $f = function($name) use ($len) {
+            $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
+            return substr($uppercase, 0, $len);
+        };
+        foreach ($this->card_types as $type_id => $card) {
+            //spawn filter
+            if ($type_id <= 4) {
+                continue;
+            }
+            if ($mono_only && !$card['is_mono']) {
+                continue;
+            }
+            if ($f($card['name']) == $f($prefix)) {
+                return $type_id;
+            }
+        }
+        throw new BgaUserException("No card name matches prefix '$prefix'");
+        return -1;
+    }
+
+    /**
+     * Spawn all cards from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawnAll(string $animalfolk_prefix) {
+        $this->spawn1($animalfolk_prefix);
+        $this->spawn2($animalfolk_prefix);
+        $this->spawn3($animalfolk_prefix);
+        $this->spawn4($animalfolk_prefix);
+        $this->spawn5a($animalfolk_prefix);
+        $this->spawn5b($animalfolk_prefix);
+    }
+
+     /**
+     * Spawn the 1-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn1(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 1);
+        $this->spawn($name, $nbr, $player_id);
+    }
+    
+    /**
+     * Spawn the 2-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn2(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 2);
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 3-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn3(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 3);
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 4-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn4(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, 4);
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 5a-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn5a(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, "5A");
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Spawn the 5b-valued card from the given animalfolk
+     * @param string $animalfolk_prefix prefix of the card's english animalfolk name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards in that player's hand (instead of the current player).
+     * @return array spawned cards
+     */
+    function spawn5b(string $animalfolk_prefix, int $nbr = 1, mixed $player_id = null) {
+        $name = $this->animalfolkNamePlusValueToCardName($animalfolk_prefix, "5B");
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    /**
+     * Return the first animalfolk id of a card type with the given prefix
+     * @param string $prefix prefix of the card's english animalfolk name
+     * @param int $value value of the animal
+     * @example example
+     * nameToTypeId("coo") = CT_COOKIES
+     */
+    function animalfolkNamePlusValueToCardName(string $prefix, int|string $value): string {
+        if ($value == "5A") {
+            $value = 5;
+        }
+        else if ($value == "5B") {
+            $value = 6;
+        }
+        else if (!is_numeric($value)) {
+            throw new BgaUserException("animalfolkNamePlusValueToCardName failed: invalid value: '$value'");
+        }
+        else if ($value < 0 or $value > 6) {
+            throw new BgaUserException("animalfolkNamePlusValueToCardName failed: value out of range [0, 6]: '$value'");
+        }
+
+        $len = strlen($prefix);
+        $f = function($name) use ($len) {
+            $uppercase = strtoupper(preg_replace('/\s+/', '', $name));
+            return substr($uppercase, 0, $len);
+        };
+        foreach ($this->card_types as $type_id => $card) {
+            if ($f($card['animalfolk_displayed']) == $f($prefix)) {
+                $offset = $value - 1; // This assumes [1, 2, 3, 4, 5a, 5b] of the same animalfolk are adjacently defined in $this->card_types
+                return $this->card_types[$type_id + $offset]["name"];
+            }
+        }
+        throw new BgaUserException("No animalfolk name matches prefix '$prefix'");
+        return "";
+    }
+
+    /**
+     * Information about the card that is currently being resolving
+     */
+    function getResolvingCard(){
+        $resolvingCard = $this->getGameStateValue("resolvingCard");
+        return $this->cards->getCard($resolvingCard);
+    }
+
+    /**
+     * Display a message in the BGA client log
+     */
+    function showDebugMessage($msg) {
+        //$this->notifyAllPlayers('message', 'DEBUG_MESSAGE: '.$msg, array());
+    }
+
+    /**
+     * Print a message in the client's console
+     */
+    function clientConsoleLog($msg) {
+        $this->notifyAllPlayers('debugClient', 'clientConsoleLog', array('arg' => 'clientConsoleLog', 'msg' => $msg));
+    }
+
+    /**
+     * Get information about a daleofmerchants card from the client's perspective
+     */
+    function debugDaleOfMerchantsCard($card_id) {
+        $this->notifyAllPlayers('debugClient', 'debugDaleOfMerchantsCard', array('arg' => 'debugDaleOfMerchantsCard', 'card_id' => $card_id));
+    }
+
+    function d($arg) {
+        //debugClient
+        $this->notifyAllPlayers('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
+    }
+
+    function debugNotificationOrder() {
+        $player_id = $this->getActivePlayerId();
+        $this->notifyAllPlayers('message', clienttranslate('1: all'), array());
+        $this->notifyPlayer($player_id, 'message', clienttranslate('2: player'), array());
+        $this->notifyAllPlayers('message', clienttranslate('3: all'), array());
+        $this->notifyPlayer($player_id, 'message', clienttranslate('4: player'), array());
+    }
+
+    function debugUpdatingGameSituation() {
+        $player_id = $this->getActivePlayerId();
+        $this->notifyAllPlayers('delay', '1: public', array());
+        $this->notifyAllPlayers('delay', '2: public', array());
+        $this->notifyAllPlayers('delay', '3: public', array());
+        $this->notifyPlayer($player_id, 'delay', '4: private', array());
+        $this->notifyAllPlayers('delay', '5: public', array());
+        $this->notifyAllPlayers('delay', '6: public', array());
+        $this->notifyAllPlayers('delay', '7: public', array());
+        $this->notifyPlayer($player_id, 'delay', '8: private', array()); //after this notification, "Updating game situation..." disappears
+        $this->notifyAllPlayers('delay', '9: public', array());
+        $this->notifyAllPlayers('delay', '10: public', array());
+        $this->notifyAllPlayers('delay', '11: public', array());
+        //$this->notifyPlayer($player_id, 'message', '12: private', array()); //placing another private notification here extends "Updating game situation..." 
+    }
+
+
+//////////////////////////////////////////////////////////////////////////////
+//////////// Test functions
+////////////    
+
+    /*
+        In this space, I will put some testing functions
+    */
+
+    function assertFalse(mixed $message, string $testname) {
+        die("TEST FAILED '$testname': $message");
+    }
+
+    function assertEquals(mixed $expected, mixed $actual, string $testname) {
+        if ($expected != $actual) {
+            $expected_displayed = is_array($expected) ? print_r($expected, true) : $expected;
+            $actual_displayed = is_array($actual) ? print_r($actual, true) : $actual;
+            die("TEST FAILED '$testname': expected: '$expected_displayed', actual: '$actual_displayed'");
+        }
+    }
+
+    function testEnforceValidStack() {
+        # Test keys:
+        #   * name
+        #   * stack
+        #   * (optional) type_ids_from_hand
+        #   * (optional) type_ids_from_discard
+        #   * (optional) global_effects
+        #   * (optional) is_valid
+        $tests = array(
+            array(
+                "name" => "Incorrect stack size",
+                "is_valid" => false,
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Build with 1 cards",
+                "stack" => 1,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Build with 2 cards",
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_SWIFTBROKER, CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Build with multiple animalfolk types",
+                "is_valid" => false,
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_STASHINGVENDOR, CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Build with junk",
+                "is_valid" => false,
+                "stack" => 1,
+                "type_ids_from_hand" => [CT_JUNK],
+            ),
+            array(
+                "name" => "Build with multiple junk",
+                "is_valid" => false,
+                "stack" => 3,
+                "type_ids_from_hand" => [CT_JUNK, CT_JUNK, CT_JUNK],
+            ),
+            array(
+                "name" => "Stashing Vendor",
+                "stack" => 3,
+                "type_ids_from_hand" => [CT_STASHINGVENDOR, CT_JUNK, CT_JUNK],
+            ),
+            array(
+                "name" => "Empty Chest + Swift Broker",
+                "stack" => 3,
+                "type_ids_from_hand" => [CT_EMPTYCHEST, CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Empty Chest + Swift Broker (x2)",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_EMPTYCHEST, CT_SWIFTBROKER, CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Empty Chest + Swift Broker + Loyal Partner",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_EMPTYCHEST, CT_SWIFTBROKER, CT_LOYALPARTNER],
+            ),
+            array(
+                "name" => "Building from discard",
+                "is_valid" => false,
+                "stack" => 1,
+                "type_ids_from_discard" => [CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Nostalgic Item + Junk",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_NOSTALGICITEM],
+                "type_ids_from_discard" => [CT_JUNK],
+            ),
+            array(
+                "name" => "Nostalgic Item + Junk (x2)",
+                "is_valid" => false,
+                "stack" => 5,
+                "type_ids_from_hand" => [CT_NOSTALGICITEM],
+                "type_ids_from_discard" => [CT_JUNK, CT_JUNK],
+            ),
+            array(
+                "name" => "Nostalgic Item + Swift Broker",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_NOSTALGICITEM],
+                "type_ids_from_discard" => [CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Nostalgic Item + Swift Broker (x2)",
+                "is_valid" => false,
+                "stack" => 5,
+                "type_ids_from_hand" => [CT_NOSTALGICITEM],
+                "type_ids_from_discard" => [CT_SWIFTBROKER, CT_SWIFTBROKER],
+            ),
+            array(
+                "name" => "Building from hand with an active Cultural Preservation effect",
+                "is_valid" => false,
+                "stack" => 1,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Building from discard with an active Cultural Preservation effect",
+                "stack" => 1,
+                "type_ids_from_discard" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Cultural Preservation + Nostalgic item + Junk",
+                "stack" => 4,
+                "type_ids_from_discard" => [CT_NOSTALGICITEM, CT_JUNK],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Cultural Preservation + Nostalgic item + Swift Broker",
+                "stack" => 4,
+                "type_ids_from_discard" => [CT_NOSTALGICITEM, CT_SWIFTBROKER],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Cultural Preservation + Nostalgic item + Junk + Swift Broker",
+                "is_valid" => false,
+                "stack" => 5,
+                "type_ids_from_discard" => [CT_NOSTALGICITEM, CT_JUNK, CT_SWIFTBROKER],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Cultural Preservation + Nostalgic item + Swift Broker (x2)",
+                "is_valid" => false,
+                "stack" => 5,
+                "type_ids_from_discard" => [CT_NOSTALGICITEM, CT_SWIFTBROKER, CT_SWIFTBROKER],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Cultural Preservation + Nostalgic item (x2) + Junk (x2)",
+                "stack" => 8,
+                "type_ids_from_discard" => [CT_NOSTALGICITEM, CT_NOSTALGICITEM, CT_JUNK, CT_JUNK],
+                "global_effects" => [CT_CULTURALPRESERVATION]
+            ),
+            array(
+                "name" => "Flashy Show",
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_FLASHYSHOW]
+            ),
+            array(
+                "name" => "Flashy Show (x2)",
+                "stack" => 3,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_FLASHYSHOW, CT_FLASHYSHOW]
+            ),
+            array (
+                "name" => "Practical Values",
+                "stack" => 5,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_PRACTICALVALUES]
+            ),
+            array (
+                "name" => "Practical Values => Flashy Show",
+                "stack" => 6,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_PRACTICALVALUES, CT_FLASHYSHOW]
+            ),
+            array (
+                "name" => "Flashy Show => Practical Values",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_FLASHYSHOW, CT_PRACTICALVALUES]
+            )
+        );
+
+        foreach ($tests as $test) {
+            $this->effects->expireAllExcept([]);
+            if (!isset($test["type_ids_from_hand"])) {
+                $test["type_ids_from_hand"] = [];
+            }
+            if (!isset($test["type_ids_from_discard"])) {
+                $test["type_ids_from_discard"] = [];
+            }
+            if (!isset($test["global_effects"])) {
+                $test["global_effects"] = [];
+            }
+            if (!isset($test["is_valid"])) {
+                $test["is_valid"] = true;
+            }
+
+            $cards_from_hand = [];
+            foreach ($test["type_ids_from_hand"] as $type_id) {
+                $fakedbcard = array(
+                    "id" => 0,
+                    "type_arg" => $type_id
+                );
+                $cards_from_hand[] = $fakedbcard;
+            }
+            $cards_from_discard = [];
+            foreach ($test["type_ids_from_discard"] as $type_id) {
+                $fakedbcard = array(
+                    "id" => 0,
+                    "type_arg" => $type_id
+                );
+                $cards_from_discard[] = $fakedbcard;
+            }
+            
+            foreach ($test["global_effects"] as $type_id) {
+                $this->effects->insertGlobal(0, $type_id);
+            }
+
+            try {
+                $stack_index = $test["stack"] - 1;
+                $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
+                if (!$test["is_valid"]) {
+                    $this->assertFalse("Building an invalid stack was allowed", $test["name"]);
+                }
+            }
+            catch (feException $e) {
+                if ($test["is_valid"]) {
+                    $this->assertFalse($e->getMessage(), $test["name"]);
+                }
+            }
+        }
+        die("SUCCESS ! ".count($tests)." TESTS PASSED !");
+    }
+
+    function testMonoPickCardsOfValue() {
+        $this->effects->expireAllExcept(array());
+        $tests = array(
+            array(
+                "name" => "Pay 0 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 0,
+                "expected_indices" => []
+            ),
+            array(
+                "name" => "Pay 1 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 1,
+                "expected_indices" => [0]
+            ),
+            array(
+                "name" => "Pay 2 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 2,
+                "expected_indices" => [0, 1]
+            ),
+            array(
+                "name" => "Pay 3 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 3,
+                "expected_indices" => [0, 1, 2]
+            ),
+            array(
+                "name" => "Pay 4 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 4,
+                "expected_indices" => [0, 1, 2, 3]
+            ),
+            array(
+                "name" => "Pay 5 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 5,
+                "expected_indices" => [0, 1, 2, 3, 4]
+            ),
+            array(
+                "name" => "Pay 6 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 6,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Pay 6 using five 1s",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 6,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Left-to-right test, easy numbers",
+                "card_values" => [1, 1, 5],
+                "value" => 6,
+                "expected_indices" => [0, 2]
+            ),
+            array(
+                "name" => "Left-to-right test, hard numbers",
+                "card_values" => [3, 2, 4, 1, 5],
+                "value" => 6,
+                "expected_indices" => [0, 2]
+            ),
+            array(
+                "name" => "Prefer 1 high valued card over 2 small valued cards, small example",
+                "card_values" => [1, 1, 3, 1, 1],
+                "value" => 2,
+                "expected_indices" => [2]
+            ),
+            array(
+                "name" => "Prefer 1 high valued card over 2 small valued cards, large example",
+                "card_values" => [1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1],
+                "value" => 2,
+                "expected_indices" => [6]
+            ),
+            array(
+                "name" => "Overpay with last two cards",
+                "card_values" => [2, 2, 2, 2, 2, 2, 4, 5],
+                "value" => 8,
+                "expected_indices" => [6, 7]
+            ),
+            array(
+                "name" => "Not enough cards, small hand",
+                "card_values" => [1, 1, 1, 1, 1],
+                "value" => 999,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Not enough cards, large hand",
+                "card_values" => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                "value" => 999,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Pay 10 using first and last card",
+                "card_values" => [5, 1, 2, 3, 3, 1, 2, 3, 1, 5],
+                "value" => 10,
+                "expected_indices" => [0, 9]
+            ),
+            array(
+                "name" => "Pay 10 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 10,
+                "expected_indices" => [0, 1, 2]
+            ),
+            array(
+                "name" => "Pay 6 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 6,
+                "expected_indices" => [0, 1]
+            ),
+            array(
+                "name" => "Pay 5 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 5,
+                "expected_indices" => [0]
+            ),
+            array(
+                "name" => "Pay 2 using cards of descending values",
+                "card_values" => [5, 4, 3, 2, 1],
+                "value" => 2,
+                "expected_indices" => [0]
+            ),
+            array(
+                "name" => "Pay 10 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 10,
+                "expected_indices" => [0, 3, 4]
+            ),
+            array(
+                "name" => "Pay 6 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 6,
+                "expected_indices" => [0, 4]
+            ),
+            array(
+                "name" => "Pay 5 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 5,
+                "expected_indices" => [4]
+            ),
+            array(
+                "name" => "Pay 2 using cards of ascending values",
+                "card_values" => [1, 2, 3, 4, 5],
+                "value" => 2,
+                "expected_indices" => [1]
+            ),
+            array(
+                "name" => "Pay 1 using zero valued cards",
+                "card_values" => [0, 0, 0, 0, 0],
+                "value" => 1,
+                "expected_indices" => null
+            ),
+            array(
+                "name" => "Pay -1 using zero valued cards",
+                "card_values" => [0, 0, 0, 0, 0],
+                "value" => -1,
+                "expected_indices" => []
+            ),
+            array(
+                "name" => "Bug-based test where the same card was used multiple times",
+                "card_values" => [0, 4, 5],
+                "value" => 8,
+                "expected_indices" => [1, 2]
+            )
+        );
+
+        foreach ($tests as $test) {
+            //stub fake cards of the specified values (using CT_BAROMETER) with random card ids
+            $dbcards = array();
+            $card_ids = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+            shuffle($card_ids);
+            $index = 0;
+            $location_arg = count($test["card_values"]);
+            foreach($test["card_values"] as $value) {
+                $card_id = array_pop($card_ids);
+                $dbcards[$card_id] = array(
+                    "index" => $index,
+                    "id" => $card_id,
+                    "type" => CT_BAROMETER,
+                    "type_arg" => CT_BAROMETER,
+                    "location" => HAND.MONO_PLAYER_ID,
+                    "location_arg" => $location_arg
+                );
+                $this->effects->insertModification($card_id, CT_BAROMETER, $value);
+                $index += 1;
+                $location_arg -= 1;
+            }
+            //execute the test
+            $result = $this->monoPickCardsOfValue($dbcards, $test["value"]);
+            if ($test["expected_indices"] === null || $result === null) {
+                $this->assertEquals($test["expected_indices"], $result, $test["name"]." @null");
+            }
+            else {
+                $this->assertEquals(count($test["expected_indices"]), count($result), $test["name"]." @length");
+                $expected_dbcards = [];
+                for ($i=0; $i < count($result); $i++) {
+                    $index = $test["expected_indices"][$i];
+                    $expected_dbcard = null;
+                    foreach ($dbcards as $dbcard) {
+                        if ($dbcard["index"] == $index) {
+                            $expected_dbcard = $dbcard;
+                            break;
+                        }
+                    }
+                    if ($expected_dbcard === null) {
+                        $dbcards_displayed = print_r($dbcards, true);
+                        $this->assertFalse("Card with index=$index not found in $dbcards_displayed", $test["name"]." @testbug");
+                    }
+                    $expected_dbcards[] = $expected_dbcard;
+                }
+                $this->assertEquals($expected_dbcards, $result, $test["name"]." @equals");
+            }
+        }
+        die("SUCCESS ! ".count($tests)." TESTS PASSED !");
+    }
+
+    function testDeckSelection() {
+        $this->deckSelection->submitPreference(123124, array(
+            ANIMALFOLK_MACAWS,
+            ANIMALFOLK_PANDAS, #3
+            ANIMALFOLK_SQUIRRELS
+        ));
+        $this->deckSelection->submitPreference(231512, array(
+            ANIMALFOLK_CHAMELEONS, #2
+            ANIMALFOLK_OCELOTS, #5
+            ANIMALFOLK_PANDAS
+        ));
+        $this->deckSelection->submitPreference(345123, array(
+            ANIMALFOLK_MACAWS, #1
+            ANIMALFOLK_SQUIRRELS, #4
+            ANIMALFOLK_PANDAS
+        ));
+        $animalfolks = $this->deckSelection->getPreferences();
+        $this->assertEquals(ANIMALFOLK_MACAWS, current($animalfolks), "selection #1");
+        $this->assertEquals(ANIMALFOLK_CHAMELEONS, next($animalfolks), "selection #2");
+        $this->assertEquals(ANIMALFOLK_PANDAS, next($animalfolks), "selection #3");
+        $this->assertEquals(ANIMALFOLK_SQUIRRELS, next($animalfolks), "selection #4");
+        $this->assertEquals(ANIMALFOLK_OCELOTS, next($animalfolks), "selection #5");
+        die("SUCCESS ! TESTS PASSED !");
+    }
+    
+    function testRemoveCardsFromPile() {
+        //manual test was executed by
+        //1. manually setting up rows in the table
+        //2. looking at the rows in the table after executing this function
+        //$this->removeCardsFromPile(DISCARD.'test');
+        $player_id = $this->getCurrentPlayerId();
+        $this->destroyAll();
+        $spawned_cards = $this->spawnDiscard("nos", 10); //10 cards in the discard pile
+        $cards = $this->cards->getCardsFromLocation($this->toCardIds($spawned_cards), DISCARD.$player_id);
+        $card_ids = $this->toCardIds($cards);
+        $target_card_ids = array(
+            $card_ids[1],
+            $card_ids[5],
+            $card_ids[9],
+            $card_ids[0],
+            $card_ids[4],
+            $card_ids[8],
+        );
+        $this->cards->removeCardsFromPile($target_card_ids, DISCARD.$player_id); //remove 6 cards
+        $this->cards->moveCards($target_card_ids, 'destroyed');
+        $cards = $this->cards->getCardsInLocation(DISCARD.$player_id); //4 cards remain
+        $location_args = array(1, 2, 3, 4); //4 cards remain
+        if (count($cards) != count($location_args)) {
+            $c1 = count($cards);
+            $c2 = count($location_args);
+            die("TEST FAILED: count(cards) == $c1 != $c2 == count(location_args)");
+        }
+        foreach ($cards as $card) {
+            if(array_search($card["location_arg"], $location_args) === false) {
+                die("TEST FAILED: unexpected index ".$card["location_arg"]);
+            }
+        }
+        die("SUCCESS ! TESTS PASSED !");
+    }
+
+    function testEffects() {
+        foreach (array(false, true) as $reload) { //reloading yes or no should not make a difference
+            $reload_msg = $reload ? " (reload TRUE)" : " (reload FALSE)";
+            $this->effects->expireAllExcept([]);
+            $this->effects->insertModification(41, 1);
+            $this->effects->insertModification(42, 2);
+            if ($reload) $this->effects->loadFromDb();
+            $this->effects->insertModification(43, 3);
+            $this->effects->insertModification(44, 4, 10);
+            if ($reload) $this->effects->loadFromDb();
+            $this->effects->insertModification(45, 5);
+            $this->effects->insertModification(46, 6);
+            if ($reload) $this->effects->loadFromDb();
+
+            //getArg
+            $this->assertEquals(null, $this->effects->getArg(43, 3), "getArg(43)".$reload_msg);
+            $this->assertEquals(null, $this->effects->getArg(44, 0), "getArg(44), null".$reload_msg);
+            $this->assertEquals(10, $this->effects->getArg(44, 4), "getArg(44), 10".$reload_msg);
+
+            //isPassiveUsed
+            $this->assertEquals(true, $this->effects->isPassiveUsed(array("id"=> 43, "type_arg" => 3)), "passive(43, 3)".$reload_msg);
+            $this->assertEquals(false, $this->effects->isPassiveUsed(array("id"=> 43, "type_arg" => 4)), "passive(43, 4)".$reload_msg);
+            $this->assertEquals(false, $this->effects->isPassiveUsed(array("id"=> 44, "type_arg" => 3)), "passive(44, 3)".$reload_msg);
+            $this->assertEquals(true, $this->effects->isPassiveUsed(array("id"=> 44, "type_arg" => 4)), "passive(44, 4)".$reload_msg);
+
+            //expire
+            $this->effects->expireModificationsMultiple([41, 42, 46]);
+            $this->effects->expireModifications(44);
+            $this->assertEquals(false, $this->effects->isPassiveUsed(array("id"=> 41, "type_arg" => 1)), "expire(41)".$reload_msg);
+            $this->assertEquals(false, $this->effects->isPassiveUsed(array("id"=> 42, "type_arg" => 2)), "expire(42)".$reload_msg);
+            $this->assertEquals(true, $this->effects->isPassiveUsed(array("id"=> 43, "type_arg" => 3)), "expire(43)".$reload_msg);
+            $this->assertEquals(false, $this->effects->isPassiveUsed(array("id"=> 44, "type_arg" => 4)), "expire(44)".$reload_msg);
+            $this->assertEquals(true, $this->effects->isPassiveUsed(array("id"=> 45, "type_arg" => 5)), "expire(45)".$reload_msg);
+            $this->assertEquals(false, $this->effects->isPassiveUsed(array("id"=> 46, "type_arg" => 6)), "expire(46)".$reload_msg);
+        }
+        die("SUCCESS ! TESTS PASSED !");
+    }
 }
