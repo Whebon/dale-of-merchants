@@ -447,12 +447,6 @@
   outline: 3px solid var(--daleofmerchants-chameleon-green);
 }
 
-.daleofmerchants-overtime-selected {
-  scale: 1.1;
-  z-index: 201 !important;
-  outline: 3px solid var(--daleofmerchants-wrap-build);
-}
-
 .daleofmerchants-blinking {
   animation: blinker 1s infinite;
 }

@@ -732,6 +732,17 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actFashionHint()
+	{
+		self::setAjaxMode();
+
+		/** @var bool $is_tossing */
+		$is_tossing = self::getArg('is_tossing', AT_bool, true);
+
+		$this->game->actFashionHint( $is_tossing );
+		self::ajaxResponse();
+	}
+
 	public function actDEPRECATED_Cheer()
 	{
 		self::setAjaxMode();

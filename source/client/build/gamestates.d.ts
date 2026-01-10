@@ -212,6 +212,7 @@ interface GameStates {
 			'trSoundDetectors': 104,
 			'trBlindfold': 105,
 			'trHistoryLesson': 106,
+			'trFashionHint': 107,
 		},
 	},
 	31: {
@@ -827,8 +828,8 @@ interface GameStates {
 	},
 	79: {
 		'name': 'wheelbarrow',
-		'description': 'Wheelbarrow: ${actplayer} must choose to toss or store ${card_name}',
-		'descriptionmyturn': 'Wheelbarrow: ${you} must choose to toss or store ${card_name}',
+		'description': 'Wheelbarrow: ${actplayer} must choose to toss or store the top card of their deck',
+		'descriptionmyturn': 'Wheelbarrow: ${you} must choose to toss or store ${_private.card_name}',
 		'type': 'activeplayer',
 		'action': 'stWheelbarrow',
 		'args': 'argCardName',
@@ -1316,6 +1317,25 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	107: {
+		'name': 'fashionHint',
+		'description': 'Fashion Hint: ${actplayer} must choose to toss or keep the top card of the supply',
+		'descriptionmyturn': 'Fashion Hint: ${you} must choose to toss or keep ${_private.card_name}',
+		'type': 'activeplayer',
+		'action': 'stFashionHint',
+		'args': 'argCardName',
+		'possibleactions': {
+			'actFashionHint': [{
+				'name': 'is_tossing',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+			'trNextPlayer': 41,
 		},
 	},
 	6300: {

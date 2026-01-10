@@ -5569,6 +5569,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'wheelbarrow':
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
                     break;
+                case 'fashionHint':
+                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
+                    break;
                 case 'vigilance':
                     var vigilance_args = args.args;
                     this.myDeck.setContent(vigilance_args._private.cards.map(DaleCard_9.DaleCard.of));
@@ -6070,6 +6073,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'wheelbarrow':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'fashionHint':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'vigilance':
@@ -6828,6 +6834,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'wheelbarrow':
                     this.addActionButton("wheelbarrow-toss-button", _("Toss"), "onWheelbarrowToss");
                     this.addActionButton("wheelbarrow-store-button", _("Store"), "onWheelbarrowStore");
+                    break;
+                case 'fashionHint':
+                    this.addActionButton("fashionHint-store-button", _("Toss"), "onFashionHintToss");
+                    this.addActionButton("fashionHint-toss-button", _("Keep and end turn"), "onFashionHintKeep");
                     break;
                 case 'tacticalMeasurement':
                     this.addActionButton("confirm-button", _("Confirm"), "onTacticalMeasurement");
@@ -9914,6 +9924,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onWheelbarrowStore = function () {
             this.bgaPerformAction('actWheelbarrow', {
+                is_tossing: false
+            });
+        };
+        DaleOfMerchants.prototype.onFashionHintToss = function () {
+            this.bgaPerformAction('actFashionHint', {
+                is_tossing: true
+            });
+        };
+        DaleOfMerchants.prototype.onFashionHintKeep = function () {
+            this.bgaPerformAction('actFashionHint', {
                 is_tossing: false
             });
         };

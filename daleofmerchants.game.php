@@ -5552,7 +5552,7 @@ class DaleOfMerchants extends DaleTableBasic
                 if ($dbcard == null) {
                     throw new BgaVisibleSystemException("Wheelbarrow: the deck is empty. This card should have fizzled instead");
                 }
-                $card_id = $this->setGameStateValue("card_id", $dbcard["id"]);
+                $this->setGameStateValue("card_id", $dbcard["id"]);
                 $this->gamestate->nextState("trWheelbarrow");
                 break;
             case CT_VIGILANCE:
@@ -6779,6 +6779,20 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Bonsai: ${player_name} draws ${nbr} cards'), 3);
                 $this->effects->insertModification($passive_card_id, CT_BONSAI);
                 break;
+            case CT_FASHIONHINT:
+                //force a reshuffle, so we can already look at the top card of the deck
+                if ($this->cards->countCardsInLocation(DECK.MARKET) == 0) {
+                    $this->onLocationExhausted(DECK.MARKET);
+                }
+                //set the name of the card for the client description
+                $dbcard = $this->cards->getCardOnTop(DECK.MARKET);
+                if ($dbcard == null) {
+                    throw new BgaVisibleSystemException("Fashion Hint: the deck is empty. This card should have fizzled instead");
+                }
+                $this->setGameStateValue("card_id", $dbcard["id"]);
+                $this->effects->insertModification($passive_card_id, CT_FASHIONHINT);
+                $this->gamestate->nextState("trFashionHint"); return;
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
@@ -7822,6 +7836,34 @@ class DaleOfMerchants extends DaleTableBasic
             ), clienttranslate('Wheelbarrow: ${player_name} stores ${card_name}'));
         }
         $this->fullyResolveCard($player_id);
+    }
+
+    function actFashionHint($is_tossing) {
+        $player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("Fashion Hint expected exactly 1 card in limbo");
+        }
+        $dbcard = reset($dbcards);
+        if ($is_tossing) {
+            $this->toss(
+                clienttranslate('Fashion Hint: ${player_name} tosses ${card_name}'),
+                $dbcard,
+                true
+            );
+            $this->gamestate->nextState("trSamePlayer");
+        }
+        else {
+            $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Fashion Hint: ${player_name} keeps the drawn card and ends their turn'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "_private" => array(
+                    "card" => $dbcard
+                )
+            ));
+            $this->gamestate->nextState("trNextPlayer");
+        }
     }
 
     function actVigilance($card_id) {
@@ -8879,7 +8921,11 @@ class DaleOfMerchants extends DaleTableBasic
             $card_name = $this->getCardName($dbcard);
         }
         return array(
-            'card_name' => $card_name
+            '_private' => array( 
+                'active' => array(
+                    'card_name' => $card_name
+                )
+            ),
         );
     }
 
@@ -9491,6 +9537,10 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stWheelbarrow() {
         $this->draw('', 1, true);
+    }
+
+    function stFashionHint() {
+        $this->draw('', 1, true, MARKET);
     }
 
     function stTacticalMeasurement() {

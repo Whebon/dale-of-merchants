@@ -1052,6 +1052,9 @@ class DaleOfMerchants extends Gamegui
 			case 'wheelbarrow':
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
 				break;
+			case 'fashionHint':
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
+				break;
 			case 'vigilance':
 				const vigilance_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(vigilance_args._private.cards.map(DaleCard.of));
@@ -1559,6 +1562,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'wheelbarrow':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'fashionHint':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'vigilance':
@@ -2330,6 +2336,10 @@ class DaleOfMerchants extends Gamegui
 				// const wheelbarrow_or = document.createElement("span");
 				// wheelbarrow_or.textContent = _(" or");
 				// wheelbarrow_toss?.parentNode?.insertBefore(wheelbarrow_or, wheelbarrow_toss.nextSibling);
+				break;
+			case 'fashionHint':
+				this.addActionButton("fashionHint-store-button", _("Toss"), "onFashionHintToss");
+				this.addActionButton("fashionHint-toss-button", _("Keep and end turn"), "onFashionHintKeep");
 				break;
 			case 'tacticalMeasurement':
 				this.addActionButton("confirm-button", _("Confirm"), "onTacticalMeasurement");
@@ -6050,6 +6060,18 @@ class DaleOfMerchants extends Gamegui
 
 	onWheelbarrowStore() {
 		this.bgaPerformAction('actWheelbarrow', {
+			is_tossing: false
+		});
+	}
+
+	onFashionHintToss() {
+		this.bgaPerformAction('actFashionHint', {
+			is_tossing: true
+		});
+	}
+
+	onFashionHintKeep() {
+		this.bgaPerformAction('actFashionHint', {
 			is_tossing: false
 		});
 	}

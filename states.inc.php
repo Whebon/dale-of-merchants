@@ -57,6 +57,7 @@ if (false) {
 	$game->stSerenade();
 	$game->stSoundDetectors();
 	$game->stHistoryLesson();
+	$game->stFashionHint();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -181,6 +182,7 @@ $machinestates = array(
 			'trSoundDetectors' => 104,
 			'trBlindfold' => 105,
 			'trHistoryLesson' => 106,
+			'trFashionHint' => 107,
 		),
 	),
 	31 => array(
@@ -560,8 +562,8 @@ $machinestates = array(
 	),
 	79 => array(
 		'name' => 'wheelbarrow',
-		'description' => clienttranslate('Wheelbarrow: ${actplayer} must choose to toss or store ${card_name}'),
-		'descriptionmyturn' => clienttranslate('Wheelbarrow: ${you} must choose to toss or store ${card_name}'),
+		'description' => clienttranslate('Wheelbarrow: ${actplayer} must choose to toss or store the top card of their deck'),
+		'descriptionmyturn' => clienttranslate('Wheelbarrow: ${you} must choose to toss or store ${_private.card_name}'),
 		'type' => 'activeplayer',
 		'action' => 'stWheelbarrow',
 		'args' => 'argCardName',
@@ -850,6 +852,19 @@ $machinestates = array(
 		'possibleactions' => ['actHistoryLesson'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	107 => array(
+		'name' => 'fashionHint',
+		'description' => clienttranslate('Fashion Hint: ${actplayer} must choose to toss or keep the top card of the supply'),
+		'descriptionmyturn' => clienttranslate('Fashion Hint: ${you} must choose to toss or keep ${_private.card_name}'),
+		'type' => 'activeplayer',
+		'action' => 'stFashionHint',
+		'args' => 'argCardName',
+		'possibleactions' => ['actFashionHint'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trNextPlayer' => 41,
 		),
 	),
 	6300 => array(
