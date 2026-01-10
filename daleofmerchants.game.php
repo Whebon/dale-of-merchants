@@ -2272,6 +2272,23 @@ class DaleOfMerchants extends DaleTableBasic
         return $count;
     }
 
+    
+    /**
+     * Counts the number of cards that are neither effective junk nor effective squirrels.
+     * @param array $dbcards array of dbcards to scan
+     * @return int number of occurrences
+     */
+    function countNonJunkNonSquirrel(array $dbcards) {
+        $count = 0;
+        foreach ($dbcards as $dbcard) {
+            if (!$this->isEffectiveJunk($dbcard) && $this->getAnimalfolk($dbcard) != ANIMALFOLK_SQUIRRELS) {
+                $count += 1;
+            }
+        }
+        return $count;
+    }
+
+
     /**
      * Returns an array of unique effective animalfolks of an array of dbcards.
      * @param array $dbcards dbcard objects
@@ -3595,19 +3612,44 @@ class DaleOfMerchants extends DaleTableBasic
      * @param int $stack_index index of the stack that needs to be build (e.g. stack_index = 3 is the 4th stack)
      * @param array $cards_from_hand cards from hand that will be used to build the stack
      * @param array $cards_from_discard additional (optional) additional cards to include in the stack, but selected by CT_NOSTALGICITEM
+     * @param ?string $from (optional) - if provided, `$cards_from_hand` come from `from` instead of `HAND`
      */
-    function enforceValidStack(int $stack_index, array $cards_from_hand, array $cards_from_discard = null) {
+    function enforceValidStack(int $stack_index, array $cards_from_hand, array $cards_from_discard = null, ?string $from = null) {
         //get all the cards involved
         $player_id = $this->getActivePlayerId();
-        $cards_typing_rules = $cards_from_hand; // all cards that should obey the typing rules
-        $cards_all = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand; // all cards
-        $nbr_nostalgic_items = 0;
+        $cards_all = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
+        
+        //Apply CT_STASHINGVENDOR, CT_WARMEMBRACE and <walrus>
+        $max_nbr_junk = 0;
+        if ($this->containsTypeId($cards_all, CT_STASHINGVENDOR)) {
+            $max_nbr_junk = INF;
+        }
+        else {
+            $max_nbr_junk += $this->countTypeId($this->cards->getCardsInLocation(STALL.$player_id), CT_WARMEMBRACE);
+            $max_nbr_junk += 0; // TODO: <walrus>
+        }
 
-        //Apply CT_CULTURALPRESERVATION
-        if ($this->effects->countGlobalEffects(CT_CULTURALPRESERVATION) > 0) {
-            $cards_typing_rules = $cards_all;
+        //Apply CT_EMPTYCHEST and <walrus>
+        $ignore_animalfolk_rule = $this->containsTypeId($cards_all, CT_EMPTYCHEST);
+        
+        
+        if ($from == null && $this->effects->countGlobalEffects(CT_CULTURALPRESERVATION) > 0) { // We check from == null to ignore CT_CULTURALPRESERVATION when building with CT_CHARM
+            //Apply CT_CULTURALPRESERVATION
             if (count($cards_from_hand) != 0) {
                 throw new BgaUserException($this->_("Cultural Preservation: you may only build using cards from discard"));
+            }
+            //Apply CT_CULTURALPRESERVATION + CT_NOSTALGICITEM interaction.
+            $nbr_nostalgic_items = $this->countTypeId($cards_from_discard, CT_NOSTALGICITEM);
+            if ($nbr_nostalgic_items > 0) {
+                if (!$ignore_animalfolk_rule) {
+                    $ignore_animalfolk_rule = true;
+                    $nbr_different_animalfolk_cards = $this->countNonJunkNonSquirrel($cards_from_discard);
+                    if ($nbr_different_animalfolk_cards > $nbr_nostalgic_items) {
+                        throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set").$this->_(" (not enough nostalgic items)"));
+                    }
+                    $nbr_nostalgic_items -= $nbr_different_animalfolk_cards;
+                }
+                $max_nbr_junk += $nbr_nostalgic_items;
             }
         }
         else if ($cards_from_discard) {
@@ -3622,24 +3664,18 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
 
-        //Apply CT_STASHINGVENDOR and CT_WARMEMBRACE
-        $nbr_junk = $this->countJunk($cards_typing_rules);
-        if ($this->containsTypeId($cards_all, CT_STASHINGVENDOR)) {
-            $max_nbr_junk = INF;
-        }
-        else {
-            $max_nbr_junk = $this->countTypeId($this->cards->getCardsInLocation(STALL.$player_id), CT_WARMEMBRACE);
-        }
-
         //Apply junk rule
+        $nbr_junk = $this->countJunk($cards_all);
         if ($nbr_junk > $max_nbr_junk) {
             throw new BgaUserException($this->_("Junk cards cannot be included in a stack"));
         }
 
-        //Apply animalfolk rule (and CT_EMPTYCHEST)
-        $animalfolks = $this->getAnimalfolks($cards_typing_rules);
-        if (count($animalfolks) >= 2 && !$this->containsTypeId($cards_all, CT_EMPTYCHEST)) {
-            throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set"));
+        //Apply animalfolk rule
+        if (!$ignore_animalfolk_rule) {
+            $animalfolks = $this->getAnimalfolks($cards_all);
+            if (count($animalfolks) >= 2) {
+                throw new BgaUserException($this->_("Cards in the stack must be of the same animalfolk set"));
+            }
         }
 
         //Enforce the stack value is correct
@@ -3700,7 +3736,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
 
         //Apply the rules for a valid stack
-        $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard);
+        $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard, $from);
 
         //Check for winter is coming (before effects expire)
         $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
