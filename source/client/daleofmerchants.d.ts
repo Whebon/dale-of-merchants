@@ -498,7 +498,7 @@ declare global {
 		'client_riskyBusiness': { value: number }
 		'client_DEPRECATED_historyLesson': { card_ids: number[] }
 		'client_replacement': { card_id?: number }
-		'client_DEPRECATED_fashionHint': { toss: boolean }
+		'client_velocipede': { toss: boolean }
 		'client_pompousProfessional': { animalfolk_id: number }
 		'client_burglaryOpponentId': {},
 		'client_burglaryValue': { opponent_id: number, value: number }

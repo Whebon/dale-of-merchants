@@ -314,7 +314,6 @@ export class DaleCard {
     static readonly CT_DEPRECATED_CULTURALPRESERVATION: number = 265;
     static readonly CT_DEPRECATED_SLICEOFLIFE: number = 266;
     static readonly CT_DEPRECATED_VORACIOUSCONSUMER: number = 267;
-    static readonly CT_DEPRECATED_FASHIONHINT: number = 268;
     static readonly CT_DEPRECATED_ROYALPRIVILEGE: number = 269;
     static readonly CT_DEPRECATED_VELOCIPEDE: number = 270;
     static readonly CT_DEPRECATED_INSIGHT: number = 271;

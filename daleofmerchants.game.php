@@ -4109,7 +4109,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_RISKYBUSINESS:
                 case CT_CHARM:
-                case CT_DEPRECATED_FASHIONHINT:
+                case CT_VELOCIPEDE:
                 case CT_SPECIALOFFER:
                 case CT_INHERITANCE:
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
@@ -5231,10 +5231,10 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->gamestate->nextState("trReplacement");
                 }
                 break;
-            case CT_DEPRECATED_FASHIONHINT:
+            case CT_VELOCIPEDE:
                 $toss = $args["toss"];
                 if ($toss) {
-                    $this->tossFromMarketDeck(clienttranslate('Fashion Hint: ${player_name} tosses ${card_name} from the supply'));
+                    $this->tossFromMarketDeck(clienttranslate('Velocipede: ${player_name} tosses ${card_name} from the supply'));
                 }
                 else {
                     $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
@@ -5258,7 +5258,7 @@ class DaleOfMerchants extends DaleTableBasic
                     return;
                 }
                 $this->beginResolvingCard($technique_card_id);
-                $this->gamestate->nextState("trDEPRECATED_FashionHint");
+                $this->gamestate->nextState("trVelocipede");
                 break;
             case CT_POMPOUSPROFESSIONAL:
                 $animalfolk_id = $args["animalfolk_id"];
@@ -7570,19 +7570,19 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
     }
 
-    function actDEPRECATED_FashionHint($card_id) {
-        $this->checkAction("actDEPRECATED_FashionHint");
+    function actVelocipede($card_id) {
+        $this->checkAction("actVelocipede");
         $player_id = $this->getActivePlayerId();
         if ($card_id != -1) {
             //server-side swap
             $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
             if (!$this->isAnimalfolk($card)) {
                 $card_name = $this->getCardName($card);
-                throw new BgaUserException("actDEPRECATED_FashionHint expected an animalfolk card from hand, but got ".$card_name);
+                throw new BgaUserException("actVelocipede expected an animalfolk card from hand, but got ".$card_name);
             }
             $topCard = $this->cards->getCardOnTop(DISCARD.MARKET);
             if (!$topCard) {
-                throw new BgaVisibleSystemException("actDEPRECATED_FashionHint was called on an empty discard pile. We should not have entered this game state to begin with");
+                throw new BgaVisibleSystemException("actVelocipede was called on an empty discard pile. We should not have entered this game state to begin with");
             }
             $this->cards->moveCard($topCard["id"], HAND.$player_id);
             //client-side swap

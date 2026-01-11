@@ -8,7 +8,6 @@ CT_DEPRECATED_HISTORYLESSON             //Shuffle any of the top 3 🃏🃏🃏 
 CT_DEPRECATED_CULTURALPRESERVATION      //Search your deck for 1 🃏 to take and 2 🃏🃏 to discard. Shuffle your deck.
 CT_DEPRECATED_SLICEOFLIFE               //Discard 2 🃏🃏 to draw 2 🃏🃏.
 CT_DEPRECATED_VORACIOUSCONSUMER         //Shuffle your discard into your deck.
-CT_DEPRECATED_FASHIONHINT               //You may toss 1 🃏 from the supply. You may swap 1 animalfolk 🃏 with the top 🃏 of the bin.
 CT_DEPRECATED_ROYALPRIVILEGE            //When used to purchase, you may toss 1 animalfolk 🃏 to take another 🃏 from the market.
 CT_DEPRECATED_VELOCIPEDE                //Swap this 🃏 with any 1 🃏 from another player's discard.
 CT_DEPRECATED_INSIGHT                   //Look at the top 2 🃏🃏 of your deck. You may reorder them. Finish 2: Draw 2 🃏🃏.

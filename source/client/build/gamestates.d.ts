@@ -182,7 +182,7 @@ interface GameStates {
 			'trRefreshingDrink': 70,
 			'trDelightfulSurprise': 71,
 			'trReplacement': 72,
-			'trDEPRECATED_FashionHint': 73,
+			'trVelocipede': 73,
 			'trDEPRECATED_Whirligig': 74,
 			'trPompousProfessional': 75,
 			'trDelicacy': 76,
@@ -717,13 +717,13 @@ interface GameStates {
 		},
 	},
 	73: {
-		'name': 'DEPRECATED_fashionHint',
-		'description': 'Fashion Hint: ${actplayer} may choose an animalfolk card from their hand to swap with ${card_name}',
-		'descriptionmyturn': 'Fashion Hint: ${you} may choose an animalfolk card from your hand to swap with ${card_name}',
+		'name': 'velocipede',
+		'description': 'Velocipede: ${actplayer} may choose an animalfolk card from their hand to swap with ${card_name}',
+		'descriptionmyturn': 'Velocipede: ${you} may choose an animalfolk card from your hand to swap with ${card_name}',
 		'type': 'activeplayer',
 		'args': 'argTopCardBin',
 		'possibleactions': {
-			'actDEPRECATED_FashionHint': [{
+			'actVelocipede': [{
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,

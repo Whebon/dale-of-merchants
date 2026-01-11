@@ -394,14 +394,14 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
-	public function actDEPRECATED_FashionHint()
+	public function actVelocipede()
 	{
 		self::setAjaxMode();
 
 		/** @var int $card_id */
 		$card_id = self::getArg('card_id', AT_int, true);
 
-		$this->game->actDEPRECATED_FashionHint( $card_id );
+		$this->game->actVelocipede( $card_id );
 		self::ajaxResponse();
 	}
 
