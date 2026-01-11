@@ -866,6 +866,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_siesta':
 				this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
 				break;
+			case 'insightTake':
+				this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
+				break;
 			case 'nightShift':
 				for (const deck of Object.values(this.playerDecks)) {
 					deck.setSelectionMode('noneCantViewContent');
@@ -1181,6 +1184,13 @@ class DaleOfMerchants extends Gamegui
 			case 'client_badOmen':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
 				break;
+			case 'coffeeGrinder':
+				const coffeeGrinder_args = (args.args as { opponent_id: number });
+				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+				break;
+			case 'insightDiscard':
+				this.myDeck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+				break;
 			case 'celestialGuidanceMarket':
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
@@ -1456,6 +1466,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_siesta':
 				this.myDiscard.setSelectionMode('none');
 				break;
+			case 'insightTake':
+				this.myDiscard.setSelectionMode('none');
+				break;
 			case 'nightShift':
 				for (const deck of Object.values(this.playerDecks)) {
 					deck.setSelectionMode('none');
@@ -1696,6 +1709,9 @@ class DaleOfMerchants extends Gamegui
 			case 'coffeeGrinder':
 				const coffeeGrinder_args = (this.gamedatas.gamestate.args as { opponent_id: number });
 				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('none');
+				break;
+			case 'insightDiscard':
+				this.myDeck.setSelectionMode('none');
 				break;
 			case 'serenade':
 				this.myHand.setSelectionMode('none');
@@ -2468,8 +2484,10 @@ class DaleOfMerchants extends Gamegui
 			case 'coffeeGrinder':
 				this.addActionButton("confirm-button", _("Discard"), "onCoffeeGrinderDiscard");
 				this.addActionButton("skip-button", _("Skip"), "onCoffeeGrinderSkip", undefined, false, 'gray');
-				const coffeeGrinder_args = (args as { opponent_id: number });
-				this.playerDecks[coffeeGrinder_args.opponent_id]!.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+				break;
+			case 'insightDiscard':
+				this.addActionButton("confirm-button", _("Discard"), "onInsightDiscard");
+				this.addActionButton("skip-button", _("Skip"), "onInsightSkip", undefined, false, 'gray');
 				break;
 			case 'client_dramaticRomantic':
 				switch(this.myClock.getClock()) {
@@ -3479,6 +3497,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
+			case 'insightTake':
+				this.bgaPerformAction('actInsightTake', {
+					card_id: card!.id
+				})
+				break;
 			case 'client_alternativePlan':
 				this.playTechniqueCard<'client_alternativePlan'>({
 					card_id: card!.id
@@ -3590,6 +3613,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'coffeeGrinder':
 				this.onCoffeeGrinderDiscard();
+				break;
+			case 'insightDiscard':
+				this.onInsightDiscard();
 				break;
 		}
 	}
@@ -3986,6 +4012,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_DEPRECATED_INSIGHT:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				break;
+			case DaleCard.CT_INSIGHT:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
 				break;
 			case DaleCard.CT_PERFECTMOVE:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
@@ -6552,6 +6581,18 @@ class DaleOfMerchants extends Gamegui
 
 	onCoffeeGrinderSkip() {
 		this.bgaPerformAction('actCoffeeGrinder', {
+			skip: true
+		});
+	}
+
+	onInsightDiscard() {
+		this.bgaPerformAction('actInsightDiscard', {
+			skip: false
+		});
+	}
+
+	onInsightSkip() {
+		this.bgaPerformAction('actInsightDiscard', {
 			skip: true
 		});
 	}

@@ -187,6 +187,8 @@ $machinestates = array(
 			'trFashionHint' => 107,
 			'trAccident' => 108,
 			'trSouvenirs' => 109,
+			'trInsightDiscard' => 110,
+			'trInsightTake' => 111,
 		),
 	),
 	31 => array(
@@ -793,13 +795,14 @@ $machinestates = array(
 	),
 	101 => array(
 		'name' => 'coffeeGrinder',
-		'description' => clienttranslate('Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\'s deck'),
-		'descriptionmyturn' => clienttranslate('Coffee Grinder: ${you} may discard another card from ${opponent_name}\'s deck'),
+		'description' => clienttranslate('Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\'s deck (${die_value} left)'),
+		'descriptionmyturn' => clienttranslate('Coffee Grinder: ${you} may discard another card from ${opponent_name}\'s deck (${die_value} left)'),
 		'type' => 'activeplayer',
-		'args' => 'argOpponentNameAndPassiveCardId',
+		'args' => 'argOpponentNameAndPassiveCardIdAndDie',
 		'possibleactions' => ['actCoffeeGrinder'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+			'trSameState' => 101,
 		),
 	),
 	102 => array(
@@ -890,6 +893,28 @@ $machinestates = array(
 		'action' => 'stSouvenirs',
 		'args' => 'argPlayerIds',
 		'possibleactions' => ['actGiveCardsFromLimboToPlayers'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	110 => array(
+		'name' => 'insightDiscard',
+		'description' => clienttranslate('Insight: ${actplayer} may discard another card from their deck (${die_value} left)'),
+		'descriptionmyturn' => clienttranslate('Insight: ${you} may discard another card from your deck (${die_value} left)'),
+		'type' => 'activeplayer',
+		'args' => 'argDie',
+		'possibleactions' => ['actInsightDiscard'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trSameState' => 110,
+		),
+	),
+	111 => array(
+		'name' => 'insightTake',
+		'description' => clienttranslate('Insight: ${actplayer} must take a card from their discard'),
+		'descriptionmyturn' => clienttranslate('Insight: ${you} must take a card from your discard'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actInsightTake'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

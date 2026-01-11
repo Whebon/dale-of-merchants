@@ -415,13 +415,13 @@ $this->AUTORESOLVE_TRIGGERS = array(
 
 //disable these animalfolks in the deck selection (and random selection)
 $this->DISABLED_ANIMALFOLK_IDS = array(
-    ANIMALFOLK_PANDAS,              //requires rework
-    ANIMALFOLK_OCELOTS,             //requires rework
-    ANIMALFOLK_DESERTMONITORS,      //requires rework
-    ANIMALFOLK_LEMURS,              //requires rework
-    ANIMALFOLK_ECHIDNAS,            //requires rework
-    ANIMALFOLK_WOODTURTLES,         //requires rework
-    ANIMALFOLK_PANGOLINS,           //requires rework
+    //ANIMALFOLK_PANDAS,            //reworked
+    //ANIMALFOLK_OCELOTS,           //reworked
+    //ANIMALFOLK_DESERTMONITORS,    //reworked
+    //ANIMALFOLK_LEMURS,            //reworked
+    //ANIMALFOLK_ECHIDNAS,          //reworked
+    //ANIMALFOLK_WOODTURTLES,       //reworked
+    //ANIMALFOLK_PANGOLINS,         //CT_ANOTHERFINEMESS requires an effect rework.
     
     ANIMALFOLK_BATS,                //new
     ANIMALFOLK_DODOS,               //new

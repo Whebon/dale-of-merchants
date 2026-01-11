@@ -215,6 +215,8 @@ interface GameStates {
 			'trFashionHint': 107,
 			'trAccident': 108,
 			'trSouvenirs': 109,
+			'trInsightDiscard': 110,
+			'trInsightTake': 111,
 		},
 	},
 	31: {
@@ -1216,10 +1218,10 @@ interface GameStates {
 	},
 	101: {
 		'name': 'coffeeGrinder',
-		'description': 'Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\\\'s deck',
-		'descriptionmyturn': 'Coffee Grinder: ${you} may discard another card from ${opponent_name}\\\'s deck',
+		'description': 'Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\\\'s deck (${die_value} left)',
+		'descriptionmyturn': 'Coffee Grinder: ${you} may discard another card from ${opponent_name}\\\'s deck (${die_value} left)',
 		'type': 'activeplayer',
-		'args': 'argOpponentNameAndPassiveCardId',
+		'args': 'argOpponentNameAndPassiveCardIdAndDie',
 		'possibleactions': {
 			'actCoffeeGrinder': [{
 				'name': 'skip',
@@ -1229,6 +1231,7 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+			'trSameState': 101,
 		},
 	},
 	102: {
@@ -1373,6 +1376,40 @@ interface GameStates {
 				'name': 'player_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	110: {
+		'name': 'insightDiscard',
+		'description': 'Insight: ${actplayer} may discard another card from their deck (${die_value} left)',
+		'descriptionmyturn': 'Insight: ${you} may discard another card from your deck (${die_value} left)',
+		'type': 'activeplayer',
+		'args': 'argDie',
+		'possibleactions': {
+			'actInsightDiscard': [{
+				'name': 'skip',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+			'trSameState': 110,
+		},
+	},
+	111: {
+		'name': 'insightTake',
+		'description': 'Insight: ${actplayer} must take a card from their discard',
+		'descriptionmyturn': 'Insight: ${you} must take a card from your discard',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actInsightTake': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

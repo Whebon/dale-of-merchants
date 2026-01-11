@@ -5417,6 +5417,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_siesta':
                     this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
                     break;
+                case 'insightTake':
+                    this.myDiscard.setSelectionMode('single', 'hand', "daleofmerchants-wrap-technique");
+                    break;
                 case 'nightShift':
                     for (var _u = 0, _v = Object.values(this.playerDecks); _u < _v.length; _u++) {
                         var deck = _v[_u];
@@ -5702,6 +5705,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_badOmen':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to place on your deck"));
                     break;
+                case 'coffeeGrinder':
+                    var coffeeGrinder_args = args.args;
+                    this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                    break;
+                case 'insightDiscard':
+                    this.myDeck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                    break;
                 case 'celestialGuidanceMarket':
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
@@ -5966,6 +5976,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_siesta':
                     this.myDiscard.setSelectionMode('none');
                     break;
+                case 'insightTake':
+                    this.myDiscard.setSelectionMode('none');
+                    break;
                 case 'nightShift':
                     for (var _s = 0, _t = Object.values(this.playerDecks); _s < _t.length; _s++) {
                         var deck = _t[_s];
@@ -6215,6 +6228,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'coffeeGrinder':
                     var coffeeGrinder_args = this.gamedatas.gamestate.args;
                     this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('none');
+                    break;
+                case 'insightDiscard':
+                    this.myDeck.setSelectionMode('none');
                     break;
                 case 'serenade':
                     this.myHand.setSelectionMode('none');
@@ -6969,8 +6985,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'coffeeGrinder':
                     this.addActionButton("confirm-button", _("Discard"), "onCoffeeGrinderDiscard");
                     this.addActionButton("skip-button", _("Skip"), "onCoffeeGrinderSkip", undefined, false, 'gray');
-                    var coffeeGrinder_args = args;
-                    this.playerDecks[coffeeGrinder_args.opponent_id].setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                    break;
+                case 'insightDiscard':
+                    this.addActionButton("confirm-button", _("Discard"), "onInsightDiscard");
+                    this.addActionButton("skip-button", _("Skip"), "onInsightSkip", undefined, false, 'gray');
                     break;
                 case 'client_dramaticRomantic':
                     switch (this.myClock.getClock()) {
@@ -7633,6 +7651,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
+                case 'insightTake':
+                    this.bgaPerformAction('actInsightTake', {
+                        card_id: card.id
+                    });
+                    break;
                 case 'client_alternativePlan':
                     this.playTechniqueCard({
                         card_id: card.id
@@ -7738,6 +7761,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'coffeeGrinder':
                     this.onCoffeeGrinderDiscard();
+                    break;
+                case 'insightDiscard':
+                    this.onInsightDiscard();
                     break;
             }
         };
@@ -8084,6 +8110,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_9.DaleCard.CT_DEPRECATED_INSIGHT:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    break;
+                case DaleCard_9.DaleCard.CT_INSIGHT:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
                     break;
                 case DaleCard_9.DaleCard.CT_PERFECTMOVE:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
@@ -10363,6 +10392,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onCoffeeGrinderSkip = function () {
             this.bgaPerformAction('actCoffeeGrinder', {
+                skip: true
+            });
+        };
+        DaleOfMerchants.prototype.onInsightDiscard = function () {
+            this.bgaPerformAction('actInsightDiscard', {
+                skip: false
+            });
+        };
+        DaleOfMerchants.prototype.onInsightSkip = function () {
+            this.bgaPerformAction('actInsightDiscard', {
                 skip: true
             });
         };

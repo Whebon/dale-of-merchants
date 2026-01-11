@@ -754,6 +754,28 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actInsightDiscard()
+	{
+		self::setAjaxMode();
+
+		/** @var bool $skip */
+		$skip = self::getArg('skip', AT_bool, true);
+
+		$this->game->actInsightDiscard( $skip );
+		self::ajaxResponse();
+	}
+
+	public function actInsightTake()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actInsightTake( $card_id );
+		self::ajaxResponse();
+	}
+
 	public function actDEPRECATED_Cheer()
 	{
 		self::setAjaxMode();

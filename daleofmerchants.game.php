@@ -3413,9 +3413,11 @@ class DaleOfMerchants extends DaleTableBasic
      * @param int $card_id the card id of the card to resolve
      */
     function beginResolvingCard(int $card_id){
-        $previous = $this->getGameStateValue("resolvingCard");
-        if ($previous != -1) {
-            throw new Error("Cannot resolve two cards at the same time! Finish resolving the first card before resolving the second.");
+        $previous_card_id = $this->getGameStateValue("resolvingCard");
+        if ($previous_card_id != -1) {
+            $dbcard = $this->cards->getCard($previous_card_id);
+            $card_name = $this->getCardName($dbcard);
+            throw new BgaVisibleSystemException("Cannot resolve two cards at the same time! Finish resolving the first card ($card_name) before resolving the second.");
         }
         $this->setGameStateValue("resolvingCard", $card_id);
     }
@@ -3434,7 +3436,7 @@ class DaleOfMerchants extends DaleTableBasic
             $technique_card_id = $this->getGameStateValue("resolvingCard");
             $technique_card = $this->cards->getCard($technique_card_id);
             if ($technique_card_id == -1) {
-                throw new Error("Trying to 'resolveImmediateEffects' without 'beginResolvingCard'");
+                throw new BgaVisibleSystemException("Trying to 'resolveImmediateEffects' without 'beginResolvingCard'");
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
@@ -6166,6 +6168,29 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trAccident");
                 break;
+            case CT_INSIGHT:
+                //discard 1 card, if possible
+                $topCard = $this->cards->pickCardForLocation(DECK.$player_id, 'unstable');
+                if ($topCard) {
+                    $this->cards->moveCardOnTop($topCard["id"], DISCARD.$player_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('Insight: ${player_name} discards ${card_name} from their deck'), array(
+                        "player_id" => $player_id,
+                        "card" => $topCard,
+                        'player_name' => $this->getActivePlayerName(),
+                        'opponent_name' => $this->getPlayerNameByIdInclMono($player_id),
+                        'card_name' => $this->getCardName($topCard)
+                    ));
+                }
+                //move to another state to discard the 2nd card and 3rd card
+                if ($this->cards->countCardsInDeckAndDiscardOfPlayer($player_id) > 0) {
+                    $this->setGameStateValue("die_value", 2); //not actually a die value, but we will use this state to keep track how many cards may still be discarded
+                    $this->beginResolvingCard($technique_card_id);
+                    $this->gamestate->nextState("trInsightDiscard");
+                }
+                else {
+                    $this->resolveImmediateEffects($technique_card_id);
+                }
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -6391,6 +6416,15 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->spend($player_id, $args, 2, $this->_("DEPRECATED_Insight"));
                 $this->draw(clienttranslate('DEPRECATED_Insight: ${player_name} draws ${nbr} cards'), 2);
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_INSIGHT:
+                $this->spend($player_id, $args, 3, $this->_("Insight"));
+                if ($this->cards->countCardInLocation(DISCARD.$player_id) == 0) {
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trInsightTake");
                 break;
             case CT_PERFECTMOVE:
                 $this->spend($player_id, $args, 3, $this->_("Perfect Move"));
@@ -6791,7 +6825,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 //mark this passive as used
                 $this->effects->insertModification($passive_card_id, CT_COFFEEGRINDER);
-                //move to another state to discard the 2nd card
+                //move to another state to discard the 2nd card and 3rd card
                 if ($this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id) > 0) {
                     $this->setGameStateValue("opponent_id", $opponent_id);
                     $this->setGameStateValue("passive_card_id", $passive_card_id);
@@ -8566,11 +8600,64 @@ class DaleOfMerchants extends DaleTableBasic
         $discards_left = $this->getGameStateValue("die_value") - 1;
         if ($discards_left > 0 && $this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id) > 0) {
             $this->setGameStateValue("die_value", $discards_left);
+            $this->gamestate->nextState("trSameState");
         }
         else {
             $this->gamestate->nextState("trSamePlayer");
         }
     }
+
+
+    function actInsightDiscard($skip) {
+        $this->checkAction("actInsightDiscard");
+        $player_id = $this->getActivePlayerId();
+        
+        if ($skip) {
+            $this->resolveImmediateEffects($player_id);
+            return;
+        }
+
+        //discard 1 card
+        $topCard = $this->cards->pickCardForLocation(DECK.$player_id, 'unstable');
+        if ($topCard) {
+            $this->cards->moveCardOnTop($topCard["id"], DISCARD.$player_id);
+            $this->notifyAllPlayers('deckToDiscard', clienttranslate('Insight: ${player_name} discards ${card_name} from their deck'), array(
+                "player_id" => $player_id,
+                "card" => $topCard,
+                'player_name' => $this->getActivePlayerName(),
+                'opponent_name' => $this->getPlayerNameByIdInclMono($player_id),
+                'card_name' => $this->getCardName($topCard)
+            ));
+        }
+        else {
+            throw new BgaUserException($this->_("Unable to discard a card"));
+        }
+        
+        // Check if we can leave this state
+        $discards_left = $this->getGameStateValue("die_value") - 1;
+        if ($discards_left > 0 && $this->cards->countCardsInDeckAndDiscardOfPlayer($player_id) > 0) {
+            $this->setGameStateValue("die_value", $discards_left);
+            $this->gamestate->nextState("trSameState"); //update args
+        }
+        else {
+            $this->resolveImmediateEffects($player_id);
+        }
+    }
+
+    function actInsightTake($card_id) {
+        $this->checkAction("actInsightTake");
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('discardToHand', clienttranslate('Insight: ${player_name} takes their ${card_name} from their discard pile'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "card" => $dbcard
+        ));
+        $this->fullyResolveCard($player_id);
+    }
+
 
     function actSerenade($card_ids) {
         $this->checkAction("actSerenade");
@@ -8837,6 +8924,13 @@ class DaleOfMerchants extends DaleTableBasic
             'passive_card_id' => $passive_card_id,
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
+        );
+    }
+
+    function argOpponentNameAndPassiveCardIdAndDie() {
+        return array_merge(
+            $this->argOpponentNameAndPassiveCardId(),
+            $this->argDie()
         );
     }
 
