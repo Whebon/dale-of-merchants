@@ -5234,15 +5234,15 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_VELOCIPEDE:
                 $toss = $args["toss"];
                 if ($toss) {
-                    $this->tossFromMarketDeck(clienttranslate('Velocipede: ${player_name} tosses ${card_name} from the supply'));
+                    $dbcard = $this->tossFromMarketDeck(clienttranslate('Velocipede: ${player_name} tosses ${card_name} from the supply'));
                 }
                 else {
                     $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
-                    if (!$dbcard) {
-                        //skip swappping: the bin is empty
-                        $this->fullyResolveCard($player_id, $technique_card);
-                        return;
-                    }
+                }
+                if ($dbcard == null) {
+                    //skip swappping: the bin is empty
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
                 }
                 $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
                 $has_valid_targets = false;
@@ -8934,7 +8934,23 @@ class DaleOfMerchants extends DaleTableBasic
         );
     }
 
-    function argCardName() {
+    function argCardNamePublic() {
+        //get the card name stored in "card_id"
+        $card_id = $this->getGameStateValue("card_id");
+        if ($card_id == -1) {
+            //should not happen. but if it does, let's see if we can improvise our way out
+            $card_name = $this->_("card");
+        }
+        else {
+            $dbcard = $this->cards->getCard($card_id);
+            $card_name = $this->getCardName($dbcard);
+        }
+        return array(
+            'card_name' => $card_name
+        );
+    }
+
+    function argCardNamePrivate() {
         //get the card name stored in "card_id"
         $card_id = $this->getGameStateValue("card_id");
         if ($card_id == -1) {

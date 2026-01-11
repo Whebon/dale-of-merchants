@@ -832,7 +832,7 @@ interface GameStates {
 		'descriptionmyturn': 'Wheelbarrow: ${you} must choose to toss or store ${_private.card_name}',
 		'type': 'activeplayer',
 		'action': 'stWheelbarrow',
-		'args': 'argCardName',
+		'args': 'argCardNamePrivate',
 		'possibleactions': {
 			'actWheelbarrow': [{
 				'name': 'is_tossing',
@@ -1325,7 +1325,7 @@ interface GameStates {
 		'descriptionmyturn': 'Fashion Hint: ${you} must choose to toss or keep ${_private.card_name}',
 		'type': 'activeplayer',
 		'action': 'stFashionHint',
-		'args': 'argCardName',
+		'args': 'argCardNamePrivate',
 		'possibleactions': {
 			'actFashionHint': [{
 				'name': 'is_tossing',
