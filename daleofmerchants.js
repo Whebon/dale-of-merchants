@@ -11637,6 +11637,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                             DaleCard_9.DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority");
                                         }
                                     }
+                                    if (args.highlight_hand_cards !== undefined) {
+                                        for (var card_id in args.highlight_hand_cards) {
+                                            var dbcard = args.highlight_hand_cards[card_id];
+                                            _this.myHand.selectItem(+dbcard.id);
+                                            DaleCard_9.DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority");
+                                        }
+                                    }
                                     if (args.highlight_schedule_card !== undefined) {
                                         _this.monoSchedule.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique", undefined, undefined, Infinity);
                                         _this.monoSchedule.selectItem(+args.highlight_schedule_card["id"]);

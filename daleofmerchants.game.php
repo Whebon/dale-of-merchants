@@ -532,17 +532,25 @@ class DaleOfMerchants extends DaleTableBasic
             return MONO_TECHNIQUE_NONE;
         }
 
-        //Confirm action
+        //Confirm action (the technique is in hand)
         $this->monoConfirmAction($msg, array(
             "highlight_limbo_cards" => array($technique_card),
             "wrap_class" => "daleofmerchants-wrap-technique"
         ));
 
+        //schedule the technique
+        $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);
+
+        // //Confirm action (the technique is in schedule)
+        // $this->monoConfirmAction($msg, array(
+        //     "highlight_schedule_card" => $technique_card,
+        //     "wrap_class" => "daleofmerchants-wrap-technique"
+        // ));
+
         //Get basic information
         $opponent_id = $this->getActivePlayerId();
 
         //resolve the technique
-        $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);
         switch($technique_type_id) {
             case CT_SWIFTMEMBER:
                 $this->draw(clienttranslate('Swift Member: ${player_name} draws ${nbr} cards'), 3, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
@@ -782,6 +790,69 @@ class DaleOfMerchants extends DaleTableBasic
                     "cards" => $junk_cards,
                     "nbr" => 1,
                 ));
+                break;
+            case CT_WILYMEMBER:
+                $opponent_dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($opponent_dbcards) == 0) {
+                    //fizzle (player has no cards)
+                    $this->notifyAllPlayers('message', clienttranslate('Wily Member: ${player_name} tries to take a card from ${opponent_name}, but their hand is empty'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
+                    ));
+                    break;
+                }
+                $opponent_card_id = array_rand($opponent_dbcards);
+                $opponent_dbcard = $opponent_dbcards[$opponent_card_id];
+                
+                $mono_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $mono_dbcards = $this->sortCardsByLocationArg($mono_dbcards, false);
+                $mono_junk_dbcard = null;
+                foreach ($mono_dbcards as $mono_dbcard) {
+                    if ($this->isEffectiveJunk($mono_dbcard)) {
+                        $mono_junk_dbcard = $mono_dbcard;
+                        break;
+                    }
+                }
+                if ($mono_junk_dbcard == null) {
+                    //fizzle (mono has no cards)
+                    $this->notifyAllPlayers('message', clienttranslate('Wily Member: ${player_name} has no junk cards to give to ${opponent_name}'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
+                    ));
+                }
+                else {
+                    //swap $opponent_dbcard and $mono_junk_dbcard
+                    $this->monoConfirmAction(clienttranslate('Wily Member: ${player_name} swaps ${opponent_name}\'s ${card_name} with a Junk'), array(
+                        "highlight_limbo_cards" => array($mono_junk_dbcard),
+                        "highlight_hand_cards" => array($opponent_dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($opponent_dbcard)
+                    ));
+                    $this->cards->moveCard($opponent_dbcard["id"], HAND.MONO_PLAYER_ID);
+                    $this->cards->moveCard($mono_junk_dbcard["id"], HAND.$opponent_id);
+                    $this->notifyAllPlayersWithPrivateArguments('instant_opponentHandToPlayerHand', '', array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "opponent_id" => $opponent_id,
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "_private" => array(
+                            "card" => $opponent_dbcard,
+                            "card_name" => $this->getCardName($opponent_dbcard)
+                        )
+                    ));
+                    $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', '', array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "opponent_id" => $opponent_id,
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "_private" => array(
+                            "card" => $mono_junk_dbcard,
+                            "card_name" => $this->getCardName($mono_junk_dbcard)
+                        )
+                    ));
+                }
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(

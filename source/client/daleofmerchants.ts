@@ -8013,9 +8013,19 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none', icon, args.wrap_class, _("Mono's hand"), undefined, Infinity);
 			}
 			if (args.highlight_limbo_cards !== undefined) {
+				//highlight cards in Mono's hand
 				for (let card_id in args.highlight_limbo_cards) {
 					const dbcard = args.highlight_limbo_cards[card_id]!
 					this.myLimbo.selectItem(+dbcard.id);
+					//The card(s) could have one of the animations, like the one where its scale pulses a bit //Sami
+					DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority"); 
+				}
+			}
+			if (args.highlight_hand_cards !== undefined) {
+				//highlight cards in the player's hand
+				for (let card_id in args.highlight_hand_cards) {
+					const dbcard = args.highlight_hand_cards[card_id]!
+					this.myHand.selectItem(+dbcard.id);
 					//The card(s) could have one of the animations, like the one where its scale pulses a bit //Sami
 					DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority"); 
 				}

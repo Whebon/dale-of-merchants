@@ -397,10 +397,11 @@ declare global {
 		'monoConfirmAction': {
 			description: string, //main title description
 			opponent_name: string,
-			highlight_limbo_cards?: {[card_id: number]: DbCard},
+			highlight_limbo_cards?: {[card_id: number]: DbCard}, //cards in the Mono's hand
 			highlight_market_pos?: number,
 			highlight_schedule_card?: DbCard,
 			wrap_class?: DaleWrapClass
+			highlight_hand_cards?: {[card_id: number]: DbCard}, //cards in the player's hand
 		}
 	}
 
