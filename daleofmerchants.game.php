@@ -2271,10 +2271,25 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $dbcards array of dbcards to scan
      * @return int number of occurrences
      */
-    function countJunk(array $dbcards) {
+    function countJunk(array $dbcards): int {
         $count = 0;
         foreach ($dbcards as $dbcard) {
             if ($this->isEffectiveJunk($dbcard)) {
+                $count += 1;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * Counts the number of animalfolk cards in hand
+     * @param array $dbcards array of dbcards to scan
+     * @return int number of occurrences
+     */
+    function countAnimalfolk(array $dbcards): int {
+        $count = 0;
+        foreach ($dbcards as $dbcard) {
+            if (!$this->isEffectiveJunk($dbcard)) {
                 $count += 1;
             }
         }
@@ -4282,6 +4297,17 @@ class DaleOfMerchants extends DaleTableBasic
                             }
                             break;
                     }
+                case CT_ACCIDENT:
+                    $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
+                    $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
+                    if ($nbr > 0) {
+                        throw new BgaVisibleSystemException("Unable to fizzle. The supply contains card(s).");
+                    }
+                    $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+                    if ($this->countAnimalfolk($hand_cards) > 1) { //1 is for accident itself
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_ACCIDENT: there are animalfolk cards in hand");
+                    }
+                    break;
                 default:
                     break; //by default, there is no fizzle verification. TODO: issue #126
             } //(~fizzle technique)
@@ -6124,6 +6150,10 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_ACCIDENT:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trAccident");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -8608,6 +8638,14 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trSamePlayer");
     }
 
+    function actAccident($card_id) {
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+        $this->validateIsAnimalfolkCard($dbcard);
+        $this->toss(clienttranslate('Accident: ${player_name} tosses ${card_name}'), $dbcard, false);
+        $this->fullyResolveCard($player_id);
+    }
+
 
     // ^
     // |
@@ -9232,6 +9270,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stSpyglass() {
+        //Drawing to limbo happens in an "st" to ensure limbo is created after the state has been entered. Otherwise it flickers "Your Limbo"
         $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 cards'), 3, true);
         if ($nbr == 0) {
             //skyglass has no effect
@@ -9716,6 +9755,18 @@ class DaleOfMerchants extends DaleTableBasic
             "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
             "nbr" => $nbr,
         ));  
+    }
+
+    function stAccident() {
+        $player_id = $this->getActivePlayerId();
+        $this->draw(clienttranslate('Accident: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
+        $hand_cards = $this->cards->getCardsInLocation(HAND.$player_id);
+        if ($this->countAnimalfolk($hand_cards) == 0) {
+            //This should never happen, but if it does, escape from this game state
+            //throw new BgaVisibleSystemException("Accident should have fizzled");
+            $this->notifyAllPlayers('message', "Accident fizzled unexpectedly", array());
+            $this->fullyResolveCard($player_id);
+        }
     }
 
     

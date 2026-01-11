@@ -213,6 +213,7 @@ interface GameStates {
 			'trBlindfold': 105,
 			'trHistoryLesson': 106,
 			'trFashionHint': 107,
+			'trAccident': 108,
 		},
 	},
 	31: {
@@ -1336,6 +1337,23 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 30,
 			'trNextPlayer': 41,
+		},
+	},
+	108: {
+		'name': 'accident',
+		'description': 'Accident: ${actplayer} must toss an animalfolk card',
+		'descriptionmyturn': 'Accident: ${you} must toss an animalfolk card',
+		'type': 'activeplayer',
+		'action': 'stAccident',
+		'possibleactions': {
+			'actAccident': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	6300: {

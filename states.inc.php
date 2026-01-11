@@ -58,6 +58,7 @@ if (false) {
 	$game->stSoundDetectors();
 	$game->stHistoryLesson();
 	$game->stFashionHint();
+	$game->stAccident();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -183,6 +184,7 @@ $machinestates = array(
 			'trBlindfold' => 105,
 			'trHistoryLesson' => 106,
 			'trFashionHint' => 107,
+			'trAccident' => 108,
 		),
 	),
 	31 => array(
@@ -865,6 +867,17 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trNextPlayer' => 41,
+		),
+	),
+	108 => array(
+		'name' => 'accident',
+		'description' => clienttranslate('Accident: ${actplayer} must toss an animalfolk card'),
+		'descriptionmyturn' => clienttranslate('Accident: ${you} must toss an animalfolk card'),
+		'type' => 'activeplayer',
+		'action' => 'stAccident',
+		'possibleactions' => ['actAccident'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	6300 => array(

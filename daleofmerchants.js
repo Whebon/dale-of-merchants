@@ -5760,6 +5760,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myDiscard.openPopin();
                     }
                     break;
+                case 'accident':
+                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6232,6 +6235,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_generationChange':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'accident':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -7932,6 +7938,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         toss_card_id: card.id,
                     });
                     break;
+                case 'accident':
+                    this.bgaPerformAction('actAccident', {
+                        card_id: card.id,
+                    });
+                    break;
                 case null:
                     throw new Error("gamestate.name is null");
             }
@@ -9029,6 +9040,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientScheduleTechnique('client_generationChange', card.id, {
                         nbr: Math.min(2, this.myDiscard.size)
                     });
+                    break;
+                case DaleCard_9.DaleCard.CT_ACCIDENT:
+                    fizzle = (this.marketDeck.size + this.marketDiscard.size + this.myHand.count()) <= 1;
+                    if (fizzle) {
+                        this.clientScheduleTechnique('client_fizzle', card.id);
+                    }
+                    else {
+                        this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
