@@ -912,6 +912,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'charity':
 			case 'rumours':
+			case 'souvenirs':
 				this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				break;
 			case 'DEPRECATED_tasters':
@@ -1485,6 +1486,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'charity':
 			case 'rumours':
+			case 'souvenirs':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'DEPRECATED_tasters':
@@ -2099,6 +2101,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'charity':
 			case 'rumours':
+			case 'souvenirs':
 				const charity_args = args as { player_ids: number[] };
 				this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
 				this.max_opponents = 1; //ensure that no opponent is selected by default
@@ -4490,6 +4493,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_CHARM:
 			case DaleCard.CT_SPECIALOFFER:
 			case DaleCard.CT_INHERITANCE:
+			case DaleCard.CT_SOUVENIRS:
 				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -5761,11 +5765,7 @@ class DaleOfMerchants extends Gamegui
 		const items = this.myLimbo.getAllItems();
 		const card_ids = [card_id];
 		const player_ids = [player_id];
-		if (items.length == 2) {
-			//automatically give the last card
-			if (args.player_ids.length != 2) {
-				throw new Error(`Unable to give ${items.length} cards to ${args.player_ids.length} players`)
-			}
+		if (items.length == 2 && args.player_ids.length == 2) {
 			for (let item of items) {
 				if (item.id != card_id) {
 					card_ids.push(item.id);

@@ -5457,6 +5457,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'charity':
                 case 'rumours':
+                case 'souvenirs':
                     this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     break;
                 case 'DEPRECATED_tasters':
@@ -5997,6 +5998,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'charity':
                 case 'rumours':
+                case 'souvenirs':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'DEPRECATED_tasters':
@@ -6607,6 +6609,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'charity':
                 case 'rumours':
+                case 'souvenirs':
                     var charity_args = args;
                     this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
                     this.max_opponents = 1;
@@ -8510,6 +8513,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_CHARM:
                 case DaleCard_9.DaleCard.CT_SPECIALOFFER:
                 case DaleCard_9.DaleCard.CT_INHERITANCE:
+                case DaleCard_9.DaleCard.CT_SOUVENIRS:
                     fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9671,10 +9675,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var items = this.myLimbo.getAllItems();
             var card_ids = [card_id];
             var player_ids = [player_id];
-            if (items.length == 2) {
-                if (args.player_ids.length != 2) {
-                    throw new Error("Unable to give ".concat(items.length, " cards to ").concat(args.player_ids.length, " players"));
-                }
+            if (items.length == 2 && args.player_ids.length == 2) {
                 for (var _i = 0, items_3 = items; _i < items_3.length; _i++) {
                     var item = items_3[_i];
                     if (item.id != card_id) {

@@ -59,6 +59,7 @@ if (false) {
 	$game->stHistoryLesson();
 	$game->stFashionHint();
 	$game->stAccident();
+	$game->stSouvenirs();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -185,6 +186,7 @@ $machinestates = array(
 			'trHistoryLesson' => 106,
 			'trFashionHint' => 107,
 			'trAccident' => 108,
+			'trSouvenirs' => 109,
 		),
 	),
 	31 => array(
@@ -876,6 +878,18 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'action' => 'stAccident',
 		'possibleactions' => ['actAccident'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	109 => array(
+		'name' => 'souvenirs',
+		'description' => clienttranslate('Souvenirs: ${actplayer} must give back all drawn cards'),
+		'descriptionmyturn' => clienttranslate('Souvenirs: ${you} must choose a card and a player'),
+		'type' => 'activeplayer',
+		'action' => 'stSouvenirs',
+		'args' => 'argPlayerIds',
+		'possibleactions' => ['actGiveCardsFromLimboToPlayers'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

@@ -4127,6 +4127,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_VELOCIPEDE:
                 case CT_SPECIALOFFER:
                 case CT_INHERITANCE:
+                case CT_SOUVENIRS:
                     $nbr = $this->cards->countCardsInLocation(DECK.MARKET);
                     $nbr += $this->cards->countCardsInLocation(DISCARD.MARKET);
                     if ($nbr > 0) {
@@ -5021,6 +5022,16 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trRumours");
+                break;
+            case CT_SOUVENIRS:
+                $this->beginResolvingCard($technique_card_id);
+                $players = $this->loadPlayersBasicInfosInclMono();
+                $player_ids = [];
+                foreach ($players as $player_id => $player) {
+                    $player_ids[] = $player_id;
+                }
+                $this->setGameStateValuePlayerIds($player_ids);
+                $this->gamestate->nextState("trSouvenirs");
                 break;
             case CT_DEPRECATED_TASTERS:
                 $reverse_direction = isset($args["reverse_direction"]) ? $args["reverse_direction"] : false;
@@ -7279,7 +7290,7 @@ class DaleOfMerchants extends DaleTableBasic
     
     /**
      * General purpose action for techniques to partially fulfill giving cards to the players. Updates `setGameStateValuePlayerIds`. Fully resolves the current technique if the fulfillment is complete.
-     * Usages: actCharity and actRumours
+     * Usages: CT_CHARITY, CT_RUMOURS and CT_SOUVENIRS
      * @param mixed $card_ids card ids to give to players. These cards must be present in the active player's limbo
      * @param mixed $player_ids card ids to give to players. Must be a subset of the ids stored in `setGameStateValuePlayerIds`
      */
@@ -7334,6 +7345,13 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateValuePlayerIds($remaining_player_ids);
         if (count($remaining_player_ids) == 0) {
             $this->fullyResolveCard($player_id);
+            return;
+        }
+
+        //check if limbo is now empty (this happens in souvenirs when supply_size < number_of_players)
+        if ($this->cards->countCardsInLocation(LIMBO.$player_id) == 0) {
+            $this->fullyResolveCard($player_id);
+            return;
         }
     }
 
@@ -9503,6 +9521,22 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
     }
+
+    function stSouvenirs() {
+        $player_id = $this->getActivePlayerId();
+        $nbr = $this->getPlayersNumberInclMono();
+        $nbr = $this->draw(
+            clienttranslate('Souvenirs: ${player_name} draws ${nbr} card(s) from the supply'), 
+            $nbr, 
+            true, 
+            MARKET, 
+            $player_id
+        );
+        if ($nbr == 0) {
+            throw new BgaVisibleSystemException("Entered the 'souvenirs' gamestate with an empty supply. The card should have fizzled instead.");
+        }
+    }
+
 
     function stDaringAdventurer() {
         $die_value = $this->getGameStateValue("die_value");

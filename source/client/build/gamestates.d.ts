@@ -214,6 +214,7 @@ interface GameStates {
 			'trHistoryLesson': 106,
 			'trFashionHint': 107,
 			'trAccident': 108,
+			'trSouvenirs': 109,
 		},
 	},
 	31: {
@@ -1350,6 +1351,28 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	109: {
+		'name': 'souvenirs',
+		'description': 'Souvenirs: ${actplayer} must give back all drawn cards',
+		'descriptionmyturn': 'Souvenirs: ${you} must choose a card and a player',
+		'type': 'activeplayer',
+		'action': 'stSouvenirs',
+		'args': 'argPlayerIds',
+		'possibleactions': {
+			'actGiveCardsFromLimboToPlayers': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'player_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {
