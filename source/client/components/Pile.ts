@@ -242,9 +242,12 @@ export class Pile implements DaleLocation {
      * @param duration (optional) defines the duration in millisecond of the slide. The default is 500 milliseconds.
      * @param delay (optional) defines the delay in millisecond before the slide is executed. The default is 0 milliseconds.
      */
-    public push(card: DaleCard, from?: string | HTMLElement, onEnd?: Function | null, duration?: number, delay?: number) {
+    public push(card: DaleCard, from?: string | HTMLElement | Pile, onEnd?: Function | null, duration?: number, delay?: number) {
         this.cards.push(card);
         if (from) {
+            if (from instanceof Pile) {
+                from = from.placeholderHTML;
+            }
             this._slidingCards.push(card);
             let slidingElement = card.toDiv(this.placeholderHTML);
             this.placeholderHTML.appendChild(slidingElement)
@@ -353,6 +356,29 @@ export class Pile implements DaleLocation {
         }
         else {
             this.pop(drawPile, callback, durationPerPop);
+        }
+    }
+
+    /**
+    * Pop all cards from the pile, destroying the entire pile in the process. Adds hidden cards to the provided `drawPile`.
+    * @param drawPile pile to add a hidden card to for each card popped.
+    * @param duration (optional) defines the total duration in millisecond of the slide.
+    */
+    public shuffleToPile(discardPile: Pile, duration: number = 1000) {
+        if (this.cards.length == 0) {
+            return;
+        }
+        if (this === discardPile) {
+            throw new Error('Cannot shuffle to self.');
+        }
+        let n = this.cards.length;
+        let durationPerPop = duration/n;
+        for (let i = 0; i < n; i++) {
+            const card = this.pop();
+            if (card.id == 0) {
+                throw new Error("shuffleToPile can only be used on piles with known contents. If this is a HiddenPile, call setContent first");
+            }
+            discardPile.push(card, this, null, durationPerPop, durationPerPop*i);
         }
     }
 

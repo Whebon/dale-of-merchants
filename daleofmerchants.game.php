@@ -374,7 +374,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->obtainStoredCards(MONO_PLAYER_ID);
         $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
         $this->monoResolveCards(TRIGGER_ONTURNSTART);
-        $technique_result = $this->monoPlayTechnique(clienttranslate('${player_name} plays its leftmost Mono card'));
+        $technique_result = $this->monoPlayLeftmostTechnique(clienttranslate('${player_name} plays its leftmost Mono card'));
 
         switch($technique_result) {
             case MONO_TECHNIQUE_NONE:
@@ -401,7 +401,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $msg = '';
                 break;
             default:
-                throw new BgaVisibleSystemException("Unexpected return value from monoPlayTechnique()");
+                throw new BgaVisibleSystemException("Unexpected return value from monoScheduleAndPlayTechnique()");
                 break;
         }
         
@@ -505,6 +505,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Schedules and resolves the leftmost card in Mono's hand
      * @param string $msg display this message in monoConfirmAction
      * @return int representing the result of playing Mono card techniques.
      * * `MONO_TECHNIQUE_NONE` if Mono didn't play a card.
@@ -512,7 +513,7 @@ class DaleOfMerchants extends DaleTableBasic
      * * `MONO_TECHNIQUE_NO_ACQUIRE` if Mono played a card with a "plus", but without "acquire".
      * * `MONO_TECHNIQUE_NO_PLUS` if Mono played a card without a "plus".
      */
-    function monoPlayTechnique($msg): int {
+    function monoPlayLeftmostTechnique($msg): int {
         //get the leftmost mono card
         $unsorted_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
         $dbcards = $this->sortCardsByLocationArg($unsorted_dbcards, false);
@@ -520,7 +521,6 @@ class DaleOfMerchants extends DaleTableBasic
         foreach ($dbcards as $dbcard) {
             if ($this->isMonoCard($dbcard)) {
                 $technique_card = $dbcard;
-                $technique_type_id = $this->getTypeId($technique_card);
                 break;
             }
         }
@@ -547,7 +547,22 @@ class DaleOfMerchants extends DaleTableBasic
         //     "wrap_class" => "daleofmerchants-wrap-technique"
         // ));
 
+        return $this->monoPlayTechnique($technique_card);
+    }
+
+    /**
+     * Resolves the immediate effects of a scheduled Mono technique card
+     * IMPORTANT: this helper method assumes the technique card is already in Mono's schedule
+     * @param array $technique_card display this message in monoConfirmAction
+     * @return int representing the result of playing Mono card techniques.
+     * * `MONO_TECHNIQUE_NONE` if Mono didn't play a card.
+     * * `MONO_TECHNIQUE_ACQUIRE` if Mono played a card with a "plus", and "acquire".
+     * * `MONO_TECHNIQUE_NO_ACQUIRE` if Mono played a card with a "plus", but without "acquire".
+     * * `MONO_TECHNIQUE_NO_PLUS` if Mono played a card without a "plus".
+     */
+    function monoPlayTechnique(array $technique_card): int {
         //Get basic information
+        $technique_type_id = $this->getTypeId($technique_card);
         $opponent_id = $this->getActivePlayerId();
 
         //resolve the technique
@@ -854,6 +869,44 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 break;
+            case CT_FLEXIBLEMEMBER:
+                //Get a Mono card from discard
+                $dbcards = $this->cards->getCardsInLocation(DISCARD.MONO_PLAYER_ID);
+                $dbcard = $this->monoPickMonoCard($dbcards);
+                if (!$dbcard) {
+                    $this->discardEntireDeck(clienttranslate('Flexible Member: ${player_name} discards their entire deck'), MONO_PLAYER_ID);
+                    $dbcards = $this->cards->getCardsInLocation(DISCARD.MONO_PLAYER_ID);
+                    $dbcard = $this->monoPickMonoCard($dbcards);
+                }
+                if (!$dbcard) {
+                    //Fizzle (no Mono cards in discard)
+                    $this->notifyAllPlayers('message', clienttranslate('Flexible Member: ${player_name} has no Mono cards in their discard'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
+                    ));
+                }
+                else {
+                    //Play a Mono card from discard
+                    $msg = clienttranslate('Flexible Member: ${player_name} plays ${card_name} from their discard');
+                    $this->cards->moveCard($dbcard["id"], SCHEDULE.MONO_PLAYER_ID);
+                    $this->notifyAllPlayers('discardToSchedule', '', array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "card" => $dbcard,
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    //Confirm action (highlight the scheduled Mono card from discard)
+                    $this->monoConfirmAction($msg, array(
+                        "highlight_schedule_card" => $dbcard,
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    $result = $this->monoPlayTechnique($dbcard); // Resolve the "copied" card
+                    $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card); // Resolve the flexible member
+                    return $result;
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -1059,6 +1112,23 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers(count($cards) == 0 ? 'instant_monoHideHand' : 'monoHideHand', '', array(
             "cards" => $cards
         ));
+    }
+
+    /**
+     * @param $dbcards unsorted array of dbcards to pick from
+     * @return ?array return the topmost (=leftmost) Mono card
+     */
+    function monoPickMonoCard($dbcards) {
+        if (count($dbcards) == 0) {
+            return null;
+        }
+        $sorted_dbcards = $this->sortCardsByLocationArg($dbcards, false);
+        foreach ($sorted_dbcards as $dbcard) {
+            if ($this->isMonoCard($dbcard)) {
+                return $dbcard;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1967,6 +2037,25 @@ class DaleOfMerchants extends DaleTableBasic
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'nbr' => count($cards) + $nbr_unordered_cards,
+        ));
+    }
+
+    /**
+     * The given player discards their entire deck to the discard pile. All players are notified.
+     * @param string $msg notification message for all players
+     * @param mixed $player_id player that will discard the cards from hand
+     */
+    function discardEntireDeck(string $msg, mixed $player_id) {
+        $deck_dbcards = $this->cards->getCardsInLocation(DECK.$player_id);
+        $sorted_deck_dbcards = $this->sortCardsByLocationArg($deck_dbcards, true);      // bottom to top (low to high)
+        $bottom_to_top_deck_card_ids = $this->toCardIds($sorted_deck_dbcards);          // bottom to top
+        $top_to_bottom_deck_card_ids = array_reverse($bottom_to_top_deck_card_ids);     // top to bottom
+        $this->cards->moveCardsOnTop($top_to_bottom_deck_card_ids, DISCARD.$player_id); // IMPORTANT: The top card (highest location_arg) must be the first element of this array
+        $this->notifyAllPlayers('discardEntireDeck', $msg, array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),    
+            "cards" => $deck_dbcards,
+            "card_ids" => $bottom_to_top_deck_card_ids, // IMPORTANT: The top card (highest location_arg) must be the last element of this array
         ));
     }
 
@@ -10196,6 +10285,40 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    /**
+     * Spawn and immediately discard the spawned cards to Mono's discard
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnMonoDiscard(string $name, int $nbr = 1) {
+        try {
+            //When using a prefix, prioritize Mono cards
+            $type_id = $this->nameToTypeId($name, true);
+            $name = $this->card_types[$type_id]['name'];
+        }
+        finally {
+            return $this->spawnDiscard($name, $nbr, MONO_PLAYER_ID);
+        }
+    }
+
+    /**
+     * Spawn and immediately place the spawned cards on Mono's deck
+     * @param string $name prefix of the card name
+     * @param int $nbr (optional) amount of cards to spawn
+     * @return array spawned cards
+     */
+    function spawnMonoDeck(string $name, int $nbr = 1) {
+        try {
+            //When using a prefix, prioritize Mono cards
+            $type_id = $this->nameToTypeId($name, true);
+            $name = $this->card_types[$type_id]['name'];
+        }
+        finally {
+            return $this->spawnDeck($name, $nbr, MONO_PLAYER_ID);
+        }
+    }
+
      /**
      * Spawn cards on top of the supply
      * @param string $name prefix of the card name
@@ -10224,10 +10347,11 @@ class DaleOfMerchants extends DaleTableBasic
      * Spawn cards on top of the current player's deck
      * @param string $name prefix of the card name
      * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards for another player (instead of the current player).
      * @return array spawned cards
      */
-    function spawnDeck(string $name, int $nbr = 1) {
-        $player_id = $this->getCurrentPlayerId();
+    function spawnDeck(string $name, int $nbr = 1, mixed $player_id = null) {
+        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
         $cards = $this->spawn($name, $nbr);
         $this->cards->moveCardsOnTop($this->toCardIds($cards), DECK.$player_id);
         $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', clienttranslate('SPAWN: place cards on deck'), array_merge( array (
@@ -10248,10 +10372,11 @@ class DaleOfMerchants extends DaleTableBasic
      * Spawn and immediately discard the spawned cards
      * @param string $name prefix of the card name
      * @param int $nbr (optional) amount of cards to spawn
+     * @param mixed $player_id (optional) if specified, spawn the cards for another player (instead of the current player).
      * @return array spawned cards
      */
-    function spawnDiscard(string $name, int $nbr = 1) {
-        $player_id = $this->getCurrentPlayerId();
+    function spawnDiscard(string $name, int $nbr = 1, mixed $player_id = null) {
+        $player_id = $player_id === null ? $this->getCurrentPlayerId() : $player_id;
         $cards = $this->spawn($name, $nbr);
         $this->discardMultiple(
             clienttranslate('SPAWN: move cards on discard'),
@@ -10502,6 +10627,18 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers('delay', '10: public', array());
         $this->notifyAllPlayers('delay', '11: public', array());
         //$this->notifyPlayer($player_id, 'message', '12: private', array()); //placing another private notification here extends "Updating game situation..." 
+    }
+
+    function debugMonoDiscardToSchedule() {
+        $dbcards = $this->cards->getCardsInLocation(DISCARD.MONO_PLAYER_ID);
+        $dbcard = reset($dbcards); //dbcard with lowest card_id
+
+        $this->notifyAllPlayers('discardToSchedule', 'DEBUG: debugMonoDiscardToSchedule', array(
+            "player_id" => MONO_PLAYER_ID,
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+            "card" => $dbcard,
+            "card_name" => $this->getCardName($dbcard)
+        ));
     }
 
 

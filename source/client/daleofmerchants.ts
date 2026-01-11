@@ -6717,6 +6717,7 @@ class DaleOfMerchants extends Gamegui
 			['instant_discardToHand', 				1],
 			['discardToHand', 						500],
 			['discardToHandMultiple', 				500],
+			['discardToSchedule',					500],
 			['draw', 								500, true],
 			['drawMultiple', 						500, true],
 			['handToLimbo', 						500, true],
@@ -6738,6 +6739,7 @@ class DaleOfMerchants extends Gamegui
 			['placeOnDeckMultiple', 				500, true],
 			['shuffleDiscard',						500],
 			['reshuffleDeck', 						1500],
+			['discardEntireDeck',					1000],
 			['wilyFellow', 							500],
 			['DEPRECATED_whirligigShuffle', 		1750],
 			['DEPRECATED_whirligigTakeBack', 		500, true],
@@ -7466,6 +7468,13 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	notif_discardToSchedule(notif: NotifAs<'discardToSchedule'>) {
+		console.warn("discardToSchedule", notif);
+		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
+		const schedule = this.playerSchedules[notif.args.player_id]!;
+		this.pileToStock(notif.args.card, discardPile, schedule, +notif.args.card.location_arg);
+	}
+
 	notif_draw(notif: NotifAs<'draw'>) {
 		console.warn("notif_draw");
 		const stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
@@ -7537,6 +7546,27 @@ class DaleOfMerchants extends Gamegui
 		else {
 			this.playerDiscards[notif.args.player_id]!.shuffleToDrawPile(this.playerDecks[notif.args.player_id]!);
 		}
+	}
+
+	notif_discardEntireDeck(notif: NotifAs<'discardEntireDeck'>) {
+		console.warn("discardEntireDeck", notif);
+		const deck = this.playerDecks[notif.args.player_id]!
+		const discard = this.playerDiscards[notif.args.player_id]!
+		const cards = []
+		if (notif.args.card_ids.length != deck.size) {
+			throw new Error(`Server says decksize = ${notif.args.card_ids.length}, client says decksize = ${deck.size}`);
+		}
+		for (let i = 0; i < notif.args.card_ids.length; i++) {
+			const card_id = notif.args.card_ids[i]!;
+			const dbcard = notif.args.cards[card_id];
+			if (!dbcard) {
+				throw new Error(`discardEntireDeck should receive an associative array of dbcards with keys matching the card_ids. card_id ${card_id} was not found as a key.`)
+			}
+			const card = DaleCard.of(dbcard);
+			cards.push(card);
+		}
+		deck.setContent(cards.map(DaleCard.of));
+		deck.shuffleToPile(discard);
 	}
 
 	notif_wilyFellow(notif: NotifAs<'wilyFellow'>) {

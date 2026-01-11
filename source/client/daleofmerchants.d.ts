@@ -110,6 +110,11 @@ declare global {
 			market: boolean
 			player_id: number
 		}
+		'discardEntireDeck': { 
+			player_id: number
+			cards: {[card_id: number]: DbCard}
+			card_ids: number[] //because ordering matters
+		}
 		'wilyFellow': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
@@ -291,6 +296,11 @@ declare global {
 			cards: {[card_id: number]: DbCard} //location_arg matters!
 			nbr: number
 			to_limbo?: boolean
+		}
+		'discardToSchedule': {
+			player_id: number
+			discard_id?: number
+			card: DbCard
 		}
 		'draw': {
 			player_id: number 

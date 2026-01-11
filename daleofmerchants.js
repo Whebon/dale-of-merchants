@@ -2266,7 +2266,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
             if (!div) {
-                throw new Error("Card ".concat(card_id, " does not exist in hand, so setClickable cannot be set"));
+                throw new Error("Card ".concat(card_id, " does not exist this DaleStock, so setClickable cannot be set"));
             }
             if (this.isClickable(card_id)) {
                 div.classList.add("daleofmerchants-clickable");
@@ -2735,6 +2735,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         Pile.prototype.push = function (card, from, onEnd, duration, delay) {
             this.cards.push(card);
             if (from) {
+                if (from instanceof Pile) {
+                    from = from.placeholderHTML;
+                }
                 this._slidingCards.push(card);
                 var slidingElement = card.toDiv(this.placeholderHTML);
                 this.placeholderHTML.appendChild(slidingElement);
@@ -2819,6 +2822,24 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             else {
                 this.pop(drawPile, callback, durationPerPop);
+            }
+        };
+        Pile.prototype.shuffleToPile = function (discardPile, duration) {
+            if (duration === void 0) { duration = 1000; }
+            if (this.cards.length == 0) {
+                return;
+            }
+            if (this === discardPile) {
+                throw new Error('Cannot shuffle to self.');
+            }
+            var n = this.cards.length;
+            var durationPerPop = duration / n;
+            for (var i = 0; i < n; i++) {
+                var card = this.pop();
+                if (card.id == 0) {
+                    throw new Error("shuffleToPile can only be used on piles with known contents. If this is a HiddenPile, call setContent first");
+                }
+                discardPile.push(card, this, null, durationPerPop, durationPerPop * i);
             }
         };
         Pile.prototype.peek = function (exclude_sliding_cards) {
@@ -10507,6 +10528,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['instant_discardToHand', 1],
                 ['discardToHand', 500],
                 ['discardToHandMultiple', 500],
+                ['discardToSchedule', 500],
                 ['draw', 500, true],
                 ['drawMultiple', 500, true],
                 ['handToLimbo', 500, true],
@@ -10528,6 +10550,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['placeOnDeckMultiple', 500, true],
                 ['shuffleDiscard', 500],
                 ['reshuffleDeck', 1500],
+                ['discardEntireDeck', 1000],
                 ['wilyFellow', 500],
                 ['DEPRECATED_whirligigShuffle', 1750],
                 ['DEPRECATED_whirligigTakeBack', 500, true],
@@ -11140,6 +11163,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.playerHandSizes[notif.args.player_id].incValue(notif.args.nbr);
             }
         };
+        DaleOfMerchants.prototype.notif_discardToSchedule = function (notif) {
+            var _a;
+            console.warn("discardToSchedule", notif);
+            var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
+            var schedule = this.playerSchedules[notif.args.player_id];
+            this.pileToStock(notif.args.card, discardPile, schedule, +notif.args.card.location_arg);
+        };
         DaleOfMerchants.prototype.notif_draw = function (notif) {
             var _a;
             console.warn("notif_draw");
@@ -11202,6 +11232,26 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 this.playerDiscards[notif.args.player_id].shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
             }
+        };
+        DaleOfMerchants.prototype.notif_discardEntireDeck = function (notif) {
+            console.warn("discardEntireDeck", notif);
+            var deck = this.playerDecks[notif.args.player_id];
+            var discard = this.playerDiscards[notif.args.player_id];
+            var cards = [];
+            if (notif.args.card_ids.length != deck.size) {
+                throw new Error("Server says decksize = ".concat(notif.args.card_ids.length, ", client says decksize = ").concat(deck.size));
+            }
+            for (var i = 0; i < notif.args.card_ids.length; i++) {
+                var card_id = notif.args.card_ids[i];
+                var dbcard = notif.args.cards[card_id];
+                if (!dbcard) {
+                    throw new Error("discardEntireDeck should receive an associative array of dbcards with keys matching the card_ids. card_id ".concat(card_id, " was not found as a key."));
+                }
+                var card = DaleCard_9.DaleCard.of(dbcard);
+                cards.push(card);
+            }
+            deck.setContent(cards.map(DaleCard_9.DaleCard.of));
+            deck.shuffleToPile(discard);
         };
         DaleOfMerchants.prototype.notif_wilyFellow = function (notif) {
             var discard = this.playerDiscards[notif.args.player_id];
