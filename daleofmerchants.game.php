@@ -4886,11 +4886,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDEPRECATED_Whirligig");
                 break;
-            case CT_DEPRECATED_WHIRLIGIG:
+            case CT_WHIRLIGIG:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $nbr = $this->rollDie(
-                    clienttranslate('DEPRECATED_Whirligig: ${player_name} rolls ${die_icon}'),
+                    clienttranslate('Whirligig: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_OCELOTS,
                     $technique_card,
                 );
@@ -4908,7 +4908,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "to_player_id" => $opponent_id,
                     "nbr" => $nbr
                 ));
-                $this->notifyAllPlayers('deckToDeck', clienttranslate('DEPRECATED_Whirligig: ${player_name} and ${opponent_name} swap ${nbr} card(s) between the tops of their decks'), array(
+                $this->notifyAllPlayers('deckToDeck', clienttranslate('Whirligig: ${player_name} and ${opponent_name} swap ${nbr} card(s) between the tops of their decks'), array(
                     "from_player_id" => $opponent_id,
                     "to_player_id" => $player_id,
                     "nbr" => $nbr,
