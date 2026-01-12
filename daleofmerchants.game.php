@@ -950,6 +950,13 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                 ));
                 break;
+            case CT_CUNNINGMEMBER:
+                // Mono draws 1 🃏 from its and your deck. It gives you the lower valued 🃏 of those. Acquire.
+                $mono_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from their deck'), false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                $opponent_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from your deck'), false, $opponent_id, MONO_PLAYER_ID);
+                $dbcards = array_merge($mono_dbcards, $opponent_dbcards);
+                throw new BgaUserException("TODO: Implement CT_CUNNINGMEMBER");
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -1778,9 +1785,9 @@ class DaleOfMerchants extends DaleTableBasic
      * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
      * @param string $private_message (optional) by default, send the public message - if provided, send a special private message
      * @param array $msg_args (optional) - additional args to display in the `$msg`
-     * @return int how much cards were actually drawn (`<= $nbr`)
+     * @return array an array holding the much cards were actually drawn (`<= $nbr`)
      */
-    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, string $private_message = null, array $msg_args = array()) {
+    function draw(string $msg, int $nbr = 1, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, string $private_message = null, array $msg_args = array()): array {
         if ($from_player_id == null) {
             $from_player_id = $this->getActivePlayerId();
         }
@@ -1789,30 +1796,30 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $to_location = $to_limbo ? LIMBO.$to_player_id : HAND.$to_player_id;
         if ($nbr == 1) {
-            $card = $this->cards->pickCardForLocation(DECK.$from_player_id, $to_location);
-            if ($card) {
+            $dbcard = $this->cards->pickCardForLocation(DECK.$from_player_id, $to_location);
+            if ($dbcard) {
                 $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array_merge(array(
                     "player_id" => $to_player_id,
                     "player_name" => $this->getPlayerNameByIdInclMono($to_player_id),
                     "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameByIdInclMono($from_player_id),
                     "nbr" => 1,
                     "_private" => array(
-                        "card" => $card,
-                        "card_name" => $this->getCardName($card)
+                        "card" => $dbcard,
+                        "card_name" => $this->getCardName($dbcard)
                     ),
                     "deck_player_id" => $from_player_id,
                     "to_limbo" => $to_limbo
                 ), $msg_args), $private_message);
                 if (!$to_limbo) {
-                    $this->removeMonoCardsFromPlayerHand($to_player_id, array($card));
+                    $this->removeMonoCardsFromPlayerHand($to_player_id, array($dbcard));
                 }
-                return 1;
+                return array($dbcard);
             }
-            return 0;
+            return array();
         }
         else {
-            $cards = $this->cards->pickCardsForLocation($nbr, DECK.$from_player_id, $to_location);
-            $actual_nbr = count($cards);
+            $dbcards = $this->cards->pickCardsForLocation($nbr, DECK.$from_player_id, $to_location);
+            $actual_nbr = count($dbcards);
             if ($actual_nbr > 0)
             $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array_merge(array(
                 "player_id" => $to_player_id,
@@ -1820,17 +1827,58 @@ class DaleOfMerchants extends DaleTableBasic
                 "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameByIdInclMono($from_player_id),
                 "nbr" => $actual_nbr,
                 "_private" => array(
-                    "cards" => $cards
+                    "cards" => $dbcards
                 ),
                 "deck_player_id" => $from_player_id,
                 "to_limbo" => $to_limbo
             ), $msg_args), $private_message);
             if (!$to_limbo) {
-                $this->removeMonoCardsFromPlayerHand($to_player_id, $cards);
+                $this->removeMonoCardsFromPlayerHand($to_player_id, $dbcards);
             }
-            return $actual_nbr;
+            return $dbcards;
         }
     }
+
+    // TODO: safely remove this
+    // /**
+    //  * Draw 1 card from your deck and place it into your hand. Duplicate of `draw`, but it returns the card drawn.
+    //  * @param string $msg notification message for all players
+    //  * @param bool $to_limbo (optional) default false. If true, the cards are placed in limbo. If false, the cards are placed in hand.
+    //  * @param string $from_player_id (optional) default active player. If provided, draw cards from this player's deck instead. May also be MARKET.
+    //  * @param string $to_player_id (optional) default active player. If provided, draw cards for this player instead.
+    //  * @param string $private_message (optional) by default, send the public message - if provided, send a special private message
+    //  * @param array $msg_args (optional) - additional args to display in the `$msg`
+    //  * @return int how much cards were actually drawn (`<= $nbr`)
+    //  */
+    // function draw1(string $msg, bool $to_limbo = false, string $from_player_id = null, string $to_player_id = null, string $private_message = null, array $msg_args = array()) {
+    //     if ($from_player_id == null) {
+    //         $from_player_id = $this->getActivePlayerId();
+    //     }
+    //     if ($to_player_id == null) {
+    //         $to_player_id = $this->getActivePlayerId();
+    //     }
+    //     $to_location = $to_limbo ? LIMBO.$to_player_id : HAND.$to_player_id;
+    //     $dbcard = $this->cards->pickCardForLocation(DECK.$from_player_id, $to_location);
+    //     if ($dbcard) {
+    //         $this->notifyAllPlayersWithPrivateArguments('draw', $msg, array_merge(array(
+    //             "player_id" => $to_player_id,
+    //             "player_name" => $this->getPlayerNameByIdInclMono($to_player_id),
+    //             "opponent_name" => ($from_player_id == MARKET) ? MARKET : $this->getPlayerNameByIdInclMono($from_player_id),
+    //             "nbr" => 1,
+    //             "_private" => array(
+    //                 "card" => $dbcard,
+    //                 "card_name" => $this->getCardName($dbcard)
+    //             ),
+    //             "deck_player_id" => $from_player_id,
+    //             "to_limbo" => $to_limbo
+    //         ), $msg_args), $private_message);
+    //         if (!$to_limbo) {
+    //             $this->removeMonoCardsFromPlayerHand($to_player_id, array($dbcard));
+    //         }
+    //         return $dbcard;
+    //     }
+    //     return null;
+    // }
 
     /**
      * Draw a specific card from your deck and place it into your hand. Then, shuffle the deck
@@ -5941,7 +5989,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_ICETRADE:
                 $x = $this->spendX($player_id, $args, 1, 1000, $this->_("Ice Trade"));
-                $nbr = $this->draw(
+                $this->draw(
                     clienttranslate('Ice Trade: ${player_name} draws 1 card from the supply'), 
                     1, 
                     false, 
@@ -9589,16 +9637,16 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stSpyglass() {
         //Drawing to limbo happens in an "st" to ensure limbo is created after the state has been entered. Otherwise it flickers "Your Limbo"
-        $nbr = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 cards'), 3, true);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 cards'), 3, true);
+        if (count($dbcards) == 0) {
             //skyglass has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 
     function stHistoryLesson() {
-        $nbr = $this->draw(clienttranslate('History Lesson: ${player_name} draws 3 cards'), 3, true);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('History Lesson: ${player_name} draws 3 cards'), 3, true);
+        if (count($dbcards) == 0) {
             //history lesson has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
@@ -9628,10 +9676,10 @@ class DaleOfMerchants extends DaleTableBasic
             default:
                 throw new BgaVisibleSystemException("stSpecialOffer: unexpected resolving card with type_id = ".$type_id);
         }
-        $actual_nbr = $this->draw(clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} cards'), $nbr, true, MARKET, null, null, array(
+        $dbcards = $this->draw(clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} cards'), $nbr, true, MARKET, null, null, array(
             "resolving_card_name" => $this->getCardName($dbcard)
         ));
-        if ($actual_nbr == 0) {
+        if (count($dbcards) == 0) {
             //special offer has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
@@ -9676,8 +9724,8 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stSabotage() {
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $nbr = $this->draw(clienttranslate('Sabotage: ${player_name} draws 2 cards from ${opponent_name}\'s deck'), 2, true, $opponent_id);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('Sabotage: ${player_name} draws 2 cards from ${opponent_name}\'s deck'), 2, true, $opponent_id);
+        if (count($dbcards) == 0) {
             //sabotage has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
@@ -9699,8 +9747,8 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stDangerousTest() {
-        $nbr = $this->draw(clienttranslate('Dangerous Test: ${player_name} draws 3 cards'), 3, false);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('Dangerous Test: ${player_name} draws 3 cards'), 3, false);
+        if (count($dbcards) == 0) {
             //dangerous test has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
@@ -9808,7 +9856,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $player_ids = $this->getGameStateValuePlayerIds();
         foreach ($player_ids as $other_player_id) {
-            $nbr = $this->draw(
+            $dbcards = $this->draw(
                 clienttranslate('Rumours: ${player_name} looks at a card from ${opponent_name}\'s deck'), 
                 1, 
                 true, 
@@ -9816,7 +9864,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $player_id,
                 clienttranslate('Rumours: ${player_name} looks at ${opponent_name}\'s ${card_name}')
             );
-            if ($nbr == 0) {
+            if (count($dbcards) == 0) {
                 throw new BgaVisibleSystemException("Rumours: expected all players from 'getGameStateValuePlayerIds' to have a card in their deck/discard");
             }
         }
@@ -9825,14 +9873,14 @@ class DaleOfMerchants extends DaleTableBasic
     function stSouvenirs() {
         $player_id = $this->getActivePlayerId();
         $nbr = $this->getPlayersNumberInclMono();
-        $nbr = $this->draw(
+        $dbcards = $this->draw(
             clienttranslate('Souvenirs: ${player_name} draws ${nbr} card(s) from the supply'), 
             $nbr, 
             true, 
             MARKET, 
             $player_id
         );
-        if ($nbr == 0) {
+        if (count($dbcards) == 0) {
             throw new BgaVisibleSystemException("Entered the 'souvenirs' gamestate with an empty supply. The card should have fizzled instead.");
         }
     }
@@ -9840,11 +9888,11 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stDaringAdventurer() {
         $die_value = $this->getGameStateValue("die_value");
-        $nbr_cards_drawn =$this->draw(
+        $dbcards = $this->draw(
             clienttranslate('Daring Adventurer: ${player_name} draws ${nbr} cards'), 
             $die_value
         );
-        if ($nbr_cards_drawn == 0) {
+        if (count($dbcards) == 0) {
             //daring adventurer has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
@@ -9855,8 +9903,8 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stDelightfulSurprise() {
-        $nbr = $this->draw(clienttranslate('Delightful Surprise: ${player_name} draws ${nbr} cards'), 2, true, MARKET);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('Delightful Surprise: ${player_name} draws ${nbr} cards'), 2, true, MARKET);
+        if (count($dbcards) == 0) {
             //just toss the delightful surprise
             $this->fullyResolveCard($this->getActivePlayerId(), null, DISCARD.MARKET);
         }
@@ -9901,14 +9949,14 @@ class DaleOfMerchants extends DaleTableBasic
     function stDelicacy() {
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $nbr = $this->draw(
+        $dbcards = $this->draw(
             clienttranslate('Delicacy: ${player_name} draws ${nbr} cards from ${opponent_name}\'s deck'),
             2,
             true,
             $opponent_id,
             $player_id
         );
-        if ($nbr == 0) {
+        if (count($dbcards) == 0) {
             //delicacy has no effect
             $this->fullyResolveCard($player_id);
         }
@@ -9974,16 +10022,16 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stTravelingEquipment() {
-        $nbr = $this->draw(clienttranslate('Traveling Equipment: ${player_name} draws 2 cards'), 2);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('Traveling Equipment: ${player_name} draws 2 cards'), 2);
+        if (count($dbcards) == 0) {
             //traveling equipment has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 
     function stDEPRECATED_Insight() {
-        $nbr = $this->draw(clienttranslate('DEPRECATED_Insight: ${player_name} looks at the top ${nbr} cards of their deck'), 2, true);
-        if ($nbr == 0) {
+        $dbcards = $this->draw(clienttranslate('DEPRECATED_Insight: ${player_name} looks at the top ${nbr} cards of their deck'), 2, true);
+        if (count($dbcards) == 0) {
             //DEPRECATED_insight has no effect (but since it is a finish technique, do not fully resolve it)
             $this->gamestate->nextState("trSamePlayer");
         }
@@ -9994,8 +10042,8 @@ class DaleOfMerchants extends DaleTableBasic
         $type_id = (int)$this->getTypeId($dbcard);
         switch ($type_id) {
             case CT_BADOMEN:
-                $nbr = $this->draw(clienttranslate('Bad Omen: ${player_name} draws ${nbr} cards'), 3, true);
-                if ($nbr == 0) {
+                $dbcards = $this->draw(clienttranslate('Bad Omen: ${player_name} draws ${nbr} cards'), 3, true);
+                if (count($dbcards) == 0) {
                     //bad omen has no effect
                     $this->fullyResolveCard($this->getActivePlayerId());
                 }
@@ -10004,8 +10052,8 @@ class DaleOfMerchants extends DaleTableBasic
                 $player_id = $this->getActivePlayerId();
                 $nbr = $this->cards->countCardsInLocation(LIMBO.$player_id);
                 if ($nbr == 0) {
-                    $nbr = $this->draw(clienttranslate('Duplicate Entry: ${player_name} draws ${nbr} cards'), 2, true);
-                    if ($nbr == 0) {
+                    $dbcards = $this->draw(clienttranslate('Duplicate Entry: ${player_name} draws ${nbr} cards'), 2, true);
+                    if (count($dbcards) == 0) {
                         //duplicate entry has no effect
                         $this->fullyResolveCard($this->getActivePlayerId());
                     }
@@ -10014,22 +10062,6 @@ class DaleOfMerchants extends DaleTableBasic
             default:
                 throw new BgaVisibleSystemException("stBadOmen: unexpected resolving card with type_id = ".$type_id);
         }
-
-        //TODO safely delete this
-        // $player_id = $this->getActivePlayerId();
-        // $nbr = $this->cards->countCardsInLocation(LIMBO.$player_id);
-        // if ($nbr > 0) {
-        //     //there are already cards in limbo
-        //     return;
-        // }
-        // //if no cards are in limbo, attempt to draw 3 cards
-        // $nbr = $this->draw(clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} cards'), 3, true, $player_id, $player_id, null, array(
-        //     "resolving_card_name" => $this->getCurrentResolvingCardName()
-        // ));
-        // if ($nbr == 0) {
-        //     //bad omen has no effect
-        //     $this->fullyResolveCard($this->getActivePlayerId());
-        // }
     }
     
     function stSerenade() {
