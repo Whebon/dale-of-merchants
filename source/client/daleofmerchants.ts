@@ -8046,6 +8046,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.myLimbo.setSelectionMode('none', icon, args.wrap_class, _("Mono's hand"), undefined, Infinity);
 			}
+			var high_priority_divs = Array<HTMLElement>();
 			if (args.highlight_limbo_cards !== undefined) {
 				//highlight cards in Mono's hand
 				for (let card_id in args.highlight_limbo_cards) {
@@ -8053,6 +8054,7 @@ class DaleOfMerchants extends Gamegui
 					this.myLimbo.selectItem(+dbcard.id);
 					//The card(s) could have one of the animations, like the one where its scale pulses a bit //Sami
 					DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority"); 
+					high_priority_divs.push(DaleCard.of(dbcard).div);
 				}
 			}
 			if (args.highlight_hand_cards !== undefined) {
@@ -8062,6 +8064,7 @@ class DaleOfMerchants extends Gamegui
 					this.myHand.selectItem(+dbcard.id);
 					//The card(s) could have one of the animations, like the one where its scale pulses a bit //Sami
 					DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority"); 
+					high_priority_divs.push(DaleCard.of(dbcard).div);
 				}
 			}
 			if (args.highlight_schedule_card !== undefined) {
@@ -8076,6 +8079,12 @@ class DaleOfMerchants extends Gamegui
 			this.setDescriptionOnMyTurn(args.description, args);
 			dojo.removeClass("ebd-body", "lockedInterface");
 			this.addActionButton("mono-confirm-action-button", _("Confirm"), () => {
+				for (const div of high_priority_divs) {
+					div.classList.remove("daleofmerchants-high-priority")
+				}
+				this.myLimbo.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
+				this.monoSchedule.setSelectionMode('none');
 				this.removeActionButtons();
 				this.restoreMainTitle();
 				resolve();

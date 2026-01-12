@@ -11681,11 +11681,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                         }
                                         _this.myLimbo.setSelectionMode('none', icon, args.wrap_class, _("Mono's hand"), undefined, Infinity);
                                     }
+                                    var high_priority_divs = Array();
                                     if (args.highlight_limbo_cards !== undefined) {
                                         for (var card_id in args.highlight_limbo_cards) {
                                             var dbcard = args.highlight_limbo_cards[card_id];
                                             _this.myLimbo.selectItem(+dbcard.id);
                                             DaleCard_9.DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority");
+                                            high_priority_divs.push(DaleCard_9.DaleCard.of(dbcard).div);
                                         }
                                     }
                                     if (args.highlight_hand_cards !== undefined) {
@@ -11693,6 +11695,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                             var dbcard = args.highlight_hand_cards[card_id];
                                             _this.myHand.selectItem(+dbcard.id);
                                             DaleCard_9.DaleCard.of(dbcard).div.classList.add("daleofmerchants-high-priority");
+                                            high_priority_divs.push(DaleCard_9.DaleCard.of(dbcard).div);
                                         }
                                     }
                                     if (args.highlight_schedule_card !== undefined) {
@@ -11707,6 +11710,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                     _this.setDescriptionOnMyTurn(args.description, args);
                                     dojo.removeClass("ebd-body", "lockedInterface");
                                     _this.addActionButton("mono-confirm-action-button", _("Confirm"), function () {
+                                        for (var _i = 0, high_priority_divs_1 = high_priority_divs; _i < high_priority_divs_1.length; _i++) {
+                                            var div = high_priority_divs_1[_i];
+                                            div.classList.remove("daleofmerchants-high-priority");
+                                        }
+                                        _this.myLimbo.setSelectionMode('none');
+                                        _this.myHand.setSelectionMode('none');
+                                        _this.monoSchedule.setSelectionMode('none');
                                         _this.removeActionButtons();
                                         _this.restoreMainTitle();
                                         resolve();

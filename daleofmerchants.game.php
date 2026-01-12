@@ -952,10 +952,39 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_CUNNINGMEMBER:
                 // Mono draws 1 🃏 from its and your deck. It gives you the lower valued 🃏 of those. Acquire.
-                $mono_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from their deck'), false, MONO_PLAYER_ID, MONO_PLAYER_ID);
-                $opponent_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from your deck'), false, $opponent_id, MONO_PLAYER_ID);
+                $mono_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from their deck'), 1, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                $opponent_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from your deck'), 1, false, $opponent_id, MONO_PLAYER_ID);
                 $dbcards = array_merge($mono_dbcards, $opponent_dbcards);
-                throw new BgaUserException("TODO: Implement CT_CUNNINGMEMBER");
+                if (count($dbcards) > 0) {
+                    // Give the lower valued card
+                    $lowest_valued_dbcard = $this->monoPickLowestValuedCard($dbcards);
+                    $this->monoConfirmAction(clienttranslate('Cunning Member: ${player_name} gives ${card_name} to ${opponent_name}'), array(
+                        "highlight_limbo_cards" => array($lowest_valued_dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($lowest_valued_dbcard),
+                    ));
+                    $this->cards->moveCard($lowest_valued_dbcard["id"], HAND.$opponent_id);
+                    $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', '', array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "opponent_id" => $opponent_id,
+                        "_private" => array(
+                            "card" => $lowest_valued_dbcard,
+                        )
+                    ));
+                    // Notify about the card that mono keeps
+                    foreach ($dbcards as $other_dbcard) {
+                        if ($other_dbcard != $lowest_valued_dbcard) {
+                            $this->monoConfirmAction(clienttranslate('Cunning Member: ${player_name} keeps ${card_name}'), array(
+                                "highlight_limbo_cards" => array($other_dbcard),
+                                "wrap_class" => "daleofmerchants-wrap-technique",
+                                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                                "card_name" => $this->getCardName($other_dbcard),
+                            ));
+                        }
+                    }
+                }
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(

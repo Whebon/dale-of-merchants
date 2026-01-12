@@ -42,7 +42,6 @@
 	  },
 
 	"102": {
-		//unused, but might be helpful later
 		"name": "Mono's turn style (solo-mode)",
 		"needReload": false,
 		"values": {
