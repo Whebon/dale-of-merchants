@@ -458,6 +458,8 @@ declare global {
 		'inDeckSelection': boolean
 		'disabledAnimalfolkIds': number[]
 		'animalfolkIds': number[]
+
+		'monoHand': {[card_id: number]: DbCard} | undefined
 	}
 
 	type ClientChoiceSubsetValidation<T extends Record<keyof T, unknown>, U extends Record<string, unknown>> = {

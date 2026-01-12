@@ -243,6 +243,10 @@ class DaleOfMerchants extends DaleTableBasic
             $this->DISABLED_ANIMALFOLK_IDS,
             $this->DISABLED_SOLO_ANIMALFOLK_IDS
         ) : $this->DISABLED_ANIMALFOLK_IDS;
+
+        if ($this->isSoloGame() && $this->gamestate->state()["name"] == "gameEnd") {
+            $result['monoHand'] = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        }
   
         return $result;
     }
@@ -9656,6 +9660,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->setStat($nbr, "cards_remaining", $player_id);
         }
         if ($this->isSoloGame()) {
+            $this->monoShowHand();
             $score_player = $this->getScore($this->getActivePlayerId());
             $score_mono = $this->getScore(MONO_PLAYER_ID);
             $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"

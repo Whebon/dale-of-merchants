@@ -5055,6 +5055,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var effect = gamedatas.effects[i];
                 DaleCard_9.DaleCard.addEffect(new DbEffect_1.DbEffect(effect));
             }
+            if (gamedatas.monoHand) {
+                this.monoShowHand(gamedatas.monoHand);
+            }
             this.showAnimalfolkSpecificGameComponents();
             this.setupNotifications();
             console.warn("Ending game setup");
@@ -11404,13 +11407,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_monoShowHand = function (notif) {
             console.warn("notif_monoShowHand", notif.args);
+            this.monoShowHand(notif.args.cards);
+        };
+        DaleOfMerchants.prototype.monoShowHand = function (cards) {
             if (!this.is_solo || !this.unique_opponent_id) {
                 throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
             }
-            this.myLimbo.enableSortItems = false;
+            if (this.mono_hand_is_visible) {
+                return;
+            }
             this.mono_hand_is_visible = true;
+            this.myLimbo.enableSortItems = false;
             this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Mono's hand"));
-            var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
+            var sortedCards = this.sortCardsByLocationArg(cards, true);
             for (var i in sortedCards) {
                 var card = sortedCards[i];
                 this.myLimbo.addDaleCardToStock(DaleCard_9.DaleCard.of(card), "overall_player_board_" + this.unique_opponent_id);

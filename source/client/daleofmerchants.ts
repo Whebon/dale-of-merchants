@@ -377,6 +377,11 @@ class DaleOfMerchants extends Gamegui
 			DaleCard.addEffect(new DbEffect(effect));
 		}
 
+		//show monos hand (end of game)
+		if (gamedatas.monoHand) {
+			this.monoShowHand(gamedatas.monoHand)
+		}
+
 		//TODO: safely remove this
 		// //fix the zoom for popins
 		// const overallContent = $("overall-content")
@@ -7740,13 +7745,21 @@ class DaleOfMerchants extends Gamegui
 
 	notif_monoShowHand(notif: NotifAs<'monoShowHand'>) {
 		console.warn("notif_monoShowHand", notif.args);
+		this.monoShowHand(notif.args.cards);
+
+	}
+
+	monoShowHand(cards: {[card_id: number]: DbCard}) {
 		if (!this.is_solo || !this.unique_opponent_id) {
 			throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
 		}
-		this.myLimbo.enableSortItems = false; //important: this is needed to enable the left-to-right ordering! (on Mono's turn)
+		if (this.mono_hand_is_visible) {
+			return; //end of game => Mono shows hand. but if this was Mono's turn, then the hand was already being visible
+		}
 		this.mono_hand_is_visible = true;
+		this.myLimbo.enableSortItems = false; //important: this is needed to enable the left-to-right ordering! (on Mono's turn)
 		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Mono's hand"));
-		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
+		const sortedCards = this.sortCardsByLocationArg(cards, true);
 		for (let i in sortedCards) {
 			let card = sortedCards[i]!;
 			this.myLimbo.addDaleCardToStock(DaleCard.of(card), "overall_player_board_"+this.unique_opponent_id);
