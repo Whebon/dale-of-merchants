@@ -380,8 +380,11 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * Rearrange the cards using the provided ordering
      */
     public rearrange(card_ids: number[]) {
+        console.warn("rearrange", card_ids);
         if (this.getCards().length != card_ids.length) {
-            throw new Error("market.rearrange failed: the number of cards must remain the same after rearranging");
+            throw new Error(`market.rearrange failed: the number of cards must remain the same after rearranging. \
+                Current: ${this.getCards().length}. After rearranging: ${card_ids.length}`
+            );
         }
         let arrangementChanged = false;
         const froms = new Map<number, HTMLElement>();

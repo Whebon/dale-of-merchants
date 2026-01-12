@@ -583,8 +583,9 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
-				if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
-					this.myDiscard.openPopin();
+				//Do not open the popin when client states are being closed
+				if (!this.buildActionSuccessful && DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
+					this.myDiscard.openPopin(); 
 				}
 				break;
 			case 'bonusBuild':
@@ -595,7 +596,8 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
-				if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
+				//Do not open the popin when leaving the client state
+				if (!this.buildActionSuccessful && DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
 					this.myDiscard.openPopin();
 				}
 				break;
@@ -4114,10 +4116,10 @@ class DaleOfMerchants extends Gamegui
 				market_card_id: card_id,
 				args: JSON.stringify(args.optionalArgs)
 			}).then(() => {
-				this.mainClientState.leaveAllAndDontReturn(); //see issue #97.2 and #97.3
-				// while (this.gamedatas.gamestate.name != 'client_purchase') {
-				// 	this.mainClientState.leave(); //see issue #97.2 and #97.3
-				// }
+				//if the purchase is successful, nicely close the stack of client states
+				while (this.gamedatas.gamestate.name != 'client_purchase') {	
+					this.mainClientState.leave(); //see issue #97.2 and #97.3
+				}
 			});
 
 		}
@@ -5259,6 +5261,8 @@ class DaleOfMerchants extends Gamegui
 		this.onBuild();
 	}
 
+	private buildActionSuccessful: boolean = false;
+
 	onBuild() {
 		const args = this.mainClientState.args as ClientGameStates['client_build'];
 		console.warn("onBuild", args);
@@ -5293,12 +5297,12 @@ class DaleOfMerchants extends Gamegui
 			stack_card_ids_from_discard: this.arrayToNumberList(args.stack_card_ids_from_discard),
 			args: JSON.stringify(args.optionalArgs)
 		}).then(() => {
-			this.mainClientState.leaveAllAndDontReturn(); //see issue #97.2 and #97.3
-			//The code below was removed because in case of CT_CULTURALPRESERVATION, it opens the discard again
 			//if the build is successful, nicely close the stack of client states
-			// while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'bonusBuild') {
-			// 	this.mainClientState.leave(); //see issue #97.2 and #97.3
-			// }
+			this.buildActionSuccessful = true; //workaround to not open the discard pile with CT_CULTURALPREVERSION
+			while (this.gamedatas.gamestate.name != 'client_build' && this.gamedatas.gamestate.name != 'bonusBuild') {
+				this.mainClientState.leave(); //see issue #97.2 and #97.3
+			}
+			this.buildActionSuccessful = false;
 		});
 	}
 	
@@ -7112,12 +7116,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_rearrangeMarket(notif: NotifAs<'rearrangeMarket'>) {
+		console.warn("notif_rearrangeMarket", notif.args);
 		this.market!.rearrange(notif.args.card_ids);
 	}
 
 	notif_fillEmptyMarketSlots(notif: NotifAs<'fillEmptyMarketSlots'>) {
-		console.warn("notif_fillEmptyMarketSlots");
-		console.warn(notif.args);
+		console.warn("notif_fillEmptyMarketSlots", notif.args);
 		const cards = notif.args.cards;
 		const positions = notif.args.positions;
 		if (cards.length != positions.length) {

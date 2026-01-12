@@ -348,7 +348,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * Same as `getPlayerNameByIdInclMono`, but also works for solo-mode
+     * Same as `getPlayerNameById`, but also works for solo-mode
      */
     function getPlayerNameByIdInclMono(mixed $player_id) {
         if ($player_id == MONO_PLAYER_ID) {
@@ -568,9 +568,11 @@ class DaleOfMerchants extends DaleTableBasic
         //resolve the technique
         switch($technique_type_id) {
             case CT_SWIFTMEMBER:
+                //Mono draws 3 🃏🃏🃏. Acquire.
                 $this->draw(clienttranslate('Swift Member: ${player_name} draws ${nbr} cards'), 3, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
             case CT_LOYALMEMBER:
+                //Mono takes the highest printed valued 🃏 from the market.
                 $market_cards = $this->cards->getCardsInLocation(MARKET);
                 $market_card = $this->monoPickHighestValuedCard($market_cards);
                 if ($market_card) {
@@ -593,12 +595,14 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_STASHINGMEMBER:
+                //Mono can use junk 🃏🃏🃏 to build this turn.
                 $this->notifyAllPlayers('message', clienttranslate('Stashing Member: ${player_name} can use junk to build this turn'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                 ));
                 $this->effects->insertGlobal(0, CT_STASHINGMEMBER);
                 break;
             case CT_BOLDMEMBER:
+                //Roll 🐱. Swap that many 🃏🃏🃏 between the tops of your and Mono’s decks. Acquire.
                 $nbr = $this->rollDie(
                     clienttranslate('Bold Member: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_OCELOTS,
@@ -630,9 +634,11 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 break;
             case CT_STEADYMEMBER:
+                //At the start of Mono’s next turn, it takes the leftmost 🃏 from the market.
                 //no immediate effects
                 break;
             case CT_LITTLEMEMBER:
+                //"Mono draws 1 🃏 from your deck. It places back its lowest 🃏. Acquire."
                 $this->draw(
                     clienttranslate('Little Member: ${player_name} draws a card from ${opponent_name}\' deck'), 
                     1, false, $opponent_id, MONO_PLAYER_ID, 
@@ -655,6 +661,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_DARINGMEMBER:
+                //Roll 💈. Multiply the value of each 🃏 Mono uses this turn by the rolled value. Acquire.
                 $die_value = $this->rollDie(
                     clienttranslate('Daring Member: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_POLECATS,
@@ -670,6 +677,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertGlobal($technique_card["id"], CT_DARINGMEMBER, $die_value);
                 break;
             case CT_RIGOROUSMEMBER:
+                //Mono discards all junk 🃏🃏🃏. It draws as many 🃏🃏🃏 +1. Acquire.
                 $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
                 $dbcards = $this->sortCardsByLocationArg($dbcards, false);
                 $junk_ids = array();
@@ -689,6 +697,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Rigorous Member: ${player_name} draws ${nbr} card(s)'), count($junk_ids)+1, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
             case CT_ARCANEMEMBER:
+                //Roll 🐰. Mono draws 1 🃏 from [☄️: nowhere] [🪐: the supply] [✨: its deck]. Acquire.
                 $value = $this->rollDie(
                     clienttranslate('Arcane Member: ${player_name} rolls ${die_icon}'),
                     ANIMALFOLK_HARES,
@@ -722,6 +731,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_FUMBLINGMEMBER:
+                //Roll ❇️✳️. Look at 1 🃏 from your [source]. If it is not junk, place it into Mono's [destination]. Acquire.
                 $this->rollPangolinDice(
                     clienttranslate('Fumbling Dreamer: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
                     $technique_card,
@@ -778,6 +788,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_MEDDLINGMEMBER:
+                //Place 1 junk 🃏 from Mono’s discard and 1 junk 🃏 from the junkyard on your discard. Acquire.
                 $discard_cards_unsorted = $this->cards->getCardsInLocation(DISCARD.MONO_PLAYER_ID);
                 $discard_cards = $this->sortCardsByLocationArg($discard_cards_unsorted, false);
                 foreach ($discard_cards as $dbcard) {
@@ -807,6 +818,7 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 break;
             case CT_WILYMEMBER:
+                //"Mono swaps 1 random 🃏 from you with 1 junk 🃏 from it. Acquire."
                 $opponent_dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($opponent_dbcards) == 0) {
                     //fizzle (player has no cards)
@@ -870,6 +882,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_FLEXIBLEMEMBER:
+                //If Mono's discard has no Mono 🃏🃏🃏, discard its deck. Mono plays 1 Mono 🃏 from its discard.
                 //Get a Mono card from discard
                 $dbcards = $this->cards->getCardsInLocation(DISCARD.MONO_PLAYER_ID);
                 $dbcard = $this->monoPickMonoCard($dbcards);
@@ -906,6 +919,36 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card); // Resolve the flexible member
                     return $result;
                 }
+                break;
+            case CT_TIRELESSMEMBER:
+                //"Order 🃏🃏🃏 in the market from the highest to lowest value. Mono ignores the market's added costs this turn. Acquire."
+                //Calculate the new order
+                $market_dbcards = $this->cards->getCardsInLocation(MARKET);
+                uasort($market_dbcards, function ($a, $b) {
+                    $a_value = $this->getOriginalValue($a);
+                    $b_value = $this->getOriginalValue($b);
+                    if ($a_value == $b_value) {
+                        return $a['location_arg'] <=> $b['location_arg'];
+                    }
+                    return $a_value <=> $b_value;
+                });
+                $market_cards_ids = $this->toCardIds($market_dbcards);
+                //Apply the order on the server-side
+                $pos = 0;
+                foreach ($market_cards_ids as $calculations_card_id) {
+                    $this->cards->moveCard($calculations_card_id, MARKET, $pos);
+                    $pos += 1;
+                }
+                //Notify the player
+                $this->notifyAllPlayers('rearrangeMarket', clienttranslate('Tireless Member: ${player_name} rearranges the market'), array (
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "card_ids" => $market_cards_ids,
+                ));
+                //Insert an effect that ignores market added cost
+                $this->effects->insertGlobal(0, CT_TIRELESSMEMBER);
+                $this->notifyAllPlayers('message', clienttranslate('Tireless Member: ${player_name} ignores the market\'s added cost this turn'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                ));
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -1586,7 +1629,7 @@ class DaleOfMerchants extends DaleTableBasic
     function toCardIds(array $dbcards){
         $card_ids = array();
         foreach ($dbcards as $card) {
-            $card_ids[] = $card["id"];
+            $card_ids[] = (int)$card["id"]; //casting for CT_TIRELESSMEMBER, this could be causing a bug somewhere else
         }
         return $card_ids;
     }
@@ -2537,7 +2580,10 @@ class DaleOfMerchants extends DaleTableBasic
         if ($dbcard['location'] != MARKET) {
             return $base_cost;
         }
-        $total_cost = $base_cost + $dbcard['location_arg'] + $this->effects->getAdditionalCost($player_id);
+        $total_cost = $base_cost + $this->effects->getAdditionalCost($player_id);
+        if ($this->effects->countGlobalEffects(CT_TIRELESSMEMBER) == 0) {
+            $total_cost += $dbcard['location_arg']; //CT_TIRELESSMEMBER ignores market's added cost
+        }
         return max(0, $total_cost);
     }
 
@@ -4076,7 +4122,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->cards->moveCard($calculations_card_id, MARKET, $pos);
                 $pos += 1;
             }
-            $this->notifyAllPlayers('rearrangeMarket', clienttranslate('Calculations: ${player_name} rearranged the market'), array (
+            $this->notifyAllPlayers('rearrangeMarket', clienttranslate('Calculations: ${player_name} rearranges the market'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $calculations_card_ids,

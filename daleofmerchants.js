@@ -3677,8 +3677,9 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             }
         };
         MarketBoard.prototype.rearrange = function (card_ids) {
+            console.warn("rearrange", card_ids);
             if (this.getCards().length != card_ids.length) {
-                throw new Error("market.rearrange failed: the number of cards must remain the same after rearranging");
+                throw new Error("market.rearrange failed: the number of cards must remain the same after rearranging.                 Current: ".concat(this.getCards().length, ". After rearranging: ").concat(card_ids.length));
             }
             var arrangementChanged = false;
             var froms = new Map();
@@ -4364,7 +4365,6 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             this._name = 'client_technique';
             this._args = {};
             if (previous instanceof PreviousState) {
-                this._page.onLeavingState(previous.name);
                 this._name = previous.name;
                 if (previous.args) {
                     this._args = previous.args;
@@ -4393,12 +4393,6 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                 this.leave();
             }
             this.enter('client_technique');
-        };
-        MainClientState.prototype.leaveAllAndDontReturn = function () {
-            console.warn("mainClientState: leaveAllAndDontReturn");
-            while (this._stack.length > 0) {
-                this.leaveAndDontReturn();
-            }
         };
         MainClientState.prototype.enter = function (name, args) {
             if (name) {
@@ -4838,6 +4832,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             _this.previousMainTitle = '';
             _this.opponent_ids = [];
             _this.max_opponents = 4;
+            _this.buildActionSuccessful = false;
             console.warn('dale constructor');
             return _this;
         }
@@ -5208,7 +5203,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
-                    if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
+                    if (!this.buildActionSuccessful && DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
                         this.myDiscard.openPopin();
                     }
                     break;
@@ -5220,7 +5215,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
-                    if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
+                    if (!this.buildActionSuccessful && DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
                         this.myDiscard.openPopin();
                     }
                     break;
@@ -8228,7 +8223,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     market_card_id: card_id,
                     args: JSON.stringify(args.optionalArgs)
                 }).then(function () {
-                    _this.mainClientState.leaveAllAndDontReturn();
+                    while (_this.gamedatas.gamestate.name != 'client_purchase') {
+                        _this.mainClientState.leave();
+                    }
                 });
             }
         };
@@ -9322,7 +9319,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 stack_card_ids_from_discard: this.arrayToNumberList(args.stack_card_ids_from_discard),
                 args: JSON.stringify(args.optionalArgs)
             }).then(function () {
-                _this.mainClientState.leaveAllAndDontReturn();
+                _this.buildActionSuccessful = true;
+                while (_this.gamedatas.gamestate.name != 'client_build' && _this.gamedatas.gamestate.name != 'bonusBuild') {
+                    _this.mainClientState.leave();
+                }
+                _this.buildActionSuccessful = false;
             });
         };
         DaleOfMerchants.prototype.onBonusBuildSkip = function () {
@@ -10850,11 +10851,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.notif_rearrangeMarket = function (notif) {
+            console.warn("notif_rearrangeMarket", notif.args);
             this.market.rearrange(notif.args.card_ids);
         };
         DaleOfMerchants.prototype.notif_fillEmptyMarketSlots = function (notif) {
-            console.warn("notif_fillEmptyMarketSlots");
-            console.warn(notif.args);
+            console.warn("notif_fillEmptyMarketSlots", notif.args);
             var cards = notif.args.cards;
             var positions = notif.args.positions;
             if (cards.length != positions.length) {

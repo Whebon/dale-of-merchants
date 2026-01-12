@@ -296,7 +296,7 @@ export class MainClientState {
         this._name = 'client_technique';
         this._args = {};
         if (previous instanceof PreviousState) {
-            this._page.onLeavingState(previous.name);
+            //this._page.onLeavingState(previous.name); //unsafe: the state machine will eventually call this again
             this._name = previous.name;
             if (previous.args) {
                 this._args = previous.args;
@@ -333,16 +333,6 @@ export class MainClientState {
             this.leave(); //see issue #97.2 and #97.3
         }
         this.enter('client_technique');
-    }
-
-    /**
-     * Clears all client states from the stack. Doesn't return to another state.
-     */
-    public leaveAllAndDontReturn() {
-        console.warn("mainClientState: leaveAllAndDontReturn");
-        while (this._stack.length > 0) {
-            this.leaveAndDontReturn(); //see issue #97.2 and #97.3
-        }
     }
 
     /**
