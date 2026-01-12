@@ -3417,7 +3417,7 @@ class DaleOfMerchants extends Gamegui
 						'daleofmerchants-line-source-technique',
 						'daleofmerchants-line-target-technique',
 						'daleofmerchants-line-technique',
-						(source_id: number) => TargetingLine.remove(),
+						(source_id: number) => this.onCalculationsDoubleClick(source_id), //TargetingLine.remove(),
 						(source_id: number, target_id: number) => this.onCalculationsSwap(source_id, target_id)
 					);
 				}
@@ -5622,6 +5622,12 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actDEPRECATED_BlindfoldDecideValue', {
 			value: value
 		});
+	}
+
+	onCalculationsDoubleClick(click_card_id: number) {
+		const args = this.mainClientState.args as ClientGameStates['client_calculations'];
+		args.card_id_last = click_card_id;
+		this.onCalculations();
 	}
 
 	onCalculations() {

@@ -7589,7 +7589,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                                 calculations_targets.push(new DaleCard_9.DaleCard(target_id));
                             }
                         }
-                        new TargetingLine_1.TargetingLine(card, calculations_targets, 'daleofmerchants-line-source-technique', 'daleofmerchants-line-target-technique', 'daleofmerchants-line-technique', function (source_id) { return TargetingLine_1.TargetingLine.remove(); }, function (source_id, target_id) { return _this.onCalculationsSwap(source_id, target_id); });
+                        new TargetingLine_1.TargetingLine(card, calculations_targets, 'daleofmerchants-line-source-technique', 'daleofmerchants-line-target-technique', 'daleofmerchants-line-technique', function (source_id) { return _this.onCalculationsDoubleClick(source_id); }, function (source_id, target_id) { return _this.onCalculationsSwap(source_id, target_id); });
                     }
                     break;
                 case 'client_shoppingJourney':
@@ -9570,6 +9570,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.bgaPerformAction('actDEPRECATED_BlindfoldDecideValue', {
                 value: value
             });
+        };
+        DaleOfMerchants.prototype.onCalculationsDoubleClick = function (click_card_id) {
+            var args = this.mainClientState.args;
+            args.card_id_last = click_card_id;
+            this.onCalculations();
         };
         DaleOfMerchants.prototype.onCalculations = function () {
             if (this.checkLock()) {
