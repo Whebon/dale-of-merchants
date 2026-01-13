@@ -1057,7 +1057,6 @@ class DaleOfMerchants extends DaleTableBasic
                         "_private" => array() //The player is not allowed to receive this private information
                     ));
                 }
-                $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
