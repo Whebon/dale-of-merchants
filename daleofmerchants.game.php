@@ -372,8 +372,8 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Automatically execute an entire turn for Mono
      */
-    function monoTurnStart() {
-        $this->showDebugMessage("monoTurnStart");
+    function monoTurn() {
+        $this->showDebugMessage("monoTurn");
         $this->monoShowHand();
         $this->obtainStoredCards(MONO_PLAYER_ID);
         $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
@@ -1057,6 +1057,9 @@ class DaleOfMerchants extends DaleTableBasic
                         "_private" => array() //The player is not allowed to receive this private information
                     ));
                 }
+                break;
+            case CT_AVIDMEMBER:
+                $this->gainCoins(MONO_PLAYER_ID, 10, $this->_("Avid Member"));
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -2969,7 +2972,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers('gainCoins', $msg, array(
             'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
             'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'nbr' => $nbr,
             'coin_icon' => ""
         ));
@@ -3000,7 +3003,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers('gainCoins', $msg, array(
             'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
             'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'positive_nbr' => $nbr,
             'nbr' => -$nbr,
             'coin_icon' => ""
@@ -9740,7 +9743,7 @@ class DaleOfMerchants extends DaleTableBasic
         $next_player_id = $this->activeNextPlayer();
         $this->giveExtraTime($next_player_id);
         if ($this->isSoloGame()) {
-            $this->monoTurnStart();
+            $this->monoTurn();
         }
         $this->incStat(1, "number_of_turns", $next_player_id);
         $this->gamestate->nextState("trNextPlayer");
