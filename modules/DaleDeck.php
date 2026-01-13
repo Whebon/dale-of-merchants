@@ -44,35 +44,36 @@ class DaleDeck {
         return $this->countCardsInLocation(DECK.$player_id) + $this->countCardsInLocation(DISCARD.$player_id);
     }
 
-    /**
-     * Get all cards in the specified stack of the specified stall
-     * @param string $stall_location location to move to cards to (must be a stall)
-     * @param int $stack_index index of a stack in the stall to put the cards on
-     */
-    function getCardsInStall(string $stall_location, int $stack_index) {
-        $prefix = substr($stall_location, 0, 4);
-        if ($prefix != STALL) {
-            throw new BgaVisibleSystemException("getCardsInStall must be called with a stall location");
-        }
-        $min = MAX_STACK_SIZE * $stack_index;
-        $max = MAX_STACK_SIZE * ($stack_index + 1);
-        $order_by = 'location_arg';
-        $result = array();
+    // TODO: safely remove this (mysql_fetch_assoc is deprecated and this function was not even used)
+    // /**
+    //  * Get all cards in the specified stack of the specified stall
+    //  * @param string $stall_location location to move to cards to (must be a stall)
+    //  * @param int $stack_index index of a stack in the stall to put the cards on
+    //  */
+    // function getCardsInStall(string $stall_location, int $stack_index) {
+    //     $prefix = substr($stall_location, 0, 4);
+    //     if ($prefix != STALL) {
+    //         throw new BgaVisibleSystemException("getCardsInStall must be called with a stall location");
+    //     }
+    //     $min = MAX_STACK_SIZE * $stack_index;
+    //     $max = MAX_STACK_SIZE * ($stack_index + 1);
+    //     $order_by = 'location_arg';
+    //     $result = array();
 
-        $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
-        $sql .= "FROM " . $this->deck->table;
-        $sql .= " WHERE card_location='" . addslashes($stall_location) . "' ";
-        $sql .= " AND card_location_arg >= $min AND card_location_arg < $max ";
-        $sql .= " ORDER BY $order_by";
-        $dbres = $this->game->DbQuery($sql);
-        while ($row = mysql_fetch_assoc($dbres)) {
-            $result[$row['id']] = $row;
-        }
-        if ($order_by !== null) {
-            $result = array_merge(array(), $result); // Note: this trick resets the array keys to 0, 1, 2 in order to keep this order in JS
-        }
-        return $result;
-    }
+    //     $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
+    //     $sql .= "FROM " . $this->deck->table;
+    //     $sql .= " WHERE card_location='" . addslashes($stall_location) . "' ";
+    //     $sql .= " AND card_location_arg >= $min AND card_location_arg < $max ";
+    //     $sql .= " ORDER BY $order_by";
+    //     $dbres = $this->game->DbQuery($sql);
+    //     while ($row = mysql_fetch_assoc($dbres)) {
+    //         $result[$row['id']] = $row;
+    //     }
+    //     if ($order_by !== null) {
+    //         $result = array_merge(array(), $result); // Note: this trick resets the array keys to 0, 1, 2 in order to keep this order in JS
+    //     }
+    //     return $result;
+    // }
 
     /**
      * Build a new stack in a stall
