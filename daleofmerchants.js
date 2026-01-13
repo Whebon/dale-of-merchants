@@ -2266,7 +2266,7 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
         DaleStock.prototype.setClickable = function (card_id) {
             var div = $(this.control_name + "_item_" + card_id);
             if (!div) {
-                throw new Error("Card ".concat(card_id, " does not exist this DaleStock, so setClickable cannot be set"));
+                throw new Error("Card ".concat(card_id, " does not exist in ").concat(this.control_name, ", so setClickable cannot be set"));
             }
             if (this.isClickable(card_id)) {
                 div.classList.add("daleofmerchants-clickable");

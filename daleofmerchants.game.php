@@ -853,36 +853,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 else {
                     //swap $opponent_dbcard and $mono_junk_dbcard
-                    $this->monoConfirmAction(clienttranslate('Wily Member: ${player_name} swaps ${opponent_name}\'s ${card_name} with a Junk'), array(
-                        "highlight_limbo_cards" => array($mono_junk_dbcard),
-                        "highlight_hand_cards" => array($opponent_dbcard),
-                        "wrap_class" => "daleofmerchants-wrap-technique",
-                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                        "card_name" => $this->getCardName($opponent_dbcard)
-                    ));
-                    $this->cards->moveCard($opponent_dbcard["id"], HAND.MONO_PLAYER_ID);
-                    $this->cards->moveCard($mono_junk_dbcard["id"], HAND.$opponent_id);
-                    $this->notifyAllPlayersWithPrivateArguments('instant_opponentHandToPlayerHand', '', array(
-                        "player_id" => MONO_PLAYER_ID,
-                        "opponent_id" => $opponent_id,
-                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                        "_private" => array(
-                            "card" => $opponent_dbcard,
-                            "card_name" => $this->getCardName($opponent_dbcard)
-                        )
-                    ));
-                    $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', '', array(
-                        "player_id" => MONO_PLAYER_ID,
-                        "opponent_id" => $opponent_id,
-                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                        "_private" => array(
-                            "card" => $mono_junk_dbcard,
-                            "card_name" => $this->getCardName($mono_junk_dbcard)
-                        )
-                    ));
+                    $this->monoSwapHandCards($technique_card, $opponent_id, $opponent_dbcard, MONO_PLAYER_ID, $mono_junk_dbcard);
                 }
                 break;
             case CT_FLEXIBLEMEMBER:
@@ -997,50 +968,81 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->notifyAllPlayers('message', clienttranslate('Pompous Member: ${player_name} has no card in hand'), array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
+                    break;
+                }
+                $card_id = array_rand($dbcards);
+                $dbcard = $dbcards[$card_id];
+                $value = $this->getValue($dbcard);
+                $market_dbcards = $this->cards->getCardsInLocation(MARKET);
+                $match = false;
+                foreach ($market_dbcards as $market_dbcard) {
+                    if ($this->getValue($market_dbcard) == $value) {
+                        $match = true;
+                    }
+                }
+                if ($match) {
+                    $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} takes ${card_name}, as it matches a card value in the market.'), array(
+                        "highlight_hand_cards" => array($dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    $this->cards->moveCard($dbcard["id"], HAND.MONO_PLAYER_ID);
+                    $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "opponent_id" => $opponent_id,
+                        "_private" => array(
+                            "card" => $dbcard,
+                        )
+                    ));
                 }
                 else {
-                    $card_id = array_rand($dbcards);
-                    $dbcard = $dbcards[$card_id];
-                    $value = $this->getValue($dbcard);
-                    $market_dbcards = $this->cards->getCardsInLocation(MARKET);
-                    $match = false;
-                    foreach ($market_dbcards as $market_dbcard) {
-                        if ($this->getValue($market_dbcard) == $value) {
-                            $match = true;
-                        }
-                    }
-                    if ($match) {
-                        $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} takes ${card_name}, as it matches a card value in the market.'), array(
-                            "highlight_hand_cards" => array($dbcard),
-                            "wrap_class" => "daleofmerchants-wrap-technique",
-                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                            "card_name" => $this->getCardName($dbcard)
-                        ));
-                        $this->cards->moveCard($dbcard["id"], HAND.MONO_PLAYER_ID);
-                        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
-                            "player_id" => MONO_PLAYER_ID,
-                            "opponent_id" => $opponent_id,
-                            "_private" => array(
-                                "card" => $dbcard,
-                            )
-                        ));
-                    }
-                    else {
-                        $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} discards ${opponent_name}\'s ${card_name}, as it doesn\'t match a card value in the market.'), array(
-                            "highlight_hand_cards" => array($dbcard),
-                            "wrap_class" => "daleofmerchants-wrap-technique",
-                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                            "card_name" => $this->getCardName($dbcard)
-                        ));
-                        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MONO_PLAYER_ID);
-                        $this->notifyAllPlayers('discard', '', array(
-                            "player_id" => $opponent_id,
-                            "card" => $dbcard,
-                        ));
-                    }
+                    $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} discards ${opponent_name}\'s ${card_name}, as it doesn\'t match a card value in the market.'), array(
+                        "highlight_hand_cards" => array($dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MONO_PLAYER_ID);
+                    $this->notifyAllPlayers('discard', '', array(
+                        "player_id" => $opponent_id,
+                        "card" => $dbcard,
+                    ));
                 }
+                break;
+            case CT_CAREFREEMEMBER:
+                //Swap Mono's lowest animalfolk 🃏 with 1 random animalfolk 🃏 of higher value from you. Acquire.
+                $mono_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $mono_animafolk_dbcards = array_filter($mono_dbcards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
+                if (count($mono_animafolk_dbcards) == 0) {
+                    //Fizzle (no animalfolk cards in hand)
+                    $this->notifyAllPlayers('message', clienttranslate('Carefree Member: ${player_name} has no animalfolk cards in their hand'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    ));
+                    break;
+                }
+                $mono_dbcard = $this->monoPickLowestValuedCard($mono_animafolk_dbcards);
+                $value = $this->getValue($mono_dbcard);
+
+                $opponent_dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                $opponent_filtered_dbcards = array_filter($opponent_dbcards, function($dbcard) use ($value) { 
+                    return $this->isAnimalfolk($dbcard) && $this->getValue($dbcard) > $value; 
+                });
+                if (count($opponent_filtered_dbcards) == 0) {
+                    //Fizzle (no match in players hand)
+                    $this->notifyAllPlayers('message', clienttranslate('Carefree Member: ${player_name} fails to swap: ${opponent_name} has no animalfolk card of value > ${value}'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "value" => $value
+                    ));
+                    break;
+                }
+                $opponent_card_id = array_rand($opponent_filtered_dbcards);
+                $opponent_dbcard = $opponent_filtered_dbcards[$opponent_card_id];
+                
+                $this->monoSwapHandCards($technique_card, $opponent_id, $opponent_dbcard, MONO_PLAYER_ID, $mono_dbcard);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -1246,6 +1248,44 @@ class DaleOfMerchants extends DaleTableBasic
         $cards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
         $this->notifyAllPlayers(count($cards) == 0 ? 'instant_monoHideHand' : 'monoHideHand', '', array(
             "cards" => $cards
+        ));
+    }
+
+    function monoSwapHandCards(array $technique_card, mixed $opponent_id, array $opponent_dbcard, mixed $mono_player_id, array $mono_dbcard) {
+        if ($mono_player_id != MONO_PLAYER_ID) {
+            throw new BgaVisibleSystemException("monoSwapHandCards got unexpected arguments (expected mono_player_id == MONO_PLAYER_ID)");
+        }
+        $this->monoConfirmAction(clienttranslate('${resolving_card_name}: ${player_name} swaps ${opponent_name}\'s ${player_card_name} with a ${opponent_card_name}'), array(
+            "resolving_card_name" => $this->getCardName($technique_card),
+            "highlight_limbo_cards" => array($mono_dbcard),
+            "highlight_hand_cards" => array($opponent_dbcard),
+            "wrap_class" => "daleofmerchants-wrap-technique",
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+            "player_card_name" => $this->getCardName($opponent_dbcard),
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "opponent_card_name" => $this->getCardName($opponent_dbcard)
+        ));
+        $this->cards->moveCard($opponent_dbcard["id"], HAND.MONO_PLAYER_ID);
+        $this->cards->moveCard($mono_dbcard["id"], HAND.$opponent_id);
+        $this->notifyAllPlayersWithPrivateArguments('instant_opponentHandToPlayerHand', '', array(
+            "player_id" => MONO_PLAYER_ID,
+            "opponent_id" => $opponent_id,
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "_private" => array(
+                "card" => $opponent_dbcard,
+                "card_name" => $this->getCardName($opponent_dbcard)
+            )
+        ));
+        $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', '', array(
+            "player_id" => MONO_PLAYER_ID,
+            "opponent_id" => $opponent_id,
+            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "_private" => array(
+                "card" => $mono_dbcard,
+                "card_name" => $this->getCardName($mono_dbcard)
+            )
         ));
     }
 
