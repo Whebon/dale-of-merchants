@@ -469,29 +469,40 @@ class DaleOfMerchants extends DaleTableBasic
                 continue;
             }
             $technique_type_id = $this->getTypeId($technique_card);
+            if ($technique_type_id == CT_IMPULSIVEMEMBER) {
+                $mono_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                if ($this->countMonoCards($mono_dbcards) > 0) {
+                    continue;
+                }
+            }
             $this->monoConfirmAction(clienttranslate('${player_name} resolves their ${card_name}'), array(
                 "highlight_schedule_card" => $technique_card,
                 "card_name" => $this->getCardName($technique_card)
             ));
             switch($technique_type_id) {
                 case CT_STEADYMEMBER:
+                case CT_IMPULSIVEMEMBER:
+                    //CT_STEADYMEMBER: At the start of Mono’s next turn, it takes the leftmost 🃏 from the market.
+                    //CT_IMPULSIVEMEMBER: Next time Mono starts its turn with no Mono 🃏🃏🃏, it takes the leftmost 🃏 from the market.
                     $market_cards_unsorted = $this->cards->getCardsInLocation(MARKET);
                     $market_cards = $this->sortCardsByLocationArg($market_cards_unsorted, false);
                     if (count($market_cards) > 0) {
                         $market_card = $market_cards[0];
                         $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                        $this->notifyAllPlayers('marketToHand', clienttranslate('Steady Member: ${player_name} takes ${extended_card_name} from the market'), array (
-                            'player_id' => MONO_PLAYER_ID,
-                            'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                            'card_name' => $this->getCardName($market_card),
-                            'extended_card_name' => $this->getCardNameExt($market_card),
-                            'market_card_id' => $market_card["id"],
-                            'pos' => $market_card["location_arg"],
+                        $this->notifyAllPlayers('marketToHand', clienttranslate('${resolving_card_name}: ${player_name} takes ${extended_card_name} from the market'), array (
+                            "resolving_card_name" => $this->getCardName($technique_card),
+                            "player_id" => MONO_PLAYER_ID,
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            "card_name" => $this->getCardName($market_card),
+                            "extended_card_name" => $this->getCardNameExt($market_card),
+                            "market_card_id" => $market_card["id"],
+                            "pos" => $market_card["location_arg"],
                         ));
                     }
                     else {
                         //fizzle
-                        $this->notifyAllPlayers('message', clienttranslate('Steady Member: ${player_name} fails to take a card from the market'), array(
+                        $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} fails to take a card from the market'), array(
+                            "resolving_card_name" => $this->getCardName($technique_card),
                             "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                         ));
                     }
@@ -638,7 +649,6 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 break;
             case CT_STEADYMEMBER:
-                //At the start of Mono’s next turn, it takes the leftmost 🃏 from the market.
                 //no immediate effects
                 break;
             case CT_LITTLEMEMBER:
@@ -1074,6 +1084,9 @@ class DaleOfMerchants extends DaleTableBasic
                     'card_name' => $this->getCardName($dbcard)
                 ));
                 $this->effects->insertModification($dbcard["id"], CT_RESOURCEFULMEMBER, $nbr);
+                break;
+            case CT_IMPULSIVEMEMBER:
+                //no immediate effects
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
