@@ -1045,6 +1045,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->monoSwapHandCards($technique_card, $opponent_id, $opponent_dbcard, MONO_PLAYER_ID, $mono_dbcard);
                 break;
             case CT_CLEVERMEMBER:
+                //Mono stores the top 3 🃏🃏🃏 of its deck. Acquire.
                 $dbcards = $this->cards->pickCardsForLocation(3, DECK.MONO_PLAYER_ID, STORED_CARDS.MONO_PLAYER_ID);
                 $this->notifyAllPlayers('message', clienttranslate('Clever Member: ${player_name} stores ${nbr} cards from their deck'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
@@ -1059,7 +1060,20 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_AVIDMEMBER:
+                //Mono gains 10 🟡. Acquire.
                 $this->gainCoins(MONO_PLAYER_ID, 10, $this->_("Avid Member"));
+                break;
+            case CT_RESOURCEFULMEMBER:
+                //Add +1 to Mono’s highest valued animalfolk 🃏 for each junk 🃏 in its hand.
+                $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $dbcard = $this->monoPickHighestValuedCard($dbcards);
+                $nbr = $this->countJunk($dbcards);
+                $this->notifyAllPlayers('message', clienttranslate('Resourceful Member: ${player_name} adds +${nbr} to their ${card_name}'), array(
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    'nbr' => $nbr,
+                    'card_name' => $this->getCardName($dbcard)
+                ));
+                $this->effects->insertModification($dbcard["id"], CT_RESOURCEFULMEMBER, $nbr);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(

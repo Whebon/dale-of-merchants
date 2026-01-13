@@ -1379,6 +1379,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                 value += 1;
                                 break;
                             case DaleCard.CT_BOLDHAGGLER:
+                            case DaleCard.CT_RESOURCEFULMEMBER:
                                 value += effect.arg;
                                 break;
                             case DaleCard.CT_BLINDFOLD:

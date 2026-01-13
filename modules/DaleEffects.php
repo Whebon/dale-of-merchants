@@ -172,6 +172,7 @@ class DaleEffects {
                         $value += 1;
                         break;
                     case CT_BOLDHAGGLER:
+                    case CT_RESOURCEFULMEMBER:
                         $value += $row["arg"];
                         break;
                     case CT_BLINDFOLD:
