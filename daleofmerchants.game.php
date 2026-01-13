@@ -990,6 +990,58 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                 }
                 break;
+            case CT_POMPOUSMEMBER:
+                //Discard 1 random 🃏 from your hand. If the 🃏 value matches any 🃏🃏🃏 in the market, Mono takes it. Acquire.
+                $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($dbcards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Pompous Member: ${player_name} has no card in hand'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                    ));
+                }
+                else {
+                    $card_id = array_rand($dbcards);
+                    $dbcard = $dbcards[$card_id];
+                    $value = $this->getValue($dbcard);
+                    $market_dbcards = $this->cards->getCardsInLocation(MARKET);
+                    $match = false;
+                    foreach ($market_dbcards as $market_dbcard) {
+                        if ($this->getValue($market_dbcard) == $value) {
+                            $match = true;
+                        }
+                    }
+                    if ($match) {
+                        $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} takes ${card_name}, as it matches a card value in the market.'), array(
+                            "highlight_hand_cards" => array($dbcard),
+                            "wrap_class" => "daleofmerchants-wrap-technique",
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card_name" => $this->getCardName($dbcard)
+                        ));
+                        $this->cards->moveCard($dbcard["id"], HAND.MONO_PLAYER_ID);
+                        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
+                            "player_id" => MONO_PLAYER_ID,
+                            "opponent_id" => $opponent_id,
+                            "_private" => array(
+                                "card" => $dbcard,
+                            )
+                        ));
+                    }
+                    else {
+                        $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} discards ${opponent_name}\'s ${card_name}, as it doesn\'t match a card value in the market.'), array(
+                            "highlight_hand_cards" => array($dbcard),
+                            "wrap_class" => "daleofmerchants-wrap-technique",
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card_name" => $this->getCardName($dbcard)
+                        ));
+                        $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MONO_PLAYER_ID);
+                        $this->notifyAllPlayers('discard', '', array(
+                            "player_id" => $opponent_id,
+                            "card" => $dbcard,
+                        ));
+                    }
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
