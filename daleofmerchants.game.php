@@ -376,7 +376,6 @@ class DaleOfMerchants extends DaleTableBasic
         $this->showDebugMessage("monoTurn");
         $this->monoShowHand();
         $this->obtainStoredCards(MONO_PLAYER_ID);
-        $this->resetClock(MONO_PLAYER_ID, clienttranslate('${player_name} reaches ${clock}'));
         $this->monoResolveCards(TRIGGER_ONTURNSTART);
         $technique_result = $this->monoPlayLeftmostTechnique(clienttranslate('${player_name} plays its leftmost Mono card'));
 
@@ -1110,6 +1109,21 @@ class DaleOfMerchants extends DaleTableBasic
                     true,
                     array("player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID))
                 );
+                break;
+            case CT_DRAMATICMEMBER:
+                //Mono draws [🌅 3 🃏🃏🃏] [☀️ 4 🃏🃏🃏] [🌙 2 🃏🃏]. Acquire.
+                switch($this->getClock(MONO_PLAYER_ID)) {
+                    case CLOCK_DAWN:
+                        $nbr = 3;
+                        break;
+                    case CLOCK_DAY:
+                        $nbr = 4;
+                        break;
+                    case CLOCK_NIGHT:
+                        $nbr = 2;
+                        break;
+                }
+                $this->draw(clienttranslate('Dramatic Member: ${player_name} draws ${nbr} cards'), $nbr, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -3445,7 +3459,12 @@ class DaleOfMerchants extends DaleTableBasic
         }
         //calculate the new clock position
         $previous_clock = $this->getClock($player_id);
-        $clock = max(0, min(2, $previous_clock + $nbr));
+        if ($player_id == MONO_PLAYER_ID) {
+            $clock = ($previous_clock + $nbr) % 3; //clock loops
+        }
+        else {
+            $clock = max(0, min(2, $previous_clock + $nbr)); //clock doesn't loop
+        }
         if ($clock == $previous_clock) {
             return;
         }

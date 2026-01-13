@@ -1099,19 +1099,28 @@ define("components/PlayerClock", ["require", "exports", "components/DaleIcons"],
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.PlayerClock = void 0;
     var PlayerClock = (function () {
-        function PlayerClock(page, player_id) {
+        function PlayerClock(page, player_id, is_mono) {
+            if (is_mono === void 0) { is_mono = false; }
             this.player_id = 0;
             this.position = 0;
+            this.is_mono = false;
             this.page = page;
             this.player_id = player_id;
             this.wrap = $('daleofmerchants-clock-wrap-' + player_id);
             this.label = $('daleofmerchants-clock-label-' + player_id);
+            this.is_mono = is_mono;
             this.advanceClock(page.gamedatas.players[player_id].clock);
         }
         PlayerClock.prototype.advanceClock = function (steps) {
             var prevPostion = this.position;
-            var newPosition = Math.max(PlayerClock.CLOCK_DAWN, Math.min(PlayerClock.CLOCK_NIGHT, prevPostion + steps));
-            this.setClock(newPosition);
+            if (this.is_mono) {
+                var newPosition = (prevPostion + steps) % 3;
+                this.setClock(newPosition);
+            }
+            else {
+                var newPosition = Math.max(PlayerClock.CLOCK_DAWN, Math.min(PlayerClock.CLOCK_NIGHT, prevPostion + steps));
+                this.setClock(newPosition);
+            }
         };
         PlayerClock.prototype.getClock = function () {
             return this.position;
@@ -4935,7 +4944,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.coinManager.init(this);
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
-                this.playerClocks[player_id] = new PlayerClock_2.PlayerClock(this, +player_id);
+                this.playerClocks[player_id] = new PlayerClock_2.PlayerClock(this, +player_id, this.isMonoPlayer(+player_id));
                 var handsize_span = document.createElement('span');
                 var handsize_icon = DaleIcons_10.DaleIcons.getHandIcon();
                 var player_board_div = (_c = $('player_board_' + player_id)) === null || _c === void 0 ? void 0 : _c.querySelector(".player_score");
@@ -11571,6 +11580,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Slot Machine"));
         };
         DaleOfMerchants.prototype.notif_advanceClock = function (notif) {
+            console.warn("notif_advanceClock", notif.args);
             var playerClock = this.playerClocks[+notif.args.player_id];
             playerClock.advanceClock(notif.args.nbr);
         };

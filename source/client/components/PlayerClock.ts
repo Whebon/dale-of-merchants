@@ -10,6 +10,7 @@ export class PlayerClock {
     private page: Gamegui;
     private player_id: number = 0;
     private position: number = 0;
+    private is_mono: boolean = false;
 
     private wrap: HTMLElement;
     private label: HTMLElement;
@@ -22,11 +23,12 @@ export class PlayerClock {
     /**
      * Construct a clock for a player
      */
-    constructor(page: Gamegui, player_id: number) {
+    constructor(page: Gamegui, player_id: number, is_mono: boolean = false) {
         this.page = page;
         this.player_id = player_id;
         this.wrap = $('daleofmerchants-clock-wrap-'+player_id)! as HTMLElement;
         this.label = $('daleofmerchants-clock-label-'+player_id)! as HTMLElement;
+        this.is_mono = is_mono
             
         //initial position
         this.advanceClock(page.gamedatas.players[player_id]!.clock);
@@ -38,8 +40,14 @@ export class PlayerClock {
      */
     public advanceClock(steps: number) {
         const prevPostion = this.position;
-        const newPosition = Math.max(PlayerClock.CLOCK_DAWN, Math.min(PlayerClock.CLOCK_NIGHT, prevPostion + steps));
-        this.setClock(newPosition);
+        if (this.is_mono) {
+            const newPosition = (prevPostion + steps) % 3
+            this.setClock(newPosition);
+        }
+        else {
+            const newPosition = Math.max(PlayerClock.CLOCK_DAWN, Math.min(PlayerClock.CLOCK_NIGHT, prevPostion + steps));
+            this.setClock(newPosition);
+        }
     }
 
     /**

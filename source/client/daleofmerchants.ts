@@ -220,7 +220,7 @@ class DaleOfMerchants extends Gamegui
 			let player = gamedatas.players[player_id];
 
 			//clock per player
-			this.playerClocks[player_id] = new PlayerClock(this, +player_id);
+			this.playerClocks[player_id] = new PlayerClock(this, +player_id, this.isMonoPlayer(+player_id));
 
 			//handsize per player
 			const handsize_span = document.createElement('span'); 
@@ -7927,6 +7927,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_advanceClock(notif: NotifAs<'advanceClock'>){
+		console.warn("notif_advanceClock", notif.args);
 		const playerClock = this.playerClocks[+notif.args.player_id]!;
 		playerClock.advanceClock(notif.args.nbr);
 	}
