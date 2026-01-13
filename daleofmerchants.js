@@ -10731,21 +10731,40 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.notif_deckToStoredCards = function (notif) {
-            var _a;
+            var _a, _b;
             var deck = this.playerDecks[notif.args.player_id];
             var storedCards = this.playerStoredCards[notif.args.player_id];
-            var card = notif.args._private ? DaleCard_9.DaleCard.of((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.card) : new DaleCard_9.DaleCard(-storedCards.count(), 0);
+            var card = ((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.card) ? DaleCard_9.DaleCard.of((_b = notif.args._private) === null || _b === void 0 ? void 0 : _b.card) : new DaleCard_9.DaleCard(-storedCards.count(), 0);
             storedCards.addDaleCardToStock(card, deck.placeholderHTML);
             deck.pop();
         };
         DaleOfMerchants.prototype.notif_storedCardsToHand = function (notif) {
-            if (notif.args.player_id == this.player_id || this.isMonoPlayer(notif.args.player_id)) {
+            if (this.isMonoPlayer(notif.args.player_id)) {
+                var storedCards = this.playerStoredCards[notif.args.player_id];
+                var dummy_card_ids = storedCards.getAllItems().map(function (item) { return item.id; });
+                var cards = Object.values(notif.args._private.cards).map(DaleCard_9.DaleCard.of);
+                if (dummy_card_ids.length != cards.length) {
+                    throw new Error("Mismatch in number of stored cards for Mono: client says ".concat(dummy_card_ids.length, ", server says ").concat(Object.keys(notif.args._private.cards).length, " "));
+                }
+                for (var i = 0; i < cards.length; i++) {
+                    var dummy_card_id = dummy_card_ids[i];
+                    var card = cards[i];
+                    var storedCards_1 = this.playerStoredCards[notif.args.player_id];
+                    if ($(storedCards_1.control_name + '_item_' + dummy_card_id)) {
+                        this.myLimbo.addDaleCardToStock(card, storedCards_1.control_name + '_item_' + dummy_card_id);
+                        storedCards_1.removeFromStockByIdNoAnimation(+dummy_card_id);
+                    }
+                    else {
+                        throw new Error("storedCardsToHand failed. Dummy stored card ".concat(dummy_card_id, " does not exist among the stored cards."));
+                    }
+                }
+            }
+            else if (notif.args.player_id == this.player_id) {
                 for (var card_id in notif.args._private.cards) {
                     var dbcard = notif.args._private.cards[card_id];
-                    var stock = this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
                     var storedCards = this.playerStoredCards[notif.args.player_id];
                     if ($(storedCards.control_name + '_item_' + card_id)) {
-                        stock.addDaleCardToStock(DaleCard_9.DaleCard.of(dbcard), storedCards.control_name + '_item_' + card_id);
+                        this.myHand.addDaleCardToStock(DaleCard_9.DaleCard.of(dbcard), storedCards.control_name + '_item_' + card_id);
                         storedCards.removeFromStockByIdNoAnimation(+card_id);
                     }
                     else {

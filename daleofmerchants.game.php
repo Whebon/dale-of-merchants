@@ -1044,6 +1044,21 @@ class DaleOfMerchants extends DaleTableBasic
                 
                 $this->monoSwapHandCards($technique_card, $opponent_id, $opponent_dbcard, MONO_PLAYER_ID, $mono_dbcard);
                 break;
+            case CT_CLEVERMEMBER:
+                $dbcards = $this->cards->pickCardsForLocation(3, DECK.MONO_PLAYER_ID, STORED_CARDS.MONO_PLAYER_ID);
+                $this->notifyAllPlayers('message', clienttranslate('Clever Member: ${player_name} stores ${nbr} cards from their deck'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "nbr" => count($dbcards)
+                ));
+                foreach ($dbcards as $dbcard) {
+                    $this->notifyAllPlayersWithPrivateArguments('deckToStoredCards', '', array(
+                        "player_id" => MONO_PLAYER_ID,
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "_private" => array() //The player is not allowed to receive this private information
+                    ));
+                }
+                $this->fullyResolveCard(MONO_PLAYER_ID, $technique_card);
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)

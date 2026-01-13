@@ -6978,20 +6978,40 @@ class DaleOfMerchants extends Gamegui
 	notif_deckToStoredCards(notif: NotifAs<'deckToStoredCards'>) {
 		const deck = this.playerDecks[notif.args.player_id]!;
 		const storedCards = this.playerStoredCards[notif.args.player_id]!;
-		const card = notif.args._private ? DaleCard.of(notif.args._private?.card) : new DaleCard(-storedCards.count(), 0);
+		const card = notif.args._private?.card ? DaleCard.of(notif.args._private?.card) : new DaleCard(-storedCards.count(), 0);
 		storedCards.addDaleCardToStock(card, deck.placeholderHTML);
 		deck.pop();	
 	}
 
 	notif_storedCardsToHand(notif: NotifAs<'storedCardsToHand'>) {
-		if (notif.args.player_id == this.player_id || this.isMonoPlayer(notif.args.player_id)) {
+		if (this.isMonoPlayer(notif.args.player_id)) {
+			//animate from mono's hand (=limbo)
+			const storedCards = this.playerStoredCards[notif.args.player_id]!;
+			const dummy_card_ids = storedCards.getAllItems().map(item => item.id);
+			const cards = Object.values(notif.args._private!.cards).map(DaleCard.of);
+			if (dummy_card_ids.length != cards.length) {
+				throw new Error(`Mismatch in number of stored cards for Mono: client says ${dummy_card_ids.length}, server says ${Object.keys(notif.args._private!.cards).length} `)
+			}
+			for (let i = 0; i < cards.length; i++) {
+				const dummy_card_id = dummy_card_ids[i]!
+				const card = cards[i]!
+				const storedCards = this.playerStoredCards[notif.args.player_id]!;
+				if ($(storedCards.control_name+'_item_' + dummy_card_id)) {
+					this.myLimbo.addDaleCardToStock(card, storedCards.control_name+'_item_' + dummy_card_id)
+					storedCards.removeFromStockByIdNoAnimation(+dummy_card_id);
+				}
+				else {
+					throw new Error(`storedCardsToHand failed. Dummy stored card ${dummy_card_id} does not exist among the stored cards.`);
+				}
+			}
+		}
+		else if (notif.args.player_id == this.player_id) {
 			//animate from my hand
 			for (let card_id in notif.args._private!.cards) {
 				const dbcard = notif.args._private!.cards[card_id]!
-				const stock = this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
 				const storedCards = this.playerStoredCards[notif.args.player_id]!;
 				if ($(storedCards.control_name+'_item_' + card_id)) {
-					stock.addDaleCardToStock(DaleCard.of(dbcard), storedCards.control_name+'_item_' + card_id)
+					this.myHand.addDaleCardToStock(DaleCard.of(dbcard), storedCards.control_name+'_item_' + card_id)
 					storedCards.removeFromStockByIdNoAnimation(+card_id);
 				}
 				else {

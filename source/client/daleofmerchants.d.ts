@@ -63,7 +63,7 @@ declare global {
 		'deckToStoredCards': {
 			player_id: number
 			_private?: {
-				card: DbCard
+				card?: DbCard //Mono doesn't send the card
 			}
 		}
 		'storedCardsToHand': {
