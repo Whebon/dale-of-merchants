@@ -11135,7 +11135,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_placeOnDeckMultiple = function (notif) {
             var _a;
-            console.warn("placeOnDeckMultiple");
+            console.warn("placeOnDeckMultiple", notif.args);
             var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
             if (notif.args._private) {
                 for (var _i = 0, _b = notif.args._private.card_ids; _i < _b.length; _i++) {
@@ -11222,8 +11222,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_drawMultiple = function (notif) {
             var _a, _b;
-            console.warn("notif_drawMultiple");
-            console.warn(notif.args);
+            console.warn("notif_drawMultiple", notif.args);
             var stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
             var deck = this.allDecks[(_a = notif.args.deck_player_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             console.warn(deck.size);

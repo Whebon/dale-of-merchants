@@ -1088,6 +1088,29 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_IMPULSIVEMEMBER:
                 //no immediate effects
                 break;
+            case CT_PRISTINEMEMBER:
+                //Mono draws 4 🃏🃏🃏. Mono places 2 junk 🃏🃏 on its deck. Acquire.
+                $this->draw(clienttranslate('Pristine Member: ${player_name} draws ${nbr} cards'), 4, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $sorted_dbcards = $this->sortCardsByLocationArg($dbcards, false);
+                $junk_dbcards = [];
+                foreach ($sorted_dbcards as $dbcard) {
+                    if ($this->isEffectiveJunk($dbcard)) {
+                        $junk_dbcards[$dbcard["id"]] = $dbcard;
+                        if (count($junk_dbcards) == 2) {
+                            break;
+                        }
+                    }
+                }
+                $this->placeOnDeckMultiple(MONO_PLAYER_ID, 
+                    clienttranslate('Pristine Member: ${player_name} places ${nbr} Junk cards on their deck'),
+                    $this->toCardIds($junk_dbcards),
+                    $junk_dbcards,
+                    null,
+                    true,
+                    array("player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID))
+                );
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)

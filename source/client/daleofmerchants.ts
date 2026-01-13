@@ -7438,7 +7438,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_placeOnDeckMultiple(notif: NotifAs<'placeOnDeckMultiple'>) {
-		console.warn("placeOnDeckMultiple");
+		console.warn("placeOnDeckMultiple", notif.args);
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
 		if (notif.args._private) {
 			//you GIVE the cards
@@ -7535,8 +7535,7 @@ class DaleOfMerchants extends Gamegui
 	}
 	
 	notif_drawMultiple(notif: NotifAs<'drawMultiple'>) {
-		console.warn("notif_drawMultiple");
-		console.warn(notif.args);
+		console.warn("notif_drawMultiple", notif.args);
 		const stock = notif.args.to_limbo || this.isMonoPlayer(notif.args.player_id) ? this.myLimbo : this.myHand;
 		const deck = this.allDecks[notif.args.deck_player_id ?? notif.args.player_id]!
 		console.warn(deck.size);
