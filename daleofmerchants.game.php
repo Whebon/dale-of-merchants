@@ -6656,6 +6656,13 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->resolveImmediateEffects($technique_card_id);
                 }
                 break;
+            case CT_CAPUCHINS1:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $this->gainCoins($player_id, 2, $this->_("<INSERT_NAME>"));
+                $this->gainCoins($opponent_id, 1, $this->_("<INSERT_NAME>"));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -7357,7 +7364,11 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->draw(clienttranslate('Royal Privilege: ${player_name} draws ${nbr} cards'), 2);
                 $this->effects->insertModification($passive_card_id, CT_ROYALPRIVILEGE);
-                break; 
+                break;
+            case CT_CAPUCHINS2:
+                $this->gainCoins($player_id, 1, $this->_("<INSERT_NAME>"));
+                $this->effects->insertModification($passive_card_id, CT_CAPUCHINS2);
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");

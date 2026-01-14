@@ -4470,6 +4470,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SABOTAGE:
 			case DaleCard.CT_DELICACY:
 			case DaleCard.CT_UMBRELLA:
+			case DaleCard.CT_CAPUCHINS1:
 				if (this.unique_opponent_id) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
