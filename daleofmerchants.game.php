@@ -1070,7 +1070,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_AVIDMEMBER:
                 //Mono gains 10 🟡. Acquire.
-                $this->gainCoins(MONO_PLAYER_ID, 10, $this->_("Avid Member"));
+                $this->gainCoins(MONO_PLAYER_ID, 10, $technique_card);
                 break;
             case CT_RESOURCEFULMEMBER:
                 //Add +1 to Mono’s highest valued animalfolk 🃏 for each junk 🃏 in its hand.
@@ -3028,13 +3028,14 @@ class DaleOfMerchants extends DaleTableBasic
      * Also notifies the players.
      * @param mixed $player_id player that receives the coin
      * @param int $nbr number of coins to take from the bank
-     * @param string $msg_prefix (optional) - source of this effect
+     * @param array $source_dbcard source of this effect
      */
-    function gainCoins(mixed $player_id, int $nbr, string $msg_prefix = null) {
+    function gainCoins(mixed $player_id, int $nbr, array $source_dbcard) {
         $this->addCoins($player_id, $nbr);
-        $msg = clienttranslate('${msg_prefix}${player_name} gains ${nbr} ${coin_icon}');
+        $msg = clienttranslate('${resolving_card_name}: ${player_name} gains ${nbr} ${coin_icon}');
         $this->notifyAllPlayers('gainCoins', $msg, array(
-            'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
+            'resolving_card_name' => $this->getCardName($source_dbcard),
+            'source_card' => $source_dbcard,
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'nbr' => $nbr,
@@ -6156,7 +6157,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_GOLDENOPPORTUNITY:
                 $this->toss1FromHand($player_id, $technique_card, $args);
-                $this->gainCoins($player_id, 1, $this->_("Golden Opportunity"));
+                $this->gainCoins($player_id, 1, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_CACHE:
@@ -6190,7 +6191,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_SAFEPROFITS:
                 $x = $this->spendX($player_id, $args, 1, 10, $this->_("Safe Profits"));
-                $this->gainCoins($player_id, ($x+1)/2, $this->_("Safe Profits"));
+                $this->gainCoins($player_id, ($x+1)/2, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_RESOURCEFULALLY:
@@ -6659,8 +6660,8 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_CAPUCHINS1:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
-                $this->gainCoins($player_id, 2, $this->_("<INSERT_NAME>"));
-                $this->gainCoins($opponent_id, 1, $this->_("<INSERT_NAME>"));
+                $this->gainCoins($player_id, 2, $technique_card);
+                $this->gainCoins($opponent_id, 1, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -6819,7 +6820,6 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_AVIDFINANCIER:
                 $coins_on_card = $this->effects->getArg($technique_card_id, CT_AVIDFINANCIER);
                 $coins_on_card -= 1;
-                //$this->gainCoins($player_id, 1, $this->_("Avid Financier"));
                 $this->addCoins($player_id, 1);
                 $this->notifyAllPlayers('avidFinancierTakeCoin', clienttranslate('Avid Financier: ${player_name} gains 1 ${coin_icon}'), array(
                     'player_id' => $player_id,
@@ -7366,7 +7366,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertModification($passive_card_id, CT_ROYALPRIVILEGE);
                 break;
             case CT_CAPUCHINS2:
-                $this->gainCoins($player_id, 1, $this->_("<INSERT_NAME>"));
+                $this->gainCoins($player_id, 1, $passive_card);
                 $this->effects->insertModification($passive_card_id, CT_CAPUCHINS2);
                 break;
             default:
