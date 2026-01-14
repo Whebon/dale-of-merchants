@@ -182,6 +182,18 @@ export class CoinManager {
         }
     }
 
+
+    /**
+     * Moves coins between players
+     * @param gain_player_id the player take will gain/take the coins.
+     * @param lose_player_id the player take will lose/give the coins.
+     * @param nbr amount of coins (may be negative)
+    */
+    public stealCoins(gain_player_id: number, lose_player_id: number, nbr: number) {
+        this.addCoins(lose_player_id, -nbr);
+        this.addCoins(gain_player_id, nbr, this.playerCoinIcon[gain_player_id!]);
+    }
+
     /**
      * Increment the coin counter, and disable all selection modes
      * @param player_id owner of the coin counter

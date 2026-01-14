@@ -3024,6 +3024,32 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * The specified `$player_id` steal the specified `$nbr` of coins from the specified `$opponent_id`.
+     * Also notifies the players.
+     * @param mixed $player_id player that receives the coin
+     * @param mixed $player_id player that gives the coin
+     * @param int $nbr number of coins to take from the bank
+     * @param array $source_dbcard (optional) source of this effect
+     */
+    function stealCoins(mixed $player_id, mixed $opponent_id, int $nbr, array $source_dbcard = null) {
+        $max_nbr_of_coins_to_steal = $this->getCoins($opponent_id);
+        $nbr = max(0, min($nbr, $max_nbr_of_coins_to_steal));
+        $this->addCoins($player_id, $nbr);
+        $this->addCoins($opponent_id, -$nbr);
+        $msg = clienttranslate('${resolving_card_name}: ${player_name} steals ${nbr} ${coin_icon} from ${opponent_name}');
+        $this->notifyAllPlayers('stealCoins', $msg, array(
+            'resolving_card_name' => $source_dbcard ? $this->getCardName($source_dbcard) : "",
+            'source_card' => $source_dbcard,
+            'player_id' => $player_id,
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id),
+            'opponent_id' => $opponent_id,
+            'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id),
+            'nbr' => $nbr,
+            'coin_icon' => ""
+        ));
+    }
+
+    /**
      * The specified `$player_id` takes the specified `$nbr` of coins from the bank.
      * Also notifies the players.
      * @param mixed $player_id player that receives the coin
@@ -6662,6 +6688,26 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->validateOpponentId($opponent_id);
                 $this->gainCoins($player_id, 2, $technique_card);
                 $this->gainCoins($opponent_id, 1, $technique_card);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_CAPUCHINS3:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $card_id = $args["card_id"];
+                $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('${resolving_card_name}: ${player_name} gives a card to ${opponent_name}'), array(
+                    "resolving_card_name" => $this->getCardName($technique_card),
+                    "player_id" => $player_id,
+                    "opponent_id" => $opponent_id,
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                    "_private" => array(
+                        "card" => $dbcard,
+                        "card_name" => $this->getCardName($dbcard)
+                        )
+                    ), clienttranslate('${resolving_card_name}: ${player_name} gives ${card_name} to ${opponent_name}')
+                );
+                $this->stealCoins($player_id, $opponent_id, 1, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

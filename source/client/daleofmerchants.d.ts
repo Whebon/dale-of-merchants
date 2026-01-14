@@ -396,6 +396,12 @@ declare global {
 		'deselectPassive': {
 			passive_card_id: number
 		}
+		'stealCoins': {
+			player_id: number,
+			opponent_id: number,
+			nbr: number,
+			source_card?: DbCard
+		}
 		'gainCoins': {
 			player_id: number,
 			nbr: number,
@@ -534,6 +540,7 @@ declare global {
 		'client_groundbreakingIdea': { card_id: number }
 		'client_selectingContracts': { card_ids: number[] }
 		'client_generationChange': { card_ids: number[] }
+		'client_capuchin3': { opponent_id: number, card_id: number }
 	}
 
 	interface ClientPassiveChoice {

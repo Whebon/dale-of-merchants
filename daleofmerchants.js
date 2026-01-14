@@ -4778,6 +4778,10 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                     break;
             }
         };
+        CoinManager.prototype.stealCoins = function (gain_player_id, lose_player_id, nbr) {
+            this.addCoins(lose_player_id, -nbr);
+            this.addCoins(gain_player_id, nbr, this.playerCoinIcon[gain_player_id]);
+        };
         CoinManager.prototype.addCoins = function (player_id, nbr, animate_from) {
             var _this = this;
             if (animate_from === void 0) { animate_from = undefined; }
@@ -5832,6 +5836,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'accident':
                     this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
+                case 'client_capuchin3':
+                    this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6315,6 +6322,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'accident':
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'client_capuchin3':
+                    this.myHand.setSelectionMode('none');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -6685,7 +6695,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'rumours':
                 case 'souvenirs':
                     var charity_args = args;
-                    this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
+                    this.addActionButtonsOpponentSelection(1, charity_args.player_ids);
                     this.max_opponents = 1;
                     this.addActionButton("confirm-button", _("Confirm"), "onGiveCardsFromLimboToPlayers");
                     break;
@@ -6695,7 +6705,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'tasters':
                     var tasters_args = args;
-                    this.addActionButtonsOpponentSelection(0, tasters_args.player_ids);
+                    this.addActionButtonsOpponentSelection(1, tasters_args.player_ids);
                     this.max_opponents = 1;
                     this.addActionButton("confirm-button", _("Confirm"), "onTasters");
                     break;
@@ -7088,6 +7098,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'serenade':
                     this.addActionButton("confirm-button", _("Confirm"), "onSerenade");
+                    break;
+                case 'client_capuchin3':
+                    if (!this.unique_opponent_id) {
+                        this.addActionButtonsOpponentSelection(1);
+                    }
+                    else {
+                        this.opponent_ids = [this.unique_opponent_id];
+                    }
+                    this.addActionButton("confirm-button", _("Confirm"), "onCapuchin3");
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -9144,6 +9164,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
+                case DaleCard_9.DaleCard.CT_CAPUCHINS3:
+                    this.clientScheduleTechnique('client_capuchin3', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -10550,6 +10573,22 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 throw new Error("Invalid button id: ".concat(button_id));
             }
         };
+        DaleOfMerchants.prototype.onCapuchin3 = function () {
+            var card_id = this.myHand.orderedSelection.get()[0];
+            if (!card_id) {
+                this.showMessage(_("Please choose a card to give"), 'error');
+                return;
+            }
+            var opponent_id = this.opponent_ids[0];
+            if (opponent_id === undefined) {
+                this.showMessage(_("Please choose the opponent that will receive ") + "'".concat(new DaleCard_9.DaleCard(card_id).name, "'"), 'error');
+                return;
+            }
+            this.playTechniqueCard({
+                opponent_id: opponent_id,
+                card_id: card_id
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -10620,6 +10659,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['discardToDiscard', 500],
                 ['rollDie', 1000],
                 ['avidFinancierTakeCoin', 500],
+                ['stealCoins', 250],
                 ['gainCoins', 250],
                 ['startSlotMachine', 1],
                 ['advanceClock', 1],
@@ -11620,6 +11660,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_deselectPassive = function (notif) {
             this.setPassiveSelected(notif.args.passive_card_id, false);
+        };
+        DaleOfMerchants.prototype.notif_stealCoins = function (notif) {
+            this.coinManager.stealCoins(+notif.args.player_id, +notif.args.opponent_id, notif.args.nbr);
         };
         DaleOfMerchants.prototype.notif_gainCoins = function (notif) {
             if (notif.args.source_card) {

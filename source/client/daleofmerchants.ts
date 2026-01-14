@@ -1262,6 +1262,9 @@ class DaleOfMerchants extends Gamegui
 			case 'accident':
 				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
+			case 'client_capuchin3':
+				this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1745,6 +1748,9 @@ class DaleOfMerchants extends Gamegui
 			case 'accident':
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'client_capuchin3':
+				this.myHand.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -2126,7 +2132,7 @@ class DaleOfMerchants extends Gamegui
 			case 'rumours':
 			case 'souvenirs':
 				const charity_args = args as { player_ids: number[] };
-				this.addActionButtonsOpponentSelection(0, charity_args.player_ids);
+				this.addActionButtonsOpponentSelection(1, charity_args.player_ids);
 				this.max_opponents = 1; //ensure that no opponent is selected by default
 				this.addActionButton("confirm-button", _("Confirm"), "onGiveCardsFromLimboToPlayers"); //confirm the opponent and the card
 				break;
@@ -2136,7 +2142,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'tasters':
 				const tasters_args = args as { player_ids: number[] };
-				this.addActionButtonsOpponentSelection(0, tasters_args.player_ids);
+				this.addActionButtonsOpponentSelection(1, tasters_args.player_ids);
 				this.max_opponents = 1; //ensure that no opponent is selected by default
 				this.addActionButton("confirm-button", _("Confirm"), "onTasters"); //confirm the opponent and the card
 				break;
@@ -2536,6 +2542,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'serenade':
 				this.addActionButton("confirm-button", _("Confirm"), "onSerenade");
+				break;
+			case 'client_capuchin3':
+				if (!this.unique_opponent_id) {
+					this.addActionButtonsOpponentSelection(1);
+				}
+				else {
+					this.opponent_ids = [this.unique_opponent_id]
+				}
+				this.addActionButton("confirm-button", _("Confirm"), "onCapuchin3"); //confirm the opponent and the card
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -5071,6 +5087,9 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
+			case DaleCard.CT_CAPUCHINS3:
+				this.clientScheduleTechnique('client_capuchin3', card.id)
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -6697,6 +6716,23 @@ class DaleOfMerchants extends Gamegui
 
 	}
 
+	onCapuchin3() {
+		const card_id = this.myHand.orderedSelection.get()[0];
+		if (!card_id) {
+			this.showMessage(_("Please choose a card to give"), 'error');
+			return;
+		}
+		const opponent_id = this.opponent_ids[0];
+		if (opponent_id === undefined) {
+			this.showMessage(_("Please choose the opponent that will receive ")+`'${new DaleCard(card_id).name}'`, 'error');
+			return;
+		}
+		this.playTechniqueCard<'client_capuchin3'>({
+			opponent_id: opponent_id,
+			card_id: card_id
+		});
+	}
+
 	//(~on)
 
 
@@ -6776,6 +6812,7 @@ class DaleOfMerchants extends Gamegui
 			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
+			['stealCoins',							250],
 			['gainCoins',							250],
 			['startSlotMachine',					1],
 			['advanceClock',						1],
@@ -7940,6 +7977,10 @@ class DaleOfMerchants extends Gamegui
 
 	notif_deselectPassive(notif: NotifAs<'deselectPassive'>){
 		this.setPassiveSelected(notif.args.passive_card_id, false);
+	}
+
+	notif_stealCoins(notif: NotifAs<'stealCoins'>) {
+		this.coinManager.stealCoins(+notif.args.player_id, +notif.args.opponent_id, notif.args.nbr);
 	}
 
 	notif_gainCoins(notif: NotifAs<'gainCoins'>) {
