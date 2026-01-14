@@ -3,6 +3,7 @@ import Counter = require('ebg/counter');
 import { DaleIcons } from './DaleIcons';
 import { DALE_WRAP_CLASSES, DaleWrapClass } from './types/DaleWrapClass';
 import { DaleCard } from './DaleCard';
+import { Images } from './Images';
 
 declare function $(text: string | Element): HTMLElement;
 
@@ -27,6 +28,9 @@ export class CoinManager {
 	/** A coin counter for each player  */
 	private playerCoins: Record<number, Counter> = {};
 
+    /** A coin icon for each player  */
+	private playerCoinIcon: Record<number, HTMLElement> = {};
+
 	/** A coin counter for this player  */
     get myCoins(): Counter {
         const counter = this.playerCoins[this.page!.player_id];
@@ -49,6 +53,7 @@ export class CoinManager {
             const coins_icon = DaleIcons.getCoinIcon();
             coins_icon.id = 'daleofmerchants-coins-icon-'+player_id;
             coins_wrap.append(coins_icon);
+            this.playerCoinIcon[player_id] = coins_icon;
             this.playerCoins[player_id] = new ebg.counter();
             this.playerCoins[player_id].create(coins_span);
             this.playerCoins[player_id].setValue(page.gamedatas.players[player_id]!.coins);
@@ -181,9 +186,35 @@ export class CoinManager {
      * Increment the coin counter, and disable all selection modes
      * @param player_id owner of the coin counter
      * @param nbr amount of coins (may be negative)
+     * @param animate_from (optional) - if provided, animate the coins from a given HTMLElement to the player's coin icon
     */
-    public addCoins(player_id: number, nbr: number) {
-        this.playerCoins[player_id]!.incValue(nbr);
-        this.setSelectionMode('none');
+    public addCoins(player_id: number, nbr: number, animate_from: HTMLElement | undefined = undefined) {
+        if (animate_from && nbr > 0) {
+            const max_delay = 250;
+            const duration = 500;
+            const nbr_icons = Math.min(nbr, 100)
+            for (let i = 0; i < nbr_icons; i++) {
+                const coin = DaleIcons.getCoinIcon();
+                dojo.setStyle(coin, 'position', 'absolute');
+                dojo.setStyle(coin, 'z-index', String(Images.Z_INDEX_SLIDING_CARD));
+                dojo.setStyle(coin, 'width', '28px');
+                dojo.setStyle(coin, 'height', '28px');
+                $("overall-content").append(coin)
+                this.page!.placeOnObject(coin, animate_from);
+                const delay = i / nbr_icons * max_delay;
+                const animSlide = this.page!.slideToObject(coin, this.playerCoinIcon[player_id]!, duration, delay);
+                const onEnd = (node: HTMLElement) => {
+                    node.remove();
+                    this.playerCoins[player_id]!.incValue(1);
+                }
+                const animCallback = dojo.animateProperty({ node: coin, duration: 0, onEnd: onEnd });
+                const anim = dojo.fx.chain([animSlide as unknown as dojo._base.Animation, animCallback]);
+                anim.play();
+            }
+        }
+        else {
+            this.playerCoins[player_id]!.incValue(nbr);
+            this.setSelectionMode('none');
+        }
     }
 }

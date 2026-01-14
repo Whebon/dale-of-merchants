@@ -4639,7 +4639,7 @@ define("components/TargetingLine", ["require", "exports", "components/DaleCard"]
     }());
     exports.TargetingLine = TargetingLine;
 });
-define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard"], function (require, exports, DaleIcons_9, DaleWrapClass_4, DaleCard_8) {
+define("components/CoinManager", ["require", "exports", "components/DaleIcons", "components/types/DaleWrapClass", "components/DaleCard", "components/Images"], function (require, exports, DaleIcons_9, DaleWrapClass_4, DaleCard_8, Images_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CoinManager = void 0;
@@ -4647,6 +4647,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
         function CoinManager() {
             this.selectionMode = 'none';
             this.playerCoins = {};
+            this.playerCoinIcon = {};
         }
         Object.defineProperty(CoinManager.prototype, "defaultActionLabelText", {
             get: function () {
@@ -4674,6 +4675,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                 var coins_icon = DaleIcons_9.DaleIcons.getCoinIcon();
                 coins_icon.id = 'daleofmerchants-coins-icon-' + player_id;
                 coins_wrap.append(coins_icon);
+                this.playerCoinIcon[player_id] = coins_icon;
                 this.playerCoins[player_id] = new ebg.counter();
                 this.playerCoins[player_id].create(coins_span);
                 this.playerCoins[player_id].setValue(page.gamedatas.players[player_id].coins);
@@ -4776,9 +4778,36 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                     break;
             }
         };
-        CoinManager.prototype.addCoins = function (player_id, nbr) {
-            this.playerCoins[player_id].incValue(nbr);
-            this.setSelectionMode('none');
+        CoinManager.prototype.addCoins = function (player_id, nbr, animate_from) {
+            var _this = this;
+            if (animate_from === void 0) { animate_from = undefined; }
+            if (animate_from && nbr > 0) {
+                var max_delay = 250;
+                var duration = 500;
+                var nbr_icons = Math.min(nbr, 100);
+                for (var i = 0; i < nbr_icons; i++) {
+                    var coin = DaleIcons_9.DaleIcons.getCoinIcon();
+                    dojo.setStyle(coin, 'position', 'absolute');
+                    dojo.setStyle(coin, 'z-index', String(Images_8.Images.Z_INDEX_SLIDING_CARD));
+                    dojo.setStyle(coin, 'width', '28px');
+                    dojo.setStyle(coin, 'height', '28px');
+                    $("overall-content").append(coin);
+                    this.page.placeOnObject(coin, animate_from);
+                    var delay = i / nbr_icons * max_delay;
+                    var animSlide = this.page.slideToObject(coin, this.playerCoinIcon[player_id], duration, delay);
+                    var onEnd = function (node) {
+                        node.remove();
+                        _this.playerCoins[player_id].incValue(1);
+                    };
+                    var animCallback = dojo.animateProperty({ node: coin, duration: 0, onEnd: onEnd });
+                    var anim = dojo.fx.chain([animSlide, animCallback]);
+                    anim.play();
+                }
+            }
+            else {
+                this.playerCoins[player_id].incValue(nbr);
+                this.setSelectionMode('none');
+            }
         };
         return CoinManager;
     }());
@@ -4813,7 +4842,7 @@ define("components/types/TranslatableStrings", ["require", "exports"], function 
     }());
     exports.TranslatableStrings = TranslatableStrings;
 });
-define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/PlayerClock", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, MainClientState_1, Images_8, TargetingLine_1, DbEffect_1, DaleDeckSelection_2, DaleDie_2, DaleIcons_10, CoinManager_1, PlayerClock_2, TranslatableStrings_1) {
+define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "components/DaleStock", "components/Pile", "components/HiddenPile", "components/DaleCard", "components/MarketBoard", "components/Stall", "components/types/MainClientState", "components/Images", "components/TargetingLine", "components/types/DbEffect", "components/DaleDeckSelection", "components/DaleDie", "components/DaleIcons", "components/CoinManager", "components/PlayerClock", "components/types/TranslatableStrings", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, DaleStock_1, Pile_2, HiddenPile_1, DaleCard_9, MarketBoard_1, Stall_1, MainClientState_1, Images_9, TargetingLine_1, DbEffect_1, DaleDeckSelection_2, DaleDie_2, DaleIcons_10, CoinManager_1, PlayerClock_2, TranslatableStrings_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DaleOfMerchants = (function (_super) {
@@ -5002,7 +5031,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.addDaleCardToStock(DaleCard_9.DaleCard.of(card));
                 }
                 this.myLimbo.setSelectionMode('none');
-                dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_8.Images.CARD_WIDTH_S + 'px');
+                dojo.setStyle(this.myLimbo.wrap, 'min-width', 3 * Images_9.Images.CARD_WIDTH_S + 'px');
                 dojo.connect(this.myLimbo, 'onClick', this, 'onSelectLimboCard');
                 dojo.connect(this.myLimbo.orderedSelection, 'onSelect', this, 'onSelectLimboCard');
                 dojo.connect(this.myLimbo.orderedSelection, 'onUnselect', this, 'onUnselectLimboCard');
@@ -5010,7 +5039,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var player_id in gamedatas.schedules) {
                 var container = $('daleofmerchants-schedule-' + player_id);
                 var wrap = $('daleofmerchants-schedule-wrap-' + player_id);
-                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_8.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.75 * Images_9.Images.CARD_WIDTH_S, "px"));
                 this.playerSchedules[player_id] = new DaleStock_1.DaleStock();
                 this.playerSchedules[player_id].init(this, container, wrap, _("Schedule"));
                 this.playerSchedules[player_id].setSelectionMode('none');
@@ -5037,7 +5066,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     console.warn('daleofmerchants-stored-cards-wrap-' + player_id);
                     continue;
                 }
-                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_8.Images.CARD_WIDTH_S, "px"));
+                dojo.setStyle(wrap, 'min-width', "".concat(1.5 * Images_9.Images.CARD_WIDTH_S, "px"));
                 this.playerStoredCards[player_id] = new DaleStock_1.DaleStock();
                 this.playerStoredCards[player_id].init(this, container, wrap, _("Stored Cards"));
                 this.playerStoredCards[player_id].setSelectionMode('none');
@@ -8512,6 +8541,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_SABOTAGE:
                 case DaleCard_9.DaleCard.CT_DELICACY:
                 case DaleCard_9.DaleCard.CT_UMBRELLA:
+                case DaleCard_9.DaleCard.CT_CAPUCHINS1:
                     if (this.unique_opponent_id) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
@@ -10590,11 +10620,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['discardToDiscard', 500],
                 ['rollDie', 1000],
                 ['avidFinancierTakeCoin', 500],
+                ['gainCoins', 250],
                 ['startSlotMachine', 1],
                 ['advanceClock', 1],
                 ['updateActionButtons', 1],
                 ['deselectPassive', 1],
-                ['gainCoins', 1],
                 ['selectDEPRECATED_Blindfold', 1, true],
                 ['addEffect', 1],
                 ['updateEffect', 1],
@@ -11537,7 +11567,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (notif.args.to_bottom && deck.placeholderHTML && deck.topCardHTML) {
                 var cover_1 = deck.topCardHTML.cloneNode(true);
                 deck.placeholderHTML.appendChild(cover_1);
-                dojo.setStyle(cover_1, 'z-index', Images_8.Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD.toString());
+                dojo.setStyle(cover_1, 'z-index', Images_9.Images.Z_INDEX_DECK_ABOVE_SLIDING_CARD.toString());
                 dojo.setStyle(cover_1, 'box-shadow', "0px 0px");
                 discard.pop(deck.placeholderHTML, function () {
                     deck.pushHiddenCards(1);
@@ -11592,7 +11622,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.setPassiveSelected(notif.args.passive_card_id, false);
         };
         DaleOfMerchants.prototype.notif_gainCoins = function (notif) {
-            this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
+            if (notif.args.source_card) {
+                var card = DaleCard_9.DaleCard.of(notif.args.source_card);
+                this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr, card.div);
+            }
+            else {
+                this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
+            }
         };
         DaleOfMerchants.prototype.notif_avidFinancierTakeCoin = function (notif) {
             var _this = this;

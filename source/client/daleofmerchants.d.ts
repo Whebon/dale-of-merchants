@@ -399,6 +399,7 @@ declare global {
 		'gainCoins': {
 			player_id: number,
 			nbr: number,
+			source_card?: DbCard
 		}
 		'avidFinancierTakeCoin': {
 			player_id: number,

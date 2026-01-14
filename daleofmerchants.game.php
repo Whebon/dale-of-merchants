@@ -3028,13 +3028,13 @@ class DaleOfMerchants extends DaleTableBasic
      * Also notifies the players.
      * @param mixed $player_id player that receives the coin
      * @param int $nbr number of coins to take from the bank
-     * @param array $source_dbcard source of this effect
+     * @param array $source_dbcard (optional) source of this effect
      */
-    function gainCoins(mixed $player_id, int $nbr, array $source_dbcard) {
+    function gainCoins(mixed $player_id, int $nbr, array $source_dbcard = null) {
         $this->addCoins($player_id, $nbr);
         $msg = clienttranslate('${resolving_card_name}: ${player_name} gains ${nbr} ${coin_icon}');
         $this->notifyAllPlayers('gainCoins', $msg, array(
-            'resolving_card_name' => $this->getCardName($source_dbcard),
+            'resolving_card_name' => $source_dbcard ? $this->getCardName($source_dbcard) : "",
             'source_card' => $source_dbcard,
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),

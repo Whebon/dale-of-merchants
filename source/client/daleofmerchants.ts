@@ -6776,11 +6776,11 @@ class DaleOfMerchants extends Gamegui
 			['discardToDiscard',					500],
 			['rollDie', 							1000],
 			['avidFinancierTakeCoin', 				500],
+			['gainCoins',							250],
 			['startSlotMachine',					1],
 			['advanceClock',						1],
 			['updateActionButtons',					1],
 			['deselectPassive',						1],
-			['gainCoins',							1],
 			['selectDEPRECATED_Blindfold', 					1, true],
 			['addEffect', 							1],
 			['updateEffect', 						1],
@@ -7943,7 +7943,13 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_gainCoins(notif: NotifAs<'gainCoins'>) {
-		this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
+		if (notif.args.source_card) {
+			const card = DaleCard.of(notif.args.source_card);
+			this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr, card.div);
+		}
+		else {
+			this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
+		}
 	}
 
 	notif_avidFinancierTakeCoin(notif: NotifAs<'avidFinancierTakeCoin'>) {
