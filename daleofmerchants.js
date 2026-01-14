@@ -4789,8 +4789,8 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                     var coin = DaleIcons_9.DaleIcons.getCoinIcon();
                     dojo.setStyle(coin, 'position', 'absolute');
                     dojo.setStyle(coin, 'z-index', String(Images_8.Images.Z_INDEX_SLIDING_CARD));
-                    dojo.setStyle(coin, 'width', '28px');
-                    dojo.setStyle(coin, 'height', '28px');
+                    dojo.setStyle(coin, 'width', '50px');
+                    dojo.setStyle(coin, 'height', '50px');
                     $("overall-content").append(coin);
                     this.page.placeOnObject(coin, animate_from);
                     var delay = i / nbr_icons * max_delay;
