@@ -712,6 +712,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             this.gameHTML = gameHTML;
             this.filterContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-filters");
             this.resetFiltersButton = this.filterContainer.querySelector("#daleofmerchants-filter-title-reset-filters");
+            this.pickRandomButton = this.filterContainer.querySelector("#daleofmerchants-pick-random");
             this.cardContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container");
             this.cardContainer.classList.add("daleofmerchants-wrap-technique");
             if (!inDeckSelection) {
@@ -807,7 +808,8 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 ["daleofmerchants-filter-title-interactivity", DaleIcons_2.DaleIcons.getInteractivityIcon()],
                 ["daleofmerchants-filter-title-nastiness", DaleIcons_2.DaleIcons.getNastinessIcon()],
                 ["daleofmerchants-filter-title-randomness", DaleIcons_2.DaleIcons.getRandomnessIcon()],
-                ["daleofmerchants-filter-title-game", DaleIcons_2.DaleIcons.getGameIcon()]
+                ["daleofmerchants-filter-title-game", DaleIcons_2.DaleIcons.getGameIcon()],
+                ["daleofmerchants-pick-random", DaleIcons_2.DaleIcons.getRandomIcon()],
             ];
             for (var _i = 0, icons_1 = icons; _i < icons_1.length; _i++) {
                 var _b = icons_1[_i], html_id = _b[0], icon = _b[1];
@@ -852,9 +854,13 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             this.resetFiltersButton.addEventListener("click", function () {
                 _this.resetFilters();
             });
+            this.pickRandomButton.addEventListener("click", function () {
+                _this.pickRandom();
+            });
             (_a = this.filterContainer.querySelector("h2")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", function () {
                 _this.filterContainer.classList.toggle("daleofmerchants-collapsed");
             });
+            this.filterContainer.classList.add("daleofmerchants-collapsed");
         };
         DaleDeckSelection.prototype.resetFilters = function () {
             this.filterContainer.querySelectorAll(".toggle").forEach(function (toggle) {
@@ -863,13 +869,34 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 }
             });
         };
+        DaleDeckSelection.prototype.getSelectableAnimalfolkIds = function () {
+            var animalfolk_ids = [];
+            for (var animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+                var div = this.card_divs.get(animalfolk_id);
+                var isHidden = div.classList.contains("daleofmerchants-hidden");
+                var isDisabled = div.classList.contains("daleofmerchants-deck-selection-unavailable");
+                var isAlreadySelected = this.orderedSelection.includes(animalfolk_id);
+                if (!isHidden && !isDisabled && !isAlreadySelected) {
+                    animalfolk_ids.push(animalfolk_id);
+                }
+            }
+            return animalfolk_ids;
+        };
+        DaleDeckSelection.prototype.pickRandom = function () {
+            var animalfolk_ids = this.getSelectableAnimalfolkIds();
+            if (animalfolk_ids.length > 0) {
+                var random_index = Math.floor(Math.random() * animalfolk_ids.length);
+                var animalfolk_id = animalfolk_ids[random_index];
+                this.orderedSelection.selectItem(animalfolk_id);
+            }
+        };
         DaleDeckSelection.prototype.updateResetFiltersButton = function () {
             var hasActiveFilter = Array.from(this.filterBlacklists.values()).some(function (blacklist) { return blacklist.length > 0; });
             this.resetFiltersButton.classList.toggle("active", hasActiveFilter);
             var prevIcon = this.resetFiltersButton.querySelector(".daleofmerchants-icon");
             if (prevIcon) {
                 var newIcon = hasActiveFilter ? DaleIcons_2.DaleIcons.getResetFiltersEnabledIcon() : DaleIcons_2.DaleIcons.getResetFiltersDisabledIcon();
-                prevIcon.insertAdjacentHTML('beforebegin', "<span class=\"daleofmerchants-log-span\">".concat(newIcon.outerHTML, "</span>"));
+                prevIcon.insertAdjacentHTML('beforebegin', newIcon.outerHTML);
                 prevIcon.remove();
             }
         };

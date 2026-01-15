@@ -69,7 +69,7 @@
             <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
         </div>
         <div class="filter">
-            <button class="daleofmerchants-bga-button", id="daleofmerchants-pick-random"> {PICK_RANDOM}</button>
+            <button class="daleofmerchants-bga-button active", id="daleofmerchants-pick-random"> {PICK_RANDOM}</button>
         </div>
     </div>
     <!-- deck portaits go inside this container -->

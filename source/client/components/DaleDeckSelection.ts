@@ -16,6 +16,7 @@ export class DaleDeckSelection {
     private deckSelectionHTML: HTMLElement;
     private filterContainer: HTMLElement;
     private resetFiltersButton: HTMLElement;
+    private pickRandomButton: HTMLElement;
     private cardContainer: HTMLElement;
     public orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
 
@@ -87,6 +88,7 @@ export class DaleDeckSelection {
         this.gameHTML = gameHTML;
         this.filterContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-filters") as HTMLElement)!;
         this.resetFiltersButton = this.filterContainer.querySelector("#daleofmerchants-filter-title-reset-filters")!;
+        this.pickRandomButton = this.filterContainer.querySelector("#daleofmerchants-pick-random")!;
         this.cardContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container") as HTMLElement)!;
         this.cardContainer.classList.add("daleofmerchants-wrap-technique");
         if (!inDeckSelection) {
@@ -196,7 +198,8 @@ export class DaleDeckSelection {
             ["daleofmerchants-filter-title-interactivity",  DaleIcons.getInteractivityIcon()],
             ["daleofmerchants-filter-title-nastiness",      DaleIcons.getNastinessIcon()],
             ["daleofmerchants-filter-title-randomness",     DaleIcons.getRandomnessIcon()],
-            ["daleofmerchants-filter-title-game",           DaleIcons.getGameIcon()]
+            ["daleofmerchants-filter-title-game",           DaleIcons.getGameIcon()],
+            ["daleofmerchants-pick-random",                 DaleIcons.getRandomIcon()],
         ]
         for (const [html_id, icon] of icons) {
             $(html_id)!.insertAdjacentHTML('afterbegin', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
@@ -242,10 +245,16 @@ export class DaleDeckSelection {
             this.resetFilters();
         })
 
+        //pick random toggle
+        this.pickRandomButton.addEventListener("click", () => {
+            this.pickRandom();
+        })
+
         //collapsible
         this.filterContainer.querySelector("h2")?.addEventListener("click", () => {
             this.filterContainer.classList.toggle("daleofmerchants-collapsed");
         })
+        this.filterContainer.classList.add("daleofmerchants-collapsed"); // Sami: "Whenever the filters are on top (not on the side), they should be hidden by default"
     }
 
     private resetFilters() {
@@ -255,6 +264,32 @@ export class DaleDeckSelection {
             }
         })
     }
+
+    /**
+     * Returns all animalfolk_ids that pass the current filters and is not selected already
+     */
+    private getSelectableAnimalfolkIds(): number[] {
+        let animalfolk_ids = [];
+        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+            const div = this.card_divs.get(animalfolk_id)!
+            const isHidden = div.classList.contains("daleofmerchants-hidden");
+            const isDisabled = div.classList.contains("daleofmerchants-deck-selection-unavailable");
+            const isAlreadySelected = this.orderedSelection.includes(animalfolk_id);
+            if (!isHidden && !isDisabled && !isAlreadySelected) {
+                animalfolk_ids.push(animalfolk_id);
+            }
+        }
+        return animalfolk_ids;
+    }
+
+    private pickRandom() {
+        const animalfolk_ids = this.getSelectableAnimalfolkIds();
+        if (animalfolk_ids.length > 0) {
+            const random_index = Math.floor(Math.random() * animalfolk_ids.length);
+            const animalfolk_id = animalfolk_ids[random_index]!;
+            this.orderedSelection.selectItem(animalfolk_id);
+        }
+    }
     
     private updateResetFiltersButton() {
         const hasActiveFilter = Array.from(this.filterBlacklists.values()).some(blacklist => blacklist.length > 0);
@@ -262,7 +297,7 @@ export class DaleDeckSelection {
         const prevIcon = this.resetFiltersButton.querySelector(".daleofmerchants-icon")!;
         if (prevIcon) {
             const newIcon = hasActiveFilter ? DaleIcons.getResetFiltersEnabledIcon() : DaleIcons.getResetFiltersDisabledIcon();
-            prevIcon.insertAdjacentHTML('beforebegin', `<span class="daleofmerchants-log-span">${newIcon.outerHTML}</span>`);
+            prevIcon.insertAdjacentHTML('beforebegin', newIcon.outerHTML); //`<span class="daleofmerchants-log-span">${newIcon.outerHTML}</span>`);
             prevIcon.remove();
         }
     }
