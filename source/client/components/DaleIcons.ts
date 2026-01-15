@@ -62,6 +62,10 @@ export class DaleIcons {
         return icon;
     }
 
+    public static getPompousProfessionalIcon(): HTMLElement {
+        return this.getIcon(3, 2);
+    }
+
     public static getDuplicateEntry(): HTMLElement {
         return this.getIcon(3, 3);
     }
@@ -110,6 +114,9 @@ export class DaleIcons {
         return this.getIcon(5, index);
     }
 
+    public static getTastersIcon(): HTMLElement {
+        return this.getIcon(5, 5);
+    }
     
     /////////////////////////////
     ////////    ROW 6    ////////
@@ -238,5 +245,9 @@ export class DaleIcons {
 
     public static getWarningIcon(): HTMLElement {
         return this.getIcon(11, 2);
+    }
+
+    public static getRandomIcon(): HTMLElement {
+        return this.getIcon(11, 3);
     }
 }

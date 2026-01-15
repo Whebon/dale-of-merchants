@@ -86,7 +86,7 @@ export class DaleDeckSelection {
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
         this.filterContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-filters") as HTMLElement)!;
-        this.resetFiltersButton = this.filterContainer.querySelector(".reset-filters")!;
+        this.resetFiltersButton = this.filterContainer.querySelector("#daleofmerchants-filter-title-reset-filters")!;
         this.cardContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container") as HTMLElement)!;
         this.cardContainer.classList.add("daleofmerchants-wrap-technique");
         if (!inDeckSelection) {

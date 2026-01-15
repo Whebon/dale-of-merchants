@@ -883,19 +883,21 @@
 .daleofmerchants-filters button {
   width: auto;
 }
-.daleofmerchants-filters .reset-filters {
+.daleofmerchants-filters #daleofmerchants-filter-title-reset-filters {
+  float: right;
+}
+.daleofmerchants-filters .daleofmerchants-bga-button {
   border: none;
   font-size: 1em;
   background-color: rgba(120, 62, 21, 0.1);
   border-radius: 0.4em;
   padding: 0.3em 0.5em;
-  float: right;
   color: rgba(120, 62, 21, 0.5);
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
 }
-.daleofmerchants-filters .reset-filters.active {
+.daleofmerchants-filters .daleofmerchants-bga-button.active {
   background: #4871b6;
   border: 1px solid #37578c;
   box-shadow: 0 1px 0 #000;

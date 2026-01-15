@@ -929,7 +929,7 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'tasters':
-				this.market!.setSelectionMode(2, 'cheese', "daleofmerchants-wrap-technique");
+				this.market!.setSelectionMode(2, 'tasters', "daleofmerchants-wrap-technique");
 				this.market!.orderedSelection.setMaxSize(1);
 				break;
 			case 'daringAdventurer':
@@ -2229,7 +2229,7 @@ class DaleOfMerchants extends Gamegui
 				);
 				if (pompousProfessional_is_taking_card) {
 					const pompousProfessional_label = _("Choose a '")+pompousProfessional_args.animalfolk_name+("' card to take");
-					this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
+					this.myLimbo.setSelectionMode('multiple', 'pompousProfessional', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
 					this.addActionButton("confirm-button", _("Confirm"), "onPompousProfessionalTakeAndDiscard");
 					this.restoreMainTitle();
 				}

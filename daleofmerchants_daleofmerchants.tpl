@@ -17,7 +17,7 @@
 <div id="daleofmerchants-page-deck-selection">
     <!-- Filter HTML by Sami Laakso -->
     <div class="daleofmerchants-filters">
-        <button class="reset-filters" id="daleofmerchants-filter-title-reset-filters"> {RESET_FILTERS}</button>
+        <button class="daleofmerchants-bga-button" id="daleofmerchants-filter-title-reset-filters"> {RESET_FILTERS}</button>
         <h2 class="daleofmerchants-filters-header">{FILTER_DECKS}</h2>
         <div class="filter">
             <h3 id="daleofmerchants-filter-title-complexity"> {COMPLEXITY}</h3>
@@ -67,6 +67,9 @@
             <span data-filter="game: 6" class="toggle chosen">6</span>
             </div>
             <div class="daleofmerchants-warning daleofmerchants-hidden"> {DECK_SELECTION_WARNING}<div class="triangle"></div></div>
+        </div>
+        <div class="filter">
+            <button class="daleofmerchants-bga-button", id="daleofmerchants-pick-random"> {PICK_RANDOM}</button>
         </div>
     </div>
     <!-- deck portaits go inside this container -->

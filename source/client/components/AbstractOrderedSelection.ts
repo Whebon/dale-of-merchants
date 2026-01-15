@@ -80,6 +80,12 @@ export abstract class AbstractOrderedSelection {
             case 'spyglass':
                 icon = (index == 0) ? DaleIcons.getSpyglassIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
+            case 'tasters':
+                icon = (index == 0) ? DaleIcons.getTastersIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
+            case 'pompousProfessional':
+                icon = (index == 0) ? DaleIcons.getPompousProfessionalIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
             case 'historyLesson':
                 icon = (index == 0) ? DaleIcons.getHistoryLessonIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;

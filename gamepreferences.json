@@ -1,1 +1,41 @@
-{	"100": {		"name": "Confirm technique",		"needReload": false,		"values": {		  "0": {			"name": "Only when a choice is involved"		  },		  "1": {			"name": "Always"		  }		},		"default": 1	},	"101": {		"name": "Rotate play areas",		"needReload": true,		"values": {		  "0": {			"name": "No, always show my play area on top"		  },		  "1": {			"name": "Yes, show the active player's play area on top"		  }		},		"default": 1	  },	"102": {		"name": "Mono's turn style (solo-mode)",		"needReload": false,		"values": {		  "0": {			"name": "Stepped"		  },		  "1": {			"name": "Automated"		  }		},		"default": 0	}}
+{
+	"100": {
+		"name": "Confirm technique",
+		"needReload": false,
+		"values": {
+		  "0": {
+			"name": "Only when a choice is involved"
+		  },
+		  "1": {
+			"name": "Always"
+		  }
+		},
+		"default": 1
+	},
+	"101": {
+		"name": "Rotate play areas",
+		"needReload": true,
+		"values": {
+		  "0": {
+			"name": "No, always show my play area on top"
+		  },
+		  "1": {
+			"name": "Yes, show the active player's play area on top"
+		  }
+		},
+		"default": 1
+	  },
+	"102": {
+		"name": "Mono's turn style (solo-mode)",
+		"needReload": false,
+		"values": {
+		  "0": {
+			"name": "Stepped"
+		  },
+		  "1": {
+			"name": "Automated"
+		  }
+		},
+		"default": 0
+	}
+}

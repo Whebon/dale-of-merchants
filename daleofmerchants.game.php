@@ -8299,7 +8299,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->discardMultiple(
             clienttranslate('Pompous Professional: ${player_name} discards ${nbr} cards'),
             $player_id, 
-            $this->toCardIds($ordered_dbcards), 
+            $card_ids, 
             $ordered_dbcards,
             $dbcards,
             true

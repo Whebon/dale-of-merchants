@@ -1115,13 +1115,16 @@
 		width: auto;
 	}
 
-	.reset-filters {
+	#daleofmerchants-filter-title-reset-filters {
+		float: right;
+	}
+
+	.daleofmerchants-bga-button {
 		border: none;
 		font-size: 1em;
 		background-color: rgba(120, 62, 21, 0.1);
 		border-radius: 0.4em;
 		padding: 0.3em 0.5em;
-		float: right;
 		color: rgba(120, 62, 21, 0.5);
 		cursor: pointer;
 		font-weight: 700; //bga button style

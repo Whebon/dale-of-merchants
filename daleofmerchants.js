@@ -99,6 +99,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             icon.classList.add("daleofmerchants-build-icon");
             return icon;
         };
+        DaleIcons.getPompousProfessionalIcon = function () {
+            return this.getIcon(3, 2);
+        };
         DaleIcons.getDuplicateEntry = function () {
             return this.getIcon(3, 3);
         };
@@ -128,6 +131,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
+        };
+        DaleIcons.getTastersIcon = function () {
+            return this.getIcon(5, 5);
         };
         DaleIcons.getCostModificationIcon = function (index) {
             if (index >= 4) {
@@ -206,6 +212,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         };
         DaleIcons.getWarningIcon = function () {
             return this.getIcon(11, 2);
+        };
+        DaleIcons.getRandomIcon = function () {
+            return this.getIcon(11, 3);
         };
         DaleIcons.ROWS = 12;
         DaleIcons.COLUMNS = 6;
@@ -405,6 +414,12 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'spyglass':
                     icon = (index == 0) ? DaleIcons_1.DaleIcons.getSpyglassIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'tasters':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getTastersIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'pompousProfessional':
+                    icon = (index == 0) ? DaleIcons_1.DaleIcons.getPompousProfessionalIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
                 case 'historyLesson':
                     icon = (index == 0) ? DaleIcons_1.DaleIcons.getHistoryLessonIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
@@ -696,7 +711,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             this.deckSelectionHTML = deckSelectionHTML;
             this.gameHTML = gameHTML;
             this.filterContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-filters");
-            this.resetFiltersButton = this.filterContainer.querySelector(".reset-filters");
+            this.resetFiltersButton = this.filterContainer.querySelector("#daleofmerchants-filter-title-reset-filters");
             this.cardContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container");
             this.cardContainer.classList.add("daleofmerchants-wrap-technique");
             if (!inDeckSelection) {
@@ -5529,7 +5544,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'tasters':
-                    this.market.setSelectionMode(2, 'cheese', "daleofmerchants-wrap-technique");
+                    this.market.setSelectionMode(2, 'tasters', "daleofmerchants-wrap-technique");
                     this.market.orderedSelection.setMaxSize(1);
                     break;
                 case 'daringAdventurer':
@@ -6794,7 +6809,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var pompousProfessional_is_taking_card = this.myLimbo.getAllItems().some(function (item) { return new DaleCard_9.DaleCard(item.id).effective_animalfolk_id == pompousProfessional_args_1.animalfolk_id; });
                     if (pompousProfessional_is_taking_card) {
                         var pompousProfessional_label = _("Choose a '") + pompousProfessional_args_1.animalfolk_name + ("' card to take");
-                        this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
+                        this.myLimbo.setSelectionMode('multiple', 'pompousProfessional', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
                         this.addActionButton("confirm-button", _("Confirm"), "onPompousProfessionalTakeAndDiscard");
                         this.restoreMainTitle();
                     }
