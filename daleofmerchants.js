@@ -4405,6 +4405,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         }
                     case 'client_royalPrivilege':
                         return _("${card_name}: ${you} must discard 1 animalfolk card");
+                    case 'client_capuchin3':
+                        return _("${card_name}: ${you} must choose an opponent");
+                    case 'client_spendSelectOpponentTechnique':
+                        return _("${card_name}: ${you} must choose an opponent");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -6367,6 +6371,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_capuchin3':
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'capuchin4':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -6515,6 +6522,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_dirtyExchange':
                     this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_spendSelectOpponentTechnique':
+                    this.addActionButtonsOpponent(this.onCapuchin4Client.bind(this));
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_selectOpponentTechnique':
@@ -7150,6 +7161,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.addActionButton("confirm-button", _("Confirm"), "onCapuchin3");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'capuchin4':
+                    var capuchin4_args = args;
+                    var capuchin4_label = capuchin4_args.opponent_name + "\'s " + _("card");
+                    this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', capuchin4_label);
+                    this.addActionButton("confirm-button", _("Take"), "onCapuchin4Take");
+                    this.addActionButton("confirm-skip", _("Skip"), "onCapuchin4Skip", undefined, false, 'gray');
                     break;
             }
         };
@@ -8178,6 +8196,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         toss_card_id: card.id,
                         card_name: (_c = badOmen_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME"
                     });
+                    break;
+                case 'capuchin4':
+                    this.onCapuchin4Take();
                     break;
             }
         };
@@ -9208,6 +9229,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_9.DaleCard.CT_CAPUCHINS3:
                     this.clientScheduleTechnique('client_capuchin3', card.id);
+                    break;
+                case DaleCard_9.DaleCard.CT_CAPUCHINS4:
+                case DaleCard_9.DaleCard.CT_CAPUCHINS5A:
+                case DaleCard_9.DaleCard.CT_CAPUCHINS5B:
+                    if (this.unique_opponent_id) {
+                        this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
+                    }
+                    else {
+                        this.clientScheduleSpendTechnique('client_spendSelectOpponentTechnique', card.id, 2);
+                    }
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -10629,6 +10660,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.playTechniqueCard({
                 opponent_id: opponent_id,
                 card_id: card_id
+            });
+        };
+        DaleOfMerchants.prototype.onCapuchin4Client = function (opponent_id) {
+            this.playTechniqueCardWithServerState(__assign({ opponent_id: opponent_id }, this.mainClientState.getSpendArgs()));
+        };
+        DaleOfMerchants.prototype.onCapuchin4Take = function () {
+            this.bgaPerformAction('actCapuchin4', {
+                is_taking_card: true
+            });
+        };
+        DaleOfMerchants.prototype.onCapuchin4Skip = function () {
+            this.bgaPerformAction('actCapuchin4', {
+                is_taking_card: false
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

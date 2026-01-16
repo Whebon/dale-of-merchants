@@ -6710,6 +6710,26 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->stealCoins($player_id, $opponent_id, 1, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_CAPUCHINS4:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $this->spend($player_id, $args, 2, $this->_("Traveling Equipment"));
+                $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($dbcards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} attempted to take a card from ${opponent_name}, but their hand is empty'), array(
+                        "resolving_card_name" => $this->getCardName($technique_card),
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $card_id = array_rand($dbcards);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->setGameStateValue("card_id", $card_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trCapuchins4");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -9273,6 +9293,53 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actCapuchin4($is_taking_card) {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("actCapuchin4 expected limbo size 1");
+        }
+        $dbcard = reset($dbcards);
+        $card_id = $dbcard["id"];
+        if ($is_taking_card) {
+            // Take the card
+            $msg = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s card');
+            $msg_private = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s ${card_name}');
+            $this->cards->moveCard($card_id, HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', $msg, array(
+                "resolving_card_name" => $this->getCurrentResolvingCardName(),
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_id" => $opponent_id,
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            ), $msg_private);
+        }
+        else {
+            // Return the card to the opponent
+            $msg = clienttranslate('${resolving_card_name}: ${player_name} does not take ${opponent_name}\'s card');
+            $msg_private = clienttranslate('${resolving_card_name}: ${player_name} does not take ${opponent_name}\'s ${card_name}');
+            $this->cards->moveCard($card_id, HAND.$opponent_id);
+            $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', $msg, array(
+                "resolving_card_name" => $this->getCurrentResolvingCardName(),
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_id" => $opponent_id,
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "from_limbo" => true,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            ), $msg_private);
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
 
     // ^
     // |
@@ -9639,6 +9706,13 @@ class DaleOfMerchants extends DaleTableBasic
                     'card_name' => $card_name
                 )
             ),
+        );
+    }
+
+    function argOpponentNameAndCardNamePrivate() {
+        return array_merge(
+            $this->argOpponentName(),
+            $this->argCardNamePrivate()
         );
     }
 
@@ -10402,6 +10476,27 @@ class DaleOfMerchants extends DaleTableBasic
             $this->notifyAllPlayers('message', "Accident fizzled unexpectedly", array());
             $this->fullyResolveCard($player_id);
         }
+    }
+
+    function stCapuchin4() {
+        //This happens in a state so the client doesn't see the "limbo" label
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $card_id = $this->getGameStateValue("card_id");
+        $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$opponent_id);
+        $this->cards->moveCard($dbcard["id"], LIMBO.$player_id);
+        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('${resolving_card_name}: ${player_name} looks at a card from ${opponent_name}'), array(
+            "resolving_card_name" => $this->getCurrentResolvingCardName(),
+            "player_id" => $player_id,
+            "opponent_id" => $opponent_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "to_limbo" => true,
+            "_private" => array(
+                "card" => $dbcard,
+                "card_name" => $this->getCardName($dbcard)
+            )
+        ), clienttranslate('${resolving_card_name}: ${player_name} looks at ${opponent_name}\'s ${card_name}'));
     }
 
     

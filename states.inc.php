@@ -60,6 +60,7 @@ if (false) {
 	$game->stFashionHint();
 	$game->stAccident();
 	$game->stSouvenirs();
+	$game->stCapuchin4();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -189,6 +190,7 @@ $machinestates = array(
 			'trSouvenirs' => 109,
 			'trInsightDiscard' => 110,
 			'trInsightTake' => 111,
+			'trCapuchins4' => 112,
 		),
 	),
 	31 => array(
@@ -915,6 +917,18 @@ $machinestates = array(
 		'descriptionmyturn' => clienttranslate('Insight: ${you} must take a card from your discard'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actInsightTake'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	112 => array(
+		'name' => 'capuchin4',
+		'description' => clienttranslate('CT_CAPUCHINS4: ${actplayer} may take a card from ${opponent_name}'),
+		'descriptionmyturn' => clienttranslate('CT_CAPUCHINS4: ${you} may take ${opponent_name}\'s ${_private.card_name}'),
+		'type' => 'activeplayer',
+		'args' => 'argOpponentNameAndCardNamePrivate',
+		'action' => 'stCapuchin4',
+		'possibleactions' => ['actCapuchin4'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

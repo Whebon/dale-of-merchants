@@ -1751,6 +1751,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_capuchin3':
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'capuchin4':
+				this.myLimbo.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -1898,6 +1901,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_dirtyExchange':
 				this.addActionButtonsOpponent(this.onDirtyExchange.bind(this));
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_spendSelectOpponentTechnique':
+				this.addActionButtonsOpponent(this.onCapuchin4Client.bind(this));
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_selectOpponentTechnique':
@@ -2552,6 +2559,13 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.addActionButton("confirm-button", _("Confirm"), "onCapuchin3"); //confirm the opponent and the card
 				this.addActionButtonCancelClient();
+				break;
+			case 'capuchin4':
+				const capuchin4_args = (args as { opponent_name: string });
+				const capuchin4_label = capuchin4_args.opponent_name+"\'s "+_("card")
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', capuchin4_label);
+				this.addActionButton("confirm-button", _("Take"), "onCapuchin4Take");
+				this.addActionButton("confirm-skip", _("Skip"), "onCapuchin4Skip", undefined, false, 'gray');
 				break;
 		}
 		//(~actionbuttons)
@@ -3979,6 +3993,9 @@ class DaleOfMerchants extends Gamegui
 					card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
 				});
 				break;
+			case 'capuchin4':
+				this.onCapuchin4Take();
+				break;
 		}
 	}
 
@@ -5089,6 +5106,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_CAPUCHINS3:
 				this.clientScheduleTechnique('client_capuchin3', card.id)
+				break;
+			case DaleCard.CT_CAPUCHINS4:
+			case DaleCard.CT_CAPUCHINS5A:
+			case DaleCard.CT_CAPUCHINS5B:
+				if (this.unique_opponent_id) {
+					this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
+				}
+				else {
+					this.clientScheduleSpendTechnique('client_spendSelectOpponentTechnique', card.id, 2);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -6731,6 +6758,25 @@ class DaleOfMerchants extends Gamegui
 			opponent_id: opponent_id,
 			card_id: card_id
 		});
+	}
+	
+	onCapuchin4Client(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_selectOpponentTechnique'>({
+			opponent_id: opponent_id,
+			...this.mainClientState.getSpendArgs()
+		})
+	}
+
+	onCapuchin4Take() {
+		this.bgaPerformAction('actCapuchin4', {
+			is_taking_card: true
+		})
+	}
+
+	onCapuchin4Skip() {
+		this.bgaPerformAction('actCapuchin4', {
+			is_taking_card: false
+		})
 	}
 
 	//(~on)

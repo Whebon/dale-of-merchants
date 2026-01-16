@@ -283,6 +283,10 @@ export class MainClientState {
                 }
             case 'client_royalPrivilege':
                 return _("${card_name}: ${you} must discard 1 animalfolk card");
+            case 'client_capuchin3':
+                return _("${card_name}: ${you} must choose an opponent");
+            case 'client_spendSelectOpponentTechnique':
+                return _("${card_name}: ${you} must choose an opponent");
         }
         return "MISSING DESCRIPTION";
     }

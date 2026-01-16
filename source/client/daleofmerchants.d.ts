@@ -621,6 +621,7 @@ declare global {
 		'client_badOmen': { toss_card_id: number, card_name: string }
 		'client_selectingContracts': {technique_card_id: number, nbr: number }
 		'client_generationChange': { technique_card_id: number, nbr: number }
+		'client_spendSelectOpponentTechnique': {opponent_id: number, }
 	}
 
 	//

@@ -217,6 +217,7 @@ interface GameStates {
 			'trSouvenirs': 109,
 			'trInsightDiscard': 110,
 			'trInsightTake': 111,
+			'trCapuchins4': 112,
 		},
 	},
 	31: {
@@ -1410,6 +1411,24 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	112: {
+		'name': 'capuchin4',
+		'description': 'CT_CAPUCHINS4: ${actplayer} may take a card from ${opponent_name}',
+		'descriptionmyturn': 'CT_CAPUCHINS4: ${you} may take ${opponent_name}\\\'s ${_private.card_name}',
+		'type': 'activeplayer',
+		'args': 'argOpponentNameAndCardNamePrivate',
+		'action': 'stCapuchin4',
+		'possibleactions': {
+			'actCapuchin4': [{
+				'name': 'is_taking_card',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
 			}],
 		},
 		'transitions': {
