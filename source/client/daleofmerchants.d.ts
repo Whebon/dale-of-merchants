@@ -540,7 +540,9 @@ declare global {
 		'client_groundbreakingIdea': { card_id: number }
 		'client_selectingContracts': { card_ids: number[] }
 		'client_generationChange': { card_ids: number[] }
-		'client_capuchin3': { opponent_id: number, card_id: number }
+		'client_capuchin3': { opponent_id: number, card_id: number },
+		'client_spendSelectOpponentTechnique': { opponent_id: number }
+		'client_capuchin5b': { opponent_id: number, card_id: number }
 	}
 
 	interface ClientPassiveChoice {
@@ -615,13 +617,14 @@ declare global {
 		'client_meddlingMarketeer': { discard_card_ids: number[], card_name: string }
 		'client_anchor': { opponent_id: number, opponent_name: string, discard_card_id: number, card_name: string },
 		'client_manufacturedJoy': { draw_card_id: number, card_name: string }
-		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, wrap_class?: DaleWrapClass }
-		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, wrap_class?: DaleWrapClass }
+		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, next_args: any, wrap_class?: DaleWrapClass }
+		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, next_args: any, wrap_class?: DaleWrapClass }
 		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
 		'client_badOmen': { toss_card_id: number, card_name: string }
 		'client_selectingContracts': {technique_card_id: number, nbr: number }
+		'client_capuchin5b': {technique_card_id: number, opponent_id: number, opponent_name: string }
 		'client_generationChange': { technique_card_id: number, nbr: number }
-		'client_spendSelectOpponentTechnique': {opponent_id: number, }
+		'client_spendSelectOpponentTechnique': { technique_card_id: number, player_ids?: number[]}
 	}
 
 	//

@@ -6741,6 +6741,25 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCapuchin5a");
                 break;
+            case CT_CAPUCHIN5B:
+                $this->spend($player_id, $args, 2, $this->_("INSERT_NAME"));
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $card_id = $args["card_id"];
+                $top_cards = $this->toAssociativeArray($this->cards->getCardsOnTop(2, DISCARD.$opponent_id));
+                if (!isset($top_cards[$card_id])) {
+                    throw new BgaUserException($this->_("Some selected card is not within the top X cards of the discard pile"));
+                }
+                $dbcard = $top_cards[$card_id];
+                $this->discardToHandMultiple(
+                    clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'),
+                    $player_id,
+                    $this->toCardIds($top_cards),
+                    false,
+                    $opponent_id
+                );
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

@@ -1266,13 +1266,35 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'client_spendSelectOpponentTechnique':
-				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", "daleofmerchants-wrap-purchase");
+				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
 				const client_spendSelectOpponentTechnique_args = this.mainClientState.getSpendArgs();
 				for (const card_id of client_spendSelectOpponentTechnique_args.spend_card_ids.reverse()) {
 					this.myHand.selectItem(card_id);
 				}
-				this.coinManager.setSelectionMode('implicit', "daleofmerchants-wrap-purchase", _("Coins included"));
+				this.coinManager.setSelectionMode('implicit', undefined, _("Coins included"));
 				this.coinManager.setCoinsToSpendImplicitly([], client_spendSelectOpponentTechnique_args.spend_coins, false);
+				//alternative selection mode: by clicking on an opponent's pile:
+				const client_spendSelectOpponentTechnique_type_id = new DaleCard(this.mainClientState.getTechniqueCardId()).effective_type_id
+				let client_spendSelectOpponentTechnique_piles: Record<number, Pile> | null = null;
+				if (client_spendSelectOpponentTechnique_type_id == DaleCard.CT_CAPUCHIN5A) {
+					client_spendSelectOpponentTechnique_piles = this.playerDecks;
+				}
+				else if (client_spendSelectOpponentTechnique_type_id == DaleCard.CT_CAPUCHIN5B) {
+					client_spendSelectOpponentTechnique_piles = this.playerDiscards;
+				}
+				if (client_spendSelectOpponentTechnique_piles) {
+					for (const [player_id, pile] of Object.entries(client_spendSelectOpponentTechnique_piles)) {
+						if (+player_id != +this.player_id) {
+							pile.setSelectionMode('top', undefined, "daleofmerchants-wrap-technique");
+						}
+					}
+				}
+				break;
+			case 'client_capuchin5b':
+				const client_capuchin5b_opponent_id = this.mainClientState.getArgs<'client_capuchin5b'>().opponent_id;
+				const client_capuchin5b_discard = this.playerDiscards[client_capuchin5b_opponent_id]!
+				client_capuchin5b_discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2)
+				client_capuchin5b_discard.openPopin();
 				break;
 		}
 		//(~enteringstate)
@@ -1769,6 +1791,17 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spendSelectOpponentTechnique':
 				this.myHand.setSelectionMode('none');
 				this.coinManager.setSelectionMode('none');
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
+				break;
+			case 'client_capuchin5b':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
 				break;
 		}
 		//(~leavingstate)
@@ -1920,7 +1953,8 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_spendSelectOpponentTechnique':
-				this.addActionButtonsOpponent(this.onCapuchin4Client.bind(this));
+				const client_spendSelectOpponentTechnique_args = this.mainClientState.getArgs<'client_spendSelectOpponentTechnique'>();
+				this.addActionButtonsOpponent(this.onSpendSelectOpponentTechnique.bind(this), undefined, undefined, client_spendSelectOpponentTechnique_args.player_ids);
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_selectOpponentTechnique':
@@ -2590,7 +2624,10 @@ class DaleOfMerchants extends Gamegui
 				const capuchin4_label = capuchin4_args.opponent_name+"\'s "+_("card")
 				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', capuchin4_label);
 				this.addActionButton("confirm-button", _("Take"), "onCapuchin4Take");
-				this.addActionButton("confirm-skip", _("Skip"), "onCapuchin4Skip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onCapuchin4Skip", undefined, false, 'gray');
+				break;
+			case 'client_capuchin5b':
+				this.addActionButtonCancelClient(undefined, false);
 				break;
 		}
 		//(~actionbuttons)
@@ -3160,8 +3197,9 @@ class DaleOfMerchants extends Gamegui
 	 * Add a cancel button to return from the main client state
 	 * @param label (optional) default "Cancel". Label to display on the cancel button.
 	*/
-	addActionButtonCancelClient(label?: string) {
-		this.addActionButton("cancel-button", label ?? _("Cancel"), "onCancelClient", undefined, false, 'gray');
+	addActionButtonCancelClient(label?: string, undo_schedule: boolean = true) {
+		const method = undo_schedule ? "onCancelClient" : "onCancelClientWithoutUndoingSchedule"
+		this.addActionButton("cancel-button", label ?? _("Cancel"), method, undefined, false, 'gray');
 	}
 
 	///////////////////////////////////////////////////
@@ -3678,6 +3716,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'insightDiscard':
 				this.onInsightDiscard();
+				break;
+			case 'client_spendSelectOpponentTechnique':
+				this.onSpendSelectOpponentTechnique(pile.getPlayerId());
+				break;
+			case 'client_capuchin5b':
+				this.playTechniqueCard<'client_capuchin5b'>({
+					opponent_id: this.mainClientState.getArgs<'client_capuchin5b'>().opponent_id,
+					card_id: card!.id,
+					...this.mainClientState.getSpendArgs()
+				})
 				break;
 		}
 	}
@@ -4321,7 +4369,7 @@ class DaleOfMerchants extends Gamegui
 	 * @param cost cost to pay
 	 * @param max_cost (optional) - if provided, the spend ability has a range [`cost`, `max_cost`]
 	 */
-	clientScheduleSpendTechnique(next: ClientSpendNext, technique_card_id: number, cost: number, cost_max?: number) {
+	clientScheduleSpendTechnique(next: ClientSpendNext, technique_card_id: number, cost: number, cost_max?: number, next_args?: any) {
 		const other_hand_cards = this.myHand.getAllDaleCards().filter(card => card.id != technique_card_id);
 		const max_value = this.coinManager.getMaximumSpendValue(other_hand_cards);
 		if (cost > max_value) {
@@ -4333,7 +4381,8 @@ class DaleOfMerchants extends Gamegui
 		else if (cost_max === undefined) {
 			this.clientScheduleTechnique('client_spend', technique_card_id, {
 				cost: cost,
-				next: next
+				next: next,
+				next_args: next_args
 			});
 		}
 		else {
@@ -4341,7 +4390,8 @@ class DaleOfMerchants extends Gamegui
 				cost_min: cost,
 				cost_max: cost_max,
 				cost_displayed: (cost_max == Infinity) ? `${cost}+` : `${cost} - ${cost_max}`,
-				next: next
+				next: next,
+				next_args: next_args
 			});
 		}
 	}
@@ -5134,12 +5184,38 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_CAPUCHIN4:
 			case DaleCard.CT_CAPUCHIN5A:
-			case DaleCard.CT_CAPUCHIN5B:
 				if (this.unique_opponent_id) {
 					this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
 				}
 				else {
 					this.clientScheduleSpendTechnique('client_spendSelectOpponentTechnique', card.id, 2);
+				}
+				break;
+			case DaleCard.CT_CAPUCHIN5B:
+				if (this.unique_opponent_id) {
+					fizzle = this.playerDiscards[this.unique_opponent_id]!.size == 0;
+					if (fizzle) {
+						this.clientScheduleTechnique('client_fizzle', card.id);
+					}
+					else {
+						this.clientScheduleSpendTechnique('client_capuchin5b', card.id, 2, undefined, { opponent_id: this.unique_opponent_id });
+					}
+					
+				}
+				else {
+					const capuchin5b_player_ids: number[] = [];
+					for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+						if (+player_id != +this.player_id && pile.size > 0) {
+							capuchin5b_player_ids.push(+player_id);
+						}
+					}
+					fizzle = capuchin5b_player_ids.length == 0
+					if (fizzle) {
+						this.clientScheduleTechnique('client_fizzle', card.id);
+					}
+					else {
+						this.clientScheduleSpendTechnique('client_spendSelectOpponentTechnique', card.id, 2, undefined, { player_ids: capuchin5b_player_ids });
+					}
 				}
 				break;
 			default:
@@ -5394,9 +5470,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onCancelClient() {
-		console.warn("onCancelClient");
 		TargetingLine.removeAll();
-		console.warn(this.mainClientState.args);
 		if ('technique_card_id' in this.mainClientState.args && !('is_trigger' in this.mainClientState.args)) {
 			//undo the technique choice state
 			const card_id = this.mainClientState.args.technique_card_id
@@ -5408,6 +5482,11 @@ class DaleOfMerchants extends Gamegui
 				this.myHandSize.incValue(1);
 			}
 		}
+		this.mainClientState.leave();
+	}
+
+	onCancelClientWithoutUndoingSchedule() {
+		TargetingLine.removeAll();
 		this.mainClientState.leave();
 	}
 
@@ -6475,7 +6554,8 @@ class DaleOfMerchants extends Gamegui
 				this.mainClientState.enter(args.next, { 
 					technique_card_id: args.technique_card_id, 
 					spend_coins: spend_coins,
-					spend_card_ids: spend_card_ids
+					spend_card_ids: spend_card_ids,
+					...(args.next_args ?? {})
 				});
 				break;
 		}
@@ -6785,11 +6865,22 @@ class DaleOfMerchants extends Gamegui
 		});
 	}
 	
-	onCapuchin4Client(opponent_id: number) {
-		this.playTechniqueCardWithServerState<'client_selectOpponentTechnique'>({
-			opponent_id: opponent_id,
-			...this.mainClientState.getSpendArgs()
-		})
+	onSpendSelectOpponentTechnique(opponent_id: number) {
+		const args = this.mainClientState.getArgs<'client_spendSelectOpponentTechnique'>();
+		if (new DaleCard(args.technique_card_id).effective_type_id == DaleCard.CT_CAPUCHIN5B) {
+			this.mainClientState.enterOnStack('client_capuchin5b', {
+				technique_card_id: args.technique_card_id,
+				opponent_id: opponent_id,
+				opponent_name: this.gamedatas.players[opponent_id]!.name!,
+				...this.mainClientState.getSpendArgs()
+			});
+		}
+		else {
+			this.playTechniqueCardWithServerState<'client_selectOpponentTechnique'>({
+				opponent_id: opponent_id,
+				...this.mainClientState.getSpendArgs()
+			})
+		}
 	}
 
 	onCapuchin4Take() {

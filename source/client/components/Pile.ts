@@ -14,6 +14,7 @@ declare function $(text: string | Element): HTMLElement;
  * 'noneCantViewContent':       content popin can cannot be viewed, and no cards can be selected
  * 'single':                    a single card can be selected from the popin
  * 'singleAnimalfolk'           a single animalfolk card can be selected from the popin
+ * 'singleFromTopX'             a single card can be selected from the popin, up to 'selectionMax' cards deep
  * 'multiple':                  multiple cards (up to the selectionMax) can be selected from the popin
  * 'multipleJunk':              up to 3 junk cards can be selected from the popin
  * 'multipleFromTopWithGaps':   multiple cards (up to the selectionMax) can be selected from the popin, up to 'selectionMax' cards deep
@@ -24,7 +25,7 @@ declare function $(text: string | Element): HTMLElement;
  * 'topIncludingEmpty':         content popin can cannot be viewed, and only the top card (or the empty pile) can be selected.
  * 'sliceOfLife':               only unused CT_SLICEOFLIFE cards may be selected from the popin
  */
-type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'multiplePrimarySecondary' | 'top' | 'topIncludingEmpty' | 'sliceOfLife';
+type SelectionMode = 'none' | 'noneCantViewContent' | 'single' | 'singleAnimalfolk' | 'singleFromTopX' | 'multiple' | 'multipleJunk' | 'multipleFromTopWithGaps' | 'multipleFromTopNoGaps' | 'multipleProgrammatic' | 'multiplePrimarySecondary' | 'top' | 'topIncludingEmpty' | 'sliceOfLife';
 
 /**
  * A component to display a set of cards in a pile.
@@ -568,6 +569,7 @@ export class Pile implements DaleLocation {
             case 'single':
             case 'singleAnimalfolk':
             case 'sliceOfLife':
+            case 'singleFromTopX':
                 (this.page as any).onSelectPileCard(this, card.id);
                 this.closePopin();
                 break;
@@ -738,6 +740,7 @@ export class Pile implements DaleLocation {
                 break;
             case 'single':
             case 'singleAnimalfolk':
+            case 'singleFromTopX':
                 this.showMainTitleBarInPopin = true;
                 this.containerHTML.classList.add("daleofmerchants-blinking");
                 this.openPopin();
@@ -765,6 +768,7 @@ export class Pile implements DaleLocation {
     private isGrayedOut(card: DaleCard) {
 		switch (this.selectionMode) {
             case 'singleAnimalfolk':
+            case 'singleFromTopX':
             case 'multipleFromTopWithGaps':
             case 'multipleFromTopNoGaps':
             case 'multipleJunk':
@@ -787,6 +791,7 @@ export class Pile implements DaleLocation {
 				return this.orderedSelection.getMaxSize() > 0;
             case 'multipleJunk':
                 return card.isJunk();
+            case 'singleFromTopX':
             case 'multipleFromTopWithGaps':
             case 'multipleFromTopNoGaps':
                 const multipleFromTop_nbr = this.orderedSelection.getMaxSize();

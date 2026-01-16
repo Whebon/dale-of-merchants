@@ -59,6 +59,13 @@ export class MainClientState {
         }
     }
 
+    public getTechniqueCardId(): number {
+        if ('technique_card_id' in this._args) {
+            return this._args.technique_card_id
+        }
+        throw new Error("Current state has no 'technique_card_id'")
+    }
+
     private get _descriptionmyturn() {
         switch(this._name) {
             //Main client states
@@ -287,6 +294,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card to give to an opponent");
             case 'client_spendSelectOpponentTechnique':
                 return _("${card_name}: ${you} must choose an opponent");
+            case 'client_capuchin5b':
+                return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
         }
         return "MISSING DESCRIPTION";
     }
