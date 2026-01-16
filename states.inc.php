@@ -190,7 +190,7 @@ $machinestates = array(
 			'trSouvenirs' => 109,
 			'trInsightDiscard' => 110,
 			'trInsightTake' => 111,
-			'trCapuchins4' => 112,
+			'trCapuchin4' => 112,
 		),
 	),
 	31 => array(
@@ -923,8 +923,8 @@ $machinestates = array(
 	),
 	112 => array(
 		'name' => 'capuchin4',
-		'description' => clienttranslate('CT_CAPUCHINS4: ${actplayer} may take a card from ${opponent_name}'),
-		'descriptionmyturn' => clienttranslate('CT_CAPUCHINS4: ${you} may take ${opponent_name}\'s ${_private.card_name}'),
+		'description' => clienttranslate('INSERT_NAME: ${actplayer} may take a card from ${opponent_name}'),
+		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} may take ${opponent_name}\'s ${_private.card_name}'),
 		'type' => 'activeplayer',
 		'args' => 'argOpponentNameAndCardNamePrivate',
 		'action' => 'stCapuchin4',

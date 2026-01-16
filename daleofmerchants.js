@@ -2036,24 +2036,24 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_CACHE = 117;
         DaleCard.CT_DISPLAYOFPOWER = 118;
         DaleCard.CT_SAFEPROFITS = 119;
-        DaleCard.CT_DODOS1 = 120;
-        DaleCard.CT_DODOS2 = 121;
-        DaleCard.CT_DODOS3 = 122;
-        DaleCard.CT_DODOS4 = 123;
-        DaleCard.CT_DODOS5A = 124;
-        DaleCard.CT_DODOS5B = 125;
-        DaleCard.CT_CAPUCHINS1 = 126;
-        DaleCard.CT_CAPUCHINS2 = 127;
-        DaleCard.CT_CAPUCHINS3 = 128;
-        DaleCard.CT_CAPUCHINS4 = 129;
-        DaleCard.CT_CAPUCHINS5A = 130;
-        DaleCard.CT_CAPUCHINS5B = 131;
-        DaleCard.CT_OLMS1 = 132;
-        DaleCard.CT_OLMS2 = 133;
-        DaleCard.CT_OLMS3 = 134;
-        DaleCard.CT_OLMS4 = 135;
-        DaleCard.CT_OLMS5A = 136;
-        DaleCard.CT_OLMS5B = 137;
+        DaleCard.CT_DODO1 = 120;
+        DaleCard.CT_DODO2 = 121;
+        DaleCard.CT_DODO3 = 122;
+        DaleCard.CT_DODO4 = 123;
+        DaleCard.CT_DODO5A = 124;
+        DaleCard.CT_DODO5B = 125;
+        DaleCard.CT_CAPUCHIN1 = 126;
+        DaleCard.CT_CAPUCHIN2 = 127;
+        DaleCard.CT_CAPUCHIN3 = 128;
+        DaleCard.CT_CAPUCHIN4 = 129;
+        DaleCard.CT_CAPUCHIN5A = 130;
+        DaleCard.CT_CAPUCHIN5B = 131;
+        DaleCard.CT_OLM1 = 132;
+        DaleCard.CT_OLM2 = 133;
+        DaleCard.CT_OLM3 = 134;
+        DaleCard.CT_OLM4 = 135;
+        DaleCard.CT_OLM5A = 136;
+        DaleCard.CT_OLM5B = 137;
         DaleCard.CT_RESOURCEFULALLY = 138;
         DaleCard.CT_ICETRADE = 139;
         DaleCard.CT_TRAVELINGEQUIPMENT = 140;
@@ -2066,12 +2066,12 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_INSPIRATION = 147;
         DaleCard.CT_INSIGHT = 148;
         DaleCard.CT_PERFECTMOVE = 149;
-        DaleCard.CT_SKINKS1 = 150;
-        DaleCard.CT_SKINKS2 = 151;
-        DaleCard.CT_SKINKS3 = 152;
-        DaleCard.CT_SKINKS4 = 153;
-        DaleCard.CT_SKINKS5A = 154;
-        DaleCard.CT_SKINKS5B = 155;
+        DaleCard.CT_SKINK1 = 150;
+        DaleCard.CT_SKINK2 = 151;
+        DaleCard.CT_SKINK3 = 152;
+        DaleCard.CT_SKINK4 = 153;
+        DaleCard.CT_SKINK5A = 154;
+        DaleCard.CT_SKINK5B = 155;
         DaleCard.CT_MASTERBUILDER = 156;
         DaleCard.CT_SNACK = 157;
         DaleCard.CT_WINDOFCHANGE = 158;
@@ -2096,36 +2096,36 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_LOOSEMARBLES = 177;
         DaleCard.CT_ANOTHERFINEMESS = 178;
         DaleCard.CT_SOUVENIRS = 179;
-        DaleCard.CT_GLASSFROGS1 = 180;
-        DaleCard.CT_GLASSFROGS2 = 181;
-        DaleCard.CT_GLASSFROGS3 = 182;
-        DaleCard.CT_GLASSFROGS4 = 183;
-        DaleCard.CT_GLASSFROGS5A = 184;
-        DaleCard.CT_GLASSFROGS5B = 185;
-        DaleCard.CT_GORILLAS1 = 186;
-        DaleCard.CT_GORILLAS2 = 187;
-        DaleCard.CT_GORILLAS3 = 188;
-        DaleCard.CT_GORILLAS4 = 189;
-        DaleCard.CT_GORILLAS5A = 190;
-        DaleCard.CT_GORILLAS5B = 191;
-        DaleCard.CT_WALRUSES1 = 192;
-        DaleCard.CT_WALRUSES2 = 193;
-        DaleCard.CT_WALRUSES3 = 194;
-        DaleCard.CT_WALRUSES4 = 195;
-        DaleCard.CT_WALRUSES5A = 196;
-        DaleCard.CT_WALRUSES5B = 197;
-        DaleCard.CT_TASMANIANDEVILS1 = 198;
-        DaleCard.CT_TASMANIANDEVILS2 = 199;
-        DaleCard.CT_TASMANIANDEVILS3 = 200;
-        DaleCard.CT_TASMANIANDEVILS4 = 201;
-        DaleCard.CT_TASMANIANDEVILS5A = 202;
-        DaleCard.CT_TASMANIANDEVILS5B = 203;
-        DaleCard.CT_JUNGLEFOWLS1 = 204;
-        DaleCard.CT_JUNGLEFOWLS2 = 205;
-        DaleCard.CT_JUNGLEFOWLS3 = 206;
-        DaleCard.CT_JUNGLEFOWLS4 = 207;
-        DaleCard.CT_JUNGLEFOWLS5A = 208;
-        DaleCard.CT_JUNGLEFOWLS5B = 209;
+        DaleCard.CT_GLASSFROG1 = 180;
+        DaleCard.CT_GLASSFROG2 = 181;
+        DaleCard.CT_GLASSFROG3 = 182;
+        DaleCard.CT_GLASSFROG4 = 183;
+        DaleCard.CT_GLASSFROG5A = 184;
+        DaleCard.CT_GLASSFROG5B = 185;
+        DaleCard.CT_GORILLA1 = 186;
+        DaleCard.CT_GORILLA2 = 187;
+        DaleCard.CT_GORILLA3 = 188;
+        DaleCard.CT_GORILLA4 = 189;
+        DaleCard.CT_GORILLA5A = 190;
+        DaleCard.CT_GORILLA5B = 191;
+        DaleCard.CT_WALRUS1 = 192;
+        DaleCard.CT_WALRUS2 = 193;
+        DaleCard.CT_WALRUS3 = 194;
+        DaleCard.CT_WALRUS4 = 195;
+        DaleCard.CT_WALRUS5A = 196;
+        DaleCard.CT_WALRUS5B = 197;
+        DaleCard.CT_TASMANIANDEVIL1 = 198;
+        DaleCard.CT_TASMANIANDEVIL2 = 199;
+        DaleCard.CT_TASMANIANDEVIL3 = 200;
+        DaleCard.CT_TASMANIANDEVIL4 = 201;
+        DaleCard.CT_TASMANIANDEVIL5A = 202;
+        DaleCard.CT_TASMANIANDEVIL5B = 203;
+        DaleCard.CT_JUNGLEFOWL1 = 204;
+        DaleCard.CT_JUNGLEFOWL2 = 205;
+        DaleCard.CT_JUNGLEFOWL3 = 206;
+        DaleCard.CT_JUNGLEFOWL4 = 207;
+        DaleCard.CT_JUNGLEFOWL5A = 208;
+        DaleCard.CT_JUNGLEFOWL5B = 209;
         DaleCard.CT_DRAMATICROMANTIC = 210;
         DaleCard.CT_SERENADE = 211;
         DaleCard.CT_SELECTINGCONTRACTS = 212;
@@ -2157,21 +2157,21 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_ARCANEMEMBER = 238;
         DaleCard.CT_CLEVERMEMBER = 239;
         DaleCard.CT_AVIDMEMBER = 240;
-        DaleCard.CT_DODOSMONO = 241;
-        DaleCard.CT_CAPUCHINSMONO = 242;
-        DaleCard.CT_OLMSMONO = 243;
+        DaleCard.CT_DODOMONO = 241;
+        DaleCard.CT_CAPUCHINMONO = 242;
+        DaleCard.CT_OLMMONO = 243;
         DaleCard.CT_RESOURCEFULMEMBER = 244;
         DaleCard.CT_IMPULSIVEMEMBER = 245;
-        DaleCard.CT_SKINKSMONO = 246;
+        DaleCard.CT_SKINKMONO = 246;
         DaleCard.CT_MASTERMEMBER = 247;
         DaleCard.CT_PRISTINEMEMBER = 248;
         DaleCard.CT_MEDDLINGMEMBER = 249;
         DaleCard.CT_FUMBLINGMEMBER = 250;
-        DaleCard.CT_GLASSFROGSMONO = 251;
-        DaleCard.CT_GORILLASMONO = 252;
-        DaleCard.CT_WALRUSESMONO = 253;
-        DaleCard.CT_TASMANIANDEVILSMONO = 254;
-        DaleCard.CT_JUNGLEFOWLSMONO = 255;
+        DaleCard.CT_GLASSFROGMONO = 251;
+        DaleCard.CT_GORILLAMONO = 252;
+        DaleCard.CT_WALRUSMONO = 253;
+        DaleCard.CT_SHREWDMEMBER = 254;
+        DaleCard.CT_JUNGLEFOWLMONO = 255;
         DaleCard.CT_DRAMATICMEMBER = 256;
         DaleCard.CT_STEALTHYMEMBER = 257;
         DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 258;
@@ -2184,11 +2184,11 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_DEPRECATED_CULTURALPRESERVATION = 265;
         DaleCard.CT_DEPRECATED_SLICEOFLIFE = 266;
         DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER = 267;
-        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 269;
-        DaleCard.CT_DEPRECATED_VELOCIPEDE = 270;
-        DaleCard.CT_DEPRECATED_INSIGHT = 271;
-        DaleCard.CT_DEPRECATED_WHIRLIGIG = 272;
-        DaleCard.CT_DEPRECATED_FRESHSTART = 273;
+        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 268;
+        DaleCard.CT_DEPRECATED_VELOCIPEDE = 269;
+        DaleCard.CT_DEPRECATED_INSIGHT = 270;
+        DaleCard.CT_DEPRECATED_WHIRLIGIG = 271;
+        DaleCard.CT_DEPRECATED_FRESHSTART = 272;
         DaleCard.EFFECT_CHAMELEON_TYPE = 1000;
         DaleCard.EFFECT_CHAMELEON_VALUE = 1001;
         DaleCard.EFFECT_INCREASE_HAND_SIZE = 1002;
@@ -4406,7 +4406,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_royalPrivilege':
                         return _("${card_name}: ${you} must discard 1 animalfolk card");
                     case 'client_capuchin3':
-                        return _("${card_name}: ${you} must choose an opponent");
+                        return _("${card_name}: ${you} must choose a card to give to an opponent");
                     case 'client_spendSelectOpponentTechnique':
                         return _("${card_name}: ${you} must choose an opponent");
                 }
@@ -8293,7 +8293,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
                     break;
-                case DaleCard_9.DaleCard.CT_SKINKS3:
+                case DaleCard_9.DaleCard.CT_SKINK3:
                     if (this.myHand.count() == 1) {
                         this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     }
@@ -8638,7 +8638,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_SABOTAGE:
                 case DaleCard_9.DaleCard.CT_DELICACY:
                 case DaleCard_9.DaleCard.CT_UMBRELLA:
-                case DaleCard_9.DaleCard.CT_CAPUCHINS1:
+                case DaleCard_9.DaleCard.CT_CAPUCHIN1:
                     if (this.unique_opponent_id) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
@@ -9241,12 +9241,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }
                     break;
-                case DaleCard_9.DaleCard.CT_CAPUCHINS3:
+                case DaleCard_9.DaleCard.CT_CAPUCHIN3:
                     this.clientScheduleTechnique('client_capuchin3', card.id);
                     break;
-                case DaleCard_9.DaleCard.CT_CAPUCHINS4:
-                case DaleCard_9.DaleCard.CT_CAPUCHINS5A:
-                case DaleCard_9.DaleCard.CT_CAPUCHINS5B:
+                case DaleCard_9.DaleCard.CT_CAPUCHIN4:
+                case DaleCard_9.DaleCard.CT_CAPUCHIN5A:
+                case DaleCard_9.DaleCard.CT_CAPUCHIN5B:
                     if (this.unique_opponent_id) {
                         this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
                     }

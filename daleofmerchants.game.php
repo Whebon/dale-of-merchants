@@ -6633,7 +6633,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertGlobal(0, CT_ESSENTIALPURCHASE, $player_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_SKINKS3:
+            case CT_SKINK3:
                 $this->draw(clienttranslate('Matches: ${player_name} draws 2 cards'), 2);
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
@@ -6683,14 +6683,14 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->resolveImmediateEffects($technique_card_id);
                 }
                 break;
-            case CT_CAPUCHINS1:
+            case CT_CAPUCHIN1:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $this->gainCoins($player_id, 2, $technique_card);
                 $this->gainCoins($opponent_id, 1, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_CAPUCHINS3:
+            case CT_CAPUCHIN3:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $card_id = $args["card_id"];
@@ -6710,7 +6710,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->stealCoins($player_id, $opponent_id, 1, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_CAPUCHINS4:
+            case CT_CAPUCHIN4:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $this->spend($player_id, $args, 2, $this->_("Traveling Equipment"));
@@ -6728,7 +6728,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->setGameStateValue("card_id", $card_id);
                 $this->beginResolvingCard($technique_card_id);
-                $this->gamestate->nextState("trCapuchins4");
+                $this->gamestate->nextState("trCapuchin4");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -7019,7 +7019,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_SKINKS3:
+            case CT_SKINK3:
                 $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -7431,9 +7431,9 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Royal Privilege: ${player_name} draws ${nbr} cards'), 2);
                 $this->effects->insertModification($passive_card_id, CT_ROYALPRIVILEGE);
                 break;
-            case CT_CAPUCHINS2:
+            case CT_CAPUCHIN2:
                 $this->gainCoins($player_id, 1, $passive_card);
-                $this->effects->insertModification($passive_card_id, CT_CAPUCHINS2);
+                $this->effects->insertModification($passive_card_id, CT_CAPUCHIN2);
                 break;
             default:
                 $name = $this->getCardName($passive_card);

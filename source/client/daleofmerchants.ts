@@ -4093,7 +4093,7 @@ class DaleOfMerchants extends Gamegui
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
 				break;
-			case DaleCard.CT_SKINKS3:
+			case DaleCard.CT_SKINK3:
 				if (this.myHand.count() == 1) {
 					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				}
@@ -4516,7 +4516,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SABOTAGE:
 			case DaleCard.CT_DELICACY:
 			case DaleCard.CT_UMBRELLA:
-			case DaleCard.CT_CAPUCHINS1:
+			case DaleCard.CT_CAPUCHIN1:
 				if (this.unique_opponent_id) {
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
@@ -5117,12 +5117,12 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				}
 				break;
-			case DaleCard.CT_CAPUCHINS3:
+			case DaleCard.CT_CAPUCHIN3:
 				this.clientScheduleTechnique('client_capuchin3', card.id)
 				break;
-			case DaleCard.CT_CAPUCHINS4:
-			case DaleCard.CT_CAPUCHINS5A:
-			case DaleCard.CT_CAPUCHINS5B:
+			case DaleCard.CT_CAPUCHIN4:
+			case DaleCard.CT_CAPUCHIN5A:
+			case DaleCard.CT_CAPUCHIN5B:
 				if (this.unique_opponent_id) {
 					this.clientScheduleSpendTechnique('playTechniqueCardWithServerState', card.id, 2);
 				}
