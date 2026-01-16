@@ -216,6 +216,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getRandomIcon = function () {
             return this.getIcon(11, 3);
         };
+        DaleIcons.getCapuchin5aIcon = function () {
+            return this.getPompousProfessionalIcon();
+        };
         DaleIcons.ROWS = 12;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
@@ -448,6 +451,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                 case 'selectingContracts':
                     icon = (index == 0) ? DaleIcons_1.DaleIcons.getTossIcon() : DaleIcons_1.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
+                case 'capuchin5a':
+                    icon = DaleIcons_1.DaleIcons.getCapuchin5aIcon();
+                    break;
             }
             if (icon) {
                 if (secondary) {
@@ -581,6 +587,26 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
             else {
                 this.selectItem(card_id, secondary);
                 return true;
+            }
+        };
+        AbstractOrderedSelection.prototype.togglePrimarySecondary = function (card_id) {
+            if (this.includes(card_id)) {
+                if (this.getSize(true) < this.getMaxSize(true)) {
+                    this.unselectItem(card_id);
+                    this.selectItem(card_id, true);
+                }
+                else {
+                    this.unselectItem(card_id);
+                }
+            }
+            else if (this.includes(card_id, true)) {
+                this.unselectItem(card_id, true);
+            }
+            else if (this.getSize() < this.getMaxSize()) {
+                this.selectItem(card_id);
+            }
+            else {
+                this.selectItem(card_id, true);
             }
         };
         AbstractOrderedSelection.prototype.includes = function (card_id, secondary) {
@@ -2275,6 +2301,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     if (this.isClickSelectionMode()) {
                         this.onClick(item_id);
                     }
+                    else if (this.selectionMode == 'multiplePrimarySecondary') {
+                        this.orderedSelection.togglePrimarySecondary(item_id);
+                    }
                     else {
                         this.orderedSelection.toggle(item_id);
                     }
@@ -2355,6 +2384,12 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     this.orderedSelection.setMaxSize(3);
                     break;
                 case 'multipleExceptSecondary':
+                    this.orderedSelection.setMaxSize(Infinity);
+                    break;
+                case 'multipleProgrammatic':
+                    this.orderedSelection.setMaxSize(Infinity);
+                    break;
+                case 'multiplePrimarySecondary':
                     this.orderedSelection.setMaxSize(Infinity);
                     break;
                 case 'deprecated_essentialPurchase':
@@ -2473,6 +2508,10 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
                     return card.isEffectiveJunk();
                 case 'multipleExceptSecondary':
                     return !this.orderedSelection.includes(card_id, true);
+                case 'multipleProgrammatic':
+                    return false;
+                case 'multiplePrimarySecondary':
+                    return true;
                 case 'deprecated_essentialPurchase':
                     return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
                 case 'glue':
@@ -3107,24 +3146,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     this.updateHTML();
                     break;
                 case 'multiplePrimarySecondary':
-                    if (this.orderedSelection.includes(card.id)) {
-                        if (this.orderedSelection.getSize(true) < this.orderedSelection.getMaxSize(true)) {
-                            this.orderedSelection.unselectItem(card.id);
-                            this.orderedSelection.selectItem(card.id, true);
-                        }
-                        else {
-                            this.orderedSelection.unselectItem(card.id);
-                        }
-                    }
-                    else if (this.orderedSelection.includes(card.id, true)) {
-                        this.orderedSelection.unselectItem(card.id, true);
-                    }
-                    else if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
-                        this.orderedSelection.selectItem(card.id);
-                    }
-                    else {
-                        this.orderedSelection.selectItem(card.id, true);
-                    }
+                    this.orderedSelection.togglePrimarySecondary(card.id);
                     this.updateHTML();
                     break;
             }
@@ -5868,8 +5890,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'rake':
                     this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_10.DaleIcons.getTossIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
-                    var raket_args = args.args;
-                    this.myDeck.setContent(raket_args._private.cards.map(DaleCard_9.DaleCard.of));
+                    var rake_args = args.args;
+                    this.myDeck.setContent(rake_args._private.cards.map(DaleCard_9.DaleCard.of));
                     this.myDeck.setSelectionMode('multiplePrimarySecondary', 'toss', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
                     this.myDeck.openPopin();
                     break;
@@ -5886,7 +5908,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
                     break;
                 case 'client_spendSelectOpponentTechnique':
-                    this.myHand.setSelectionMode('multiple', "pileYellow", "daleofmerchants-wrap-purchase");
+                    this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", "daleofmerchants-wrap-purchase");
                     var client_spendSelectOpponentTechnique_args = this.mainClientState.getSpendArgs();
                     for (var _20 = 0, _21 = client_spendSelectOpponentTechnique_args.spend_card_ids.reverse(); _20 < _21.length; _20++) {
                         var card_id = _21[_20];
@@ -6198,6 +6220,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'pompousProfessional':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'capuchin5a':
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'delicacy':
@@ -6870,6 +6895,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Discard cards"));
                         this.addActionButton("confirm-button", _("Discard"), "onPompousProfessionalDiscard");
                     }
+                    break;
+                case 'capuchin5a':
+                    var capuchin5a_args = this.gamedatas.gamestate.args;
+                    var capuchin5a_label = this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getCapuchin5aIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0));
+                    this.myLimbo.setSelectionMode('multiplePrimarySecondary', 'capuchin5a', "daleofmerchants-wrap-technique", capuchin5a_label, 'pileBlue', 1);
+                    this.addActionButton("confirm-button", _("Confirm"), "onCapuchin5a");
                     break;
                 case 'client_burglaryOpponentId':
                     var burglaryOpponentId_args_1 = this.mainClientState.args;
@@ -10687,6 +10718,22 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onCapuchin4Skip = function () {
             this.bgaPerformAction('actCapuchin4', {
                 is_taking_card: false
+            });
+        };
+        DaleOfMerchants.prototype.onCapuchin5a = function () {
+            var take_card_ids = this.myLimbo.orderedSelection.get();
+            var discard_card_ids = this.myLimbo.orderedSelection.get(true);
+            if (take_card_ids.length > 1) {
+                this.showMessage(_("Please select at most 1 card to take"), "error");
+                return;
+            }
+            if (discard_card_ids.length > 2) {
+                this.showMessage(_("Please select at most 2 cards to discard"), "error");
+                return;
+            }
+            this.bgaPerformAction('actCapuchin5a', {
+                take_card_id: take_card_ids.length == 0 ? -1 : take_card_ids[0],
+                discard_card_ids: this.arrayToNumberList(discard_card_ids)
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

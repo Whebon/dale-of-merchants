@@ -218,6 +218,7 @@ interface GameStates {
 			'trInsightDiscard': 110,
 			'trInsightTake': 111,
 			'trCapuchin4': 112,
+			'trCapuchin5a': 113,
 		},
 	},
 	31: {
@@ -1429,6 +1430,28 @@ interface GameStates {
 				'name': 'is_taking_card',
 				'type': 'AT_bool',
 				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	113: {
+		'name': 'capuchin5a',
+		'description': 'INSERT_NAME: ${actplayer} may take a card from the top of ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'INSERT_NAME: ${you} may take a card from the top of ${opponent_name}\\\'s deck',
+		'type': 'activeplayer',
+		'args': 'argOpponentName',
+		'action': 'stCapuchin5a',
+		'possibleactions': {
+			'actCapuchin5a': [{
+				'name': 'take_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'discard_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

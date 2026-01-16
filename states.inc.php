@@ -61,6 +61,7 @@ if (false) {
 	$game->stAccident();
 	$game->stSouvenirs();
 	$game->stCapuchin4();
+	$game->stCapuchin5a();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -191,6 +192,7 @@ $machinestates = array(
 			'trInsightDiscard' => 110,
 			'trInsightTake' => 111,
 			'trCapuchin4' => 112,
+			'trCapuchin5a' => 113,
 		),
 	),
 	31 => array(
@@ -929,6 +931,18 @@ $machinestates = array(
 		'args' => 'argOpponentNameAndCardNamePrivate',
 		'action' => 'stCapuchin4',
 		'possibleactions' => ['actCapuchin4'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	113 => array(
+		'name' => 'capuchin5a',
+		'description' => clienttranslate('INSERT_NAME: ${actplayer} may take a card from the top of ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} may take a card from the top of ${opponent_name}\'s deck'),
+		'type' => 'activeplayer',
+		'args' => 'argOpponentName',
+		'action' => 'stCapuchin5a',
+		'possibleactions' => ['actCapuchin5a'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

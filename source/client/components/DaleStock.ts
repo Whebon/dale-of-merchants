@@ -32,11 +32,13 @@ import { DaleTrigger } from './types/DaleTrigger';
  * 'multiple3':						multiple cards can be selected, but no more than 3
  * 'multipleJunk':					multiple junk cards can be selected
  * 'multipleExceptSecondary'		multiple cards can be selected, except the cards that are already selected in the secondary selection
+ * 'multipleProgrammatic':      	multiple cards can be selected programmatically, but NOT by the player
+ * 'multiplePrimarySecondary':  	multiple cards in both the primary and secondary selection
  * 'only_card_id47':       			no new selections are possible, the previous selection is retained. only the specified card_id can be clicked.
  * 'deprecated_essentialPurchase':	up to 3 junk cards on can be selected. It is required that they are already selected on the secondary selection level.
  * 'glue'							only CT_GLUE cards can be selected
  */
-type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnCleanUp' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' |  `only_card_id${number}` | 'deprecated_essentialPurchase' | 'glue'
+type DaleStockSelectionMode = 'none' | 'noneRetainSelection' | 'click' | 'clickTechnique' | 'clickAbility' | 'clickAbilityPostCleanup' | 'clickRetainSelection' | 'clickOnTurnStart' | 'clickOnCleanUp' | 'clickOnTrigger' | 'clickOnFinish' | 'clickOnFinishAndSnack' | 'clickAnimalfolk' | `clickAnimalfolk${number}` | 'clickWhitelist' | 'single' | 'singleAnimalfolk' | 'multiple' | 'multiple2' | 'multiple3' | 'multipleJunk' | 'multipleExceptSecondary' | 'multipleProgrammatic' | 'multiplePrimarySecondary' |  `only_card_id${number}` | 'deprecated_essentialPurchase' | 'glue'
 
 /**
  * Decorator of the standard BGA Stock component.
@@ -130,6 +132,9 @@ export class DaleStock extends Stock implements DaleLocation {
 			if (this.isClickable(item_id)) {
 				if (this.isClickSelectionMode()) {
 					this.onClick(item_id);
+				}
+				else if (this.selectionMode == 'multiplePrimarySecondary') {
+					this.orderedSelection.togglePrimarySecondary(item_id);
 				}
 				else {
 					this.orderedSelection.toggle(item_id);
@@ -258,6 +263,12 @@ export class DaleStock extends Stock implements DaleLocation {
 				this.orderedSelection.setMaxSize(3);
 				break;
 			case 'multipleExceptSecondary':
+				this.orderedSelection.setMaxSize(Infinity);
+				break;
+			case 'multipleProgrammatic':
+				this.orderedSelection.setMaxSize(Infinity);
+				break;
+			case 'multiplePrimarySecondary':
 				this.orderedSelection.setMaxSize(Infinity);
 				break;
 			case 'deprecated_essentialPurchase':
@@ -397,6 +408,10 @@ export class DaleStock extends Stock implements DaleLocation {
 				return card.isEffectiveJunk();
 			case 'multipleExceptSecondary':
 				return !this.orderedSelection.includes(card_id, true);
+			case 'multipleProgrammatic':
+				return false;
+			case 'multiplePrimarySecondary':
+				return true;
 			case 'deprecated_essentialPurchase':
 				return card.isEffectiveJunk() && this.orderedSelection.get(true).includes(card.id);
 			case 'glue':

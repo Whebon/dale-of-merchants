@@ -1248,8 +1248,8 @@ class DaleOfMerchants extends Gamegui
 					DaleIcons.getTossIcon(),
 					DaleIcons.getBluePileIcon(0)
 				));
-				const raket_args = args.args as { _private: { cards: DbCard[] } };
-				this.myDeck.setContent(raket_args._private.cards.map(DaleCard.of));
+				const rake_args = args.args as { _private: { cards: DbCard[] } };
+				this.myDeck.setContent(rake_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'toss', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
 				this.myDeck.openPopin();
 				break;
@@ -1266,7 +1266,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
 				break;
 			case 'client_spendSelectOpponentTechnique':
-				this.myHand.setSelectionMode('multiple', "pileYellow", "daleofmerchants-wrap-purchase");
+				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", "daleofmerchants-wrap-purchase");
 				const client_spendSelectOpponentTechnique_args = this.mainClientState.getSpendArgs();
 				for (const card_id of client_spendSelectOpponentTechnique_args.spend_card_ids.reverse()) {
 					this.myHand.selectItem(card_id);
@@ -1584,6 +1584,9 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'pompousProfessional':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'capuchin5a':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'delicacy':
@@ -2258,6 +2261,15 @@ class DaleOfMerchants extends Gamegui
 					this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Discard cards"));
 					this.addActionButton("confirm-button", _("Discard"), "onPompousProfessionalDiscard");
 				}
+				break;
+			case 'capuchin5a':
+				const capuchin5a_args = this.gamedatas.gamestate.args as { opponent_id: number, opponent_name: string };
+				const capuchin5a_label = this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), 
+					DaleIcons.getCapuchin5aIcon(), 
+					DaleIcons.getBluePileIcon(0)
+				)
+				this.myLimbo.setSelectionMode('multiplePrimarySecondary', 'capuchin5a', "daleofmerchants-wrap-technique", capuchin5a_label, 'pileBlue', 1)
+				this.addActionButton("confirm-button", _("Confirm"), "onCapuchin5a");
 				break;
 			case 'client_burglaryOpponentId':
 				const burglaryOpponentId_args = (this.mainClientState.args as ClientGameStates['client_burglaryOpponentId']);
@@ -6789,6 +6801,23 @@ class DaleOfMerchants extends Gamegui
 	onCapuchin4Skip() {
 		this.bgaPerformAction('actCapuchin4', {
 			is_taking_card: false
+		})
+	}
+
+	onCapuchin5a() {
+		const take_card_ids = this.myLimbo.orderedSelection.get();
+		const discard_card_ids = this.myLimbo.orderedSelection.get(true);
+		if (take_card_ids.length > 1) {
+			this.showMessage(_("Please select at most 1 card to take"), "error");
+			return;
+		}
+		if (discard_card_ids.length > 2) {
+			this.showMessage(_("Please select at most 2 cards to discard"), "error");
+			return;
+		}
+		this.bgaPerformAction('actCapuchin5a', {
+			take_card_id: take_card_ids.length == 0 ? -1 : take_card_ids[0]!,
+			discard_card_ids: this.arrayToNumberList(discard_card_ids)
 		})
 	}
 

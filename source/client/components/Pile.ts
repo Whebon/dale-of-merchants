@@ -627,29 +627,7 @@ export class Pile implements DaleLocation {
                 this.updateHTML();
                 break;
             case 'multiplePrimarySecondary':
-                if (this.orderedSelection.includes(card.id)) {
-                    if (this.orderedSelection.getSize(true) < this.orderedSelection.getMaxSize(true)) {
-                        //primary => secondary
-                        this.orderedSelection.unselectItem(card.id);
-                        this.orderedSelection.selectItem(card.id, true);
-                    }
-                    else {
-                        //primary => NONE
-                        this.orderedSelection.unselectItem(card.id);
-                    }
-                }
-                else if (this.orderedSelection.includes(card.id, true)) {
-                    //secondary => NONE 
-                    this.orderedSelection.unselectItem(card.id, true);
-                }
-                else if (this.orderedSelection.getSize() < this.orderedSelection.getMaxSize()) {
-                    //NONE => primary
-                    this.orderedSelection.selectItem(card.id);
-                }
-                else {
-                    //NONE => secondary
-                    this.orderedSelection.selectItem(card.id, true);
-                }
+                this.orderedSelection.togglePrimarySecondary(card.id);
                 this.updateHTML();
                 break;
         }

@@ -787,6 +787,19 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actCapuchin5a()
+	{
+		self::setAjaxMode();
+
+		/** @var int $take_card_id */
+		$take_card_id = self::getArg('take_card_id', AT_int, true);
+		/** @var string $discard_card_ids */
+		$discard_card_ids = self::getArg('discard_card_ids', AT_numberlist, true);
+
+		$this->game->actCapuchin5a( $take_card_id, $discard_card_ids );
+		self::ajaxResponse();
+	}
+
 	public function actDEPRECATED_Cheer()
 	{
 		self::setAjaxMode();

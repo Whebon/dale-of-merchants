@@ -2296,17 +2296,19 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $unordered_cards (optional) - if provided, first discard this collection of unordered cards
      * @param bool $from_limbo (optional) - default false. If `false`, discard from hand. If `true`, discard from limbo.
      * @param bool $ignore_card_not_found (optional) - default false. If `true`, the client will ignore "card not found" errors
+     * @param int $discard_id (optional) - default: $player_id. If specified, the cards will be discarded to this player.
      */
-    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, bool $ignore_card_not_found = false) {
+    function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, bool $ignore_card_not_found = false, int $discard_id = 0) {
+        $discard_id = $discard_id ? $discard_id : $player_id;
         //1: move the unordered cards to the discard pile (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
             $nbr_unordered_cards = count($unordered_cards);
             $unordered_card_ids = array_keys($unordered_cards);
-            $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.$player_id);
+            $this->cards->moveCardsOnTop($unordered_card_ids, DISCARD.$discard_id);
             $this->notifyAllPlayers('discardMultiple', '', array (
                 'player_id' => $player_id,
-                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
+                'discard_id' => $discard_id,
                 'card_ids' => $unordered_card_ids,
                 'cards' => $unordered_cards,
                 'nbr' => $nbr_unordered_cards,
@@ -2317,10 +2319,10 @@ class DaleOfMerchants extends DaleTableBasic
         
         //2: move the ordered cards to the discard pile
         if ($cards && count($cards) > 0) {
-            $this->cards->moveCardsOnTop($card_ids, DISCARD.$player_id);
+            $this->cards->moveCardsOnTop($card_ids, DISCARD.$discard_id);
             $this->notifyAllPlayers('discardMultiple', '', array (
                 'player_id' => $player_id,
-                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
+                'discard_id' => $discard_id,
                 'card_ids' => $card_ids,
                 'cards' => $cards,
                 'nbr' => count($cards),
@@ -2333,6 +2335,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers('message', $msg, array (
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),
+            'opponent_name' => $this->getPlayerNameByIdInclMono($discard_id),
             'nbr' => count($cards) + $nbr_unordered_cards,
         ));
     }
@@ -6713,7 +6716,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_CAPUCHIN4:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
-                $this->spend($player_id, $args, 2, $this->_("Traveling Equipment"));
+                $this->spend($player_id, $args, 2, $this->_("INSERT_NAME"));
                 $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($dbcards) == 0) {
                     $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} attempted to take a card from ${opponent_name}, but their hand is empty'), array(
@@ -6729,6 +6732,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("card_id", $card_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCapuchin4");
+                break;
+            case CT_CAPUCHIN5A:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->spend($player_id, $args, 2, $this->_("INSERT_NAME"));
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trCapuchin5a");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -9247,6 +9258,7 @@ class DaleOfMerchants extends DaleTableBasic
 
 
     function actSoundDetectors($card_id) {
+        $this->checkAction("actSoundDetectors");
         $player_id = $this->getActivePlayerId();
         $limbo_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
         $target_dbcard = null;
@@ -9286,6 +9298,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function actAccident($card_id) {
+        $this->checkAction("actAccident");
         $player_id = $this->getActivePlayerId();
         $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
         $this->validateIsAnimalfolkCard($dbcard);
@@ -9294,6 +9307,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function actCapuchin4($is_taking_card) {
+        $this->checkAction("actCapuchin4");
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
@@ -9337,6 +9351,51 @@ class DaleOfMerchants extends DaleTableBasic
                 )
             ), $msg_private);
         }
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actCapuchin5a($take_card_id, $discard_card_ids) {
+        $this->checkAction("actCapuchin5a");
+        $discard_card_ids = $this->numberListToArray($discard_card_ids);
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        
+        if ($take_card_id != -1) {
+            //take the selected card
+            if (!isset($dbcards[$take_card_id])) {
+                throw new BgaUserException($this->_("The selected card is not in limbo"));
+            }
+            $dbcard = $dbcards[$take_card_id];
+            unset($dbcards[$take_card_id]);
+            $this->cards->moveCard($take_card_id, HAND.$player_id);
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('INSERT_NAME: ${player_name} takes a card from ${opponent_name}\'s deck'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_id" => $opponent_id,
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            ), clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from ${opponent_name}\'s deck'));
+        }
+
+        //discard, with with optional order
+        $ordered_dbcards = $this->cards->getCardsFromLocation($discard_card_ids, LIMBO.$player_id);
+        foreach ($ordered_dbcards as $ordered_card_id => $card) {
+            unset($dbcards[$ordered_card_id]);
+        }
+        $this->discardMultiple(
+            clienttranslate('INSERT_NAME: ${player_name} discards the other cards'),
+            $player_id, 
+            $discard_card_ids, 
+            $ordered_dbcards,
+            $dbcards,
+            true,
+            false,
+            $opponent_id
+        );
         $this->fullyResolveCard($player_id);
     }
 
@@ -10497,6 +10556,22 @@ class DaleOfMerchants extends DaleTableBasic
                 "card_name" => $this->getCardName($dbcard)
             )
         ), clienttranslate('${resolving_card_name}: ${player_name} looks at ${opponent_name}\'s ${card_name}'));
+    }
+
+    function stCapuchin5a() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->draw(
+            clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards from ${opponent_name}\'s deck'),
+            2,
+            true,
+            $opponent_id,
+            $player_id
+        );
+        if (count($dbcards) == 0) {
+            //capcuchin5a has no effect
+            $this->fullyResolveCard($player_id);
+        }
     }
 
     

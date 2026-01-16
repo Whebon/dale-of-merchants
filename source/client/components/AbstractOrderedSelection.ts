@@ -113,6 +113,9 @@ export abstract class AbstractOrderedSelection {
             case 'selectingContracts':
                 icon = (index == 0) ? DaleIcons.getTossIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
+            case 'capuchin5a':
+                icon = DaleIcons.getCapuchin5aIcon();
+                break;
         }
         if (icon) {
             if (secondary) {
@@ -305,6 +308,36 @@ export abstract class AbstractOrderedSelection {
         else {
             this.selectItem(card_id, secondary);
             return true;
+        }
+    }
+
+    /**
+     * Toggle unselected, primary selected Also updates the icons.
+     * @param card_id
+     */
+    public togglePrimarySecondary(card_id: number) {
+        if (this.includes(card_id)) {
+            if (this.getSize(true) < this.getMaxSize(true)) {
+                //primary => secondary
+                this.unselectItem(card_id);
+                this.selectItem(card_id, true);
+            }
+            else {
+                //primary => NONE
+                this.unselectItem(card_id);
+            }
+        }
+        else if (this.includes(card_id, true)) {
+            //secondary => NONE 
+            this.unselectItem(card_id, true);
+        }
+        else if (this.getSize() < this.getMaxSize()) {
+            //NONE => primary
+            this.selectItem(card_id);
+        }
+        else {
+            //NONE => secondary
+            this.selectItem(card_id, true);
         }
     }
 

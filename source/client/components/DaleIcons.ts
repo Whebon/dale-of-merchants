@@ -250,4 +250,12 @@ export class DaleIcons {
     public static getRandomIcon(): HTMLElement {
         return this.getIcon(11, 3);
     }
+
+    ///////////////////////////////
+    ////////    MISSING    ////////
+    ///////////////////////////////
+
+    public static getCapuchin5aIcon(): HTMLElement {
+        return this.getPompousProfessionalIcon();
+    }
 }
