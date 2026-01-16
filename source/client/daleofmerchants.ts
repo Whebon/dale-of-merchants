@@ -1265,6 +1265,15 @@ class DaleOfMerchants extends Gamegui
 			case 'client_capuchin3':
 				this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
 				break;
+			case 'client_spendSelectOpponentTechnique':
+				this.myHand.setSelectionMode('multiple', "pileYellow", "daleofmerchants-wrap-purchase");
+				const client_spendSelectOpponentTechnique_args = this.mainClientState.getSpendArgs();
+				for (const card_id of client_spendSelectOpponentTechnique_args.spend_card_ids.reverse()) {
+					this.myHand.selectItem(card_id);
+				}
+				this.coinManager.setSelectionMode('implicit', "daleofmerchants-wrap-purchase", _("Coins included"));
+				this.coinManager.setCoinsToSpendImplicitly([], client_spendSelectOpponentTechnique_args.spend_coins, false);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1753,6 +1762,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'capuchin4':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_spendSelectOpponentTechnique':
+				this.myHand.setSelectionMode('none');
+				this.coinManager.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)

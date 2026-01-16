@@ -5885,6 +5885,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_capuchin3':
                     this.myHand.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to give"));
                     break;
+                case 'client_spendSelectOpponentTechnique':
+                    this.myHand.setSelectionMode('multiple', "pileYellow", "daleofmerchants-wrap-purchase");
+                    var client_spendSelectOpponentTechnique_args = this.mainClientState.getSpendArgs();
+                    for (var _20 = 0, _21 = client_spendSelectOpponentTechnique_args.spend_card_ids.reverse(); _20 < _21.length; _20++) {
+                        var card_id = _21[_20];
+                        this.myHand.selectItem(card_id);
+                    }
+                    this.coinManager.setSelectionMode('implicit', "daleofmerchants-wrap-purchase", _("Coins included"));
+                    this.coinManager.setCoinsToSpendImplicitly([], client_spendSelectOpponentTechnique_args.spend_coins, false);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6373,6 +6383,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'capuchin4':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'client_spendSelectOpponentTechnique':
+                    this.myHand.setSelectionMode('none');
+                    this.coinManager.setSelectionMode('none');
                     break;
             }
         };
