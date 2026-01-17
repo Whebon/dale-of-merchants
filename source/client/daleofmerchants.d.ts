@@ -524,7 +524,6 @@ declare global {
 		'client_burglaryValue': { opponent_id: number, value: number }
 		'client_graspOpponentId': {},
 		'client_graspValue': { opponent_id: number, value: number }
-		'client_suddenNap': { opponent_id: number },
 		'client_periscopeOpponentId': {},
 		'client_periscopeValue': { opponent_id: number, animalfolk_id: number, value: number  }
 		'client_carefreeSwapper': { card_id: number },

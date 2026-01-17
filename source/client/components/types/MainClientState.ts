@@ -233,8 +233,6 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a set");
             case 'client_periscopeValue':
                 return _("${card_name}: ${you} must choose a value");
-            case 'client_suddenNap':
-                return _("${card_name}: ${you} must choose an opponent");
             case 'client_carefreeSwapper':
                 return _("${card_name}: ${you} must swap this card with a card from another player's discard pile");
             case 'client_DEPRECATED_velocipede':

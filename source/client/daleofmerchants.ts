@@ -2382,10 +2382,6 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("button-5", '5', (() => this.onGrasp(5)).bind(this));
 				this.addActionButtonCancelClient();
 				break;
-			case 'client_suddenNap':
-				this.addActionButtonsOpponent(this.onSuddenNap.bind(this));
-				this.addActionButtonCancelClient();
-				break;
 			case 'client_periscopeOpponentId':
 				const periscopeOpponentId_args = (this.mainClientState.args as ClientGameStates['client_periscopeOpponentId']);
 				//add a button for each opponent
@@ -4614,6 +4610,7 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_dirtyExchange', card.id);
 				}
 				break;
+			case DaleCard.CT_SUDDENNAP:
 			case DaleCard.CT_SABOTAGE:
 			case DaleCard.CT_DELICACY:
 			case DaleCard.CT_UMBRELLA:
@@ -4991,9 +4988,6 @@ class DaleOfMerchants extends Gamegui
 						})
 					}
 				}
-				break;
-			case DaleCard.CT_SUDDENNAP:
-				this.clientScheduleTechnique('client_suddenNap', card.id);
 				break;
 			case DaleCard.CT_PERISCOPE:
 				let periscope_opponents_nbr = 0;
@@ -6245,12 +6239,6 @@ class DaleOfMerchants extends Gamegui
 		this.playTechniqueCard<'client_graspValue'>({
 			opponent_id: args.opponent_id,
 			value: value
-		})
-	}
-
-	onSuddenNap(opponent_id: number) {
-		this.playTechniqueCardWithServerState<'client_suddenNap'>({
-			opponent_id: opponent_id
 		})
 	}
 
