@@ -7567,6 +7567,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 stock.removeFromStockById(+card.id);
             }
+            else {
+                var parent_1 = $('overall_player_board_' + player_id);
+                var daleCard = DaleCard_9.DaleCard.of(card);
+                var div_1 = daleCard.toDiv(parent_1);
+                this.placeOnObject(div_1.id, 'overall_player_board_' + player_id);
+                setTimeout((function () {
+                    dojo.fadeOut({ node: div_1, onEnd: function (node) { dojo.destroy(node); } }).play();
+                }), 250);
+            }
         };
         DaleOfMerchants.prototype.pileToStock = function (card, pile, stock, location_arg) {
             if (location_arg !== undefined) {

@@ -3153,6 +3153,15 @@ class DaleOfMerchants extends Gamegui
 			}
 			stock.removeFromStockById(+card.id);
 		}
+		else {
+			const parent = $('overall_player_board_'+player_id) as HTMLElement;
+			const daleCard = DaleCard.of(card);
+			const div = daleCard.toDiv(parent);
+			this.placeOnObject(div.id, 'overall_player_board_'+player_id);
+			setTimeout((() => {
+                dojo.fadeOut({node: div, onEnd: (node: HTMLElement) => { dojo.destroy(node);}}).play();
+            }), 250);
+		}
 	}
 
 	/**
