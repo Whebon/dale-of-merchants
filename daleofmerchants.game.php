@@ -8434,6 +8434,7 @@ class DaleOfMerchants extends DaleTableBasic
     function actUmbrella($card_id) {
         $this->checkAction("actUmbrella");
         $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
         //swap
         if ($card_id != -1) {
             //limbo to hand
@@ -8441,6 +8442,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->cards->moveCard($dbcard["id"], HAND.$player_id);
             $this->notifyAllPlayersWithPrivateArguments('instant_limboToHand', clienttranslate('Umbrella: ${player_name} swaps a card'), array(
                 "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "_private" => array(
                     "card" => $dbcard,
@@ -8461,7 +8463,6 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //return the remaining cards to the opponent's hand
-        $opponent_id = $this->getGameStateValue("opponent_id");
         $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
         $public_msg = clienttranslate('Umbrella: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'); 
         foreach($dbcards as $dbcard) {
