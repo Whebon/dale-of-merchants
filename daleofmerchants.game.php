@@ -1124,6 +1124,32 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->draw(clienttranslate('Dramatic Member: ${player_name} draws ${nbr} cards'), $nbr, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
+            case CT_CAPUCHINMONO:
+                $this->stealCoins(MONO_PLAYER_ID, $opponent_id, 1, $technique_card);
+                $dbcard = $this->cards->pickCardForLocation(DECK.$opponent_id, 'unstable');
+                if ($dbcard) {
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('deckToDiscard', clienttranslate('${resolving_card_name}: ${player_name} discards ${card_name} from ${opponent_name}\'s deck'), array(
+                        "resolving_card_name" => $this->getCardName($technique_card),        
+                        "player_id" => $opponent_id,
+                        "card" => $dbcard,
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    if (!$this->isEffectiveJunk($dbcard)) {
+                        $this->discardToHandMultiple('', MONO_PLAYER_ID, array($dbcard["id"]), false, $opponent_id);
+                        $this->monoConfirmAction(clienttranslate('${resolving_card_name}: ${player_name} took ${card_name} from ${opponent_name}\'s discard pile'), array(
+                            "resolving_card_name" => $this->getCardName($technique_card),    
+                            "highlight_limbo_cards" => array($dbcard),
+                            "wrap_class" => "daleofmerchants-wrap-technique",
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card_name" => $this->getCardName($dbcard)
+                        ));
+                    }
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
