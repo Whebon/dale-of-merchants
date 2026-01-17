@@ -997,14 +997,12 @@ class DaleOfMerchants extends DaleTableBasic
                         "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                         "card_name" => $this->getCardName($dbcard)
                     ));
-                    $this->cards->moveCard($dbcard["id"], HAND.MONO_PLAYER_ID);
-                    $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
-                        "player_id" => MONO_PLAYER_ID,
-                        "opponent_id" => $opponent_id,
-                        "_private" => array(
-                            "card" => $dbcard,
-                        )
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('discard', '', array(
+                        "player_id" => $opponent_id,
+                        "card" => $dbcard,
                     ));
+                    $this->discardToHandMultiple('', MONO_PLAYER_ID, array($dbcard["id"]), false, $opponent_id);
                 }
                 else {
                     $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} discards ${opponent_name}\'s ${card_name}, as it doesn\'t match a card value in the market.'), array(
