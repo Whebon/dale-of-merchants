@@ -273,9 +273,10 @@ export class DaleDeckSelection {
         for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
             const div = this.card_divs.get(animalfolk_id)!
             const isHidden = div.classList.contains("daleofmerchants-hidden");
+            const isFilteredOut = div.classList.contains("daleofmerchants-filtered-out");
             const isDisabled = div.classList.contains("daleofmerchants-deck-selection-unavailable");
             const isAlreadySelected = this.orderedSelection.includes(animalfolk_id);
-            if (!isHidden && !isDisabled && !isAlreadySelected) {
+            if (!isHidden && !isFilteredOut && !isDisabled && !isAlreadySelected) {
                 animalfolk_ids.push(animalfolk_id);
             }
         }
@@ -310,7 +311,7 @@ export class DaleDeckSelection {
                     isHidden = true;
                 }
             });
-            this.card_divs.get(animalfolk_id)?.classList.toggle("daleofmerchants-hidden", isHidden);
+            this.card_divs.get(animalfolk_id)?.classList.toggle("daleofmerchants-filtered-out", isHidden);
         }
     }
 }
