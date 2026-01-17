@@ -11536,7 +11536,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_discardToHand = function (notif) {
             var _a;
-            console.warn("notif_discardToHand");
+            console.warn("notif_discardToHand", notif.args);
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
             var discardPile = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
