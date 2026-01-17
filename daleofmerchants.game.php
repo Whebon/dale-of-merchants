@@ -6754,7 +6754,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->discardToHandMultiple(
                     clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'),
                     $player_id,
-                    $this->toCardIds($top_cards),
+                    array($dbcard["id"]),
                     false,
                     $opponent_id
                 );

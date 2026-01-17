@@ -1291,10 +1291,24 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'client_capuchin5b':
-				const client_capuchin5b_opponent_id = this.mainClientState.getArgs<'client_capuchin5b'>().opponent_id;
-				const client_capuchin5b_discard = this.playerDiscards[client_capuchin5b_opponent_id]!
-				client_capuchin5b_discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2)
-				client_capuchin5b_discard.openPopin();
+				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
+				const client_capuchin5b_args = this.mainClientState.getSpendArgs();
+				for (const card_id of client_capuchin5b_args.spend_card_ids.reverse()) {
+					this.myHand.selectItem(card_id);
+				}
+				this.coinManager.setSelectionMode('implicit', undefined, _("Coins included"));
+				this.coinManager.setCoinsToSpendImplicitly([], client_capuchin5b_args.spend_coins, false);
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id) {
+						discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2);
+					}
+				}
+				break;
+			case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
+				const client_DEPRECATED_capuchin5b_SINGLEDISCARD_opponent_id = this.mainClientState.getArgs<'client_DEPRECATED_capuchin5b_SINGLEDISCARD'>().opponent_id;
+				const client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard = this.playerDiscards[client_DEPRECATED_capuchin5b_SINGLEDISCARD_opponent_id]!
+				client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2)
+				client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.openPopin();
 				break;
 		}
 		//(~enteringstate)
@@ -1799,6 +1813,13 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'client_capuchin5b':
+				this.myHand.setSelectionMode('none');
+				this.coinManager.setSelectionMode('none');
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				break;
+			case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
 				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 					discard.setSelectionMode('none');
 				}
@@ -2626,8 +2647,18 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Take"), "onCapuchin4Take");
 				this.addActionButton("skip-button", _("Skip"), "onCapuchin4Skip", undefined, false, 'gray');
 				break;
-			case 'client_capuchin5b':
+			case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
 				this.addActionButtonCancelClient(undefined, false);
+				break;
+			case 'client_capuchin5b':
+				const client_capuchin5b_player_ids: number[] = [];
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						client_capuchin5b_player_ids.push(+player_id);
+					}
+				}
+				this.addActionButtonsOpponent(this.onCapuchin5bOpenDiscard.bind(this), false, undefined, client_capuchin5b_player_ids);
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -3196,6 +3227,7 @@ class DaleOfMerchants extends Gamegui
 	/**
 	 * Add a cancel button to return from the main client state
 	 * @param label (optional) default "Cancel". Label to display on the cancel button.
+	 * @param undo_schedule (optional) default `true`. If true, the scheduled card will be returned to the player's hand
 	*/
 	addActionButtonCancelClient(label?: string, undo_schedule: boolean = true) {
 		const method = undo_schedule ? "onCancelClient" : "onCancelClientWithoutUndoingSchedule"
@@ -3720,9 +3752,16 @@ class DaleOfMerchants extends Gamegui
 			case 'client_spendSelectOpponentTechnique':
 				this.onSpendSelectOpponentTechnique(pile.getPlayerId());
 				break;
+			case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
+				this.playTechniqueCard<'client_DEPRECATED_capuchin5b_SINGLEDISCARD'>({
+					opponent_id: this.mainClientState.getArgs<'client_DEPRECATED_capuchin5b_SINGLEDISCARD'>().opponent_id,
+					card_id: card!.id,
+					...this.mainClientState.getSpendArgs()
+				})
+				break;
 			case 'client_capuchin5b':
 				this.playTechniqueCard<'client_capuchin5b'>({
-					opponent_id: this.mainClientState.getArgs<'client_capuchin5b'>().opponent_id,
+					opponent_id: pile.getPlayerId(),
 					card_id: card!.id,
 					...this.mainClientState.getSpendArgs()
 				})
@@ -5192,30 +5231,17 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_CAPUCHIN5B:
-				if (this.unique_opponent_id) {
-					fizzle = this.playerDiscards[this.unique_opponent_id]!.size == 0;
-					if (fizzle) {
-						this.clientScheduleTechnique('client_fizzle', card.id);
+				fizzle = true
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					if (+player_id != +this.player_id && pile.size > 0) {
+						fizzle = false;
 					}
-					else {
-						this.clientScheduleSpendTechnique('client_capuchin5b', card.id, 2, undefined, { opponent_id: this.unique_opponent_id });
-					}
-					
+				}
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
 				}
 				else {
-					const capuchin5b_player_ids: number[] = [];
-					for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
-						if (+player_id != +this.player_id && pile.size > 0) {
-							capuchin5b_player_ids.push(+player_id);
-						}
-					}
-					fizzle = capuchin5b_player_ids.length == 0
-					if (fizzle) {
-						this.clientScheduleTechnique('client_fizzle', card.id);
-					}
-					else {
-						this.clientScheduleSpendTechnique('client_spendSelectOpponentTechnique', card.id, 2, undefined, { player_ids: capuchin5b_player_ids });
-					}
+					this.clientScheduleSpendTechnique('client_capuchin5b', card.id, 2);
 				}
 				break;
 			default:
@@ -6868,7 +6894,7 @@ class DaleOfMerchants extends Gamegui
 	onSpendSelectOpponentTechnique(opponent_id: number) {
 		const args = this.mainClientState.getArgs<'client_spendSelectOpponentTechnique'>();
 		if (new DaleCard(args.technique_card_id).effective_type_id == DaleCard.CT_CAPUCHIN5B) {
-			this.mainClientState.enterOnStack('client_capuchin5b', {
+			this.mainClientState.enterOnStack('client_DEPRECATED_capuchin5b_SINGLEDISCARD', {
 				technique_card_id: args.technique_card_id,
 				opponent_id: opponent_id,
 				opponent_name: this.gamedatas.players[opponent_id]!.name!,
@@ -6910,6 +6936,22 @@ class DaleOfMerchants extends Gamegui
 			take_card_id: take_card_ids.length == 0 ? -1 : take_card_ids[0]!,
 			discard_card_ids: this.arrayToNumberList(discard_card_ids)
 		})
+	}
+
+	onCapuchin5bOpenDiscard(opponent_id: number) {
+		//KNOWN BUG: switching back-and-forth within 500ms closes the popin.
+		//The openPopinCooldown makes it impossible to re-open a popin within the cooldown time.
+		// Without that, the popin is attempted` re-opened while it is fading out. Which softlocks the ebg popin
+
+		//close other discard piles
+		for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+			if (+player_id != opponent_id) {
+				console.log("closing", player_id);
+				this.playerDiscards[+player_id]!.closePopin();
+			}
+		}
+		//open the target opponent's discard pile
+		this.playerDiscards[opponent_id]!.openPopin();
 	}
 
 	//(~on)

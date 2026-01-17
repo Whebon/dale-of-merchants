@@ -295,6 +295,8 @@ export class MainClientState {
             case 'client_spendSelectOpponentTechnique':
                 return _("${card_name}: ${you} must choose an opponent");
             case 'client_capuchin5b':
+                return _("${card_name}: ${you} must take a card from an opponent\'s discard");
+            case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
                 return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
         }
         return "MISSING DESCRIPTION";

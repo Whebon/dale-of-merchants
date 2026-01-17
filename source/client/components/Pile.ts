@@ -48,6 +48,7 @@ export class Pile implements DaleLocation {
     private selectionMode: SelectionMode = 'none';
     private popin: PopInDialog = new ebg.popindialog();
     private isPopinOpen: boolean = false;
+    private openPopinCooldown: boolean = false;
     private cardIdToPopinDiv: Map<number, HTMLElement> = new Map<number, HTMLElement>();
     private wrapClass: DaleWrapClass = "daleofmerchants-wrap-default";
     private showMainTitleBarInPopin: boolean = false;
@@ -456,7 +457,7 @@ export class Pile implements DaleLocation {
      */
     public openPopin() {
         this.openPopinRequested = true;
-        if (this.isPopinOpen) {
+        if (this.isPopinOpen || this.openPopinCooldown) {
             return;
         }
         console.warn("openPopin");
@@ -740,10 +741,14 @@ export class Pile implements DaleLocation {
                 break;
             case 'single':
             case 'singleAnimalfolk':
-            case 'singleFromTopX':
                 this.showMainTitleBarInPopin = true;
                 this.containerHTML.classList.add("daleofmerchants-blinking");
                 this.openPopin();
+                break;
+            case 'singleFromTopX':
+                this.showMainTitleBarInPopin = true;
+                this.containerHTML.classList.add("daleofmerchants-blinking");
+                //this.openPopin(); //doesn't call openPopin, this would cause multiple piles to open in 'client_capuchin5b'
                 break;
             case 'sliceOfLife':
                 for (const card of this.cards) {
@@ -844,6 +849,12 @@ export class Pile implements DaleLocation {
         for (let card of this.cards) {
             card.detachDiv();
         }
+
+        //put re-opening the popin on a cooldown for quicking switching between popins in 'client_capuchin5'
+        this.openPopinCooldown = true; 
+        setTimeout(() => {
+            this.openPopinCooldown = false;
+        }, 500);
 
         //Reattach the tooltip of the top card of the pile
         this.isPopinOpen = false;
