@@ -627,6 +627,7 @@ export class Pile implements DaleLocation {
                         this.orderedSelection.selectItem(this.cards[i]!.id);
                     }
                 }
+                this.orderedSelection.updateIcons();
                 this.updateHTML();
                 break;
             case 'multiplePrimarySecondary':

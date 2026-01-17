@@ -3146,6 +3146,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                             this.orderedSelection.selectItem(this.cards[i].id);
                         }
                     }
+                    this.orderedSelection.updateIcons();
                     this.updateHTML();
                     break;
                 case 'multiplePrimarySecondary':
@@ -4453,6 +4454,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take a card from an opponent\'s discard");
                     case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
                         return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
+                    case 'client_skink1':
+                        return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5978,6 +5981,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2);
                     client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.openPopin();
                     break;
+                case 'client_skink1':
+                    this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'pileBlue', "daleofmerchants-wrap-technique", 2);
+                    this.myDiscard.openPopin();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6495,6 +6502,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var _29 = _28[_27], player_id = _29[0], discard = _29[1];
                         discard.setSelectionMode('none');
                     }
+                    break;
+                case 'client_skink1':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -7306,6 +7316,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     this.addActionButtonsOpponent(this.onCapuchin5bOpenDiscard.bind(this), false, undefined, client_capuchin5b_player_ids);
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_skink1':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSkink1");
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -8437,6 +8451,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_WINDOFCHANGE:
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
+                    break;
+                case DaleCard_9.DaleCard.CT_SKINK1:
+                    fizzle = this.myDiscard.size == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink1', card.id);
                     break;
                 case DaleCard_9.DaleCard.CT_SKINK3:
                     if (this.myHand.count() == 1) {
@@ -10873,6 +10891,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
             this.playerDiscards[opponent_id].openPopin();
+        };
+        DaleOfMerchants.prototype.onSkink1 = function () {
+            this.resolveTechniqueCard({
+                card_ids: this.myDiscard.orderedSelection.get()
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

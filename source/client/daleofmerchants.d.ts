@@ -483,6 +483,7 @@ declare global {
 		'client_spendx' : { spend_card_ids: number[], spend_coins: number } //for finish cards
 		'client_windOfChange': { card_id?: number }
 		'client_snack': { card_id: number }
+		'client_skink1': { card_ids: number[] }
 		'client_matches': { card_id: number } //basically the same as shattered relic
 	}
 	

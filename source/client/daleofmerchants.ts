@@ -1312,6 +1312,10 @@ class DaleOfMerchants extends Gamegui
 				client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2)
 				client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.openPopin();
 				break;
+			case 'client_skink1':
+				this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'pileBlue', "daleofmerchants-wrap-technique", 2);
+				this.myDiscard.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1825,6 +1829,9 @@ class DaleOfMerchants extends Gamegui
 				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
 					discard.setSelectionMode('none');
 				}
+				break;
+			case 'client_skink1':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2656,6 +2663,10 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				this.addActionButtonsOpponent(this.onCapuchin5bOpenDiscard.bind(this), false, undefined, client_capuchin5b_player_ids);
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_skink1':
+				this.addActionButton("confirm-button", _("Confirm"), "onSkink1");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -4198,6 +4209,10 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_WINDOFCHANGE:
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
+				break;
+			case DaleCard.CT_SKINK1:
+				fizzle = this.myDiscard.size == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink1', card.id);
 				break;
 			case DaleCard.CT_SKINK3:
 				if (this.myHand.count() == 1) {
@@ -6951,6 +6966,12 @@ class DaleOfMerchants extends Gamegui
 		}
 		//open the target opponent's discard pile
 		this.playerDiscards[opponent_id]!.openPopin();
+	}
+
+	onSkink1() {
+		this.resolveTechniqueCard<'client_skink1'>({
+			card_ids: this.myDiscard.orderedSelection.get()
+		})
 	}
 
 	//(~on)
