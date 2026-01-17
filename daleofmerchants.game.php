@@ -291,6 +291,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         foreach($hand_dbcards as $dbcard) {
             if ($this->isMonoCard($dbcard)) {
+                $card_name = $this->getCardName($dbcard); //get the card name before the chameleon expires
                 $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MONO_PLAYER_ID);
                 $this->notifyAllPlayers('discard', clienttranslate('${player_name} places ${card_name} back on ${opponent_name}\'s discard pile'), array(
                     "player_id" => $player_id,
@@ -298,7 +299,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "card" => $dbcard,
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                     "opponent_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                    "card_name" => $this->getCardName($dbcard)
+                    "card_name" => $card_name
                 ));
             }
         }
@@ -2977,11 +2978,12 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * Returns true iff the original card is a Mono card
+     * Returns true iff the effective card is a Mono card
      * @param array $dbcard dbcard object
     */
     function isMonoCard(array $dbcard): int {
-        return $this->card_types[$dbcard["type_arg"]]['is_mono'];
+        $type_id = $this->getTypeId($dbcard);
+        return $this->card_types[$type_id]['is_mono'];
     }
 
     /**
@@ -3545,13 +3547,15 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array target dbcard that will be copied.
      */
     function copyCard(array $chameleon_dbcard, array $target_dbcard) {
+        $player_id = $this->getActivePlayerId();
         $chameleon_name_before_copying = $this->getCardName($chameleon_dbcard);
         $this->effects->copyCard($chameleon_dbcard, $target_dbcard);
         $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} chameleon copy ${target_card_name}'), array(
             'chameleon_card_name' => $chameleon_name_before_copying,
             'target_card_name' => $this->getCardName($target_dbcard),
-            'player_name' => $this->getActivePlayerName()
+            'player_name' => $this->getPlayerNameByIdInclMono($player_id)
         ));
+        $this->removeMonoCardsFromPlayerHand($player_id, array($chameleon_dbcard));
     }
 
     // TODO: safely remove this
