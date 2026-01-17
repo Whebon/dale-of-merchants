@@ -6667,10 +6667,6 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->effects->insertGlobal(0, CT_ESSENTIALPURCHASE, $player_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
-            case CT_SKINK3:
-                $this->draw(clienttranslate('Matches: ${player_name} draws 2 cards'), 2);
-                $this->resolveImmediateEffects($player_id, $technique_card);
-                break;
             case CT_RIGOROUSCHRONICLER:
                 $this->cards->shuffle(DISCARD.$player_id);
                 $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id);
@@ -6790,6 +6786,24 @@ class DaleOfMerchants extends DaleTableBasic
                     $opponent_id
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SKINK1:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_SKINK2:
+                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_SKINK3:
+                $this->draw(clienttranslate('Matches: ${player_name} draws ${nbr} cards'), 2);
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_SKINK4:
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_SKINK5A:
+                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 3);
+                $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
