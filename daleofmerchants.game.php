@@ -409,7 +409,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         
         if ($technique_result == MONO_TECHNIQUE_ACQUIRE) {
-            if (!$this->monoMarketAction($msg)) {
+            if (!$this->monoMarketAction($msg, '${player_name} purchases ${card_name} (because of acquire)')) {
                 $msg = clienttranslate('${player_name} failed to purchase, so it now tries to build');
                 if (!$this->monoStallAction($msg)) {
                     $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to build') , array(
@@ -421,7 +421,7 @@ class DaleOfMerchants extends DaleTableBasic
         else if ($technique_result == MONO_TECHNIQUE_NO_ACQUIRE) {
             if (!$this->monoStallAction($msg)) {
                 $msg = clienttranslate('${player_name} failed to build, so it now tries to purchase');
-                if (!$this->monoMarketAction($msg)) {
+                if (!$this->monoMarketAction($msg, '${player_name} purchases ${card_name} (because it failed to build)')) {
                     $this->notifyAllPlayers('message', clienttranslate('${player_name} also failed to purchase') , array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
@@ -1214,9 +1214,10 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Automatically executes a market action for Mono
      * @param string $msg display this message in monoConfirmAction
+     * @param string $description display this shorter message in the monoConfirmAction title bar
      * @return bool indicating if the action was successful
      */
-    function monoMarketAction(string $msg): bool {
+    function monoMarketAction(string $msg, string $description): bool {
         $this->showDebugMessage("monoMarketAction");
 
         //fetch information from the db
@@ -1234,7 +1235,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "highlight_limbo_cards" => array_reverse($fund_cards),
                     "highlight_market_pos" => $market_card["location_arg"],
                     "wrap_class" => "daleofmerchants-wrap-purchase",
-                    "description" => '${player_name} purchases ${card_name}',
+                    "description" => $description,
                     "card_name" => $this->getCardName($market_card)
                 ));
                 //pay coin funds
