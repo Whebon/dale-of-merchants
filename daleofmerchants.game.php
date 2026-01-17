@@ -2125,9 +2125,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $dbcard card that needs to be tossed
      * @param bool $from_limbo (optional) - default false. If `false`, toss from hand. If `true`, toss from limbo.
      * @param array $msg_args (optional) - additional args to display in the `$msg`
+     * @param mixed $player_id (optional) - default active player. toss from this player instead
      */
-    function toss(string $msg, array $dbcard, bool $from_limbo = false, $msg_args = array()) {
-        $player_id = $this->getActivePlayerId();
+    function toss(string $msg, array $dbcard, bool $from_limbo = false, array $msg_args = array(), mixed $player_id = null) {
+        $player_id = $player_id ? $player_id : $this->getActivePlayerId();
         if ($this->isJunk($dbcard)) {
             $destination = JUNKRESERVE;
         }
@@ -5918,15 +5919,16 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $card_id = array_rand($cards);
                 $dbcard = $cards[$card_id];
-                $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
-                $this->cards->moveCardOnTop($dbcard["id"], $destination);
-                $this->notifyAllPlayers('toss', clienttranslate('Sudden Nap: ${player_name} tossed ${card_name} from ${opponent_name}\'s hand'), array(
-                    "player_id" => $opponent_id, #we toss a card from the OPPONENT, not the active player
-                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                    "card_name" => $this->getCardName($dbcard),
-                    "card" => $dbcard
-                ));
+                $this->toss(
+                    clienttranslate('Sudden Nap: ${player_name} tossed ${card_name} from ${opponent_name}\'s hand'),
+                    $dbcard,
+                    false,
+                    array(
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                    ),
+                    $opponent_id
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_PERISCOPE:
