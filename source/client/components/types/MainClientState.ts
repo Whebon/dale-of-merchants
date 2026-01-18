@@ -300,6 +300,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
             case 'client_skink1':
                 return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck")
+            case 'client_skink5a':
+                return _("${card_name}: ${you} must choose ${nbr} cards to discard");
         }
         return "MISSING DESCRIPTION";
     }

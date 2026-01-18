@@ -1320,6 +1320,10 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'pileBlue', "daleofmerchants-wrap-technique", 2);
 				this.myDiscard.openPopin();
 				break;
+			case 'client_skink5a':
+				const client_skink5a_label = this.myHand.count() == 1 ? _("Discard 1 card") : _("Discard 2 cards");
+				this.myHand.setSelectionMode('multiple2', 'pileBlue', "daleofmerchants-wrap-technique", client_skink5a_label)
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1840,6 +1844,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_skink1':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_skink5a':
+				this.myHand.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2681,6 +2688,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_skink1':
 				this.addActionButton("confirm-button", _("Confirm"), "onSkink1");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_skink5a':
+				this.addActionButton("confirm-button", _("Confirm"), "onSkink5a");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -4257,6 +4268,11 @@ class DaleOfMerchants extends Gamegui
 				else {
 					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				}
+				break;
+			case DaleCard.CT_SKINK5A:
+				const skink5a_nbr = Math.min(2, this.myHand.count())
+				fizzle = skink5a_nbr == 0;
+				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink5a', card.id, {nbr: skink5a_nbr});
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -7016,6 +7032,18 @@ class DaleOfMerchants extends Gamegui
 		this.resolveTechniqueCard<'client_skink2'>({
 			card_id: -1
 		})
+	}
+
+	onSkink5a() {
+		const card_ids = this.myHand.orderedSelection.get();
+		const nbr = Math.min(2, this.myHand.count())
+		if (card_ids.length < nbr) {
+			this.showMessage(_("Please select exactly ")+nbr+_(" card(s) from your hand"), 'error');
+			return;
+		}
+		this.resolveTechniqueCard<'client_skink5a'>({
+			card_ids: card_ids
+		});
 	}
 
 	//(~on)

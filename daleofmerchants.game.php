@@ -7117,6 +7117,21 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->reshuffleDeckForSearch($player_id, 1);
                 $this->gamestate->nextState("trSkink4");
                 break;
+            case CT_SKINK5A:
+                $card_ids = $args["card_ids"];
+                $nbr = min(2, $this->cards->countCardInLocation(HAND.$player_id));
+                if (count($card_ids) != $nbr) {
+                    throw new BgaUserException("Invalid input arguments: select exactly $nbr card(s) from your hand");
+                }
+                $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+                $this->discardMultiple(
+                    clienttranslate('INSERT_NAME: ${player_name} discards ${nbr} cards'),
+                    $player_id,
+                    $card_ids,
+                    $dbcards
+                );
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TRIGGER NOT IMPLEMENTED: '$name'");

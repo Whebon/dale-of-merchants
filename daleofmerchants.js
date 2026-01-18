@@ -4458,6 +4458,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
                     case 'client_skink1':
                         return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck");
+                    case 'client_skink5a':
+                        return _("${card_name}: ${you} must choose ${nbr} cards to discard");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5991,6 +5993,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'pileBlue', "daleofmerchants-wrap-technique", 2);
                     this.myDiscard.openPopin();
                     break;
+                case 'client_skink5a':
+                    var client_skink5a_label = this.myHand.count() == 1 ? _("Discard 1 card") : _("Discard 2 cards");
+                    this.myHand.setSelectionMode('multiple2', 'pileBlue', "daleofmerchants-wrap-technique", client_skink5a_label);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6515,6 +6521,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_skink1':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'client_skink5a':
+                    this.myHand.setSelectionMode('none');
                     break;
             }
         };
@@ -7336,6 +7345,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_skink1':
                     this.addActionButton("confirm-button", _("Confirm"), "onSkink1");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_skink5a':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSkink5a");
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -8501,6 +8514,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     else {
                         this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     }
+                    break;
+                case DaleCard_9.DaleCard.CT_SKINK5A:
+                    var skink5a_nbr = Math.min(2, this.myHand.count());
+                    fizzle = skink5a_nbr == 0;
+                    this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink5a', card.id, { nbr: skink5a_nbr });
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
@@ -10938,6 +10956,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onSkink2 = function () {
             this.resolveTechniqueCard({
                 card_id: -1
+            });
+        };
+        DaleOfMerchants.prototype.onSkink5a = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            var nbr = Math.min(2, this.myHand.count());
+            if (card_ids.length < nbr) {
+                this.showMessage(_("Please select exactly ") + nbr + _(" card(s) from your hand"), 'error');
+                return;
+            }
+            this.resolveTechniqueCard({
+                card_ids: card_ids
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

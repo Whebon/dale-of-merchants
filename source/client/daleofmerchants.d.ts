@@ -486,6 +486,7 @@ declare global {
 		'client_skink1': { card_ids: number[] }
 		'client_skink2': { card_id: number }
 		'client_skink3': { card_id: number } //basically the same as shattered relic
+		'client_skink5a': { card_ids: number[] }
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */
@@ -627,6 +628,7 @@ declare global {
 		'client_DEPRECATED_capuchin5b_SINGLEDISCARD': {technique_card_id: number, opponent_id: number, opponent_name: string }
 		'client_generationChange': { technique_card_id: number, nbr: number }
 		'client_spendSelectOpponentTechnique': { technique_card_id: number, player_ids?: number[]}
+		'client_skink5a': { technique_card_id: number, nbr: number }
 	}
 
 	//
