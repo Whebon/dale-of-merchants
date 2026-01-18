@@ -4947,7 +4947,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
         };
         CoinManager.prototype.stealCoins = function (gain_player_id, lose_player_id, nbr) {
             this.addCoins(lose_player_id, -nbr);
-            this.addCoins(gain_player_id, nbr, this.playerCoinIcon[gain_player_id]);
+            this.addCoins(gain_player_id, nbr, this.playerCoinIcon[lose_player_id]);
         };
         CoinManager.prototype.addCoins = function (player_id, nbr, animate_from) {
             var _this = this;

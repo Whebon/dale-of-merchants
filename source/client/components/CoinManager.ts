@@ -191,7 +191,7 @@ export class CoinManager {
     */
     public stealCoins(gain_player_id: number, lose_player_id: number, nbr: number) {
         this.addCoins(lose_player_id, -nbr);
-        this.addCoins(gain_player_id, nbr, this.playerCoinIcon[gain_player_id!]);
+        this.addCoins(gain_player_id, nbr, this.playerCoinIcon[lose_player_id!]);
     }
 
     /**
