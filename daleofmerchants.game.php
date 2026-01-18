@@ -436,6 +436,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->monoDiscardJunk();
         $this->monoHideHand();
         $this->refillHand(MONO_PLAYER_ID);
+        $this->monoResolveCards(TRIGGER_ONCLEANUP);
         $this->expireEffectsAtTheEndOfTurn();
     }
     
@@ -506,6 +507,10 @@ class DaleOfMerchants extends DaleTableBasic
                             "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                         ));
                     }
+                    break;
+                case CT_SKINKMONO:
+                    //Mono draws 2 🃏🃏. Acquire. At the end of Mono's turn, it draws 2 🃏🃏.
+                    $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 2, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                     break;
                 default:
                     $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TRIGGER NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -1149,6 +1154,10 @@ class DaleOfMerchants extends DaleTableBasic
                         ));
                     }
                 }
+                break;
+            case CT_SKINKMONO:
+                //Mono draws 2 🃏🃏. Acquire. At the end of Mono's turn, it draws 2 🃏🃏.
+                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 2, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
