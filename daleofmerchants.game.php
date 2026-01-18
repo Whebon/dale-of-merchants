@@ -3544,7 +3544,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $chameleon_name_before_copying = $this->getCardName($chameleon_dbcard);
         $this->effects->copyCard($chameleon_dbcard, $target_dbcard);
-        $this->notifyAllPlayers('message', clienttranslate('${player_name} lets their ${chameleon_card_name} chameleon copy ${target_card_name}'), array(
+        $this->notifyAllPlayers('message', clienttranslate('${player_name} uses ${chameleon_card_name} chameleon to <strong>copy</strong> ${target_card_name}'), array(
             'chameleon_card_name' => $chameleon_name_before_copying,
             'target_card_name' => $this->getCardName($target_dbcard),
             'player_name' => $this->getPlayerNameByIdInclMono($player_id)
@@ -9505,7 +9505,6 @@ class DaleOfMerchants extends DaleTableBasic
             $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('INSERT_NAME: ${player_name} takes a card from ${opponent_name}\'s deck'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                "opponent_id" => $opponent_id,
                 "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                 "_private" => array(
                     "card" => $dbcard,
