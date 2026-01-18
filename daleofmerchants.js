@@ -4301,9 +4301,11 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may <stronger>spend</stronger> x to change this card's value");
                     case 'client_swiftBroker':
                         return _("${card_name}: ${you} may choose the order to discard your hand");
+                    case 'client_skink2':
+                        return _("${card_name}: ${you} must choose an animalfolk card to <stronger>toss</stronger>");
                     case 'client_shatteredRelic':
                         return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
-                    case 'client_matches':
+                    case 'client_skink3':
                         return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_acorn':
                         return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
@@ -5402,8 +5404,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_swiftBroker':
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
                     break;
+                case 'client_skink2':
+                    this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>toss</strong>"));
+                    break;
                 case 'client_shatteredRelic':
-                case 'client_matches':
+                case 'client_skink3':
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'spyglass':
@@ -6054,8 +6059,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_swiftBroker':
                     this.myHand.setSelectionMode('none');
                     break;
+                case 'client_skink2':
+                    this.myHand.setSelectionMode('none');
+                    break;
                 case 'client_shatteredRelic':
-                case 'client_matches':
+                case 'client_skink3':
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'spyglass':
@@ -6620,8 +6628,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_skink2':
+                    var client_client_skink2_args = this.mainClientState.getArgs();
+                    var client_client_skink2_technique_card = new DaleCard_9.DaleCard(client_client_skink2_args.technique_card_id);
+                    this.addActionButton("confirm-button", _("Toss") + " " + client_client_skink2_technique_card.name, "onSkink2");
+                    this.addActionButtonCancelClient();
+                    break;
                 case 'client_shatteredRelic':
-                case 'client_matches':
+                case 'client_skink3':
                     this.addActionButtonCancelClient();
                     break;
                 case 'spyglass':
@@ -8148,7 +8162,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'client_matches':
+                case 'client_skink2':
+                    this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
+                case 'client_skink3':
                     this.resolveTechniqueCard({
                         card_id: card.id
                     });
@@ -8456,12 +8475,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     fizzle = this.myDiscard.size == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink1', card.id);
                     break;
+                case DaleCard_9.DaleCard.CT_SKINK2:
+                    this.clientTriggerTechnique('client_skink2', card.id);
+                    break;
                 case DaleCard_9.DaleCard.CT_SKINK3:
                     if (this.myHand.count() == 1) {
                         this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     }
                     else {
-                        this.clientTriggerTechnique('client_matches', card.id);
+                        this.clientTriggerTechnique('client_skink3', card.id);
                     }
                     break;
                 default:
@@ -10895,6 +10917,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onSkink1 = function () {
             this.resolveTechniqueCard({
                 card_ids: this.myDiscard.orderedSelection.get()
+            });
+        };
+        DaleOfMerchants.prototype.onSkink2 = function () {
+            this.resolveTechniqueCard({
+                card_id: -1
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

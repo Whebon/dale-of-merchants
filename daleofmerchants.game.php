@@ -2256,12 +2256,13 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * Tosses 1 card from hand.
+     * Tosses 1 card from hand selected by the user. Throws an error if the card is not found in hand. Only allows not tossing a card if the hand was empty.
      * @param int $player_id active player id.
-     * @param array $technique_card the card that causes the effet. (e.g. Shattered Relic, Essential Purchase, Golden Opportunity, Fortunate Upgrade, etc)
+     * @param array $technique_card the card that causes the effect. (e.g. Shattered Relic, Essential Purchase, Golden Opportunity, Fortunate Upgrade, etc)
      * @param array $args arguments send from the client. Must contain a "card_id" to toss except when the hand is empty.
+     * @return ?array the $dbcard tossed this way. if the hand was empty, returns `null` instead.
      */
-    function toss1FromHand(int $player_id, array $technique_card, array $args) {
+    function toss1FromHand(int $player_id, array $technique_card, array $args): ?array {
         $resolving_card_name = $this->getCardName($technique_card);
         $handsize = $this->cards->countCardInLocation(HAND.$player_id);
         if ($handsize > 0) {
@@ -2269,16 +2270,18 @@ class DaleOfMerchants extends DaleTableBasic
                 throw new BgaVisibleSystemException("toss1FromHand failed: the player did not select a card to toss");
             }
             $card_id = $args["card_id"];
-            $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-            $this->toss(clienttranslate('${resolving_card_name}: ${player_name} tosses ${card_name}'), $card, false, array(
+            $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+            $this->toss(clienttranslate('${resolving_card_name}: ${player_name} tosses ${card_name}'), $dbcard, false, array(
                 "resolving_card_name" => $resolving_card_name,
             ));
+            return $dbcard;
         }
         else {
             $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} has no cards to toss'), array(
                 "resolving_card_name" => $resolving_card_name,
                 "player_name" => $this->getActivePlayerName()
             ));
+            return null;
         }
     }
 
@@ -7121,6 +7124,26 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SKINK2:
+                $card_id = $args["card_id"];
+                if ($card_id != -1) {
+                    // Toss an animalfolk card
+                    $dbcard = $this->toss1FromHand($player_id, $technique_card, $args);
+                    if ($dbcard == null || !$this->isAnimalfolk($dbcard)) {
+                        throw new BgaUserException(_("Please select an animalfolk card"));
+                    }
+                    $this->fullyResolveCard($player_id, $technique_card);
+                }
+                else {
+                    // ...or toss this card
+                    $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} tosses their ${card_name}'), array(
+                        "resolving_card_name" => $this->getCardName($technique_card),
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "card_name" => $this->getCardName($technique_card)
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card, DISCARD.MARKET);
+                }
                 break;
             case CT_SKINK3:
                 $this->toss1FromHand($player_id, $technique_card, $args);

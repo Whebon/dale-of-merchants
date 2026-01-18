@@ -649,8 +649,11 @@ class DaleOfMerchants extends Gamegui
 			case 'client_swiftBroker':
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				break;
+			case 'client_skink2':
+				this.myHand.setSelectionMode('clickAnimalfolk', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to <strong>toss</strong>"));
+				break;
 			case 'client_shatteredRelic':
-			case 'client_matches':
+			case 'client_skink3':
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'spyglass':
@@ -1399,8 +1402,11 @@ class DaleOfMerchants extends Gamegui
 			case 'client_swiftBroker':
 				this.myHand.setSelectionMode('none');
 				break;
+			case 'client_skink2':
+				this.myHand.setSelectionMode('none');
+				break;
 			case 'client_shatteredRelic':
-			case 'client_matches':
+			case 'client_skink3':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'spyglass':
@@ -1946,8 +1952,14 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Discard all"), "onSwiftBroker");
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_skink2':
+				const client_client_skink2_args = this.mainClientState.getArgs<'client_skink2'>();
+				const client_client_skink2_technique_card = new DaleCard(client_client_skink2_args.technique_card_id);
+				this.addActionButton("confirm-button", _("Toss")+" "+client_client_skink2_technique_card.name, "onSkink2");
+				this.addActionButtonCancelClient();
+				break;
 			case 'client_shatteredRelic':
-			case 'client_matches':
+			case 'client_skink3':
 				this.addActionButtonCancelClient();
 				break;
 			case 'spyglass':
@@ -3859,8 +3871,13 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
-			case 'client_matches':
-				this.resolveTechniqueCard<'client_matches'>({
+			case 'client_skink2':
+				this.resolveTechniqueCard<'client_skink2'>({
+					card_id: card!.id
+				})
+				break;
+			case 'client_skink3':
+				this.resolveTechniqueCard<'client_skink3'>({
 					card_id: card!.id
 				})
 				break;
@@ -4214,12 +4231,15 @@ class DaleOfMerchants extends Gamegui
 				fizzle = this.myDiscard.size == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink1', card.id);
 				break;
+			case DaleCard.CT_SKINK2:
+				this.clientTriggerTechnique('client_skink2', card.id);
+				break;
 			case DaleCard.CT_SKINK3:
 				if (this.myHand.count() == 1) {
 					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				}
 				else {
-					this.clientTriggerTechnique('client_matches', card.id);
+					this.clientTriggerTechnique('client_skink3', card.id);
 				}
 				break;
 			default:
@@ -6971,6 +6991,13 @@ class DaleOfMerchants extends Gamegui
 	onSkink1() {
 		this.resolveTechniqueCard<'client_skink1'>({
 			card_ids: this.myDiscard.orderedSelection.get()
+		})
+	}
+
+	onSkink2() {
+		// Toss the resolving CT_SKINK2 itself
+		this.resolveTechniqueCard<'client_skink2'>({
+			card_id: -1
 		})
 	}
 

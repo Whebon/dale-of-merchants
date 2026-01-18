@@ -484,7 +484,8 @@ declare global {
 		'client_windOfChange': { card_id?: number }
 		'client_snack': { card_id: number }
 		'client_skink1': { card_ids: number[] }
-		'client_matches': { card_id: number } //basically the same as shattered relic
+		'client_skink2': { card_id: number }
+		'client_skink3': { card_id: number } //basically the same as shattered relic
 	}
 	
 	/** @gameSpecific Add the choices to send to the server to resolve the technique */

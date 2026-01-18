@@ -143,9 +143,11 @@ export class MainClientState {
             //Specific technique states
             case 'client_swiftBroker':
                 return _("${card_name}: ${you} may choose the order to discard your hand");
+            case 'client_skink2':
+                return _("${card_name}: ${you} must choose an animalfolk card to <stronger>toss</stronger>");
             case 'client_shatteredRelic':
                 return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
-            case 'client_matches':
+            case 'client_skink3':
                 return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
             case 'client_acorn':
                 return _("${card_name}: ${you} must choose a card from an opponent's stall to swap with");
