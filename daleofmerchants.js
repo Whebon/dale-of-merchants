@@ -4460,6 +4460,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck");
                     case 'client_skink5a':
                         return _("${card_name}: ${you} must choose ${nbr} cards to discard");
+                    case 'client_skink5b':
+                        return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -5699,10 +5701,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'velocipede':
-                    var DEPRECATED_fashionHint_args = args.args;
-                    new TargetingLine_1.TargetingLine(new DaleCard_9.DaleCard(DEPRECATED_fashionHint_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onVelocipedeSwapSkip(); }, function (source_id, target_id) { return _this.onVelocipedeSwap(target_id); });
-                    this.myDiscard.setSelectionMode('noneCantViewContent');
-                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + DEPRECATED_fashionHint_args.card_name);
+                    var velocipede_args = args.args;
+                    new TargetingLine_1.TargetingLine(new DaleCard_9.DaleCard(velocipede_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onVelocipedeSwapSkip(); }, function (source_id, target_id) { return _this.onVelocipedeSwap(target_id); });
+                    this.marketDiscard.setSelectionMode('noneCantViewContent');
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + velocipede_args.card_name);
                     break;
                 case 'DEPRECATED_royalPrivilege':
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
@@ -5996,6 +5998,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_skink5a':
                     var client_skink5a_label = this.myHand.count() == 1 ? _("Discard 1 card") : _("Discard 2 cards");
                     this.myHand.setSelectionMode('multiple2', 'pileBlue', "daleofmerchants-wrap-technique", client_skink5a_label);
+                    break;
+                case 'client_skink5b':
+                    var skink5b_args = this.mainClientState.getArgs();
+                    new TargetingLine_1.TargetingLine(this.myDiscard.peek(), this.myHand.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSkink5b(target_id); });
+                    this.myDiscard.setSelectionMode('noneCantViewContent');
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ") + skink5b_args.card_name);
                     break;
             }
         };
@@ -6296,7 +6304,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'velocipede':
                     TargetingLine_1.TargetingLine.remove();
-                    this.myDiscard.setSelectionMode('none');
+                    this.marketDiscard.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
                     break;
                 case 'DEPRECATED_royalPrivilege':
@@ -6523,6 +6531,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'client_skink5a':
+                    this.myHand.setSelectionMode('none');
+                    break;
+                case 'client_skink5b':
+                    TargetingLine_1.TargetingLine.remove();
+                    this.myDiscard.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
                     break;
             }
@@ -7349,6 +7362,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_skink5a':
                     this.addActionButton("confirm-button", _("Confirm"), "onSkink5a");
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_skink5b':
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -9599,6 +9615,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_9.DaleCard.CT_ROYALPRIVILEGE:
                     this.mainClientState.enterOnStack('client_royalPrivilege', { passive_card_id: card.id });
                     break;
+                case DaleCard_9.DaleCard.CT_SKINK5B:
+                    if (this.myDiscard.size == 0) {
+                        this.showMessage(_("This passive has no effect"), "error");
+                    }
+                    else {
+                        this.mainClientState.enterOnStack('client_skink5b', { passive_card_id: card.id, disable_cancel_on_click: true, card_name: this.myDiscard.peek().name });
+                    }
+                    break;
                 default:
                     this.mainClientState.enterOnStack('client_choicelessPassiveCard', { passive_card_id: card.id });
                     break;
@@ -10967,6 +10991,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.resolveTechniqueCard({
                 card_ids: card_ids
+            });
+        };
+        DaleOfMerchants.prototype.onSkink5b = function (card_id) {
+            this.playPassiveCard({
+                card_id: card_id
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

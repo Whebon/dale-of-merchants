@@ -302,6 +302,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck")
             case 'client_skink5a':
                 return _("${card_name}: ${you} must choose ${nbr} cards to discard");
+            case 'client_skink5b':
+                return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
         }
         return "MISSING DESCRIPTION";
     }

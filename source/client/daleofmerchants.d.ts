@@ -567,6 +567,7 @@ declare global {
 		'client_dramaticRomantic': { forward: boolean }
 		'client_bonsai': { card_ids: number[] }
 		'client_royalPrivilege': { card_id: number }
+		'client_skink5b': {card_id: number }
 	}
 
 	//add all client states with a ClientTechniqueChoice or ClientAbilityChoice
@@ -629,6 +630,7 @@ declare global {
 		'client_generationChange': { technique_card_id: number, nbr: number }
 		'client_spendSelectOpponentTechnique': { technique_card_id: number, player_ids?: number[]}
 		'client_skink5a': { technique_card_id: number, nbr: number }
+		'client_skink5b': { passive_card_id: number, card_name: string }
 	}
 
 	//

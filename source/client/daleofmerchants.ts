@@ -1012,9 +1012,9 @@ class DaleOfMerchants extends Gamegui
 				this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'velocipede':
-				const DEPRECATED_fashionHint_args = args.args as { card_id: number, card_name: string };
+				const velocipede_args = args.args as { card_id: number, card_name: string };
 				new TargetingLine(
-					new DaleCard(DEPRECATED_fashionHint_args.card_id),
+					new DaleCard(velocipede_args.card_id),
 					this.myHand.getAllItems().map(item => new DaleCard(item.id)).filter(card => card.isAnimalfolk()),
 					"daleofmerchants-line-source-technique",
 					"daleofmerchants-line-target-technique",
@@ -1022,8 +1022,8 @@ class DaleOfMerchants extends Gamegui
 					(source_id: number) => this.onVelocipedeSwapSkip(),
 					(source_id: number, target_id: number) => this.onVelocipedeSwap(target_id)
 				)
-				this.myDiscard.setSelectionMode('noneCantViewContent');
-				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+DEPRECATED_fashionHint_args.card_name);
+				this.marketDiscard.setSelectionMode('noneCantViewContent');
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+velocipede_args.card_name);
 				break;
 			case 'DEPRECATED_royalPrivilege':
 				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
@@ -1323,6 +1323,20 @@ class DaleOfMerchants extends Gamegui
 			case 'client_skink5a':
 				const client_skink5a_label = this.myHand.count() == 1 ? _("Discard 1 card") : _("Discard 2 cards");
 				this.myHand.setSelectionMode('multiple2', 'pileBlue', "daleofmerchants-wrap-technique", client_skink5a_label)
+				break;
+			case 'client_skink5b':
+				const skink5b_args = this.mainClientState.getArgs<'client_skink5b'>();
+				new TargetingLine(
+					this.myDiscard.peek()!,
+					this.myHand.getAllItems().map(item => new DaleCard(item.id)),
+					"daleofmerchants-line-source-technique",
+					"daleofmerchants-line-target-technique",
+					"daleofmerchants-line-technique",
+					(source_id: number) => this.onCancelClient(),
+					(source_id: number, target_id: number) => this.onSkink5b(target_id)
+				)
+				this.myDiscard.setSelectionMode('noneCantViewContent');
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ")+skink5b_args.card_name);
 				break;
 		}
 		//(~enteringstate)
@@ -1630,7 +1644,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'velocipede':
 				TargetingLine.remove();
-				this.myDiscard.setSelectionMode('none');
+				this.marketDiscard.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'DEPRECATED_royalPrivilege':
@@ -1846,6 +1860,11 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'client_skink5a':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_skink5b':
+				TargetingLine.remove();
+				this.myDiscard.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
 		}
@@ -2692,6 +2711,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_skink5a':
 				this.addActionButton("confirm-button", _("Confirm"), "onSkink5a");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_skink5b':
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -5407,7 +5429,6 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_BONSAI:
 				this.mainClientState.enterOnStack('client_bonsai', {passive_card_id: card.id});
 				break;
-
 			case DaleCard.CT_FLEXIBLESHOPKEEPER:
 				this.mainClientState.enterOnStack('chameleon_flexibleShopkeeper', {passive_card_id: card.id});
 				break;
@@ -5433,6 +5454,14 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_ROYALPRIVILEGE:
 				this.mainClientState.enterOnStack('client_royalPrivilege', {passive_card_id: card.id});
+				break;
+			case DaleCard.CT_SKINK5B:
+				if (this.myDiscard.size == 0) {
+					this.showMessage(_("This passive has no effect"), "error");
+				}
+				else {
+					this.mainClientState.enterOnStack('client_skink5b', {passive_card_id: card.id, disable_cancel_on_click: true, card_name: this.myDiscard.peek()!.name});
+				}
 				break;
 			default:
 				this.mainClientState.enterOnStack('client_choicelessPassiveCard', {passive_card_id: card.id});
@@ -7043,6 +7072,12 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.resolveTechniqueCard<'client_skink5a'>({
 			card_ids: card_ids
+		});
+	}
+
+	onSkink5b(card_id: number) {
+		this.playPassiveCard<'client_skink5b'>({
+			card_id: card_id
 		});
 	}
 

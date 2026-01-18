@@ -7544,6 +7544,32 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gainCoins($player_id, 1, $passive_card);
                 $this->effects->insertModification($passive_card_id, CT_CAPUCHIN2);
                 break;
+            case CT_SKINK5B:
+                //mark this passive as used (if it discards itself, the effect will immediately expire)
+                $this->effects->insertModification($passive_card_id, CT_SKINK5B);
+                $card_id = $args["card_id"];
+                $handCard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $topCard = $this->cards->getCardOnTop(DISCARD.$player_id);
+                if (!$topCard) {
+                    throw new BgaVisibleSystemException("Attempted to use CT_SKINK5B with an empty discard pile");
+                }
+                //discard to hand (instant)
+                $this->cards->moveCard($topCard["id"], HAND.$player_id);
+                $this->notifyAllPlayers('instant_discardToHand', clienttranslate('${resolving_card_name}: ${player_name} swaps their ${hand_card_name} from their hand with their ${card_name} from the top of their discard'), array(
+                    "resolving_card_name" => $this->getCardName($passive_card),
+                    "player_id" => $player_id,
+                    "card" => $topCard,
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "card_name" => $this->getCardName($topCard),
+                    "hand_card_name" => $this->getCardName($handCard),
+                ));
+                //hand to discard
+                $this->cards->moveCardOnTop($handCard["id"], DISCARD.$player_id);
+                $this->notifyAllPlayers('discard', '', array(
+                    "player_id" => $player_id,
+                    "card" => $handCard,
+                ));
+                break;
             default:
                 $name = $this->getCardName($passive_card);
                 throw new BgaVisibleSystemException("PASSIVE ABILITY NOT IMPLEMENTED: '$name'");
@@ -10077,6 +10103,15 @@ class DaleOfMerchants extends DaleTableBasic
             foreach ($dbcards as $card_id => $dbcard) {
                 $type_id = $this->getTypeId($dbcard);
                 if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP && $type_id != CT_SLICEOFLIFE && $this->card_types[$type_id]["has_ability"] && !$this->effects->isPassiveUsed($dbcard)) {
+                    if ($type_id == CT_BARRICADE && $this->countJunk($this->cards->getCardsInLocation(DISCARD.$player_id)) == 0) {
+                        continue; //do not start a postCleanUpPhase for just a fizzling CT_BARRICADE
+                    }
+                    if ($type_id == CT_COOKIES && $this->cards->countCardsInDeckAndDiscardOfPlayer($player_id) == 0) {
+                        continue; //do not start a postCleanUpPhase for just a fizzling CT_COOKIES
+                    }
+                    if ($type_id == CT_SKINK5B && $this->cards->countCardsInLocation(DISCARD.$player_id) == 0) {
+                        continue; //do not start a postCleanUpPhase for just a fizzling CT_SKINK5B
+                    }
                     //the hand contains a card that uses the post clean up phase
                     $this->gamestate->nextState("trPostCleanUpPhase");
                     return;
