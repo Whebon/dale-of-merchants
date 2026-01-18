@@ -266,6 +266,7 @@ $machinestates = array(
 			'trNextPlayer' => 41,
 			'trPassiveAbility' => 41,
 			'trTacticalMeasurement' => 81,
+			'trSkink4' => 114,
 		),
 	),
 	52 => array(
@@ -945,6 +946,17 @@ $machinestates = array(
 		'possibleactions' => ['actCapuchin5a'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	114 => array(
+		'name' => 'skink4',
+		'description' => clienttranslate('INSERT_NAME: ${actplayer} must search their deck for a card'),
+		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} must search your deck for a card'),
+		'type' => 'activeplayer',
+		'args' => 'argMyDeckContent',
+		'possibleactions' => ['actSkink4'],
+		'transitions' => array(
+			'trSamePlayer' => 41,
 		),
 	),
 	6300 => array(

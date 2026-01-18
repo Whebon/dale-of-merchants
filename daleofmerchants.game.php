@@ -6828,6 +6828,13 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle. Your discard pile is nonempty.");
                     }
                     break;
+                case CT_SKINK4:
+                    $decksize = $this->cards->countCardInLocation(DECK.$player_id);
+                    $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
+                    if ($decksize + $discardsize >= 1) {
+                        throw new BgaVisibleSystemException("Unable to fizzle. count(deck)+count(discard)>=1.");
+                    }
+                    break;
                 default:
                     $cards = $this->cards->getCardsInLocation(HAND.$player_id);
                     if (count($cards) >= 1) {
@@ -7104,6 +7111,11 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SKINK3:
                 $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SKINK4:
+                $this->beginResolvingCard($technique_card_id);
+                $this->reshuffleDeckForSearch($player_id, 1);
+                $this->gamestate->nextState("trSkink4");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -9468,6 +9480,13 @@ class DaleOfMerchants extends DaleTableBasic
             false,
             $opponent_id
         );
+        $this->fullyResolveCard($player_id);
+    }
+
+    function actSkink4($card_id) {
+        $this->checkAction("actSkink4");
+        $player_id = $this->getActivePlayerId();
+        $this->drawCardId(clienttranslate('Skink: ${player_name} draws a card from their deck'), $card_id);
         $this->fullyResolveCard($player_id);
     }
 

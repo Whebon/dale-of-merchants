@@ -5555,6 +5555,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     new TargetingLine_1.TargetingLine(new DaleCard_9.DaleCard(client_safetyPrecaution_args.technique_card_id), this.myStall.getCardsInStall(), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSafetyPrecaution(source_id, target_id); });
                     break;
                 case 'magnet':
+                case 'skink4':
                     var magnet_args = args.args;
                     this.myDeck.setContent(magnet_args._private.cards.map(DaleCard_9.DaleCard.of));
                     this.myDeck.setSelectionMode('single');
@@ -6177,6 +6178,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     TargetingLine_1.TargetingLine.remove();
                     break;
                 case 'magnet':
+                case 'skink4':
                     this.myDeck.hideContent();
                     this.myDeck.setSelectionMode('none');
                     break;
@@ -8042,6 +8044,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
+                case 'skink4':
+                    this.bgaPerformAction('actSkink4', {
+                        card_id: card.id
+                    });
+                    break;
                 case 'DEPRECATED_cheer':
                     this.bgaPerformAction('actDEPRECATED_Cheer', {
                         card_id: card.id
@@ -8484,6 +8491,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else {
                         this.clientTriggerTechnique('client_skink3', card.id);
+                    }
+                    break;
+                case DaleCard_9.DaleCard.CT_SKINK4:
+                    fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
+                    if (fizzle) {
+                        this.clientTriggerTechnique('client_triggerFizzle', card.id);
+                    }
+                    else {
+                        this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     }
                     break;
                 default:

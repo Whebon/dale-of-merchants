@@ -855,6 +855,7 @@ class DaleOfMerchants extends Gamegui
 				)
 				break;
 			case 'magnet':
+			case 'skink4':
 				const magnet_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(magnet_args._private.cards.map(DaleCard.of));
 				this.myDeck.setSelectionMode('single');
@@ -1515,6 +1516,7 @@ class DaleOfMerchants extends Gamegui
 				TargetingLine.remove();
 				break;
 			case 'magnet':
+			case 'skink4':
 				this.myDeck.hideContent();
 				this.myDeck.setSelectionMode('none');
 				break;
@@ -3739,6 +3741,11 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break
+			case 'skink4':
+				this.bgaPerformAction('actSkink4', {
+					card_id: card!.id
+				})
+				break;
 			case 'DEPRECATED_cheer':
 				this.bgaPerformAction('actDEPRECATED_Cheer', {
 					card_id: card!.id
@@ -4242,9 +4249,19 @@ class DaleOfMerchants extends Gamegui
 					this.clientTriggerTechnique('client_skink3', card.id);
 				}
 				break;
+			case DaleCard.CT_SKINK4:
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
+				if (fizzle) {
+					this.clientTriggerTechnique('client_triggerFizzle', card.id);
+				}
+				else {
+					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
+				}
+				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				break;
+			//(~trigger)
 		}
 	}
 

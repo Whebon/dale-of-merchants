@@ -305,7 +305,8 @@
 			"trPassiveAbility": 41,
 
 			//Hidden-information technique states
-			"trTacticalMeasurement": 81
+			"trTacticalMeasurement": 81,
+			"trSkink4": 114
 		}
 	},
 
@@ -1188,6 +1189,20 @@
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"114": {
+		"name": "skink4",
+		"description": "INSERT_NAME: ${actplayer} must search their deck for a card",
+		"descriptionmyturn": "INSERT_NAME: ${you} must search your deck for a card",
+		"type": "activeplayer",
+		"args": "argMyDeckContent",
+		"possibleactions": {
+			"actSkink4": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 41 }
 	},
 
 

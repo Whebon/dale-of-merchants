@@ -352,6 +352,7 @@ interface GameStates {
 			'trNextPlayer': 41,
 			'trPassiveAbility': 41,
 			'trTacticalMeasurement': 81,
+			'trSkink4': 114,
 		},
 	},
 	52: {
@@ -1456,6 +1457,23 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	114: {
+		'name': 'skink4',
+		'description': 'INSERT_NAME: ${actplayer} must search their deck for a card',
+		'descriptionmyturn': 'INSERT_NAME: ${you} must search your deck for a card',
+		'type': 'activeplayer',
+		'args': 'argMyDeckContent',
+		'possibleactions': {
+			'actSkink4': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 41,
 		},
 	},
 	6300: {
