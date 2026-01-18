@@ -4,6 +4,8 @@ import { DaleIcons } from "./DaleIcons"
 import { Images } from "./Images";
 import { AbstractOrderedSelection } from "./AbstractOrderedSelection";
 import { AnimalfolkDetails } from './types/AnimalfolkDetails'
+import { DaleCard } from "./DaleCard";
+import { DaleAnimalfolk } from "./DaleAnimalfolk";
 
 class OrderedDeckSelection extends AbstractOrderedSelection {
     override getDiv(card_id: number): HTMLElement | undefined {
@@ -12,6 +14,7 @@ class OrderedDeckSelection extends AbstractOrderedSelection {
 }
 
 export class DaleDeckSelection {
+    private page: Gamegui | undefined;
     private gameHTML: HTMLElement;
     private deckSelectionHTML: HTMLElement;
     private filterContainer: HTMLElement;
@@ -32,58 +35,8 @@ export class DaleDeckSelection {
 
     private tooltips: dijit.Tooltip[] = [];
 
-    //Non-animalfolk
-    static readonly ANIMALFOLK_NONE: number = 0;
-
-    //DoM1
-    static readonly ANIMALFOLK_MACAWS: number = 1;
-    static readonly ANIMALFOLK_PANDAS: number = 2;
-    static readonly ANIMALFOLK_RACCOONS: number = 3;
-    static readonly ANIMALFOLK_SQUIRRELS: number = 4;
-    static readonly ANIMALFOLK_OCELOTS: number = 5;
-    static readonly ANIMALFOLK_CHAMELEONS: number = 6;
-
-    //DoM2
-    static readonly ANIMALFOLK_PLATYPUSES: number = 7;
-    static readonly ANIMALFOLK_SLOTHS: number = 8;
-    static readonly ANIMALFOLK_CROCODILES: number = 9;
-    static readonly ANIMALFOLK_FOXES: number = 10;
-    static readonly ANIMALFOLK_POLECATS: number = 11;
-    static readonly ANIMALFOLK_OWLS: number = 12;
-
-    //DoM3
-    static readonly ANIMALFOLK_DESERTMONITORS: number = 13;
-    static readonly ANIMALFOLK_LEMURS: number = 14;
-    static readonly ANIMALFOLK_MAGPIES: number = 15;
-    static readonly ANIMALFOLK_ECHIDNAS: number = 16;
-    static readonly ANIMALFOLK_HARES: number = 17;
-    static readonly ANIMALFOLK_TREEKANGAROOS: number = 18;
-
-    //DoM4
-    static readonly ANIMALFOLK_TUATARAS: number = 19;
-    static readonly ANIMALFOLK_DODOS: number = 20;
-    static readonly ANIMALFOLK_CAPUCHINS: number = 21;
-    static readonly ANIMALFOLK_OLMS: number = 22;
-    static readonly ANIMALFOLK_PENGUINS: number = 23;
-    static readonly ANIMALFOLK_WOODTURTLES: number = 24;
-
-    //DoM5
-    static readonly ANIMALFOLK_SKINKS: number = 25;
-    static readonly ANIMALFOLK_BEAVERS: number = 26;
-    static readonly ANIMALFOLK_SNOWMACAQUES: number = 27;
-    static readonly ANIMALFOLK_GULLS: number = 28;
-    static readonly ANIMALFOLK_PANGOLINS: number = 29;
-    static readonly ANIMALFOLK_GLASSFROGS: number = 30;
-
-    //DoM6
-    static readonly ANIMALFOLK_GORILLAS: number = 31;
-    static readonly ANIMALFOLK_WALRUSES: number = 32;
-    static readonly ANIMALFOLK_TASMANIANDEVILS: number = 33;
-    static readonly ANIMALFOLK_JUNGLEFOWLS: number = 34;
-    static readonly ANIMALFOLK_MONGOOSES: number = 35;
-    static readonly ANIMALFOLK_BATS: number = 36;
-
     constructor(page: Gamegui, deckSelectionHTML: HTMLElement, gameHTML: HTMLElement, inDeckSelection: boolean) {
+        this.page = page;
         this.deckSelectionHTML = deckSelectionHTML;
         this.gameHTML = gameHTML;
         this.filterContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-filters") as HTMLElement)!;
@@ -100,7 +53,7 @@ export class DaleDeckSelection {
         const n = Math.max(2, Object.values(page.gamedatas.players).length);
         this.orderedSelection.setIconType('numbers');
         this.orderedSelection.setMaxSize(n + 1);
-        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+        for (let animalfolk_id = DaleAnimalfolk.ANIMALFOLK_MACAWS; animalfolk_id <= DaleAnimalfolk.ANIMALFOLK_BATS; animalfolk_id++) {
             //create card div
             const card_div = document.createElement('div');
             card_div.id = "deck-"+animalfolk_id;
@@ -150,7 +103,24 @@ export class DaleDeckSelection {
     }
 
     private getTooltipContent(animalfolk_id: number): string {
-        return `TODO: TOOLTIP`;
+        const disabled = this.page!.gamedatas.disabledAnimalfolkIds.includes(animalfolk_id);
+        let flavour_text = AnimalfolkDetails.getFlavourText(animalfolk_id);
+        let footer = "";
+        if (disabled) {
+            footer = `<hr> <strong>${_("This animalfolk is unavailable on BGA")}</strong>`;
+        }
+        else if (this.page!.is_solo) {
+            const type_id = Images.first_mono_type_id + animalfolk_id - 1
+            const cardType = DaleCard.cardTypes[type_id]! 
+            //footer = `<strong>${_("Mono will have this card:")}</strong><br>`
+            footer = `<hr>
+                <strong>${cardType.name} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)":""}</strong><br>
+                ${DaleCard.format_string(cardType.text)} <br><br style="line-height: 10px" />`;
+        }
+        return `<div class="daleofmerchants-card-tooltip">
+            <div class="daleofmerchants-card-tooltip-text">${flavour_text}</div>
+            <div class="daleofmerchants-card-tooltip-text">${footer}</div>
+        </div>`
 	}
 
     /**
@@ -270,7 +240,7 @@ export class DaleDeckSelection {
      */
     private getSelectableAnimalfolkIds(): number[] {
         let animalfolk_ids = [];
-        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+        for (let animalfolk_id = DaleAnimalfolk.ANIMALFOLK_MACAWS; animalfolk_id <= DaleAnimalfolk.ANIMALFOLK_BATS; animalfolk_id++) {
             const div = this.card_divs.get(animalfolk_id)!
             const isHidden = div.classList.contains("daleofmerchants-hidden");
             const isFilteredOut = div.classList.contains("daleofmerchants-filtered-out");
@@ -304,7 +274,7 @@ export class DaleDeckSelection {
     }
 
     private updateFilters() {
-        for (let animalfolk_id = DaleDeckSelection.ANIMALFOLK_MACAWS; animalfolk_id <= DaleDeckSelection.ANIMALFOLK_BATS; animalfolk_id++) {
+        for (let animalfolk_id = DaleAnimalfolk.ANIMALFOLK_MACAWS; animalfolk_id <= DaleAnimalfolk.ANIMALFOLK_BATS; animalfolk_id++) {
             let isHidden = false;
             this.filterBlacklists.forEach((blacklist, category) => {
                 if (blacklist.includes(AnimalfolkDetails.get(animalfolk_id, category))) {

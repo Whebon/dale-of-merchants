@@ -1,4 +1,4 @@
-import { DaleDeckSelection } from "./DaleDeckSelection";
+import { DaleAnimalfolk } from "./DaleAnimalfolk";
 import { DaleIcons } from "./DaleIcons";
 
 type DieType = 'ocelot' | 'polecat' | 'hare' | 'pangolin1' | 'pangolin2';
@@ -42,19 +42,19 @@ export class DaleDie {
     constructor(animalfolk_id: number, d6: 0|1|2|3|4|5, name_displayed: string, parentHTML: HTMLElement) {
         //construct the die
         switch(animalfolk_id) {
-            case DaleDeckSelection.ANIMALFOLK_OCELOTS:
+            case DaleAnimalfolk.ANIMALFOLK_OCELOTS:
                 this.type = 'ocelot';
                 break;
-            case DaleDeckSelection.ANIMALFOLK_POLECATS:
+            case DaleAnimalfolk.ANIMALFOLK_POLECATS:
                 this.type = 'polecat';
                 break;
-            case DaleDeckSelection.ANIMALFOLK_HARES:
+            case DaleAnimalfolk.ANIMALFOLK_HARES:
                 this.type = 'hare';
                 break;
-            case DaleDeckSelection.ANIMALFOLK_PANGOLINS:
+            case DaleAnimalfolk.ANIMALFOLK_PANGOLINS:
                 this.type = 'pangolin1';
                 break;
-            case DaleDeckSelection.ANIMALFOLK_PANGOLINS+1:
+            case DaleAnimalfolk.ANIMALFOLK_PANGOLINS+1:
                 this.type = 'pangolin2';
                 break;
             default:

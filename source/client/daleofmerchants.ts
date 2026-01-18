@@ -17,6 +17,7 @@ import Counter = require('ebg/counter');
 import "ebg/counter";
 import "ebg/stock"; 
 
+import { DaleAnimalfolk } from "./components/DaleAnimalfolk";
 import { DaleStock } from './components/DaleStock'
 import { Pile } from './components/Pile';
 import { HiddenPile } from './components/HiddenPile';
@@ -34,9 +35,10 @@ import { DaleDie } from './components/DaleDie';
 import { DaleIcons } from './components/DaleIcons';
 import { CoinManager } from './components/CoinManager';
 import { PlayerClock } from './components/PlayerClock';
-import { PrivateNotification } from './components/types/PrivateNotification'
-import { TranslatableStrings } from './components/types/TranslatableStrings'
-import { SelectionIconType } from './components/SelectionIconType'
+import { PrivateNotification } from './components/types/PrivateNotification';
+import { TranslatableStrings } from './components/types/TranslatableStrings';
+import { SelectionIconType } from './components/SelectionIconType';
+
 
 /** The root for all of your game code. */
 class DaleOfMerchants extends Gamegui
@@ -181,6 +183,9 @@ class DaleOfMerchants extends Gamegui
 		$("overall-content")?.appendChild(svgContainer);
 		addEventListener("mousemove", function(this: Window, evt: MouseEvent) { TargetingLine.previousMouseEvent = evt; });
 
+		//initialize the card types
+		DaleCard.init(this, gamedatas.cardTypes);
+
 		//initialize the deck selection
 		this.deckSelection = new DaleDeckSelection(
 			this,
@@ -188,9 +193,6 @@ class DaleOfMerchants extends Gamegui
 			$("daleofmerchants-page-game") as HTMLElement,
 			gamedatas.inDeckSelection
 		);
-
-		//initialize the card types
-		DaleCard.init(this, gamedatas.cardTypes);
 
 		//initialize mono (this adds mono to the gamedatas.playerorder)
 		this.setupMono(gamedatas);
@@ -492,22 +494,22 @@ class DaleOfMerchants extends Gamegui
 
 		for (let player_id in this.gamedatas.players) {
 			//show the storedCards if tree kangaroos are in play
-			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TREEKANGAROOS)) {
+			if (this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_TREEKANGAROOS)) {
 				const stored_cards_wrap = $('daleofmerchants-stored-cards-wrap-'+player_id)!;
 				stored_cards_wrap.classList.remove("daleofmerchants-hidden");
 			}
 			//show coins if coin-based animalfolk are in play
-			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_TUATARAS) ||
-				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_DODOS) ||
-				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_CAPUCHINS)
+			if (this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_TUATARAS) ||
+				this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_DODOS) ||
+				this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_CAPUCHINS)
 			) {
 				const coins_wrap = $('daleofmerchants-coins-wrap-'+player_id)!;
 				coins_wrap.classList.remove("daleofmerchants-hidden");
 			}
 			//show clock if coin-based animalfolk are in play
-			if (this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_JUNGLEFOWLS) ||
-				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_MONGOOSES) ||
-				this.gamedatas.animalfolkIds.includes(DaleDeckSelection.ANIMALFOLK_BATS)) {
+			if (this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_JUNGLEFOWLS) ||
+				this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_MONGOOSES) ||
+				this.gamedatas.animalfolkIds.includes(DaleAnimalfolk.ANIMALFOLK_BATS)) {
 				const clock_wrap = $('daleofmerchants-clock-wrap-'+player_id)!;
 				clock_wrap.classList.remove("daleofmerchants-hidden");
 			}

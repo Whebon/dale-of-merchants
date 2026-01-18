@@ -430,15 +430,16 @@ $this->DISABLED_ANIMALFOLK_IDS = array(
     //ANIMALFOLK_WOODTURTLES,       //reworked
     //ANIMALFOLK_PANGOLINS,         //CT_ANOTHERFINEMESS requires an effect rework.
     
-    ANIMALFOLK_BATS,                //new
+    //ANIMALFOLK_CAPUCHINS,             //v0.1.1
+    //ANIMALFOLK_SKINKS,                //v0.1.1
+    //ANIMALFOLK_JUNGLEFOWLS,           //v0.1.1
+    //ANIMALFOLK_BATS,                  //v0.1.1
+
     ANIMALFOLK_DODOS,               //new
-    ANIMALFOLK_CAPUCHINS,           //new
     ANIMALFOLK_OLMS,                //new
-    ANIMALFOLK_SKINKS,              //new
     ANIMALFOLK_GORILLAS,            //new
     ANIMALFOLK_WALRUSES,            //new
     ANIMALFOLK_TASMANIANDEVILS,     //new
-    ANIMALFOLK_JUNGLEFOWLS,         //new
 
     // Won't have
     ANIMALFOLK_BEAVERS,
@@ -472,16 +473,17 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     //ANIMALFOLK_WOODTURTLES,           //v0.1.0
     //ANIMALFOLK_SNOWMACAQUES,          //v0.1.0
     //ANIMALFOLK_MONGOOSES,             //v0.1.0
+
+    //ANIMALFOLK_CAPUCHINS,             //v0.1.1
+    //ANIMALFOLK_SKINKS,                //v0.1.1
+    //ANIMALFOLK_JUNGLEFOWLS,           //v0.1.1
+    //ANIMALFOLK_BATS,                  //v0.1.1
     
     ANIMALFOLK_DODOS,                   //new
-    ANIMALFOLK_CAPUCHINS,               //new
     ANIMALFOLK_OLMS,                    //new
-    ANIMALFOLK_SKINKS,                  //new
     ANIMALFOLK_GORILLAS,                //new
     ANIMALFOLK_WALRUSES,                //new
     ANIMALFOLK_TASMANIANDEVILS,         //new
-    ANIMALFOLK_JUNGLEFOWLS,             //new
-    ANIMALFOLK_BATS,                    //new
 
     // Effect not finalized
     ANIMALFOLK_LEMURS,

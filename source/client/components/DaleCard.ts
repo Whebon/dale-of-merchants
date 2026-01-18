@@ -7,7 +7,6 @@ import { DbEffect } from './types/DbEffect';
 import { DaleTrigger } from './types/DaleTrigger';
 import { DaleDie } from './DaleDie';
 import { AbstractOrderedSelection } from './AbstractOrderedSelection';
-import { DaleDeckSelection } from './DaleDeckSelection';
 import { PlayerClock } from './PlayerClock';
 
 /**
@@ -29,7 +28,7 @@ export class OrderedSelection extends AbstractOrderedSelection {
  * A Dale of Merchants Card. All information of the card can be retrieved from this object.
  */
 export class DaleCard {
-    static cardTypes: CardType[]; //initialized during "setup(gamedatas: Gamedatas)"
+    public static cardTypes: CardType[]; //initialized during "setup(gamedatas: Gamedatas)"
     private static readonly cardIdtoTypeId: Map<number, number> = new Map<number, number>();
 
     /**
@@ -325,7 +324,6 @@ export class DaleCard {
     static readonly EFFECT_CHAMELEON_TYPE: number = 1000;
     static readonly EFFECT_CHAMELEON_VALUE: number = 1001;
     static readonly EFFECT_INCREASE_HAND_SIZE: number = 1002;
-    
 
     /** 
      * Construct a dale card of a given card id. If this is the first time this card id is constructed, the type_id MUST be provided.
