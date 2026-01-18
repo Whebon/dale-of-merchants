@@ -12143,8 +12143,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.notif_gainCoins = function (notif) {
             if (notif.args.source_card) {
-                var card = DaleCard_10.DaleCard.of(notif.args.source_card);
-                this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr, card.div);
+                var div_maybe = DaleCard_10.DaleCard.divs.get(+notif.args.source_card.id);
+                this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr, div_maybe);
             }
             else {
                 this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);

@@ -8335,8 +8335,8 @@ class DaleOfMerchants extends Gamegui
 
 	notif_gainCoins(notif: NotifAs<'gainCoins'>) {
 		if (notif.args.source_card) {
-			const card = DaleCard.of(notif.args.source_card);
-			this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr, card.div);
+			const div_maybe = DaleCard.divs.get(+notif.args.source_card.id);
+			this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr, div_maybe);
 		}
 		else {
 			this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
