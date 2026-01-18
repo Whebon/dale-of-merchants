@@ -9459,7 +9459,6 @@ class DaleOfMerchants extends DaleTableBasic
                 "resolving_card_name" => $this->getCurrentResolvingCardName(),
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                "opponent_id" => $opponent_id,
                 "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                 "_private" => array(
                     "card" => $dbcard,
