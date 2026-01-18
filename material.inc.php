@@ -377,6 +377,13 @@ if (!defined('DIE_STARS')) {
     define('DIE_HAND2', 16);
 }
 
+//define post clean up phase flags
+if (!defined('FLAG_POST_CLEAN_UP_PHASE_UNVISITED')) {
+    define('FLAG_POST_CLEAN_UP_PHASE_UNVISITED', 0);
+    define('FLAG_POST_CLEAN_UP_PHASE_VISITED', 1);
+    define('FLAG_POST_CLEAN_UP_PHASE_VISITED_AND_ENDED', 2);
+}
+
 //define triggers
 if (!defined('TRIGGER_ONTURNSTART')) {
     define('TRIGGER_INSTANT', null);
