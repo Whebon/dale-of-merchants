@@ -3478,7 +3478,8 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function advanceClock($player_id, $nbr, $msg = '', $msg_args = array()) {
         //skip
-        if (!$this->deckSelection->includes(ANIMALFOLK_MONGOOSES) && 
+        if (!$this->deckSelection->includes(ANIMALFOLK_JUNGLEFOWLS) && 
+            !$this->deckSelection->includes(ANIMALFOLK_MONGOOSES) && 
             !$this->deckSelection->includes(ANIMALFOLK_BATS)) {
             $this->showDebugMessage("clock skipped");
             return;
@@ -6778,6 +6779,30 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_SKINK5A:
                 $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 3);
                 $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_JUNGLEFOWL1:
+                $nbr = $this->getClock($player_id) == CLOCK_DAWN ? 2 : 1;
+                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} card(s)'), $nbr);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_JUNGLEFOWL2:
+                $this->draw(
+                    clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} card from the supply'), 
+                    1, 
+                    false, 
+                    MARKET, 
+                    $player_id
+                );
+                $clock = $this->getClock($player_id);
+                if ($clock == CLOCK_DAWN) {
+                    $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 3);
+                    $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} increases their hand size by 3 because it is ${clock}'), array(
+                        'resolving_card_name' => $this->getCardName($technique_card),
+                        'clock' => $clock,
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
