@@ -6695,6 +6695,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->validateOpponentId($opponent_id);
                 $card_id = $args["card_id"];
                 $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
+                $this->cards->moveCard($card_id, HAND.$opponent_id);
                 $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('${resolving_card_name}: ${player_name} gives a card to ${opponent_name}'), array(
                     "resolving_card_name" => $this->getCardName($technique_card),
                     "player_id" => $player_id,
