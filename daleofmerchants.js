@@ -8928,6 +8928,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_FORTUNATEUPGRADE:
                 case DaleCard_10.DaleCard.CT_GOLDENOPPORTUNITY:
                 case DaleCard_10.DaleCard.CT_ESSENTIALPURCHASE:
+                case DaleCard_10.DaleCard.CT_JUNGLEFOWL3:
                     if (this.myHand.count() == 1) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }

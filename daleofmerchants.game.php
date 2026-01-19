@@ -6781,8 +6781,14 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_JUNGLEFOWL1:
-                $nbr = $this->getClock($player_id) == CLOCK_DAWN ? 2 : 1;
-                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} card(s)'), $nbr);
+                //$nbr = $this->getClock($player_id) == CLOCK_DAWN ? 2 : 1;
+                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws 1 card'), 1);
+                $clock = $this->getClock($player_id);
+                if ($clock == CLOCK_DAWN) {
+                    $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws 1 more card, because it is ${clock}'),
+                        1, false, null, null, null, array("clock" => $clock)
+                    );
+                }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_JUNGLEFOWL2:
@@ -6796,11 +6802,21 @@ class DaleOfMerchants extends DaleTableBasic
                 $clock = $this->getClock($player_id);
                 if ($clock == CLOCK_DAWN) {
                     $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 3);
-                    $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} increases their hand size by 3 because it is ${clock}'), array(
+                    $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} increases their hand size by 3, because it is ${clock}'), array(
                         'resolving_card_name' => $this->getCardName($technique_card),
                         'clock' => $clock,
                         'player_name' => $this->getActivePlayerName()
                     ));
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_JUNGLEFOWL3:
+                $this->toss1FromHand($player_id, $technique_card, $args);
+                $clock = $this->getClock($player_id);
+                if ($clock == CLOCK_DAWN) {
+                    $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} card(s), because it is ${clock}'), 
+                        2, false, null, null, null, array("clock" => $clock)
+                    );
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
