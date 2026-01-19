@@ -6130,6 +6130,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('noneCantViewContent');
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ") + skink5b_args.card_name);
                     break;
+                case 'junglefowl5a':
+                    var junglefowl5a_args = args.args;
+                    this.myDiscard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", junglefowl5a_args.nbr);
+                    this.myDiscard.openPopin();
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6662,6 +6667,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     TargetingLine_1.TargetingLine.remove();
                     this.myDiscard.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
+                    break;
+                case 'junglefowl5a':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -8161,6 +8169,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_windOfChange':
                     this.resolveTechniqueCard({
+                        card_id: card.id
+                    });
+                    break;
+                case 'junglefowl5a':
+                    this.bgaPerformAction('actJunglefowl5a', {
                         card_id: card.id
                     });
                     break;

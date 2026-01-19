@@ -1344,6 +1344,11 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('noneCantViewContent');
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ")+skink5b_args.card_name);
 				break;
+			case 'junglefowl5a':
+				const junglefowl5a_args = args.args as { nbr: number };
+				this.myDiscard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", junglefowl5a_args.nbr);
+				this.myDiscard.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1872,6 +1877,9 @@ class DaleOfMerchants extends Gamegui
 				TargetingLine.remove();
 				this.myDiscard.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
+				break;
+			case 'junglefowl5a':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -3741,6 +3749,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_windOfChange':
 				this.resolveTechniqueCard<'client_windOfChange'>({
+					card_id: card!.id
+				})
+				break;
+			case 'junglefowl5a':
+				this.bgaPerformAction('actJunglefowl5a', {
 					card_id: card!.id
 				})
 				break;

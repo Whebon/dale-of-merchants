@@ -193,6 +193,7 @@ $machinestates = array(
 			'trInsightTake' => 111,
 			'trCapuchin4' => 112,
 			'trCapuchin5a' => 113,
+			'trJungleFowl5A' => 115,
 		),
 	),
 	31 => array(
@@ -958,6 +959,17 @@ $machinestates = array(
 		'possibleactions' => ['actSkink4'],
 		'transitions' => array(
 			'trSamePlayer' => 41,
+		),
+	),
+	115 => array(
+		'name' => 'junglefowl5a',
+		'description' => clienttranslate('INSERT_NAME: ${actplayer} must take a card from the top ${nbr} of their discard pile'),
+		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} must take a card from the top ${nbr} of your discard pile'),
+		'type' => 'activeplayer',
+		'args' => 'argJunglefowl5a',
+		'possibleactions' => ['actJunglefowl5a'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	6300 => array(

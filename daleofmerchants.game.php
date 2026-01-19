@@ -6819,6 +6819,21 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSpyglass");
                 break;
+            case CT_JUNGLEFOWL5A:
+                $this->cards->shuffle(DISCARD.$player_id);
+                $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
+                if (count($dbcards) == 0) {
+                    throw new BgaUserException("Invalid input: CT_JUNGLEFOWL5A should have fizzled as the discard pile is empty");
+                }
+                $this->notifyAllPlayers('shuffleDiscard', clienttranslate('${resolving_card_name}: ${player_name} shuffles their discard pile'), array(
+                    "resolving_card_name" => $this->getCardName($technique_card),
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "player_id" => $player_id,
+                    "discardPile" => $dbcards
+                ));
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trJungleFowl5A");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -9586,6 +9601,23 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actJunglefowl5a($card_id) {
+        $this->checkAction("actJunglefowl5a");
+        $player_id = $this->getActivePlayerId();
+        $nbr = $this->getClock($player_id) == CLOCK_DAWN ? 4 : 2;
+        $topCards = $this->toAssociativeArray($this->cards->getCardsOnTop($nbr, DISCARD.$player_id));
+        if (!isset($topCards[$card_id])) {
+            throw new BgaUserException("Card $card_id was not found within the top $nbr cards of the discard pile");
+        }
+        $dbcard = $topCards[$card_id];
+        $this->discardToHandMultiple(
+            clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from their discard pile'),
+            $player_id,
+            array($dbcard["id"])
+        );
+        $this->fullyResolveCard($player_id);
+    }
+
 
     // ^
     // |
@@ -9986,6 +10018,15 @@ class DaleOfMerchants extends DaleTableBasic
         return array(
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
+        );
+    }
+
+    function argJunglefowl5a() {
+        $player_id = $this->getActivePlayerId();
+        $discard_size = $this->cards->countCardsInLocation(DISCARD.$player_id);
+        $nbr = $this->getClock($player_id) == CLOCK_DAWN ? 4 : 2;
+        return array(
+            'nbr' => min($nbr, $discard_size),
         );
     }
 

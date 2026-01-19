@@ -219,6 +219,7 @@ interface GameStates {
 			'trInsightTake': 111,
 			'trCapuchin4': 112,
 			'trCapuchin5a': 113,
+			'trJungleFowl5A': 115,
 		},
 	},
 	31: {
@@ -1475,6 +1476,23 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 41,
+		},
+	},
+	115: {
+		'name': 'junglefowl5a',
+		'description': 'INSERT_NAME: ${actplayer} must take a card from the top ${nbr} of their discard pile',
+		'descriptionmyturn': 'INSERT_NAME: ${you} must take a card from the top ${nbr} of your discard pile',
+		'type': 'activeplayer',
+		'args': 'argJunglefowl5a',
+		'possibleactions': {
+			'actJunglefowl5a': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	6300: {
