@@ -8164,6 +8164,7 @@ class DaleOfMerchants extends Gamegui
 			return; //end of game => Mono shows hand. but if this was Mono's turn, then the hand was already being visible
 		}
 		this.mono_hand_is_visible = true;
+		this.market?.updateCostModificationHTML(); //For CT_SCARYGUNFIGHT
 		this.myLimbo.enableSortItems = false; //important: this is needed to enable the left-to-right ordering! (on Mono's turn)
 		this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Mono's hand"));
 		const sortedCards = this.sortCardsByLocationArg(cards, true);
@@ -8185,6 +8186,7 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.myLimbo.enableSortItems = true; //important: this is needed to disable the left-to-right ordering! (on the players turn)
 		this.mono_hand_is_visible = false;
+		this.market?.updateCostModificationHTML(); //For CT_SCARYGUNFIGHT
 		this.onLimboItemDelete(); //make sure to hide limbo now (limbo was forced open while mono_hand_is_visible == true)
 		const sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
 		if (this.myLimbo.count() > sortedCards.length) {

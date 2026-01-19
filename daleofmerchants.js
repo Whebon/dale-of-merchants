@@ -1196,7 +1196,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 if (effect.effect_class == DaleCard.EC_GLOBAL) {
                     switch (effect.type_id) {
                         case DaleCard.CT_SCARYGUNFIGHT:
-                            if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id) != effect.arg) {
+                            if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id) != effect.arg || (this.page.mono_hand_is_visible)) {
                                 cost += 2;
                             }
                             break;
@@ -12032,6 +12032,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.monoShowHand(notif.args.cards);
         };
         DaleOfMerchants.prototype.monoShowHand = function (cards) {
+            var _a;
             if (!this.is_solo || !this.unique_opponent_id) {
                 throw new Error("notif_monoShowHand can only be called in a solo game with unique_opponent_id defined");
             }
@@ -12039,6 +12040,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 return;
             }
             this.mono_hand_is_visible = true;
+            (_a = this.market) === null || _a === void 0 ? void 0 : _a.updateCostModificationHTML();
             this.myLimbo.enableSortItems = false;
             this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Mono's hand"));
             var sortedCards = this.sortCardsByLocationArg(cards, true);
@@ -12052,12 +12054,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.notif_monoHideHand(notif);
         };
         DaleOfMerchants.prototype.notif_monoHideHand = function (notif) {
+            var _a;
             console.warn("notif_monoHideHand", notif.args);
             if (!this.is_solo || !this.unique_opponent_id) {
                 throw new Error("notif_monoHideHand can only be called in a solo game with unique_opponent_id defined");
             }
             this.myLimbo.enableSortItems = true;
             this.mono_hand_is_visible = false;
+            (_a = this.market) === null || _a === void 0 ? void 0 : _a.updateCostModificationHTML();
             this.onLimboItemDelete();
             var sortedCards = this.sortCardsByLocationArg(notif.args.cards, true);
             if (this.myLimbo.count() > sortedCards.length) {

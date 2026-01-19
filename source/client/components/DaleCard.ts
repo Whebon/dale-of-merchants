@@ -667,7 +667,7 @@ export class DaleCard {
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
                 switch(effect.type_id) {
                     case DaleCard.CT_SCARYGUNFIGHT:
-                        if (DaleCard.page?.player_id != effect.arg) {
+                        if (DaleCard.page?.player_id != effect.arg || ((this.page as any).mono_hand_is_visible)) {
                             cost += 2;
                         }
                         break;
