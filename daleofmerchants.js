@@ -183,7 +183,8 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getTastersIcon = function () {
             return this.getIcon(5, 5);
         };
-        DaleIcons.getCostModificationIcon = function (index) {
+        DaleIcons.getCostModificationIcon = function (market_position) {
+            var index = market_position - 1;
             if (index >= 4) {
                 throw new Error("CostModificationIcon " + index + " does not exist");
             }
@@ -1049,6 +1050,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                         console.warn("WARNING: skipped a global effect of type ".concat(effect.type_id, " applying to an unknown card ").concat(effect.card_id));
                     }
                 }
+                this.page.market.updateCostModificationHTML();
             }
             else {
                 try {
@@ -1107,6 +1109,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             affected_card_ids.forEach(function (card_id) {
                 DaleCard.updateHTML(card_id);
             });
+            this.page.market.updateCostModificationHTML();
         };
         DaleCard.updateEffect = function (effect) {
             switch (effect.type_id) {
@@ -1185,37 +1188,33 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(DaleCard.prototype, "effective_cost", {
-            get: function () {
-                var _a, _b, _c;
-                var cost = this.original_value;
-                for (var _i = 0, _d = DaleCard.effects; _i < _d.length; _i++) {
-                    var effect = _d[_i];
-                    if (effect.effect_class == DaleCard.EC_GLOBAL) {
-                        switch (effect.type_id) {
-                            case DaleCard.CT_SCARYGUNFIGHT:
-                                if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id) != effect.arg) {
-                                    cost += 2;
-                                }
-                                break;
-                            case DaleCard.CT_ESSENTIALPURCHASE:
-                                if (((_b = DaleCard.page) === null || _b === void 0 ? void 0 : _b.player_id) == effect.arg) {
-                                    cost -= 2;
-                                }
-                                break;
-                            case DaleCard.CT_EXCLUSIVECONTACTS:
-                                if (((_c = DaleCard.page) === null || _c === void 0 ? void 0 : _c.player_id) == effect.arg) {
-                                    cost += 2;
-                                }
-                                break;
-                        }
+        DaleCard.getCostModification = function (market_position) {
+            var _a, _b, _c;
+            var cost = market_position;
+            for (var _i = 0, _d = DaleCard.effects; _i < _d.length; _i++) {
+                var effect = _d[_i];
+                if (effect.effect_class == DaleCard.EC_GLOBAL) {
+                    switch (effect.type_id) {
+                        case DaleCard.CT_SCARYGUNFIGHT:
+                            if (((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id) != effect.arg) {
+                                cost += 2;
+                            }
+                            break;
+                        case DaleCard.CT_ESSENTIALPURCHASE:
+                            if (((_b = DaleCard.page) === null || _b === void 0 ? void 0 : _b.player_id) == effect.arg) {
+                                cost -= 2;
+                            }
+                            break;
+                        case DaleCard.CT_EXCLUSIVECONTACTS:
+                            if (((_c = DaleCard.page) === null || _c === void 0 ? void 0 : _c.player_id) == effect.arg) {
+                                cost += 2;
+                            }
+                            break;
                     }
                 }
-                return cost;
-            },
-            enumerable: false,
-            configurable: true
-        });
+            }
+            return cost;
+        };
         DaleCard.prototype.isChameleon = function () {
             var type_id = this.effective_type_id;
             return (type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
@@ -1250,7 +1249,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             configurable: true
         });
         DaleCard.prototype.getCost = function (pos) {
-            return Math.max(0, this.effective_cost + pos);
+            return Math.max(0, this.original_value + DaleCard.getCostModification(pos));
         };
         Object.defineProperty(DaleCard.prototype, "trigger", {
             get: function () {
@@ -1524,10 +1523,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
             var _a, _b;
             var value = this.original_value;
-            if (card_div.dataset['location'] == 'market') {
-                value = this.effective_cost;
-            }
-            else if ((DaleCard.page.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
+            if ((DaleCard.page.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
                 (card_div.dataset['location'] == 'moving') ||
                 ((DaleCard.page.mono_hand_is_visible && card_div.id.includes("limbo")))) {
                 value = this.effective_value;
@@ -3208,9 +3204,11 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
     var MarketBoard = (function () {
         function MarketBoard(page) {
             this.MAX_SIZE = 5;
+            this.previousEffectiveCosts = [];
             this.page = page;
             $("daleofmerchants-market-board-background").setAttribute("style", "\n            width: ".concat(Images_5.Images.MARKET_WIDTH_S - Images_5.Images.MARKET_PADDING_LEFT_S - Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n            height: ").concat(Images_5.Images.MARKET_HEIGHT_S - Images_5.Images.MARKET_PADDING_TOP_S - Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-top: ").concat(Images_5.Images.MARKET_PADDING_TOP_S, "px;\n\t\t\tpadding-left: ").concat(Images_5.Images.MARKET_PADDING_LEFT_S, "px;\n            padding-bottom: ").concat(Images_5.Images.MARKET_PADDING_BOTTOM_S, "px;\n\t\t\tpadding-right: ").concat(Images_5.Images.MARKET_PADDING_RIGHT_S, "px;\n\t\t"));
             this.container = $("daleofmerchants-market-board-background").querySelector("#daleofmerchants-market-board");
+            this.stackContainers = [];
             this.slots = [];
             for (var pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
                 var stackContainer = document.createElement("div");
@@ -3224,18 +3222,63 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                 var slotDiv = Images_5.Images.getPlaceholder();
                 slotDiv.classList.add("daleofmerchants-placeholder-market");
                 stackContainer.appendChild(slotDiv);
-                if (pos > 0) {
-                    stackContainer.appendChild(DaleIcons_5.DaleIcons.getCostModificationIcon(pos - 1));
-                }
                 this.container.appendChild(stackContainer);
+                this.stackContainers.unshift(stackContainer);
                 this.slots.unshift(new CardSlot_1.CardSlot(this, pos, slotDiv));
             }
             this.orderedSelection = new DaleCard_4.OrderedSelection();
             this.selectionMode = 0;
+            this.updateCostModificationHTML();
             var thiz = this;
             addEventListener("resize", function () { return setTimeout(function () { return thiz.onResize(); }, 1); });
-            this.onResize();
         }
+        MarketBoard.prototype.updateCostModificationHTML = function () {
+            var _a, _b, _c;
+            var pos = 0;
+            var anythingChanged = false;
+            for (var _i = 0, _d = this.stackContainers; _i < _d.length; _i++) {
+                var stackContainer = _d[_i];
+                var originalCostModification = pos;
+                var effectiveCostModification = DaleCard_4.DaleCard.getCostModification(pos);
+                if (this.previousEffectiveCosts[pos] != effectiveCostModification) {
+                    this.previousEffectiveCosts[pos] = effectiveCostModification;
+                    anythingChanged = true;
+                }
+                else {
+                    continue;
+                }
+                if (effectiveCostModification == originalCostModification) {
+                    (_a = stackContainer.querySelector(".daleofmerchants-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
+                    if (effectiveCostModification != 0 && !stackContainer.querySelector(".daleofmerchants-icon")) {
+                        stackContainer.appendChild(DaleIcons_5.DaleIcons.getCostModificationIcon(effectiveCostModification));
+                    }
+                }
+                else {
+                    (_b = stackContainer.querySelector(".daleofmerchants-icon")) === null || _b === void 0 ? void 0 : _b.remove();
+                    var value_div = (_c = stackContainer.querySelector(".daleofmerchants-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
+                    value_div.classList.add("daleofmerchants-effective-value");
+                    stackContainer.appendChild(value_div);
+                    if (effectiveCostModification >= 0) {
+                        value_div.innerHTML = "+".concat(effectiveCostModification);
+                    }
+                    else {
+                        value_div.innerHTML = "".concat(effectiveCostModification);
+                    }
+                    if (effectiveCostModification > originalCostModification) {
+                        value_div.classList.add("daleofmerchants-effective-value-high");
+                        value_div.classList.remove("daleofmerchants-effective-value-low");
+                    }
+                    else {
+                        value_div.classList.remove("daleofmerchants-effective-value-high");
+                        value_div.classList.add("daleofmerchants-effective-value-low");
+                    }
+                }
+                pos += 1;
+            }
+            if (anythingChanged) {
+                this.onResize();
+            }
+        };
         Object.defineProperty(MarketBoard.prototype, "size", {
             get: function () {
                 var nbr = 0;
@@ -3488,7 +3531,7 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             }
         };
         MarketBoard.prototype.onResize = function () {
-            var _a, _b, _c, _d;
+            var _a, _b, _c, _d, _e, _f;
             var totalWidth = this.container.getBoundingClientRect().width;
             if (totalWidth < (1 + Images_5.Images.STACK_MIN_MARGIN_X) * Images_5.Images.CARD_WIDTH_S * this.MAX_SIZE) {
                 for (var i = 1; i < this.slots.length; i++) {
@@ -3502,10 +3545,14 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             }
             var overlap = Math.max(0, Images_5.Images.CARD_WIDTH_S - totalWidth / this.MAX_SIZE);
             var left = Math.round((Images_5.Images.CARD_WIDTH_S - overlap) / 2) + 'px';
-            for (var pos = 1; pos < this.MAX_SIZE; pos++) {
+            for (var pos = 0; pos < this.MAX_SIZE; pos++) {
                 var icon = (_d = (_c = this.slots[pos]) === null || _c === void 0 ? void 0 : _c.container.parentElement) === null || _d === void 0 ? void 0 : _d.querySelector(".daleofmerchants-icon");
+                var override = (_f = (_e = this.slots[pos]) === null || _e === void 0 ? void 0 : _e.container.parentElement) === null || _f === void 0 ? void 0 : _f.querySelector(".daleofmerchants-effective-value");
                 if (icon) {
                     dojo.setStyle(icon, 'left', left);
+                }
+                if (override) {
+                    dojo.setStyle(override, 'left', left);
                 }
             }
         };

@@ -318,16 +318,17 @@
 	display: none; //by default, text is hidden
 }
 
-.daleofmerchants-card[data-location="market"] {
-	.daleofmerchants-effective-value {
-		&.daleofmerchants-effective-value-high {
-			color: lightcoral; // = expensive
-		}
-		&.daleofmerchants-effective-value-low {
-			color: lightgreen; // = cheap
-		}
-	}
-}
+// TODO: safely remove this (effective values are now on the modification, not on the card)
+// .daleofmerchants-card[data-location="market"] {
+// 	.daleofmerchants-effective-value {
+// 		&.daleofmerchants-effective-value-high {
+// 			color: lightcoral; // = expensive
+// 		}
+// 		&.daleofmerchants-effective-value-low {
+// 			color: lightgreen; // = cheap
+// 		}
+// 	}
+// }
 
 .daleofmerchants-effective-value {
 	height: 20px;
@@ -588,6 +589,21 @@
 		width: 40px;
 		height: 40px;
 		z-index: 0;
+	}
+
+	//override modification icon with textual effective value
+	.daleofmerchants-stack-container>.daleofmerchants-effective-value {
+		top: -29px;
+		font-size: xx-large;
+		width: 0px;
+		pointer-events: none;
+		z-index: 0;
+		&.daleofmerchants-effective-value-high {
+			color: lightcoral; // = expensive
+		}
+		&.daleofmerchants-effective-value-low {
+			color: lightgreen; // = cheap
+		}
 	}
 
 	//align Supply and Bin with the market slots

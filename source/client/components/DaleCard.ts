@@ -431,6 +431,7 @@ export class DaleCard {
                     console.warn(`WARNING: skipped a global effect of type ${effect.type_id} applying to an unknown card ${effect.card_id}`)
                 }
             }
+            (this.page! as any).market.updateCostModificationHTML();
         }
         else {
             try {
@@ -492,6 +493,7 @@ export class DaleCard {
         affected_card_ids.forEach(card_id => {
             DaleCard.updateHTML(card_id);
         });
+        (this.page! as any).market.updateCostModificationHTML();
     }
 
     /**
@@ -655,11 +657,12 @@ export class DaleCard {
         return value;
     }
 
-    /** 
-     * Returns the effective cost of this (market) card (after applying effects)
-     * */
-    public get effective_cost(): number {
-        let cost = this.original_value;
+    /**
+     * @param market_position position in the market. Without any effect, the additional cost is equal to the position.
+     * @returns additional cost for a market card in the given position, taking into account ongoing effects
+     */
+    public static getCostModification(market_position: number): number {
+        let cost = market_position;
         for (let effect of DaleCard.effects) {
             if (effect.effect_class == DaleCard.EC_GLOBAL) {
                 switch(effect.type_id) {
@@ -683,6 +686,36 @@ export class DaleCard {
         }
         return cost;
     }
+
+    // TODO: safely remove this
+    // /** 
+    //  * Returns the effective cost of this (market) card (after applying effects)
+    //  * */
+    // public get effective_cost(): number {
+    //     let cost = this.original_value;
+    //     for (let effect of DaleCard.effects) {
+    //         if (effect.effect_class == DaleCard.EC_GLOBAL) {
+    //             switch(effect.type_id) {
+    //                 case DaleCard.CT_SCARYGUNFIGHT:
+    //                     if (DaleCard.page?.player_id != effect.arg) {
+    //                         cost += 2;
+    //                     }
+    //                     break;
+    //                 case DaleCard.CT_ESSENTIALPURCHASE:
+    //                     if (DaleCard.page?.player_id == effect.arg) {
+    //                         cost -= 2;
+    //                     }
+    //                     break;
+    //                 case DaleCard.CT_EXCLUSIVECONTACTS:
+    //                     if (DaleCard.page?.player_id == effect.arg) {
+    //                         cost += 2;
+    //                     }
+    //                     break;
+    //             }
+    //         }
+    //     }
+    //     return cost;
+    // }
 
     ///////////////////////////////////////////////////////
     //////////        Chameleon functions        //////////
@@ -846,7 +879,7 @@ export class DaleCard {
      * @param pos
      */
     public getCost(pos: number) {
-        return Math.max(0, this.effective_cost + pos);
+        return Math.max(0, this.original_value + DaleCard.getCostModification(pos));
     }
 
     public get trigger(): DaleTrigger {
@@ -1169,10 +1202,11 @@ export class DaleCard {
 
     private updateEffectiveValue(card_div: HTMLElement) {
         let value = this.original_value;
-        if (card_div.dataset['location'] == 'market') {
-            value = this.effective_cost;
-        }
-        else if (
+        // Never show any effective value on a card in the market, this is shown by the MarketBoard instead
+        // if (card_div.dataset['location'] == 'market') {
+        //     value = this.effective_cost;
+        // }
+        if (
             (DaleCard.page!.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
             (card_div.dataset['location'] == 'moving') ||
             (((DaleCard.page as any)!.mono_hand_is_visible && card_div.id.includes("limbo")))

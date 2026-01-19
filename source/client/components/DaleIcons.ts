@@ -122,7 +122,8 @@ export class DaleIcons {
     ////////    ROW 6    ////////
     /////////////////////////////
 
-    public static getCostModificationIcon(index: number): HTMLElement {
+    public static getCostModificationIcon(market_position: number): HTMLElement {
+        const index = market_position - 1;
         if (index >= 4) {
             throw new Error("CostModificationIcon "+index+" does not exist");
         }

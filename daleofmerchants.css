@@ -439,6 +439,19 @@
   height: 40px;
   z-index: 0;
 }
+#daleofmerchants-market-wrap .daleofmerchants-stack-container > .daleofmerchants-effective-value {
+  top: -29px;
+  font-size: xx-large;
+  width: 0px;
+  pointer-events: none;
+  z-index: 0;
+}
+#daleofmerchants-market-wrap .daleofmerchants-stack-container > .daleofmerchants-effective-value.daleofmerchants-effective-value-high {
+  color: lightcoral;
+}
+#daleofmerchants-market-wrap .daleofmerchants-stack-container > .daleofmerchants-effective-value.daleofmerchants-effective-value-low {
+  color: lightgreen;
+}
 #daleofmerchants-market-wrap .daleofmerchants-pile-container {
   padding-bottom: 11px;
 }

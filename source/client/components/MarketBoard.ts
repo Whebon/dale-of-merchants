@@ -18,6 +18,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
 
     public page: Gamegui;
     private container: HTMLElement;
+    private stackContainers: HTMLElement[];
     private slots: CardSlot[];
     private selectionMode: 0 | 1 | 2;
     public orderedSelection: OrderedSelection;
@@ -37,6 +38,7 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         this.container = $("daleofmerchants-market-board-background").querySelector("#daleofmerchants-market-board")!;
 
         //card containers
+        this.stackContainers = []
         this.slots = []
         for (let pos = this.MAX_SIZE - 1; pos >= 0; pos--) {
             const stackContainer = document.createElement("div");
@@ -52,10 +54,12 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
             const slotDiv = Images.getPlaceholder();
             slotDiv.classList.add("daleofmerchants-placeholder-market");
             stackContainer.appendChild(slotDiv);
-            if (pos > 0) {
-                stackContainer.appendChild(DaleIcons.getCostModificationIcon(pos-1));
-            }
+            // TODO: safely remove this
+            // if (pos > 0) {
+            //     stackContainer.appendChild(DaleIcons.getCostModificationIcon(pos-1));
+            // }
             this.container.appendChild(stackContainer);
+            this.stackContainers.unshift(stackContainer)
             this.slots.unshift(new CardSlot(this, pos, slotDiv));
         }
 
@@ -63,10 +67,66 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         this.orderedSelection = new OrderedSelection();
         this.selectionMode = 0;
 
+        // show the cost modification labels
+        this.updateCostModificationHTML();
+
         //copied from Stall.ts
         const thiz = this
         addEventListener("resize", () => setTimeout(() => thiz.onResize(), 1));
-        this.onResize();
+        //this.onResize(); //called by updateCostModificationHTML already
+    }
+
+    private previousEffectiveCosts: number[] = [];
+
+    public updateCostModificationHTML() {
+        let pos = 0;
+        let anythingChanged = false;
+        for (const stackContainer of this.stackContainers) {
+            const originalCostModification = pos;
+            const effectiveCostModification = DaleCard.getCostModification(pos);
+
+            //Optimization: keep track of previousEffectiveCosts and anythingChanged
+            if (this.previousEffectiveCosts[pos] != effectiveCostModification) {
+                this.previousEffectiveCosts[pos] = effectiveCostModification
+                anythingChanged = true;
+            }
+            else {
+                continue;
+            }
+
+            if (effectiveCostModification == originalCostModification) {
+                // Show icon
+                stackContainer.querySelector(".daleofmerchants-effective-value")?.remove();
+                if (effectiveCostModification != 0 && !stackContainer.querySelector(".daleofmerchants-icon")) {
+                    stackContainer.appendChild(DaleIcons.getCostModificationIcon(effectiveCostModification));
+                }
+            }
+            else {
+                // Show override
+                stackContainer.querySelector(".daleofmerchants-icon")?.remove();
+                const value_div = stackContainer.querySelector(".daleofmerchants-effective-value") ?? document.createElement('div');
+                value_div.classList.add("daleofmerchants-effective-value");
+                stackContainer.appendChild(value_div);
+                if (effectiveCostModification >= 0) {
+                    value_div.innerHTML = `+${effectiveCostModification}`;
+                }
+                else {
+                    value_div.innerHTML = `${effectiveCostModification}`;
+                }
+                if (effectiveCostModification > originalCostModification) {
+                    value_div.classList.add("daleofmerchants-effective-value-high");
+                    value_div.classList.remove("daleofmerchants-effective-value-low");
+                }
+                else {
+                    value_div.classList.remove("daleofmerchants-effective-value-high");
+                    value_div.classList.add("daleofmerchants-effective-value-low");
+                }
+            }
+            pos += 1;
+        }
+        if (anythingChanged) {
+            this.onResize();
+        }
     }
 
     /**
@@ -431,10 +491,14 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
         //center the cost modification icons
         const overlap = Math.max(0, Images.CARD_WIDTH_S - totalWidth/this.MAX_SIZE);
         const left = Math.round((Images.CARD_WIDTH_S-overlap)/2)+'px';
-        for (let pos = 1; pos < this.MAX_SIZE; pos++) {
+        for (let pos = 0; pos < this.MAX_SIZE; pos++) {
             const icon = this.slots[pos]?.container.parentElement?.querySelector(".daleofmerchants-icon");
+            const override = this.slots[pos]?.container.parentElement?.querySelector(".daleofmerchants-effective-value");
             if (icon) {
                 dojo.setStyle(icon, 'left', left);
+            }
+            if (override) {
+                dojo.setStyle(override, 'left', left);
             }
         }
     }

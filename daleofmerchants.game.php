@@ -6212,6 +6212,9 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_EXCLUSIVECONTACTS:
                 $this->effects->insertGlobal($technique_card_id, CT_EXCLUSIVECONTACTS, $player_id);
                 $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 2);
+                $this->notifyAllPlayers('message', clienttranslate('Exclusive Contacts: ${player_name} increases the cost of cards in the market by 2'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id)
+                ));
                 $this->notifyAllPlayers('message', clienttranslate('Exclusive Contacts: ${player_name} increases their hand size by 2'), array(
                     'player_name' => $this->getActivePlayerName()
                 ));
@@ -6633,6 +6636,9 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_ESSENTIALPURCHASE:
                 $this->toss1FromHand($player_id, $technique_card, $args);
                 $this->effects->insertGlobal(0, CT_ESSENTIALPURCHASE, $player_id);
+                $this->notifyAllPlayers('message', clienttranslate('Essential Purchase: ${player_name} decreases the cost of cards in the market by 2'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id)
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_RIGOROUSCHRONICLER:
