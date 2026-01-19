@@ -659,8 +659,12 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
 				break;
 			case 'spyglass':
-				this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique',
-					this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons.getSpyglassIcon(), DaleIcons.getBluePileIcon(0))
+				const spyglass_args = args.args as { resolving_card: DbCard };
+				const spyglass_type_id = DaleCard.of(spyglass_args.resolving_card).effective_type_id;
+				const spyglass_iconType = spyglass_type_id == DaleCard.CT_JUNGLEFOWL4 ? 'junglefowl4' : 'spyglass'
+				const spyglass_icon = spyglass_type_id == DaleCard.CT_JUNGLEFOWL4 ? DaleIcons.getJunglefowl4Icon() : DaleIcons.getSpyglassIcon()
+				this.myLimbo.setSelectionMode('multiple', spyglass_iconType, 'daleofmerchants-wrap-technique',
+					this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), spyglass_icon, DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'historyLesson':

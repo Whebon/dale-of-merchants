@@ -268,6 +268,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getCapuchin5aIcon = function () {
             return this.getPompousProfessionalIcon();
         };
+        DaleIcons.getJunglefowl4Icon = function () {
+            return this.getSpyglassIcon();
+        };
         DaleIcons.ROWS = 12;
         DaleIcons.COLUMNS = 6;
         DaleIcons.ICON_WIDTH = 150;
@@ -645,6 +648,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'spyglass':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getSpyglassIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'junglefowl4':
+                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getJunglefowl4Icon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
                 case 'tasters':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getTastersIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
@@ -5531,7 +5537,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
                     break;
                 case 'spyglass':
-                    this.myLimbo.setSelectionMode('multiple', 'spyglass', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), DaleIcons_10.DaleIcons.getSpyglassIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
+                    var spyglass_args = args.args;
+                    var spyglass_type_id = DaleCard_10.DaleCard.of(spyglass_args.resolving_card).effective_type_id;
+                    var spyglass_iconType = spyglass_type_id == DaleCard_10.DaleCard.CT_JUNGLEFOWL4 ? 'junglefowl4' : 'spyglass';
+                    var spyglass_icon = spyglass_type_id == DaleCard_10.DaleCard.CT_JUNGLEFOWL4 ? DaleIcons_10.DaleIcons.getJunglefowl4Icon() : DaleIcons_10.DaleIcons.getSpyglassIcon();
+                    this.myLimbo.setSelectionMode('multiple', spyglass_iconType, 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), spyglass_icon, DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     break;
                 case 'historyLesson':
                     this.myLimbo.setSelectionMode('multiple', 'historyLesson', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getHistoryLessonIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));

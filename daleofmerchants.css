@@ -234,13 +234,6 @@
   display: none;
 }
 
-.daleofmerchants-card[data-location=market] .daleofmerchants-effective-value.daleofmerchants-effective-value-high {
-  color: lightcoral;
-}
-.daleofmerchants-card[data-location=market] .daleofmerchants-effective-value.daleofmerchants-effective-value-low {
-  color: lightgreen;
-}
-
 .daleofmerchants-effective-value {
   height: 20px;
   width: 20px;

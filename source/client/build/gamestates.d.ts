@@ -357,10 +357,11 @@ interface GameStates {
 	},
 	52: {
 		'name': 'spyglass',
-		'description': 'Spyglass: ${actplayer} must choose 1 card to take and reorder the rest',
-		'descriptionmyturn': 'Spyglass: ${you} must choose 1 card to take and reorder the rest',
+		'description': '${resolving_card_name}: ${actplayer} must choose 1 card to take and reorder the rest',
+		'descriptionmyturn': '${resolving_card_name}: ${you} must choose 1 card to take and reorder the rest',
 		'type': 'activeplayer',
 		'action': 'stSpyglass',
+		'args': 'argResolvingCardName',
 		'possibleactions': {
 			'actSpyglass': [{
 				'name': 'card_ids',

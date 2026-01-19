@@ -259,4 +259,8 @@ export class DaleIcons {
     public static getCapuchin5aIcon(): HTMLElement {
         return this.getPompousProfessionalIcon();
     }
+
+    public static getJunglefowl4Icon(): HTMLElement {
+        return this.getSpyglassIcon();
+    }
 }

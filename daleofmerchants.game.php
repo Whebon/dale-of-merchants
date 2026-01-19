@@ -4094,13 +4094,8 @@ class DaleOfMerchants extends DaleTableBasic
     /**
      * Returns the effective name of the card that is currently being resolved
      */
-    function getCurrentResolvingCardName() {
-        $technique_card_id = $this->getGameStateValue("resolvingCard");
-        $technique_card = $this->cards->getCard($technique_card_id);
-        if ($technique_card_id == -1) {
-            throw new Error("Trying to 'getCurrentResolvingCardName' without 'beginResolvingCard'");
-        }
-        return $this->getCardName($technique_card);
+    function getResolvingCardName() {
+        return $this->getCardName($this->getResolvingCard());
     }
 
     /**
@@ -6820,6 +6815,10 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_JUNGLEFOWL4:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trSpyglass");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -7660,7 +7659,8 @@ class DaleOfMerchants extends DaleTableBasic
 
         //1. place the selected card into the hand
         $this->cards->moveCard($draw_card_id, HAND.$player_id);
-        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Spyglass: ${player_name} places 1 card into their hand'), array(
+        $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('${resolving_card_name}: ${player_name} places 1 card into their hand'), array(
+            "resolving_card_name" => $this->getResolvingCardName(),
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
             "_private" => array(
@@ -7671,11 +7671,12 @@ class DaleOfMerchants extends DaleTableBasic
         //2. place the rest on top of the deck
         $this->placeOnDeckMultiple(
             $player_id, 
-            clienttranslate('Spyglass: ${player_name} places ${nbr} cards on top of their deck'),
+            clienttranslate('${resolving_card_name}: ${player_name} places ${nbr} cards on top of their deck'),
             $card_ids, 
             $selected_cards, 
             $non_selected_cards,
-            true
+            true,
+            array("resolving_card_name" => $this->getResolvingCardName())
         );
 
         $this->fullyResolveCard($player_id);
@@ -7729,7 +7730,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actSpecialOffer");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
-        $resolving_card_name = $this->getCurrentResolvingCardName();
+        $resolving_card_name = $this->getResolvingCardName();
 
         //get the card to draw (first card from the card_ids array)
         if (count($card_ids) == 0) {
@@ -8066,7 +8067,7 @@ class DaleOfMerchants extends DaleTableBasic
         $card_ids = $this->numberListToArray($card_ids);
         $player_ids = $this->numberListToArray($player_ids);
         $player_id = $this->getActivePlayerId();
-        $resolving_card_name = $this->getCurrentResolvingCardName();
+        $resolving_card_name = $this->getResolvingCardName();
         if (count($card_ids) != count($player_ids)) {
             throw new BgaVisibleSystemException($resolving_card_name.": count(card_ids) != count(player_ids)");
         }
@@ -8803,7 +8804,7 @@ class DaleOfMerchants extends DaleTableBasic
         $deck_card_ids = $this->numberListToArray($deck_card_ids);
         $deck_cards = array();
         $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
-        $resolving_card_name = $this->getCurrentResolvingCardName();
+        $resolving_card_name = $this->getResolvingCardName();
 
         //get the card to discard
         if (!isset($non_selected_cards[$discard_card_id])) {
@@ -8997,7 +8998,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actBadOmen");
         $player_id = $this->getActivePlayerId();
         $deck_card_ids = $this->numberListToArray($deck_card_ids);
-        $resolving_card_name = $this->getCurrentResolvingCardName();
+        $resolving_card_name = $this->getResolvingCardName();
 
         //toss a card
         if ($toss_card_id != -1) {
@@ -9503,7 +9504,7 @@ class DaleOfMerchants extends DaleTableBasic
             $msg_private = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s ${card_name}');
             $this->cards->moveCard($card_id, HAND.$player_id);
             $this->notifyAllPlayersWithPrivateArguments('limboToHand', $msg, array(
-                "resolving_card_name" => $this->getCurrentResolvingCardName(),
+                "resolving_card_name" => $this->getResolvingCardName(),
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
@@ -9519,7 +9520,7 @@ class DaleOfMerchants extends DaleTableBasic
             $msg_private = clienttranslate('${resolving_card_name}: ${player_name} does not take ${opponent_name}\'s ${card_name}');
             $this->cards->moveCard($card_id, HAND.$opponent_id);
             $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', $msg, array(
-                "resolving_card_name" => $this->getCurrentResolvingCardName(),
+                "resolving_card_name" => $this->getResolvingCardName(),
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "opponent_id" => $opponent_id,
@@ -9964,9 +9965,10 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function argResolvingCardName() {
-        $resolving_card_name = $this->getCurrentResolvingCardName();
+        $resolving_card = $this->getResolvingCard();
         return array(
-            'resolving_card_name' => $resolving_card_name
+            'resolving_card' => $resolving_card,
+            'resolving_card_name' => $this->getCardName($resolving_card)
         );
     }
 
@@ -10241,15 +10243,34 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stSpyglass() {
         //Drawing to limbo happens in an "st" to ensure limbo is created after the state has been entered. Otherwise it flickers "Your Limbo"
-        $dbcards = $this->draw(clienttranslate('Spyglass: ${player_name} draws 3 cards'), 3, true);
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->getResolvingCard();
+        $type_id = (int)$this->getTypeId($dbcard);
+        $msg_args = array("resolving_card_name" => $this->getCardName($dbcard));
+        $msg = clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} card(s)');
+        switch ($type_id) {
+            case CT_SPYGLASS:
+                $dbcards = $this->draw($msg, 3, true, null, null, null, $msg_args);
+                break;
+            case CT_JUNGLEFOWL4:
+                //stJungleFowl4
+                $dbcards = $this->draw($msg, 2, true, null, null, null, $msg_args);
+                $clock = $this->getClock($player_id);
+                if ($clock == CLOCK_DAWN) {
+                    $msg_args["clock"] = $clock;
+                    $msg = clienttranslate('${resolving_card_name}: ${player_name} draws ${nbr} more card(s), because it is ${clock}');
+                    $this->draw($msg, 2, true, null, null, null, $msg_args); //bonus draws, does not count toward the fizzle check
+                }
+                break;
+        }
         if (count($dbcards) == 0) {
-            //skyglass has no effect
+            //skyglass has no effect (fizzle)
             $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 
     function stHistoryLesson() {
-        $dbcards = $this->draw(clienttranslate('History Lesson: ${player_name} draws 3 cards'), 3, true);
+        $dbcards = $this->draw(clienttranslate('History Lesson: ${player_name} draws ${nbr} cards'), 3, true);
         if (count($dbcards) == 0) {
             //history lesson has no effect
             $this->fullyResolveCard($this->getActivePlayerId());
@@ -10747,7 +10768,7 @@ class DaleOfMerchants extends DaleTableBasic
         $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$opponent_id);
         $this->cards->moveCard($dbcard["id"], LIMBO.$player_id);
         $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('${resolving_card_name}: ${player_name} looks at a card from ${opponent_name}'), array(
-            "resolving_card_name" => $this->getCurrentResolvingCardName(),
+            "resolving_card_name" => $this->getResolvingCardName(),
             "player_id" => $player_id,
             "opponent_id" => $opponent_id,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
@@ -11294,8 +11315,11 @@ class DaleOfMerchants extends DaleTableBasic
      * Information about the card that is currently being resolving
      */
     function getResolvingCard(){
-        $resolvingCard = $this->getGameStateValue("resolvingCard");
-        return $this->cards->getCard($resolvingCard);
+        $technique_card_id = $this->getGameStateValue("resolvingCard");
+        if ($technique_card_id == -1) {
+            throw new Error("Trying to 'getResolvingCard' without 'beginResolvingCard'");
+        }
+        return $this->cards->getCard($technique_card_id);
     }
 
     /**
