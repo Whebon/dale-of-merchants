@@ -9575,24 +9575,30 @@ class DaleOfMerchants extends DaleTableBasic
         $card_id = $dbcard["id"];
         if ($is_taking_card) {
             // Take the card
-            $msg = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s card');
-            $msg_private = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s ${card_name}');
             $this->cards->moveCard($card_id, HAND.$player_id);
-            $this->notifyAllPlayersWithPrivateArguments('limboToHand', $msg, array(
-                "resolving_card_name" => $this->getResolvingCardName(),
+            $msg = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s card');
+            $private_msg = clienttranslate('${resolving_card_name}: ${player_name} takes ${opponent_name}\'s ${card_name}');
+            $this->notifyAllPlayersWithPrivateArguments('privateMessage', $msg, array(
                 "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "resolving_card_name" => $this->getResolvingCardName(),
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                 "_private" => array(
-                    "card" => $dbcard,
                     "card_name" => $this->getCardName($dbcard)
                 )
-            ), $msg_private);
+            ), $private_msg);
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', '', array(
+                "player_id" => $player_id, //important: do not send the $opponent_id here, otherwise their client tries to execute the limboToHand
+                "_private" => array(
+                    "card" => $dbcard,
+                )
+            ));
         }
         else {
             // Return the card to the opponent
             $msg = clienttranslate('${resolving_card_name}: ${player_name} does not take ${opponent_name}\'s card');
-            $msg_private = clienttranslate('${resolving_card_name}: ${player_name} does not take ${opponent_name}\'s ${card_name}');
+            $private_msg = clienttranslate('${resolving_card_name}: ${player_name} does not take ${opponent_name}\'s ${card_name}');
             $this->cards->moveCard($card_id, HAND.$opponent_id);
             $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', $msg, array(
                 "resolving_card_name" => $this->getResolvingCardName(),
@@ -9605,7 +9611,7 @@ class DaleOfMerchants extends DaleTableBasic
                     "card" => $dbcard,
                     "card_name" => $this->getCardName($dbcard)
                 )
-            ), $msg_private);
+            ), $private_msg);
         }
         $this->fullyResolveCard($player_id);
     }
@@ -9625,15 +9631,24 @@ class DaleOfMerchants extends DaleTableBasic
             $dbcard = $dbcards[$take_card_id];
             unset($dbcards[$take_card_id]);
             $this->cards->moveCard($take_card_id, HAND.$player_id);
-            $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('INSERT_NAME: ${player_name} takes a card from ${opponent_name}\'s deck'), array(
+            $msg = clienttranslate('${resolving_card_name}: ${player_name} takes a card from ${opponent_name}\'s deck');
+            $private_msg = clienttranslate('${resolving_card_name}: ${player_name} takes ${card_name} from ${opponent_name}\'s deck');
+            $this->notifyAllPlayersWithPrivateArguments('privateMessage', $msg, array(
                 "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "resolving_card_name" => $this->getResolvingCardName(),
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                 "_private" => array(
-                    "card" => $dbcard,
                     "card_name" => $this->getCardName($dbcard)
                 )
-            ), clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from ${opponent_name}\'s deck'));
+            ), $private_msg);
+            $this->notifyAllPlayersWithPrivateArguments('limboToHand', '', array(
+                "player_id" => $player_id, //important: do not send the $opponent_id here, otherwise their client tries to execute the limboToHand
+                "_private" => array(
+                    "card" => $dbcard,
+                )
+            ));
         }
 
         //discard, with with optional order

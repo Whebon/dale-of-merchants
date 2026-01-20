@@ -11220,6 +11220,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['expireEffects', 1],
                 ['setScheduleCooldown', 1],
                 ['message', 1],
+                ['privateMessage', 1, true],
                 ['debugClient', 1],
             ];
             notifs.forEach(function (notif) {
@@ -12280,6 +12281,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.notif_message = function (notif) {
+            return;
+        };
+        DaleOfMerchants.prototype.notif_privateMessage = function (notif) {
             return;
         };
         DaleOfMerchants.prototype.notif_debugClient = function (notif) {

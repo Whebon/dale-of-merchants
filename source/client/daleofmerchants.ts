@@ -7188,12 +7188,13 @@ class DaleOfMerchants extends Gamegui
 			['advanceClock',						1],
 			['updateActionButtons',					1],
 			['deselectPassive',						1],
-			['selectDEPRECATED_Blindfold', 					1, true],
+			['selectDEPRECATED_Blindfold', 			1, true],
 			['addEffect', 							1],
 			['updateEffect', 						1],
 			['expireEffects', 						1],
 			['setScheduleCooldown', 				1],
 			['message', 							1],
+			['privateMessage', 						1, true],
 			['debugClient', 						1],
 		];
 
@@ -8428,6 +8429,10 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_message(notif: NotifAs<'message'>) {
+		return;
+	}
+
+	notif_privateMessage(notif: NotifAs<'privateMessage'>) {
 		return;
 	}
 

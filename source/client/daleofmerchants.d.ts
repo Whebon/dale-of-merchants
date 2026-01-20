@@ -95,6 +95,10 @@ declare global {
 		'message': {
 			//no args
 		}
+		'privateMessage': {
+			player_id?: number
+			opponent_id?: number
+		}
 		'debugClient': {
 			arg: string
 			msg: string
