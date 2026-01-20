@@ -4941,7 +4941,7 @@ class DaleOfMerchants extends DaleTableBasic
 
                 //1. toss all cards from the market board
                 $this->tossFromMarketBoard(
-                    clienttranslate('Loyal Partner: ${player_name} tosses all cards from the market'),
+                    clienttranslate('Loyal Partner: ${player_name} tosses ${nbr} card(s) from the market'),
                     $card_ids, 
                     $selected_cards, 
                     $non_selected_cards
