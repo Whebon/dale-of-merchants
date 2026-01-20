@@ -1159,6 +1159,28 @@ class DaleOfMerchants extends DaleTableBasic
                 //Mono draws 2 🃏🃏. Acquire. At the end of Mono's turn, it draws 2 🃏🃏.
                 $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 2, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
                 break;
+            case CT_JUNGLEFOWLMONO:
+                $clock = $this->getClock(MONO_PLAYER_ID);
+                $msg = clienttranslate('${resolving_card_name}: ${player_name} increases their hand size by ${nbr}');
+                switch ($clock) {
+                    case CLOCK_DAWN:
+                        $nbr = 4;
+                        break;
+                    case CLOCK_DAY:
+                        $nbr = 3;
+                        break;
+                    case CLOCK_NIGHT:
+                        $msg = clienttranslate('${resolving_card_name}: ${player_name} decreases their hand size by ${nbr}');
+                        $nbr = -1;
+                        break;
+                }
+                $this->effects->insertGlobal($technique_card["id"], EFFECT_INCREASE_HAND_SIZE, $nbr);
+                $this->notifyAllPlayers('message', $msg, array(
+                    'resolving_card_name' => $this->getCardName($technique_card),
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "nbr" => abs($nbr)
+                ));
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -2487,15 +2509,14 @@ class DaleOfMerchants extends DaleTableBasic
      * @return int maximum hand size
      */
     function getMaximumHandSize(mixed $player_id, array $hand_cards, array $stall_cards): int {
+        $increaseHandSizeEffects = $this->effects->countIncreaseHandSizeEffects();
         if ($player_id == MONO_PLAYER_ID) {
-            return 5;
+            return 5 + $increaseHandSizeEffects;
         }
         $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
-        //$cookies = $this->countTypeId($hand_cards, CT_COOKIES); //old cookies effect
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
-        $increaseHandSizeEffects = $this->effects->countIncreaseHandSizeEffects();
-        $monocards = $this->countMonoCards($hand_cards);
-        return 5 + $bribes + $sofas + $increaseHandSizeEffects + $monocards;
+        $monocards = $this->countMonoCards($hand_cards); //they will be returned to mono, so ignore them when refilling the hand
+        return 5 + $increaseHandSizeEffects + $bribes + $sofas + $monocards;
     }
 
     /**
