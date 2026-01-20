@@ -99,14 +99,14 @@
   margin: 5px;
 }
 
-.daleofmerchants-deck-selection-unavailable {
+.daleofmerchants-filtered-out .daleofmerchants-deck-selection-background {
   background-color: black;
   background-blend-mode: luminosity;
-  opacity: 0.5;
+  opacity: 0.3;
 }
 
-.daleofmerchants-filtered-out {
-  background-color: white;
+.daleofmerchants-deck-selection-unavailable .daleofmerchants-deck-selection-background {
+  background-color: black;
   background-blend-mode: luminosity;
   opacity: 0.5;
 }
@@ -507,6 +507,14 @@
   box-shadow: 0px 0px 16px var(--daleofmerchants-wrap-technique) !important;
 }
 
+.daleofmerchants-deck-selection-background {
+  background-image: url("img/cards.jpg");
+  background-size: cover;
+  border-radius: 10px;
+  z-index: 100;
+  background-image: url("img/cards_selection.jpg");
+}
+
 .daleofmerchants-card {
   background-image: url("img/cards.jpg");
   background-size: cover;
@@ -537,7 +545,7 @@
   height: 100px;
 }
 .daleofmerchants-card.daleofmerchants-deck-selection {
-  background-image: url("img/cards_selection.jpg");
+  background-image: none;
 }
 .daleofmerchants-card.daleofmerchants-card-sheet-1 {
   background-image: url("img/cards_1.jpg");

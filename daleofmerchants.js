@@ -4538,20 +4538,20 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
                     _("Kangaroos are excellent at hiding their valuables and creating diversions for mischief makers. However, their techniques are useful even when no one is playing dirty."),
                     _("Tuataras benefit from the riches gathered by their ancestors. You can save up gold and gain new options, including purchasing expensive cards more easily."),
                     _("nan"),
-                    _("Capuchins"),
+                    _("Capuchins. Warning: this deck has placeholder names and artwork"),
                     _("nan"),
                     _("Penguins give you potent effects for tough situations. Their power comes at a cost which seasoned players can turn into an advantage."),
                     _("Turtles like to play new techniques but struggle to finish them. If you're not careful, everything can come to a standstill. You will have to think around this."),
-                    _("Skinks"),
+                    _("Skinks. Warning: this deck has placeholder names and artwork"),
                     _("Do you have what it takes to create a plan and then execute it with precision? Master beavers to unleash awesome combos! They are recommended for a bit more experienced players."),
-                    _("nan"),
+                    _("Snow Macaques. Warning: this deck has placeholder names and artwork"),
                     _("Gulls absolutely love gifting junk to their opponents to slow them down! Novices can get the hang of them pretty fast. Just be prepared for a slightly slower game."),
                     _("Pangolins cause destruction by being so absent-minded. Even more skilled players may have trouble exploiting their potential without it backfiring."),
                     _("nan"),
                     _("nan"),
                     _("nan"),
                     _("Tasmanian devils are your best bet if you want to mess up your opponents' plans! They're not ones to steal, but they do enhance it if you invite those that are."),
-                    _("Junglefowls"),
+                    _("Junglefowls. Warning: this deck has placeholder names and artwork"),
                     _("Mongooses work hard during the day. Managing your tempo becomes increasingly important as you try to benefit more from them than your opponents do."),
                     _("Bats appear innocent during the day, but just wait for the night to set in! Your possessions will end up either missing or destroyed by the time dawn approaches.")
                 ];
@@ -4654,8 +4654,12 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 card_div.id = "deck-" + animalfolk_id;
                 card_div.classList.add("daleofmerchants-card", "daleofmerchants-relative", "daleofmerchants-clickable", "daleofmerchants-deck-selection");
                 this_4.cardContainer.appendChild(card_div);
-                Images_7.Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
                 this_4.card_divs.set(animalfolk_id, card_div);
+                Images_7.Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
+                var card_div_background = document.createElement('div');
+                card_div.appendChild(card_div_background);
+                card_div_background.classList.add("daleofmerchants-deck-selection-background");
+                Images_7.Images.setCardStyleForDeckSelection(card_div_background, animalfolk_id);
                 var tooltip = new dijit.Tooltip({
                     connectId: [card_div.id],
                     label: this_4.getTooltipContent(animalfolk_id),
@@ -4729,6 +4733,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             var card_div = this.card_divs.get(animalfolk_id);
             if (card_div) {
                 card_div.classList.remove("daleofmerchants-deck-selection-unavailable");
+                card_div.classList.remove("daleofmerchants-filtered-out");
                 if (card_div.classList.contains("daleofmerchants-hidden")) {
                     card_div.classList.remove("daleofmerchants-hidden");
                     this.cardContainer.append(card_div);

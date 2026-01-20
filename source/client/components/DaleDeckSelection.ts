@@ -59,8 +59,14 @@ export class DaleDeckSelection {
             card_div.id = "deck-"+animalfolk_id;
             card_div.classList.add("daleofmerchants-card", "daleofmerchants-relative", "daleofmerchants-clickable", "daleofmerchants-deck-selection");
             this.cardContainer.appendChild(card_div);
-            Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
             this.card_divs.set(animalfolk_id, card_div);
+            Images.setCardStyleForDeckSelection(card_div, animalfolk_id);
+
+            //draw the deck selection portrait on top as a background, so it can be set to a lower opacity without affecting the selection border and icon
+            const card_div_background = document.createElement('div');
+            card_div.appendChild(card_div_background);
+            card_div_background.classList.add("daleofmerchants-deck-selection-background");
+            Images.setCardStyleForDeckSelection(card_div_background, animalfolk_id);
 
             //add tooltip
             const tooltip = new dijit.Tooltip({
@@ -151,8 +157,8 @@ export class DaleDeckSelection {
         const card_div = this.card_divs.get(animalfolk_id);
         if (card_div) {
             card_div.classList.remove("daleofmerchants-deck-selection-unavailable");
+            card_div.classList.remove("daleofmerchants-filtered-out");
             if (card_div.classList.contains("daleofmerchants-hidden")) {
-                //if the chosen card is not visible due to filters, show it and append the portait to the back
                 card_div.classList.remove("daleofmerchants-hidden");
                 this.cardContainer.append(card_div);
             }
