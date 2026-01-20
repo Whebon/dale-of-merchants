@@ -1162,29 +1162,24 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                 break;
                             case DaleCard.CT_BOLDHAGGLER:
                             case DaleCard.CT_RESOURCEFULMEMBER:
+                            case DaleCard.CT_JUNGLEFOWL5B:
                                 value += effect.arg;
                                 break;
+                            case DaleCard.EFFECT_CHAMELEON_VALUE:
                             case DaleCard.CT_BLINDFOLD:
                             case DaleCard.CT_DEPRECATED_BLINDFOLD:
+                            case DaleCard.CT_BAROMETER:
+                            case DaleCard.CT_STOVE:
                                 value = effect.arg;
                                 break;
                             case DaleCard.CT_RAREARTEFACT:
                             case DaleCard.CT_DARINGMEMBER:
                                 value *= effect.arg;
                                 break;
-                            case DaleCard.CT_STOVE:
-                                value = effect.arg;
-                                break;
                             case DaleCard.CT_PRACTICALVALUES:
                                 if (value >= 1 && value <= 5) {
                                     value = 6 - value;
                                 }
-                                break;
-                            case DaleCard.CT_BAROMETER:
-                                value = effect.arg;
-                                break;
-                            case DaleCard.EFFECT_CHAMELEON_VALUE:
-                                value = effect.arg;
                                 break;
                         }
                     }
@@ -9114,6 +9109,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_TIRELESSTINKERER:
                 case DaleCard_10.DaleCard.CT_RIGOROUSCHRONICLER:
+                case DaleCard_10.DaleCard.CT_JUNGLEFOWL5A:
                     fizzle = this.myDiscard.size == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -9141,6 +9137,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_MEDDLINGMARKETEER:
                 case DaleCard_10.DaleCard.CT_ANCHOR:
                 case DaleCard_10.DaleCard.CT_BADOMEN:
+                case DaleCard_10.DaleCard.CT_JUNGLEFOWL5B:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);

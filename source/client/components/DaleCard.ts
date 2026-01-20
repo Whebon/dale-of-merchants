@@ -627,29 +627,24 @@ export class DaleCard {
                         break;
                     case DaleCard.CT_BOLDHAGGLER:
                     case DaleCard.CT_RESOURCEFULMEMBER:
+                    case DaleCard.CT_JUNGLEFOWL5B:
                         value += effect.arg!;
                         break;
+                    case DaleCard.EFFECT_CHAMELEON_VALUE:
                     case DaleCard.CT_BLINDFOLD:
                     case DaleCard.CT_DEPRECATED_BLINDFOLD:
+                    case DaleCard.CT_BAROMETER:
+                    case DaleCard.CT_STOVE:
                         value = effect.arg!;
                         break;
                     case DaleCard.CT_RAREARTEFACT:
                     case DaleCard.CT_DARINGMEMBER:
                         value *= effect.arg!;
                         break;
-                    case DaleCard.CT_STOVE:
-                        value = effect.arg!;
-                        break;
                     case DaleCard.CT_PRACTICALVALUES:
                         if (value >= 1 && value <= 5) {
                             value = 6 - value;
                         }
-                        break;
-                    case DaleCard.CT_BAROMETER:
-                        value = effect.arg!;
-                        break;
-                    case DaleCard.EFFECT_CHAMELEON_VALUE:
-                        value = effect.arg!;
                         break;
                 }
             }

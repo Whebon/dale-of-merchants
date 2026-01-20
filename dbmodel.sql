@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `effect` (
   `effect_class` int(10) unsigned NOT NULL,
   `card_id` int(10) unsigned NOT NULL,
   `type_id` int(10) unsigned NOT NULL,
-  `arg` int(10) unsigned,
+  `arg` int(10),
   PRIMARY KEY (`effect_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 

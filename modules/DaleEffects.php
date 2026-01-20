@@ -48,7 +48,7 @@ class DaleEffects {
     private function insert(int $effect_class, int $card_id, int $type_id, ?int $arg) {
         $this->last_effect_id += 1;
         $effect_id = $this->last_effect_id;
-        $nullable_arg = ($arg == null) ? "NULL" : $arg;
+        $nullable_arg = ($arg === null) ? "NULL" : $arg; // === is important, because "0 == null" which is not what we want
         $sql = "INSERT INTO effect (effect_id, effect_class, card_id, type_id, arg) VALUES ($effect_id, $effect_class, $card_id, $type_id, $nullable_arg)";
         $this->game->DbQuery($sql);
         $row = array(
@@ -173,29 +173,24 @@ class DaleEffects {
                         break;
                     case CT_BOLDHAGGLER:
                     case CT_RESOURCEFULMEMBER:
+                    case CT_JUNGLEFOWL5B:
                         $value += $row["arg"];
                         break;
+                    case EFFECT_CHAMELEON_VALUE:
                     case CT_BLINDFOLD:
                     case CT_DEPRECATED_BLINDFOLD:
+                    case CT_BAROMETER:
+                    case CT_STOVE:
                         $value = $row["arg"];
                         break;
                     case CT_RAREARTEFACT:
                     case CT_DARINGMEMBER:
                         $value *= $row["arg"];
                         break;
-                    case CT_STOVE:
-                        $value = $row["arg"];
-                        break;
                     case CT_PRACTICALVALUES:
                         if ($value >= 1 && $value <= 5) {
                             $value = 6 - $value;
                         }
-                        break;
-                    case CT_BAROMETER:
-                        $value = $row["arg"];
-                        break;
-                    case EFFECT_CHAMELEON_VALUE:
-                        $value = $row["arg"];
                         break;
                 }
             }

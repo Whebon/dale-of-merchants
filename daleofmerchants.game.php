@@ -2846,8 +2846,8 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function getValueSum(array $dbcards) {
         $sum = 0;
-        foreach ($dbcards as $card) {
-            $sum += $this->getValue($card);
+        foreach ($dbcards as $dbcard) {
+            $sum += $this->getValue($dbcard);
         }
         return $sum;
     }
@@ -4630,6 +4630,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_DEPRECATED_HISTORYLESSON:
                 case CT_ALTERNATIVEPLAN:
                 case CT_SELECTINGCONTRACTS:
+                case CT_JUNGLEFOWL5A:
                     $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
                     if ($nbr > 0) {
                         throw new BgaVisibleSystemException("Unable to fizzle. The player's discard pile contains card(s).");
@@ -4694,6 +4695,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_ANCHOR:
                 case CT_BADOMEN:
                 case CT_BLINDFOLD:
+                case CT_JUNGLEFOWL5B:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -6824,7 +6826,9 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->cards->shuffle(DISCARD.$player_id);
                 $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
                 if (count($dbcards) == 0) {
-                    throw new BgaUserException("Invalid input: CT_JUNGLEFOWL5A should have fizzled as the discard pile is empty");
+                    //throw new BgaUserException("Invalid input: CT_JUNGLEFOWL5A should have fizzled as the discard pile is empty");
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
                 }
                 $this->notifyAllPlayers('shuffleDiscard', clienttranslate('${resolving_card_name}: ${player_name} shuffles their discard pile'), array(
                     "resolving_card_name" => $this->getCardName($technique_card),
@@ -6834,6 +6838,40 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trJungleFowl5A");
+                break;
+            case CT_JUNGLEFOWL5B:
+                $dbcards = $this->draw('', 1);
+                if (count($dbcards) == 0) {
+                    //throw new BgaUserException("Invalid input: CT_JUNGLEFOWL5A should have fizzled as the player was unable to draw a card");
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $dbcard = $dbcards[0];
+                $clock = $this->getClock($player_id);
+                switch ($clock) {
+                    case CLOCK_DAWN:
+                        $nbr = 2;
+                        $nbr_string = "+2";
+                        break;
+                    case CLOCK_DAY:
+                        $nbr = 1;
+                        $nbr_string = "+1";
+                        break;
+                    case CLOCK_NIGHT:
+                        $nbr = -1;
+                        $nbr_string = "-1";
+                        break;
+                }
+                $this->effects->insertModification($dbcard["id"], CT_JUNGLEFOWL5B, $nbr);
+                $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} draws a ${card_name}, it gets ${nbr} because it is ${clock}. It now has value ${value}'), array(
+                    "resolving_card_name" => $this->getCardName($technique_card),
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "card_name" => $this->getCardName($dbcard),
+                    "nbr" => $nbr_string,
+                    "clock" => $clock,
+                    "value" => $this->getValue($dbcard)
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);

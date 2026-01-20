@@ -4832,6 +4832,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_TIRELESSTINKERER:
 			case DaleCard.CT_RIGOROUSCHRONICLER:
+			case DaleCard.CT_JUNGLEFOWL5A:
 				fizzle = this.myDiscard.size == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -4859,6 +4860,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_MEDDLINGMARKETEER:
 			case DaleCard.CT_ANCHOR:
 			case DaleCard.CT_BADOMEN:
+			case DaleCard.CT_JUNGLEFOWL5B:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
