@@ -31,12 +31,9 @@ $gameinfos = array(
 	'losers_not_ranked' => false,
 	'solo_mode_ranked' => false,
 	'is_coop' => 0,
-	'is_beta' => 1,
 	'language_dependency' => false,
 	'game_interface_width' => array(
 		'min' => 740,
 		'max' => null,
 	),
-	'is_sandbox' => false,
-	'turnControl' => 'simple',
 );
