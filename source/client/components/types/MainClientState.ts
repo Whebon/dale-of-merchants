@@ -128,9 +128,13 @@ export class MainClientState {
             case 'client_selectOpponentTechnique':
                 return _("${card_name}: ${you} must choose an opponent"); //e.g. sabotage
             case 'client_selectPlayerTechnique':
-                return _("${card_name}: ${you} must choose a player"); //e.g. fresh start
+                return _("${card_name}: ${you} must choose any player"); //e.g. fresh start
+            case 'client_selectPlayerDeckTechnique':
+                return _("${card_name}: ${you} must choose any player\'s deck"); //e.g. sneaky scout
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
+            case 'client_choicelessBatCard':
+                return _("${card_name}: ${you} may play this card as a technique during the ${clock}"); 
             case 'client_choicelessTriggerTechniqueCard':
                 return _("${card_name}: ${you} must resolve this technique");
             case 'client_spend':

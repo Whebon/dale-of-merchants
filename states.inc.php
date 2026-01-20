@@ -62,6 +62,7 @@ if (false) {
 	$game->stSouvenirs();
 	$game->stCapuchin4();
 	$game->stCapuchin5a();
+	$game->stSneakyScout();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -194,6 +195,7 @@ $machinestates = array(
 			'trCapuchin4' => 112,
 			'trCapuchin5a' => 113,
 			'trJungleFowl5A' => 115,
+			'trSneakyScout' => 116,
 		),
 	),
 	31 => array(
@@ -968,6 +970,18 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'args' => 'argJunglefowl5a',
 		'possibleactions' => ['actJunglefowl5a'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	116 => array(
+		'name' => 'sneakyScout',
+		'description' => clienttranslate('Sneaky Scout: ${actplayer} may reorder the top cards of ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Sneaky Scout: ${you} may reorder the top cards of ${opponent_name}\'s deck'),
+		'type' => 'activeplayer',
+		'action' => 'stSneakyScout',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actSneakyScout'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

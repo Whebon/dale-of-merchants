@@ -3472,6 +3472,20 @@ class DaleOfMerchants extends DaleTableBasic
         return $die_value;
     }
 
+    /**
+     * In the night, validate and return $args["opponent_id"]
+     * Otherwise, return $player_id
+     */
+    function extractNightOpponentId($args) {
+        $player_id = $this->getActivePlayerId();
+        if ($this->getClock($player_id) != CLOCK_NIGHT) {
+            return $player_id;
+        }
+        $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $player_id;
+        $this->validatePlayerId($opponent_id);
+        return $opponent_id;
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////// Clock functions
     ////////////  
@@ -4717,6 +4731,9 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_BADOMEN:
                 case CT_BLINDFOLD:
                 case CT_JUNGLEFOWL5B:
+                case CT_SNEAKYSCOUT:
+                case CT_HEROICDEED:
+                case CT_SECRETMISSION:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -6893,6 +6910,12 @@ class DaleOfMerchants extends DaleTableBasic
                     "value" => $this->getValue($dbcard)
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_SNEAKYSCOUT:
+                $opponent_id = $this->extractNightOpponentId($args);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trSneakyScout");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -9693,6 +9716,33 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actSneakyScout($card_ids) {
+        $this->checkAction("actSneakyScout");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+
+        //get the non-selected cards and selected cards to place on the deck
+        $non_selected_cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        $selected_cards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
+        foreach ($selected_cards as $card_id => $card) {
+            unset($non_selected_cards[$card_id]);
+        }
+
+        //place the cards on top of the opponent's deck
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $this->placeOnDeckMultiple(
+            $opponent_id, 
+            clienttranslate('${resolving_card_name}: ${player_name} places ${nbr} cards on top of their deck'),
+            $card_ids, 
+            $selected_cards, 
+            $non_selected_cards,
+            true,
+            array("resolving_card_name" => $this->getResolvingCardName())
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
 
     // ^
     // |
@@ -10910,6 +10960,15 @@ class DaleOfMerchants extends DaleTableBasic
         if (count($dbcards) == 0) {
             //capcuchin5a has no effect
             $this->fullyResolveCard($player_id);
+        }
+    }
+
+    function stSneakyScout() {
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->draw(clienttranslate('Sneaky Scout: ${player_name} looks at the top ${nbr} card(s) of ${opponent_name}\'s deck'), 2, true, $opponent_id);
+        if (count($dbcards) == 0) {
+            //sneaky scout has no effect
+            $this->fullyResolveCard($this->getActivePlayerId());
         }
     }
 

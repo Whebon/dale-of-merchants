@@ -220,6 +220,7 @@ interface GameStates {
 			'trCapuchin4': 112,
 			'trCapuchin5a': 113,
 			'trJungleFowl5A': 115,
+			'trSneakyScout': 116,
 		},
 	},
 	31: {
@@ -1489,6 +1490,24 @@ interface GameStates {
 				'name': 'card_id',
 				'type': 'AT_int',
 				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	116: {
+		'name': 'sneakyScout',
+		'description': 'Sneaky Scout: ${actplayer} may reorder the top cards of ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Sneaky Scout: ${you} may reorder the top cards of ${opponent_name}\\\'s deck',
+		'type': 'activeplayer',
+		'action': 'stSneakyScout',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actSneakyScout': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

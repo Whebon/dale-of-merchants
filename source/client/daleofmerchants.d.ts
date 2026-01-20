@@ -497,8 +497,10 @@ declare global {
 	interface ClientTechniqueChoice {
 		'client_fizzle': { fizzle: boolean }
 		'client_choicelessTechniqueCard': { choiceless: boolean }
+		'client_choicelessBatCard': { choiceless: boolean }
 		'client_selectOpponentTechnique': { opponent_id: number }
 		'client_selectPlayerTechnique': { opponent_id: number }
+		'client_selectPlayerDeckTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }
 		'client_acorn': { stall_player_id: number, stall_card_id: number }
@@ -550,6 +552,9 @@ declare global {
 		'client_spendSelectOpponentTechnique': { opponent_id: number }
 		'client_DEPRECATED_capuchin5b_SINGLEDISCARD': { opponent_id: number, card_id: number }
 		'client_capuchin5b': { opponent_id: number, card_id: number }
+		'client_falseAlarm': { take_bottom_of_discard: boolean }
+		'client_captureDawnDay': { opponent_id: number, from_discard: boolean }
+		'client_captureNight': { opponent_id: number, from_discard: boolean }
 	}
 
 	interface ClientPassiveChoice {
@@ -635,6 +640,7 @@ declare global {
 		'client_spendSelectOpponentTechnique': { technique_card_id: number, player_ids?: number[]}
 		'client_skink5a': { technique_card_id: number, nbr: number }
 		'client_skink5b': { passive_card_id: number, card_name: string }
+		'client_choicelessBatCard': { technique_card_id: number, clock: number }
 	}
 
 	//

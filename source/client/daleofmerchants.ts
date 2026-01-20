@@ -667,6 +667,9 @@ class DaleOfMerchants extends Gamegui
 					this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), spyglass_icon, DaleIcons.getBluePileIcon(0))
 				);
 				break;
+			case 'sneakyScout':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique',_("Choose cards to place back"));
+				break;
 			case 'historyLesson':
 				this.myLimbo.setSelectionMode('multiple', 'historyLesson', 'daleofmerchants-wrap-technique',
 					this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons.getHistoryLessonIcon(), DaleIcons.getBluePileIcon(0))
@@ -1349,6 +1352,13 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", junglefowl5a_args.nbr);
 				this.myDiscard.openPopin();
 				break;
+			case 'client_selectPlayerDeckTechnique':
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					if (this.playerDiscards[+player_id]!.size + deck.size > 0) {
+						deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+					}
+				}
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1440,6 +1450,9 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'spyglass':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'sneakyScout':
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'historyLesson':
@@ -1881,6 +1894,11 @@ class DaleOfMerchants extends Gamegui
 			case 'junglefowl5a':
 				this.myDiscard.setSelectionMode('none');
 				break;
+			case 'client_selectPlayerDeckTechnique':
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -2007,6 +2025,9 @@ class DaleOfMerchants extends Gamegui
 			case 'spyglass':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onSpyglass");
 				break;
+			case 'sneakyScout':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onSneakyScout");
+				break;
 			case 'historyLesson':
 				this.addActionButton("confirm-button", _("Confirm selected"), "onHistoryLesson");
 				break;
@@ -2047,6 +2068,22 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectPlayerTechnique':
 				this.addActionButtonsOpponent(this.onSelectPlayerTechnique.bind(this), true);
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_selectPlayerDeckTechnique':
+				const client_selectPlayerDeckTechnique_player_ids: number[] = [];
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					if (this.playerDiscards[+player_id]!.size + deck.size > 0) {
+						client_selectPlayerDeckTechnique_player_ids.push(+player_id);
+					}
+				}
+				console.log(client_selectPlayerDeckTechnique_player_ids);
+				if (client_selectPlayerDeckTechnique_player_ids.length > 0) {
+					this.addActionButtonsOpponent(this.onSelectPlayerDeckTechnique.bind(this), true, undefined, client_selectPlayerDeckTechnique_player_ids);
+				}
+				else {
+					this.addActionButton("fizzle-button", _("Fizzle"), "onChoicelessTechniqueCard");
+				}
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_selectOpponentPassive':
@@ -2189,6 +2226,7 @@ class DaleOfMerchants extends Gamegui
 				//this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTriggerTechniqueCard");
 				break;
 			case 'client_choicelessTechniqueCard':
+			case 'client_choicelessBatCard':
 				const client_choicelessTechniqueCard_confirmation = this.getGameUserPreference(100); // "Confirm technique"
 				if (client_choicelessTechniqueCard_confirmation == 1) {
 					this.addActionButton("confirm-button", _("Confirm"), "onChoicelessTechniqueCard");
@@ -3855,6 +3893,9 @@ class DaleOfMerchants extends Gamegui
 					...this.mainClientState.getSpendArgs()
 				})
 				break;
+			case 'client_selectPlayerDeckTechnique':
+				this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+				break;
 		}
 	}
 
@@ -4661,6 +4702,7 @@ class DaleOfMerchants extends Gamegui
 	 * The player want to use a technique card as a technique. Locally schedule that card.
 	 */
 	onClickTechnique(card: DaleCard) {
+		let clock = this.myClock.getClock(); //for bats
 		let fizzle = true;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_SWIFTBROKER:
@@ -5361,6 +5403,55 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleSpendTechnique('client_capuchin5b', card.id, 2);
 				}
 				break;
+			case DaleCard.CT_SNEAKYSCOUT:
+			case DaleCard.CT_HEROICDEED:
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
+				if (clock == PlayerClock.CLOCK_NIGHT) {
+					this.clientScheduleTechnique('client_selectPlayerDeckTechnique', card.id); //note: allow clicking the deck
+				}
+				else if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessBatCard', card.id, { clock: clock });
+				}
+				break;
+			case DaleCard.CT_FALSEALARM:
+				if (clock == PlayerClock.CLOCK_NIGHT) {
+					this.clientScheduleTechnique('client_falseAlarm', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessBatCard', card.id, { clock: clock });
+				}
+				break;
+			case DaleCard.CT_SECRETMISSION:
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
+				if (clock == PlayerClock.CLOCK_NIGHT) {
+					this.clientScheduleTechnique('client_selectPlayerTechnique', card.id); //note: don't allow clicking the deck
+				}
+				else if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessBatCard', card.id, { clock: clock });
+				}
+				break;
+			case DaleCard.CT_PROVOCATION:
+				if (clock == PlayerClock.CLOCK_NIGHT) {
+					this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_choicelessBatCard', card.id, { clock: clock });
+				}
+				break;
+			case DaleCard.CT_CAPTURE:
+				if (clock == PlayerClock.CLOCK_NIGHT) {
+					this.clientScheduleTechnique('client_captureNight', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_captureDawnDay', card.id, { clock: clock });
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -5764,6 +5855,13 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onSneakyScout() {
+		const card_ids = this.myLimbo.orderedSelection.get();
+		this.bgaPerformAction('actSneakyScout', {
+			card_ids: this.arrayToNumberList(card_ids)
+		})
+	}
+
 	onHistoryLesson() {
 		const card_ids = this.myLimbo.orderedSelection.get();
 		if (card_ids.length == 0) {
@@ -5824,6 +5922,12 @@ class DaleOfMerchants extends Gamegui
 
 	onSelectPlayerTechnique(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_selectPlayerTechnique'>({
+			opponent_id: opponent_id
+		})
+	}
+
+	onSelectPlayerDeckTechnique(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_selectPlayerDeckTechnique'>({
 			opponent_id: opponent_id
 		})
 	}
