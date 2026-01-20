@@ -6917,6 +6917,40 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trSneakyScout");
                 break;
+            case CT_FALSEALARM:
+                if (isset($args["take_bottom_of_discard"]) && $args["take_bottom_of_discard"]) {
+                    if ($this->getClock($player_id) != CLOCK_NIGHT) {
+                        throw new BgaUserException("Taking the bottom card of the discard is only allowed during the night");
+                    }
+                    $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
+                    if (count($dbcards) == 0) {
+                        // Player actively chose to the skip the effect
+                        $this->notifyAllPlayers('message', clienttranslate('False Alarm: ${player_name} skipped the effect by taking the bottom card of their empty discard pile'), array(
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id)
+                        ));
+                    }
+                    else {
+                        // Take the bottom card of the discard
+                        $dbcard = $dbcards[0];
+                        $this->cards->removeCardFromPile($dbcard["id"], DISCARD.$player_id);
+                        $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+                        $this->notifyAllPlayers('discardToHand', clienttranslate('False Alarm: ${player_name} takes their ${card_name} from the bottom of their discard pile'), array(
+                            "player_id" => $player_id,
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "card_name" => $this->getCardName($dbcard),
+                            "card" => $dbcard
+                        ));
+                    }
+                }
+                else {
+                    // Draw a card
+                    $this->draw(clienttranslate('False Alarm: ${player_name} draws a ${card_name}'),
+                        1, false, null, null, 
+                        clienttranslate('False Alarm: ${player_name} draws a ${card_name}')
+                    );
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

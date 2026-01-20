@@ -2784,6 +2784,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 case 'singleAnimalfolk':
                 case 'sliceOfLife':
                 case 'singleFromTopX':
+                case 'singleFromBottomX':
                     this.page.onSelectPileCard(this, card.id);
                     this.closePopin();
                     break;
@@ -2906,6 +2907,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     this.openPopin();
                     break;
                 case 'singleFromTopX':
+                case 'singleFromBottomX':
                     this.showMainTitleBarInPopin = true;
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                     break;
@@ -2930,6 +2932,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             switch (this.selectionMode) {
                 case 'singleAnimalfolk':
                 case 'singleFromTopX':
+                case 'singleFromBottomX':
                 case 'multipleFromTopWithGaps':
                 case 'multipleFromTopNoGaps':
                 case 'multipleJunk':
@@ -2955,6 +2958,15 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     for (var i = Math.max(0, this.cards.length - multipleFromTop_nbr); i < this.cards.length; i++) {
                         var topCard = this.cards[i];
                         if (card === topCard) {
+                            return true;
+                        }
+                    }
+                    return false;
+                case 'singleFromBottomX':
+                    var multipleFromBottom_nbr = this.orderedSelection.getMaxSize();
+                    for (var i = Math.max(0, this.cards.length - multipleFromBottom_nbr); i < this.cards.length; i++) {
+                        var bottomCard = this.cards[this.cards.length - 1 - i];
+                        if (card === bottomCard) {
                             return true;
                         }
                     }
@@ -4213,6 +4225,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose ${nbr} cards to discard");
                     case 'client_skink5b':
                         return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
+                    case 'client_falseAlarm':
+                        return _("${card_name}: ${you} must choose one");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -6158,6 +6172,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
+                case 'client_falseAlarm':
+                    this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 1);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -6702,6 +6719,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var _32 = _31[_30], player_id = _32[0], deck = _32[1];
                         deck.setSelectionMode('none');
                     }
+                    break;
+                case 'client_falseAlarm':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -7551,6 +7571,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_skink5b':
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_falseAlarm':
+                    this.addActionButton("draw-button", _("Draw"), "onFalseAlarmDraw");
+                    var client_falseAlarm_cards = this.myDiscard.getCards();
+                    if (client_falseAlarm_cards.length > 0) {
+                        var client_falseAlarm_card = client_falseAlarm_cards[0];
+                        this.addActionButton("take-bottom-of-discard-button", _("Take") + " " + client_falseAlarm_card.name, "onFalseAlarmTakeBottomOfDiscard");
+                    }
+                    else {
+                        this.addActionButton("skip-button", _("Skip"), "onFalseAlarmTakeBottomOfDiscard");
+                    }
                     this.addActionButtonCancelClient();
                     break;
             }
@@ -11254,6 +11286,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onSkink5b = function (card_id) {
             this.playPassiveCard({
                 card_id: card_id
+            });
+        };
+        DaleOfMerchants.prototype.onFalseAlarmDraw = function () {
+            console.log("GOT HERE (draw)");
+            this.playTechniqueCard({
+                take_bottom_of_discard: false
+            });
+        };
+        DaleOfMerchants.prototype.onFalseAlarmTakeBottomOfDiscard = function () {
+            console.log("GOT HERE");
+            this.playTechniqueCard({
+                take_bottom_of_discard: true
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

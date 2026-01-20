@@ -1359,6 +1359,9 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case 'client_falseAlarm':
+				this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 1);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1898,6 +1901,9 @@ class DaleOfMerchants extends Gamegui
 				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
 					deck.setSelectionMode('none');
 				}
+				break;
+			case 'client_falseAlarm':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -2766,6 +2772,18 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_skink5b':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_falseAlarm':
+				this.addActionButton("draw-button", _("Draw"), "onFalseAlarmDraw");
+				const client_falseAlarm_cards = this.myDiscard.getCards();
+				if (client_falseAlarm_cards.length > 0) {
+					const client_falseAlarm_card = client_falseAlarm_cards[0]!;
+					this.addActionButton("take-bottom-of-discard-button", _("Take")+" "+client_falseAlarm_card.name, "onFalseAlarmTakeBottomOfDiscard");
+				}
+				else {
+					this.addActionButton("skip-button", _("Skip"), "onFalseAlarmTakeBottomOfDiscard");
+				}
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -7205,6 +7223,20 @@ class DaleOfMerchants extends Gamegui
 		this.playPassiveCard<'client_skink5b'>({
 			card_id: card_id
 		});
+	}
+
+	onFalseAlarmDraw() {
+		console.log("GOT HERE (draw)");
+		this.playTechniqueCard<'client_falseAlarm'>({
+			take_bottom_of_discard: false
+		})
+	}
+
+	onFalseAlarmTakeBottomOfDiscard() {
+		console.log("GOT HERE");
+		this.playTechniqueCard<'client_falseAlarm'>({
+			take_bottom_of_discard: true
+		})
 	}
 
 	//(~on)

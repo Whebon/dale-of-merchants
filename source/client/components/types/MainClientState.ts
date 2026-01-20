@@ -308,6 +308,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose ${nbr} cards to discard");
             case 'client_skink5b':
                 return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
+            case 'client_falseAlarm':
+                return _("${card_name}: ${you} must choose one");
         }
         return "MISSING DESCRIPTION";
     }
