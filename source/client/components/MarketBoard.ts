@@ -94,10 +94,15 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
                 continue;
             }
 
-            if (effectiveCostModification == originalCostModification) {
+            if (effectiveCostModification == 0) {
+                // Show nothing
+                stackContainer.querySelector(".daleofmerchants-effective-value")?.remove();
+                stackContainer.querySelector(".daleofmerchants-icon")?.remove();
+            }
+            else if (effectiveCostModification == originalCostModification) {
                 // Show icon
                 stackContainer.querySelector(".daleofmerchants-effective-value")?.remove();
-                if (effectiveCostModification != 0 && !stackContainer.querySelector(".daleofmerchants-icon")) {
+                if (!stackContainer.querySelector(".daleofmerchants-icon")) {
                     stackContainer.appendChild(DaleIcons.getCostModificationIcon(effectiveCostModification));
                 }
             }

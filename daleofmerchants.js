@@ -3234,11 +3234,11 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
             addEventListener("resize", function () { return setTimeout(function () { return thiz.onResize(); }, 1); });
         }
         MarketBoard.prototype.updateCostModificationHTML = function () {
-            var _a, _b, _c;
+            var _a, _b, _c, _d, _e;
             var pos = 0;
             var anythingChanged = false;
-            for (var _i = 0, _d = this.stackContainers; _i < _d.length; _i++) {
-                var stackContainer = _d[_i];
+            for (var _i = 0, _f = this.stackContainers; _i < _f.length; _i++) {
+                var stackContainer = _f[_i];
                 var originalCostModification = pos;
                 var effectiveCostModification = DaleCard_4.DaleCard.getCostModification(pos);
                 if (this.previousEffectiveCosts[pos] != effectiveCostModification) {
@@ -3248,15 +3248,19 @@ define("components/MarketBoard", ["require", "exports", "components/DaleCard", "
                 else {
                     continue;
                 }
-                if (effectiveCostModification == originalCostModification) {
+                if (effectiveCostModification == 0) {
                     (_a = stackContainer.querySelector(".daleofmerchants-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
-                    if (effectiveCostModification != 0 && !stackContainer.querySelector(".daleofmerchants-icon")) {
+                    (_b = stackContainer.querySelector(".daleofmerchants-icon")) === null || _b === void 0 ? void 0 : _b.remove();
+                }
+                else if (effectiveCostModification == originalCostModification) {
+                    (_c = stackContainer.querySelector(".daleofmerchants-effective-value")) === null || _c === void 0 ? void 0 : _c.remove();
+                    if (!stackContainer.querySelector(".daleofmerchants-icon")) {
                         stackContainer.appendChild(DaleIcons_5.DaleIcons.getCostModificationIcon(effectiveCostModification));
                     }
                 }
                 else {
-                    (_b = stackContainer.querySelector(".daleofmerchants-icon")) === null || _b === void 0 ? void 0 : _b.remove();
-                    var value_div = (_c = stackContainer.querySelector(".daleofmerchants-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
+                    (_d = stackContainer.querySelector(".daleofmerchants-icon")) === null || _d === void 0 ? void 0 : _d.remove();
+                    var value_div = (_e = stackContainer.querySelector(".daleofmerchants-effective-value")) !== null && _e !== void 0 ? _e : document.createElement('div');
                     value_div.classList.add("daleofmerchants-effective-value");
                     stackContainer.appendChild(value_div);
                     if (effectiveCostModification >= 0) {
