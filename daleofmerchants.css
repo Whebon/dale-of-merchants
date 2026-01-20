@@ -90,6 +90,15 @@
   display: none;
 }
 
+.daleofmerchants-deck-selection-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: max-content;
+  width: 100%;
+  margin: 5px;
+}
+
 .daleofmerchants-deck-selection-container {
   display: flex;
   flex-wrap: wrap;
@@ -103,12 +112,6 @@
   background-color: black;
   background-blend-mode: luminosity;
   opacity: 0.3;
-}
-
-.daleofmerchants-deck-selection-unavailable .daleofmerchants-deck-selection-background {
-  background-color: black;
-  background-blend-mode: luminosity;
-  opacity: 0.5;
 }
 
 .daleofmerchants-mono-avatar {

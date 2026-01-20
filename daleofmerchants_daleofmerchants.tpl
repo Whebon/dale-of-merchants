@@ -73,7 +73,11 @@
         </div>
     </div>
     <!-- deck portaits go inside this container -->
-    <div class="daleofmerchants-deck-selection-container"></div>
+    <div class="daleofmerchants-deck-selection-wrap">
+        <div id="daleofmerchants-deck-selection-container-available" class="daleofmerchants-deck-selection-container"></div>
+        <h2 id="daleofmerchants-title-unavailable-decks">{TITLE_UNAVAILABLE_DECKS}</h2>
+        <div id="daleofmerchants-deck-selection-container-unavailable" class="daleofmerchants-deck-selection-container"></div>
+    </div>
 </div>
 
 <div id="daleofmerchants-page-game">

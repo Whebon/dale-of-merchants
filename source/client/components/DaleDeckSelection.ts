@@ -21,6 +21,7 @@ export class DaleDeckSelection {
     private resetFiltersButton: HTMLElement;
     private pickRandomButton: HTMLElement;
     private cardContainer: HTMLElement;
+    private cardContainerUnavailable: HTMLElement;
     public orderedSelection: OrderedDeckSelection = new OrderedDeckSelection();
 
     private card_divs: Map<number, HTMLElement> = new Map();
@@ -42,7 +43,8 @@ export class DaleDeckSelection {
         this.filterContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-filters") as HTMLElement)!;
         this.resetFiltersButton = this.filterContainer.querySelector("#daleofmerchants-filter-title-reset-filters")!;
         this.pickRandomButton = this.filterContainer.querySelector("#daleofmerchants-pick-random")!;
-        this.cardContainer = (this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container") as HTMLElement)!;
+        this.cardContainer = ($("daleofmerchants-deck-selection-container-available") as HTMLElement)!;
+        this.cardContainerUnavailable = ($("daleofmerchants-deck-selection-container-unavailable") as HTMLElement)!;
         this.cardContainer.classList.add("daleofmerchants-wrap-technique");
         if (!inDeckSelection) {
             this.deckSelectionHTML.classList.add("daleofmerchants-hidden");
@@ -90,7 +92,7 @@ export class DaleDeckSelection {
             const card_id = animalfolk_id;
             card_div.addEventListener('click', () => {
                 if (unavailable) {
-                    page.showMessage(_("This animalfolk is unavailable"), 'error');
+                    page.showMessage(_("This animalfolk is unavailable on BGA"), 'error');
                     return;
                 }
                 if (page.isCurrentPlayerActive()) {
@@ -101,8 +103,7 @@ export class DaleDeckSelection {
 
         //move disabled animalfolk to the back
         for (const disabled_animalfolk_id of page.gamedatas.disabledAnimalfolkIds) {
-            console.log("deck-"+disabled_animalfolk_id);
-            this.cardContainer.appendChild($("deck-"+disabled_animalfolk_id)!);
+            this.cardContainerUnavailable.appendChild($("deck-"+disabled_animalfolk_id)!);
         }
 
         this.setupFilters();
@@ -144,13 +145,16 @@ export class DaleDeckSelection {
     public setResult(animalfolk_id: number) {
         //if not done yet, set the deck selection to 'reveal' mode (this uses the purchase wrap)
         if (this.cardContainer.classList.contains("daleofmerchants-wrap-technique")) {
+            $("daleofmerchants-title-unavailable-decks")?.classList.add("daleofmerchants-hidden");
             this.cardContainer.classList.remove("daleofmerchants-wrap-technique");
             this.cardContainer.classList.add("daleofmerchants-wrap-purchase");
             this.orderedSelection.unselectAll();
             this.orderedSelection.setIconType(undefined);
             this.cardContainer.querySelectorAll(".daleofmerchants-deck-selection").forEach(card_div => {
-                card_div.classList.add("daleofmerchants-deck-selection-unavailable");
-                card_div.classList.add("daleofmerchants-hidden"); //BOTCH: hide all cards!
+                card_div.classList.add("daleofmerchants-hidden");
+            });
+            this.cardContainerUnavailable.querySelectorAll(".daleofmerchants-deck-selection").forEach(card_div => {
+                card_div.classList.add("daleofmerchants-hidden");
             });
         }
         //reveal 1 animalfolk

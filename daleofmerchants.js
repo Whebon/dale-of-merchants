@@ -4639,7 +4639,8 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             this.filterContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-filters");
             this.resetFiltersButton = this.filterContainer.querySelector("#daleofmerchants-filter-title-reset-filters");
             this.pickRandomButton = this.filterContainer.querySelector("#daleofmerchants-pick-random");
-            this.cardContainer = this.deckSelectionHTML.querySelector(".daleofmerchants-deck-selection-container");
+            this.cardContainer = $("daleofmerchants-deck-selection-container-available");
+            this.cardContainerUnavailable = $("daleofmerchants-deck-selection-container-unavailable");
             this.cardContainer.classList.add("daleofmerchants-wrap-technique");
             if (!inDeckSelection) {
                 this.deckSelectionHTML.classList.add("daleofmerchants-hidden");
@@ -4677,7 +4678,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 var card_id = animalfolk_id;
                 card_div.addEventListener('click', function () {
                     if (unavailable) {
-                        page.showMessage(_("This animalfolk is unavailable"), 'error');
+                        page.showMessage(_("This animalfolk is unavailable on BGA"), 'error');
                         return;
                     }
                     if (page.isCurrentPlayerActive()) {
@@ -4691,8 +4692,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             }
             for (var _i = 0, _a = page.gamedatas.disabledAnimalfolkIds; _i < _a.length; _i++) {
                 var disabled_animalfolk_id = _a[_i];
-                console.log("deck-" + disabled_animalfolk_id);
-                this.cardContainer.appendChild($("deck-" + disabled_animalfolk_id));
+                this.cardContainerUnavailable.appendChild($("deck-" + disabled_animalfolk_id));
             }
             this.setupFilters();
         }
@@ -4720,13 +4720,17 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             this.gameHTML.classList.remove("daleofmerchants-hidden");
         };
         DaleDeckSelection.prototype.setResult = function (animalfolk_id) {
+            var _a;
             if (this.cardContainer.classList.contains("daleofmerchants-wrap-technique")) {
+                (_a = $("daleofmerchants-title-unavailable-decks")) === null || _a === void 0 ? void 0 : _a.classList.add("daleofmerchants-hidden");
                 this.cardContainer.classList.remove("daleofmerchants-wrap-technique");
                 this.cardContainer.classList.add("daleofmerchants-wrap-purchase");
                 this.orderedSelection.unselectAll();
                 this.orderedSelection.setIconType(undefined);
                 this.cardContainer.querySelectorAll(".daleofmerchants-deck-selection").forEach(function (card_div) {
-                    card_div.classList.add("daleofmerchants-deck-selection-unavailable");
+                    card_div.classList.add("daleofmerchants-hidden");
+                });
+                this.cardContainerUnavailable.querySelectorAll(".daleofmerchants-deck-selection").forEach(function (card_div) {
                     card_div.classList.add("daleofmerchants-hidden");
                 });
             }

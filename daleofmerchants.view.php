@@ -82,6 +82,7 @@ class view_daleofmerchants_daleofmerchants extends game_view
         $this->tpl['RANDOMNESS'] = $this->_("Randomness");
         $this->tpl['GAME'] = $this->_("Game");
         $this->tpl['PICK_RANDOM'] = $this->_("Pick random from filtered");
+        $this->tpl['TITLE_UNAVAILABLE_DECKS'] = $this->_("Physical games have even more decks available");
 
         //Filter toggles
         $this->tpl['NONE'] = $this->_("None");

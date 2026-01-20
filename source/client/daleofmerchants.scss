@@ -118,6 +118,15 @@
 	}
 }
 
+.daleofmerchants-deck-selection-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	height: max-content;
+	width: 100%;
+	margin: 5px
+}
+
 .daleofmerchants-deck-selection-container {
 	display: flex;
 	flex-wrap: wrap;
@@ -135,13 +144,14 @@
 	}
 }
 
-.daleofmerchants-deck-selection-unavailable {
-	.daleofmerchants-deck-selection-background {
-		background-color: black;
-		background-blend-mode: luminosity;
-		opacity: 0.5;
-	}
-}
+//No special styling for unavailable decks
+// .daleofmerchants-deck-selection-unavailable {
+// 	.daleofmerchants-deck-selection-background {
+// 		background-color: black;
+// 		background-blend-mode: luminosity;
+// 		opacity: 0.5;
+// 	}
+// }
 
 //////////////////////////////////////////////////////
 ////////////////////     MONO     ////////////////////
