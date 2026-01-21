@@ -9754,7 +9754,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //return the cards to the opponent's hand
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $public_msg = clienttranslate('Umbrella: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'); 
+        $public_msg = clienttranslate('Sound Detectors: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'); 
         foreach ($limbo_cards as $dbcard) {
             if ($dbcard["id"] == $card_id) {
                 $target_dbcard = $dbcard;
