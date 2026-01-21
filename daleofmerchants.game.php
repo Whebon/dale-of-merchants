@@ -6944,11 +6944,19 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 else {
                     // Draw a card
-                    $this->draw(clienttranslate('False Alarm: ${player_name} draws a ${card_name}'),
+                    $this->draw(clienttranslate('False Alarm: ${player_name} draws a card'),
                         1, false, null, null, 
                         clienttranslate('False Alarm: ${player_name} draws a ${card_name}')
                     );
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_HEROICDEED:
+                $opponent_id = $this->extractNightOpponentId($args);
+                $this->draw(clienttranslate('Heroic Deed: ${player_name} draws a card from ${opponent_name}\'s deck'),
+                    1, false, $opponent_id, $player_id, 
+                    clienttranslate('Heroic Deed: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck')
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
