@@ -310,6 +310,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
             case 'client_falseAlarm':
                 return _("${card_name}: ${you} must choose one");
+            case 'client_secretMission':
+                return _("${card_name}: ${you} must draw a card or take a random card from an opponent");
         }
         return "MISSING DESCRIPTION";
     }

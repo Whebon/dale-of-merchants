@@ -2786,6 +2786,11 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.addActionButtonCancelClient();
 				break;
+			case 'client_secretMission':
+				//this.addActionButton("draw-button", _("Draw"), "onChoicelessTechniqueCard");
+				this.addActionButtonsOpponent(this.onSecretMission.bind(this), true);
+				this.addActionButtonCancelClient();
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -5445,7 +5450,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SECRETMISSION:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (clock == PlayerClock.CLOCK_NIGHT) {
-					this.clientScheduleTechnique('client_selectPlayerTechnique', card.id); //note: don't allow clicking the deck
+					this.clientScheduleTechnique('client_secretMission', card.id);
 				}
 				else if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -7236,6 +7241,12 @@ class DaleOfMerchants extends Gamegui
 		console.log("GOT HERE");
 		this.playTechniqueCard<'client_falseAlarm'>({
 			take_bottom_of_discard: true
+		})
+	}
+
+	onSecretMission(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_secretMission'>({
+			opponent_id: opponent_id
 		})
 	}
 

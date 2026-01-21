@@ -4227,6 +4227,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
                     case 'client_falseAlarm':
                         return _("${card_name}: ${you} must choose one");
+                    case 'client_secretMission':
+                        return _("${card_name}: ${you} must draw a card or take a random card from an opponent");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -7585,6 +7587,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     this.addActionButtonCancelClient();
                     break;
+                case 'client_secretMission':
+                    this.addActionButtonsOpponent(this.onSecretMission.bind(this), true);
+                    this.addActionButtonCancelClient();
+                    break;
             }
         };
         DaleOfMerchants.prototype.getChameleonTargets = function (card, type_id) {
@@ -9757,7 +9763,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_SECRETMISSION:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (clock == PlayerClock_2.PlayerClock.CLOCK_NIGHT) {
-                        this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+                        this.clientScheduleTechnique('client_secretMission', card.id);
                     }
                     else if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -11298,6 +11304,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.log("GOT HERE");
             this.playTechniqueCard({
                 take_bottom_of_discard: true
+            });
+        };
+        DaleOfMerchants.prototype.onSecretMission = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

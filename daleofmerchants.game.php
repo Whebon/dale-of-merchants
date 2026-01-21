@@ -6959,6 +6959,43 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_SECRETMISSION:
+                $opponent_id = $this->extractNightOpponentId($args);
+                if ($opponent_id != $player_id) {
+                    $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                    if (count($cards) == 0) {
+                        //Secret mission has no effect
+                        $this->notifyAllPlayers('message', clienttranslate('Secret Mission: ${player_name} tries to take a card from ${opponent_name}, but their hand is empty'), array(
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
+                        ));
+                    }
+                    else {
+                        //Take a random card from an opponent
+                        $card_id = array_rand($cards);
+                        $card = $cards[$card_id];
+                        $this->cards->moveCard($card_id, HAND.$player_id);
+                        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Secret Mission: ${player_name} takes a card from ${opponent_name}'), array(
+                            "player_id" => $player_id,
+                            "opponent_id" => $opponent_id,
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "_private" => array(
+                                "card" => $card,
+                                "card_name" => $this->getCardName($card)
+                            )
+                        ), clienttranslate('Secret Mission: ${player_name} takes ${card_name} from ${opponent_name}'));
+                    }
+                }
+                else {
+                    //Draw a card
+                    $this->draw(clienttranslate('Secret Mission: ${player_name} draws a card'),
+                        1, false, null, null, 
+                        clienttranslate('Secret Mission: ${player_name} draws a ${card_name}')
+                    );
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
