@@ -1372,7 +1372,7 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 //obtain the market card
                 $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
-                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought ${extended_card_name} for ${cost}'), array (
+                $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} buys ${extended_card_name} for ${cost}'), array (
                     'player_id' => MONO_PLAYER_ID,
                     'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                     'card_name' => $this->getCardName($market_card),
@@ -4579,7 +4579,7 @@ class DaleOfMerchants extends DaleTableBasic
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
         if ($from_bin) {
-            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} bought ${extended_card_name} for ${cost}'), array (
+            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} buys ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -4589,7 +4589,7 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         else {
-            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} bought ${extended_card_name} for ${cost}'), array (
+            $this->notifyAllPlayers('marketToHand', clienttranslate('${player_name} buys ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -4620,7 +4620,7 @@ class DaleOfMerchants extends DaleTableBasic
             $first_market_card_id = $this->getGameStateValue("card_id");
             if ($toss_card_id == $first_market_card_id) {
                 //TODO: forbid immediately tossing the purchased card? Use limbo? (see issue #111)
-                //throw new BgaUserException($this->_("You just bought this card, please choose another card!")); 
+                //throw new BgaUserException($this->_("You just buys this card, please choose another card!")); 
             }
 
             //toss the animalfolk card
@@ -4633,7 +4633,7 @@ class DaleOfMerchants extends DaleTableBasic
             //purchase the additional market card
             $market_card = $this->cards->getCardFromLocation($market_card_id, MARKET);
             $this->cards->moveCard($market_card_id, HAND.$player_id);
-            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} bought ${extended_card_name} for free'), array(
+            $this->notifyAllPlayers('marketToHand', clienttranslate('Royal Privilege: ${player_name} buys ${extended_card_name} for free'), array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
