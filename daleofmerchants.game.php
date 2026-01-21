@@ -1181,6 +1181,64 @@ class DaleOfMerchants extends DaleTableBasic
                     "nbr" => abs($nbr)
                 ));
                 break;
+            case CT_SNEAKYMEMBER:
+                //[☀️ Mono draws 1 🃏 from your deck.] [🌙 Mono takes 1 random animalfolk 🃏 from you.] Acquire.
+                $clock = $this->getClock(MONO_PLAYER_ID);
+                switch ($clock) {
+                    case CLOCK_DAWN:
+                        $this->notifyAllPlayers('message', clienttranslate('Sneaky Member: ${player_name} does nothing, because it is ${clock}'), array(
+                            "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                            "card_name" => $this->getCardName($technique_card),
+                            "clock" => $clock
+                        ));
+                        break;
+                    case CLOCK_DAY:
+                        $dbcards = $this->draw('', 1, false, $opponent_id, MONO_PLAYER_ID, null);
+                        if (count($dbcards) > 0) {
+                            $dbcard = $dbcards[0];
+                            $this->monoConfirmAction(clienttranslate('Sneaky Member: ${player_name} draws a ${card_name} from ${opponent_name}\'s deck, because it is ${clock}'), array(
+                                "highlight_limbo_cards" => array($dbcard),
+                                "wrap_class" => "daleofmerchants-wrap-technique",
+                                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                                "card_name" => $this->getCardName($dbcard),
+                                "clock" => $clock
+                            ));
+                        }
+                        else {
+                            $this->notifyAllPlayers('message', clienttranslate('Sneaky Member: ${player_name} does nothing, because it is ${clock} and ${opponent_name}\'s deck is empty'), array(
+                                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                                "card_name" => $this->getCardName($technique_card),
+                                "clock" => $clock
+                            ));
+                        }
+                        break;
+                    case CLOCK_NIGHT:
+                        $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                        if (count($dbcards) > 0) {
+                            $card_id = array_rand($dbcards);
+                            $dbcard = $dbcards[$card_id];
+                            $this->cards->moveCard($card_id, HAND.MONO_PLAYER_ID);
+                            $this->monoConfirmAction(clienttranslate('Sneaky Member: ${player_name} takes ${card_name} from ${opponent_name}\'s hand, because it is ${clock}'), array(
+                                "highlight_hand_cards" => array($dbcard),
+                                "wrap_class" => "daleofmerchants-wrap-technique",
+                                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                                "card_name" => $this->getCardName($dbcard),
+                                "clock" => $clock
+                            ));
+                            $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', '', array(
+                                "player_id" => MONO_PLAYER_ID,
+                                "opponent_id" => $opponent_id,
+                                "_private" => array(
+                                    "card" => $dbcard,
+                                )
+                            ));
+                        }
+                        break;
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)

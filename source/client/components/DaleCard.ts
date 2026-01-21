@@ -302,7 +302,7 @@ export class DaleCard {
     static readonly CT_SHREWDMEMBER: number = 254;
     static readonly CT_JUNGLEFOWLMONO: number = 255;
     static readonly CT_DRAMATICMEMBER: number = 256;
-    static readonly CT_STEALTHYMEMBER: number = 257;
+    static readonly CT_SNEAKYMEMBER: number = 257;
     static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 258;
     static readonly CT_DEPRECATED_CHEER: number = 259;
     static readonly CT_DEPRECATED_TASTERS: number = 260;

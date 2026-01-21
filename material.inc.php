@@ -278,7 +278,7 @@ if (!defined('CT_CARDBACK')) {
     define('CT_SHREWDMEMBER', 254);
     define('CT_JUNGLEFOWLMONO', 255);
     define('CT_DRAMATICMEMBER', 256);
-    define('CT_STEALTHYMEMBER', 257);
+    define('CT_SNEAKYMEMBER', 257);
     define('CT_DEPRECATED_MARKETDISCOVERY', 258);
     define('CT_DEPRECATED_CHEER', 259);
     define('CT_DEPRECATED_TASTERS', 260);
@@ -4609,7 +4609,7 @@ $this->card_types = array(
   ),
   257 => array(
       'type_id' => 257,
-      'name' => clienttranslate("Stealthy Member"),
+      'name' => clienttranslate("Sneaky Member"),
       'text' => clienttranslate("[DAY Mono draws 1 CARD from your deck.] [NIGHT Mono takes 1 random animalfolk CARD from you.] Acquire."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,

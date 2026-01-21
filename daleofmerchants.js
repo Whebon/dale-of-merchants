@@ -1892,7 +1892,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_SHREWDMEMBER = 254;
         DaleCard.CT_JUNGLEFOWLMONO = 255;
         DaleCard.CT_DRAMATICMEMBER = 256;
-        DaleCard.CT_STEALTHYMEMBER = 257;
+        DaleCard.CT_SNEAKYMEMBER = 257;
         DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 258;
         DaleCard.CT_DEPRECATED_CHEER = 259;
         DaleCard.CT_DEPRECATED_TASTERS = 260;
