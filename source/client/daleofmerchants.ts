@@ -2677,11 +2677,11 @@ class DaleOfMerchants extends Gamegui
 					this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', looseMarbles_hand_label);
 					this.addActionButtonsOpponent(((opponent_id: number) => {
 						this.onLooseMarblesBegin(opponent_id);
-					}).bind(this), true, TranslatableStrings.s_hand);
+					}).bind(this), true, TranslatableStrings.players_hand);
 				}
 				else if (looseMarbles_args.die_value2 == DaleDie.DIE_HAND2) {
 					const looseMarbles_fail_message = _("Please select the top card of a pile first");
-					this.addActionButtonsOpponent(((opponent_id: number) => this.showMessage(looseMarbles_fail_message, "error")).bind(this), true, TranslatableStrings.s_hand);
+					this.addActionButtonsOpponent(((opponent_id: number) => this.showMessage(looseMarbles_fail_message, "error")).bind(this), true, TranslatableStrings.players_hand);
 				}
 				break;
 			case 'coffeeGrinder':
@@ -3417,17 +3417,20 @@ class DaleOfMerchants extends Gamegui
 	 * Add selection buttons to select a single opponent
 	 * @param onOpponentHandler handler
 	 * @param include_player if true, also include the player
-	 * @param suffix add a suffix to the button label. (e.g. John -> John's deck)
+	 * @param label (optional) - default `"${player_name}"` - label on the button per player.
 	 * @param player_ids (optional) if specified, only use these player ids. should be a subset of `this.gamedatas.playerorder`
 	 */
-	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void, include_player: boolean = false, suffix: string = "", player_ids?: number[]) {
+	addActionButtonsOpponent(onOpponentHandler: (opponent_id: number) => void, include_player: boolean = false, label: string = "", player_ids?: number[]) {
 		player_ids = player_ids ?? this.gamedatas.playerorder;
+		if (!label) { //label could be undefined, in which case, it needs to be "${player_name}" instead
+			label = "${player_name}"
+		}
 		for(let opponent_id of player_ids) {
 			if (include_player || opponent_id != this.player_id) {
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
-				const label = `<span style="font-weight:bold;color:#${color};">${name}${suffix}</span>`;
-				this.addActionButton("opponent-selection-button-"+opponent_id, label, () => {onOpponentHandler(+opponent_id)}, undefined, false, 'gray');
+				const label_formatted = `<span style="font-weight:bold;color:#${color};">${label.replace("${player_name}", name)}</span>`;
+				this.addActionButton("opponent-selection-button-"+opponent_id, label_formatted, () => {onOpponentHandler(+opponent_id)}, undefined, false, 'gray');
 			}
 		}
 	}
@@ -4027,7 +4030,7 @@ class DaleOfMerchants extends Gamegui
 				)
 				//alternative selection mode (bga button)
 				this.removeActionButtons();
-				this.addActionButtonsOpponent((opponent_id: number) => {this.onRottenFood(card.id, opponent_id)}, false, _("\'s deck"));
+				this.addActionButtonsOpponent((opponent_id: number) => {this.onRottenFood(card.id, opponent_id)}, false, _("${player_name}\'s deck"));
 				this.addActionButtonCancelClient();
 				break;
 			case 'dirtyExchange':
@@ -4134,7 +4137,7 @@ class DaleOfMerchants extends Gamegui
 				)
 				//alternative selection mode (bga button)
 				this.removeActionButtons();
-				this.addActionButtonsOpponent((opponent_id: number) => {this.onManufacturedJoy(card.id, opponent_id)}, true, _("\'s discard"));
+				this.addActionButtonsOpponent((opponent_id: number) => {this.onManufacturedJoy(card.id, opponent_id)}, true, _("${player_name}\'s discard"));
 				this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, 'gray');
 				break;
 			case 'client_spend':
@@ -4197,7 +4200,7 @@ class DaleOfMerchants extends Gamegui
 					)
 					//alternative selection mode (bga buttons)
 					this.removeActionButtons();
-					this.addActionButtonsOpponent((opponent_id: number) => {this.onNightShift(card.id, opponent_id)}, true, _("\'s deck"), nightShift_args.player_ids);
+					this.addActionButtonsOpponent((opponent_id: number) => {this.onNightShift(card.id, opponent_id)}, true, _("${player_name}\'s deck"), nightShift_args.player_ids);
 				}
 				break;
 			case 'delightfulSurprise':
@@ -4243,7 +4246,7 @@ class DaleOfMerchants extends Gamegui
 					(source_id: number, target_id: number) => this.onAnchor(source_id, target_id)
 				)
 				//alternative selection mode (bga button)
-				this.addActionButtonsOpponent((opponent_id: number) => {this.onAnchor(card.id, opponent_id)}, true, _("\'s discard"));
+				this.addActionButtonsOpponent((opponent_id: number) => {this.onAnchor(card.id, opponent_id)}, true, _("${player_name}\'s discard"));
 				this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
 				break;
 			case 'badOmen':
@@ -6957,7 +6960,7 @@ class DaleOfMerchants extends Gamegui
 						if (button_opponent_id == opponent_id) {
 							this.showMessage(TranslatableStrings.please_select_a_different_player, 'error');
 						}
-					}).bind(this), true, TranslatableStrings.s_hand);
+					}).bind(this), true, TranslatableStrings.players_hand);
 				}
 				for (const [player_id, _] of Object.entries(this.playerHandSizes)) {
 					const target = $("opponent-selection-button-"+player_id)! as HTMLElement;

@@ -6,7 +6,7 @@ export class TranslatableStrings {
         return _("Please select a different player");
     }
 
-    static get s_hand(): string {
-        return _("\'s hand"); //<player_name>'s hand
+    static get players_hand(): string {
+        return _("${player_name}\'s hand"); //<player_name>'s hand
     }
 }

@@ -5083,9 +5083,9 @@ define("components/types/TranslatableStrings", ["require", "exports"], function 
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(TranslatableStrings, "s_hand", {
+        Object.defineProperty(TranslatableStrings, "players_hand", {
             get: function () {
-                return _("\'s hand");
+                return _("${player_name}\'s hand");
             },
             enumerable: false,
             configurable: true
@@ -7477,11 +7477,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', looseMarbles_hand_label);
                         this.addActionButtonsOpponent((function (opponent_id) {
                             _this.onLooseMarblesBegin(opponent_id);
-                        }).bind(this), true, TranslatableStrings_1.TranslatableStrings.s_hand);
+                        }).bind(this), true, TranslatableStrings_1.TranslatableStrings.players_hand);
                     }
                     else if (looseMarbles_args.die_value2 == DaleDie_2.DaleDie.DIE_HAND2) {
                         var looseMarbles_fail_message_1 = _("Please select the top card of a pile first");
-                        this.addActionButtonsOpponent((function (opponent_id) { return _this.showMessage(looseMarbles_fail_message_1, "error"); }).bind(this), true, TranslatableStrings_1.TranslatableStrings.s_hand);
+                        this.addActionButtonsOpponent((function (opponent_id) { return _this.showMessage(looseMarbles_fail_message_1, "error"); }).bind(this), true, TranslatableStrings_1.TranslatableStrings.players_hand);
                     }
                     break;
                 case 'coffeeGrinder':
@@ -7923,16 +7923,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
         };
-        DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler, include_player, suffix, player_ids) {
+        DaleOfMerchants.prototype.addActionButtonsOpponent = function (onOpponentHandler, include_player, label, player_ids) {
             if (include_player === void 0) { include_player = false; }
-            if (suffix === void 0) { suffix = ""; }
+            if (label === void 0) { label = ""; }
             player_ids = player_ids !== null && player_ids !== void 0 ? player_ids : this.gamedatas.playerorder;
+            if (!label) {
+                label = "${player_name}";
+            }
             var _loop_17 = function (opponent_id) {
                 if (include_player || opponent_id != this_16.player_id) {
                     var name_1 = this_16.gamedatas.players[opponent_id].name;
                     var color = this_16.gamedatas.players[opponent_id].color;
-                    var label = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(name_1).concat(suffix, "</span>");
-                    this_16.addActionButton("opponent-selection-button-" + opponent_id, label, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
+                    var label_formatted = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(label.replace("${player_name}", name_1), "</span>");
+                    this_16.addActionButton("opponent-selection-button-" + opponent_id, label_formatted, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
                 }
             };
             var this_16 = this;
@@ -8455,7 +8458,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
                     new TargetingLine_1.TargetingLine(card, client_rottenFood_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onRottenFood(source_id, target_id); });
                     this.removeActionButtons();
-                    this.addActionButtonsOpponent(function (opponent_id) { _this.onRottenFood(card.id, opponent_id); }, false, _("\'s deck"));
+                    this.addActionButtonsOpponent(function (opponent_id) { _this.onRottenFood(card.id, opponent_id); }, false, _("${player_name}\'s deck"));
                     this.addActionButtonCancelClient();
                     break;
                 case 'dirtyExchange':
@@ -8545,7 +8548,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_manufacturedJoy_label);
                     new TargetingLine_1.TargetingLine(card, client_manufacturedJoy_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onManufacturedJoyCancelTargetingLine(); }, function (source_id, target_id) { return _this.onManufacturedJoy(source_id, target_id); });
                     this.removeActionButtons();
-                    this.addActionButtonsOpponent(function (opponent_id) { _this.onManufacturedJoy(card.id, opponent_id); }, true, _("\'s discard"));
+                    this.addActionButtonsOpponent(function (opponent_id) { _this.onManufacturedJoy(card.id, opponent_id); }, true, _("${player_name}\'s discard"));
                     this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, 'gray');
                     break;
                 case 'client_spend':
@@ -8600,7 +8603,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
                         new TargetingLine_1.TargetingLine(card, nightShift_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onNightShiftNext(); }, function (source_id, target_id) { return _this.onNightShift(source_id, target_id); });
                         this.removeActionButtons();
-                        this.addActionButtonsOpponent(function (opponent_id) { _this.onNightShift(card.id, opponent_id); }, true, _("\'s deck"), nightShift_args.player_ids);
+                        this.addActionButtonsOpponent(function (opponent_id) { _this.onNightShift(card.id, opponent_id); }, true, _("${player_name}\'s deck"), nightShift_args.player_ids);
                     }
                     break;
                 case 'delightfulSurprise':
@@ -8638,7 +8641,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.setMainTitle(anchor_label);
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', anchor_label);
                     new TargetingLine_1.TargetingLine(card, anchor_targets, "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onAnchorCancelTargetingLine(); }, function (source_id, target_id) { return _this.onAnchor(source_id, target_id); });
-                    this.addActionButtonsOpponent(function (opponent_id) { _this.onAnchor(card.id, opponent_id); }, true, _("\'s discard"));
+                    this.addActionButtonsOpponent(function (opponent_id) { _this.onAnchor(card.id, opponent_id); }, true, _("${player_name}\'s discard"));
                     this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
                     break;
                 case 'badOmen':
@@ -11069,7 +11072,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             if (button_opponent_id == opponent_id) {
                                 _this.showMessage(TranslatableStrings_1.TranslatableStrings.please_select_a_different_player, 'error');
                             }
-                        }).bind(this), true, TranslatableStrings_1.TranslatableStrings.s_hand);
+                        }).bind(this), true, TranslatableStrings_1.TranslatableStrings.players_hand);
                     }
                     for (var _j = 0, _k = Object.entries(this.playerHandSizes); _j < _k.length; _j++) {
                         var _l = _k[_j], player_id = _l[0], _ = _l[1];
