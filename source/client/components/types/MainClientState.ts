@@ -318,7 +318,7 @@ export class MainClientState {
                     case PlayerClock.CLOCK_NIGHT:
                         return _("${card_name}: ${you} must take the top card of the supply, bin or opponent\'s deck or discard")
                     default:
-                        return _("${card_name}: ${you} must take the top card of the supply or bin")
+                        return _("${card_name}: ${you} must take the top card of the supply or bin, because it is ${clock}")
                 }
         }
         return "MISSING DESCRIPTION";

@@ -2242,12 +2242,17 @@ class DaleOfMerchants extends DaleTableBasic
      * The active player tosses a card from their discard pile and notifies all players
      * @param string $msg notification message
      * @param int $card_id the id of a card in the discard pile to toss
+     * @param mixed $discard_id (optional) default $player_id - toss from this player's discard
      * @param array $msg_args
      */
-    function tossFromDiscard(string $msg, int $card_id, array $msg_args = array()) {
-        //1. remove the card from the discard pile
+    function tossFromDiscard(string $msg, int $card_id, mixed $discard_id = null, array $msg_args = array()) {
         $player_id = $this->getActivePlayerId();
-        $dbcards = $this->cards->removeCardsFromPile(array($card_id), DISCARD.$player_id);
+        if (!$discard_id) {
+            $discard_id = $player_id;
+        }
+
+        //1. remove the card from the discard pile$player_id = $this->getActivePlayerId();
+        $dbcards = $this->cards->removeCardsFromPile(array($card_id), DISCARD.$discard_id);
         if (count($dbcards) != 1) {
             throw new BgaVisibleSystemException("'tossFromDiscard' could not find unique card_id $card_id");
         }
@@ -2259,6 +2264,8 @@ class DaleOfMerchants extends DaleTableBasic
         $this->notifyAllPlayers('tossFromDiscard', $msg, array_merge(array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "discard_id" => $discard_id,
+            "opponent_name" => $this->getPlayerNameByIdInclMono($discard_id),
             "card_name" => $this->getCardName($dbcard),
             "card" => $dbcard
         ), $msg_args));
@@ -7038,6 +7045,29 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_PROVOCATION:
+                $opponent_id = $this->extractNightOpponentId($args);
+                $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($cards) > 0) {
+                    $card_id = array_rand($cards);
+                    $card = $cards[$card_id];
+                    $this->cards->moveCardOnTop($card_id, DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('discard', clienttranslate('Provocation: ${player_name} lets ${opponent_name} discard their ${card_name}'), array(
+                        "player_id" => $opponent_id,
+                        "card" => $card,
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($card)
+                    ));
+                    $this->setGameStateValue("opponent_id", $opponent_id);
+                    $this->setGameStateValue("card_id", $card_id);
+                    $this->beginResolvingCard($technique_card_id);
+                    $this->gamestate->nextState("trProvocation");
+                }
+                else {
+                    $this->fullyResolveCard($player_id, $technique_card);
+                }
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -9864,6 +9894,21 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actProvocation($is_tossing) {
+        $this->checkAction("actProvocation");
+        $player_id = $this->getActivePlayerId();
+        if ($is_tossing) {
+            $card_id = $this->getGameStateValue("card_id");
+            $opponent_id = $this->getGameStateValue("opponent_id");
+            $this->tossFromDiscard(
+                clienttranslate('Provocation: ${player_name} tosses ${opponent_name}\'s ${card_name}'),
+                $card_id,
+                $opponent_id
+            );
+        }
+        $this->fullyResolveCard($player_id);
+    }
+
 
     // ^
     // |
@@ -10239,6 +10284,13 @@ class DaleOfMerchants extends DaleTableBasic
         return array_merge(
             $this->argOpponentName(),
             $this->argCardNamePrivate()
+        );
+    }
+
+    function argOpponentNameAndCardNamePublic() {
+        return array_merge(
+            $this->argOpponentName(),
+            $this->argCardNamePublic()
         );
     }
 

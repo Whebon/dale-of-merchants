@@ -160,6 +160,7 @@ declare global {
 		}
 		'tossFromDiscard': {
 			player_id: number
+			discard_id?: number
 			card: DbCard
 		}
 		'tossFromDeck': {

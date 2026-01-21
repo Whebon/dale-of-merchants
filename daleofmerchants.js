@@ -4234,7 +4234,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                             case PlayerClock_2.PlayerClock.CLOCK_NIGHT:
                                 return _("${card_name}: ${you} must take the top card of the supply, bin or opponent\'s deck or discard");
                             default:
-                                return _("${card_name}: ${you} must take the top card of the supply or bin");
+                                return _("${card_name}: ${you} must take the top card of the supply or bin, because it is ${clock}");
                         }
                 }
                 return "MISSING DESCRIPTION";
@@ -5689,7 +5689,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                             }
                         }
                     }
-                    if (client_capture_targets_1.length > 0) {
+                    if (client_capture_targets_1.length == 0) {
                         this.marketDeck.setSelectionMode('noneCantViewContent');
                         var target_deck = (_g = this.marketDeck.topCardHTML) !== null && _g !== void 0 ? _g : this.marketDeck.placeholderHTML;
                         client_capture_targets_1.push(target_deck);
@@ -7663,6 +7663,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_secretMission':
                     this.addActionButtonsOpponent(this.onSecretMission.bind(this), true);
                     this.addActionButtonCancelClient();
+                    break;
+                case 'provocation':
+                    this.addActionButton("toss-button", _("Toss"), "onProvocationToss");
+                    this.addActionButton("skip-button", _("Skip"), "onProvocationSkip", undefined, false, 'gray');
                     break;
             }
         };
@@ -11388,6 +11392,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 opponent_id: opponent_id
             });
         };
+        DaleOfMerchants.prototype.onProvocationToss = function () {
+            this.bgaPerformAction('actProvocation', {
+                is_tossing: true
+            });
+        };
+        DaleOfMerchants.prototype.onProvocationSkip = function () {
+            this.bgaPerformAction('actProvocation', {
+                is_tossing: false
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -12352,8 +12366,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.myLimbo.removeAllTo("overall_player_board_" + this.unique_opponent_id);
         };
         DaleOfMerchants.prototype.notif_tossFromDiscard = function (notif) {
+            var _a;
             console.warn("notif_tossFromDiscard");
-            var playerDiscard = this.playerDiscards[notif.args.player_id];
+            var playerDiscard = this.playerDiscards[(_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id];
             var dbcard = notif.args.card;
             var card = DaleCard_10.DaleCard.of(dbcard);
             var index = +dbcard.location_arg - 1;

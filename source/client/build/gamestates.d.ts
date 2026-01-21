@@ -221,6 +221,7 @@ interface GameStates {
 			'trCapuchin5a': 113,
 			'trJungleFowl5A': 115,
 			'trSneakyScout': 116,
+			'trProvocation': 117,
 		},
 	},
 	31: {
@@ -1508,6 +1509,23 @@ interface GameStates {
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	117: {
+		'name': 'provocation',
+		'description': 'Provocation: ${actplayer} may toss ${card_name} from ${opponent_name}\\\'s discard',
+		'descriptionmyturn': 'Provocation: ${you} may toss ${card_name} from ${opponent_name}\\\'s discard',
+		'type': 'activeplayer',
+		'args': 'argOpponentNameAndCardNamePublic',
+		'possibleactions': {
+			'actProvocation': [{
+				'name': 'is_tossing',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
 			}],
 		},
 		'transitions': {

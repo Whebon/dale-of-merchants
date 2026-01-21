@@ -805,7 +805,7 @@ class DaleOfMerchants extends Gamegui
 						}
 					}
 				}
-				if (client_capture_targets.length > 0) {
+				if (client_capture_targets.length == 0) {
 					// edge case: nothing to capture, allow selecting the deck to fizzle
 					this.marketDeck.setSelectionMode('noneCantViewContent');
 					const target_deck = this.marketDeck.topCardHTML ?? this.marketDeck.placeholderHTML;
@@ -2864,6 +2864,10 @@ class DaleOfMerchants extends Gamegui
 				//this.addActionButton("draw-button", _("Draw"), "onChoicelessTechniqueCard");
 				this.addActionButtonsOpponent(this.onSecretMission.bind(this), true);
 				this.addActionButtonCancelClient();
+				break;
+			case 'provocation':
+				this.addActionButton("toss-button", _("Toss"), "onProvocationToss");
+				this.addActionButton("skip-button", _("Skip"), "onProvocationSkip", undefined, false, 'gray');
 				break;
 		}
 		//(~actionbuttons)
@@ -7332,6 +7336,18 @@ class DaleOfMerchants extends Gamegui
 		})
 	}
 
+	onProvocationToss() {
+		this.bgaPerformAction('actProvocation', {
+			is_tossing: true
+		});
+	}
+
+	onProvocationSkip() {
+		this.bgaPerformAction('actProvocation', {
+			is_tossing: false
+		});
+	}
+
 	//(~on)
 
 
@@ -8453,7 +8469,7 @@ class DaleOfMerchants extends Gamegui
 
 	notif_tossFromDiscard(notif: NotifAs<'tossFromDiscard'>) {
 		console.warn("notif_tossFromDiscard");
-		const playerDiscard = this.playerDiscards[notif.args.player_id]!;
+		const playerDiscard = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
 		const dbcard = notif.args.card;
 		const card = DaleCard.of(dbcard);
 		const index = +dbcard.location_arg - 1; //-1 because location_args are 1-indexed and piles are 0-indexed

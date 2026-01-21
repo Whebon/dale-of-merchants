@@ -196,6 +196,7 @@ $machinestates = array(
 			'trCapuchin5a' => 113,
 			'trJungleFowl5A' => 115,
 			'trSneakyScout' => 116,
+			'trProvocation' => 117,
 		),
 	),
 	31 => array(
@@ -982,6 +983,17 @@ $machinestates = array(
 		'action' => 'stSneakyScout',
 		'args' => 'argOpponentName',
 		'possibleactions' => ['actSneakyScout'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	117 => array(
+		'name' => 'provocation',
+		'description' => clienttranslate('Provocation: ${actplayer} may toss ${card_name} from ${opponent_name}\'s discard'),
+		'descriptionmyturn' => clienttranslate('Provocation: ${you} may toss ${card_name} from ${opponent_name}\'s discard'),
+		'type' => 'activeplayer',
+		'args' => 'argOpponentNameAndCardNamePublic',
+		'possibleactions' => ['actProvocation'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),
