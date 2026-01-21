@@ -1094,7 +1094,7 @@ namespace Bga\GameFramework {
          *
          * @return array<int, int>
          */
-        final protected function getPrevPlayerTable($players): array
+        final protected function getPrevPlayerTable($players = null): array
         {
             return [];
         }
@@ -1918,6 +1918,16 @@ namespace {
         final public function setPrivateState(int $playerId, int $newStateId): void
         {
             //
+        }
+
+        /**
+         * Get an associative array of current game state attributes. (new api)
+         *
+         * @see states.inc.php
+         */
+        final public function getCurrentMainState(): array
+        {
+            return [];
         }
 
         /**

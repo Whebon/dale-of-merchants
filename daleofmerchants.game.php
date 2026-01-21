@@ -244,7 +244,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->DISABLED_SOLO_ANIMALFOLK_IDS
         ) : $this->DISABLED_ANIMALFOLK_IDS;
 
-        if ($this->isSoloGame() && $this->gamestate->state()["name"] == "gameEnd") {
+        if ($this->isSoloGame() && $this->gamestate->getCurrentMainState()["name"] == "gameEnd") {
             $result['monoHand'] = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
         }
   
@@ -4178,7 +4178,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
         }
         else if ($this->card_types[$type_id]["has_plus"]) {
-            if ($this->getActivePlayerId() == $player_id || $this->gamestate->state()["type"] == "game") {
+            if ($this->getActivePlayerId() == $player_id || $this->gamestate->getCurrentMainState()["type"] == "game") {
                 $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
             }
             else {
@@ -7139,7 +7139,7 @@ class DaleOfMerchants extends DaleTableBasic
         $technique_type_id = $this->getTypeId($technique_card);
 
         //Verify the card is being resolved in the correct phase
-        $current_state_name = $this->gamestate->state()["name"];
+        $current_state_name = $this->gamestate->getCurrentMainState()["name"];
         $type_id = $this->getTypeId($technique_card);
         $trigger = $this->card_types[$type_id]["trigger"];
         switch($trigger) {
@@ -7530,7 +7530,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->incStat(1, "actions_passive", $player_id);
 
         //Check triggers
-        $isPostCleanUpPhase = $this->gamestate->state()['name'] == 'postCleanUpPhase';
+        $isPostCleanUpPhase = $this->gamestate->getCurrentMainState()['name'] == 'postCleanUpPhase';
         if ($isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] != TRIGGER_ONCLEANUP) {
             throw new BgaUserException($this->_("This card's ability can not be used at the end of your turn"));
         }
