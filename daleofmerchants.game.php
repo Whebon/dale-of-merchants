@@ -244,7 +244,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->DISABLED_SOLO_ANIMALFOLK_IDS
         ) : $this->DISABLED_ANIMALFOLK_IDS;
 
-        if ($this->isSoloGame() && $this->gamestate->getCurrentMainState()["name"] == "gameEnd") {
+        if ($this->isSoloGame() && $this->gamestate->getCurrentMainState()->name == "gameEnd") {
             $result['monoHand'] = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
         }
   
@@ -1799,7 +1799,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //if we are already in the trigger state, only try to trigger more cards (schedule cards that are on cooldown)
-        $current_state_id = $this->gamestate->state_id();
+        $current_state_id = $this->gamestate->getCurrentMainStateId();
         $schedule = ($current_state_id == 28) ? SCHEDULE_COOLDOWN : SCHEDULE;
 
         //trigger all related schedule cards
@@ -1856,7 +1856,7 @@ class DaleOfMerchants extends DaleTableBasic
             throw new BgaVisibleSystemException("Beaver trigger: '$next_transition' is not a valid transition in in the current gamestate");
         }
         $next_player_id = $this->getActivePlayerId();
-        $next_state_id = $next_transition === null ? $this->gamestate->state_id() : $this->gamestate->states[$current_state_id]['transitions'][$next_transition];
+        $next_state_id = $next_transition === null ? $this->gamestate->getCurrentMainStateId() : $this->gamestate->states[$current_state_id]['transitions'][$next_transition];
         $this->setGameStateValue("trigger_next_player_id", $next_player_id);
         $this->setGameStateValue("trigger_next_state_id", $next_state_id);
         if ($trigger_player_id == $next_player_id) {
@@ -7139,7 +7139,7 @@ class DaleOfMerchants extends DaleTableBasic
         $technique_type_id = $this->getTypeId($technique_card);
 
         //Verify the card is being resolved in the correct phase
-        $current_state_name = $this->gamestate->getCurrentMainState()["name"];
+        $current_state_name = $this->gamestate->getCurrentMainState()->name;
         $type_id = $this->getTypeId($technique_card);
         $trigger = $this->card_types[$type_id]["trigger"];
         switch($trigger) {
@@ -7530,7 +7530,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->incStat(1, "actions_passive", $player_id);
 
         //Check triggers
-        $isPostCleanUpPhase = $this->gamestate->getCurrentMainState()['name'] == 'postCleanUpPhase';
+        $isPostCleanUpPhase = $this->gamestate->getCurrentMainState()->name == 'postCleanUpPhase';
         if ($isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] != TRIGGER_ONCLEANUP) {
             throw new BgaUserException($this->_("This card's ability can not be used at the end of your turn"));
         }

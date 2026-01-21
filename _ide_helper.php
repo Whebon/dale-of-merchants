@@ -1921,13 +1921,23 @@ namespace {
         }
 
         /**
-         * Get an associative array of current game state attributes. (new api)
+         * Returns the current main state, ignoring private parallel states. (new api, its documentation makes me sad)
+         * Some object, who knows what
          *
          * @see states.inc.php
          */
-        final public function getCurrentMainState(): array
+        final public function getCurrentMainState(): mixed
         {
             return [];
+        }
+
+        /**
+         * Get the id of the current game state (rarely useful, it's best to use name, unless you use constants for
+         * state ids).
+         */
+        final public function getCurrentMainStateId(): string|int
+        {
+            return '0'; 
         }
 
         /**
