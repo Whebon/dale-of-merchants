@@ -7791,7 +7791,8 @@ class DaleOfMerchants extends Gamegui
 		}
 
 		//update the score
-		this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1);
+		//this.scoreCtrl[notif.args.player_id]?.toValue(notif.args.stack_index_plus_1); //raises a BGA code check warning
+		(this as any).bga.playerPanels.getScoreCounter()?.toValue(notif.args.stack_index_plus_1);
 
 		//update the hand sizes
 		if (notif.args.from == 'hand') {
