@@ -554,8 +554,7 @@ declare global {
 		'client_capuchin5b': { opponent_id: number, card_id: number }
 		'client_falseAlarm': { take_bottom_of_discard: boolean }
 		'client_secretMission': { opponent_id: number }
-		'client_captureDawnDay': { opponent_id: number, from_discard: boolean }
-		'client_captureNight': { opponent_id: number, from_discard: boolean }
+		'client_capture': { opponent_id: number, from_deck: boolean }
 	}
 
 	interface ClientPassiveChoice {
@@ -642,6 +641,7 @@ declare global {
 		'client_skink5a': { technique_card_id: number, nbr: number }
 		'client_skink5b': { passive_card_id: number, card_name: string }
 		'client_choicelessBatCard': { technique_card_id: number, clock: number }
+		'client_capture': { technique_card_id: number, clock: number }
 	}
 
 	//

@@ -82,6 +82,9 @@ class DaleOfMerchants extends Gamegui
 	/** A hidden draw pile for each player AND the market */
 	allDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
 
+	/** A discard pile for each player AND the market */
+	allDiscards: Record<number | 'mark', Pile> = {'mark': this.marketDiscard};
+
 	/** Boolean that indicates if myLimbo is currently representing Mono's hand */
 	mono_hand_is_visible = false;
 
@@ -257,6 +260,7 @@ class DaleOfMerchants extends Gamegui
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));
 			}
+			this.allDiscards[player_id] = this.playerDiscards[player_id];
 
 			//stall per player
 			this.playerStalls[player_id] = new Stall(this, +player_id);
@@ -754,6 +758,9 @@ class DaleOfMerchants extends Gamegui
 					throw new Error("No valid targets for Treasure Hunter ('client_fizzle' should have been entered instead of 'client_treasureHunter')");
 				}
 				setTimeout((() => {
+					if (this.mainClientState.name != 'client_treasureHunter') {
+						return;
+					}
 					new TargetingLine(
 						new DaleCard(client_treasureHunter_args.technique_card_id),
 						client_treasureHunter_targets,
@@ -762,6 +769,61 @@ class DaleOfMerchants extends Gamegui
 						"daleofmerchants-line-technique",
 						(source_id: number) => this.onCancelClient(),
 						(source_id: number, target_id: number) => this.onTreasureHunter(target_id)
+					)
+				}).bind(this), 500);
+				break;
+			case 'client_capture':
+				const client_capture_args = (this.mainClientState.args as ClientGameStates['client_capture']);
+				const client_capture_targets: (DaleCard|HTMLElement)[] = [];
+				if (this.marketDeck.size + this.marketDiscard.size > 0) {
+					this.marketDeck.setSelectionMode('noneCantViewContent');
+					const target_deck = this.marketDeck.topCardHTML ?? this.marketDeck.placeholderHTML;
+					client_capture_targets.push(target_deck);
+					target_deck.dataset['target_id'] = String(-this.player_id); // current player_id means market
+				}
+				if (this.marketDiscard.size > 0) {
+					this.marketDiscard.setSelectionMode('noneCantViewContent');
+					const target_discard = this.marketDiscard.topCardHTML ?? this.marketDiscard.placeholderHTML;
+					client_capture_targets.push(target_discard);
+					target_discard.dataset['target_id'] = String(this.player_id);
+				}
+				for (const player_id of this.gamedatas.playerorder) {
+					const deck = this.playerDecks[player_id]!;
+					const discard = this.playerDiscards[player_id]!;
+					if (player_id != this.player_id && client_capture_args.clock == PlayerClock.CLOCK_NIGHT) {
+						if (deck.size + discard.size > 0) {
+							deck.setSelectionMode('noneCantViewContent');
+							const target_deck = deck.topCardHTML ?? deck.placeholderHTML;
+							client_capture_targets.push(target_deck);
+							target_deck.dataset['target_id'] = String(-player_id); // negation is important here (see onCapture)
+						}
+						if (discard.size > 0) {
+							discard.setSelectionMode('noneCantViewContent');
+							const target_discard = discard.topCardHTML ?? discard.placeholderHTML;
+							client_capture_targets.push(target_discard);
+							target_discard.dataset['target_id'] = String(player_id);
+						}
+					}
+				}
+				if (client_capture_targets.length > 0) {
+					// edge case: nothing to capture, allow selecting the deck to fizzle
+					this.marketDeck.setSelectionMode('noneCantViewContent');
+					const target_deck = this.marketDeck.topCardHTML ?? this.marketDeck.placeholderHTML;
+					client_capture_targets.push(target_deck);
+					target_deck.dataset['target_id'] = String(-this.player_id); // current player_id means market
+				}
+				setTimeout((() => {
+					if (this.mainClientState.name != 'client_capture') {
+						return;
+					}
+					new TargetingLine(
+						new DaleCard(client_capture_args.technique_card_id),
+						client_capture_targets,
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
+						(source_id: number) => this.onCancelClient(),
+						(source_id: number, target_id: number) => this.onCapture(target_id)
 					)
 				}).bind(this), 500);
 				break;
@@ -1508,6 +1570,15 @@ class DaleOfMerchants extends Gamegui
 				}
 				TargetingLine.remove();
 				break;
+			case 'client_capture':
+				for (const [player_id, discard] of Object.entries(this.allDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				for (const [player_id, deck] of Object.entries(this.allDecks)) {
+					deck.setSelectionMode('none');
+				}
+				TargetingLine.remove();
+				break;
 			case 'client_newSeason':
 				this.myDiscard.setSelectionMode('none');
 				break;
@@ -2102,6 +2173,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_treasureHunter':
 			case 'client_carefreeSwapper':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_capture':
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_newSeason':
@@ -5471,12 +5545,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_CAPTURE:
-				if (clock == PlayerClock.CLOCK_NIGHT) {
-					this.clientScheduleTechnique('client_captureNight', card.id);
-				}
-				else {
-					this.clientScheduleTechnique('client_captureDawnDay', card.id, { clock: clock });
-				}
+				this.clientScheduleTechnique('client_capture', card.id, { clock: clock });
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -5975,6 +6044,16 @@ class DaleOfMerchants extends Gamegui
 		// -123		->	draw a card from 123's deck 
 		// 123 		->	take the top card of 123's discard
 		this.playTechniqueCard<'client_treasureHunter'>({
+			opponent_id: Math.abs(opponent_id),
+			from_deck: opponent_id < 0
+		});
+	}
+
+	onCapture(opponent_id: number) {
+		//uses a small botch that assumes player_ids are positive
+		// -123		->	draw a card from 123's deck 
+		// 123 		->	take the top card of 123's discard
+		this.playTechniqueCard<'client_capture'>({
 			opponent_id: Math.abs(opponent_id),
 			from_deck: opponent_id < 0
 		});
@@ -8040,7 +8119,7 @@ class DaleOfMerchants extends Gamegui
 	notif_discardToHand(notif: NotifAs<'discardToHand'>) {
 		console.warn("notif_discardToHand", notif.args);
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		const discardPile = this.playerDiscards[notif.args.discard_id ?? notif.args.player_id]!;
+		const discardPile = this.allDiscards[notif.args.discard_id ?? notif.args.player_id]!; //also supports market discard
 		this.pileToPlayerStock(notif.args.card, discardPile, stock, notif.args.player_id, +notif.args.card.location_arg);
 		//update the hand sizes
 		if (!notif.args.to_limbo) {

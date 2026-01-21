@@ -1,6 +1,7 @@
 import Gamegui = require('ebg/core/gamegui');
 import { DaleCard } from '../DaleCard';
 import { DaleIcons } from '../DaleIcons';
+import { PlayerClock } from '../PlayerClock';
 
 class ServerState {}
 class PreviousState {
@@ -312,6 +313,13 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose one");
             case 'client_secretMission':
                 return _("${card_name}: ${you} must draw a card or take a random card from an opponent");
+            case 'client_capture':
+                switch ((this._args as ClientGameStates['client_capture']).clock) {
+                    case PlayerClock.CLOCK_NIGHT:
+                        return _("${card_name}: ${you} must take the top card of the supply, bin or opponent\'s deck or discard")
+                    default:
+                        return _("${card_name}: ${you} must take the top card of the supply or bin")
+                }
         }
         return "MISSING DESCRIPTION";
     }

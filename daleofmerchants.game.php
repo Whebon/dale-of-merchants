@@ -6996,6 +6996,48 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_CAPTURE:
+                $from_deck = (bool)$args["from_deck"];
+                $opponent_id = $this->extractNightOpponentId($args);
+                if ($opponent_id != $player_id) {
+                    $msg_deck_public = clienttranslate('Capture: ${player_name} draws a card from ${opponent_name}\'s deck');
+                    $msg_deck_private = clienttranslate('Capture: ${player_name} draws ${card_name} from ${opponent_name}\'s deck');
+                    $msg_discard = clienttranslate('Capture: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile');
+                }
+                else {
+                    $opponent_id = MARKET;
+                    $msg_deck_public = clienttranslate('Capture: ${player_name} draws a card from the supply');
+                    $msg_deck_private = clienttranslate('Capture: ${player_name} draws ${card_name} from the supply');
+                    $msg_discard = clienttranslate('Capture: ${player_name} takes ${card_name} from the bin');
+                }
+                if ($from_deck) {
+                    // Take a card from a deck
+                    $this->draw(
+                        $msg_deck_public, 
+                        1,
+                        false,
+                        $opponent_id,
+                        $player_id,
+                        $msg_deck_private
+                    );
+                }
+                else {
+                    // Take a card from a discard pile
+                    $dbcard = $this->cards->getCardOnTop(DISCARD.$opponent_id);
+                    if ($dbcard) {
+                        $this->cards->moveCard($dbcard["id"], HAND.$player_id);
+                        $this->notifyAllPlayers('discardToHand', $msg_discard, array(
+                            "player_id" => $player_id,
+                            "discard_id" => $opponent_id,
+                            "opponent_name" => $opponent_id == MARKET ? "" : $this->getPlayerNameByIdInclMono($opponent_id),
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "card_name" => $this->getCardName($dbcard),
+                            "card" => $dbcard
+                        ));
+                    }
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
