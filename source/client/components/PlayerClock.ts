@@ -62,6 +62,11 @@ export class PlayerClock {
      * @param newPosition either CLOCK_DAWN, CLOCK_DAY or CLOCK_NIGHT
      */
     public setClock(newPosition: number) {
+        if (this.position != newPosition) {
+            this.wrap.classList.remove("daleofmerchants-grow");
+            this.wrap.offsetWidth; // force reflow
+            this.wrap.classList.add("daleofmerchants-grow");
+        }
         this.position = newPosition;
         this.wrap!.dataset['clock'] = this.position.toString();
         this.icon?.remove();

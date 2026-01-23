@@ -898,6 +898,11 @@ define("components/PlayerClock", ["require", "exports", "components/DaleIcons"],
         };
         PlayerClock.prototype.setClock = function (newPosition) {
             var _a;
+            if (this.position != newPosition) {
+                this.wrap.classList.remove("daleofmerchants-grow");
+                this.wrap.offsetWidth;
+                this.wrap.classList.add("daleofmerchants-grow");
+            }
             this.position = newPosition;
             this.wrap.dataset['clock'] = this.position.toString();
             (_a = this.icon) === null || _a === void 0 ? void 0 : _a.remove();
