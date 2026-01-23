@@ -1216,6 +1216,7 @@ class DaleOfMerchants extends DaleTableBasic
                         break;
                     case CLOCK_NIGHT:
                         $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                        $dbcards = array_filter($dbcards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
                         if (count($dbcards) > 0) {
                             $card_id = array_rand($dbcards);
                             $dbcard = $dbcards[$card_id];
@@ -1234,6 +1235,12 @@ class DaleOfMerchants extends DaleTableBasic
                                 "_private" => array(
                                     "card" => $dbcard,
                                 )
+                            ));
+                        }
+                        else {
+                            $this->notifyAllPlayers('message', clienttranslate('Sneaky Member: ${player_name} does not take a card, because ${opponent_name} doesn\'t have any animalfolk cards in hand'), array(
+                                "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                             ));
                         }
                         break;
