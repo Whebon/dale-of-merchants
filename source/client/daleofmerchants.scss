@@ -723,6 +723,7 @@
 	border-radius: 10px;
 	z-index: 100;
 	background-image: url("img/cards_selection.jpg");
+	transition: opacity 0.3s ease, background-color 0.3s ease; //animation for daleofmerchants-filtered-out
 }
 
 .daleofmerchants-card {
