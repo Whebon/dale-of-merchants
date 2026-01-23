@@ -2149,12 +2149,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectPlayerDeckTechnique':
 				const client_selectPlayerDeckTechnique_player_ids: number[] = [];
-				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+				for (const player_id of this.gamedatas.playerorder) {
+					const deck = this.playerDecks[player_id]!;
 					if (this.playerDiscards[+player_id]!.size + deck.size > 0) {
 						client_selectPlayerDeckTechnique_player_ids.push(+player_id);
 					}
 				}
-				console.log(client_selectPlayerDeckTechnique_player_ids);
 				if (client_selectPlayerDeckTechnique_player_ids.length > 0) {
 					this.addActionButtonsOpponent(this.onSelectPlayerDeckTechnique.bind(this), true, undefined, client_selectPlayerDeckTechnique_player_ids);
 				}
