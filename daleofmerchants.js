@@ -159,6 +159,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getChameleonIcon = function () {
             return this.getIcon(3, 5);
         };
+        DaleIcons.getCapuchin5aIcon = function () {
+            return this.getIcon(3, 6);
+        };
         DaleIcons.getSpyglassIcon = function () {
             return this.getIcon(4, 0);
         };
@@ -176,6 +179,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         };
         DaleIcons.getBluePileFullIcon = function () {
             return this.getIcon(4, 5);
+        };
+        DaleIcons.getJunglefowl4Icon = function () {
+            return this.getIcon(4, 6);
         };
         DaleIcons.getNumberIcon = function (index) {
             return this.getIcon(5, index);
@@ -265,14 +271,8 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getRandomIcon = function () {
             return this.getIcon(11, 3);
         };
-        DaleIcons.getCapuchin5aIcon = function () {
-            return this.getPompousProfessionalIcon();
-        };
-        DaleIcons.getJunglefowl4Icon = function () {
-            return this.getSpyglassIcon();
-        };
         DaleIcons.ROWS = 12;
-        DaleIcons.COLUMNS = 6;
+        DaleIcons.COLUMNS = 7;
         DaleIcons.ICON_WIDTH = 150;
         DaleIcons.ICON_HEIGHT = 150;
         DaleIcons.BACKGROUND_WIDTH = DaleIcons.ICON_WIDTH * DaleIcons.COLUMNS;

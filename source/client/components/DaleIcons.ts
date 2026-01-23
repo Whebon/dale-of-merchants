@@ -1,6 +1,6 @@
 export class DaleIcons {
     private static readonly ROWS = 12;
-    private static readonly COLUMNS = 6;
+    private static readonly COLUMNS = 7;
     
     private static readonly ICON_WIDTH = 150;
     private static readonly ICON_HEIGHT = 150;
@@ -78,6 +78,10 @@ export class DaleIcons {
         return this.getIcon(3, 5);
     }
 
+    public static getCapuchin5aIcon(): HTMLElement {
+        return this.getIcon(3, 6);
+    }
+
     /////////////////////////////
     ////////    ROW 4    ////////
     /////////////////////////////
@@ -104,6 +108,10 @@ export class DaleIcons {
 
     public static getBluePileFullIcon(): HTMLElement {
         return this.getIcon(4, 5); //unused so far
+    }
+
+    public static getJunglefowl4Icon(): HTMLElement {
+        return this.getIcon(4, 6);
     }
 
     /////////////////////////////
@@ -255,12 +263,4 @@ export class DaleIcons {
     ///////////////////////////////
     ////////    MISSING    ////////
     ///////////////////////////////
-
-    public static getCapuchin5aIcon(): HTMLElement {
-        return this.getPompousProfessionalIcon();
-    }
-
-    public static getJunglefowl4Icon(): HTMLElement {
-        return this.getSpyglassIcon();
-    }
 }
