@@ -453,7 +453,7 @@ export class Stall implements CardSlotManager, DaleLocation {
     /**
      * Set the correct placeholder class based on the container width. Note: we don't update stack 0, as it is always fully visible.
      */
-    private onResize() {
+    public onResize() {
         //set portrait or landscape mode
         if (window.innerWidth < 1250) {
             this.wrapPortrait.appendChild(this.container);

@@ -425,6 +425,9 @@ declare global {
 			wrap_class?: DaleWrapClass
 			highlight_hand_cards?: {[card_id: number]: DbCard}, //cards in the player's hand
 		}
+		'revealAllHiddenGamedatas': {
+			hiddenGamedatas: HiddenGamedatas
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
@@ -472,6 +475,21 @@ declare global {
 		'animalfolkIds': number[]
 
 		'monoHand': {[card_id: number]: DbCard} | undefined
+
+		'hiddenGamedatas': HiddenGamedatas | undefined
+	}
+
+	interface HiddenGamedatas {
+		'decks': {
+			"market": {[card_id: number]: DbCard}
+			[player_id: number]: {[card_id: number]: DbCard}
+		}
+		'hand': {
+			[player_id: number]: {[card_id: number]: DbCard}
+		}
+		'storedCards': {
+			[player_id: number]: {[card_id: number]: DbCard}
+		}
 	}
 
 	type ClientChoiceSubsetValidation<T extends Record<keyof T, unknown>, U extends Record<string, unknown>> = {

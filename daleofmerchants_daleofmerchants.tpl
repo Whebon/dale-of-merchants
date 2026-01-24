@@ -137,7 +137,7 @@
                 </div>
                 <div id="daleofmerchants-schedule-wrap-{PLAYER_ID}" class="daleofmerchants-flat-stock daleofmerchants-schedule">
                     <div class="daleofmerchants-hidden daleofmerchants-label"></div> <!-- not used, but exists so this component can be a proper daleStock -->
-                    <h3 class="daleofmerchants-component-name"> {SCHEDULE} </h3>
+                    <h3 id="daleofmerchants-schedule-title-{PLAYER_ID}" class="daleofmerchants-component-name"> {SCHEDULE} </h3>
                     <div id="daleofmerchants-schedule-{PLAYER_ID}"></div>
                 </div>
                 <!-- only needed for the tree kangaroos -->

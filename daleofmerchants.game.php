@@ -244,10 +244,35 @@ class DaleOfMerchants extends DaleTableBasic
             $this->DISABLED_SOLO_ANIMALFOLK_IDS
         ) : $this->DISABLED_ANIMALFOLK_IDS;
 
-        if ($this->isSoloGame() && $this->gamestate->getCurrentMainState()->name == "gameEnd") {
-            $result['monoHand'] = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+        //gameEnd screen
+        if ($this->gamestate->getCurrentMainState()->name == "gameEnd") {
+            if ($this->isSoloGame()) {
+                $result['monoHand'] = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+            }
+            $result['hiddenGamedatas'] = $this->getHiddenGamedatas();
         }
   
+        return $result;
+    }
+
+    /**
+     * Add hidden gamedatas. Will be send to all players when the game ended
+     */
+    function getHiddenGamedatas(): array {
+        $players = $this->loadPlayersBasicInfosInclMono();
+        $result = array(
+            'decks' => array(),
+            'hand' => array(),
+            'storedCards' => array()
+        );
+        $result['decks'] = array(
+            'market' => $this->cards->getCardsInLocation(DECK.MARKET, null, 'location_arg')
+        );
+        foreach ( $players as $player_id => $player ) {
+            $result['decks'][$player_id] = $this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg');
+            $result['hand'][$player_id] = $this->cards->getCardsInLocation(HAND.$player_id, null, 'location_arg');
+            $result['storedCards'][$player_id] = $this->cards->getCardsInLocation(STORED_CARDS.$player_id, null, 'location_arg');
+        }
         return $result;
     }
 
@@ -10642,6 +10667,16 @@ class DaleOfMerchants extends DaleTableBasic
             $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"
             $this->DbQuery("UPDATE player SET `player_score` = $score_difference, `player_score_aux` = 0");
         }
+
+        // Reveal all hidden information
+        $hiddenGamedatas = $this->getHiddenGamedatas();
+        foreach ( $players as $player_id => $player ) {
+            $this->cards->moveAllCardsInLocation(HAND.$player_id, SCHEDULE.$player_id);
+            $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, SCHEDULE.$player_id);
+        }
+        $this->notifyAllPlayers("revealAllHiddenGamedatas", '', array(
+            'hiddenGamedatas' => $hiddenGamedatas
+        ));
         $this->gamestate->nextState("trGameEnd");
     }
 

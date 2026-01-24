@@ -3034,7 +3034,9 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
     var HiddenPile = (function (_super) {
         __extends(HiddenPile, _super);
         function HiddenPile() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.showTopCardFaceUp = false;
+            return _this;
         }
         HiddenPile.prototype.push = function (_card, from, onEnd, duration, delay) {
             _super.prototype.push.call(this, new DaleCard_3.DaleCard(0, 0), from, onEnd, duration, delay);
@@ -3049,19 +3051,26 @@ define("components/HiddenPile", ["require", "exports", "components/DaleCard", "c
         };
         HiddenPile.prototype.peek = function (exclude_sliding_cards) {
             if (exclude_sliding_cards === void 0) { exclude_sliding_cards = false; }
-            return _super.prototype.peek.call(this, exclude_sliding_cards) ? new DaleCard_3.DaleCard(0, 0) : undefined;
+            var topCard = _super.prototype.peek.call(this, exclude_sliding_cards);
+            if (this.showTopCardFaceUp) {
+                return topCard;
+            }
+            return topCard ? new DaleCard_3.DaleCard(0, 0) : undefined;
         };
-        HiddenPile.prototype.setContent = function (cards) {
+        HiddenPile.prototype.setContent = function (cards, showTopCardFaceUp) {
+            if (showTopCardFaceUp === void 0) { showTopCardFaceUp = false; }
             if (this.cards.length != cards.length) {
                 throw Error("Client expected a deck of size ".concat(this.cards.length, ", but got size ").concat(cards.length, " from the server"));
             }
             this.cards = cards;
+            this.showTopCardFaceUp = showTopCardFaceUp;
             this.updateHTML();
         };
         HiddenPile.prototype.hideContent = function () {
             this.closePopin();
             var size = this.cards.length;
             this.cards = [];
+            this.showTopCardFaceUp = false;
             this.pushHiddenCards(size);
         };
         return HiddenPile;
@@ -5365,7 +5374,38 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.showAnimalfolkSpecificGameComponents();
             this.setupNotifications();
+            if (gamedatas.hiddenGamedatas) {
+                this.setupHiddenGamedatas(gamedatas.hiddenGamedatas);
+            }
             console.warn("Ending game setup");
+        };
+        DaleOfMerchants.prototype.setupHiddenGamedatas = function (hiddenGamedatas) {
+            var cards = Object.values(hiddenGamedatas.decks['market']).map(DaleCard_10.DaleCard.of);
+            this.marketDeck.setContent(cards, true);
+            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
+                var player_id = _a[_i];
+                var deck = this.playerDecks[+player_id];
+                var deckCards = Object.values(hiddenGamedatas.decks[+player_id]).map(DaleCard_10.DaleCard.of);
+                deck.setContent(deckCards, true);
+                dojo.setStyle('daleofmerchants-schedule-wrap-' + player_id, 'flex-grow', '3');
+                var schedule = this.playerSchedules[+player_id];
+                var storedCards = this.playerStoredCards[+player_id];
+                var stored_card_ids = storedCards.getAllItems().map(function (item) { return item.id; });
+                for (var _b = 0, _c = Object.values(hiddenGamedatas.storedCards[+player_id]); _b < _c.length; _b++) {
+                    var storedDbCard = _c[_b];
+                    var stored_card_id = stored_card_ids.pop();
+                    schedule.addDaleCardToStock(DaleCard_10.DaleCard.of(storedDbCard), storedCards.control_name + '_item_' + stored_card_id);
+                    storedCards.removeFromStockByIdNoAnimation(+stored_card_id);
+                }
+                $('daleofmerchants-stored-cards-wrap-' + player_id).classList.add("daleofmerchants-hidden");
+                $("daleofmerchants-schedule-title-" + player_id).textContent = _("Hand") + " + " + _("Schedule");
+                for (var _d = 0, _e = Object.values(hiddenGamedatas.hand[+player_id]); _d < _e.length; _d++) {
+                    var handDbCard = _e[_d];
+                    this.handtoSchedule(+player_id, handDbCard);
+                }
+                this.playerStalls[player_id].onResize();
+            }
+            $('daleofmerchants-hand-limbo-flex').classList.add("daleofmerchants-hidden");
         };
         DaleOfMerchants.prototype.limboTransitionUpdateDisplay = function () {
             var _this = this;
@@ -11479,6 +11519,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['avidFinancierTakeCoin', 500],
                 ['stealCoins', 250],
                 ['gainCoins', 250],
+                ['revealAllHiddenGamedatas', 1],
                 ['startSlotMachine', 1],
                 ['advanceClock', 1],
                 ['updateActionButtons', 1],
@@ -11540,10 +11581,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.market.onResize();
         };
         DaleOfMerchants.prototype.notif_scheduleTechnique = function (notif) {
-            if (notif.args.player_id == this.player_id) {
-                var card_id = +notif.args.card.id;
+            this.handtoSchedule(+notif.args.player_id, notif.args.card);
+        };
+        DaleOfMerchants.prototype.handtoSchedule = function (player_id, card) {
+            if (player_id == this.player_id) {
+                var card_id = +card.id;
                 if ($(this.myHand.control_name + '_item_' + card_id)) {
-                    this.mySchedule.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), this.myHand.control_name + '_item_' + card_id);
+                    this.mySchedule.addDaleCardToStock(DaleCard_10.DaleCard.of(card), this.myHand.control_name + '_item_' + card_id);
                     this.myHand.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -11552,9 +11596,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
             else if (this.mono_hand_is_visible) {
-                var card_id = +notif.args.card.id;
+                var card_id = +card.id;
                 if ($(this.myLimbo.control_name + '_item_' + card_id)) {
-                    this.monoSchedule.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), this.myLimbo.control_name + '_item_' + card_id);
+                    this.monoSchedule.addDaleCardToStock(DaleCard_10.DaleCard.of(card), this.myLimbo.control_name + '_item_' + card_id);
                     this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
                 }
                 else {
@@ -11563,10 +11607,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
             else {
-                var schedule = this.playerSchedules[notif.args.player_id];
-                schedule.addDaleCardToStock(DaleCard_10.DaleCard.of(notif.args.card), 'overall_player_board_' + notif.args.player_id);
+                var schedule = this.playerSchedules[player_id];
+                schedule.addDaleCardToStock(DaleCard_10.DaleCard.of(card), 'overall_player_board_' + player_id);
             }
-            this.playerHandSizes[notif.args.player_id].incValue(-1);
+            this.playerHandSizes[player_id].incValue(-1);
         };
         DaleOfMerchants.prototype.notif_scheduleTechniqueDelay = function (notif) {
             console.warn("notif_scheduleTechniqueDelay");
@@ -12496,6 +12540,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
             }
+        };
+        DaleOfMerchants.prototype.notif_revealAllHiddenGamedatas = function (notif) {
+            console.warn("notif_revealAllHiddenGamedatas", notif.args);
+            this.setupHiddenGamedatas(notif.args.hiddenGamedatas);
         };
         DaleOfMerchants.prototype.notif_avidFinancierTakeCoin = function (notif) {
             var _this = this;

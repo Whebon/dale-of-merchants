@@ -5,6 +5,10 @@ import { Pile } from "./Pile";
  * A pile with only face-down cards
  */
 export class HiddenPile extends Pile {
+
+    // When `setContent` was called with `showTopCardFaceUp == true`, show the top card of the deck face-up.
+    private showTopCardFaceUp: boolean = false;
+
     /**
      * Pushes a card on top of the pile. Hide the content.
      */
@@ -29,19 +33,27 @@ export class HiddenPile extends Pile {
     * The top card of a deck is always face-down
     */
     override peek(exclude_sliding_cards: boolean = false): DaleCard | undefined {
-        return super.peek(exclude_sliding_cards) ? new DaleCard(0, 0) : undefined;
+        const topCard = super.peek(exclude_sliding_cards);
+        if (this.showTopCardFaceUp) {
+            return topCard
+        }
+        return topCard ? new DaleCard(0, 0) : undefined;
     }
 
     /**
+     * @param cards
+     * @param showTopCardFaceUp (optional) default `false` - if `true`, the top card will be face up instead of the usual face down
      * Replace the hidden cards with the actual card ids.
      * e.g. `[0, 0, 0, 0]` => `[23, 55, 34, 3]`
      */
-    public setContent(cards: DaleCard[]) {
+    public setContent(cards: DaleCard[], showTopCardFaceUp: boolean = false) {
         if (this.cards.length != cards.length) {
             throw Error(`Client expected a deck of size ${this.cards.length}, but got size ${cards.length} from the server`)
         }
         this.cards = cards;
+        this.showTopCardFaceUp = showTopCardFaceUp;
         this.updateHTML();
+        
     }
 
     /**
@@ -52,6 +64,7 @@ export class HiddenPile extends Pile {
         this.closePopin();
         const size = this.cards.length;
         this.cards = [];
+        this.showTopCardFaceUp = false;
         this.pushHiddenCards(size);
     }
 }

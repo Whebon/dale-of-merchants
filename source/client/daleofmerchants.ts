@@ -53,7 +53,7 @@ class DaleOfMerchants extends Gamegui
 	allCardSlots: CardSlot[] = [];
 
 	/** Pile of hidden cards representing the market deck. */
-	marketDeck: Pile = new HiddenPile(this, "daleofmerchants-market-deck", 'Supply');
+	marketDeck: HiddenPile = new HiddenPile(this, "daleofmerchants-market-deck", 'Supply');
 
 	/** Ordered pile of known cards representing the market discard deck. */
 	marketDiscard: Pile = new Pile(this, "daleofmerchants-market-discard", 'Bin');
@@ -80,7 +80,7 @@ class DaleOfMerchants extends Gamegui
 	playerStoredCards: Record<number, DaleStock> = {};
 
 	/** A hidden draw pile for each player AND the market */
-	allDecks: Record<number | 'mark', Pile> = {'mark': this.marketDeck};
+	allDecks: Record<number | 'mark', HiddenPile> = {'mark': this.marketDeck};
 
 	/** A discard pile for each player AND the market */
 	allDiscards: Record<number | 'mark', Pile> = {'mark': this.marketDiscard};
@@ -403,7 +403,51 @@ class DaleOfMerchants extends Gamegui
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
 
+		if (gamedatas.hiddenGamedatas) {
+			this.setupHiddenGamedatas(gamedatas.hiddenGamedatas);
+		}
+		
 		console.warn( "Ending game setup" );
+	}
+
+	/**
+	 * When the game is over, set up hiddenGamedatas
+	 * @param hiddenGamedatas 
+	 */
+	setupHiddenGamedatas(hiddenGamedatas: HiddenGamedatas) {
+		const cards = Object.values(hiddenGamedatas.decks['market']!).map(DaleCard.of);
+		this.marketDeck.setContent(cards, true);
+		for (const player_id of this.gamedatas.playerorder) {
+			// Reveal deck content
+			const deck = this.playerDecks[+player_id]!;
+			const deckCards = Object.values(hiddenGamedatas.decks[+player_id]!).map(DaleCard.of);
+			deck.setContent(deckCards, true);
+
+			// Make more space for cards
+			dojo.setStyle('daleofmerchants-schedule-wrap-'+player_id, 'flex-grow', '3') 
+
+			// Move storedCards to schedule
+			const schedule = this.playerSchedules[+player_id]!;
+			const storedCards = this.playerStoredCards[+player_id]!;
+			const stored_card_ids = storedCards!.getAllItems()!.map(item => item.id); //face-up or face-down
+			for (const storedDbCard of Object.values(hiddenGamedatas.storedCards[+player_id]!)) {
+				//animate from my hand (if not done already by the client state)
+				const stored_card_id = stored_card_ids.pop()!; // might be a hidden
+				schedule.addDaleCardToStock(DaleCard.of(storedDbCard), storedCards.control_name+'_item_'+stored_card_id)
+				storedCards.removeFromStockByIdNoAnimation(+stored_card_id);
+			}
+			$('daleofmerchants-stored-cards-wrap-'+player_id)!.classList.add("daleofmerchants-hidden");
+
+			// Move cards to schedule
+			$("daleofmerchants-schedule-title-"+player_id)!.textContent = _("Hand")+" + "+_("Schedule");
+			for (const handDbCard of Object.values(hiddenGamedatas.hand[+player_id]!)) {
+				this.handtoSchedule(+player_id, handDbCard);
+			}
+
+			// Update stall layout
+			this.playerStalls[player_id]!.onResize();
+		}
+		$('daleofmerchants-hand-limbo-flex')!.classList.add("daleofmerchants-hidden"); // TODO: css animation that shrinks. zoom? scale? size?
 	}
 
 	limboTransitionUpdateDisplay() {
@@ -7429,6 +7473,7 @@ class DaleOfMerchants extends Gamegui
 			['avidFinancierTakeCoin', 				500],
 			['stealCoins',							250],
 			['gainCoins',							250],
+			['revealAllHiddenGamedatas',			1],
 			['startSlotMachine',					1],
 			['advanceClock',						1],
 			['updateActionButtons',					1],
@@ -7519,12 +7564,16 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
+		this.handtoSchedule(+notif.args.player_id, notif.args.card);
+	}
+
+	handtoSchedule(player_id: number, card: DbCard) {
 		//hand to schedule
-		if (notif.args.player_id == this.player_id) {
+		if (player_id == this.player_id) {
 			//animate from my hand (if not done already by the client state)
-			const card_id = +notif.args.card.id;
+			const card_id = +card.id;
 			if ($(this.myHand.control_name+'_item_' + card_id)) {
-				this.mySchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myHand.control_name+'_item_'+card_id)
+				this.mySchedule.addDaleCardToStock(DaleCard.of(card), this.myHand.control_name+'_item_'+card_id)
 				this.myHand.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -7534,9 +7583,9 @@ class DaleOfMerchants extends Gamegui
 		}
 		else if (this.mono_hand_is_visible) {
 			//animate from my limbo
-			const card_id = +notif.args.card.id;
+			const card_id = +card.id;
 			if ($(this.myLimbo.control_name+'_item_' + card_id)) {
-				this.monoSchedule.addDaleCardToStock(DaleCard.of(notif.args.card), this.myLimbo.control_name+'_item_'+card_id)
+				this.monoSchedule.addDaleCardToStock(DaleCard.of(card), this.myLimbo.control_name+'_item_'+card_id)
 				this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
 			}
 			else {
@@ -7546,11 +7595,11 @@ class DaleOfMerchants extends Gamegui
 		}
 		else {
 			//animate from player board
-			const schedule = this.playerSchedules[notif.args.player_id]!;
-			schedule.addDaleCardToStock(DaleCard.of(notif.args.card), 'overall_player_board_'+notif.args.player_id)
+			const schedule = this.playerSchedules[player_id]!;
+			schedule.addDaleCardToStock(DaleCard.of(card), 'overall_player_board_'+player_id)
 		}
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(-1);
+		this.playerHandSizes[player_id]!.incValue(-1);
 	}
 
 	notif_scheduleTechniqueDelay(notif: NotifAs<'scheduleTechniqueDelay'>) {
@@ -8610,6 +8659,11 @@ class DaleOfMerchants extends Gamegui
 		else {
 			this.coinManager.addCoins(+notif.args.player_id, notif.args.nbr);
 		}
+	}
+
+	notif_revealAllHiddenGamedatas(notif: NotifAs<'revealAllHiddenGamedatas'>) {
+		console.warn("notif_revealAllHiddenGamedatas", notif.args);
+		this.setupHiddenGamedatas(notif.args.hiddenGamedatas)
 	}
 
 	notif_avidFinancierTakeCoin(notif: NotifAs<'avidFinancierTakeCoin'>) {
