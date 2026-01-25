@@ -10658,6 +10658,8 @@ class DaleOfMerchants extends DaleTableBasic
             $nbr = $this->cards->countCardsInLocation(HAND.$player_id);
             $nbr += $this->cards->countCardsInLocation(DISCARD.$player_id);
             $nbr += $this->cards->countCardsInLocation(DECK.$player_id);
+            $nbr += $this->cards->countCardsInLocation(SCHEDULE.$player_id);
+            $nbr += $this->cards->countCardsInLocation(STORED_CARDS.$player_id);
             $this->setStat($nbr, "cards_remaining", $player_id);
         }
         if ($this->isSoloGame()) {
