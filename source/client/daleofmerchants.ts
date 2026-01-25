@@ -444,6 +444,11 @@ class DaleOfMerchants extends Gamegui
 				this.handtoSchedule(+player_id, handDbCard);
 			}
 
+			// Update schedule layout (monkey patch)
+			setTimeout(() => {
+				schedule.updateDisplay()
+			}, 1);
+
 			// Update stall layout
 			this.playerStalls[player_id]!.onResize();
 		}

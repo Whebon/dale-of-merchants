@@ -5382,14 +5382,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.setupHiddenGamedatas = function (hiddenGamedatas) {
             var cards = Object.values(hiddenGamedatas.decks['market']).map(DaleCard_10.DaleCard.of);
             this.marketDeck.setContent(cards, true);
-            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
-                var player_id = _a[_i];
-                var deck = this.playerDecks[+player_id];
+            var _loop_7 = function (player_id) {
+                var deck = this_6.playerDecks[+player_id];
                 var deckCards = Object.values(hiddenGamedatas.decks[+player_id]).map(DaleCard_10.DaleCard.of);
                 deck.setContent(deckCards, true);
                 dojo.setStyle('daleofmerchants-schedule-wrap-' + player_id, 'flex-grow', '3');
-                var schedule = this.playerSchedules[+player_id];
-                var storedCards = this.playerStoredCards[+player_id];
+                var schedule = this_6.playerSchedules[+player_id];
+                var storedCards = this_6.playerStoredCards[+player_id];
                 var stored_card_ids = storedCards.getAllItems().map(function (item) { return item.id; });
                 for (var _b = 0, _c = Object.values(hiddenGamedatas.storedCards[+player_id]); _b < _c.length; _b++) {
                     var storedDbCard = _c[_b];
@@ -5401,9 +5400,17 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 $("daleofmerchants-schedule-title-" + player_id).textContent = _("Hand") + " + " + _("Schedule");
                 for (var _d = 0, _e = Object.values(hiddenGamedatas.hand[+player_id]); _d < _e.length; _d++) {
                     var handDbCard = _e[_d];
-                    this.handtoSchedule(+player_id, handDbCard);
+                    this_6.handtoSchedule(+player_id, handDbCard);
                 }
-                this.playerStalls[player_id].onResize();
+                setTimeout(function () {
+                    schedule.updateDisplay();
+                }, 1);
+                this_6.playerStalls[player_id].onResize();
+            };
+            var this_6 = this;
+            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
+                var player_id = _a[_i];
+                _loop_7(player_id);
             }
             $('daleofmerchants-hand-limbo-flex').classList.add("daleofmerchants-hidden");
         };
@@ -6864,42 +6871,42 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'postCleanUpPhase':
                     var postCleanUpPhase_hasPassiveAbilities = false;
-                    var _loop_7 = function (card) {
+                    var _loop_8 = function (card) {
                         if (card.effective_type_id == DaleCard_10.DaleCard.CT_SLICEOFLIFE && !card.isPassiveUsed()) {
                             var label = _("Use") + " " + card.name + " " + _("(from discard)");
-                            this_6.statusBar.addActionButton(label, function () { return _this.onClickPassive(card); });
-                            postCleanUpPhase_hasPassiveAbilities = true;
-                        }
-                    };
-                    var this_6 = this;
-                    for (var _i = 0, _d = this.myDiscard.getCards(); _i < _d.length; _i++) {
-                        var card = _d[_i];
-                        _loop_7(card);
-                    }
-                    var _loop_8 = function (card) {
-                        if (card.isPlayableFromHandPostCleanUp() && !card.isPassiveUsed()) {
-                            var label = _("Use") + " " + card.name;
                             this_7.statusBar.addActionButton(label, function () { return _this.onClickPassive(card); });
                             postCleanUpPhase_hasPassiveAbilities = true;
                         }
                     };
                     var this_7 = this;
-                    for (var _e = 0, _f = this.myHand.getAllDaleCards(); _e < _f.length; _e++) {
-                        var card = _f[_e];
+                    for (var _i = 0, _d = this.myDiscard.getCards(); _i < _d.length; _i++) {
+                        var card = _d[_i];
                         _loop_8(card);
                     }
-                    var postCleanUpPhase_hasScheduledTechniques = false;
                     var _loop_9 = function (card) {
-                        if (card.trigger == 'onCleanUp' && !card.inScheduleCooldown()) {
-                            var label = _("Resolve") + " " + card.name;
-                            this_8.statusBar.addActionButton(label, function () { return _this.onTriggerTechnique(card.id); });
-                            postCleanUpPhase_hasScheduledTechniques = true;
+                        if (card.isPlayableFromHandPostCleanUp() && !card.isPassiveUsed()) {
+                            var label = _("Use") + " " + card.name;
+                            this_8.statusBar.addActionButton(label, function () { return _this.onClickPassive(card); });
+                            postCleanUpPhase_hasPassiveAbilities = true;
                         }
                     };
                     var this_8 = this;
+                    for (var _e = 0, _f = this.myHand.getAllDaleCards(); _e < _f.length; _e++) {
+                        var card = _f[_e];
+                        _loop_9(card);
+                    }
+                    var postCleanUpPhase_hasScheduledTechniques = false;
+                    var _loop_10 = function (card) {
+                        if (card.trigger == 'onCleanUp' && !card.inScheduleCooldown()) {
+                            var label = _("Resolve") + " " + card.name;
+                            this_9.statusBar.addActionButton(label, function () { return _this.onTriggerTechnique(card.id); });
+                            postCleanUpPhase_hasScheduledTechniques = true;
+                        }
+                    };
+                    var this_9 = this;
                     for (var _g = 0, _h = this.mySchedule.getAllDaleCards(); _g < _h.length; _g++) {
                         var card = _h[_g];
-                        _loop_9(card);
+                        _loop_10(card);
                     }
                     if (postCleanUpPhase_hasScheduledTechniques) {
                         if (postCleanUpPhase_hasPassiveAbilities) {
@@ -7069,25 +7076,25 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_blindfold':
-                    var _loop_10 = function (value) {
-                        this_9.addActionButton("button-" + value, String(value), (function () { return _this.onClientBlindfold(value); }));
+                    var _loop_11 = function (value) {
+                        this_10.addActionButton("button-" + value, String(value), (function () { return _this.onClientBlindfold(value); }));
                     };
-                    var this_9 = this;
+                    var this_10 = this;
                     for (var _l = 0, _m = [1, 2, 3, 4, 5]; _l < _m.length; _l++) {
                         var value = _m[_l];
-                        _loop_10(value);
+                        _loop_11(value);
                     }
                     this.addActionButtonCancelClient();
                     break;
                 case 'blindfold':
                     var blindfold_args = args;
-                    var _loop_11 = function (value) {
-                        this_10.addActionButton("button-" + value, String(value), (function () { return _this.onBlindfold(value); }));
+                    var _loop_12 = function (value) {
+                        this_11.addActionButton("button-" + value, String(value), (function () { return _this.onBlindfold(value); }));
                     };
-                    var this_10 = this;
+                    var this_11 = this;
                     for (var _o = 0, _p = [1, 2, 3, 4, 5]; _o < _p.length; _o++) {
                         var value = _p[_o];
-                        _loop_11(value);
+                        _loop_12(value);
                     }
                     var blindfold_cardName = new DaleCard_10.DaleCard(blindfold_args.card_id).name;
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Decide the value of ") + blindfold_cardName);
@@ -7103,7 +7110,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var DEPRECATED_blindfold_args = args;
                     var DEPRECATED_blindfold_label = '';
                     var DEPRECATED_blindfold_baseValue = 1;
-                    var _loop_12 = function (value) {
+                    var _loop_13 = function (value) {
                         if (DEPRECATED_blindfold_baseValue > 5) {
                             DEPRECATED_blindfold_label = "<span style='color:lightgreen'>".concat(value, "</span>");
                         }
@@ -7113,33 +7120,33 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         else {
                             DEPRECATED_blindfold_label = "".concat(DEPRECATED_blindfold_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
                         }
-                        this_11.addActionButton("button-" + value, DEPRECATED_blindfold_label, (function () { return _this.onDEPRECATED_BlindfoldGuess(value); }).bind(this_11));
+                        this_12.addActionButton("button-" + value, DEPRECATED_blindfold_label, (function () { return _this.onDEPRECATED_BlindfoldGuess(value); }).bind(this_12));
                         DEPRECATED_blindfold_baseValue += 1;
                     };
-                    var this_11 = this;
+                    var this_12 = this;
                     for (var _q = 0, _r = DEPRECATED_blindfold_args.possible_values; _q < _r.length; _q++) {
                         var value = _r[_q];
-                        _loop_12(value);
+                        _loop_13(value);
                     }
                     break;
                 case 'DEPRECATED_blindfoldDecideValue':
                     var DEPRECATED_blindfoldDecideValue_args = args;
                     var DEPRECATED_blindfoldDecideValue_label = '';
                     var DEPRECATED_blindfoldDecideValue_baseValue = 1;
-                    var _loop_13 = function (value) {
+                    var _loop_14 = function (value) {
                         if (value == DEPRECATED_blindfoldDecideValue_baseValue) {
                             DEPRECATED_blindfoldDecideValue_label = String(value);
                         }
                         else {
                             DEPRECATED_blindfoldDecideValue_label = "".concat(DEPRECATED_blindfoldDecideValue_baseValue, " (<span style='color:lightgreen'>").concat(value, "</span>)");
                         }
-                        this_12.addActionButton("button-" + value, DEPRECATED_blindfoldDecideValue_label, (function () { return _this.onDEPRECATED_BlindfoldDecideValue(value); }).bind(this_12));
+                        this_13.addActionButton("button-" + value, DEPRECATED_blindfoldDecideValue_label, (function () { return _this.onDEPRECATED_BlindfoldDecideValue(value); }).bind(this_13));
                         DEPRECATED_blindfoldDecideValue_baseValue += 1;
                     };
-                    var this_12 = this;
+                    var this_13 = this;
                     for (var _s = 0, _t = DEPRECATED_blindfoldDecideValue_args.possible_values; _s < _t.length; _s++) {
                         var value = _t[_s];
-                        _loop_13(value);
+                        _loop_14(value);
                     }
                     this.myHand.setSelectionMode('noneRetainSelection', undefined, 'daleofmerchants-wrap-default');
                     this.myHand.orderedSelection.setMaxSize(1);
@@ -7323,14 +7330,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_pompousProfessional':
                     this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), function () { return _this.onPompousProfessional(0); });
-                    var _loop_14 = function (animalfolk_id) {
-                        var animalfolk_name = this_13.getAnimalfolkName(animalfolk_id);
-                        this_13.addActionButton("animalfolk-button-" + animalfolk_id, animalfolk_name, function () { return _this.onPompousProfessional(animalfolk_id); });
+                    var _loop_15 = function (animalfolk_id) {
+                        var animalfolk_name = this_14.getAnimalfolkName(animalfolk_id);
+                        this_14.addActionButton("animalfolk-button-" + animalfolk_id, animalfolk_name, function () { return _this.onPompousProfessional(animalfolk_id); });
                     };
-                    var this_13 = this;
+                    var this_14 = this;
                     for (var _u = 0, _v = this.gamedatas.animalfolkIds; _u < _v.length; _u++) {
                         var animalfolk_id = _v[_u];
-                        _loop_14(animalfolk_id);
+                        _loop_15(animalfolk_id);
                     }
                     this.addActionButtonCancelClient();
                     break;
@@ -7434,26 +7441,26 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_periscopeAnimalfolkId':
                     this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), function () { return _this.onPeriscopeAnimalfolkId(0); });
-                    var _loop_15 = function (animalfolk_id) {
-                        var animalfolk_name = this_14.getAnimalfolkName(animalfolk_id);
-                        this_14.addActionButton("animalfolk-button-" + animalfolk_id, animalfolk_name, function () { return _this.onPeriscopeAnimalfolkId(animalfolk_id); });
+                    var _loop_16 = function (animalfolk_id) {
+                        var animalfolk_name = this_15.getAnimalfolkName(animalfolk_id);
+                        this_15.addActionButton("animalfolk-button-" + animalfolk_id, animalfolk_name, function () { return _this.onPeriscopeAnimalfolkId(animalfolk_id); });
                     };
-                    var this_14 = this;
+                    var this_15 = this;
                     for (var _w = 0, _x = this.gamedatas.animalfolkIds; _w < _x.length; _w++) {
                         var animalfolk_id = _x[_w];
-                        _loop_15(animalfolk_id);
+                        _loop_16(animalfolk_id);
                     }
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_periscopeValue':
-                    var _loop_16 = function (value) {
+                    var _loop_17 = function (value) {
                         var callback = function () { return _this.onPeriscopeValue(value); };
-                        this_15.addActionButton("animalfolk-button-" + value, value.toString(), callback.bind(this_15));
+                        this_16.addActionButton("animalfolk-button-" + value, value.toString(), callback.bind(this_16));
                     };
-                    var this_15 = this;
+                    var this_16 = this;
                     for (var _y = 0, _z = [1, 2, 3, 4, 5]; _y < _z.length; _y++) {
                         var value = _z[_y];
-                        _loop_16(value);
+                        _loop_17(value);
                     }
                     this.addActionButtonCancelClient();
                     break;
@@ -8052,18 +8059,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!label) {
                 label = "${player_name}";
             }
-            var _loop_17 = function (opponent_id) {
-                if (include_player || opponent_id != this_16.player_id) {
-                    var name_1 = this_16.gamedatas.players[opponent_id].name;
-                    var color = this_16.gamedatas.players[opponent_id].color;
+            var _loop_18 = function (opponent_id) {
+                if (include_player || opponent_id != this_17.player_id) {
+                    var name_1 = this_17.gamedatas.players[opponent_id].name;
+                    var color = this_17.gamedatas.players[opponent_id].color;
                     var label_formatted = "<span style=\"font-weight:bold;color:#".concat(color, ";\">").concat(label.replace("${player_name}", name_1), "</span>");
-                    this_16.addActionButton("opponent-selection-button-" + opponent_id, label_formatted, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
+                    this_17.addActionButton("opponent-selection-button-" + opponent_id, label_formatted, function () { onOpponentHandler(+opponent_id); }, undefined, false, 'gray');
                 }
             };
-            var this_16 = this;
+            var this_17 = this;
             for (var _i = 0, player_ids_1 = player_ids; _i < player_ids_1.length; _i++) {
                 var opponent_id = player_ids_1[_i];
-                _loop_17(opponent_id);
+                _loop_18(opponent_id);
             }
         };
         DaleOfMerchants.prototype.addActionButtonsOpponentSelection = function (maxSize, player_ids, auto_select) {
