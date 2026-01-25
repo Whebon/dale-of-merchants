@@ -1043,7 +1043,7 @@ class DaleOfMerchants extends DaleTableBasic
                         "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                         "card_name" => $this->getCardName($dbcard)
                     ));
-                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MONO_PLAYER_ID);
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
                     $this->notifyAllPlayers('discard', '', array(
                         "player_id" => $opponent_id,
                         "card" => $dbcard,
