@@ -8357,8 +8357,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actCunningNeighbour");
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $cards = $this->cards->getCardsInLocation(LIMBO.$player_id);
-        $this->cards->moveCards($this->toCardIds($cards), HAND.$opponent_id);
+        $cards = $this->cards->getCardsInLocation(LIMBO.$player_id, null, "location_arg");
+        $card_ids = $this->toCardIds($cards);
+        $this->cards->moveCardsonTop($card_ids, HAND.$opponent_id); //onTop for Mono's hand ordering
         $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourReturn', '', array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
@@ -10850,8 +10851,9 @@ class DaleOfMerchants extends DaleTableBasic
     function stCunningNeighbour() {
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
-        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
-        $this->cards->moveCards($this->toCardIds($cards), LIMBO.$player_id);
+        $cards = $this->cards->getCardsInLocation(HAND.$opponent_id, null, "location_arg");
+        $card_ids = $this->toCardIds($cards);
+        $this->cards->moveCardsOnTop($card_ids, LIMBO.$player_id); //onTop for Mono's hand ordering
         $this->notifyAllPlayersWithPrivateArguments('cunningNeighbourWatch', clienttranslate('Cunning Neighbour: ${player_name} looks at ${opponent_name}\'s hand'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),

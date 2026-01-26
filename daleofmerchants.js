@@ -12351,6 +12351,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _a;
             console.warn("notif_cunningNeighbourWatch");
             if (notif.args.player_id == this.player_id) {
+                if (this.is_solo) {
+                    this.myLimbo.enableSortItems = false;
+                }
                 var sortedCards = this.sortCardsByLocationArg((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards, true);
                 for (var i in sortedCards) {
                     var card = sortedCards[i];
@@ -12364,6 +12367,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_cunningNeighbourReturn = function (notif) {
             var _a;
             if (notif.args.player_id == this.player_id) {
+                if (this.is_solo) {
+                    this.myLimbo.enableSortItems = true;
+                }
                 this.myLimbo.removeAllTo("overall_player_board_" + notif.args.opponent_id);
             }
             else if (notif.args.opponent_id == this.player_id) {

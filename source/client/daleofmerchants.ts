@@ -8447,7 +8447,9 @@ class DaleOfMerchants extends Gamegui
 	notif_cunningNeighbourWatch(notif: NotifAs<'cunningNeighbourWatch'>) {
 		console.warn("notif_cunningNeighbourWatch");
 		if (notif.args.player_id == this.player_id) {
-			//TODO: remove sorting the cards? This was needed for Mono. But that functionality was moved to monoShowHand
+			if (this.is_solo) {
+				this.myLimbo.enableSortItems = false; //important: this is needed to enable the left-to-right ordering! (for Mono)
+			}
 			const sortedCards = this.sortCardsByLocationArg(notif.args._private?.cards, true);
 			for (let i in sortedCards) {
 				let card = sortedCards[i]!;
@@ -8461,6 +8463,9 @@ class DaleOfMerchants extends Gamegui
 
 	notif_cunningNeighbourReturn(notif: NotifAs<'cunningNeighbourReturn'>) {
 		if (notif.args.player_id == this.player_id) {
+			if (this.is_solo) {
+				this.myLimbo.enableSortItems = true; //important: this is needed to disable the left-to-right ordering! (for Mono)
+			}
 			this.myLimbo.removeAllTo("overall_player_board_"+notif.args.opponent_id);
 		}
 		else if (notif.args.opponent_id == this.player_id) {
