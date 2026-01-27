@@ -9322,7 +9322,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_BLINDFOLD:
-                    fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+                    fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
                     }

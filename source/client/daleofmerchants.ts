@@ -5008,7 +5008,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_BLINDFOLD:
-				fizzle = (this.marketDiscard.size + this.marketDeck.size) == 0;
+				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
 				}

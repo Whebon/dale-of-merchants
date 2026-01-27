@@ -5344,7 +5344,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $player_card = $player_cards[$player_card_id];
                         unset($player_cards[$player_card_id]);
                         $this->cards->moveCard($player_card_id, HAND.$opponent_id);
-                        $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('Gamble: ${player_name} takes a card from ${opponent_name}'), array(
+                        $this->notifyAllPlayersWithPrivateArguments('playerHandToOpponentHand', clienttranslate('Gamble: ${opponent_name} takes a card from ${player_name}'), array(
                             "player_id" => $player_id,
                             "opponent_id" => $opponent_id,
                             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
@@ -5353,7 +5353,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card" => $player_card,
                                 "card_name" => $this->getCardName($player_card)
                             )
-                        ), clienttranslate('Gamble: ${player_name} takes ${card_name} from ${opponent_name}'));
+                        ), clienttranslate('Gamble: ${opponent_name} takes ${card_name} from ${player_name}'));
                     }
                     //opponent -> player
                     for ($i = 0; $i < $nbr; $i++) { 
@@ -5361,7 +5361,7 @@ class DaleOfMerchants extends DaleTableBasic
                         $opponent_card = $opponent_cards[$opponent_card_id];
                         unset($opponent_cards[$opponent_card_id]);
                         $this->cards->moveCard($opponent_card_id, HAND.$player_id);
-                        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Gamble: ${opponent_name} takes a card from ${player_name}'), array(
+                        $this->notifyAllPlayersWithPrivateArguments('opponentHandToPlayerHand', clienttranslate('Gamble: ${player_name} takes a card from ${opponent_name}'), array(
                             "player_id" => $player_id,
                             "opponent_id" => $opponent_id,
                             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
@@ -5370,7 +5370,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 "card" => $opponent_card,
                                 "card_name" => $this->getCardName($opponent_card)
                             )
-                        ), clienttranslate('Gamble: ${opponent_name} takes ${card_name} from ${player_name}'));
+                        ), clienttranslate('Gamble: ${player_name} takes ${card_name} from ${opponent_name}'));
                     }
                 }
                 else {
@@ -10192,7 +10192,7 @@ class DaleOfMerchants extends DaleTableBasic
         return array(
             'card_name' => $this->getCardName($dbcard),
             'card_id' => $card_id,
-            'prior_modifications' => $this->isGlobalValueEffectActive() ? $prior_modifications : "a"
+            'prior_modifications' => $this->isGlobalValueEffectActive() ? $prior_modifications : ""
             //'base_effective_values' => $this->getBaseEffectiveValues(), // Not used anymore
         );
     }
