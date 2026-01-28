@@ -461,6 +461,15 @@ class DaleOfMerchants extends Gamegui
 		$('daleofmerchants-hand-limbo-flex')!.classList.add("daleofmerchants-hidden"); // TODO: css animation that shrinks. zoom? scale? size?
 	}
 
+	onGameUserPreferenceChanged(pref_id: number, pref_value: number): void {
+		switch (pref_id) {
+			case 103:
+				this.positionActionBarBasedOnPreference(true);
+				break;
+		}
+	}
+	
+
 	limboTransitionUpdateDisplay() {
 		setTimeout(() => {this.myLimbo.updateDisplay()}, 1)
 		setTimeout(() => {this.myHand.updateDisplay()}, 1)
@@ -546,10 +555,10 @@ class DaleOfMerchants extends Gamegui
 	 * Should be called on refresh and on game start
 	 */
 	showAnimalfolkSpecificGameComponents() {
-		//hacky way of moving the top bar
 		if (!this.gamedatas.inDeckSelection) {
-			$("daleofmerchants-market-wrap")?.insertAdjacentElement('afterend', $("page-title")!);
+			this.positionActionBarBasedOnPreference();
 		}
+		
 
 		for (let player_id in this.gamedatas.players) {
 			//show the storedCards if tree kangaroos are in play
@@ -572,6 +581,36 @@ class DaleOfMerchants extends Gamegui
 				const clock_wrap = $('daleofmerchants-clock-wrap-'+player_id)!;
 				clock_wrap.classList.remove("daleofmerchants-hidden");
 			}
+		}
+	}
+
+	positionActionBarBasedOnPreference(is_update = false) {
+		const market_wrap = $("daleofmerchants-market-wrap");
+		const page_title = $("page-title");
+		const after_page_title = $("after-page-title");
+
+		if (!market_wrap || !page_title || !after_page_title) {
+			console.error("positionActionBarBasedOnPreference is broken, please report this error message");
+			return;
+		}
+
+		const useCustomPositioning = this.getGameUserPreference(103);
+
+		if (useCustomPositioning) {
+			// Apply the custom positioning
+			market_wrap.insertAdjacentElement('afterend', page_title);
+
+			market_wrap.classList.add("daleofmerchants-custom-action-bar");
+			page_title.classList.add("daleofmerchants-custom-action-bar");
+			after_page_title.classList.add("daleofmerchants-custom-action-bar");
+		}
+		else if (is_update) {
+			// Restore the default
+			after_page_title.insertAdjacentElement('afterend', page_title);
+			
+			market_wrap.classList.remove("daleofmerchants-custom-action-bar");
+			page_title.classList.remove("daleofmerchants-custom-action-bar");
+			after_page_title.classList.remove("daleofmerchants-custom-action-bar");
 		}
 	}
 

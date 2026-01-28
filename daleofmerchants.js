@@ -5414,6 +5414,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             $('daleofmerchants-hand-limbo-flex').classList.add("daleofmerchants-hidden");
         };
+        DaleOfMerchants.prototype.onGameUserPreferenceChanged = function (pref_id, pref_value) {
+            switch (pref_id) {
+                case 103:
+                    this.positionActionBarBasedOnPreference(true);
+                    break;
+            }
+        };
         DaleOfMerchants.prototype.limboTransitionUpdateDisplay = function () {
             var _this = this;
             setTimeout(function () { _this.myLimbo.updateDisplay(); }, 1);
@@ -5477,9 +5484,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.showAnimalfolkSpecificGameComponents = function () {
-            var _a;
             if (!this.gamedatas.inDeckSelection) {
-                (_a = $("daleofmerchants-market-wrap")) === null || _a === void 0 ? void 0 : _a.insertAdjacentElement('afterend', $("page-title"));
+                this.positionActionBarBasedOnPreference();
             }
             for (var player_id in this.gamedatas.players) {
                 if (this.gamedatas.animalfolkIds.includes(DaleAnimalfolk_3.DaleAnimalfolk.ANIMALFOLK_TREEKANGAROOS)) {
@@ -5498,6 +5504,29 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var clock_wrap = $('daleofmerchants-clock-wrap-' + player_id);
                     clock_wrap.classList.remove("daleofmerchants-hidden");
                 }
+            }
+        };
+        DaleOfMerchants.prototype.positionActionBarBasedOnPreference = function (is_update) {
+            if (is_update === void 0) { is_update = false; }
+            var market_wrap = $("daleofmerchants-market-wrap");
+            var page_title = $("page-title");
+            var after_page_title = $("after-page-title");
+            if (!market_wrap || !page_title || !after_page_title) {
+                console.error("positionActionBarBasedOnPreference is broken, please report this error message");
+                return;
+            }
+            var useCustomPositioning = this.getGameUserPreference(103);
+            if (useCustomPositioning) {
+                market_wrap.insertAdjacentElement('afterend', page_title);
+                market_wrap.classList.add("daleofmerchants-custom-action-bar");
+                page_title.classList.add("daleofmerchants-custom-action-bar");
+                after_page_title.classList.add("daleofmerchants-custom-action-bar");
+            }
+            else if (is_update) {
+                after_page_title.insertAdjacentElement('afterend', page_title);
+                market_wrap.classList.remove("daleofmerchants-custom-action-bar");
+                page_title.classList.remove("daleofmerchants-custom-action-bar");
+                after_page_title.classList.remove("daleofmerchants-custom-action-bar");
             }
         };
         DaleOfMerchants.prototype.onEnteringState = function (stateName, args) {

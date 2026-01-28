@@ -53,5 +53,19 @@
 		  }
 		},
 		"default": 0
+	},
+
+	"103": {
+		"name": "Action bar positioning",
+		"needReload": false,
+		"values": {
+		  "0": {
+			"name": "Sticky (BGA default)"
+		  },
+		  "1": {
+			"name": "Underneath the market"
+		  }
+		},
+		"default": 0
 	}
 }

@@ -29,6 +29,14 @@
 
 #page-title {
 	min-height: 34px; //on desktop, this prevents the page title to shrink/grow when action buttons disappear/reappear
+
+	//Match the white action bar margins. Looks a bit messy with everything having their own margins and corners
+	margin-left: 10px;
+	margin-right: 10px;
+	border-radius: 10px;
+	#synchronous_notif_icon {
+		left: -40px !important; //default is -30px, due to margin-left: -10px, this must be moved 10 pixels more
+	}
 }
 
 .action-button:has(.daleofmerchants-icon) {
@@ -39,32 +47,34 @@
 	margin-top: 0px !important; //why waste space on top margin?
 }
 
-#daleofmerchants-page-game {
-	#page-title {
-		//Match the white action bar margins. Looks a bit messy with everything having their own margins and corners
-		margin-left: 10px;
-		margin-right: 10px;
-		border-radius: 10px;
-		#synchronous_notif_icon {
-			left: -40px !important; //default is -30px, due to margin-left: -10px, this must be moved 10 pixels more
-		}
-	}
-}
-
+// TODO: safely remove this
+// #daleofmerchants-page-game {
+// 	#page-title {
+// 		//Match the white action bar margins. Looks a bit messy with everything having their own margins and corners
+// 		margin-left: 10px;
+// 		margin-right: 10px;
+// 		border-radius: 10px;
+// 		#synchronous_notif_icon {
+// 			left: -40px !important; //default is -30px, due to margin-left: -10px, this must be moved 10 pixels more
+// 		}
+// 	}
+// }
 
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////     CSS FOR SAMI'S PAGE TITLE     ////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-#after-page-title {
-	display: none !important;
-}
+.daleofmerchants-custom-action-bar {
+	&#after-page-title {
+		display: none !important;
+	}
 
-#page-title {
-	position: sticky !important;
-	top: 0 !important;
-	zoom: 1 !important;
+	&#page-title {
+		position: sticky !important;
+		top: 0 !important;
+		zoom: 1 !important;
+	}
 }
 
 .standard_popin {
@@ -80,6 +90,10 @@
 		width: 98%; //popin has 2% padding
 		margin: 5px;
 		padding: 5px;
+
+		min-height: 34px;
+		display: flex;
+		align-items: center;
 	}
 }
 
@@ -570,6 +584,11 @@
     border-radius: 10px;
 
 	margin-top: 0px;
+	margin-bottom: 0px;
+	&.daleofmerchants-custom-action-bar {
+		margin-bottom: 10px;
+	}
+
 	.daleofmerchants-selected {
 
 		//note that the slot is selected, not the card
