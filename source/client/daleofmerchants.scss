@@ -1214,12 +1214,27 @@
 		font-size: 14px; //bga button style
 
 		&.active {
-			background: #4871b6;
-			border: 1px solid #37578c;
+			background: #c92727;
+			background: -o-linear-gradient(top,#c20b0b,#c92727);
+			border: 1px solid #b20a0a;
+			// background: #4871b6;
+			// border: 1px solid #37578c;
 			box-shadow: 0 1px 0 #000;
 			padding: calc(0.3em - 1px) calc(0.5em - 1px) calc(0.3em - 2px) calc(0.5em - 1px); //compensate for the border and box-shadow
 			color: white;
 		}
+	}
+
+	#daleofmerchants-pick-random {
+		// slightly browner to indicate this is a button, not a filter
+		user-select: none;
+		background: none;
+		cursor: pointer;
+		padding: 6px 12px;
+		border-radius: 8px;
+		//background-color: rgb(120, 62, 21);
+		background-color: rgb(212, 130, 30); //Very ugly: this looks like a filter now. But BGA staff wants it
+		color: white;
 	}
 
 	.filter {

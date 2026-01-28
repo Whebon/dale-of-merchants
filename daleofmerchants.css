@@ -940,10 +940,20 @@
   font-size: 14px;
 }
 .daleofmerchants-filters .daleofmerchants-bga-button.active {
-  background: #4871b6;
-  border: 1px solid #37578c;
+  background: #c92727;
+  background: -o-linear-gradient(top, #c20b0b, #c92727);
+  border: 1px solid #b20a0a;
   box-shadow: 0 1px 0 #000;
   padding: calc(0.3em - 1px) calc(0.5em - 1px) calc(0.3em - 2px) calc(0.5em - 1px);
+  color: white;
+}
+.daleofmerchants-filters #daleofmerchants-pick-random {
+  user-select: none;
+  background: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background-color: rgb(212, 130, 30);
   color: white;
 }
 .daleofmerchants-filters .filter {
