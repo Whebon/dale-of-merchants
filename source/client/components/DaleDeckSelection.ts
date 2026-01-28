@@ -234,7 +234,9 @@ export class DaleDeckSelection {
         this.filterContainer.querySelector("h2")?.addEventListener("click", () => {
             this.filterContainer.classList.toggle("daleofmerchants-collapsed");
         })
-        this.filterContainer.classList.add("daleofmerchants-collapsed"); // Sami: "Whenever the filters are on top (not on the side), they should be hidden by default"
+        if (document.querySelector(".mobile_version")) {
+            this.filterContainer.classList.add("daleofmerchants-collapsed"); // Sami: "Whenever the filters are on top (not on the side), they should be hidden by default"
+        }
     }
 
     private resetFilters() {

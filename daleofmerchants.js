@@ -4847,7 +4847,9 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             (_a = this.filterContainer.querySelector("h2")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", function () {
                 _this.filterContainer.classList.toggle("daleofmerchants-collapsed");
             });
-            this.filterContainer.classList.add("daleofmerchants-collapsed");
+            if (document.querySelector(".mobile_version")) {
+                this.filterContainer.classList.add("daleofmerchants-collapsed");
+            }
         };
         DaleDeckSelection.prototype.resetFilters = function () {
             this.filterContainer.querySelectorAll(".toggle").forEach(function (toggle) {

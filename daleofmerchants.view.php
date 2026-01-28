@@ -74,7 +74,7 @@ class view_daleofmerchants_daleofmerchants extends game_view
         // $this->tpl['ACTION_LABEL_DEFAULT'] = $this->_("Your hand");
 
         //Filter titles
-        $this->tpl['RESET_FILTERS'] = $this->_("Reset Filters");
+        $this->tpl['RESET_FILTERS'] = $this->_("Reset"); //$this->_("Reset Filters");
         $this->tpl['FILTER_DECKS'] = $this->_("Filter Decks");
         $this->tpl['COMPLEXITY'] = $this->_("Complexity");
         $this->tpl['INTERACTIVITY'] = $this->_("Interactivity");

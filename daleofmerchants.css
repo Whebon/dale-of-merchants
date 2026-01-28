@@ -89,6 +89,39 @@
   display: none;
 }
 
+.desktop_version .daleofmerchants-filters-header {
+  cursor: pointer;
+}
+.desktop_version .daleofmerchants-filters-header::before {
+  content: "▼";
+  display: inline-block;
+  transition: transform 0.3s ease;
+  margin-right: 5px;
+}
+.desktop_version .daleofmerchants-collapsed {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.desktop_version .daleofmerchants-collapsed #daleofmerchants-filter-title-reset-filters:not(.active) {
+  display: none;
+}
+.desktop_version .daleofmerchants-collapsed #daleofmerchants-filter-title-reset-filters {
+  float: none;
+  margin: 5px;
+}
+.desktop_version .daleofmerchants-collapsed #daleofmerchants-filter-title-reset-filters .to_translate {
+  display: none;
+}
+.desktop_version .daleofmerchants-collapsed .daleofmerchants-filters-header {
+  writing-mode: vertical-lr;
+}
+.desktop_version .daleofmerchants-collapsed .daleofmerchants-filters-header::before {
+  transform: rotate(-90deg);
+}
+.desktop_version .daleofmerchants-collapsed .filter {
+  display: none;
+}
+
 .daleofmerchants-deck-selection-wrap {
   display: flex;
   flex-wrap: wrap;
@@ -921,6 +954,10 @@
   margin: 0;
   padding: 0 0.2em;
   font-size: 1.5em;
+  user-select: none;
+}
+.daleofmerchants-filters h2 span {
+  user-select: none;
 }
 .daleofmerchants-filters button {
   width: auto;
