@@ -237,6 +237,7 @@ class DaleOfMerchants extends DaleTableBasic
         $result['inDeckSelection'] = $this->getGameStateValue("inDeckSelection") == '1';
         $result['animalfolkIds'] = $result['inDeckSelection'] ? array() : $this->deckSelection->getAnimalfolkIds();
         $result['debugMode'] = $this->getGameStateValue("debugMode") == '1';
+        $result['allowDebugMode'] = ALLOW_DEBUG_MODE;
 
         //disabled animalfolk
         $result['disabledAnimalfolkIds'] = $this->isSoloGame() ? array_merge(
@@ -11362,6 +11363,9 @@ class DaleOfMerchants extends DaleTableBasic
         */
 
     function actEnableDebugMode() {
+        if (ALLOW_DEBUG_MODE == 0) {
+            throw new BgaUserException("ALLOW_DEBUG_MODE == 0");
+        }
         $debugMode = $this->getGameStateValue("debugMode", 1);
         if ($debugMode) {
             throw new BgaUserException($this->_("Debug mode is already enabled for this game!"));

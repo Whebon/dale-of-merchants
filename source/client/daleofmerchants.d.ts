@@ -469,7 +469,8 @@ declare global {
 		'market': {[card_id: number]: DbCard}
 		'effects': {[_index: number]: RawDbEffect}
 
-		'debugMode': boolean
+		'allowDebugMode': boolean //indicates if players are allowed to vote to enable debugMode
+		'debugMode': boolean //indicates if debugMode is on
 		'inDeckSelection': boolean
 		'disabledAnimalfolkIds': number[]
 		'animalfolkIds': number[]

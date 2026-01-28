@@ -20,6 +20,9 @@ if (!defined('HAND')) {
     //global variables
     define('MAX_STACK_SIZE', 1000); //must be the same as on the client side
     define('MAX_STACKS', 8); //must be the same as on the client side
+
+    //debug mode
+    define('ALLOW_DEBUG_MODE', 0); //if 1, players can enable debug mode
 }
 
 class DaleDeck {

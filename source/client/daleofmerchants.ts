@@ -43,6 +43,12 @@ import { SelectionIconType } from './components/SelectionIconType';
 /** The root for all of your game code. */
 class DaleOfMerchants extends Gamegui
 {
+	static readonly ACTION_BUTTON_SKIP = 'red'
+	static readonly ACTION_BUTTON_SELECT_PLAYER = 'gray'
+	static readonly ACTION_BUTTON_ABSTAIN = 'red'
+	static readonly ACTION_BUTTON_UNDO = 'red'
+	static readonly ACTION_BUTTON_CANCEL = 'red'
+
 	/** For conveniene, each new Pile will add a reference to itself in this array*/
 	allPiles: Pile[] = [];
 
@@ -2048,8 +2054,8 @@ class DaleOfMerchants extends Gamegui
                     this.setDescriptionOnMyTurn("${you} may choose up to ${n_plus_1} animalfolk sets to play with");
                 }
 				this.addActionButton("submit-button", this.is_solo ? _("Confirm") : _("Vote"), "onSubmitPreference");
-				this.addActionButton("abstain-button", this.is_solo ? _("Skip") : _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, 'gray');
-				if (!this.gamedatas.debugMode) {
+				this.addActionButton("abstain-button", this.is_solo ? _("Skip") : _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, DaleOfMerchants.ACTION_BUTTON_ABSTAIN);
+				if (!this.gamedatas.debugMode && this.gamedatas.allowDebugMode) {
 					this.addActionButton("debug-button", _("Enable Debug Mode"), "onEnableDebugMode", undefined, false, 'red');
 				}
 				break;
@@ -2119,11 +2125,11 @@ class DaleOfMerchants extends Gamegui
 				const bonusBuild_args = args as { is_first_build: number };
 				if (bonusBuild_args.is_first_build) {
 					//the player is skipping their entire turn
-					this.addActionButton("skip-button", _("Skip turn"), "onBonusBuildSkip", undefined, false, 'red');
+					this.addActionButton("skip-button", _("Skip turn"), "onBonusBuildSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				}
 				else {
 					//the player is skipping just a bonus action
-					this.addActionButton("skip-button", _("Skip"), "onBonusBuildSkip", undefined, false, 'gray'); 
+					this.addActionButton("skip-button", _("Skip bonus build"), "onBonusBuildSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP); 
 				}
 				break;
 			case 'client_inventory':
@@ -2386,7 +2392,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_calculations':
 				this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
-				this.addActionButton("cancel-button", _("Cancel"), "onCalculationsCancel", undefined, false, 'gray');
+				this.addActionButton("cancel-button", _("Cancel"), "onCalculationsCancel", undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
 				this.onCalculationsUpdateActionButton(null);
 				break;
 			case 'client_safetyPrecaution':
@@ -2407,7 +2413,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_houseCleaningToss':
-				this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onHouseCleaningSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_shoppingJourney':
@@ -2415,7 +2421,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_siesta':
 				//siesta skip is deprecated since the 10th anniversary
-				//this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, 'gray');
+				//this.addActionButton("skip-button", _("Skip"), "onSiestaSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_ruthlessCompetition':
@@ -2502,19 +2508,19 @@ class DaleOfMerchants extends Gamegui
 			case 'client_velocipede':
 				this.addActionButton("toss-button", _("Toss"), "onVelocipedeToss");
 				if (this.marketDiscard.size > 0) {
-					this.addActionButton("skip-button", _("Skip"), "onVelocipedeTossSkip", undefined, false, 'gray');
+					this.addActionButton("skip-button", _("Skip"), "onVelocipedeTossSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				}
 				else {
-					this.addActionButton("skip-button", _("Resolve without effect"), "onVelocipedeTossSkip", undefined, false, 'gray');
+					this.addActionButton("skip-button", _("Resolve without effect"), "onVelocipedeTossSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				}
 				this.addActionButtonCancelClient();
 				break;
 			case 'velocipede':
-				this.addActionButton("skip-button", _("Skip"), "onVelocipedeSwapSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onVelocipedeSwapSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'DEPRECATED_royalPrivilege':
 				this.addActionButton("toss-button", _("Purchase"), "onDEPRECATED_RoyalPrivilege");
-				this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_RoyalPrivilegeSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onDEPRECATED_RoyalPrivilegeSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'client_pompousProfessional':
 				this.addActionButton("animalfolk-button-0", this.getAnimalfolkName(0), () => this.onPompousProfessional(0));
@@ -2771,11 +2777,11 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm"), "onDEPRECATED_Insight");
 				break;
 			case 'badOmen':
-				this.addActionButton("skip-button", _("Skip"), "onBadOmenSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onBadOmenSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'client_badOmen':
 				this.addActionButton("confirm-button", _("Confirm"), "onBadOmenDeck");
-				this.addActionButton("undo-button", _("Undo"), "onBadOmenUndo", undefined, false, "gray");
+				this.addActionButton("undo-button", _("Undo"), "onBadOmenUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
 				break;
 			case 'fumblingDreamer':
 				this.addActionButtonsOpponent(this.onFumblingDreamer.bind(this), true);
@@ -2809,11 +2815,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'coffeeGrinder':
 				this.addActionButton("confirm-button", _("Discard"), "onCoffeeGrinderDiscard");
-				this.addActionButton("skip-button", _("Skip"), "onCoffeeGrinderSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onCoffeeGrinderSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'insightDiscard':
 				this.addActionButton("confirm-button", _("Discard"), "onInsightDiscard");
-				this.addActionButton("skip-button", _("Skip"), "onInsightSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onInsightSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'client_dramaticRomantic':
 				switch(this.myClock.getClock()) {
@@ -2835,7 +2841,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_windOfChange':
-				this.addActionButton("skip-button", _("Skip"), "onWindOfChangeSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onWindOfChangeSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_snack':
@@ -2871,7 +2877,7 @@ class DaleOfMerchants extends Gamegui
 				const capuchin4_label = capuchin4_args.opponent_name+"\'s "+_("card")
 				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', capuchin4_label);
 				this.addActionButton("confirm-button", _("Take"), "onCapuchin4Take");
-				this.addActionButton("skip-button", _("Skip"), "onCapuchin4Skip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onCapuchin4Skip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
 				this.addActionButtonCancelClient(undefined, false);
@@ -2916,7 +2922,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'provocation':
 				this.addActionButton("toss-button", _("Toss"), "onProvocationToss");
-				this.addActionButton("skip-button", _("Skip"), "onProvocationSkip", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Skip"), "onProvocationSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 		}
 		//(~actionbuttons)
@@ -3498,7 +3504,7 @@ class DaleOfMerchants extends Gamegui
 	*/
 	addActionButtonCancelClient(label?: string, undo_schedule: boolean = true) {
 		const method = undo_schedule ? "onCancelClient" : "onCancelClientWithoutUndoingSchedule"
-		this.addActionButton("cancel-button", label ?? _("Cancel"), method, undefined, false, 'gray');
+		this.addActionButton("cancel-button", label ?? _("Cancel"), method, undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
 	}
 
 	///////////////////////////////////////////////////
@@ -3557,7 +3563,7 @@ class DaleOfMerchants extends Gamegui
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
 				const label_formatted = `<span style="font-weight:bold;color:#${color};">${label.replace("${player_name}", name)}</span>`;
-				this.addActionButton("opponent-selection-button-"+opponent_id, label_formatted, () => {onOpponentHandler(+opponent_id)}, undefined, false, 'gray');
+				this.addActionButton("opponent-selection-button-"+opponent_id, label_formatted, () => {onOpponentHandler(+opponent_id)}, undefined, false, DaleOfMerchants.ACTION_BUTTON_SELECT_PLAYER);
 			}
 		}
 	}
@@ -3580,7 +3586,7 @@ class DaleOfMerchants extends Gamegui
 				const name = this.gamedatas.players[opponent_id]!.name;
 				const color = this.gamedatas.players[opponent_id]!.color;
 				const label = `<span style="font-weight:bold;color:#${color};">${name}</span>`;
-				this.addActionButton("opponent-selection-button-"+opponent_id, label, "onToggleOpponent", undefined, false, 'gray');
+				this.addActionButton("opponent-selection-button-"+opponent_id, label, "onToggleOpponent", undefined, false, DaleOfMerchants.ACTION_BUTTON_SELECT_PLAYER);
 				if (auto_select && this.opponent_ids.length < this.max_opponents) {
 					this.opponent_ids.push(+opponent_id);
 					$("opponent-selection-button-"+opponent_id)?.classList.add("daleofmerchants-bga-button-selected");
@@ -4265,7 +4271,7 @@ class DaleOfMerchants extends Gamegui
 				//alternative selection mode (bga button)
 				this.removeActionButtons();
 				this.addActionButtonsOpponent((opponent_id: number) => {this.onManufacturedJoy(card.id, opponent_id)}, true, _("${player_name}\'s discard"));
-				this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, 'gray');
+				this.addActionButton("cancel-button", _("Cancel"), "onManufacturedJoyCancelTargetingLine", undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
 				break;
 			case 'client_spend':
 				this.onSpendSelectionChanged();
@@ -4374,7 +4380,7 @@ class DaleOfMerchants extends Gamegui
 				)
 				//alternative selection mode (bga button)
 				this.addActionButtonsOpponent((opponent_id: number) => {this.onAnchor(card.id, opponent_id)}, true, _("${player_name}\'s discard"));
-				this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, 'gray');
+				this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
 				break;
 			case 'badOmen':
 				if (card.isAnimalfolk()) {
