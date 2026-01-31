@@ -4788,7 +4788,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
         };
         DaleDeckSelection.prototype.setupFilters = function () {
             var _this = this;
-            var _a;
+            var _a, _b, _c;
             var icons = [
                 ["daleofmerchants-filter-title-reset-filters", DaleIcons_8.DaleIcons.getResetFiltersDisabledIcon()],
                 ["daleofmerchants-filter-title-complexity", DaleIcons_8.DaleIcons.getComplexityIcon()],
@@ -4799,7 +4799,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
                 ["daleofmerchants-pick-random", DaleIcons_8.DaleIcons.getRandomIcon()],
             ];
             for (var _i = 0, icons_1 = icons; _i < icons_1.length; _i++) {
-                var _b = icons_1[_i], html_id = _b[0], icon = _b[1];
+                var _d = icons_1[_i], html_id = _d[0], icon = _d[1];
                 $(html_id).insertAdjacentHTML('afterbegin', "<span class=\"daleofmerchants-log-span\">".concat(icon.outerHTML, "</span>"));
             }
             var warningIcon = DaleIcons_8.DaleIcons.getWarningIcon();
@@ -4844,7 +4844,10 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             this.pickRandomButton.addEventListener("click", function () {
                 _this.pickRandom();
             });
-            (_a = this.filterContainer.querySelector("h2")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", function () {
+            if (((_a = this.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()) == false) {
+                (_b = this.pickRandomButton.parentElement) === null || _b === void 0 ? void 0 : _b.classList.add("daleofmerchants-hidden");
+            }
+            (_c = this.filterContainer.querySelector("h2")) === null || _c === void 0 ? void 0 : _c.addEventListener("click", function () {
                 _this.filterContainer.classList.toggle("daleofmerchants-collapsed");
             });
             if (document.querySelector(".mobile_version")) {
@@ -4873,6 +4876,10 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             return animalfolk_ids;
         };
         DaleDeckSelection.prototype.pickRandom = function () {
+            var _a;
+            if (((_a = this.page) === null || _a === void 0 ? void 0 : _a.isCurrentPlayerActive()) == false) {
+                return;
+            }
             var animalfolk_ids = this.getSelectableAnimalfolkIds();
             if (animalfolk_ids.length > 0) {
                 var random_index = Math.floor(Math.random() * animalfolk_ids.length);

@@ -229,6 +229,9 @@ export class DaleDeckSelection {
         this.pickRandomButton.addEventListener("click", () => {
             this.pickRandom();
         })
+        if (this.page?.isCurrentPlayerActive() == false) {
+            this.pickRandomButton.parentElement?.classList.add("daleofmerchants-hidden");
+        }
 
         //collapsible
         this.filterContainer.querySelector("h2")?.addEventListener("click", () => {
@@ -266,6 +269,9 @@ export class DaleDeckSelection {
     }
 
     private pickRandom() {
+        if (this.page?.isCurrentPlayerActive() == false) {
+            return;
+        }
         const animalfolk_ids = this.getSelectableAnimalfolkIds();
         if (animalfolk_ids.length > 0) {
             const random_index = Math.floor(Math.random() * animalfolk_ids.length);
