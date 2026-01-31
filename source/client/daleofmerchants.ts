@@ -585,6 +585,10 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	positionActionBarBasedOnPreference(is_update = false) {
+		if (this.gamedatas.inDeckSelection) {
+			return;
+		}
+
 		const market_wrap = $("daleofmerchants-market-wrap");
 		const page_title = $("page-title");
 		const after_page_title = $("after-page-title");

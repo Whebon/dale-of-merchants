@@ -5510,6 +5510,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.positionActionBarBasedOnPreference = function (is_update) {
             if (is_update === void 0) { is_update = false; }
+            if (this.gamedatas.inDeckSelection) {
+                return;
+            }
             var market_wrap = $("daleofmerchants-market-wrap");
             var page_title = $("page-title");
             var after_page_title = $("after-page-title");
