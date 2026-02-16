@@ -8802,20 +8802,6 @@ class DaleOfMerchants extends Gamegui
 		if (arg == 'log') {
 			console.warn("RECEIVED A DEBUG NOTIFICATION !");
 		}
-		else if (arg == 'shuffleToDiscard') {
-			this.marketDeck.shuffleToDrawPile(this.marketDiscard!)
-		}
-		else if (arg == 'shuffleToDraw' || arg == 'shuffleToDeck') {
-			this.marketDiscard.shuffleToDrawPile(this.marketDeck!)
-		}
-		else if (arg == 'shuffle') {
-			if (this.marketDeck.size < this.marketDiscard.size) {
-				this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
-			}
-			else {
-				this.marketDeck.shuffleToDrawPile(this.marketDiscard!);
-			}
-		}
 		else if (arg == 'slideRight') {
 			this.market!.slideRight();
 		}

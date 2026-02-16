@@ -231,6 +231,9 @@ export class Pile implements DaleLocation {
      * @param amount: number of cards to push.
      */
     public pushHiddenCards(amount: number) {
+        if (amount == 0) {
+            return;
+        }
         for (let i = 0; i < amount; i++) {
             this.cards.push(new DaleCard(0, 0));
         }
@@ -335,12 +338,11 @@ export class Pile implements DaleLocation {
         }
         let n = this.cards.length;
         let durationPerPop = duration/n;
-        let thiz = this;
-        let callback = function (node: any) {
+        let callback = (node: any) => {
             //pop next
             maxAmount -= 1;
-            if (thiz.cards.length > 0 && maxAmount > 0) {
-                thiz.pop(drawPile, callback, durationPerPop);
+            if (this.cards.length > 0 && maxAmount > 0) {
+                this.pop(drawPile, callback, durationPerPop);
             }
             //add a hidden card to the drawpile
             drawPile.pushHiddenCards(1);

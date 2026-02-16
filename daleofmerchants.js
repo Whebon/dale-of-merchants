@@ -2517,6 +2517,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
         };
         Pile.prototype.pushHiddenCards = function (amount) {
+            if (amount == 0) {
+                return;
+            }
             for (var i = 0; i < amount; i++) {
                 this.cards.push(new DaleCard_2.DaleCard(0, 0));
             }
@@ -2580,6 +2583,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             return card;
         };
         Pile.prototype.shuffleToDrawPile = function (drawPile, duration, maxAmount) {
+            var _this = this;
             if (duration === void 0) { duration = 1000; }
             if (maxAmount === void 0) { maxAmount = Infinity; }
             if (this.cards.length == 0) {
@@ -2590,11 +2594,10 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             }
             var n = this.cards.length;
             var durationPerPop = duration / n;
-            var thiz = this;
             var callback = function (node) {
                 maxAmount -= 1;
-                if (thiz.cards.length > 0 && maxAmount > 0) {
-                    thiz.pop(drawPile, callback, durationPerPop);
+                if (_this.cards.length > 0 && maxAmount > 0) {
+                    _this.pop(drawPile, callback, durationPerPop);
                 }
                 drawPile.pushHiddenCards(1);
             };
@@ -12663,20 +12666,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("Debug with argument ".concat(arg));
             if (arg == 'log') {
                 console.warn("RECEIVED A DEBUG NOTIFICATION !");
-            }
-            else if (arg == 'shuffleToDiscard') {
-                this.marketDeck.shuffleToDrawPile(this.marketDiscard);
-            }
-            else if (arg == 'shuffleToDraw' || arg == 'shuffleToDeck') {
-                this.marketDiscard.shuffleToDrawPile(this.marketDeck);
-            }
-            else if (arg == 'shuffle') {
-                if (this.marketDeck.size < this.marketDiscard.size) {
-                    this.marketDiscard.shuffleToDrawPile(this.marketDeck);
-                }
-                else {
-                    this.marketDeck.shuffleToDrawPile(this.marketDiscard);
-                }
             }
             else if (arg == 'slideRight') {
                 this.market.slideRight();
