@@ -2592,12 +2592,16 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             if (this === drawPile) {
                 throw new Error('Cannot shuffle to self.');
             }
+            var startTime = performance.now();
             var n = this.cards.length;
             var durationPerPop = duration / n;
             var callback = function (node) {
                 maxAmount -= 1;
                 if (_this.cards.length > 0 && maxAmount > 0) {
                     _this.pop(drawPile, callback, durationPerPop);
+                }
+                else {
+                    console.warn("Time elapsed in shuffleToDrawPile: ".concat(performance.now() - startTime, "ms"));
                 }
                 drawPile.pushHiddenCards(1);
             };
@@ -2611,7 +2615,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             else if (n > 5) {
                 durationPerPop *= 2;
                 this.pop(drawPile, callback, durationPerPop);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 2);
             }
             else {
                 this.pop(drawPile, callback, durationPerPop);

@@ -336,6 +336,7 @@ export class Pile implements DaleLocation {
         if (this === drawPile) {
             throw new Error('Cannot shuffle to self.');
         }
+        const startTime = performance.now();
         let n = this.cards.length;
         let durationPerPop = duration/n;
         let callback = (node: any) => {
@@ -343,6 +344,9 @@ export class Pile implements DaleLocation {
             maxAmount -= 1;
             if (this.cards.length > 0 && maxAmount > 0) {
                 this.pop(drawPile, callback, durationPerPop);
+            }
+            else {
+                console.warn(`Time elapsed in shuffleToDrawPile: ${performance.now()-startTime}ms`);
             }
             //add a hidden card to the drawpile
             drawPile.pushHiddenCards(1);
@@ -357,7 +361,7 @@ export class Pile implements DaleLocation {
         else if (n > 5) {
             durationPerPop *= 2;
             this.pop(drawPile, callback, durationPerPop);
-            this.pop(drawPile, callback, durationPerPop, durationPerPop*1/4);
+            this.pop(drawPile, callback, durationPerPop, durationPerPop*1/2);
         }
         else {
             this.pop(drawPile, callback, durationPerPop);
