@@ -4776,7 +4776,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_NIGHTSHIFT:
-                case CT_RUMOURS:
+                case CT_SHARINGISCARING:
                     $players = $this->loadPlayersBasicInfosInclMono();
                     $counts = $this->cards->countCardsInLocations();
                     foreach ($players as $other_player_id => $player) {
@@ -5636,7 +5636,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trCharity");
                 break;
-            case CT_RUMOURS:
+            case CT_SHARINGISCARING:
                 $this->beginResolvingCard($technique_card_id);
                 $players = $this->loadPlayersBasicInfosInclMono();
                 $counts = $this->cards->countCardsInLocations();
@@ -5647,10 +5647,10 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                 }
                 if (count($player_ids) == 0) {
-                    throw new BgaSystemException("Rumours has no effect and should have fizzled instead");
+                    throw new BgaSystemException("CT_SHARINGISCARING has no effect and should have fizzled instead");
                 }
                 $this->setGameStateValuePlayerIds($player_ids);
-                $this->gamestate->nextState("trRumours");
+                $this->gamestate->nextState("trSharingIsCaring");
                 break;
             case CT_SOUVENIRS:
                 $this->beginResolvingCard($technique_card_id);
@@ -8399,7 +8399,7 @@ class DaleOfMerchants extends DaleTableBasic
     
     /**
      * General purpose action for techniques to partially fulfill giving cards to the players. Updates `setGameStateValuePlayerIds`. Fully resolves the current technique if the fulfillment is complete.
-     * Usages: CT_CHARITY, CT_RUMOURS and CT_SOUVENIRS
+     * Usages: CT_CHARITY, CT_SHARINGISCARING and CT_SOUVENIRS
      * @param mixed $card_ids card ids to give to players. These cards must be present in the active player's limbo
      * @param mixed $player_ids card ids to give to players. Must be a subset of the ids stored in `setGameStateValuePlayerIds`
      */
@@ -10921,20 +10921,20 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
-    function stRumours() {
+    function stSharingIsCaring() {
         $player_id = $this->getActivePlayerId();
         $player_ids = $this->getGameStateValuePlayerIds();
         foreach ($player_ids as $other_player_id) {
             $dbcards = $this->draw(
-                clienttranslate('Rumours: ${player_name} looks at a card from ${opponent_name}\'s deck'), 
+                clienttranslate('Sharing is Caring: ${player_name} looks at a card from ${opponent_name}\'s deck'), 
                 1, 
                 true, 
                 $other_player_id, 
                 $player_id,
-                clienttranslate('Rumours: ${player_name} looks at ${opponent_name}\'s ${card_name}')
+                clienttranslate('Sharing is Caring: ${player_name} looks at ${opponent_name}\'s ${card_name}')
             );
             if (count($dbcards) == 0) {
-                throw new BgaVisibleSystemException("Rumours: expected all players from 'getGameStateValuePlayerIds' to have a card in their deck/discard");
+                throw new BgaVisibleSystemException("Sharing is Caring: expected all players from 'getGameStateValuePlayerIds' to have a card in their deck/discard");
             }
         }
     }

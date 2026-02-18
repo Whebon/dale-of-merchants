@@ -44,7 +44,7 @@ if (false) {
 	$game->stPompousProfessional();
 	$game->stDelicacy();
 	$game->stUmbrella();
-	$game->stRumours();
+	$game->stSharingIsCaring();
 	$game->stWheelbarrow();
 	$game->stTacticalMeasurement();
 	$game->stMeddlingMarketeer();
@@ -162,7 +162,7 @@ $machinestates = array(
 			'trPompousProfessional' => 75,
 			'trDelicacy' => 76,
 			'trUmbrella' => 77,
-			'trRumours' => 78,
+			'trSharingIsCaring' => 78,
 			'trWheelbarrow' => 79,
 			'trVigilance' => 80,
 			'trMeddlingMarketeer' => 82,
@@ -565,11 +565,11 @@ $machinestates = array(
 		),
 	),
 	78 => array(
-		'name' => 'rumours',
-		'description' => clienttranslate('Rumours: ${actplayer} must give back all drawn cards'),
-		'descriptionmyturn' => clienttranslate('Rumours: ${you} must choose a card and a player'),
+		'name' => 'sharingIsCaring',
+		'description' => clienttranslate('Sharing is Caring: ${actplayer} must give back all drawn cards'),
+		'descriptionmyturn' => clienttranslate('Sharing is Caring: ${you} must choose a card and a player'),
 		'type' => 'activeplayer',
-		'action' => 'stRumours',
+		'action' => 'stSharingIsCaring',
 		'args' => 'argPlayerIds',
 		'possibleactions' => ['actGiveCardsFromLimboToPlayers'],
 		'transitions' => array(

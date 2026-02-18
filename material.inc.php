@@ -86,7 +86,7 @@ if (!defined('CT_CARDBACK')) {
     define('CT_RAFFLE', 62);
     define('CT_CHARITY', 63);
     define('CT_TASTERS', 64);
-    define('CT_RUMOURS', 65);
+    define('CT_SHARINGISCARING', 65);
     define('CT_DARINGADVENTURER', 66);
     define('CT_RAREARTEFACT', 67);
     define('CT_SWANK', 68);
@@ -1537,7 +1537,7 @@ $this->card_types = array(
   ),
   65 => array(
       'type_id' => 65,
-      'name' => clienttranslate("Rumours"),
+      'name' => clienttranslate("Sharing is Caring"),
       'text' => clienttranslate("Look at the top CARD of each player's deck and give 1 of them to each player."),
       'type_displayed' => clienttranslate("Technique"),
       'is_technique' => true,

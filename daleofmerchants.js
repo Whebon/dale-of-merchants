@@ -1705,7 +1705,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_RAFFLE = 62;
         DaleCard.CT_CHARITY = 63;
         DaleCard.CT_TASTERS = 64;
-        DaleCard.CT_RUMOURS = 65;
+        DaleCard.CT_SHARINGISCARING = 65;
         DaleCard.CT_DARINGADVENTURER = 66;
         DaleCard.CT_RAREARTEFACT = 67;
         DaleCard.CT_SWANK = 68;
@@ -5940,7 +5940,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Opponent's hand"));
                     break;
                 case 'charity':
-                case 'rumours':
+                case 'sharingIsCaring':
                 case 'souvenirs':
                     this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
                     break;
@@ -6590,7 +6590,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'charity':
-                case 'rumours':
+                case 'sharingIsCaring':
                 case 'souvenirs':
                     this.myLimbo.setSelectionMode('none');
                     break;
@@ -7297,7 +7297,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'charity':
-                case 'rumours':
+                case 'sharingIsCaring':
                 case 'souvenirs':
                     var charity_args = args;
                     this.addActionButtonsOpponentSelection(1, charity_args.player_ids);
@@ -9439,7 +9439,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     });
                     break;
                 case DaleCard_10.DaleCard.CT_NIGHTSHIFT:
-                case DaleCard_10.DaleCard.CT_RUMOURS:
+                case DaleCard_10.DaleCard.CT_SHARINGISCARING:
                     for (var _f = 0, _g = this.gamedatas.playerorder; _f < _g.length; _f++) {
                         var player_id = _g[_f];
                         if (this.playerDiscards[player_id].size + this.playerDecks[player_id].size > 0) {

@@ -1096,7 +1096,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', _("Opponent's hand"));
 				break;
 			case 'charity':
-			case 'rumours':
+			case 'sharingIsCaring':
 			case 'souvenirs':
 				this.myLimbo.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique', _("Choose a card"));
 				break;
@@ -1781,7 +1781,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none');
 				break;
 			case 'charity':
-			case 'rumours':
+			case 'sharingIsCaring':
 			case 'souvenirs':
 				this.myLimbo.setSelectionMode('none');
 				break;
@@ -2486,7 +2486,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'charity':
-			case 'rumours':
+			case 'sharingIsCaring':
 			case 'souvenirs':
 				const charity_args = args as { player_ids: number[] };
 				this.addActionButtonsOpponentSelection(1, charity_args.player_ids);
@@ -5125,7 +5125,7 @@ class DaleOfMerchants extends Gamegui
 				});
 				break;
 			case DaleCard.CT_NIGHTSHIFT:
-			case DaleCard.CT_RUMOURS:
+			case DaleCard.CT_SHARINGISCARING:
 				for (let player_id of this.gamedatas.playerorder) {
 					if (this.playerDiscards[player_id]!.size + this.playerDecks[player_id]!.size > 0) {
 						fizzle = false;

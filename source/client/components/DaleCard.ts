@@ -110,7 +110,7 @@ export class DaleCard {
     static readonly CT_RAFFLE: number = 62;
     static readonly CT_CHARITY: number = 63;
     static readonly CT_TASTERS: number = 64;
-    static readonly CT_RUMOURS: number = 65;
+    static readonly CT_SHARINGISCARING: number = 65;
     static readonly CT_DARINGADVENTURER: number = 66;
     static readonly CT_RAREARTEFACT: number = 67;
     static readonly CT_SWANK: number = 68;
