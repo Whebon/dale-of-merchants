@@ -8586,7 +8586,14 @@ class DaleOfMerchants extends Gamegui
 		if (card.isAnimalfolk()) {
 			this.marketDiscard.push(card, playerDiscard.placeholderHTML);
 		}
-		//TODO: animate tossing non-animalfolk cards
+		else if (card.isMonoCard()) (
+			this.monoDiscard.push(card, playerDiscard.placeholderHTML)
+		) 
+		else {
+			// Tossing junk
+			playerDiscard.push(card)
+			playerDiscard.pop('overall_player_board_'+notif.args.player_id);
+		}
 	}
 
 	notif_tossFromDeck(notif: NotifAs<'tossFromDeck'>) {
@@ -8598,8 +8605,11 @@ class DaleOfMerchants extends Gamegui
 			playerDeck.pop(); //pop a cardback
 			this.marketDiscard.push(card, playerDeck.placeholderHTML);
 		}
+		else if (card.isMonoCard()) (
+			this.monoDiscard.push(card, playerDeck.placeholderHTML)
+		) 
 		else {
-			//TODO: better animation for tossing non-animalfolk cards
+			// Tossing junk
 			playerDeck.pop('overall_player_board_'+notif.args.player_id);
 		}
 	}

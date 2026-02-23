@@ -2350,7 +2350,15 @@ class DaleOfMerchants extends DaleTableBasic
         $dbcard = current($dbcards);
 
         //2. toss it
-        $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+        if ($this->isJunk($dbcard)) {
+            $destination = JUNKRESERVE;
+        }
+        else if ($this->isMonoCard($dbcard)) {
+            $destination = DISCARD.MONO_PLAYER_ID;
+        }
+        else {
+            $destination = DISCARD.MARKET;
+        }
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
         $this->notifyAllPlayers('tossFromDiscard', $msg, array_merge(array(
             "player_id" => $player_id,
@@ -2374,7 +2382,15 @@ class DaleOfMerchants extends DaleTableBasic
         $dbcard = $this->cards->getCardFromLocation($card_id, DECK.$player_id);
 
         //2. toss it
-        $destination = $this->isJunk($dbcard) ? JUNKRESERVE : DISCARD.MARKET;
+        if ($this->isJunk($dbcard)) {
+            $destination = JUNKRESERVE;
+        }
+        else if ($this->isMonoCard($dbcard)) {
+            $destination = DISCARD.MONO_PLAYER_ID;
+        }
+        else {
+            $destination = DISCARD.MARKET;
+        }
         $this->cards->moveCardOnTop($dbcard["id"], $destination);
         $this->notifyAllPlayers('tossFromDeck', $msg, array_merge(array(
             "player_id" => $player_id,

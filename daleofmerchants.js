@@ -12486,6 +12486,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (card.isAnimalfolk()) {
                 this.marketDiscard.push(card, playerDiscard.placeholderHTML);
             }
+            else if (card.isMonoCard())
+                (this.monoDiscard.push(card, playerDiscard.placeholderHTML));
+            else {
+                playerDiscard.push(card);
+                playerDiscard.pop('overall_player_board_' + notif.args.player_id);
+            }
         };
         DaleOfMerchants.prototype.notif_tossFromDeck = function (notif) {
             console.warn("notif_tossFromDeck");
@@ -12496,6 +12502,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 playerDeck.pop();
                 this.marketDiscard.push(card, playerDeck.placeholderHTML);
             }
+            else if (card.isMonoCard())
+                (this.monoDiscard.push(card, playerDeck.placeholderHTML));
             else {
                 playerDeck.pop('overall_player_board_' + notif.args.player_id);
             }
