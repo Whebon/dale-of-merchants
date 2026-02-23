@@ -422,8 +422,9 @@ class DaleDeck {
      * Overrides the parent::shuffle, the only difference is that the resulting pile is 1-indexed, not 0-indexed
      */
     function shuffle($location) {
+        //$this->deck->shuffle($location); // SUPER METHOD
         $card_ids = $this->game->getObjectListFromDB("SELECT card_id FROM ".$this->deck->table." WHERE card_location='$location'", true);
-        $this->deck->shuffle($location); // SUPER METHOD
+        shuffle($card_ids);
         $n=1; //$n=0; This is the only difference compared to the parent::shuffle
         foreach($card_ids as $card_id){
             $this->game->DbQuery("UPDATE ".$this->deck->table." SET card_location_arg='$n' WHERE card_id='$card_id'");
