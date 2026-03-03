@@ -13,17 +13,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -59,6 +48,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
+};
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
@@ -2583,43 +2583,59 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             return card;
         };
         Pile.prototype.shuffleToDrawPile = function (drawPile, duration, maxAmount) {
-            var _this = this;
             if (duration === void 0) { duration = 1000; }
             if (maxAmount === void 0) { maxAmount = Infinity; }
-            if (this.cards.length == 0) {
-                return;
-            }
-            if (this === drawPile) {
-                throw new Error('Cannot shuffle to self.');
-            }
-            var startTime = performance.now();
-            var n = this.cards.length;
-            var durationPerPop = duration / n;
-            var callback = function (node) {
-                maxAmount -= 1;
-                if (_this.cards.length > 0 && maxAmount > 0) {
-                    _this.pop(drawPile, callback, durationPerPop);
-                }
-                else {
-                    console.warn("Time elapsed in shuffleToDrawPile: ".concat(performance.now() - startTime, "ms"));
-                }
-                drawPile.pushHiddenCards(1);
-            };
-            if (n > 10) {
-                durationPerPop *= 4;
-                this.pop(drawPile, callback, durationPerPop);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 2 / 4);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 3 / 4);
-            }
-            else if (n > 5) {
-                durationPerPop *= 2;
-                this.pop(drawPile, callback, durationPerPop);
-                this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 2);
-            }
-            else {
-                this.pop(drawPile, callback, durationPerPop);
-            }
+            return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (this.cards.length == 0) {
+                                return [2];
+                            }
+                            if (this === drawPile) {
+                                throw new Error('Cannot shuffle to self.');
+                            }
+                            return [4, new Promise(function (resolve) {
+                                    var startTime = performance.now();
+                                    var n = _this.cards.length;
+                                    var durationPerPop = duration / n;
+                                    var callback = function (node) {
+                                        maxAmount -= 1;
+                                        if (_this.cards.length > 0 && maxAmount > 0) {
+                                            _this.pop(drawPile, callback, durationPerPop);
+                                        }
+                                        else {
+                                            console.warn("Time elapsed in shuffleToDrawPile: ".concat(performance.now() - startTime, "ms"));
+                                            resolve();
+                                        }
+                                        drawPile.pushHiddenCards(1);
+                                    };
+                                    if (n > 10) {
+                                        durationPerPop *= 4;
+                                        _this.pop(drawPile, callback, durationPerPop);
+                                        _this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 4);
+                                        _this.pop(drawPile, callback, durationPerPop, durationPerPop * 2 / 4);
+                                        _this.pop(drawPile, callback, durationPerPop, durationPerPop * 3 / 4);
+                                    }
+                                    else if (n > 5) {
+                                        durationPerPop *= 2;
+                                        _this.pop(drawPile, callback, durationPerPop);
+                                        _this.pop(drawPile, callback, durationPerPop, durationPerPop * 1 / 2);
+                                    }
+                                    else {
+                                        _this.pop(drawPile, callback, durationPerPop);
+                                    }
+                                })];
+                        case 1:
+                            _a.sent();
+                            return [4, new Promise(function (resolve) { return setTimeout(resolve, 250); })];
+                        case 2:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            });
         };
         Pile.prototype.shuffleToPile = function (discardPile, duration) {
             if (duration === void 0) { duration = 1000; }
@@ -11560,7 +11576,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['placeOnDeck', 500, true],
                 ['placeOnDeckMultiple', 500, true],
                 ['shuffleDiscard', 500],
-                ['reshuffleDeck', 1500],
                 ['discardEntireDeck', 1000],
                 ['wilyFellow', 500],
                 ['DEPRECATED_whirligigShuffle', 1750],
@@ -12259,15 +12274,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 discard.push(DaleCard_10.DaleCard.of(card));
             }
         };
-        DaleOfMerchants.prototype.notif_reshuffleDeck = function (notif) {
-            console.warn("reshuffleDeck [market=".concat(notif.args.market, ", player_id=").concat(notif.args.player_id, "]"));
-            if (notif.args.market) {
-                this.marketDiscard.shuffleToDrawPile(this.marketDeck);
-            }
-            else {
-                this.playerDiscards[notif.args.player_id].shuffleToDrawPile(this.playerDecks[notif.args.player_id]);
-            }
-        };
         DaleOfMerchants.prototype.notif_discardEntireDeck = function (notif) {
             console.warn("discardEntireDeck", notif);
             var deck = this.playerDecks[notif.args.player_id];
@@ -12716,6 +12722,26 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 throw new Error("Unknown argument ".concat(notif.args.arg));
             }
+        };
+        DaleOfMerchants.prototype.promise_notif_reshuffleDeck = function (args) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            console.warn("reshuffleDeck [market=".concat(args.market, ", player_id=").concat(args.player_id, "]"));
+                            if (!args.market) return [3, 2];
+                            return [4, this.marketDiscard.shuffleToDrawPile(this.marketDeck)];
+                        case 1:
+                            _a.sent();
+                            return [3, 4];
+                        case 2: return [4, this.playerDiscards[args.player_id].shuffleToDrawPile(this.playerDecks[args.player_id])];
+                        case 3:
+                            _a.sent();
+                            _a.label = 4;
+                        case 4: return [2];
+                    }
+                });
+            });
         };
         DaleOfMerchants.prototype.promise_notif_monoConfirmAction = function (args) {
             return __awaiter(this, void 0, void 0, function () {

@@ -7513,7 +7513,6 @@ class DaleOfMerchants extends Gamegui
 			['placeOnDeck',							500, true],
 			['placeOnDeckMultiple', 				500, true],
 			['shuffleDiscard',						500],
-			['reshuffleDeck', 						1500],
 			['discardEntireDeck',					1000],
 			['wilyFellow', 							500],
 			['DEPRECATED_whirligigShuffle', 		1750],
@@ -8340,16 +8339,6 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_reshuffleDeck(notif: NotifAs<'reshuffleDeck'>) {
-		console.warn(`reshuffleDeck [market=${notif.args.market}, player_id=${notif.args.player_id}]`);
-		if (notif.args.market) {
-			this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
-		}
-		else {
-			this.playerDiscards[notif.args.player_id]!.shuffleToDrawPile(this.playerDecks[notif.args.player_id]!);
-		}
-	}
-
 	notif_discardEntireDeck(notif: NotifAs<'discardEntireDeck'>) {
 		console.warn("discardEntireDeck", notif);
 		const deck = this.playerDecks[notif.args.player_id]!
@@ -8853,6 +8842,16 @@ class DaleOfMerchants extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Promise notifications (these notifications are auto-plugged using the new bgaSetupPromiseNotifications system)
+
+	async promise_notif_reshuffleDeck(args: NotifTypes['reshuffleDeck']) {
+		console.warn(`reshuffleDeck [market=${args.market}, player_id=${args.player_id}]`);
+		if (args.market) {
+			await this.marketDiscard.shuffleToDrawPile(this.marketDeck!);
+		}
+		else {
+			await this.playerDiscards[args.player_id]!.shuffleToDrawPile(this.playerDecks[args.player_id]!);
+		}
+	}
 
 	async promise_notif_monoConfirmAction(args: NotifTypes['monoConfirmAction']){
 		console.warn("monoConfirmAction", args);

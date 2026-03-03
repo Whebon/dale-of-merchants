@@ -329,43 +329,47 @@ export class Pile implements DaleLocation {
     * @param duration (optional) defines the total duration in millisecond of the slide.
     * @param maxAmount (optional) if provided, stop after popping `maxAmount` cards
     */
-    public shuffleToDrawPile(drawPile: Pile, duration: number = 1000, maxAmount: number = Infinity) {
+    public async shuffleToDrawPile(drawPile: Pile, duration: number = 1000, maxAmount: number = Infinity) {
         if (this.cards.length == 0) {
             return;
         }
         if (this === drawPile) {
             throw new Error('Cannot shuffle to self.');
         }
-        const startTime = performance.now();
-        let n = this.cards.length;
-        let durationPerPop = duration/n;
-        let callback = (node: any) => {
-            //pop next
-            maxAmount -= 1;
-            if (this.cards.length > 0 && maxAmount > 0) {
+        await new Promise<void>(resolve => {
+            const startTime = performance.now();
+            let n = this.cards.length;
+            let durationPerPop = duration/n;
+            let callback = (node: any) => {
+                //pop next
+                maxAmount -= 1;
+                if (this.cards.length > 0 && maxAmount > 0) {
+                    this.pop(drawPile, callback, durationPerPop);
+                }
+                else {
+                    console.warn(`Time elapsed in shuffleToDrawPile: ${performance.now()-startTime}ms`);
+                    resolve();
+                }
+                //add a hidden card to the drawpile
+                drawPile.pushHiddenCards(1);
+            };
+            if (n > 10) {
+                durationPerPop *= 4;
                 this.pop(drawPile, callback, durationPerPop);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop*1/4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop*2/4);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop*3/4);
+            }
+            else if (n > 5) {
+                durationPerPop *= 2;
+                this.pop(drawPile, callback, durationPerPop);
+                this.pop(drawPile, callback, durationPerPop, durationPerPop*1/2);
             }
             else {
-                console.warn(`Time elapsed in shuffleToDrawPile: ${performance.now()-startTime}ms`);
+                this.pop(drawPile, callback, durationPerPop);
             }
-            //add a hidden card to the drawpile
-            drawPile.pushHiddenCards(1);
-        };
-        if (n > 10) {
-            durationPerPop *= 4;
-            this.pop(drawPile, callback, durationPerPop);
-            this.pop(drawPile, callback, durationPerPop, durationPerPop*1/4);
-            this.pop(drawPile, callback, durationPerPop, durationPerPop*2/4);
-            this.pop(drawPile, callback, durationPerPop, durationPerPop*3/4);
-        }
-        else if (n > 5) {
-            durationPerPop *= 2;
-            this.pop(drawPile, callback, durationPerPop);
-            this.pop(drawPile, callback, durationPerPop, durationPerPop*1/2);
-        }
-        else {
-            this.pop(drawPile, callback, durationPerPop);
-        }
+        });
+        await new Promise(resolve => setTimeout(resolve, 250));
     }
 
     /**
