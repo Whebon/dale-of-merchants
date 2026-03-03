@@ -1417,6 +1417,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_bonsai':
 				this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
+				// QoL feature: skip the selection if all junk cards are printed junk cards (i.e. not chameleons).
+				const client_bonsai_junk_cards = this.myHand.getAllDaleCards().filter(card => card.isJunk());
+				const client_bonsai_has_chameleon_junk = this.myHand.getAllDaleCards().some(card => card.isEffectiveJunk() && !card.isJunk());
+				if (!client_bonsai_has_chameleon_junk && client_bonsai_junk_cards.length >= 2) {
+					client_bonsai_junk_cards.length = 2;
+					for (const card of client_bonsai_junk_cards) {
+						this.myHand.selectItem(card.id);
+					}
+					this.onBonsai();
+				}
 				break;
 			case 'rake':
 				this.setMainTitle(this.format_dale_icons($('pagemaintitletext')!.innerHTML,

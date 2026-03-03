@@ -6238,6 +6238,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_bonsai':
                     this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
+                    var client_bonsai_junk_cards = this.myHand.getAllDaleCards().filter(function (card) { return card.isJunk(); });
+                    var client_bonsai_has_chameleon_junk = this.myHand.getAllDaleCards().some(function (card) { return card.isEffectiveJunk() && !card.isJunk(); });
+                    if (!client_bonsai_has_chameleon_junk && client_bonsai_junk_cards.length >= 2) {
+                        client_bonsai_junk_cards.length = 2;
+                        for (var _27 = 0, client_bonsai_junk_cards_1 = client_bonsai_junk_cards; _27 < client_bonsai_junk_cards_1.length; _27++) {
+                            var card = client_bonsai_junk_cards_1[_27];
+                            this.myHand.selectItem(card.id);
+                        }
+                        this.onBonsai();
+                    }
                     break;
                 case 'rake':
                     this.setMainTitle(this.format_dale_icons($('pagemaintitletext').innerHTML, DaleIcons_10.DaleIcons.getTossIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
@@ -6261,8 +6271,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_spendSelectOpponentTechnique':
                     this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
                     var client_spendSelectOpponentTechnique_args = this.mainClientState.getSpendArgs();
-                    for (var _27 = 0, _28 = client_spendSelectOpponentTechnique_args.spend_card_ids.reverse(); _27 < _28.length; _27++) {
-                        var card_id = _28[_27];
+                    for (var _28 = 0, _29 = client_spendSelectOpponentTechnique_args.spend_card_ids.reverse(); _28 < _29.length; _28++) {
+                        var card_id = _29[_28];
                         this.myHand.selectItem(card_id);
                     }
                     this.coinManager.setSelectionMode('implicit', undefined, _("Coins included"));
@@ -6276,8 +6286,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         client_spendSelectOpponentTechnique_piles = this.playerDiscards;
                     }
                     if (client_spendSelectOpponentTechnique_piles) {
-                        for (var _29 = 0, _30 = Object.entries(client_spendSelectOpponentTechnique_piles); _29 < _30.length; _29++) {
-                            var _31 = _30[_29], player_id = _31[0], pile = _31[1];
+                        for (var _30 = 0, _31 = Object.entries(client_spendSelectOpponentTechnique_piles); _30 < _31.length; _30++) {
+                            var _32 = _31[_30], player_id = _32[0], pile = _32[1];
                             if (+player_id != +this.player_id) {
                                 pile.setSelectionMode('top', undefined, "daleofmerchants-wrap-technique");
                             }
@@ -6287,14 +6297,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_capuchin5b':
                     this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
                     var client_capuchin5b_args = this.mainClientState.getSpendArgs();
-                    for (var _32 = 0, _33 = client_capuchin5b_args.spend_card_ids.reverse(); _32 < _33.length; _32++) {
-                        var card_id = _33[_32];
+                    for (var _33 = 0, _34 = client_capuchin5b_args.spend_card_ids.reverse(); _33 < _34.length; _33++) {
+                        var card_id = _34[_33];
                         this.myHand.selectItem(card_id);
                     }
                     this.coinManager.setSelectionMode('implicit', undefined, _("Coins included"));
                     this.coinManager.setCoinsToSpendImplicitly([], client_capuchin5b_args.spend_coins, false);
-                    for (var _34 = 0, _35 = Object.entries(this.playerDiscards); _34 < _35.length; _34++) {
-                        var _36 = _35[_34], player_id = _36[0], discard = _36[1];
+                    for (var _35 = 0, _36 = Object.entries(this.playerDiscards); _35 < _36.length; _35++) {
+                        var _37 = _36[_35], player_id = _37[0], discard = _37[1];
                         if (+player_id != +this.player_id) {
                             discard.setSelectionMode('singleFromTopX', undefined, "daleofmerchants-wrap-technique", 2);
                         }
@@ -6326,8 +6336,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.openPopin();
                     break;
                 case 'client_selectPlayerDeckTechnique':
-                    for (var _37 = 0, _38 = Object.entries(this.playerDecks); _37 < _38.length; _37++) {
-                        var _39 = _38[_37], player_id = _39[0], deck = _39[1];
+                    for (var _38 = 0, _39 = Object.entries(this.playerDecks); _38 < _39.length; _38++) {
+                        var _40 = _39[_38], player_id = _40[0], deck = _40[1];
                         if (this.playerDiscards[+player_id].size + deck.size > 0) {
                             deck.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
                         }

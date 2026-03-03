@@ -10606,6 +10606,9 @@ class DaleOfMerchants extends DaleTableBasic
             foreach ($dbcards as $card_id => $dbcard) {
                 $type_id = $this->getTypeId($dbcard);
                 if ($this->card_types[$type_id]["trigger"] == TRIGGER_ONCLEANUP && $type_id != CT_SLICEOFLIFE && $this->card_types[$type_id]["has_ability"] && !$this->effects->isPassiveUsed($dbcard)) {
+                    if ($type_id == CT_BONSAI && $this->countJunk($dbcards) < 2) {
+                        continue; //do not start a postCleanUpPhase for just a fizzling CT_BONSAI
+                    }
                     if ($type_id == CT_BARRICADE && $this->countJunk($this->cards->getCardsInLocation(DISCARD.$player_id)) == 0) {
                         continue; //do not start a postCleanUpPhase for just a fizzling CT_BARRICADE
                     }
