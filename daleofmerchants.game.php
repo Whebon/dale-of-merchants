@@ -11377,9 +11377,62 @@ class DaleOfMerchants extends DaleTableBasic
     //////////// Debug functions
     ////////////    
 
-        /*
-            In this space, you can put debugging tools
-        */
+    function debug_draw(int $nbr = 1, bool $to_limbo = false, string $from_player_id = null) {
+        $this->draw("DEBUG_DRAW", $nbr, $to_limbo, $from_player_id);
+    }
+
+    function debug_spawn(string $name, int $nbr = 1, int $player_id = null) {
+        $this->spawn($name, $nbr, $player_id);
+    }
+
+    function debug_spawn1(string $animalfolk_prefix, int $nbr = 1, int $player_id = null) {
+        $this->spawn1($animalfolk_prefix, $nbr, $player_id);
+    }
+
+    function debug_spawn2(string $animalfolk_prefix, int $nbr = 1, int $player_id = null) {
+        $this->spawn2($animalfolk_prefix, $nbr, $player_id);
+    }
+
+    function debug_spawn3(string $animalfolk_prefix, int $nbr = 1, int $player_id = null) {
+        $this->spawn3($animalfolk_prefix, $nbr, $player_id);
+    }
+
+    function debug_spawn4(string $animalfolk_prefix, int $nbr = 1, int $player_id = null) {
+        $this->spawn4($animalfolk_prefix, $nbr, $player_id);
+    }
+
+    function debug_spawn5a(string $animalfolk_prefix, int $nbr = 1, int $player_id = null) {
+        $this->spawn5a($animalfolk_prefix, $nbr, $player_id);
+    }
+
+    function debug_spawn5b(string $animalfolk_prefix, int $nbr = 1, int $player_id = null) {
+        $this->spawn5b($animalfolk_prefix, $nbr, $player_id);
+    }
+    
+    function debug_spawnAll(string $animalfolk_prefix) {
+        $this->spawnAll($animalfolk_prefix);
+    }
+
+    function debug_spawnDeck(string $name, int $nbr = 1, int $player_id = null) {
+        $this->spawnDeck($name, $nbr, $player_id);
+    }
+
+    function debug_spawnDiscard(string $name, int $nbr = 1, int $player_id = null) {
+        $this->spawnDiscard($name, $nbr, $player_id);
+    }
+
+    function debug_spawnMono(string $name, int $nbr = 1) {
+        $this->spawnMono($name, $nbr);
+    }
+    
+    function debug_spawnMonoDeck(string $name, int $nbr = 1) {
+        $this->spawnMonoDeck($name, $nbr);
+    }
+
+    function debug_spawnMonoDiscard(string $name, int $nbr = 1) {
+        $this->spawnMonoDiscard($name, $nbr);
+    }
+
 
     function actEnableDebugMode() {
         if (ALLOW_DEBUG_MODE == 0) {
