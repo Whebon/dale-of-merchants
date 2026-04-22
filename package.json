@@ -23,5 +23,8 @@
   "homepage": "https://github.com/Whebon/dale-of-merchants#readme",
   "dependencies": {
     "bga-ts-template": "^1.1.10"
+  },
+  "devDependencies": {
+    "typescript": "5.9"
   }
 }
