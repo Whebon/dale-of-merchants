@@ -1201,8 +1201,9 @@ export class DaleCard {
         // if (card_div.dataset['location'] == 'market') {
         //     value = this.effective_cost;
         // }
+        const in_other_schedule = card_div.id.includes("schedule") && !card_div.id.includes("schedule-"+DaleCard.page?.player_id); // See issue #178
         if (
-            (DaleCard.page!.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
+            (DaleCard.page!.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock' && !in_other_schedule) ||
             (card_div.dataset['location'] == 'moving') ||
             (((DaleCard.page as any)!.mono_hand_is_visible && card_div.id.includes("limbo")))
         ) {

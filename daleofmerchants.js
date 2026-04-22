@@ -23,12 +23,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -1527,18 +1527,19 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
         };
         DaleCard.prototype.updateEffectiveValue = function (card_div) {
-            var _a, _b;
+            var _a, _b, _c;
             var value = this.original_value;
-            if ((DaleCard.page.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock') ||
+            var in_other_schedule = card_div.id.includes("schedule") && !card_div.id.includes("schedule-" + ((_a = DaleCard.page) === null || _a === void 0 ? void 0 : _a.player_id));
+            if ((DaleCard.page.isCurrentPlayerActive() && card_div.dataset['location'] == 'stock' && !in_other_schedule) ||
                 (card_div.dataset['location'] == 'moving') ||
                 ((DaleCard.page.mono_hand_is_visible && card_div.id.includes("limbo")))) {
                 value = this.effective_value;
             }
             if (value == this.original_value) {
-                (_a = card_div.querySelector(".daleofmerchants-effective-value")) === null || _a === void 0 ? void 0 : _a.remove();
+                (_b = card_div.querySelector(".daleofmerchants-effective-value")) === null || _b === void 0 ? void 0 : _b.remove();
             }
             else {
-                var value_div = (_b = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _b !== void 0 ? _b : document.createElement('div');
+                var value_div = (_c = card_div.querySelector(".daleofmerchants-effective-value")) !== null && _c !== void 0 ? _c : document.createElement('div');
                 value_div.classList.add("daleofmerchants-effective-value");
                 value_div.innerHTML = String(value);
                 card_div.append(value_div);
@@ -2582,11 +2583,11 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.updateHTML();
             return card;
         };
-        Pile.prototype.shuffleToDrawPile = function (drawPile, duration, maxAmount) {
-            if (duration === void 0) { duration = 1000; }
-            if (maxAmount === void 0) { maxAmount = Infinity; }
-            return __awaiter(this, void 0, void 0, function () {
+        Pile.prototype.shuffleToDrawPile = function (drawPile_1) {
+            return __awaiter(this, arguments, void 0, function (drawPile, duration, maxAmount) {
                 var _this = this;
+                if (duration === void 0) { duration = 1000; }
+                if (maxAmount === void 0) { maxAmount = Infinity; }
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -10973,7 +10974,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         };
         DaleOfMerchants.prototype.onMeddlingMarketeerUndo = function () {
             var args = this.mainClientState.args;
-            for (var _ in args.discard_card_ids) {
+            for (var _1 in args.discard_card_ids) {
                 var card = this.myDiscard.pop();
                 this.myLimbo.addDaleCardToStock(card, this.myDiscard.placeholderHTML);
                 if (!args.discard_card_ids.includes(card.id)) {
@@ -11279,7 +11280,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }).bind(this), true, TranslatableStrings_1.TranslatableStrings.players_hand);
                     }
                     for (var _j = 0, _k = Object.entries(this.playerHandSizes); _j < _k.length; _j++) {
-                        var _l = _k[_j], player_id = _l[0], _ = _l[1];
+                        var _l = _k[_j], player_id = _l[0], _2 = _l[1];
                         var target = $("opponent-selection-button-" + player_id);
                         target.childNodes.forEach(function (node) { return dojo.setStyle(node, 'pointer-events', 'none'); });
                         if (+player_id != opponent_id) {
