@@ -1341,7 +1341,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             if (this.isBoundChameleon()) {
                 chameleonName += "<span class=daleofmerchants-chameleon-name>".concat(DaleCard.cardTypes[this.original_type_id].name, "</span><br>");
             }
-            var effective_value = this.effective_value;
+            var effective_value = DaleCard.page.isCurrentPlayerActive() ? this.effective_value : cardType.value;
             if (effective_value != cardType.value) {
                 effective_value = "(<span class=daleofmerchants-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }

@@ -970,7 +970,7 @@ export class DaleCard {
         if (this.isBoundChameleon()) {
             chameleonName += `<span class=daleofmerchants-chameleon-name>${DaleCard.cardTypes[this.original_type_id]!.name}</span><br>`;
         }
-        let effective_value: string | number = this.effective_value;
+        let effective_value: string | number = DaleCard.page!.isCurrentPlayerActive() ? this.effective_value : cardType.value; // We check if the player is active to fix #178
         if (effective_value != cardType.value) {
             effective_value =  `(<span class=daleofmerchants-original-value>${cardType.value}</span>) ${effective_value}`;
         }
