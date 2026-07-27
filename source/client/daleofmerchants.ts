@@ -3689,8 +3689,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	/**
-	 * Returns all cards in the current player's hand that can possibly be swapped using the "Colour Swap" technique card
-	 * @param colourSwap_card_id the "Colour Swap" card that will be played. Should be excluded from the targets.
+	 * Returns all cards in the current player's hand that can possibly be swapped using the "Matching Colours" / "Colour Swap" technique card
+	 * @param colourSwap_card_id the "Matching Colours" / "Colour Swap" card that will be played. Should be excluded from the targets.
 	 */
 	getColourSwapHandTargets(colourSwap_card_id: number): DaleCard[] {
 		const cards: DaleCard[] = [];
@@ -3712,7 +3712,7 @@ class DaleOfMerchants extends Gamegui
 
 	/**
 	 * Returns all cards in any opponent's stall that have the same value as the given hand card
-	 * @param colourSwap_card_id the "Colour Swap" card that will be played. Should be excluded from the targets.
+	 * @param colourSwap_card_id the "Matching Colours" / "Colour Swap" card that will be played. Should be excluded from the targets.
 	 */
 	getColourSwapStallTargets(handCard: DaleCard): DaleCard[] {
 		const stallCards = [];

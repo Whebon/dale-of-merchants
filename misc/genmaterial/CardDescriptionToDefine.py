@@ -11,7 +11,7 @@ for sheet_name in xls.sheet_names:
     df = pd.read_excel(xls, sheet_name=sheet_name)
     for index, row in df.iterrows():
         type_id = int(row['type_id'])
-        upper = row['name'].replace(' ', '').replace("'", '').upper()
+        upper = row['card_type'].replace(' ', '').replace("'", '').upper()
         if upper == "JUNK" and index > 1:
             upper += str(index)
         output += f"    define('CT_{upper}', {type_id});\n"

@@ -1895,7 +1895,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_GLASSFROGMONO = 251;
         DaleCard.CT_GORILLAMONO = 252;
         DaleCard.CT_WALRUSMONO = 253;
-        DaleCard.CT_SHREWDMEMBER = 254;
+        DaleCard.CT_TASMANIANDEVILMONO = 254;
         DaleCard.CT_JUNGLEFOWLMONO = 255;
         DaleCard.CT_DRAMATICMEMBER = 256;
         DaleCard.CT_SNEAKYMEMBER = 257;
@@ -4588,11 +4588,11 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
                     _("Raccoons are a great addition for players wanting some conflict. They don't care about the definition of 'ownership'. You have been warned!"),
                     _("No one can set up their stall faster than squirrels. Inexperienced players like these hoarders, while experts can pull off nice combos with them."),
                     _("Ocelots can give you an edge if luck is on your side. Add these to the game when you want to introduce a little havoc to your contest!"),
-                    _("Chameleons make you play your cards as if they're other cards in the game. They are recommended for more experienced players with long-term plans."),
-                    _("Platypuses get the right cards into their hands at the right time. Rookies grasp platypuses quickly and experienced players like to try out new things with them."),
+                    _("Chameleons make you play your cards as if they're other cards in the game. They are recommended for more experienced players with long-term plans. *Might increase based on other decks."),
+                    _("Platypuses get the right cards into their hands at the right time. Rookies grasp platypuses quickly, and experienced players like to try out new things with them."),
                     _("You need to make plans with sloths if you don't want to waste their delayed effects. Feel free to include them even in your first game - just don't expect to be able to unleash their full potential right away!"),
                     _("Crocodiles bully other competitors by stealing their property and making threats. Invite crocodiles if you want interaction and conflict!"),
-                    _("Foxes love to get everyone involved. Other folks are wary of their seemingly friendly gestures, but can't resist foxes' tempting aid. Playing with them requires skill as timing can be critical with foxes."),
+                    _("Foxes love to get everyone involved. Other folks are wary of their seemingly friendly gestures, but can't resist foxes' tempting aid. Playing with them requires skill, as timing can be critical with foxes."),
                     _("No mountain is too tall or ocean too deep for polecats! These brave adventurers live for danger and aren't afraid of taking chances. Feeling lucky?"),
                     _("Owls wait patiently for their target to make a move before making their own. They are great at adding more interaction between players and will keep you on your toes. Stay vigilant!"),
                     _("Monitors excel at manipulating their discard piles. Do you have great cards in your discard and useless junk in your deck? You can fix that in no time with the monitors!"),
@@ -4600,23 +4600,23 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
                     _("Magpies are choosy thieves. They try to steal only specific items and nothing more. You need to keep an eye on your opponents to utilise magpies to their full potential. For advanced players only!"),
                     _("Echidnas borrow cards from everyone, but at least they always leave something as a replacement. Add them in when you want a lot of interaction between players without straight-out stealing."),
                     _("Statistics and calculations or blind trust in beliefs from previous generations? Hares introduce luck, but you can do a lot to play around it with precise timing and careful preparations."),
-                    _("Kangaroos are excellent at hiding their valuables and creating diversions for mischief makers. However, their techniques are useful even when no one is playing dirty."),
+                    _("Kangaroos are excellent at hiding their valuables and creating diversions for mischief-makers. However, their techniques are useful even when no one is playing dirty. *Might increase based on other decks."),
                     _("Tuataras benefit from the riches gathered by their ancestors. You can save up gold and gain new options, including purchasing expensive cards more easily."),
-                    _("nan"),
-                    _("Capuchins. Warning: this deck has placeholder names and artwork"),
-                    _("nan"),
-                    _("Penguins give you potent effects for tough situations. Their power comes at a cost which seasoned players can turn into an advantage."),
-                    _("Turtles like to play new techniques but struggle to finish them. If you're not careful, everything can come to a standstill. You will have to think around this."),
-                    _("Skinks. Warning: this deck has placeholder names and artwork"),
+                    _("Dodos want everything right now, even if they have to pay a high price for it later. You have to be ready to pay back your loans if you want to use their effects more than once."),
+                    _("At first, capuchins seem jolly and welcoming. Soon, all that changes and you find your valuables lost. You can't take it personally if you let them join your game."),
+                    _("Curious olms break nearly everything they investigate, replacing the broken items with things of worse quality. Play with them to see your favourite cards get trashed left and right!"),
+                    _("Penguins give you potent effects for tough situations. Their power comes at a cost, which seasoned players can turn into an advantage."),
+                    _("Turtles like to play new techniques, but struggle to finish them. If you're not careful, everything can come to a standstill. You will have to think around this."),
+                    _("The number of actions ebb and flow with skinks. Some turns you have more cards, some turns fewer, but many things always occur at the end of your turn!"),
                     _("Do you have what it takes to create a plan and then execute it with precision? Master beavers to unleash awesome combos! They are recommended for a bit more experienced players."),
-                    _("Snow Macaques. Warning: this deck has placeholder names and artwork"),
+                    _("Snow monkeys thrive in junk, so much so that they even can generate it for themselves. Be careful, or you might drown in junk with no one else to blame for it than yourself!"),
                     _("Gulls absolutely love gifting junk to their opponents to slow them down! Novices can get the hang of them pretty fast. Just be prepared for a slightly slower game."),
                     _("Pangolins cause destruction by being so absent-minded. Even more skilled players may have trouble exploiting their potential without it backfiring."),
-                    _("nan"),
-                    _("nan"),
-                    _("nan"),
+                    _("In addition to playing cards from hand, glassfrogs can play them from their discard as well. Experienced players see their cards jumping from place to place on the game area!"),
+                    _("Gorillas are straightforward and strong, sometimes even too much so! While they aren't hard to grasp, they do also offer more nuanced and calculated play for those interested."),
+                    _("Only a few folks can challenge the building efficiency of walruses. If someone starts utilising them to the fullest, you have to try your best to keep up!"),
                     _("Tasmanian devils are your best bet if you want to mess up your opponents' plans! They're not ones to steal, but they do enhance it if you invite those that are."),
-                    _("Junglefowls. Warning: this deck has placeholder names and artwork"),
+                    _("Playing a junglefowl card at the start of your turn will unleash its greatest potential. Keep in mind though that you can only do that only once per turn."),
                     _("Mongooses work hard during the day. Managing your tempo becomes increasingly important as you try to benefit more from them than your opponents do."),
                     _("Bats appear innocent during the day, but just wait for the night to set in! Your possessions will end up either missing or destroyed by the time dawn approaches.")
                 ];
@@ -4643,7 +4643,7 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
             [11, 1, 2, 0, 3, 2],
             [12, 3, 3, 0, 1, 2],
             [13, 1, 1, 0, 1, 3],
-            [14, 1, 1, 0, 2, 3],
+            [14, 2, 1, 0, 2, 3],
             [15, 3, 3, 3, 2, 3],
             [16, 2, 3, 1, 2, 3],
             [17, 2, 1, 0, 3, 3],
@@ -4661,7 +4661,7 @@ define("components/types/AnimalfolkDetails", ["require", "exports"], function (r
             [29, 3, 3, 3, 3, 5],
             [30, 3, 1, 0, 1, 5],
             [31, 1, 1, 0, 1, 6],
-            [32, 1, 2, 0, 1, 6],
+            [32, 2, 1, 0, 1, 6],
             [33, 2, 3, 1, 2, 6],
             [34, 2, 1, 0, 1, 6],
             [35, 3, 1, 0, 1, 6],

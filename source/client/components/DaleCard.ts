@@ -299,7 +299,7 @@ export class DaleCard {
     static readonly CT_GLASSFROGMONO: number = 251;
     static readonly CT_GORILLAMONO: number = 252;
     static readonly CT_WALRUSMONO: number = 253;
-    static readonly CT_SHREWDMEMBER: number = 254;
+    static readonly CT_TASMANIANDEVILMONO: number = 254;
     static readonly CT_JUNGLEFOWLMONO: number = 255;
     static readonly CT_DRAMATICMEMBER: number = 256;
     static readonly CT_SNEAKYMEMBER: number = 257;
