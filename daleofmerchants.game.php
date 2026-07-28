@@ -3524,11 +3524,11 @@ class DaleOfMerchants extends DaleTableBasic
                         break;
                     case 2:
                     case 3:
-                    case 4:
                         $die_value = DIE_DECK;
                         $die_label = clienttranslate('deck');
                         $die_icon = DIE_DECK;
                         break;
+                    case 4:
                     case 5:
                         $die_value = DIE_HAND;
                         $die_label = clienttranslate('hand');
@@ -3546,11 +3546,11 @@ class DaleOfMerchants extends DaleTableBasic
                         break;
                     case 2:
                     case 3:
-                    case 4:
                         $die_value = DIE_DECK2;
                         $die_label = clienttranslate('deck');
                         $die_icon = DIE_DECK2;
                         break;
+                    case 4:
                     case 5:
                         $die_value = DIE_HAND2;
                         $die_label = clienttranslate('hand');

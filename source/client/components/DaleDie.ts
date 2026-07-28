@@ -247,7 +247,7 @@ export class DaleDie {
                     ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
-                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_HAND)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_HAND)}
                 </span>`;
             case 'pangolin2':
@@ -256,7 +256,7 @@ export class DaleDie {
                     ${DaleDie.getIconTpl(DaleDie.DIE_DISCARD2)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
-                    ${DaleDie.getIconTpl(DaleDie.DIE_DECK2)}
+                    ${DaleDie.getIconTpl(DaleDie.DIE_HAND2)}
                     ${DaleDie.getIconTpl(DaleDie.DIE_HAND2)}
                 </span>`;
         }
