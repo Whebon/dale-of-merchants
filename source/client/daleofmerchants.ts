@@ -8234,7 +8234,7 @@ class DaleOfMerchants extends Gamegui
 	notif_marketDiscardToHand(notif: NotifAs<'marketDiscardToHand'>) {
 		console.warn("notif_marketDiscardToHand");
 		const stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
+		this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id, notif.args.location_arg);
 		//update the hand sizes
 		if (!notif.args.to_limbo) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(1);

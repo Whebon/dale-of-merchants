@@ -12183,7 +12183,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_marketDiscardToHand = function (notif) {
             console.warn("notif_marketDiscardToHand");
             var stock = notif.args.to_limbo ? this.myLimbo : this.myHand;
-            this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id);
+            this.pileToPlayerStock(notif.args.card, this.marketDiscard, stock, notif.args.player_id, notif.args.location_arg);
             if (!notif.args.to_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(1);
             }

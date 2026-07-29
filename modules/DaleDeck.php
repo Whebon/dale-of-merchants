@@ -338,7 +338,7 @@ class DaleDeck {
     }
 
     /**
-    * Override the original pickCardsForLocation method, but with the $on_location_exhausted_method hook
+    * Override the original pickCardForLocation method, but with the $on_location_exhausted_method hook
     * Pick the first card on top of specified deck and give it to specified player
     * Return card infos or null if no card in the specified location
     */

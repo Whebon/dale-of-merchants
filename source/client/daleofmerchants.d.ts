@@ -287,6 +287,7 @@ declare global {
 			player_id: number
 			card: DbCard
 			to_limbo?: boolean
+			location_arg?: number
 		}
 		'instant_discardToHand': {}
 		'discardToHand': {

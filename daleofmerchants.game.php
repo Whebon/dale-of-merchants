@@ -472,9 +472,11 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $args (optional) - additional args to display in the notification
      */
     function monoConfirmAction(string $msg, array $args = array()) {
-        if ($msg == null | $msg == '') {
-            return;
-        }
+        // TODO: safely remove this
+        // Removed for CT_DRAMATICROMANTIC: it has a monoConfirmAction with a log message
+        // if ($msg == null | $msg == '') {
+        //     return;
+        // }
         if (!isset($args["description"])) {
             $args["description"] = $msg; //this (typically shorter) description will be displayed in the main title bar
         }
@@ -1141,19 +1143,60 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 break;
             case CT_DRAMATICMEMBER:
-                //Mono draws [🌅 3 🃏🃏🃏] [☀️ 4 🃏🃏🃏] [🌙 2 🃏🃏]. Acquire.
+                //Toss [🌅 2 🃏🃏] [☀️ 5 🃏🃏🃏] [🌙 1 🃏] from the supply. Mono takes the highest valued of them.
+                $nbr = 0;
                 switch($this->getClock(MONO_PLAYER_ID)) {
                     case CLOCK_DAWN:
-                        $nbr = 3;
-                        break;
-                    case CLOCK_DAY:
-                        $nbr = 4;
-                        break;
-                    case CLOCK_NIGHT:
                         $nbr = 2;
                         break;
+                    case CLOCK_DAY:
+                        $nbr = 5;
+                        break;
+                    case CLOCK_NIGHT:
+                        $nbr = 1;
+                        break;
                 }
-                $this->draw(clienttranslate('Dramatic Member: ${player_name} draws ${nbr} cards'), $nbr, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                $nbr = min($nbr, $this->cards->countCardsInDeckAndDiscardOfPlayer(MARKET));
+                if ($nbr == 0) {
+                    // Fizzle: supply and bin are empty
+                    $this->notifyAllPlayers('message', clienttranslate('Dramatic Member: ${player_name} cannot toss a card from the supply'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    ));
+                }
+                else {
+                    // Toss cards
+                    $this->notifyAllPlayers('message', clienttranslate('Dramatic Member: ${player_name} tosses ${nbr} card(s) from the supply'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "nbr" => $nbr,
+                    ));
+                    $dbcards = array();
+                    for ($i = 0; $i < $nbr; $i++) {
+                        $dbcard = $this->tossFromMarketDeck('');
+                        $dbcard["location_arg"] = $i; # Relative location_arg to prioritize taking the top tossed card
+                        $dbcards[] = $dbcard;
+                    }
+                    if (count($dbcards) != $nbr) {
+                        throw new BgaVisibleSystemException("CT_DRAMATICMEMBER failed to toss $nbr cards");
+                    }
+                    // Retrieve the highest tossed card
+                    $dbcard = $this->monoPickHighestValuedCard($dbcards);
+                    $dbcard = $this->cards->removeCardFromPile($dbcard["id"], DISCARD.MARKET); # Remove the card from the pile and get the absolute location_arg
+                    $this->cards->moveCard($dbcard["id"], HAND.MONO_PLAYER_ID);
+                    $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Dramatic Member: ${player_name} takes ${extended_card_name} from the bin'), array (
+                        'player_id' => MONO_PLAYER_ID,
+                        'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        'extended_card_name' => $this->getCardNameExt($dbcard),
+                        'card' => $dbcard,
+                        'location_arg' => $dbcard["location_arg"],
+                    ));
+                    $this->monoConfirmAction('', array(  
+                        "highlight_limbo_cards" => array($dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "card_name" => $this->getCardName($dbcard),
+                        "description" => '${player_name} took a ${card_name} from the bin'
+                    ));
+                }
                 break;
             case CT_CAPUCHINMONO:
                 $this->stealCoins(MONO_PLAYER_ID, $opponent_id, 1, $technique_card);
@@ -11433,6 +11476,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->spawnMonoDiscard($name, $nbr);
     }
 
+    function debug_destroyAll() {
+        $this->destroyAll();
+    }
 
     function actEnableDebugMode() {
         if (ALLOW_DEBUG_MODE == 0) {
