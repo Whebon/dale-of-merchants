@@ -304,7 +304,7 @@ export class MainClientState {
             case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
                 return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
             case 'client_skink1':
-                return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck")
+                return _("${card_name}: ${you} must discard 1-2 cards")
             case 'client_skink5a':
                 return _("${card_name}: ${you} must choose ${nbr} cards to discard");
             case 'client_skink5b':

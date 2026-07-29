@@ -4258,7 +4258,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_DEPRECATED_capuchin5b_SINGLEDISCARD':
                         return _("${card_name}: ${you} must take a card from the top two cards of ${opponent_name}\'s discard");
                     case 'client_skink1':
-                        return _("${card_name}: ${you} must place the top 0-2 cards from your discard on your deck");
+                        return _("${card_name}: ${you} must discard 1-2 cards");
                     case 'client_skink5a':
                         return _("${card_name}: ${you} must choose ${nbr} cards to discard");
                     case 'client_skink5b':
@@ -6334,8 +6334,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.openPopin();
                     break;
                 case 'client_skink1':
-                    this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'pileBlue', "daleofmerchants-wrap-technique", 2);
-                    this.myDiscard.openPopin();
+                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 1-2 cards to discard"), undefined, 2);
                     break;
                 case 'client_skink5a':
                     var client_skink5a_label = this.myHand.count() == 1 ? _("Discard 1 card") : _("Discard 2 cards");
@@ -6900,7 +6899,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'client_skink1':
-                    this.myDiscard.setSelectionMode('none');
+                    this.myHand.setSelectionMode('none');
                     break;
                 case 'client_skink5a':
                     this.myHand.setSelectionMode('none');
@@ -8947,14 +8946,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_SKINK1:
-                    fizzle = this.myDiscard.size == 0;
+                    fizzle = this.myHand.count() == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink1', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_SKINK2:
                     this.clientTriggerTechnique('client_skink2', card.id);
                     break;
                 case DaleCard_10.DaleCard.CT_SKINK3:
-                    if (this.myHand.count() == 1) {
+                    if (this.myHand.count() == 0) {
                         this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     }
                     else {
@@ -11477,8 +11476,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.playerDiscards[opponent_id].openPopin();
         };
         DaleOfMerchants.prototype.onSkink1 = function () {
+            var card_ids = this.myHand.orderedSelection.get();
+            if (card_ids.length == 0) {
+                this.showMessage(_("Please select at least 1 card from your hand"), 'error');
+                return;
+            }
             this.resolveTechniqueCard({
-                card_ids: this.myDiscard.orderedSelection.get()
+                card_ids: card_ids
             });
         };
         DaleOfMerchants.prototype.onSkink2 = function () {

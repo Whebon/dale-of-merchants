@@ -1496,8 +1496,7 @@ class DaleOfMerchants extends Gamegui
 				client_DEPRECATED_capuchin5b_SINGLEDISCARD_discard.openPopin();
 				break;
 			case 'client_skink1':
-				this.myDiscard.setSelectionMode('multipleFromTopNoGaps', 'pileBlue', "daleofmerchants-wrap-technique", 2);
-				this.myDiscard.openPopin();
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 1-2 cards to discard"), undefined, 2);
 				break;
 			case 'client_skink5a':
 				const client_skink5a_label = this.myHand.count() == 1 ? _("Discard 1 card") : _("Discard 2 cards");
@@ -2063,7 +2062,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'client_skink1':
-				this.myDiscard.setSelectionMode('none');
+				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_skink5a':
 				this.myHand.setSelectionMode('none');
@@ -4540,14 +4539,14 @@ class DaleOfMerchants extends Gamegui
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_windOfChange', card.id);
 				break;
 			case DaleCard.CT_SKINK1:
-				fizzle = this.myDiscard.size == 0;
+				fizzle = this.myHand.count() == 0;
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink1', card.id);
 				break;
 			case DaleCard.CT_SKINK2:
 				this.clientTriggerTechnique('client_skink2', card.id);
 				break;
 			case DaleCard.CT_SKINK3:
-				if (this.myHand.count() == 1) {
+				if (this.myHand.count() == 0) {
 					this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				}
 				else {
@@ -7394,8 +7393,13 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onSkink1() {
+		const card_ids = this.myHand.orderedSelection.get();
+		if (card_ids.length == 0) {
+			this.showMessage(_("Please select at least 1 card from your hand"), 'error');
+			return;
+		}
 		this.resolveTechniqueCard<'client_skink1'>({
-			card_ids: this.myDiscard.orderedSelection.get()
+			card_ids: card_ids
 		})
 	}
 

@@ -7275,7 +7275,6 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_SIESTA:
                 case CT_MASTERBUILDER:
                 case CT_WINDOFCHANGE:
-                case CT_SKINK1:
                     $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
@@ -7517,29 +7516,21 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_SKINK1:
                 $card_ids = $args["card_ids"];
-                $dbcards = $this->cards->getCardsOnTop(2, DISCARD.$player_id);
-                if (count($dbcards) == 2 && count($card_ids) == 1) {
-                    $card_id = $card_ids[0];
-                    $top_card = $dbcards[0];
-                    if ($card_id != $top_card["id"]) {
-                        throw new BgaUserException($this->_("The top card is not included in the selection"));
-                    }
+                $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+                $nbr = count($dbcards);
+                if ($nbr != 1 && $nbr != 2) {
+                    throw new BgaUserException(_("Please select exactly 1 or 2 cards"));
                 }
-                $dbcards = $this->toAssociativeArray($dbcards);
-                foreach ($card_ids as $card_id) {
-                    if (!isset($dbcards[$card_id])) {
-                        throw new BgaUserException($this->_("Some selected card is not within the top X cards of the discard pile"));
-                    }
-                    $dbcard = $dbcards[$card_id];
-                    $this->cards->moveCardOnTop($card_id, DECK.$player_id);
-                    $this->notifyAllPlayers('discardToDeck', clienttranslate('${resolving_card_name}: ${player_name} places their ${card_name} on top of their deck'), array(
-                        "resolving_card_name" => $this->getCardName($technique_card),
-                        "player_id" => $player_id,
-                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                        "card_name" => $this->getCardName($dbcard),
-                        "card" => $dbcard
-                    ));
-                }
+                $this->discardMultiple(
+                    clienttranslate('Erratic Assistant: ${player_name} discards ${nbr} card(s)'),
+                    $player_id,
+                    $card_ids,
+                    $dbcards
+                );
+                $this->draw(
+                    clienttranslate('Erratic Assistant: ${player_name} draws ${nbr} card(s)'), 
+                    $nbr
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SKINK2:
