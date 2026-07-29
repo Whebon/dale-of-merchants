@@ -537,8 +537,7 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_SKINKMONO:
-                    //Mono draws 2 🃏🃏. Acquire. At the end of Mono's turn, it draws 2 🃏🃏.
-                    $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 2, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                    //no immediate effects
                     break;
                 default:
                     $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TRIGGER NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -1225,8 +1224,17 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_SKINKMONO:
-                //Mono draws 2 🃏🃏. Acquire. At the end of Mono's turn, it draws 2 🃏🃏.
-                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 2, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
+                //At the end of Mono’s turn, it draws 1 🃏 from the supply.
+                $dbcards = $this->draw('', 1, false, MARKET, MONO_PLAYER_ID);
+                if (count($dbcards) == 1) {
+                    $dbcard = $dbcards[0];
+                    $this->monoConfirmAction(clienttranslate('${player_name} draws a ${card_name} from the supply'), array(  
+                        "highlight_limbo_cards" => array($dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "card_name" => $this->getCardName($dbcard),
+                    ));
+                }
                 break;
             case CT_JUNGLEFOWLMONO:
                 $clock = $this->getClock(MONO_PLAYER_ID);
