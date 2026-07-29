@@ -1323,6 +1323,45 @@ class DaleOfMerchants extends DaleTableBasic
                         break;
                 }
                 break;
+            case CT_VORACIOUSMEMBER:
+                // Mono tosses its lowest valued animalfolk 🃏.
+                $mono_dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
+                $mono_animafolk_dbcards = array_filter($mono_dbcards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
+                if (count($mono_animafolk_dbcards) > 0) {
+                    // Toss the lowested value animalfolk card
+                    $mono_dbcard = $this->monoPickLowestValuedCard($mono_animafolk_dbcards);
+                    $this->toss(clienttranslate('Voracious Member: ${player_name} tosses its ${card_name}'), 
+                        $mono_dbcard, false, array(), MONO_PLAYER_ID
+                    );
+                }
+                else {
+                    // No animalfolk cards in hand does not cause a full fizzle: Mono still gets to take a card from the market.
+                    $this->notifyAllPlayers('message', clienttranslate('Voracious Member: ${player_name} has no animalfolk cards to toss'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    ));
+                }
+                // Mono takes the highest valued 🃏 from the market. (copied from CT_LOYALMEMBER)
+                $market_cards = $this->cards->getCardsInLocation(MARKET);
+                $market_card = $this->monoPickHighestValuedCard($market_cards);
+                if ($market_card) {
+                    //obtain the market card
+                    $this->cards->moveCard($market_card["id"], HAND.MONO_PLAYER_ID);
+                    $this->notifyAllPlayers('marketToHand', clienttranslate('Voracious Member: ${player_name} takes ${extended_card_name} from the market'), array (
+                        'player_id' => MONO_PLAYER_ID,
+                        'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        'card_name' => $this->getCardName($market_card),
+                        'extended_card_name' => $this->getCardNameExt($market_card),
+                        'market_card_id' => $market_card["id"],
+                        'pos' => $market_card["location_arg"]
+                    ));
+                }
+                else {
+                    //fizzle
+                    $this->notifyAllPlayers('message', clienttranslate('Voracious Member: ${player_name} fails to take a card from the market'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                    ));
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
