@@ -5417,6 +5417,12 @@ class DaleOfMerchants extends DaleTableBasic
                         $this->gamestate->nextState("trCharmStove"); //stCharmStove will draw it to limbo
                         return;
                     }
+                    //check for the dodo2 interaction
+                    if ($this->getTypeId($dbcard) == CT_DODO2) {
+                        $this->cards->moveCardOnTop($dbcard["id"], DECK.MARKET); //place the card back on top
+                        $this->gamestate->nextState("trCharmDodo2"); //stCharmDodo2 will draw it to limbo
+                        return;
+                    }
                     //build with a regular card
                     $transition = $this->build($stack_index, $dbcards, null, DECK);
                     $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD, TRIGGER_ONPREBUILD);
@@ -9345,6 +9351,54 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    function actCharmDodo2($spend_card_ids, $spend_coins) {
+        $this->checkAction("actCharmDodo2");
+        $spend_card_ids = $this->numberListToArray($spend_card_ids);
+        $player_id = $this->getActivePlayerId();
+        $stack_index = $this->cards->getNextStackIndex($player_id);
+
+        //get CT_DODO2 from limbo
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("Expected exactly 1 card in limbo, but found ".count($dbcards));
+        }
+        $dbcard = reset($dbcards);
+        
+        //Apply CT_DODO2
+        $dodo2_spend_args = array(
+            "spend_card_ids" => $spend_card_ids,
+            "spend_coins" => $spend_coins,
+        );
+        $x = $this->spendX($player_id, $dodo2_spend_args, 0, 3, $this->_("Promising Invention"));
+        if ($x > 0) {
+            $this->effects->insertModification($dbcard["id"], CT_DODO2, $x);
+            $this->notifyAllPlayers('message', clienttranslate('Promising Invention: ${player_name} adds +${x} to its value'), array(
+                "player_name" => $this->getActivePlayerName(),
+                "x" => $x
+            ));
+        }
+
+        //Build from limbo
+        if ($x > 0) {
+            //Modified dodo2 (mandatory)
+            $transition = $this->build($stack_index, $dbcards, null, LIMBO);
+            $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
+        }
+        else {
+            //Unmodified dodo2 (optional)
+            try {
+                $transition = $this->build($stack_index, $dbcards, null, LIMBO);
+                $this->nextStateViaTriggers($transition, TRIGGER_ONBUILD);
+            }
+            catch(BgaUserException $e) {
+                //building failed: toss the card instead
+                $this->cards->moveCardOnTop($dbcard["id"], DISCARD.MARKET);
+                $this->toss(clienttranslate('Charm: ${player_name} tosses ${card_name}'), $dbcard, true);
+                $this->fullyResolveCard($player_id);
+            }
+        }
+    }
+
     function actResourcefulAlly($card_ids) {
         $this->checkAction("actResourcefulAlly");
         $card_ids = $this->numberListToArray($card_ids);
@@ -10143,6 +10197,25 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->notifyAllPlayers('message', clienttranslate('Stove: ${player_name} changes its value to ${stove_value}'), array(
                         "player_name" => $this->getActivePlayerName(),
                         "stove_value" => $stove_value
+                    ));
+                }
+            }
+        }
+
+        //Apply CT_DODO2
+        if (isset($args["dodo2_spend_args"])) {
+            foreach ($args["dodo2_spend_args"] as $dodo2_card_id => $dodo2_spend_args) {
+                foreach ($dodo2_spend_args["spend_card_ids"] as $spend_card_id) {
+                    if (in_array($spend_card_id, $stack_card_ids)) {
+                        throw new BgaUserException($this->_("Unable to spend and build the same card"));
+                    }
+                }
+                $x = $this->spendX($player_id, $dodo2_spend_args, 0, 3, $this->_("Promising Invention"));
+                if ($x > 0) {
+                    $this->effects->insertModification($dodo2_card_id, CT_DODO2, $x);
+                    $this->notifyAllPlayers('message', clienttranslate('Promising Invention: ${player_name} adds +${x} to its value'), array(
+                        "player_name" => $this->getActivePlayerName(),
+                        "x" => $x
                     ));
                 }
             }
@@ -11198,6 +11271,10 @@ class DaleOfMerchants extends DaleTableBasic
         $this->draw('', 1, true, MARKET); //draws the top card of the market (which should be a CT_STOVE at this point)
     }
 
+    function stCharmDodo2() {
+        $this->draw('', 1, true, MARKET); //draws the top card of the market (which should be a CT_DODO2 at this point)
+    }
+
     function stTravelingEquipment() {
         $dbcards = $this->draw(clienttranslate('Traveling Equipment: ${player_name} draws 2 cards'), 2);
         if (count($dbcards) == 0) {
@@ -11500,6 +11577,10 @@ class DaleOfMerchants extends DaleTableBasic
     
     function debug_spawnAll(string $animalfolk_prefix) {
         $this->spawnAll($animalfolk_prefix);
+    }
+
+    function debug_spawnMarketDeck(string $name, int $nbr = 1) {
+        $this->spawnDeck($name, $nbr, MARKET);
     }
 
     function debug_spawnDeck(string $name, int $nbr = 1, int $player_id = null) {

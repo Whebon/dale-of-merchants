@@ -628,6 +628,7 @@ export class DaleCard {
                     case DaleCard.CT_BOLDHAGGLER:
                     case DaleCard.CT_RESOURCEFULMEMBER:
                     case DaleCard.CT_JUNGLEFOWL5B:
+                    case DaleCard.CT_DODO2:
                         value += effect.arg!;
                         break;
                     case DaleCard.EFFECT_CHAMELEON_VALUE:

@@ -174,6 +174,7 @@ class DaleEffects {
                     case CT_BOLDHAGGLER:
                     case CT_RESOURCEFULMEMBER:
                     case CT_JUNGLEFOWL5B:
+                    case CT_DODO2:
                         $value += $row["arg"];
                         break;
                     case EFFECT_CHAMELEON_VALUE:

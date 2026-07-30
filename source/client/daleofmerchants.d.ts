@@ -594,6 +594,7 @@ declare global {
 		'client_DEPRECATED_sliceOfLife': { card_ids: number[] }
 		'client_spinningWheel': { card_ids: number[] }
 		'client_stove': {} //choice sent as build args
+		'client_dodo2': {} //choice sent as build args
 		'client_dramaticRomantic': { forward: boolean }
 		'client_bonsai': { card_ids: number[] }
 		'client_royalPrivilege': { card_id: number }
@@ -633,6 +634,9 @@ declare global {
 			optionalArgs: {
 				stove_spend_args: {
 					[card_id: number]: ClientTechniqueChoice['client_spend'] | undefined
+				},
+				dodo2_spend_args: {
+					[card_id: number]: ClientTechniqueChoice['client_spend'] | undefined
 				}
 			}
 		 }
@@ -654,6 +658,7 @@ declare global {
 		'client_spend' : { technique_card_id: number, cost: number, next: ClientSpendNext, next_args: any, wrap_class?: DaleWrapClass }
 		'client_spendx' : { technique_card_id: number, cost_min: number, cost_max: number, cost_displayed: string, next: ClientSpendNext, next_args: any, wrap_class?: DaleWrapClass }
 		'client_stove': { passive_card_id: number } & ClientGameStates['client_build']
+		'client_dodo2': { passive_card_id: number } & ClientGameStates['client_build']
 		'client_badOmen': { toss_card_id: number, card_name: string }
 		'client_selectingContracts': {technique_card_id: number, nbr: number }
 		'client_DEPRECATED_capuchin5b_SINGLEDISCARD': {technique_card_id: number, opponent_id: number, opponent_name: string }

@@ -63,6 +63,7 @@ if (false) {
 	$game->stCapuchin4();
 	$game->stCapuchin5a();
 	$game->stSneakyScout();
+	$game->stCharmDodo2();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -197,6 +198,7 @@ $machinestates = array(
 			'trJungleFowl5A' => 115,
 			'trSneakyScout' => 116,
 			'trProvocation' => 117,
+			'trCharmDodo2' => 118,
 		),
 	),
 	31 => array(
@@ -657,8 +659,8 @@ $machinestates = array(
 	),
 	86 => array(
 		'name' => 'charmStove',
-		'description' => clienttranslate('Stove: ${actplayer} may spend x to change the Stove\'s value'),
-		'descriptionmyturn' => clienttranslate('Stove: ${you} may spend x to change the Stove\'s value'),
+		'description' => clienttranslate('Stove: ${actplayer} may spend X to change the Stove\'s value'),
+		'descriptionmyturn' => clienttranslate('Stove: ${you} may spend X to change the Stove\'s value'),
 		'type' => 'activeplayer',
 		'action' => 'stCharmStove',
 		'possibleactions' => ['actCharmStove'],
@@ -996,6 +998,18 @@ $machinestates = array(
 		'possibleactions' => ['actProvocation'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	118 => array(
+		'name' => 'charmDodo2',
+		'description' => clienttranslate('Promising Invention: ${actplayer} may spend X to add +X to Promising Invention\'s value'),
+		'descriptionmyturn' => clienttranslate('Promising Invention: ${you} may spend X to add +X to Promising Invention\'s value'),
+		'type' => 'activeplayer',
+		'action' => 'stCharmDodo2',
+		'possibleactions' => ['actCharmDodo2'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trGameEnd' => 98,
 		),
 	),
 	6300 => array(

@@ -1168,6 +1168,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                             case DaleCard.CT_BOLDHAGGLER:
                             case DaleCard.CT_RESOURCEFULMEMBER:
                             case DaleCard.CT_JUNGLEFOWL5B:
+                            case DaleCard.CT_DODO2:
                                 value += effect.arg;
                                 break;
                             case DaleCard.EFFECT_CHAMELEON_VALUE:
@@ -4099,7 +4100,9 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_spendx':
                         return _("${card_name}: ${you} must <stronger>spend</stronger> ${cost_displayed}");
                     case 'client_stove':
-                        return _("${card_name}: ${you} may <stronger>spend</stronger> x to change this card's value");
+                        return _("${card_name}: ${you} may <stronger>spend</stronger> X (1+) to change this card's value to X/2");
+                    case 'client_dodo2':
+                        return _("${card_name}: ${you} may <stronger>spend</stronger> X (1-3) to add +X to this card's value");
                     case 'client_swiftBroker':
                         return _("${card_name}: ${you} may choose the order to discard your hand");
                     case 'client_skink2':
@@ -4366,7 +4369,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             console.warn("setPassiveSelected", enable, this._args);
             if ('passive_card_id' in this._args) {
                 var div = DaleCard_6.DaleCard.divs.get(this._args.passive_card_id);
-                var cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx' && this._name != 'client_stove' && !('disable_cancel_on_click' in this._args));
+                var cancelOnCardClick = (this._name != 'client_spend' && this._name != 'client_spendx' && this._name != 'client_stove' && this._name != 'client_dodo2' && !('disable_cancel_on_click' in this._args));
                 if (div) {
                     if (enable) {
                         div.classList.add("daleofmerchants-passive-selected");
@@ -6151,6 +6154,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'client_stove':
+                case 'client_dodo2':
                     var client_stove_args = this.mainClientState.args;
                     this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
                     this.myHand.unselectAll();
@@ -6170,6 +6174,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'charmStove':
+                case 'charmDodo2':
                     this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
                     this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Choose cards to <strong>spend</strong>"), 'build');
                     break;
@@ -6766,10 +6771,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.mySchedule.setSelectionMode('none');
                     break;
                 case 'client_stove':
+                case 'client_dodo2':
                     this.coinManager.setSelectionMode('none');
                     this.myHand.orderedSelection.secondaryToPrimary();
                     break;
                 case 'charmStove':
+                case 'charmDodo2':
                     this.myLimbo.setSelectionMode('none');
                     this.coinManager.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
@@ -7620,11 +7627,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_stove':
+                case 'client_dodo2':
                     this.addActionButton("confirm-button", _("Confirm"), "onStove");
                     this.updateStoveButton();
                     this.addActionButtonCancelClient();
                     break;
                 case 'charmStove':
+                case 'charmDodo2':
                     this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Card drawn by Charm"));
                     this.addActionButton("confirm-button", _("Confirm"), "onCharmStove");
                     this.updateStoveButton();
@@ -8268,6 +8277,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var confirm_button = $("confirm-button");
             if (confirm_button) {
                 var value = this.coinManager.getCoinsToSpend() + this.myHand.getSelectedValue();
+                if (this.gamedatas.gamestate.name == 'client_dodo2' || this.gamedatas.gamestate.name == 'charmDodo2') {
+                    value = Math.min(3, value);
+                }
                 if (value != 0) {
                     confirm_button.innerText = _("Confirm") + " (x = ".concat(value, ")");
                 }
@@ -8594,9 +8606,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onSpendXSelectionChanged();
                     break;
                 case 'client_stove':
+                case 'client_dodo2':
                     this.updateStoveButton();
                     break;
                 case 'charmStove':
+                case 'charmDodo2':
                     this.updateStoveButton();
                     break;
             }
@@ -8761,9 +8775,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.onSpendXSelectionChanged();
                     break;
                 case 'client_stove':
+                case 'client_dodo2':
                     this.updateStoveButton();
                     break;
                 case 'charmStove':
+                case 'charmDodo2':
                     this.updateStoveButton();
                     break;
                 case 'travelingEquipment':
@@ -10123,10 +10139,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.updateSpendXButton();
                     break;
                 case 'client_stove':
+                case 'client_dodo2':
                     this.updateStoveButton();
                     break;
             }
-            if (this.gamedatas.gamestate.name == 'charmStove') {
+            if (this.gamedatas.gamestate.name == 'charmStove' || this.gamedatas.gamestate.name == 'charmDodo2') {
                 this.updateStoveButton();
             }
         };
@@ -10165,20 +10182,44 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onCharmStove = function () {
             var spend_card_ids = this.myHand.orderedSelection.get();
             var spend_coins = this.coinManager.getCoinsToSpend();
-            this.bgaPerformAction('actCharmStove', {
-                spend_card_ids: this.arrayToNumberList(spend_card_ids),
-                spend_coins: spend_coins
-            });
+            switch (this.gamedatas.gamestate.name) {
+                case 'charmStove':
+                    this.bgaPerformAction('actCharmStove', {
+                        spend_card_ids: this.arrayToNumberList(spend_card_ids),
+                        spend_coins: spend_coins
+                    });
+                    break;
+                case 'charmDodo2':
+                    this.bgaPerformAction('actCharmDodo2', {
+                        spend_card_ids: this.arrayToNumberList(spend_card_ids),
+                        spend_coins: spend_coins
+                    });
+                    break;
+                default:
+                    throw new Error("onCharmStove should not be called during ".concat(this.gamedatas.gamestate.name));
+            }
         };
         DaleOfMerchants.prototype.onStove = function () {
             var spend_card_ids = this.myHand.orderedSelection.get();
             var spend_coins = this.coinManager.getCoinsToSpend();
             var args = this.mainClientState.args;
-            var stove_card_id = args.passive_card_id;
-            args.optionalArgs.stove_spend_args[stove_card_id] = {
-                spend_card_ids: spend_card_ids,
-                spend_coins: spend_coins
-            };
+            var stove_or_dodo2_card_id = args.passive_card_id;
+            switch (this.mainClientState.name) {
+                case 'client_stove':
+                    args.optionalArgs.stove_spend_args[stove_or_dodo2_card_id] = {
+                        spend_card_ids: spend_card_ids,
+                        spend_coins: spend_coins
+                    };
+                    break;
+                case 'client_dodo2':
+                    args.optionalArgs.dodo2_spend_args[stove_or_dodo2_card_id] = {
+                        spend_card_ids: spend_card_ids,
+                        spend_coins: spend_coins
+                    };
+                    break;
+                default:
+                    throw new Error("onStove should not be called during ".concat(this.mainClientState.name));
+            }
             this.onBuild();
         };
         DaleOfMerchants.prototype.onBuild = function () {
@@ -10187,16 +10228,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             console.warn("onBuild", args);
             switch (this.gamedatas.gamestate.name) {
                 case 'client_stove':
+                case 'client_dodo2':
                     break;
                 case 'client_build':
                 case 'bonusBuild':
                     args.stack_card_ids = this.myHand.orderedSelection.get();
                     args.stack_card_ids_from_discard = this.myDiscard.orderedSelection.get();
-                    args.optionalArgs = { stove_spend_args: {} };
+                    args.optionalArgs = { stove_spend_args: {}, dodo2_spend_args: {} };
                     for (var _i = 0, _a = __spreadArray(__spreadArray([], args.stack_card_ids, true), args.stack_card_ids_from_discard, true); _i < _a.length; _i++) {
                         var card_id = _a[_i];
                         if (new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_STOVE) {
                             args.optionalArgs.stove_spend_args[card_id] = undefined;
+                        }
+                        if (new DaleCard_10.DaleCard(card_id).effective_type_id == DaleCard_10.DaleCard.CT_DODO2) {
+                            args.optionalArgs.dodo2_spend_args[card_id] = undefined;
                         }
                     }
                     break;
@@ -10209,6 +10254,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 if (args.optionalArgs.stove_spend_args[+card_id] === undefined) {
                     this.mainClientState.setPassiveSelected(false);
                     this.mainClientState.enterOnStack('client_stove', __assign(__assign({}, args), { passive_card_id: +card_id }));
+                    this.myStall.selectLeftPlaceholder();
+                    return;
+                }
+            }
+            for (var _d = 0, _e = Object.keys(args.optionalArgs.dodo2_spend_args); _d < _e.length; _d++) {
+                var card_id = _e[_d];
+                if (args.optionalArgs.dodo2_spend_args[+card_id] === undefined) {
+                    this.mainClientState.setPassiveSelected(false);
+                    this.mainClientState.enterOnStack('client_dodo2', __assign(__assign({}, args), { passive_card_id: +card_id }));
                     this.myStall.selectLeftPlaceholder();
                     return;
                 }
@@ -10292,7 +10346,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_inventory':
                     this.mainClientState.enter('client_build', {
                         stack_index_plus_1: this.myStall.getNumberOfStacks() + 1,
-                        optionalArgs: { stove_spend_args: {} }
+                        optionalArgs: { stove_spend_args: {}, dodo2_spend_args: {} }
                     });
                     break;
             }

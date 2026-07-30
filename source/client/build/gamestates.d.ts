@@ -222,6 +222,7 @@ interface GameStates {
 			'trJungleFowl5A': 115,
 			'trSneakyScout': 116,
 			'trProvocation': 117,
+			'trCharmDodo2': 118,
 		},
 	},
 	31: {
@@ -988,8 +989,8 @@ interface GameStates {
 	},
 	86: {
 		'name': 'charmStove',
-		'description': 'Stove: ${actplayer} may spend x to change the Stove\\\'s value',
-		'descriptionmyturn': 'Stove: ${you} may spend x to change the Stove\\\'s value',
+		'description': 'Stove: ${actplayer} may spend X to change the Stove\\\'s value',
+		'descriptionmyturn': 'Stove: ${you} may spend X to change the Stove\\\'s value',
 		'type': 'activeplayer',
 		'action': 'stCharmStove',
 		'possibleactions': {
@@ -1530,6 +1531,28 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	118: {
+		'name': 'charmDodo2',
+		'description': 'Promising Invention: ${actplayer} may spend X to add +X to Promising Invention\\\'s value',
+		'descriptionmyturn': 'Promising Invention: ${you} may spend X to add +X to Promising Invention\\\'s value',
+		'type': 'activeplayer',
+		'action': 'stCharmDodo2',
+		'possibleactions': {
+			'actCharmDodo2': [{
+				'name': 'spend_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'spend_coins',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+			'trGameEnd': 98,
 		},
 	},
 	6300: {
