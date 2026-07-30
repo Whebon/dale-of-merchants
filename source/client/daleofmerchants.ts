@@ -2617,6 +2617,7 @@ class DaleOfMerchants extends Gamegui
 				)
 				this.myLimbo.setSelectionMode('multiplePrimarySecondary', 'capuchin5a', "daleofmerchants-wrap-technique", capuchin5a_label, 'pileBlue', 1)
 				this.addActionButton("confirm-button", _("Confirm"), "onCapuchin5a");
+				this.addActionButton("skip-button", _("Skip"), "onCapuchin5aSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'client_burglaryOpponentId':
 				const burglaryOpponentId_args = (this.mainClientState.args as ClientGameStates['client_burglaryOpponentId']);
@@ -7434,7 +7435,15 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onCapuchin5a() {
-		const take_card_ids = this.myLimbo.orderedSelection.get();
+		this._onCapuchin5aHelper(false);
+	}
+
+	onCapuchin5aSkip() {
+		this._onCapuchin5aHelper(true);
+	}
+
+	_onCapuchin5aHelper(skip_take_card: boolean) {
+		const take_card_ids = skip_take_card ? [] : this.myLimbo.orderedSelection.get();
 		const discard_card_ids = this.myLimbo.orderedSelection.get(true);
 		if (take_card_ids.length > 1) {
 			this.showMessage(_("Please select at most 1 card to take"), "error");

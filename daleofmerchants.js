@@ -7447,6 +7447,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var capuchin5a_label = this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons_10.DaleIcons.getCapuchin5aIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0));
                     this.myLimbo.setSelectionMode('multiplePrimarySecondary', 'capuchin5a', "daleofmerchants-wrap-technique", capuchin5a_label, 'pileBlue', 1);
                     this.addActionButton("confirm-button", _("Confirm"), "onCapuchin5a");
+                    this.addActionButton("skip-button", _("Skip"), "onCapuchin5aSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
                     break;
                 case 'client_burglaryOpponentId':
                     var burglaryOpponentId_args_1 = this.mainClientState.args;
@@ -11523,7 +11524,13 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onCapuchin5a = function () {
-            var take_card_ids = this.myLimbo.orderedSelection.get();
+            this._onCapuchin5aHelper(false);
+        };
+        DaleOfMerchants.prototype.onCapuchin5aSkip = function () {
+            this._onCapuchin5aHelper(true);
+        };
+        DaleOfMerchants.prototype._onCapuchin5aHelper = function (skip_take_card) {
+            var take_card_ids = skip_take_card ? [] : this.myLimbo.orderedSelection.get();
             var discard_card_ids = this.myLimbo.orderedSelection.get(true);
             if (take_card_ids.length > 1) {
                 this.showMessage(_("Please select at most 1 card to take"), "error");

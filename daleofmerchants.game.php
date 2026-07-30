@@ -10124,6 +10124,14 @@ class DaleOfMerchants extends DaleTableBasic
                 )
             ));
         }
+        else {
+            //skip taking a card
+            $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} skipped taking a card from ${opponent_name}'), array(
+                "resolving_card_name" => $this->getResolvingCardName(),
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            ));
+        }
 
         //discard, with with optional order
         $ordered_dbcards = $this->cards->getCardsFromLocation($discard_card_ids, LIMBO.$player_id);
