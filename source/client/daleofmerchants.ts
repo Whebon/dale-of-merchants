@@ -4588,6 +4588,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_DODO3:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
 				break;
+			case DaleCard.CT_DODO4:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				break;
