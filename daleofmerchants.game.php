@@ -7290,6 +7290,13 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gainCoins($player_id, 3, $technique_card);
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_DODO5B:
+                $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 2);
+                $this->notifyAllPlayers('message', clienttranslate('Company Share: ${player_name} increases their hand size by 2'), array(
+                    'player_name' => $this->getActivePlayerName()
+                ));
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -7663,6 +7670,10 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DODO5A:
                 $this->spend($player_id, $args, 4, $this->_("Nesting Doll"));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_DODO5B:
+                $this->spend($player_id, $args, 3, $this->_("Company Share"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
