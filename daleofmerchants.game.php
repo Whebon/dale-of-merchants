@@ -7284,6 +7284,12 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Sunglasses: ${player_name} draws ${nbr} cards'), 2);
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
+            case CT_DODO5A:
+                $this->spend($player_id, $args, 1, $this->_("Nesting Doll"));
+                $this->draw(clienttranslate('Nesting Doll: ${player_name} draws ${nbr} cards'), 2);
+                $this->gainCoins($player_id, 3, $technique_card);
+                $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -7653,6 +7659,10 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_DODO4:
                 $this->spend($player_id, $args, 3, $this->_("Sunglasses"));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_DODO5A:
+                $this->spend($player_id, $args, 4, $this->_("Nesting Doll"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

@@ -4591,6 +4591,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_DODO4:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
 				break;
+			case DaleCard.CT_DODO5A:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 4);
+				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				break;
@@ -5682,6 +5685,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_CAPTURE:
 				this.clientScheduleTechnique('client_capture', card.id, { clock: clock });
+				break;
+			case DaleCard.CT_DODO5A:
+				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1);
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);

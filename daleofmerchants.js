@@ -8999,6 +8999,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_DODO4:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
                     break;
+                case DaleCard_10.DaleCard.CT_DODO5A:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 4);
+                    break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     break;
@@ -10014,6 +10017,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_CAPTURE:
                     this.clientScheduleTechnique('client_capture', card.id, { clock: clock });
+                    break;
+                case DaleCard_10.DaleCard.CT_DODO5A:
+                    this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1);
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
