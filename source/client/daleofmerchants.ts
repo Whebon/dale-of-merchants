@@ -3772,7 +3772,7 @@ class DaleOfMerchants extends Gamegui
 		const confirm_button = $("confirm-button");
 		if (confirm_button) {
 			let value = this.coinManager.getCoinsToSpend() + this.myHand.getSelectedValue();
-			
+
 			if (this.gamedatas.gamestate.name == 'client_dodo2' || this.gamedatas.gamestate.name == 'charmDodo2') {
 				value = Math.min(3, value);
 			}
@@ -4585,6 +4585,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_DODO1:
 				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
 				break;
+			case DaleCard.CT_DODO3:
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
 				break;
@@ -4940,6 +4943,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_SHATTEREDRELIC:
 			case DaleCard.CT_FORTUNATEUPGRADE:
 			case DaleCard.CT_GOLDENOPPORTUNITY:
+			case DaleCard.CT_DODO3:
 			case DaleCard.CT_ESSENTIALPURCHASE:
 			case DaleCard.CT_JUNGLEFOWL3:
 				if (this.myHand.count() == 1) {

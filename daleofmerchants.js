@@ -8993,6 +8993,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_DODO1:
                     this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
                     break;
+                case DaleCard_10.DaleCard.CT_DODO3:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     break;
@@ -9270,6 +9273,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_SHATTEREDRELIC:
                 case DaleCard_10.DaleCard.CT_FORTUNATEUPGRADE:
                 case DaleCard_10.DaleCard.CT_GOLDENOPPORTUNITY:
+                case DaleCard_10.DaleCard.CT_DODO3:
                 case DaleCard_10.DaleCard.CT_ESSENTIALPURCHASE:
                 case DaleCard_10.DaleCard.CT_JUNGLEFOWL3:
                     if (this.myHand.count() == 1) {
