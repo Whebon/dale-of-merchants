@@ -8974,6 +8974,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     fizzle = skink5a_nbr == 0;
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink5a', card.id, { nbr: skink5a_nbr });
                     break;
+                case DaleCard_10.DaleCard.CT_DODO1:
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
                     break;
