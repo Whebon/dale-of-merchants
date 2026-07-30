@@ -1239,6 +1239,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_JUNGLEFOWLMONO:
                 $clock = $this->getClock(MONO_PLAYER_ID);
                 $msg = clienttranslate('${resolving_card_name}: ${player_name} increases their hand size by ${nbr}');
+                $nbr = 0;
                 switch ($clock) {
                     case CLOCK_DAWN:
                         $nbr = 4;
@@ -1361,6 +1362,16 @@ class DaleOfMerchants extends DaleTableBasic
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
                 }
+                break;
+            case CT_DODOMONO:
+                //Mono gains 12 🟡. Mono's hand size -2 for this turn. Acquire.
+                $this->gainCoins(MONO_PLAYER_ID, 12, $technique_card);
+                $this->effects->insertGlobal($technique_card["id"], EFFECT_INCREASE_HAND_SIZE, -2);
+                $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} decreases their hand size by ${nbr}'), array(
+                    'resolving_card_name' => $this->getCardName($technique_card),
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "nbr" => 2
+                ));
                 break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
