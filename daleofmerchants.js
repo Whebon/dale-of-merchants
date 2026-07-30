@@ -4324,10 +4324,10 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
             }
             if (args) {
                 if ('technique_card_id' in args) {
-                    args = __assign({ card_name: new DaleCard_6.DaleCard(args.technique_card_id).name }, args);
+                    args = __assign(__assign({}, args), { card_name: new DaleCard_6.DaleCard(args.technique_card_id).name });
                 }
                 if ('passive_card_id' in args) {
-                    args = __assign({ card_name: new DaleCard_6.DaleCard(args.passive_card_id).name }, args);
+                    args = __assign(__assign({}, args), { card_name: new DaleCard_6.DaleCard(args.passive_card_id).name });
                 }
                 this._args = args !== null && args !== void 0 ? args : {};
             }

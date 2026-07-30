@@ -386,14 +386,14 @@ export class MainClientState {
         if (args) {
             if ('technique_card_id' in args) {
                 args = {
-                    card_name: new DaleCard(args.technique_card_id).name,
                     ...args, 
+                    card_name: new DaleCard(args.technique_card_id).name,
                 }
             }
             if ('passive_card_id' in args) {
                 args = {
-                    card_name: new DaleCard(args.passive_card_id).name,
                     ...args, 
+                    card_name: new DaleCard(args.passive_card_id).name,
                 }
             }
             this._args = args ?? {} as ClientGameStates[K];
