@@ -95,6 +95,9 @@ class DaleEffects {
             if ($row["effect_class"] == EC_GLOBAL && $row["type_id"] == EFFECT_INCREASE_HAND_SIZE) {
                 $increase_hand_size += $row["arg"];
             }
+            if ($row["effect_class"] == EC_GLOBAL && $row["type_id"] == CT_WALRUS5A && $this->game->getGameStateValue("built_this_turn") == 0) {
+                $increase_hand_size += $row["arg"];
+            }
         }
         return $increase_hand_size;
     }

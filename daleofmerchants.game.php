@@ -62,7 +62,8 @@ class DaleOfMerchants extends DaleTableBasic
             "bonus_build_type_id" => 31,
             "mono_score" => 32,
             "mono_coins" => 33,
-            "mono_clock" => 34
+            "mono_clock" => 34,
+            "built_this_turn" => 35,
         ) );
 
         $this->effects = new DaleEffects($this);
@@ -134,6 +135,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->setGameStateInitialValue("mono_score", 0);
         $this->setGameStateInitialValue("mono_coins", 0);
         $this->setGameStateInitialValue("mono_clock", 0);
+        $this->setGameStateInitialValue("built_this_turn", 0);
         
         // Init game statistics
         $this->initStat("player", "number_of_turns", 0);
@@ -4544,6 +4546,9 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $this->cards->moveCardsToStall($this->toCardIds($cards_from_hand), STALL.$player_id, $stack_index, $index);
 
+        //Remember the player built this turn for CT_WALRUS5A
+        $this->setGameStateValue("built_this_turn", 1);
+
         //Check if the player has won
         $win = $this->updateScore($player_id, $stack_index + 1);
         if ($win) {
@@ -7343,6 +7348,13 @@ class DaleOfMerchants extends DaleTableBasic
                     $player_id,
                     array($dbcard["id"])
                 );
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_WALRUS5A:
+                $this->effects->insertGlobal(0, CT_WALRUS5A, 2); // = conditional EFFECT_INCREASE_HAND_SIZE
+                $this->notifyAllPlayers('message', clienttranslate('Treasure Hoard: ${player_name} increases their hand size by 2, <strong>if</strong> they don\'t build this turn'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -10815,6 +10827,9 @@ class DaleOfMerchants extends DaleTableBasic
 
         //reset the clock
         $this->resetClock($player_id, clienttranslate('${player_name} reaches ${clock}'));
+
+        //reset CT_WALRUS5A check
+        $this->setGameStateValue("built_this_turn", 0);
 
         //trigger cards on turn start
         $dbcards = $this->cards->getCardsInLocation(SCHEDULE.$player_id);
