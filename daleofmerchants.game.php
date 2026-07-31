@@ -4384,14 +4384,14 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $cards_all = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
         
-        //Apply CT_STASHINGVENDOR, CT_WARMEMBRACE and <walrus>
+        //Apply CT_STASHINGVENDOR, CT_WARMEMBRACE and CT_WALRUS3
         $max_nbr_junk = 0;
         if ($this->containsTypeId($cards_all, CT_STASHINGVENDOR)) {
             $max_nbr_junk = INF;
         }
         else {
             $max_nbr_junk += $this->countTypeId($this->cards->getCardsInLocation(STALL.$player_id), CT_WARMEMBRACE);
-            $max_nbr_junk += 0; // TODO: <walrus>
+            $max_nbr_junk += $this->effects->countGlobalEffects(CT_WALRUS3);
         }
 
         //Apply CT_EMPTYCHEST and CT_WALRUS2
@@ -4431,7 +4431,15 @@ class DaleOfMerchants extends DaleTableBasic
         //Apply junk rule
         $nbr_junk = $this->countJunk($cards_all);
         if ($nbr_junk > $max_nbr_junk) {
-            throw new BgaUserException($this->_("Junk cards cannot be included in a stack"));
+            if ($max_nbr_junk == 0) {
+                throw new BgaUserException($this->_("Junk cards cannot be included in a stack"));
+            }
+            else if ($max_nbr_junk == 1) {
+                throw new BgaUserException($this->_("You may include at most 1 junk card"));
+            }
+            else {
+                throw new BgaUserException($this->_("You may include at most ").$max_nbr_junk.$this->_(" junk cards"));
+            }
         }
 
         //Apply animalfolk rule
@@ -7312,6 +7320,13 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_WALRUS2:
                 $this->effects->insertGlobal(0, CT_WALRUS2);
                 $this->notifyAllPlayers('message', clienttranslate('Slappy Tappy: ${player_name} may include any animalfolk cards in their stack this turn'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_WALRUS3:
+                $this->effects->insertGlobal(0, CT_WALRUS3);
+                $this->notifyAllPlayers('message', clienttranslate('Sea Salt: ${player_name} may include 1 clutter card in their stack this turn'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
