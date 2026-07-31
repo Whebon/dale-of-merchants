@@ -1004,7 +1004,7 @@ class DaleOfMerchants extends Gamegui
 					}
 				}).bind(this), 750); //workaround to ensure that limbo is filled before the targeting line is created
 				break;
-			case 'client_DEPRECATED_marketDiscovery':
+			case 'client_olm1':
 				this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
 				this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
 				break;
@@ -1729,7 +1729,7 @@ class DaleOfMerchants extends Gamegui
 				TargetingLine.remove();
 				this.myLimbo.setSelectionMode('none');
 				break;
-			case 'client_DEPRECATED_marketDiscovery':
+			case 'client_olm1':
 				this.marketDeck.setSelectionMode('none');
 				this.marketDiscard.setSelectionMode('none');
 				break;
@@ -2445,9 +2445,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_choicelessPassiveCard':
 				this.onChoicelessPassiveCard(); //immediately leave this state
 				break;
-			case 'client_DEPRECATED_marketDiscovery':
-				this.addActionButton("toss-button", _("Toss"), "onDEPRECATED_MarketDiscoveryToss");
-				this.addActionButton("purchase-button", _("Purchase"), "onDEPRECATED_MarketDiscoveryPurchase");
+			case 'client_olm1':
+				this.addActionButton("toss-button", _("Toss"), "onOlm1Toss");
+				this.addActionButton("purchase-button", _("Purchase"), "onOlm1Purchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'specialOffer':
@@ -3255,12 +3255,12 @@ class DaleOfMerchants extends Gamegui
 	 * Set standard selection modes for purchase-based client states
 	 */
 	public setPurchaseSelectionModes(client_purchase_args: ClientGameStates['client_purchase']) {
-		if (client_purchase_args.market_discovery_card_id === undefined) {
+		if (client_purchase_args.olm1_card_id === undefined) {
 			this.market!.setSelected(client_purchase_args.pos, true);
 		}
 		else {
 			if (this.myHand.orderedSelection.getSize() == 0) {
-				this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
+				this.myHand.selectItem(client_purchase_args.olm1_card_id);
 			}
 			this.marketDiscard.selectTopCard();
 			this.marketDiscard.setSelectionMode("top");
@@ -3857,7 +3857,7 @@ class DaleOfMerchants extends Gamegui
 				else if (this.checkLock()) {
 					//user clicked on a different card, enter a new client state
 					client_purchase_args.pos = pos;
-					client_purchase_args.market_discovery_card_id = undefined;
+					client_purchase_args.olm1_card_id = undefined;
 					client_purchase_args.card_name = card.name;
 					client_purchase_args.cost = card.getCost(pos);
 					this.mainClientState.enter('client_purchase', client_purchase_args);
@@ -3869,7 +3869,7 @@ class DaleOfMerchants extends Gamegui
 				if (this.checkLock()) {
 					this.mainClientState.enter('client_purchase', {
 						pos: pos,
-						market_discovery_card_id: undefined,
+						olm1_card_id: undefined,
 						calculations_card_id: undefined,
 						card_name: card.name,
 						cost: card.getCost(pos),
@@ -4045,12 +4045,12 @@ class DaleOfMerchants extends Gamegui
 			case 'client_purchase':
 				this.mainClientState.leave();
 				break;
-			case 'client_DEPRECATED_marketDiscovery':
+			case 'client_olm1':
 				if (pile === this.marketDeck) {
-					this.onDEPRECATED_MarketDiscoveryToss();
+					this.onOlm1Toss();
 				}
 				else if (pile === this.marketDiscard) {
-					this.onDEPRECATED_MarketDiscoveryPurchase();
+					this.onOlm1Purchase();
 				}
 				break;
 			case 'client_velocipede':
@@ -4660,7 +4660,7 @@ class DaleOfMerchants extends Gamegui
 		}
 
 		var card_id;
-		if (args.market_discovery_card_id === undefined) {
+		if (args.olm1_card_id === undefined) {
 			card_id = this.market!.getCardId(args.pos);
 			console.warn(card_id);
 		}
@@ -4692,13 +4692,13 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	onDEPRECATED_MarketDiscoveryToss() {
-		this.playPassiveCard<'client_DEPRECATED_marketDiscovery'>({});
+	onOlm1Toss() {
+		this.playPassiveCard<'client_olm1'>({});
 	}
 
-	onDEPRECATED_MarketDiscoveryPurchase(market_discovery_card_id?: number | PointerEvent) {
-		if (market_discovery_card_id == undefined || market_discovery_card_id instanceof PointerEvent) { //for dojo.connect
-			market_discovery_card_id = (this.mainClientState.args as ClientGameStates['client_DEPRECATED_marketDiscovery']).passive_card_id
+	onOlm1Purchase(olm1_card_id?: number | PointerEvent) {
+		if (olm1_card_id == undefined || olm1_card_id instanceof PointerEvent) { //for dojo.connect
+			olm1_card_id = (this.mainClientState.args as ClientGameStates['client_olm1']).passive_card_id
 		}
 		const card = this.marketDiscard.peek();
 		if (!card) {
@@ -4709,7 +4709,7 @@ class DaleOfMerchants extends Gamegui
 			this.mainClientState.setPassiveSelected(false);
 			this.mainClientState.enter('client_purchase', {
 				pos: -1,
-				market_discovery_card_id: market_discovery_card_id,
+				olm1_card_id: olm1_card_id,
 				calculations_card_id: undefined,
 				card_name: card.name,
 				cost: card.original_value,
@@ -5733,28 +5733,28 @@ class DaleOfMerchants extends Gamegui
 	 */
 	onClickPassive(card: DaleCard, postCleanUp: boolean = false) {
 		const type_id = card.effective_type_id;
-		if (type_id != DaleCard.CT_DEPRECATED_MARKETDISCOVERY) {
+		if (type_id != DaleCard.CT_OLM1) {
 			if (card.isPassiveUsed()) {
 				this.showMessage(_("This passive's ability was already used"), 'error');
 				return;
 			}
 		}
 		switch(card.effective_type_id) {
-			case DaleCard.CT_DEPRECATED_MARKETDISCOVERY:
+			case DaleCard.CT_OLM1:
 				if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
 					if (card.isPassiveUsed()) {
 						this.showMessage(_("This passive's ability was already used"), 'error');
 					}
 					else {
-						this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', {passive_card_id: card.id});
-						this.onDEPRECATED_MarketDiscoveryToss();
+						this.mainClientState.enterOnStack('client_olm1', {passive_card_id: card.id});
+						this.onOlm1Toss();
 					}
 				}
 				else if (card.isPassiveUsed()) {
-					this.onDEPRECATED_MarketDiscoveryPurchase(card.id);
+					this.onOlm1Purchase(card.id);
 				}
 				else {
-					this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', {passive_card_id: card.id});
+					this.mainClientState.enterOnStack('client_olm1', {passive_card_id: card.id});
 				}
 				break;
 			case DaleCard.CT_CALCULATIONS:
@@ -6366,7 +6366,7 @@ class DaleOfMerchants extends Gamegui
 			const pos = args.card_ids.indexOf(args.card_id_last);
 			this.mainClientState.enter('client_purchase', {
 				pos: pos,
-				market_discovery_card_id: undefined,
+				olm1_card_id: undefined,
 				calculations_card_id: args.passive_card_id,
 				card_name: card.name,
 				cost: card.getCost(pos),

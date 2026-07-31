@@ -279,21 +279,20 @@ if (!defined('CT_CARDBACK')) {
     define('CT_JUNGLEFOWLMONO', 255);
     define('CT_DRAMATICMEMBER', 256);
     define('CT_SNEAKYMEMBER', 257);
-    define('CT_DEPRECATED_MARKETDISCOVERY', 258);
-    define('CT_DEPRECATED_CHEER', 259);
-    define('CT_DEPRECATED_TASTERS', 260);
-    define('CT_DEPRECATED_ESSENTIALPURCHASE', 261);
-    define('CT_DEPRECATED_STOCKCLEARANCE', 262);
-    define('CT_DEPRECATED_BLINDFOLD', 263);
-    define('CT_DEPRECATED_HISTORYLESSON', 264);
-    define('CT_DEPRECATED_CULTURALPRESERVATION', 265);
-    define('CT_DEPRECATED_SLICEOFLIFE', 266);
-    define('CT_DEPRECATED_VORACIOUSCONSUMER', 267);
-    define('CT_DEPRECATED_ROYALPRIVILEGE', 268);
-    define('CT_DEPRECATED_VELOCIPEDE', 269);
-    define('CT_DEPRECATED_INSIGHT', 270);
-    define('CT_DEPRECATED_WHIRLIGIG', 271);
-    define('CT_DEPRECATED_FRESHSTART', 272);
+    define('CT_DEPRECATED_CHEER', 258);
+    define('CT_DEPRECATED_TASTERS', 259);
+    define('CT_DEPRECATED_ESSENTIALPURCHASE', 260);
+    define('CT_DEPRECATED_STOCKCLEARANCE', 261);
+    define('CT_DEPRECATED_BLINDFOLD', 262);
+    define('CT_DEPRECATED_HISTORYLESSON', 263);
+    define('CT_DEPRECATED_CULTURALPRESERVATION', 264);
+    define('CT_DEPRECATED_SLICEOFLIFE', 265);
+    define('CT_DEPRECATED_VORACIOUSCONSUMER', 266);
+    define('CT_DEPRECATED_ROYALPRIVILEGE', 267);
+    define('CT_DEPRECATED_VELOCIPEDE', 268);
+    define('CT_DEPRECATED_INSIGHT', 269);
+    define('CT_DEPRECATED_WHIRLIGIG', 270);
+    define('CT_DEPRECATED_FRESHSTART', 271);
 }
 
 //define all special effects
@@ -2614,8 +2613,8 @@ $this->card_types = array(
       'type_displayed' => clienttranslate("Passive"),
       'is_technique' => false,
       'has_plus' => false,
-      'has_ability' => false,
-      'playable' => false,
+      'has_ability' => true,
+      'playable' => true,
       'trigger' => null,
       'value' => 1,
       'nbr' => 0,

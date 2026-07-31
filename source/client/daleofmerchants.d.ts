@@ -589,7 +589,7 @@ declare global {
 		'client_choicelessPassiveCard': {},
 		'client_selectOpponentPassive': { opponent_id: number }
 		'client_selectPlayerPassive': { opponent_id: number }
-		'client_DEPRECATED_marketDiscovery': {},
+		'client_olm1': {},
 		'client_calculations': {} //choice sent as purchase args
 		'client_barricade': { card_ids: number[] }
 		'client_DEPRECATED_sliceOfLife': { card_ids: number[] }
@@ -616,7 +616,7 @@ declare global {
 	interface ClientGameStates extends TriggerTechniqueClientStates, TechniqueClientStates, PassiveClientStates {
 		'client_purchase' : { 
 			pos: number, 
-			market_discovery_card_id: number | undefined, 
+			olm1_card_id: number | undefined, 
 			calculations_card_id: number | undefined, 
 			cost: number, 
 			card_name: string,

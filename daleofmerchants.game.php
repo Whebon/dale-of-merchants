@@ -4706,8 +4706,8 @@ class DaleOfMerchants extends DaleTableBasic
         $from_bin = $market_card['location'] == DISCARD.MARKET;
         if ($from_bin) {
             $market_card = $this->cards->getCardOnTop(DISCARD.MARKET);
-            if (!$this->containsTypeId($funds_cards, CT_DEPRECATED_MARKETDISCOVERY)) {
-                throw new BgaUserException($this->_("To purchase from the bin, 'Market Discovery' must be included in the funds"));
+            if (!$this->containsTypeId($funds_cards, CT_OLM1)) {
+                throw new BgaUserException($this->_("To purchase from the bin, 'Blind Examiner' must be included in the funds"));
             }
         }
         $cost = $this->getCost($player_id, $market_card);
@@ -4764,7 +4764,7 @@ class DaleOfMerchants extends DaleTableBasic
         //Obtain the market card
         $this->cards->moveCard($market_card_id, HAND.$player_id);
         if ($from_bin) {
-            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Market Discovery: ${player_name} buys ${extended_card_name} for ${cost}'), array (
+            $this->notifyAllPlayers('marketDiscardToHand', clienttranslate('Blind Examiner: ${player_name} buys ${extended_card_name} for ${cost}'), array (
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_name' => $this->getCardName($market_card),
@@ -7903,9 +7903,9 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->copyCard($passive_card, $dbcard);
                 break;
-            case CT_DEPRECATED_MARKETDISCOVERY:
-                $this->tossFromMarketDeck(clienttranslate('${player_name} uses their Market Discovery to toss a card from the supply'));
-                $this->effects->insertModification($passive_card_id, CT_DEPRECATED_MARKETDISCOVERY);
+            case CT_OLM1:
+                $this->tossFromMarketDeck(clienttranslate('Blind Examiner: ${player_name} tosses a card from the supply'));
+                $this->effects->insertModification($passive_card_id, CT_OLM1);
                 break;
             case CT_BOLDHAGGLER:
                 $value = $this->rollDie(

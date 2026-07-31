@@ -303,21 +303,20 @@ export class DaleCard {
     static readonly CT_JUNGLEFOWLMONO: number = 255;
     static readonly CT_DRAMATICMEMBER: number = 256;
     static readonly CT_SNEAKYMEMBER: number = 257;
-    static readonly CT_DEPRECATED_MARKETDISCOVERY: number = 258;
-    static readonly CT_DEPRECATED_CHEER: number = 259;
-    static readonly CT_DEPRECATED_TASTERS: number = 260;
-    static readonly CT_DEPRECATED_ESSENTIALPURCHASE: number = 261;
-    static readonly CT_DEPRECATED_STOCKCLEARANCE: number = 262;
-    static readonly CT_DEPRECATED_BLINDFOLD: number = 263;
-    static readonly CT_DEPRECATED_HISTORYLESSON: number = 264;
-    static readonly CT_DEPRECATED_CULTURALPRESERVATION: number = 265;
-    static readonly CT_DEPRECATED_SLICEOFLIFE: number = 266;
-    static readonly CT_DEPRECATED_VORACIOUSCONSUMER: number = 267;
-    static readonly CT_DEPRECATED_ROYALPRIVILEGE: number = 268;
-    static readonly CT_DEPRECATED_VELOCIPEDE: number = 269;
-    static readonly CT_DEPRECATED_INSIGHT: number = 270;
-    static readonly CT_DEPRECATED_WHIRLIGIG: number = 271;
-    static readonly CT_DEPRECATED_FRESHSTART: number = 272;
+    static readonly CT_DEPRECATED_CHEER: number = 258;
+    static readonly CT_DEPRECATED_TASTERS: number = 259;
+    static readonly CT_DEPRECATED_ESSENTIALPURCHASE: number = 260;
+    static readonly CT_DEPRECATED_STOCKCLEARANCE: number = 261;
+    static readonly CT_DEPRECATED_BLINDFOLD: number = 262;
+    static readonly CT_DEPRECATED_HISTORYLESSON: number = 263;
+    static readonly CT_DEPRECATED_CULTURALPRESERVATION: number = 264;
+    static readonly CT_DEPRECATED_SLICEOFLIFE: number = 265;
+    static readonly CT_DEPRECATED_VORACIOUSCONSUMER: number = 266;
+    static readonly CT_DEPRECATED_ROYALPRIVILEGE: number = 267;
+    static readonly CT_DEPRECATED_VELOCIPEDE: number = 268;
+    static readonly CT_DEPRECATED_INSIGHT: number = 269;
+    static readonly CT_DEPRECATED_WHIRLIGIG: number = 270;
+    static readonly CT_DEPRECATED_FRESHSTART: number = 271;
 
     public id: number
 

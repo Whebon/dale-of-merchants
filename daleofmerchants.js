@@ -1900,21 +1900,20 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         DaleCard.CT_JUNGLEFOWLMONO = 255;
         DaleCard.CT_DRAMATICMEMBER = 256;
         DaleCard.CT_SNEAKYMEMBER = 257;
-        DaleCard.CT_DEPRECATED_MARKETDISCOVERY = 258;
-        DaleCard.CT_DEPRECATED_CHEER = 259;
-        DaleCard.CT_DEPRECATED_TASTERS = 260;
-        DaleCard.CT_DEPRECATED_ESSENTIALPURCHASE = 261;
-        DaleCard.CT_DEPRECATED_STOCKCLEARANCE = 262;
-        DaleCard.CT_DEPRECATED_BLINDFOLD = 263;
-        DaleCard.CT_DEPRECATED_HISTORYLESSON = 264;
-        DaleCard.CT_DEPRECATED_CULTURALPRESERVATION = 265;
-        DaleCard.CT_DEPRECATED_SLICEOFLIFE = 266;
-        DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER = 267;
-        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 268;
-        DaleCard.CT_DEPRECATED_VELOCIPEDE = 269;
-        DaleCard.CT_DEPRECATED_INSIGHT = 270;
-        DaleCard.CT_DEPRECATED_WHIRLIGIG = 271;
-        DaleCard.CT_DEPRECATED_FRESHSTART = 272;
+        DaleCard.CT_DEPRECATED_CHEER = 258;
+        DaleCard.CT_DEPRECATED_TASTERS = 259;
+        DaleCard.CT_DEPRECATED_ESSENTIALPURCHASE = 260;
+        DaleCard.CT_DEPRECATED_STOCKCLEARANCE = 261;
+        DaleCard.CT_DEPRECATED_BLINDFOLD = 262;
+        DaleCard.CT_DEPRECATED_HISTORYLESSON = 263;
+        DaleCard.CT_DEPRECATED_CULTURALPRESERVATION = 264;
+        DaleCard.CT_DEPRECATED_SLICEOFLIFE = 265;
+        DaleCard.CT_DEPRECATED_VORACIOUSCONSUMER = 266;
+        DaleCard.CT_DEPRECATED_ROYALPRIVILEGE = 267;
+        DaleCard.CT_DEPRECATED_VELOCIPEDE = 268;
+        DaleCard.CT_DEPRECATED_INSIGHT = 269;
+        DaleCard.CT_DEPRECATED_WHIRLIGIG = 270;
+        DaleCard.CT_DEPRECATED_FRESHSTART = 271;
         DaleCard.EFFECT_CHAMELEON_TYPE = 1000;
         DaleCard.EFFECT_CHAMELEON_VALUE = 1001;
         DaleCard.EFFECT_INCREASE_HAND_SIZE = 1002;
@@ -4064,7 +4063,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose an opponent");
                     case 'client_selectPlayerPassive':
                         return _("${card_name}: ${you} must choose a player");
-                    case 'client_DEPRECATED_marketDiscovery':
+                    case 'client_olm1':
                         return _("${card_name}: ${you} may <strong>toss</strong> the supply's top card or purchase the bin's top card");
                     case 'client_calculations':
                         return _("${card_name}: ${you} may rearrange any cards in the market");
@@ -5882,7 +5881,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }).bind(this), 750);
                     break;
-                case 'client_DEPRECATED_marketDiscovery':
+                case 'client_olm1':
                     this.marketDeck.setSelectionMode('top', undefined, 'daleofmerchants-wrap-technique');
                     this.marketDiscard.setSelectionMode('top', undefined, 'daleofmerchants-wrap-purchase');
                     break;
@@ -6556,7 +6555,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     TargetingLine_1.TargetingLine.remove();
                     this.myLimbo.setSelectionMode('none');
                     break;
-                case 'client_DEPRECATED_marketDiscovery':
+                case 'client_olm1':
                     this.marketDeck.setSelectionMode('none');
                     this.marketDiscard.setSelectionMode('none');
                     break;
@@ -7279,9 +7278,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_choicelessPassiveCard':
                     this.onChoicelessPassiveCard();
                     break;
-                case 'client_DEPRECATED_marketDiscovery':
-                    this.addActionButton("toss-button", _("Toss"), "onDEPRECATED_MarketDiscoveryToss");
-                    this.addActionButton("purchase-button", _("Purchase"), "onDEPRECATED_MarketDiscoveryPurchase");
+                case 'client_olm1':
+                    this.addActionButton("toss-button", _("Toss"), "onOlm1Toss");
+                    this.addActionButton("purchase-button", _("Purchase"), "onOlm1Purchase");
                     this.addActionButtonCancelClient();
                     break;
                 case 'specialOffer':
@@ -7916,12 +7915,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.setPurchaseSelectionModes = function (client_purchase_args) {
-            if (client_purchase_args.market_discovery_card_id === undefined) {
+            if (client_purchase_args.olm1_card_id === undefined) {
                 this.market.setSelected(client_purchase_args.pos, true);
             }
             else {
                 if (this.myHand.orderedSelection.getSize() == 0) {
-                    this.myHand.selectItem(client_purchase_args.market_discovery_card_id);
+                    this.myHand.selectItem(client_purchase_args.olm1_card_id);
                 }
                 this.marketDiscard.selectTopCard();
                 this.marketDiscard.setSelectionMode("top");
@@ -8338,7 +8337,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     else if (this.checkLock()) {
                         client_purchase_args.pos = pos;
-                        client_purchase_args.market_discovery_card_id = undefined;
+                        client_purchase_args.olm1_card_id = undefined;
                         client_purchase_args.card_name = card.name;
                         client_purchase_args.cost = card.getCost(pos);
                         this.mainClientState.enter('client_purchase', client_purchase_args);
@@ -8350,7 +8349,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (this.checkLock()) {
                         this.mainClientState.enter('client_purchase', {
                             pos: pos,
-                            market_discovery_card_id: undefined,
+                            olm1_card_id: undefined,
                             calculations_card_id: undefined,
                             card_name: card.name,
                             cost: card.getCost(pos),
@@ -8513,12 +8512,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_purchase':
                     this.mainClientState.leave();
                     break;
-                case 'client_DEPRECATED_marketDiscovery':
+                case 'client_olm1':
                     if (pile === this.marketDeck) {
-                        this.onDEPRECATED_MarketDiscoveryToss();
+                        this.onOlm1Toss();
                     }
                     else if (pile === this.marketDiscard) {
-                        this.onDEPRECATED_MarketDiscoveryPurchase();
+                        this.onOlm1Purchase();
                     }
                     break;
                 case 'client_velocipede':
@@ -9062,7 +9061,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 throw new Error("onPurchase: funds_card_ids is undefined, but it was expected to be defined in '${this.gamedatas.gamestate}'");
             }
             var card_id;
-            if (args.market_discovery_card_id === undefined) {
+            if (args.olm1_card_id === undefined) {
                 card_id = this.market.getCardId(args.pos);
                 console.warn(card_id);
             }
@@ -9091,12 +9090,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 });
             }
         };
-        DaleOfMerchants.prototype.onDEPRECATED_MarketDiscoveryToss = function () {
+        DaleOfMerchants.prototype.onOlm1Toss = function () {
             this.playPassiveCard({});
         };
-        DaleOfMerchants.prototype.onDEPRECATED_MarketDiscoveryPurchase = function (market_discovery_card_id) {
-            if (market_discovery_card_id == undefined || market_discovery_card_id instanceof PointerEvent) {
-                market_discovery_card_id = this.mainClientState.args.passive_card_id;
+        DaleOfMerchants.prototype.onOlm1Purchase = function (olm1_card_id) {
+            if (olm1_card_id == undefined || olm1_card_id instanceof PointerEvent) {
+                olm1_card_id = this.mainClientState.args.passive_card_id;
             }
             var card = this.marketDiscard.peek();
             if (!card) {
@@ -9107,7 +9106,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.mainClientState.setPassiveSelected(false);
                 this.mainClientState.enter('client_purchase', {
                     pos: -1,
-                    market_discovery_card_id: market_discovery_card_id,
+                    olm1_card_id: olm1_card_id,
                     calculations_card_id: undefined,
                     card_name: card.name,
                     cost: card.original_value,
@@ -10060,28 +10059,28 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onClickPassive = function (card, postCleanUp) {
             if (postCleanUp === void 0) { postCleanUp = false; }
             var type_id = card.effective_type_id;
-            if (type_id != DaleCard_10.DaleCard.CT_DEPRECATED_MARKETDISCOVERY) {
+            if (type_id != DaleCard_10.DaleCard.CT_OLM1) {
                 if (card.isPassiveUsed()) {
                     this.showMessage(_("This passive's ability was already used"), 'error');
                     return;
                 }
             }
             switch (card.effective_type_id) {
-                case DaleCard_10.DaleCard.CT_DEPRECATED_MARKETDISCOVERY:
+                case DaleCard_10.DaleCard.CT_OLM1:
                     if (this.gamedatas.gamestate.name == 'postCleanUpPhase') {
                         if (card.isPassiveUsed()) {
                             this.showMessage(_("This passive's ability was already used"), 'error');
                         }
                         else {
-                            this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', { passive_card_id: card.id });
-                            this.onDEPRECATED_MarketDiscoveryToss();
+                            this.mainClientState.enterOnStack('client_olm1', { passive_card_id: card.id });
+                            this.onOlm1Toss();
                         }
                     }
                     else if (card.isPassiveUsed()) {
-                        this.onDEPRECATED_MarketDiscoveryPurchase(card.id);
+                        this.onOlm1Purchase(card.id);
                     }
                     else {
-                        this.mainClientState.enterOnStack('client_DEPRECATED_marketDiscovery', { passive_card_id: card.id });
+                        this.mainClientState.enterOnStack('client_olm1', { passive_card_id: card.id });
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_CALCULATIONS:
@@ -10600,7 +10599,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var pos = args.card_ids.indexOf(args.card_id_last);
                 this.mainClientState.enter('client_purchase', {
                     pos: pos,
-                    market_discovery_card_id: undefined,
+                    olm1_card_id: undefined,
                     calculations_card_id: args.passive_card_id,
                     card_name: card.name,
                     cost: card.getCost(pos),
