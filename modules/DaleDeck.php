@@ -143,14 +143,14 @@ class DaleDeck {
      * Patch after adding the Mono player. Unlike before, Mono's hand and schedule have an ordering.
      * @return bool `true` if the specified location has an ordering
      */
-    function isOrderedLocation($location) {
+    function isOrderedLocation(string $location) {
         return $location == HAND.MONO_PLAYER_ID || $location == SCHEDULE.MONO_PLAYER_ID;
     }
 
     /**
      * @return bool `true` if the specified location is outside the union of locations `{HAND, LIMBO, SCHEDULE}`
      */
-    function isOuterLocation($location) {
+    function isOuterLocation(string $location) {
         $prefix = substr($location, 0, 4);
         return $prefix != HAND && $prefix != LIMBO && $prefix != SCHEDULE && $prefix != SCHEDULE_COOLDOWN;
     }
@@ -325,6 +325,31 @@ class DaleDeck {
         $stack_index = ($extremePos - $index) / MAX_STACK_SIZE;
         return $stack_index + 1;
     }
+
+    /**
+     * Get cards in the rightmost stack
+     * @param string $location must be a stall location
+    */
+    function getCardsInRightmostStack(string $location): array {
+        $prefix = substr($location, 0, 4);
+        if ($prefix != STALL) {
+            throw new BgaSystemException("$location is not a stall location");
+        }
+        $player_id = substr($location, strlen(STALL));
+        
+        $dbcards = array();
+        $rightmost_stack_index = $this->getNextStackIndex($player_id) - 1;
+        $stall_cards = $this->getCardsInLocation(STALL.$player_id);
+        
+        foreach ($stall_cards as $stall_card_id => $stall_card) {
+            if (intdiv($stall_card["location_arg"], MAX_STACK_SIZE) == $rightmost_stack_index) {
+                $dbcards[$stall_card_id] = $stall_card;
+            }
+        }
+        
+        return $dbcards;
+    }
+
 
     /**
      * getCards, but with a location specified. Raises an exception if the cards are not in the specified location.

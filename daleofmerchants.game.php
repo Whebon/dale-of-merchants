@@ -4454,13 +4454,18 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Enforce the stack value is correct
         $player_id = $this->getActivePlayerId();
+        $cards_rightmost_stack = $this->cards->getCardsInRightmostStack(STALL.$player_id);
+        
         $nbr_nastyThreat = $this->effects->countGlobalEffectsExcludeArg(CT_NASTYTHREAT, $player_id);
         $nbr_accordion = $this->countTypeId($cards_all, CT_ACCORDION);
         $nbr_walrus1 = $this->countTypeId($cards_all, CT_WALRUS1);
+        $nbr_walrus5b = $this->countTypeId($cards_rightmost_stack, CT_WALRUS5B);
+        
         $total_value = $this->getValueSum($cards_all);
         $base_value = $stack_index + 1 + $nbr_nastyThreat;
-        $min_value = $base_value - $nbr_accordion - 2 * $nbr_walrus1;
-        $max_value = $base_value + $nbr_accordion;
+        $min_value = $base_value - $nbr_accordion - $nbr_walrus5b - 2 * $nbr_walrus1;
+        $max_value = $base_value + $nbr_accordion + $nbr_walrus5b;
+        
         if ($total_value < $min_value || $total_value > $max_value) {
             $message = $this->_("Stack value is incorrect")." ($total_value / $base_value)";
             if ($nbr_nastyThreat) {
