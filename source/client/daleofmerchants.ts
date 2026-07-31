@@ -1533,6 +1533,10 @@ class DaleOfMerchants extends Gamegui
 			case 'client_falseAlarm':
 				this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 1);
 				break;
+			case 'client_walrus4':
+				this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 3);
+				this.myDiscard.openPopin();
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -2085,6 +2089,9 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'client_falseAlarm':
+				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_walrus4':
 				this.myDiscard.setSelectionMode('none');
 				break;
 		}
@@ -2982,6 +2989,9 @@ class DaleOfMerchants extends Gamegui
 			case 'provocation':
 				this.addActionButton("toss-button", _("Toss"), "onProvocationToss");
 				this.addActionButton("skip-button", _("Skip"), "onProvocationSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
+				break;
+			case 'client_walrus4':
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -4015,6 +4025,14 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'junglefowl5a':
 				this.bgaPerformAction('actJunglefowl5a', {
+					card_id: card!.id
+				})
+				break;
+			case 'client_falseAlarm':
+				this.onFalseAlarmTakeBottomOfDiscard();
+				break;
+			case 'client_walrus4':
+				this.playTechniqueCard<'client_walrus4'>({
 					card_id: card!.id
 				})
 				break;
@@ -5692,6 +5710,15 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_DODO5A:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 1);
+				break;
+			case DaleCard.CT_WALRUS4:
+				fizzle = this.myDiscard.size == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_walrus4', card.id);
+				}
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -7512,14 +7539,12 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onFalseAlarmDraw() {
-		console.log("GOT HERE (draw)");
 		this.playTechniqueCard<'client_falseAlarm'>({
 			take_bottom_of_discard: false
 		})
 	}
 
 	onFalseAlarmTakeBottomOfDiscard() {
-		console.log("GOT HERE");
 		this.playTechniqueCard<'client_falseAlarm'>({
 			take_bottom_of_discard: true
 		})

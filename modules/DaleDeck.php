@@ -500,6 +500,25 @@ class DaleDeck {
     }
     
     /**
+     * Return card on bottom of this location.
+     */
+    function getCardOnBottom(string $location): ?array {
+        $dbcards = $this->getCardsInLocation($location, null, 'location_arg');
+        if (count($dbcards) > 0) {
+            return $dbcards[0];
+        }
+        return null;
+    }
+
+    /**
+     * Return "$nbr" cards on bottom of this location.
+     */
+    function getCardsOnBottom(int $nbr, string $location): ?array {
+        $dbcards = $this->getCardsInLocation($location, null, 'location_arg');
+        return array_slice($dbcards, 0, $nbr);
+    }
+
+    /**
      * Move a card to a specific location where card are ordered. If location_arg place is already taken, increment
      * all cards after location_arg in order to insert new card at this precise location.
      */

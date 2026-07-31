@@ -4890,6 +4890,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_ALTERNATIVEPLAN:
                 case CT_SELECTINGCONTRACTS:
                 case CT_JUNGLEFOWL5A:
+                case CT_WALRUS4:
                     $nbr = $this->cards->countCardsInLocation(DISCARD.$player_id);
                     if ($nbr > 0) {
                         throw new BgaVisibleSystemException("Unable to fizzle. The player's discard pile contains card(s).");
@@ -7152,16 +7153,9 @@ class DaleOfMerchants extends DaleTableBasic
                     if ($this->getClock($player_id) != CLOCK_NIGHT) {
                         throw new BgaUserException("Taking the bottom card of the discard is only allowed during the night");
                     }
-                    $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
-                    if (count($dbcards) == 0) {
-                        // Player actively chose to the skip the effect
-                        $this->notifyAllPlayers('message', clienttranslate('False Alarm: ${player_name} skipped the effect by taking the bottom card of their empty discard pile'), array(
-                            "player_name" => $this->getPlayerNameByIdInclMono($player_id)
-                        ));
-                    }
-                    else {
+                    $dbcard = $this->cards->getCardOnBottom(DISCARD.$player_id);
+                    if ($dbcard) {
                         // Take the bottom card of the discard
-                        $dbcard = $dbcards[0];
                         $this->cards->removeCardFromPile($dbcard["id"], DISCARD.$player_id);
                         $this->cards->moveCard($dbcard["id"], HAND.$player_id);
                         $this->notifyAllPlayers('discardToHand', clienttranslate('False Alarm: ${player_name} takes their ${card_name} from the bottom of their discard pile'), array(
@@ -7169,6 +7163,12 @@ class DaleOfMerchants extends DaleTableBasic
                             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                             "card_name" => $this->getCardName($dbcard),
                             "card" => $dbcard
+                        ));
+                    }
+                    else {
+                        // Player actively chose to the skip the effect
+                        $this->notifyAllPlayers('message', clienttranslate('False Alarm: ${player_name} skipped the effect by taking the bottom card of their empty discard pile'), array(
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id)
                         ));
                     }
                 }
@@ -7329,6 +7329,20 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->notifyAllPlayers('message', clienttranslate('Sea Salt: ${player_name} may include 1 clutter card in their stack this turn'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_WALRUS4:
+                $card_id = $args["card_id"];
+                $bottomCards = $this->toAssociativeArray($this->cards->getCardsOnBottom(3, DISCARD.$player_id));
+                if (!isset($bottomCards[$card_id])) {
+                    throw new BgaUserException("Card $card_id was not found within the bottom 3 cards of the discard pile");
+                }
+                $dbcard = $bottomCards[$card_id];
+                $this->discardToHandMultiple(
+                    clienttranslate('Salvage: ${player_name} takes ${card_name} from their discard pile'),
+                    $player_id,
+                    array($dbcard["id"])
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

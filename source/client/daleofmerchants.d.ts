@@ -574,6 +574,7 @@ declare global {
 		'client_DEPRECATED_capuchin5b_SINGLEDISCARD': { opponent_id: number, card_id: number }
 		'client_capuchin5b': { opponent_id: number, card_id: number }
 		'client_falseAlarm': { take_bottom_of_discard: boolean }
+		'client_walrus4': { card_id: number }
 		'client_secretMission': { opponent_id: number }
 		'client_capture': { opponent_id: number, from_deck: boolean }
 	}
