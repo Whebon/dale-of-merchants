@@ -4394,8 +4394,8 @@ class DaleOfMerchants extends DaleTableBasic
             $max_nbr_junk += 0; // TODO: <walrus>
         }
 
-        //Apply CT_EMPTYCHEST and <walrus>
-        $ignore_animalfolk_rule = $this->containsTypeId($cards_all, CT_EMPTYCHEST);
+        //Apply CT_EMPTYCHEST and CT_WALRUS2
+        $ignore_animalfolk_rule = $this->containsTypeId($cards_all, CT_EMPTYCHEST) || $this->effects->countGlobalEffects(CT_WALRUS2);
         
         $nbr_nostalgic_items = 0;
         if ($from == null && $this->effects->countGlobalEffects(CT_CULTURALPRESERVATION) > 0) { // We check from == null to ignore CT_CULTURALPRESERVATION when building with CT_CHARM
@@ -7308,6 +7308,13 @@ class DaleOfMerchants extends DaleTableBasic
                     'player_name' => $this->getActivePlayerName()
                 ));
                 $this->resolveImmediateEffects($player_id, $technique_card);
+                break;
+            case CT_WALRUS2:
+                $this->effects->insertGlobal(0, CT_WALRUS2);
+                $this->notifyAllPlayers('message', clienttranslate('Slappy Tappy: ${player_name} may include any animalfolk cards in their stack this turn'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                ));
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
