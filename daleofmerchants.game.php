@@ -1375,6 +1375,13 @@ class DaleOfMerchants extends DaleTableBasic
                     "nbr" => 2
                 ));
                 break;
+            case CT_WALRUSMONO:
+                //Mono can use a single animalfolk 🃏 to build a stack this turn.
+                $this->notifyAllPlayers('message', clienttranslate('Hefty Member: ${player_name} can use a single animalfolk card to build a stack this turn'), array(
+                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
+                ));
+                $this->effects->insertGlobal($technique_card["id"], CT_WALRUSMONO);
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
@@ -1423,6 +1430,15 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
         $hand_cards = $this->monoPickCardsOfValue($all_hand_cards, $base_value);
+        
+        //Apply CT_WALRUSMONO: overwrite the picked cards with the lowest animalfolk card
+        if ($this->effects->countGlobalEffects(CT_WALRUSMONO) > 0) {
+            $animalfolk_cards = array_filter($all_hand_cards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
+            if (count($animalfolk_cards) > 0) {
+                $lowest_animalfolk_card = $this->monoPickLowestValuedCard($animalfolk_cards);
+                $hand_cards = array($lowest_animalfolk_card["id"] => $lowest_animalfolk_card);
+            }
+        }
 
         //Mono failed to build
         if ($hand_cards == null) {
