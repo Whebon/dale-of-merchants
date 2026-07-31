@@ -11687,6 +11687,10 @@ class DaleOfMerchants extends DaleTableBasic
         $this->destroyAll();
     }
 
+    function debug_runUnitTest() {
+        $this->testEnforceValidStack();
+    }
+
     function actEnableDebugMode() {
         if (ALLOW_DEBUG_MODE == 0) {
             throw new BgaUserException("ALLOW_DEBUG_MODE == 0");
@@ -12355,6 +12359,25 @@ class DaleOfMerchants extends DaleTableBasic
                 "stack" => 4,
                 "type_ids_from_hand" => [CT_SWIFTBROKER],
                 "global_effects" => [CT_FLASHYSHOW, CT_PRACTICALVALUES]
+            ),
+            array (
+                "name" => "2x Sea Salt stack 2 (success)",
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_JUNK, CT_JUNK],
+                "global_effects" => [CT_WALRUS3, CT_WALRUS3]
+            ),
+            array (
+                "name" => "1x Sea Salt stack 2 (fail)",
+                "is_valid" => false,
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_JUNK, CT_JUNK],
+                "global_effects" => [CT_WALRUS3]
+            ),
+            array (
+                "name" => "CT_WALRUS2",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_WALRUS2, CT_DODO2],
+                "global_effects" => [CT_WALRUS2]
             )
         );
 
