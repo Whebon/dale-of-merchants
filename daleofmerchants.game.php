@@ -4890,11 +4890,13 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_NEWSEASON:
+                case CT_OLM2:
                     //note that CT_NEWSEASON does NOT fizzle on empty deck/discard. In that case, it will redraw the tossed card
+                    //note that CT_OLM2 does NOT fizzle on empty market. In that case, the player just tossed a card
                     $cards = $this->cards->getCardsInLocation(DISCARD.$player_id);
                     foreach ($cards as $card) {
                         if ($this->isAnimalfolk($card)) {
-                            throw new BgaVisibleSystemException("Unable to fizzle CT_NEWSEASON. There exists an animalfolk in the discard pile.");
+                            throw new BgaVisibleSystemException("Unable to fizzle. There exists an animalfolk in the discard pile.");
                         }
                     }
                     break;
@@ -5356,6 +5358,37 @@ class DaleOfMerchants extends DaleTableBasic
                     false,
                     MARKET
                 );
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_OLM2:
+                $toss_card_id = $args["card_id"];
+                $this->tossFromDiscard(
+                    clienttranslate('Softness Shroud: ${player_name} tosses ${card_name}'),
+                    $toss_card_id
+                );
+                $middle_market_cards = $this->cards->getCardsInLocation(MARKET, 2);
+                if (count($middle_market_cards) == 1) {
+                    //Place the card from the middle slot into the player's hand
+                    $market_card = reset($middle_market_cards);
+                    $market_card_id = $market_card["id"];
+                    if ($market_card["location_arg"] != 2) {
+                        throw new BgaVisibleSystemException("The card in the middle market slot is not in pos=2");
+                    }
+                    $this->cards->moveCard($market_card_id, HAND.$player_id);
+                    $this->notifyAllPlayers('marketToHand', clienttranslate('Softness Shroud: ${player_name} takes ${extended_card_name} from the middle market slot'), array (
+                        'player_id' => $player_id,
+                        'player_name' => $this->getActivePlayerName(),
+                        'card_name' => $this->getCardName($market_card),
+                        'extended_card_name' => $this->getCardNameExt($market_card),
+                        'market_card_id' => $market_card_id,
+                        'pos' => $market_card["location_arg"],
+                    ));
+                }
+                else {
+                    $this->notifyAllPlayers('message', clienttranslate('Softness Shroud: ${player_name} does not take a card from the market, because the middle market slot is empty'), array(
+                        'player_name' => $this->getActivePlayerName(),
+                    ));
+                }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DEPRECATED_WHIRLIGIG:

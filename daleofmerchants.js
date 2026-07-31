@@ -9394,6 +9394,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_NEWSEASON:
+                case DaleCard_10.DaleCard.CT_OLM2:
                     fizzle = true;
                     for (var _b = 0, _c = this.myDiscard.getCards(); _b < _c.length; _b++) {
                         var card_4 = _c[_b];

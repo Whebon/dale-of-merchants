@@ -5065,6 +5065,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_NEWSEASON:
+			case DaleCard.CT_OLM2:
 				fizzle = true
 				for (let card of this.myDiscard.getCards()) {
 					if (card.isAnimalfolk()) {
