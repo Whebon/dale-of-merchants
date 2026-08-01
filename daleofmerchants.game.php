@@ -2587,28 +2587,41 @@ class DaleOfMerchants extends DaleTableBasic
      * Discard all cards for a player. Any cards specified in the $card_ids will be discarded LAST.
      * @param string $msg notification message for all players
      * @param int $player_id player that will discard the cards from hand
-     * @param array $card_ids cards_ids to be discarded in that order
+     * @param array $card_ids cards_ids to be discarded in that order. They will be verified to be in the correct location in this method.
      * @param bool $from_limbo (optional) - default false. If `false`, discard from hand. If `true`, discard from limbo.
      * @param bool $ignore_card_not_found (optional) - default false. If `true`, the client will ignore "card not found" errors
      * @param int $discard_id (optional) - default: $player_id. If specified, the cards will be discarded to this player.
+     * @return int number of cards discarded
      */
     function discardAll(string $msg, int $player_id, array $card_ids, bool $from_limbo = false, bool $ignore_card_not_found = false, int $discard_id = 0) {
         $location = $from_limbo ? LIMBO.$player_id : HAND.$player_id;
-        $dbcards = $this->cards->getCardsInLocation($location);
+        $unordered_dbcards = $this->cards->getCardsInLocation($location);
         
-        // TODO: optimize, this can be done with 1 less db call.
-        $ordered_dbcards = $this->cards->getCardsFromLocation($card_ids, $location);
-        foreach ($ordered_dbcards as $ordered_card_id => $card) {
-            unset($dbcards[$ordered_card_id]);
+        $ordered_dbcards = array();
+        foreach ($card_ids as $card_id) {
+            if (!isset($unordered_dbcards[$card_id])) {
+                throw new BgaUserException("Card id $card_id was not found in the expected location");
+            }
+            $ordered_dbcards[$card_id] = $unordered_dbcards[$card_id];
+            unset($unordered_dbcards[$card_id]);
         }
+        
+        // TODO: safely remove this
+        // Naive approach with 2 db calls
+        // $ordered_dbcards = $this->cards->getCardsFromLocation($card_ids, $location);
+        // foreach ($ordered_dbcards as $ordered_card_id => $card) {
+        //     unset($unordered_dbcards[$ordered_card_id]);
+        // }
 
-        $this->discardMultiple(
+        return $this->discardMultiple(
             $msg,
             $player_id, 
             $card_ids, 
             $ordered_dbcards, 
-            $dbcards,
-            true
+            $unordered_dbcards,
+            $from_limbo,
+            $ignore_card_not_found,
+            $discard_id
         );
     }
 
@@ -2622,6 +2635,7 @@ class DaleOfMerchants extends DaleTableBasic
      * @param bool $from_limbo (optional) - default false. If `false`, discard from hand. If `true`, discard from limbo.
      * @param bool $ignore_card_not_found (optional) - default false. If `true`, the client will ignore "card not found" errors
      * @param int $discard_id (optional) - default: $player_id. If specified, the cards will be discarded to this player.
+     * @return int number of cards discarded
      */
     function discardMultiple(string $msg, int $player_id, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, bool $ignore_card_not_found = false, int $discard_id = 0) {
         $discard_id = $discard_id ? $discard_id : $player_id;
@@ -2657,12 +2671,15 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //only leave a single log message to the players
+        $nbr = count($cards) + $nbr_unordered_cards;
         $this->notifyAllPlayers('message', $msg, array (
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'opponent_name' => $this->getPlayerNameByIdInclMono($discard_id),
-            'nbr' => count($cards) + $nbr_unordered_cards,
+            'nbr' => $nbr,
         ));
+
+        return $nbr;
     }
 
     /**
@@ -5174,22 +5191,11 @@ class DaleOfMerchants extends DaleTableBasic
         switch($technique_type_id) {
             case CT_SWIFTBROKER:
                 $card_ids = $args["card_ids"];
-                //get the non-selected cards and selected cards
-                $non_selected_cards = $this->cards->getCardsInLocation(HAND.$player_id);
-                $selected_cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
-                foreach ($selected_cards as $card_id => $card) {
-                    unset($non_selected_cards[$card_id]);
-                }
-                //discard all
-                $this->discardMultiple(
+                $nbr = $this->discardAll(
                     clienttranslate('Swift Broker: ${player_name} discards their hand'),
                     $player_id, 
-                    $card_ids, 
-                    $selected_cards, 
-                    $non_selected_cards
+                    $card_ids
                 );
-                //draw an equal amount of new cards
-                $nbr = count($selected_cards) + count($non_selected_cards);
                 $this->draw(
                     clienttranslate('Swift Broker: ${player_name} draws ${nbr} cards'), 
                     $nbr
@@ -9204,17 +9210,10 @@ class DaleOfMerchants extends DaleTableBasic
             }
         }
 
-        //discard, with with optional order
-        $ordered_dbcards = $this->cards->getCardsFromLocation($card_ids, LIMBO.$player_id);
-        foreach ($ordered_dbcards as $ordered_card_id => $card) {
-            unset($dbcards[$ordered_card_id]);
-        }
-        $this->discardMultiple(
+        $this->discardAll(
             clienttranslate('Pompous Professional: ${player_name} discards ${nbr} cards'),
             $player_id, 
             $card_ids, 
-            $ordered_dbcards,
-            $dbcards,
             true
         );
         $this->fullyResolveCard($player_id);
@@ -10320,16 +10319,10 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //discard, with with optional order
-        $ordered_dbcards = $this->cards->getCardsFromLocation($discard_card_ids, LIMBO.$player_id);
-        foreach ($ordered_dbcards as $ordered_card_id => $card) {
-            unset($dbcards[$ordered_card_id]);
-        }
-        $this->discardMultiple(
+        $this->discardAll(
             clienttranslate('INSERT_NAME: ${player_name} discards the other cards'),
             $player_id, 
-            $discard_card_ids, 
-            $ordered_dbcards,
-            $dbcards,
+            $discard_card_ids,
             true,
             false,
             $opponent_id
