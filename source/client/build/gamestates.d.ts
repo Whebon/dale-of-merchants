@@ -223,6 +223,8 @@ interface GameStates {
 			'trSneakyScout': 116,
 			'trProvocation': 117,
 			'trCharmDodo2': 118,
+			'trOlm4': 119,
+			'trOlm5a': 120,
 		},
 	},
 	31: {
@@ -1553,6 +1555,54 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 30,
 			'trGameEnd': 98,
+		},
+	},
+	119: {
+		'name': 'olm4',
+		'description': '${resolving_card_name}: ${actplayer} may replace one of ${opponent_name}\\\'s cards',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may toss one of ${opponent_name}\\\'s cards',
+		'type': 'activeplayer',
+		'action': 'stOlm4',
+		'args': 'argOpponentNameAndResolvingCardName',
+		'possibleactions': {
+			'actOlm4': [{
+				'name': 'toss_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'market_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'discard_card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	120: {
+		'name': 'olm5a',
+		'description': '${resolving_card_name}: ${actplayer} may replace one of ${opponent_name}\\\'s cards',
+		'descriptionmyturn': '${resolving_card_name}: ${you} may toss one of ${opponent_name}\\\'s cards',
+		'type': 'activeplayer',
+		'action': 'stOlm5a',
+		'args': 'argOpponentNameAndResolvingCardName',
+		'possibleactions': {
+			'actOlm5a': [{
+				'name': 'toss_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}, {
+				'name': 'market_card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	6300: {

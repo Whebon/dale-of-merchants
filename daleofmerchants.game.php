@@ -2582,6 +2582,36 @@ class DaleOfMerchants extends DaleTableBasic
         ));
     }
 
+
+     /**
+     * Discard all cards for a player. Any cards specified in the $card_ids will be discarded LAST.
+     * @param string $msg notification message for all players
+     * @param int $player_id player that will discard the cards from hand
+     * @param array $card_ids cards_ids to be discarded in that order
+     * @param bool $from_limbo (optional) - default false. If `false`, discard from hand. If `true`, discard from limbo.
+     * @param bool $ignore_card_not_found (optional) - default false. If `true`, the client will ignore "card not found" errors
+     * @param int $discard_id (optional) - default: $player_id. If specified, the cards will be discarded to this player.
+     */
+    function discardAll(string $msg, int $player_id, array $card_ids, bool $from_limbo = false, bool $ignore_card_not_found = false, int $discard_id = 0) {
+        $location = $from_limbo ? LIMBO.$player_id : HAND.$player_id;
+        $dbcards = $this->cards->getCardsInLocation($location);
+        
+        // TODO: optimize, this can be done with 1 less db call.
+        $ordered_dbcards = $this->cards->getCardsFromLocation($card_ids, $location);
+        foreach ($ordered_dbcards as $ordered_card_id => $card) {
+            unset($dbcards[$ordered_card_id]);
+        }
+
+        $this->discardMultiple(
+            $msg,
+            $player_id, 
+            $card_ids, 
+            $ordered_dbcards, 
+            $dbcards,
+            true
+        );
+    }
+
     /**
      * Discard multiple cards for a player in the given order
      * @param string $msg notification message for all players
@@ -2652,6 +2682,32 @@ class DaleOfMerchants extends DaleTableBasic
             "cards" => $deck_dbcards,
             "card_ids" => $bottom_to_top_deck_card_ids, // IMPORTANT: The top card (highest location_arg) must be the last element of this array
         ));
+    }
+
+    /**
+     * Returns all cards in limbo to an opponent's hand. Does the opposite of "_stLookAtOpponentRandomHandCards".
+     * @param string $public_msg message to be shown to all players
+     * @param mixed $player_id owner of the limbo
+     * @param mixed $opponent_id player who will receive their cards back into their hand
+     */
+    function returnLimboToOpponentsHand(string $public_msg, mixed $player_id, mixed $opponent_id) {
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        foreach($dbcards as $dbcard) {
+            $this->cards->moveCard($dbcard["id"], HAND.$opponent_id);
+            $this->notifyAllPlayersWithPrivateArguments('instant_playerHandToOpponentHand', $public_msg, array(
+                "player_id" => $player_id,
+                "opponent_id" => $opponent_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "nbr" => count($dbcards),
+                "from_limbo" => true,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard)
+                )
+            )); //no private message here, to see which card was swapped, players should refer to the 'swap' message
+            $public_msg = ''; //only show the public message once
+        }
     }
 
     /**
@@ -7438,6 +7494,20 @@ class DaleOfMerchants extends DaleTableBasic
                 );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_OLM4:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trOlm4");
+                break;
+            case CT_OLM5A:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validateOpponentId($opponent_id);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trOlm5a");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -9251,24 +9321,10 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         //return the remaining cards to the opponent's hand
-        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
-        $public_msg = clienttranslate('Umbrella: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'); 
-        foreach($dbcards as $dbcard) {
-            $this->cards->moveCard($dbcard["id"], HAND.$opponent_id);
-            $this->notifyAllPlayersWithPrivateArguments('instant_playerHandToOpponentHand', $public_msg, array(
-                "player_id" => $player_id,
-                "opponent_id" => $opponent_id,
-                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
-                "nbr" => count($dbcards),
-                "from_limbo" => true,
-                "_private" => array(
-                    "card" => $dbcard,
-                    "card_name" => $this->getCardName($dbcard)
-                )
-            )); //no private message here, to see which card was swapped, players should refer to the 'swap' message
-            $public_msg = ''; //only show the public message once
-        }
+        $this->returnLimboToOpponentsHand(clienttranslate('Umbrella: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'),
+            $player_id, 
+            $opponent_id
+        );
 
         //resolve
         if ($card_id != -1) {
@@ -10347,6 +10403,52 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actOlm4($toss_card_id, $market_card_id, $discard_card_ids) {
+        $this->checkAction("actOlm4");
+        $discard_card_ids = $this->numberListToArray($discard_card_ids);
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        
+        $this->_actTossCardFromLimboAndReplaceItWithACardFromTheMarket($toss_card_id, $market_card_id);
+
+        $this->discardAll(
+            clienttranslate('Opener Sticks: ${player_name} places the ${nbr} cards on ${opponent_name}\'s discard pile'),
+            $player_id, 
+            $discard_card_ids, 
+            true,
+            false,
+            $opponent_id
+        );
+        
+        $this->fullyResolveCard($player_id);
+    }
+
+
+    function actOlm5a($toss_card_id, $market_card_id) {
+        $this->checkAction("actOlm5a");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+
+        $this->_actTossCardFromLimboAndReplaceItWithACardFromTheMarket($toss_card_id, $market_card_id);
+        
+        $this->returnLimboToOpponentsHand(clienttranslate('Song-making Stone: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'),
+            $player_id, 
+            $opponent_id
+        );
+
+        $this->fullyResolveCard($player_id);
+    }
+
+    /**
+     * Helper function for actOlm4 and actOlm5a.
+     * Tosses a card in limbo and moves a card from the market to limbo.
+     * The client that committed this action already tossed the card on the client-side.
+     */
+    function _actTossCardFromLimboAndReplaceItWithACardFromTheMarket($toss_card_id, $market_card_id) {
+        // TODO
+    }
+
+
 
     // ^
     // |
@@ -10548,6 +10650,13 @@ class DaleOfMerchants extends DaleTableBasic
         return array_merge(
             $this->argOpponentNameAndPassiveCardId(),
             $this->argDie()
+        );
+    }
+
+    function argOpponentNameAndResolvingCardName() {
+        return array_merge(
+            $this->argOpponentName(),
+            $this->argResolvingCardName()
         );
     }
 
@@ -11403,11 +11512,20 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stUmbrella() {
+        $this->_stLookAtOpponentRandomHandCards(2);
+    }
+
+    /**
+     * Helper to function to set up a game state where the player looks at an amount of random cards from an opponent's hand.
+     * The opponent may be the player itself and is stored in the "opponent_id" gamestate.
+     * @param int $max_amount the number of cards to look at. The number may be lowered if that player has less cards in hand.
+     */
+    function _stLookAtOpponentRandomHandCards(int $max_amount) {
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
         $nbr = 0;
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < $max_amount; $i++) {
             if (count($cards) == 0) {
                 break;
             }
@@ -11426,13 +11544,14 @@ class DaleOfMerchants extends DaleTableBasic
             ));
             $nbr += 1;
         }
-        $this->notifyAllPlayers('message', clienttranslate('Umbrella: ${player_name} takes ${nbr} cards from ${opponent_name}\'s hand'), array(
+        $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} takes ${nbr} cards from ${opponent_name}\'s hand'), array(
+            "resolving_card_name" => $this->getResolvingCardName(),
             "player_name" => $this->getPlayerNameByIdInclMono($player_id),
             "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
             "nbr" => $nbr,
         ));
         if ($nbr == 0) {
-            //umbrella has no effect
+            //card has no effect
             $this->fullyResolveCard($player_id);
         }
     }
@@ -11625,6 +11744,24 @@ class DaleOfMerchants extends DaleTableBasic
         }
     }
 
+    function stOlm4() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->draw(clienttranslate('Opener Sticks: ${player_name} looks at the top ${nbr} cards of ${opponent_name}\'s deck'), 
+            3, 
+            true, 
+            $opponent_id, 
+            $player_id
+        );
+        if (count($dbcards) == 0) {
+            //olm4 has no effect
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
+    function stOlm5a() {
+        $this->_stLookAtOpponentRandomHandCards(3);
+    }
     
     // ^
     // |

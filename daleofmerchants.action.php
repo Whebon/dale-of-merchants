@@ -857,6 +857,34 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actOlm4()
+	{
+		self::setAjaxMode();
+
+		/** @var int $toss_card_id */
+		$toss_card_id = self::getArg('toss_card_id', AT_int, true);
+		/** @var int $market_card_id */
+		$market_card_id = self::getArg('market_card_id', AT_int, true);
+		/** @var string $discard_card_ids */
+		$discard_card_ids = self::getArg('discard_card_ids', AT_numberlist, true);
+
+		$this->game->actOlm4( $toss_card_id, $market_card_id, $discard_card_ids );
+		self::ajaxResponse();
+	}
+
+	public function actOlm5a()
+	{
+		self::setAjaxMode();
+
+		/** @var int $toss_card_id */
+		$toss_card_id = self::getArg('toss_card_id', AT_int, true);
+		/** @var int $market_card_id */
+		$market_card_id = self::getArg('market_card_id', AT_int, true);
+
+		$this->game->actOlm5a( $toss_card_id, $market_card_id );
+		self::ajaxResponse();
+	}
+
 	public function actDEPRECATED_Cheer()
 	{
 		self::setAjaxMode();

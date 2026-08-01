@@ -9436,6 +9436,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_DELICACY:
                 case DaleCard_10.DaleCard.CT_UMBRELLA:
                 case DaleCard_10.DaleCard.CT_CAPUCHIN1:
+                case DaleCard_10.DaleCard.CT_OLM4:
+                case DaleCard_10.DaleCard.CT_OLM5A:
                     if (this.unique_opponent_id) {
                         this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     }

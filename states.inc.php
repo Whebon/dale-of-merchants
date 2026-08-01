@@ -64,6 +64,8 @@ if (false) {
 	$game->stCapuchin5a();
 	$game->stSneakyScout();
 	$game->stCharmDodo2();
+	$game->stOlm4();
+	$game->stOlm5a();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -199,6 +201,8 @@ $machinestates = array(
 			'trSneakyScout' => 116,
 			'trProvocation' => 117,
 			'trCharmDodo2' => 118,
+			'trOlm4' => 119,
+			'trOlm5a' => 120,
 		),
 	),
 	31 => array(
@@ -1010,6 +1014,30 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trGameEnd' => 98,
+		),
+	),
+	119 => array(
+		'name' => 'olm4',
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may replace one of ${opponent_name}\'s cards'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may toss one of ${opponent_name}\'s cards'),
+		'type' => 'activeplayer',
+		'action' => 'stOlm4',
+		'args' => 'argOpponentNameAndResolvingCardName',
+		'possibleactions' => ['actOlm4'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	120 => array(
+		'name' => 'olm5a',
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} may replace one of ${opponent_name}\'s cards'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} may toss one of ${opponent_name}\'s cards'),
+		'type' => 'activeplayer',
+		'action' => 'stOlm5a',
+		'args' => 'argOpponentNameAndResolvingCardName',
+		'possibleactions' => ['actOlm5a'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	6300 => array(
