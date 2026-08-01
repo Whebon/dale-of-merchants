@@ -53,7 +53,6 @@ export class HiddenPile extends Pile {
         this.cards = cards;
         this.showTopCardFaceUp = showTopCardFaceUp;
         this.updateHTML();
-        
     }
 
     /**

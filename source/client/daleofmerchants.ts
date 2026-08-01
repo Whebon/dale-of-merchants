@@ -1277,7 +1277,7 @@ class DaleOfMerchants extends Gamegui
 					//no "enterOnStack", since we never want to return to this state
 					this.mainClientState.enter('client_manufacturedJoy', {
 						draw_card_id: -1,
-						card_name: "Manufactured Joy"
+						card_name: _("Manufactured Joy")
 					});
 					return;
 				}
@@ -1536,6 +1536,24 @@ class DaleOfMerchants extends Gamegui
 			case 'client_walrus4':
 				this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 3);
 				this.myDiscard.openPopin();
+				break;
+			case 'client_olm3_step1':
+				if (this.myHand.count() == 0) {
+					//Skip step 1: we cannot toss a card
+					//no "enterOnStack", since we never want to return to this state
+					const client_olm3_step1_args = this.mainClientState.getArgs<'client_olm3_step1'>();
+					console.log(client_olm3_step1_args);
+					this.mainClientState.enter('client_olm3_step2', {
+						technique_card_id: client_olm3_step1_args.technique_card_id,
+						toss_card_id: -1,
+						card_name: (client_olm3_step1_args as any).card_name ?? "MISSING CARD NAME"
+					});
+					return;
+				}
+				this.myHand.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
+				break;
+			case 'client_olm3_step2':
+				this.market!.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique", 2);
 				break;
 		}
 		//(~enteringstate)
@@ -2093,6 +2111,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_walrus4':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_olm3_step1':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'client_olm3_step2':
+				this.market!.setSelectionMode(0);
 				break;
 		}
 		//(~leavingstate)
@@ -2746,7 +2770,7 @@ class DaleOfMerchants extends Gamegui
 						this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Click a card to swap"));
 					}
 				}).bind(this), stateName === 'umbrella' ? 750 : 1); //workaround to ensure that limbo is filled before the targeting line is created
-				this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, "gray");
+				this.addActionButton("skip-button", _("Skip"), () => delicacy_action(-1), undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
 				break;
 			case 'client_DEPRECATED_velocipede':
 				this.addActionButtonCancelClient();
@@ -2781,7 +2805,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_meddlingMarketeer':
 				this.addActionButton("confirm-button", _("Confirm"), "onMeddlingMarketeerDeck");
-				this.addActionButton("undo-button", _("Undo"), "onMeddlingMarketeerUndo", undefined, false, "gray");
+				this.addActionButton("undo-button", _("Undo"), "onMeddlingMarketeerUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
 				break;
 			case 'client_goodwillpresents':
 				this.addActionButtonsOpponentSelection(2, this.gamedatas.playerorder.map(Number));
@@ -2794,12 +2818,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_anchor':
 				this.addActionButton("confirm-button", _("Confirm"), "onAnchorDeck");
-				this.addActionButton("undo-button", _("Undo"), "onAnchorUndo", undefined, false, "gray");
+				this.addActionButton("undo-button", _("Undo"), "onAnchorUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
 				break;
 			case 'client_manufacturedJoy':
 				const client_manufacturedJoy_args = (args as { draw_card_id: number });
 				if (client_manufacturedJoy_args.draw_card_id != -1) {
-					this.addActionButton("undo-button", _("Undo"), "onManufacturedJoyUndo", undefined, false, "gray");
+					this.addActionButton("undo-button", _("Undo"), "onManufacturedJoyUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
 				}
 				break;
 			case 'client_shakyEnterprise':
@@ -2992,6 +3016,13 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_walrus4':
 				this.addActionButtonCancelClient();
+				break;
+			case 'client_olm3_step1':
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_olm3_step2':
+				this.addActionButton("confirm-button", _("Confirm"), "onOlm3");
+				this.addActionButton("undo-button", _("Undo"), "onOlm3Undo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
 				break;
 		}
 		//(~actionbuttons)
@@ -3576,6 +3607,57 @@ class DaleOfMerchants extends Gamegui
 		this.addActionButton("cancel-button", label ?? _("Cancel"), method, undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
 	}
 
+	/**
+	 * Execute a client-side toss during a client state. After this method, the caller should enter another client state in which either:
+	 *  (1) an action is commited to the server that executes the toss on the server-side
+	 *  (2) the toss is undo by the user using "undoClientSideToss"
+	 * @param card the card to toss
+	 * @param from_stock the stock to remove the card from
+	 */
+	clientSideToss(card: DaleCard, from_stock: DaleStock) {
+		if (card.isAnimalfolk()) {
+			this.stockToPile(card, from_stock, this.marketDiscard);
+		}
+		else if (card.isMonoCard()) {
+			//warning: if specialty/trap cards exist, this should go somewhere else
+			this.stockToPile(card, from_stock, this.monoDiscard);
+		}
+		else {
+			from_stock.removeFromStockById(card.id);
+		}
+	}
+
+	/**
+	 * Helper function to undo a client-side toss. Also leaves the current client state. 
+	 * @param toss_card_id card_id that was tossed in the previous client state.
+	 * @param to_stock the stock to place the card in
+	 */
+	undoClientSideToss(toss_card_id: number, to_stock: DaleStock) {
+		if (toss_card_id != -1) {
+			//undo the toss
+			if (new DaleCard(toss_card_id).isAnimalfolk()) {
+				const card = this.marketDiscard.pop();
+				if (toss_card_id != card.id) {
+					throw new Error(`Expected card ${card.id} on top of the bin`);
+				}
+				to_stock.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
+			}
+			else if (new DaleCard(toss_card_id).isMonoCard()) {
+				//warning: if specialty/trap cards exist, this come from somewhere else
+				const card = this.monoDiscard.pop();
+				if (toss_card_id != card.id) {
+					throw new Error(`Expected card ${card.id} on top of Mono's discard`);
+				}
+				to_stock.addDaleCardToStock(card, this.monoDiscard.placeholderHTML);
+			}
+			else {
+				to_stock.addDaleCardToStock(new DaleCard(toss_card_id), 'overall_player_board_'+this.player_id);
+			}
+		}
+		this.mainClientState.leave();
+	}
+
+
 	///////////////////////////////////////////////////
 	//// Opponent selection utilities 
 
@@ -4091,7 +4173,7 @@ class DaleOfMerchants extends Gamegui
 			case 'manufacturedJoy':
 				this.mainClientState.enterOnStack('client_manufacturedJoy', {
 					draw_card_id: card!.id,
-					card_name: "Manufactured Joy"
+					card_name: _("Manufactured Joy")
 				});
 				//draw the card on the client-side (it is very important that this happens after switching states, otherwise the div will be detached)
 				this.myHand.addDaleCardToStock(card!, this.myDeck.placeholderHTML);
@@ -4381,6 +4463,15 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id,
 				});
 				break;
+			case 'client_olm3_step1':
+				this.clientSideToss(card, this.myHand);
+				const client_olm3_step1_args = this.gamedatas.gamestate.args as { technique_card_id: number, resolving_card_name?: string }
+				this.mainClientState.enterOnStack('client_olm3_step2', {
+					technique_card_id: client_olm3_step1_args.technique_card_id,
+					toss_card_id: card.id,
+					card_name: client_olm3_step1_args.resolving_card_name ?? "MISSING CARD NAME"
+				});
+				break;
 			case null:
 				throw new Error("gamestate.name is null");
 		}
@@ -4469,16 +4560,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("undo-button", _("Cancel"), "onAnchorCancelTargetingLine", undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
 				break;
 			case 'badOmen':
-				if (card.isAnimalfolk()) {
-					this.stockToPile(card, this.myLimbo, this.marketDiscard);
-				}
-				else if (card.isMonoCard()) {
-					//warning: if specialty/trap cards exist, this should go somewhere else
-					this.stockToPile(card, this.myLimbo, this.monoDiscard);
-				}
-				else {
-					this.myLimbo.removeFromStockById(card.id);
-				}
+				this.clientSideToss(card, this.myLimbo);
 				const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 				this.mainClientState.enterOnStack('client_badOmen', {
 					toss_card_id: card.id,
@@ -5721,6 +5803,9 @@ class DaleOfMerchants extends Gamegui
 					this.clientScheduleTechnique('client_walrus4', card.id);
 				}
 				break;
+			case DaleCard.CT_OLM3:
+				this.clientScheduleTechnique('client_olm3_step1', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -6896,7 +6981,7 @@ class DaleOfMerchants extends Gamegui
 			//let the player choose the order to place the other cards on top of their deck
 			this.mainClientState.enterOnStack('client_meddlingMarketeer', {
 				discard_card_ids: card_ids,
-				card_name: "Meddling Marketeer"
+				card_name: _("Meddling Marketeer")
 			});
 		}
 		else {
@@ -7163,29 +7248,7 @@ class DaleOfMerchants extends Gamegui
 
 	onBadOmenUndo() {
 		const args = (this.mainClientState.args as ClientGameStates['client_badOmen']);
-		if (args.toss_card_id != -1) {
-			//undo the toss
-			if (new DaleCard(args.toss_card_id).isAnimalfolk()) {
-				const card = this.marketDiscard.pop();
-				if (args.toss_card_id != card.id) {
-					throw new Error(`Expected card ${card.id} on top of the bin`);
-				}
-				this.myLimbo.addDaleCardToStock(card, this.marketDiscard.placeholderHTML);
-			}
-			else if (new DaleCard(args.toss_card_id).isMonoCard()) {
-				//warning: if specialty/trap cards exist, this come from somewhere else
-				const card = this.monoDiscard.pop();
-				if (args.toss_card_id != card.id) {
-					throw new Error(`Expected card ${card.id} on top of Mono's discard`);
-				}
-				this.myLimbo.addDaleCardToStock(card, this.monoDiscard.placeholderHTML);
-			}
-			else {
-				this.myLimbo.addDaleCardToStock(new DaleCard(args.toss_card_id), 'overall_player_board_'+this.player_id);
-			}
-
-		}
-		this.mainClientState.leave();
+		this.undoClientSideToss(args.toss_card_id, this.myLimbo);
 	}
 
 	onBadOmenDeck() {
@@ -7567,6 +7630,25 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actProvocation', {
 			is_tossing: false
 		});
+	}
+
+	onOlm3() {
+		const args = (this.mainClientState.args as ClientGameStates['client_olm3_step2']);
+		this.playTechniqueCard<'client_olm3_step2'>({
+			toss_card_id: args.toss_card_id,
+			market_card_ids: this.market!.orderedSelection.get()
+		})
+		this.mainClientState.leave();
+	}
+
+	onOlm3Undo() {
+		const args = (this.mainClientState.args as ClientGameStates['client_olm3_step2']);
+		if (args.toss_card_id != -1) {
+			this.undoClientSideToss(args.toss_card_id, this.myHand); // undo toss and return to 'client_olm3_step1'
+		}
+		else {
+			this.onCancelClient(); // undo schedule and return to 'client_technique'
+		}
 	}
 
 	//(~on)

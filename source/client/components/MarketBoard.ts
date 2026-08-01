@@ -260,10 +260,13 @@ export class MarketBoard implements CardSlotManager, DaleLocation {
      * 1: a maximum of one item can be selected by the player at a time.
      * 2: multiple items can be selected by the player at the same time.
      * @param iconType (optional) types of icons to use for the selection
+     * @param wrapClass (optional) determines the visual class of the market board (e.g. technique or purchase)
+     * @param selectionMax (optional) maximum number of cards that may be selected
     */
-    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass: DaleWrapClass = "daleofmerchants-wrap-default") {
+    setSelectionMode(mode: 0 | 1 | 2, iconType?: SelectionIconType, wrapClass: DaleWrapClass = "daleofmerchants-wrap-default", selectionMax: number = Infinity) {
         //TODO: action label?
         this.orderedSelection.setIconType(iconType);
+        this.orderedSelection.setMaxSize(selectionMax);
         if( this.selectionMode == mode ) return;
         this.setWrapClass(wrapClass);
         this.unselectAll();

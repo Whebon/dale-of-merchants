@@ -2524,9 +2524,10 @@ class DaleOfMerchants extends DaleTableBasic
      * @param int $player_id active player id.
      * @param array $technique_card the card that causes the effect. (e.g. Shattered Relic, Essential Purchase, Golden Opportunity, Fortunate Upgrade, etc)
      * @param array $args arguments send from the client. Must contain a "card_id" to toss except when the hand is empty.
+     * @param array $msg_args (optional)
      * @return ?array the $dbcard tossed this way. if the hand was empty, returns `null` instead.
      */
-    function toss1FromHand(int $player_id, array $technique_card, array $args): ?array {
+    function toss1FromHand(int $player_id, array $technique_card, array $args, array $msg_args = array()): ?array {
         $resolving_card_name = $this->getCardName($technique_card);
         $handsize = $this->cards->countCardInLocation(HAND.$player_id);
         if ($handsize > 0) {
@@ -2535,16 +2536,16 @@ class DaleOfMerchants extends DaleTableBasic
             }
             $card_id = $args["card_id"];
             $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-            $this->toss(clienttranslate('${resolving_card_name}: ${player_name} tosses ${card_name}'), $dbcard, false, array(
+            $this->toss(clienttranslate('${resolving_card_name}: ${player_name} tosses ${card_name}'), $dbcard, false, array_merge(array(
                 "resolving_card_name" => $resolving_card_name,
-            ));
+            ), $msg_args));
             return $dbcard;
         }
         else {
-            $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} has no cards to toss'), array(
+            $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} has no cards to toss'), array_merge(array(
                 "resolving_card_name" => $resolving_card_name,
                 "player_name" => $this->getActivePlayerName()
-            ));
+            ), $msg_args));
             return null;
         }
     }
@@ -2699,6 +2700,12 @@ class DaleOfMerchants extends DaleTableBasic
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $card_ids,
                 'cards' => $cards,
+                'nbr' => count($cards) + $nbr_unordered_cards,
+            ));
+        }
+        else {
+            $this->notifyAllPlayers('message', $msg, array (
+                'player_name' => $this->getActivePlayerName(),
                 'nbr' => count($cards) + $nbr_unordered_cards,
             ));
         }
@@ -7409,6 +7416,26 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->notifyAllPlayers('message', clienttranslate('Treasure Hoard: ${player_name} increases their hand size by 2, <strong>if</strong> they don\'t build this turn'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 ));
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_OLM3:
+                //Must toss 1 from hand if possible
+                $args["card_id"] = $args["toss_card_id"];
+                $this->toss1FromHand($player_id, $technique_card, $args, array(
+                    "instant_toss" => true,
+                    "ignore_card_not_found" => true,
+                ));
+                //Optionally toss up to 2 cards from the market
+                $market_card_ids = $args["market_card_ids"];
+                if (count($market_card_ids) > 2) {
+                    throw new BgaUserException("You may only select up to 2 cards to toss from the market");
+                }
+                $market_cards = $this->cards->getCardsFromLocation($market_card_ids, MARKET);
+                $this->tossFromMarketBoard(
+                    clienttranslate('Medicine Masher: ${player_name} tosses ${nbr} card(s) from the market'),
+                    $market_card_ids, 
+                    $market_cards, 
+                );
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:

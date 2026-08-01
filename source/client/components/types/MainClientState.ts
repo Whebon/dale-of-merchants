@@ -318,10 +318,14 @@ export class MainClientState {
             case 'client_capture':
                 switch ((this._args as ClientGameStates['client_capture']).clock) {
                     case PlayerClock.CLOCK_NIGHT:
-                        return _("${card_name}: ${you} must take the top card of the supply, bin or opponent\'s deck or discard")
+                        return _("${card_name}: ${you} must take the top card of the supply, bin or opponent\'s deck or discard");
                     default:
-                        return _("${card_name}: ${you} must take the top card of the supply or bin, because it is ${clock}")
+                        return _("${card_name}: ${you} must take the top card of the supply or bin, because it is ${clock}");
                 }
+            case 'client_olm3_step1':
+                return _("${card_name}: ${you} must toss 1 card from your hand");
+            case 'client_olm3_step2':
+                return _("${card_name}: ${you} may toss up to 2 cards from the market");
         }
         return "MISSING DESCRIPTION";
     }

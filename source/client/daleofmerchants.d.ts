@@ -577,6 +577,8 @@ declare global {
 		'client_walrus4': { card_id: number }
 		'client_secretMission': { opponent_id: number }
 		'client_capture': { opponent_id: number, from_deck: boolean }
+		'client_olm3_step1': { } //sends nothing to the server
+		'client_olm3_step2': { toss_card_id: number, market_card_ids: number[] } //sends all information to the server
 	}
 
 	interface ClientPassiveChoice {
@@ -669,6 +671,7 @@ declare global {
 		'client_skink5b': { passive_card_id: number, card_name: string }
 		'client_choicelessBatCard': { technique_card_id: number, clock: number }
 		'client_capture': { technique_card_id: number, clock: number }
+		'client_olm3_step2': { technique_card_id: number, toss_card_id: number, card_name: string } // stores info about the first step
 	}
 
 	//
