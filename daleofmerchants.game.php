@@ -1382,6 +1382,63 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->effects->insertGlobal($technique_card["id"], CT_WALRUSMONO);
                 break;
+            case CT_OLMMONO:
+                //Pick a card from hand
+                $hand_cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                $hand_eligible_cards = array_filter($hand_cards, function($dbcard) { return $this->isAnimalfolk($dbcard) && $this->getValue($dbcard) >= 2; });
+                if (count($hand_eligible_cards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Blind Member: effect skipped, because ${player_name} doesn\'t have an animalfolk card valued 2+ in hand'), array(
+                        'player_name' => $this->getPlayerNameByIdInclMono($opponent_id)
+                    ));
+                    break;
+                }
+                $hand_card_id = array_rand($hand_eligible_cards);
+                $hand_dbcard = $hand_cards[$hand_card_id];
+                //Pick a card from the market
+                $market_cards = $this->cards->getCardsInLocation(MARKET);
+                $market_animalfolk_cards = array_filter($market_cards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
+                if (count($market_animalfolk_cards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Blind Member: effect skipped, because the market is empty'), array());
+                    break;
+                }
+                $market_dbcard = $this->monoPickLowestValuedCard($market_cards);
+                //Toss the card from hand to take the card from the market
+                $this->monoConfirmAction(clienttranslate('${resolving_card_name}: ${player_name} forces ${opponent_name} to toss their ${card_name}'), array(
+                    "resolving_card_name" => $this->getCardName($technique_card),
+                    "highlight_hand_cards" => array($hand_dbcard),
+                    "card_name" => $this->getCardName($hand_dbcard),
+                    "wrap_class" => "daleofmerchants-wrap-technique",
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                ));
+                $this->toss('', $hand_dbcard, false, array(), $opponent_id);
+                $this->cards->moveCard($market_dbcard["id"], HAND.$opponent_id);
+                $this->notifyAllPlayers('marketToHand', clienttranslate('${resolving_card_name}: ${player_name} forces ${opponent_name} to take ${card_name}'), array (
+                    "resolving_card_name" => $this->getCardName($technique_card),
+                    "player_id" => $opponent_id, // Must be the player_id of the player receiving the card
+                    "market_card_id" => $market_dbcard["id"],
+                    "pos" => $market_dbcard["location_arg"],
+                    "card_name" => $this->getCardName($market_dbcard),
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                ));
+                // TODO: safely remove this
+                //the monoConfirmAction for a market pos always has a golden bar. Maybe the confirmation is not even needed?
+                // $this->monoConfirmAction(clienttranslate('${resolving_card_name}: ${player_name} forces ${opponent_name} to take ${card_name}'), array(
+                //     "resolving_card_name" => $this->getCardName($technique_card),
+                //     "highlight_market_pos" => $market_dbcard["location_arg"],
+                //     "card_name" => $this->getCardName($market_dbcard),
+                //     "wrap_class" => "daleofmerchants-wrap-technique",
+                //     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                //     "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                // ));
+                // $this->cards->moveCard($market_dbcard["id"], HAND.$opponent_id);
+                // $this->notifyAllPlayers('marketToHand', '', array (
+                //     "player_id" => $opponent_id, // Must be the player_id of the player receiving the card
+                //     "market_card_id" => $market_dbcard["id"],
+                //     "pos" => $market_dbcard["location_arg"],
+                // ));
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
