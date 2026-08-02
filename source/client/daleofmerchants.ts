@@ -46,7 +46,7 @@ class DaleOfMerchants extends Gamegui
 	static readonly ACTION_BUTTON_SKIP = 'red'
 	static readonly ACTION_BUTTON_SELECT_PLAYER = 'gray'
 	static readonly ACTION_BUTTON_ABSTAIN = 'red'
-	static readonly ACTION_BUTTON_UNDO = 'red'
+	static readonly ACTION_BUTTON_UNDO = 'gray' // = 'red', bga staff wants it to be red, but I think gray makes the button "safer" to click compared to skip.
 	static readonly ACTION_BUTTON_CANCEL = 'red'
 
 	/** For conveniene, each new Pile will add a reference to itself in this array*/
@@ -1555,6 +1555,16 @@ class DaleOfMerchants extends Gamegui
 			case 'client_olm3_step2':
 				this.market!.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique", 2);
 				break;
+			case 'olm4':
+			case 'olm5a':
+				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to <strong>toss</strong>"));
+				break;
+			case 'client_olm4_market':
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
+				break;
+			case 'client_olm4_discard':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"))
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -2117,6 +2127,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_olm3_step2':
 				this.market!.setSelectionMode(0);
+				break;
+			case 'olm4':
+			case 'olm5a':
+				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_olm4_market':
+				this.market!.setSelectionMode(0);
+				break;
+			case 'client_olm4_discard':
+				this.myLimbo.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -3024,6 +3044,17 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButton("confirm-button", _("Confirm"), "onOlm3");
 				this.addActionButton("undo-button", _("Undo"), "onOlm3Undo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
 				break;
+			case 'olm4':
+			case 'olm5a':
+				this.addActionButton("skip-button", _("Skip"), "onOlm4Skip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
+				break;
+			case 'client_olm4_market':
+				this.addActionButton("undo-button", _("Undo"), "onOlm4MarketUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
+				break;
+			case 'client_olm4_discard':
+				this.addActionButton("confirm-button", _("Confirm"), "onOlm4Discard");
+				this.addActionButton("undo-button", _("Undo"), "onOlm4DiscardUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
+				break;
 		}
 		//(~actionbuttons)
 	}
@@ -3657,6 +3688,41 @@ class DaleOfMerchants extends Gamegui
 		this.mainClientState.leave();
 	}
 
+	/**
+	 * Execute a client-side market to limbo during a client state. After this method, the caller should enter another client state in which either:
+	 *  (1) an action is commited to the server that executes the toss on the server-side
+	 *  (2) the toss is undo by the user using "undoClientSideMarketToLimbo"
+	 * @param market_card_id a card id from a card in the market to move to limbo
+	 * @param market_pos position in the market to take the card from
+	 */
+	clientSideMarketToLimbo(market_card_id: number, market_pos: number) {
+		const daleCard = new DaleCard(market_card_id);
+		const pos = this.market!.posOf(market_card_id);
+		const slotId = this.market!.getSlotId(pos);
+		if (pos != market_pos) {
+			// Technically, we don't need the market_pos at this point, we only need it for the undo. But since we have it, we'll just verify it.
+			console.error("Unexpected market_pos"); 
+		}
+		this.market!.unselectAll();
+		this.market!.removeCard(pos);
+		this.myLimbo.addDaleCardToStock(daleCard, slotId);
+	}
+
+	/**
+	 * Helper function to undo a clientSideMarketToLimbo. Also leaves the current client state. 
+	 * @param market_card_id a card id from a card in the market to move back into the market
+	 * @param market_pos position in the market to place the card back to
+	 */
+	undoClientSideMarketToLimbo(market_card_id: number, market_pos: number) {
+		if (market_card_id != -1) {
+			const daleCard = new DaleCard(market_card_id);
+			this.market!.getSlotId
+			this.market!.insertCard(daleCard, market_pos, daleCard.div);
+			this.myLimbo!.removeFromStockByIdNoAnimation(market_card_id);
+		}
+		this.mainClientState.leave();
+	}
+
 
 	///////////////////////////////////////////////////
 	//// Opponent selection utilities 
@@ -4015,6 +4081,9 @@ class DaleOfMerchants extends Gamegui
 				this.resolveTechniqueCard<'client_snack'>({
 					card_id: card.id
 				});
+				break;
+			case 'client_olm4_market':
+				this.onOlm4Market(card.id);
 				break;
 		}
 	}
@@ -4569,6 +4638,16 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'capuchin4':
 				this.onCapuchin4Take();
+				break;
+			case 'olm4':
+			case 'olm5a':
+				this.clientSideToss(card, this.myLimbo);
+				const olm4_args = this.gamedatas.gamestate.args as { opponent_name?: string, resolving_card_name?: string }
+				this.mainClientState.enterOnStack('client_olm4_market', {
+					toss_card_id: card.id,
+					opponent_name: olm4_args.opponent_name ?? "MISSING OPPONENT NAME",
+					card_name: olm4_args.resolving_card_name ?? "MISSING CARD NAME"
+				});
 				break;
 		}
 	}
@@ -7653,6 +7732,76 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
+	onOlm4Skip() {
+		switch(this.gamedatas.gamestate.name) {
+			case 'olm4':
+				const olm4_args = this.gamedatas.gamestate.args as { opponent_name?: string, resolving_card_name?: string }
+				this.mainClientState.enterOnStack('client_olm4_discard', {
+					toss_card_id: -1,
+					market_card_id: -1,
+					market_pos: -1,
+					opponent_name: olm4_args.opponent_name ?? "MISSING OPPONENT NAME",
+					card_name: olm4_args.resolving_card_name ?? "MISSING CARD NAME"
+				});
+				break;
+			case 'olm5a':
+				this.bgaPerformAction('actOlm5a', {
+					toss_card_id: -1,
+					market_card_id: -1,
+				})
+				break;
+			default:
+				console.error(`onOlmReplaceSkip called during an unexpected gamestate ${this.gamedatas.gamestate.name}`);
+		}
+	}
+
+	onOlm4Market(market_card_id: number) {
+		const args = (this.mainClientState.args as ClientGameStates['client_olm4_market']);
+		switch(this.last_server_state.name) {
+			case 'olm4':
+				const market_pos = this.market!.posOf(market_card_id)
+				this.clientSideMarketToLimbo(market_card_id, market_pos);
+				this.mainClientState.enterOnStack('client_olm4_discard', {
+					toss_card_id: args.toss_card_id,
+					market_card_id: market_card_id,
+					market_pos: market_pos,
+					opponent_name: args.opponent_name,
+					card_name: args.card_name
+				});
+				break;
+			case 'olm5a':
+				this.bgaPerformAction('actOlm5a', {
+					toss_card_id: args.toss_card_id,
+					market_card_id: market_card_id,
+				});
+				this.mainClientState.leaveAll();
+				break;
+			default:
+				console.error(`onOlm4Market called during an unexpected server gamestate ${this.last_server_state.name}`);
+		}
+	}
+
+	onOlm4MarketUndo() {
+		const args = (this.mainClientState.args as ClientGameStates['client_olm4_market']);
+		this.undoClientSideToss(args.toss_card_id, this.myLimbo);
+	}
+
+	onOlm4Discard() {
+		const args = (this.mainClientState.args as ClientGameStates['client_olm4_discard']);
+		this.bgaPerformAction('actOlm4', {
+			toss_card_id: args.toss_card_id,
+			market_card_id: args.market_card_id,
+			discard_card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
+		})
+		this.mainClientState.leaveAll();
+	}
+
+	onOlm4DiscardUndo() {
+		const args = (this.mainClientState.args as ClientGameStates['client_olm4_discard']);
+		this.undoClientSideMarketToLimbo(args.market_card_id, args.market_pos);
+	}
+
+
 	//(~on)
 
 
@@ -8133,6 +8282,17 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	notif_marketToHand(notif: NotifAs<'marketToHand'>) {
+		//ignore card not found
+		if (!this.market!.contains(notif.args.market_card_id)) {
+			if (notif.args.ignore_card_not_found) {
+				console.warn("notif_marketToHand ignored, because the card was not found (expected)");
+			}
+			else {
+				console.error("notif_marketToHand ignored, because the card was not found (unexpected)");
+			}
+			return;
+		}
+
 		const daleCard = new DaleCard(notif.args.market_card_id);
 		const slotId = this.market!.getSlotId(notif.args.pos);
 		this.market!.unselectAll();

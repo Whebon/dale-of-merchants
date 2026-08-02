@@ -322,10 +322,16 @@ export class MainClientState {
                     default:
                         return _("${card_name}: ${you} must take the top card of the supply or bin, because it is ${clock}");
                 }
+            case 'client_walrus4':
+                return _("${card_name}: ${you} may take a card from the bottom 3 cards of your discard")
             case 'client_olm3_step1':
                 return _("${card_name}: ${you} must toss 1 card from your hand");
             case 'client_olm3_step2':
                 return _("${card_name}: ${you} may toss up to 2 cards from the market");
+            case 'client_olm4_market':
+                return _("${card_name}: ${you} must choose a card from the market for ${opponent_name}");
+            case 'client_olm4_discard':
+                return _("${card_name}: ${you} may choose the order to place the cards on ${opponent_name}\'s discard pile");
         }
         return "MISSING DESCRIPTION";
     }

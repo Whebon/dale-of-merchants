@@ -223,6 +223,7 @@ declare global {
 			market_card_id: number
 			pos: number,
 			to_limbo?: boolean
+			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
 		}
 		'swapHandStall': {
 			player_id: number
@@ -240,7 +241,7 @@ declare global {
 			player_id: number 
 			card: DbCard
 			from_limbo?: boolean //by default, toss from hand. if specified, toss from limbo instead
-			ignore_card_not_found?: boolean
+			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
 		}
 		'tossMultiple': {
 			player_id: number 
@@ -672,6 +673,8 @@ declare global {
 		'client_choicelessBatCard': { technique_card_id: number, clock: number }
 		'client_capture': { technique_card_id: number, clock: number }
 		'client_olm3_step2': { technique_card_id: number, toss_card_id: number, card_name: string } // stores info about the first step
+		'client_olm4_market': { opponent_name: string, toss_card_id: number, card_name: string } // stores info about the other step
+		'client_olm4_discard': { opponent_name: string, toss_card_id: number, market_card_id: number, market_pos: number, card_name: string } // stores info about the other steps
 	}
 
 	//

@@ -10402,7 +10402,12 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         
-        $this->_actTossCardFromLimboAndReplaceItWithACardFromTheMarket($toss_card_id, $market_card_id);
+        $this->_actTossCardFromLimboAndReplaceItWithACardFromTheMarket(
+            $player_id,
+            $opponent_id, 
+            $toss_card_id, 
+            $market_card_id
+        );
 
         $this->discardAll(
             clienttranslate('Opener Sticks: ${player_name} places the ${nbr} cards on ${opponent_name}\'s discard pile'),
@@ -10422,13 +10427,20 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
 
-        $this->_actTossCardFromLimboAndReplaceItWithACardFromTheMarket($toss_card_id, $market_card_id);
+        $this->_actTossCardFromLimboAndReplaceItWithACardFromTheMarket(
+            $player_id,
+            $opponent_id, 
+            $toss_card_id, 
+            $market_card_id
+        );
         
         $this->returnLimboToOpponentsHand(clienttranslate('Song-making Stone: ${player_name} returns ${nbr} cards to ${opponent_name}\'s hand'),
             $player_id, 
             $opponent_id
         );
 
+        $this->delay500ms();
+        
         $this->fullyResolveCard($player_id);
     }
 
@@ -10437,10 +10449,45 @@ class DaleOfMerchants extends DaleTableBasic
      * Tosses a card in limbo and moves a card from the market to limbo.
      * The client that committed this action already tossed the card on the client-side.
      */
-    function _actTossCardFromLimboAndReplaceItWithACardFromTheMarket($toss_card_id, $market_card_id) {
-        // TODO
-    }
+    function _actTossCardFromLimboAndReplaceItWithACardFromTheMarket($player_id, $opponent_id, $toss_card_id, $market_card_id) {
+        $resolving_card_name = $this->getResolvingCardName();
 
+        // Fizzle both or neither
+        if ($toss_card_id == -1 && $market_card_id == -1) {
+            $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} did not toss one of ${opponent_name}\'s cards'), array(
+                "player_name" => $this->getPlayerNameById($player_id),
+                "opponent_name" => $this->getPlayerNameById($opponent_id),
+                "resolving_card_name" => $resolving_card_name,
+            ));
+            return;
+        }
+
+        // Toss a card
+        $toss_card = $this->cards->getCardFromLocation($toss_card_id, LIMBO.$player_id);
+        $this->toss(clienttranslate('${resolving_card_name}: ${player_name} tosses ${opponent_name}\'s ${card_name}'), $toss_card, true, array(
+            "opponent_id" => $opponent_id,
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "resolving_card_name" => $resolving_card_name,
+            "instant_toss" => true,
+            "ignore_card_not_found" => true
+        ));
+
+        // Place a card from the market into limbo
+        $dbcard = $this->cards->getCardFromLocation($market_card_id, MARKET);
+        $this->cards->moveCard($market_card_id, LIMBO.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('${resolving_card_name}: ${player_name} takes ${card_name} from the market for ${opponent_name}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "opponent_id" => $opponent_id,
+            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+            "card_name" => $this->getCardName($dbcard),
+            "resolving_card_name" => $resolving_card_name,
+            "market_card_id" => $market_card_id,
+            "pos" => $dbcard["location_arg"],
+            "to_limbo" => true,
+            "ignore_card_not_found" => true,
+        ));
+    }
 
 
     // ^
