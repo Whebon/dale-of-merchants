@@ -189,6 +189,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getTastersIcon = function () {
             return this.getIcon(5, 5);
         };
+        DaleIcons.getOlm5bIcon = function () {
+            return this.getIcon(5, 5);
+        };
         DaleIcons.getCostModificationIcon = function (market_position) {
             var index = market_position - 1;
             if (index >= 4) {
@@ -654,6 +657,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'tasters':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getTastersIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'olm5b':
+                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getOlm5bIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
                 case 'pompousProfessional':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getPompousProfessionalIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
@@ -5982,6 +5988,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(2, 'tasters', "daleofmerchants-wrap-technique");
                     this.market.orderedSelection.setMaxSize(1);
                     break;
+                case 'olm5b':
+                    this.market.setSelectionMode(2, 'olm5b', "daleofmerchants-wrap-technique");
+                    this.market.orderedSelection.setMaxSize(1);
+                    break;
                 case 'daringAdventurer':
                     var daringAdventurer_args = args.args;
                     this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to discard"));
@@ -6670,6 +6680,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(0);
                     break;
                 case 'tasters':
+                    this.market.setSelectionMode(0);
+                    break;
+                case 'olm5b':
                     this.market.setSelectionMode(0);
                     break;
                 case 'daringAdventurer':
@@ -7406,6 +7419,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonsOpponentSelection(1, tasters_args.player_ids);
                     this.max_opponents = 1;
                     this.addActionButton("confirm-button", _("Confirm"), "onTasters");
+                    break;
+                case 'olm5b':
+                    var olm5b_args = args;
+                    this.addActionButtonsOpponentSelection(1, olm5b_args.player_ids);
+                    this.max_opponents = 1;
+                    this.addActionButton("confirm-button", _("Confirm"), "onOlm5b");
                     break;
                 case 'daringAdventurer':
                     this.addActionButton("confirm-button", _("Discard selected"), "onDaringAdventurer");
@@ -9725,6 +9744,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_10.DaleCard.CT_TASTERS:
+                case DaleCard_10.DaleCard.CT_OLM5B:
                     var tasters_nbr = this.market.getCards().length;
                     fizzle = tasters_nbr == 0;
                     if (fizzle) {
@@ -10939,7 +10959,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var args = this.gamedatas.gamestate.args;
             var index = args.player_ids.indexOf(player_id);
             if (index == -1) {
-                throw new Error("Charity: player ".concat(player_id, " is not authorized to receive a card"));
+                throw new Error("Tasters: player ".concat(player_id, " is not authorized to receive a card"));
             }
             else {
                 args.player_ids.splice(index, 1);
@@ -10947,6 +10967,32 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
             }
             this.bgaPerformAction('actTasters', {
+                card_ids: this.arrayToNumberList([card_id]),
+                player_ids: this.arrayToNumberList([player_id])
+            });
+        };
+        DaleOfMerchants.prototype.onOlm5b = function () {
+            var card_id = this.market.orderedSelection.get()[0];
+            if (!card_id) {
+                this.showMessage(_("Please choose a card from the market"), 'error');
+                return;
+            }
+            var player_id = this.opponent_ids[0];
+            if (player_id === undefined) {
+                this.showMessage(_("Please choose the player that will receive ") + "'".concat(new DaleCard_10.DaleCard(card_id).name, "'"), 'error');
+                return;
+            }
+            var args = this.gamedatas.gamestate.args;
+            var index = args.player_ids.indexOf(player_id);
+            if (index == -1) {
+                throw new Error("Cave Banquet: player ".concat(player_id, " is not authorized to receive a card"));
+            }
+            else {
+                args.player_ids.splice(index, 1);
+                this.removeActionButtons();
+                this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
+            }
+            this.bgaPerformAction('actOlm5b', {
                 card_ids: this.arrayToNumberList([card_id]),
                 player_ids: this.arrayToNumberList([player_id])
             });
@@ -11865,6 +11911,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['fillEmptyMarketSlots', 500],
                 ['marketSlideRight', 500],
                 ['marketToHand', 500],
+                ['marketToDeck', 500],
                 ['swapHandStall', 1],
                 ['swapHandMarket', 1],
                 ['instant_marketDiscardToHand', 1],
@@ -12265,6 +12312,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.market.removeCard(notif.args.pos, 'overall_player_board_' + notif.args.player_id);
             }
             this.playerHandSizes[notif.args.player_id].incValue(1);
+        };
+        DaleOfMerchants.prototype.notif_marketToDeck = function (notif) {
+            var daleCard = new DaleCard_10.DaleCard(notif.args.market_card_id);
+            var slotId = this.market.getSlotId(notif.args.pos);
+            var deck = this.playerDecks[notif.args.player_id];
+            this.market.unselectAll();
+            this.market.removeCard(notif.args.pos);
+            deck.push(daleCard, slotId);
         };
         DaleOfMerchants.prototype.notif_swapHandStall = function (notif) {
             console.warn("swapHandStall");

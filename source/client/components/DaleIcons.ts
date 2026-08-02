@@ -125,6 +125,10 @@ export class DaleIcons {
     public static getTastersIcon(): HTMLElement {
         return this.getIcon(5, 5);
     }
+
+    public static getOlm5bIcon(): HTMLElement {
+        return this.getIcon(5, 5); // TODO: MISSING ART!
+    }
     
     /////////////////////////////
     ////////    ROW 6    ////////

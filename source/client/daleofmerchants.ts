@@ -1107,6 +1107,10 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(2, 'tasters', "daleofmerchants-wrap-technique");
 				this.market!.orderedSelection.setMaxSize(1);
 				break;
+			case 'olm5b':
+				this.market!.setSelectionMode(2, 'olm5b', "daleofmerchants-wrap-technique");
+				this.market!.orderedSelection.setMaxSize(1);
+				break;
 			case 'daringAdventurer':
 				const daringAdventurer_args = args.args as { die_value: number };
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose cards to discard"));
@@ -1832,6 +1836,9 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(0);
 				break;
 			case 'tasters':
+				this.market!.setSelectionMode(0);
+				break;
+			case 'olm5b':
 				this.market!.setSelectionMode(0);
 				break;
 			case 'daringAdventurer':
@@ -2566,6 +2573,12 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonsOpponentSelection(1, tasters_args.player_ids);
 				this.max_opponents = 1; //ensure that no opponent is selected by default
 				this.addActionButton("confirm-button", _("Confirm"), "onTasters"); //confirm the opponent and the card
+				break;
+			case 'olm5b':
+				const olm5b_args = args as { player_ids: number[] };
+				this.addActionButtonsOpponentSelection(1, olm5b_args.player_ids);
+				this.max_opponents = 1; //ensure that no opponent is selected by default
+				this.addActionButton("confirm-button", _("Confirm"), "onOlm5b"); //confirm the opponent and the card
 				break;
 			case 'daringAdventurer':
 				this.addActionButton("confirm-button", _("Discard selected"), "onDaringAdventurer");
@@ -5414,6 +5427,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_TASTERS:
+			case DaleCard.CT_OLM5B:
 				const tasters_nbr = this.market!.getCards().length;
 				fizzle = tasters_nbr == 0;
 				if (fizzle) {
@@ -6748,7 +6762,7 @@ class DaleOfMerchants extends Gamegui
 		const args = this.gamedatas.gamestate.args as { player_ids: number[] };
 		const index = args.player_ids.indexOf(player_id);
 		if (index == -1) {
-			throw new Error(`Charity: player ${player_id} is not authorized to receive a card`);
+			throw new Error(`Tasters: player ${player_id} is not authorized to receive a card`);
 		}
 		else {
 			args.player_ids.splice(index, 1);
@@ -6759,6 +6773,37 @@ class DaleOfMerchants extends Gamegui
 		// automatically giving the last card is not needed 
 		// because having an equal number of players and cards in the market is super rare)
 		this.bgaPerformAction('actTasters', {
+			card_ids: this.arrayToNumberList([card_id]),
+			player_ids: this.arrayToNumberList([player_id])
+		});
+	}
+
+	onOlm5b() {
+		//get the selected card and opponent
+		const card_id = this.market!.orderedSelection.get()[0];
+		if (!card_id) {
+			this.showMessage(_("Please choose a card from the market"), 'error');
+			return;
+		}
+		const player_id = this.opponent_ids[0];
+		if (player_id === undefined) {
+			this.showMessage(_("Please choose the player that will receive ")+`'${new DaleCard(card_id).name}'`, 'error');
+			return;
+		}
+		const args = this.gamedatas.gamestate.args as { player_ids: number[] };
+		const index = args.player_ids.indexOf(player_id);
+		if (index == -1) {
+			throw new Error(`Cave Banquet: player ${player_id} is not authorized to receive a card`);
+		}
+		else {
+			args.player_ids.splice(index, 1);
+			this.removeActionButtons();
+			this.onUpdateActionButtons(this.gamedatas.gamestate.name, args);
+		}
+		//send the action (for now, one card at a time.
+		// automatically giving the last card is not needed 
+		// because having an equal number of players and cards in the market is super rare)
+		this.bgaPerformAction('actOlm5b', {
 			card_ids: this.arrayToNumberList([card_id]),
 			player_ids: this.arrayToNumberList([player_id])
 		});
@@ -7831,6 +7876,7 @@ class DaleOfMerchants extends Gamegui
 			['fillEmptyMarketSlots', 				500],
 			['marketSlideRight', 					500],
 			['marketToHand', 						500],
+			['marketToDeck', 						500],
 			['swapHandStall', 						1],
 			['swapHandMarket', 						1],
 			['instant_marketDiscardToHand', 		1],
@@ -8316,6 +8362,15 @@ class DaleOfMerchants extends Gamegui
 		}
 		//update the hand sizes
 		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+	}
+
+	notif_marketToDeck(notif: NotifAs<'marketToDeck'>) {
+		const daleCard = new DaleCard(notif.args.market_card_id);
+		const slotId = this.market!.getSlotId(notif.args.pos);
+		const deck = this.playerDecks[notif.args.player_id]!;
+		this.market!.unselectAll();
+		this.market!.removeCard(notif.args.pos);
+		deck.push(daleCard, slotId);
 	}
 
 	notif_swapHandStall(notif: NotifAs<'swapHandStall'>) {

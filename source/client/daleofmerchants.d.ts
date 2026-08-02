@@ -225,6 +225,11 @@ declare global {
 			to_limbo?: boolean
 			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
 		}
+		'marketToDeck': {
+			player_id: number
+			market_card_id: number
+			pos: number
+		}
 		'swapHandStall': {
 			player_id: number
 			card: DbCard

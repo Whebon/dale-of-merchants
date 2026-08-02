@@ -225,6 +225,7 @@ interface GameStates {
 			'trCharmDodo2': 118,
 			'trOlm4': 119,
 			'trOlm5a': 120,
+			'trOlm5b': 121,
 		},
 	},
 	31: {
@@ -1603,6 +1604,29 @@ interface GameStates {
 		},
 		'transitions': {
 			'trSamePlayer': 30,
+		},
+	},
+	121: {
+		'name': 'olm5b',
+		'description': 'Cave Banquet: ${actplayer} must give each player a card from the market',
+		'descriptionmyturn': 'Cave Banquet: ${you} must choose a card from the market and a player',
+		'type': 'activeplayer',
+		'args': 'argPlayerIds',
+		'action': 'stOlm5b',
+		'possibleactions': {
+			'actOlm5b': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}, {
+				'name': 'player_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+			'trChangeActivePlayer': 29,
 		},
 	},
 	6300: {

@@ -86,6 +86,9 @@ export abstract class AbstractOrderedSelection {
             case 'tasters':
                 icon = (index == 0) ? DaleIcons.getTastersIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
+            case 'olm5b':
+                icon = (index == 0) ? DaleIcons.getOlm5bIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break;
             case 'pompousProfessional':
                 icon = (index == 0) ? DaleIcons.getPompousProfessionalIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;

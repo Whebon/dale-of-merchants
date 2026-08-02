@@ -66,6 +66,7 @@ if (false) {
 	$game->stCharmDodo2();
 	$game->stOlm4();
 	$game->stOlm5a();
+	$game->stOlm5b();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -203,6 +204,7 @@ $machinestates = array(
 			'trCharmDodo2' => 118,
 			'trOlm4' => 119,
 			'trOlm5a' => 120,
+			'trOlm5b' => 121,
 		),
 	),
 	31 => array(
@@ -1038,6 +1040,19 @@ $machinestates = array(
 		'possibleactions' => ['actOlm5a'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	121 => array(
+		'name' => 'olm5b',
+		'description' => clienttranslate('Cave Banquet: ${actplayer} must give each player a card from the market'),
+		'descriptionmyturn' => clienttranslate('Cave Banquet: ${you} must choose a card from the market and a player'),
+		'type' => 'activeplayer',
+		'args' => 'argPlayerIds',
+		'action' => 'stOlm5b',
+		'possibleactions' => ['actOlm5b'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+			'trChangeActivePlayer' => 29,
 		),
 	),
 	6300 => array(

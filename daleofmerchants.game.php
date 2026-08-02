@@ -4932,6 +4932,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_GIFTVOUCHER:
                 case CT_DEPRECATED_TASTERS:
                 case CT_TASTERS:
+                case CT_OLM5B:
                     $cards = $this->cards->getCardsInLocation(MARKET);
                     if (count($cards) >= 1) {
                         $name = $this->getCardName($technique_card);
@@ -5945,6 +5946,16 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $this->setGameStateValuePlayerIds($player_ids);
                 $this->gamestate->nextState("trTasters");
+                break;
+            case CT_OLM5B:
+                $this->beginResolvingCard($technique_card_id);
+                $players = $this->loadPlayersBasicInfosInclMono();
+                $player_ids = [];
+                foreach ($players as $player_id => $player) {
+                    $player_ids[] = $player_id;
+                }
+                $this->setGameStateValuePlayerIds($player_ids);
+                $this->gamestate->nextState("trOlm5b");
                 break;
             case CT_CHEER:
                 $players = $this->loadPlayersBasicInfosInclMono();
@@ -8860,6 +8871,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function actTasters($card_ids, $player_ids) {
+        // copied to actOlm5b
         $this->checkAction("actTasters");
         $player_id = $this->getActivePlayerId();
         $card_ids = $this->numberListToArray($card_ids);
@@ -8905,6 +8917,67 @@ class DaleOfMerchants extends DaleTableBasic
         if ($this->cards->countCardsInLocation(MARKET) == 0) {
             foreach ($remaining_player_ids as $remaining_player_id) {
                 $this->notifyAllPlayers('message', clienttranslate('Tasters: ${player_name} receives nothing'), array (
+                    'player_name' => $this->getPlayerNameByIdInclMono($remaining_player_id),
+                ));
+            }
+            if (in_array($player_id, $remaining_player_ids)) {
+                $this->fullyResolveCard($player_id); //no trigger for the active player (very, very rare)
+            }
+            else {
+                $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
+            }
+            return;
+        }
+    }
+
+    function actOlm5b($card_ids, $player_ids) {
+        // mostly copied from actTasters
+        $this->checkAction("actOlm5b");
+        $player_id = $this->getActivePlayerId();
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_ids = $this->numberListToArray($player_ids);
+        if (count($card_ids) != count($player_ids)) {
+            throw new BgaVisibleSystemException("Olm5b: count(card_ids) != count(player_ids)");
+        }
+        $remaining_player_ids = $this->getGameStateValuePlayerIds($player_ids);
+        for ($i = 0; $i < count($card_ids); $i++) {
+            //get the player that will receive the card
+            $other_player_id = $player_ids[$i];
+            if (!in_array($other_player_id, $remaining_player_ids)) {
+                throw new BgaVisibleSystemException("Olm5b: provided player_id is not authorized to receive a card");
+            }
+            //place the card on top of the deck the card
+            $card_id = $card_ids[$i];
+            $card = $this->cards->getCardFromLocation($card_id, MARKET);
+            $this->cards->moveCard($card_id, DECK.$other_player_id);
+            $this->notifyAllPlayers('marketToDeck', clienttranslate('Cave Banquet: ${player_name} places ${card_name} on top of ${opponent_name}\'s deck'), array (
+                'player_id' => $other_player_id, // This must be the id of the player who will get the card on their deck (i.e. the opponent)
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
+                'opponent_name' => $this->getPlayerNameByIdInclMono($other_player_id),
+                'card_name' => $this->getCardName($card),
+                'market_card_id' => $card_id,
+                'pos' => $card["location_arg"],
+            ));
+            if ($other_player_id != $player_id) {
+                //check for other player's TRIGGER_ONMARKETCARD triggers (the active player has their trigger when the Olm5b resolves)
+                if ($this->nextStateViaOtherPlayerTriggers(null, $other_player_id, TRIGGER_ONMARKETCARD)) {
+                    $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
+                    $this->setGameStateValuePlayerIds($remaining_player_ids);
+                    return;
+                }
+            }
+        }
+        //update the remaining player_ids
+        $remaining_player_ids = array_values(array_diff($remaining_player_ids, $player_ids));
+        $this->setGameStateValuePlayerIds($remaining_player_ids);
+        if (count($remaining_player_ids) == 0) {
+            $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
+            return;
+        }
+        //market is empty? the remaining players miss out on receiving a card
+        if ($this->cards->countCardsInLocation(MARKET) == 0) {
+            foreach ($remaining_player_ids as $remaining_player_id) {
+                $this->notifyAllPlayers('message', clienttranslate('Olm5b: ${player_name} receives nothing'), array (
                     'player_name' => $this->getPlayerNameByIdInclMono($remaining_player_id),
                 ));
             }
@@ -11687,6 +11760,15 @@ class DaleOfMerchants extends DaleTableBasic
         $remaining_player_ids = $this->getGameStateValuePlayerIds();
         if (count($remaining_player_ids) == 0) {
             //tasters has no effect remaining
+            $this->fullyResolveCard($this->getActivePlayerId(), null, null, TRIGGER_ONMARKETCARD);
+            return;
+        }
+    }
+
+    function stOlm5b() {
+        $remaining_player_ids = $this->getGameStateValuePlayerIds();
+        if (count($remaining_player_ids) == 0) {
+            //olm5b has no effect remaining
             $this->fullyResolveCard($this->getActivePlayerId(), null, null, TRIGGER_ONMARKETCARD);
             return;
         }
