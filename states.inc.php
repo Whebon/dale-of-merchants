@@ -939,8 +939,8 @@ $machinestates = array(
 	),
 	112 => array(
 		'name' => 'capuchin4',
-		'description' => clienttranslate('INSERT_NAME: ${actplayer} may take a card from ${opponent_name}'),
-		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} may take ${opponent_name}\'s ${_private.card_name}'),
+		'description' => clienttranslate('Fishing Pole: ${actplayer} may take a card from ${opponent_name}'),
+		'descriptionmyturn' => clienttranslate('Fishing Pole: ${you} may take ${opponent_name}\'s ${_private.card_name}'),
 		'type' => 'activeplayer',
 		'args' => 'argOpponentNameAndCardNamePrivate',
 		'action' => 'stCapuchin4',
@@ -951,8 +951,8 @@ $machinestates = array(
 	),
 	113 => array(
 		'name' => 'capuchin5a',
-		'description' => clienttranslate('INSERT_NAME: ${actplayer} may take a card from the top of ${opponent_name}\'s deck'),
-		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} may take a card from the top of ${opponent_name}\'s deck'),
+		'description' => clienttranslate('Crowbar: ${actplayer} may take a card from the top of ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Crowbar: ${you} may take a card from the top of ${opponent_name}\'s deck'),
 		'type' => 'activeplayer',
 		'args' => 'argOpponentName',
 		'action' => 'stCapuchin5a',
@@ -963,8 +963,8 @@ $machinestates = array(
 	),
 	114 => array(
 		'name' => 'skink4',
-		'description' => clienttranslate('INSERT_NAME: ${actplayer} must search their deck for a card'),
-		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} must search your deck for a card'),
+		'description' => clienttranslate('Hot Pie: ${actplayer} must search their deck for a card'),
+		'descriptionmyturn' => clienttranslate('Hot Pie: ${you} must search your deck for a card'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
 		'possibleactions' => ['actSkink4'],
@@ -974,8 +974,8 @@ $machinestates = array(
 	),
 	115 => array(
 		'name' => 'junglefowl5a',
-		'description' => clienttranslate('INSERT_NAME: ${actplayer} must take a card from the top ${nbr} of their discard pile'),
-		'descriptionmyturn' => clienttranslate('INSERT_NAME: ${you} must take a card from the top ${nbr} of your discard pile'),
+		'description' => clienttranslate('Organised Cabinets: ${actplayer} must take a card from the top ${nbr} of their discard pile'),
+		'descriptionmyturn' => clienttranslate('Organised Cabinets: ${you} must take a card from the top ${nbr} of your discard pile'),
 		'type' => 'activeplayer',
 		'args' => 'argJunglefowl5a',
 		'possibleactions' => ['actJunglefowl5a'],

@@ -1429,8 +1429,8 @@ interface GameStates {
 	},
 	112: {
 		'name': 'capuchin4',
-		'description': 'INSERT_NAME: ${actplayer} may take a card from ${opponent_name}',
-		'descriptionmyturn': 'INSERT_NAME: ${you} may take ${opponent_name}\\\'s ${_private.card_name}',
+		'description': 'Fishing Pole: ${actplayer} may take a card from ${opponent_name}',
+		'descriptionmyturn': 'Fishing Pole: ${you} may take ${opponent_name}\\\'s ${_private.card_name}',
 		'type': 'activeplayer',
 		'args': 'argOpponentNameAndCardNamePrivate',
 		'action': 'stCapuchin4',
@@ -1447,8 +1447,8 @@ interface GameStates {
 	},
 	113: {
 		'name': 'capuchin5a',
-		'description': 'INSERT_NAME: ${actplayer} may take a card from the top of ${opponent_name}\\\'s deck',
-		'descriptionmyturn': 'INSERT_NAME: ${you} may take a card from the top of ${opponent_name}\\\'s deck',
+		'description': 'Crowbar: ${actplayer} may take a card from the top of ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Crowbar: ${you} may take a card from the top of ${opponent_name}\\\'s deck',
 		'type': 'activeplayer',
 		'args': 'argOpponentName',
 		'action': 'stCapuchin5a',
@@ -1469,8 +1469,8 @@ interface GameStates {
 	},
 	114: {
 		'name': 'skink4',
-		'description': 'INSERT_NAME: ${actplayer} must search their deck for a card',
-		'descriptionmyturn': 'INSERT_NAME: ${you} must search your deck for a card',
+		'description': 'Hot Pie: ${actplayer} must search their deck for a card',
+		'descriptionmyturn': 'Hot Pie: ${you} must search your deck for a card',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContent',
 		'possibleactions': {
@@ -1486,8 +1486,8 @@ interface GameStates {
 	},
 	115: {
 		'name': 'junglefowl5a',
-		'description': 'INSERT_NAME: ${actplayer} must take a card from the top ${nbr} of their discard pile',
-		'descriptionmyturn': 'INSERT_NAME: ${you} must take a card from the top ${nbr} of your discard pile',
+		'description': 'Organised Cabinets: ${actplayer} must take a card from the top ${nbr} of their discard pile',
+		'descriptionmyturn': 'Organised Cabinets: ${you} must take a card from the top ${nbr} of your discard pile',
 		'type': 'activeplayer',
 		'args': 'argJunglefowl5a',
 		'possibleactions': {

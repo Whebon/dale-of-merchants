@@ -7181,7 +7181,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_CAPUCHIN4:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
-                $this->spend($player_id, $args, 2, $this->_("INSERT_NAME"));
+                $this->spend($player_id, $args, 2, $this->_("Fishing Pole"));
                 $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($dbcards) == 0) {
                     $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} attempted to take a card from ${opponent_name}, but their hand is empty'), array(
@@ -7202,12 +7202,12 @@ class DaleOfMerchants extends DaleTableBasic
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
-                $this->spend($player_id, $args, 2, $this->_("INSERT_NAME"));
+                $this->spend($player_id, $args, 2, $this->_("Crowbar"));
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCapuchin5a");
                 break;
             case CT_CAPUCHIN5B:
-                $this->spend($player_id, $args, 2, $this->_("INSERT_NAME"));
+                $this->spend($player_id, $args, 2, $this->_("Unattended Property"));
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $card_id = $args["card_id"];
@@ -7217,7 +7217,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $dbcard = $top_cards[$card_id];
                 $this->discardToHandMultiple(
-                    clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'),
+                    clienttranslate('Unattended Property: ${player_name} takes ${card_name} from ${opponent_name}\'s discard pile'),
                     $player_id,
                     array($dbcard["id"]),
                     false,
@@ -7229,7 +7229,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_SKINK2:
-                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
+                $this->draw(clienttranslate('Mint Pastilles: ${player_name} draws 1 card from the supply'), 1, false, MARKET);
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_SKINK3:
@@ -7240,15 +7240,15 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_SKINK5A:
-                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards'), 3);
+                $this->draw(clienttranslate('Saxophone: ${player_name} draws ${nbr} cards'), 3);
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_JUNGLEFOWL1:
                 //$nbr = $this->getClock($player_id) == CLOCK_DAWN ? 2 : 1;
-                $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws 1 card'), 1);
+                $this->draw(clienttranslate('Early Riser: ${player_name} draws 1 card'), 1);
                 $clock = $this->getClock($player_id);
                 if ($clock == CLOCK_DAWN) {
-                    $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws 1 more card, because it is ${clock}'),
+                    $this->draw(clienttranslate('Early Riser: ${player_name} draws 1 more card, because it is ${clock}'),
                         1, false, null, null, null, array("clock" => $clock)
                     );
                 }
@@ -7256,7 +7256,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_JUNGLEFOWL2:
                 $this->draw(
-                    clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} card from the supply'), 
+                    clienttranslate('Morning Duty: ${player_name} draws ${nbr} card from the supply'), 
                     1, 
                     false, 
                     MARKET, 
@@ -7277,7 +7277,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->toss1FromHand($player_id, $technique_card, $args);
                 $clock = $this->getClock($player_id);
                 if ($clock == CLOCK_DAWN) {
-                    $this->draw(clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} card(s), because it is ${clock}'), 
+                    $this->draw(clienttranslate('Sewing Essentials: ${player_name} draws ${nbr} card(s), because it is ${clock}'), 
                         2, false, null, null, null, array("clock" => $clock)
                     );
                 }
@@ -7934,7 +7934,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
                 $this->discardMultiple(
-                    clienttranslate('INSERT_NAME: ${player_name} discards ${nbr} cards'),
+                    clienttranslate('Saxophone: ${player_name} discards ${nbr} cards'),
                     $player_id,
                     $card_ids,
                     $dbcards
@@ -10450,7 +10450,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //discard, with with optional order
         $this->discardAll(
-            clienttranslate('INSERT_NAME: ${player_name} discards the other cards'),
+            clienttranslate('Crowbar: ${player_name} discards the other cards'),
             $player_id, 
             $discard_card_ids,
             true,
@@ -10477,7 +10477,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $dbcard = $topCards[$card_id];
         $this->discardToHandMultiple(
-            clienttranslate('INSERT_NAME: ${player_name} takes ${card_name} from their discard pile'),
+            clienttranslate('Organised Cabinets: ${player_name} takes ${card_name} from their discard pile'),
             $player_id,
             array($dbcard["id"])
         );
@@ -11902,7 +11902,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $dbcards = $this->draw(
-            clienttranslate('INSERT_NAME: ${player_name} draws ${nbr} cards from ${opponent_name}\'s deck'),
+            clienttranslate('Crowbar: ${player_name} draws ${nbr} cards from ${opponent_name}\'s deck'),
             2,
             true,
             $opponent_id,
