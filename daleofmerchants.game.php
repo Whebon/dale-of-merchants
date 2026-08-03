@@ -2746,6 +2746,9 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function discardEntireDeck(string $msg, mixed $player_id) {
         $deck_dbcards = $this->cards->getCardsInLocation(DECK.$player_id);
+        if (count($deck_dbcards) == 0) {
+            return;
+        }
         $sorted_deck_dbcards = $this->sortCardsByLocationArg($deck_dbcards, true);      // bottom to top (low to high)
         $bottom_to_top_deck_card_ids = $this->toCardIds($sorted_deck_dbcards);          // bottom to top
         $top_to_bottom_deck_card_ids = array_reverse($bottom_to_top_deck_card_ids);     // top to bottom
@@ -5125,6 +5128,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_SNEAKYSCOUT:
                 case CT_HEROICDEED:
                 case CT_SECRETMISSION:
+                case CT_GORILLA1:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -7581,6 +7585,11 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trOlm5a");
+                break;
+            case CT_GORILLA1:
+                $this->discardEntireDeck(clienttranslate('Stubborn Isolationist: ${player_name} discards their entire deck'), $player_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trGorilla1");
                 break;
             default:
                 $name = $this->getCardName($technique_card);
@@ -10617,6 +10626,27 @@ class DaleOfMerchants extends DaleTableBasic
             "to_limbo" => true,
             "ignore_card_not_found" => true,
         ));
+    }
+
+
+    function actGorilla1($card_id) {
+        $this->checkAction("actGorilla1");
+        $player_id = $this->getActivePlayerId();
+
+        $dbcards = $this->cards->getCardsInLocation(DISCARD.$player_id, null, 'location_arg');
+        $top_card = $dbcards[count($dbcards) - 1];
+        $bottom_card = $dbcards[0];
+        if ($card_id != $top_card["id"] && $card_id != $bottom_card["id"]) {
+            throw new BgaUserException("Card $card_id is not at the top or bottom of the discard");
+        }
+
+        $this->discardToHandMultiple(
+            clienttranslate('Stubborn Isolationist: ${player_name} takes ${card_name} from their discard pile'),
+            $player_id,
+            array($card_id)
+        );
+
+        $this->fullyResolveCard($player_id);
     }
 
 

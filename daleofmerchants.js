@@ -2817,6 +2817,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return;
                 case 'single':
                 case 'singleAnimalfolk':
+                case 'singleTopOrBottom':
                 case 'sliceOfLife':
                 case 'singleFromTopX':
                 case 'singleFromBottomX':
@@ -2937,6 +2938,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     break;
                 case 'single':
                 case 'singleAnimalfolk':
+                case 'singleTopOrBottom':
                     this.showMainTitleBarInPopin = true;
                     this.containerHTML.classList.add("daleofmerchants-blinking");
                     this.openPopin();
@@ -2968,6 +2970,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 case 'singleAnimalfolk':
                 case 'singleFromTopX':
                 case 'singleFromBottomX':
+                case 'singleTopOrBottom':
                 case 'multipleFromTopWithGaps':
                 case 'multipleFromTopNoGaps':
                 case 'multipleJunk':
@@ -2982,6 +2985,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                     return true;
                 case 'singleAnimalfolk':
                     return card.isAnimalfolk();
+                case 'singleTopOrBottom':
+                    var singleTopOrBottom_index = this.cards.indexOf(card);
+                    return singleTopOrBottom_index == 0 || singleTopOrBottom_index == this.cards.length - 1;
                 case 'multiple':
                     return this.orderedSelection.getMaxSize() > 0;
                 case 'multipleJunk':
@@ -6418,6 +6424,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_olm4_discard':
                     this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"));
                     break;
+                case 'gorilla1':
+                    this.myDiscard.setSelectionMode('singleTopOrBottom', undefined, 'daleofmerchants-wrap-technique');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -7000,6 +7009,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_olm4_discard':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'gorilla1':
+                    this.myDiscard.setSelectionMode('none');
                     break;
             }
         };
@@ -7904,6 +7916,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Confirm"), "onOlm4Discard");
                     this.addActionButton("undo-button", _("Undo"), "onOlm4DiscardUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
                     break;
+                case 'gorilla1':
+                    var gorilla1_cards = this.myDiscard.getCards();
+                    var gorilla1_top_card_1 = gorilla1_cards[gorilla1_cards.length - 1];
+                    this.addActionButton("top-card-button", _("Take ") + gorilla1_top_card_1.name, function () { return _this.onGorilla1(gorilla1_top_card_1.id); });
+                    if (gorilla1_cards.length >= 2) {
+                        var gorilla1_bottom_card_1 = gorilla1_cards[0];
+                        this.addActionButton("bottom-card-button", _("Take ") + gorilla1_bottom_card_1.name, function () { return _this.onGorilla1(gorilla1_bottom_card_1.id); });
+                    }
+                    break;
             }
         };
         DaleOfMerchants.prototype.getChameleonTargets = function (card, type_id) {
@@ -8650,6 +8671,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.playTechniqueCard({
                         card_id: card.id
                     });
+                    break;
+                case 'gorilla1':
+                    this.onGorilla1(card.id);
                     break;
             }
         };
@@ -9655,6 +9679,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_ANCHOR:
                 case DaleCard_10.DaleCard.CT_BADOMEN:
                 case DaleCard_10.DaleCard.CT_JUNGLEFOWL5B:
+                case DaleCard_10.DaleCard.CT_GORILLA1:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);
@@ -11891,6 +11916,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var args = this.mainClientState.args;
             this.undoClientSideMarketToLimbo(args.market_card_id, args.market_pos);
         };
+        DaleOfMerchants.prototype.onGorilla1 = function (card_id) {
+            this.bgaPerformAction('actGorilla1', {
+                card_id: card_id
+            });
+        };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;
             console.warn('notifications subscriptions setup42');
@@ -11940,7 +11970,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['placeOnDeck', 500, true],
                 ['placeOnDeckMultiple', 500, true],
                 ['shuffleDiscard', 500],
-                ['discardEntireDeck', 1000],
+                ['discardEntireDeck', 1100],
                 ['wilyFellow', 500],
                 ['DEPRECATED_whirligigShuffle', 1750],
                 ['DEPRECATED_whirligigTakeBack', 500, true],

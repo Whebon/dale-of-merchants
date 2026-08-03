@@ -205,6 +205,7 @@ $machinestates = array(
 			'trOlm4' => 119,
 			'trOlm5a' => 120,
 			'trOlm5b' => 121,
+			'trGorilla1' => 122,
 		),
 	),
 	31 => array(
@@ -1053,6 +1054,16 @@ $machinestates = array(
 		'transitions' => array(
 			'trSamePlayer' => 30,
 			'trChangeActivePlayer' => 29,
+		),
+	),
+	122 => array(
+		'name' => 'gorilla1',
+		'description' => clienttranslate('Stubborn Isolationist: ${actplayer} must take the top or bottom card of their discard'),
+		'descriptionmyturn' => clienttranslate('Stubborn Isolationist: ${you} must take the top or bottom card of their discard'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actGorilla1'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	6300 => array(

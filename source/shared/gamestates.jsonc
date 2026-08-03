@@ -210,7 +210,8 @@
 			"trCharmDodo2": 118,
 			"trOlm4": 119,
 			"trOlm5a": 120,
-			"trOlm5b": 121
+			"trOlm5b": 121,
+			"trGorilla1": 122
 		}
 	},
 
@@ -1320,6 +1321,21 @@
 		"transitions": { 
 			"trSamePlayer": 30,
 			"trChangeActivePlayer": 29	//for TRIGGER_ONMARKETCARD
+		}
+	},
+
+	"122": {
+		"name": "gorilla1",
+		"description": "Stubborn Isolationist: ${actplayer} must take the top or bottom card of their discard",
+		"descriptionmyturn": "Stubborn Isolationist: ${you} must take the top or bottom card of their discard",
+		"type": "activeplayer",
+		"possibleactions": {
+			"actGorilla1": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { 
+			"trSamePlayer": 30
 		}
 	},
 

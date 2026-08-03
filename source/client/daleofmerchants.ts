@@ -1569,6 +1569,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_olm4_discard':
 				this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"))
 				break;
+			case 'gorilla1':
+				this.myDiscard.setSelectionMode('singleTopOrBottom', undefined, 'daleofmerchants-wrap-technique');
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -2144,6 +2147,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_olm4_discard':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'gorilla1':
+				this.myDiscard.setSelectionMode('none');
 				break;
 		}
 		//(~leavingstate)
@@ -3067,6 +3073,15 @@ class DaleOfMerchants extends Gamegui
 			case 'client_olm4_discard':
 				this.addActionButton("confirm-button", _("Confirm"), "onOlm4Discard");
 				this.addActionButton("undo-button", _("Undo"), "onOlm4DiscardUndo", undefined, false, DaleOfMerchants.ACTION_BUTTON_UNDO);
+				break;
+			case 'gorilla1':
+				const gorilla1_cards = this.myDiscard.getCards();
+				const gorilla1_top_card = gorilla1_cards[gorilla1_cards.length - 1]!;
+				this.addActionButton("top-card-button", _("Take ")+gorilla1_top_card.name, () => this.onGorilla1(gorilla1_top_card.id));
+				if (gorilla1_cards.length >= 2) {
+					const gorilla1_bottom_card = gorilla1_cards[0]!;
+					this.addActionButton("bottom-card-button", _("Take ")+gorilla1_bottom_card.name, () => this.onGorilla1(gorilla1_bottom_card.id));
+				}
 				break;
 		}
 		//(~actionbuttons)
@@ -4199,6 +4214,9 @@ class DaleOfMerchants extends Gamegui
 				this.playTechniqueCard<'client_walrus4'>({
 					card_id: card!.id
 				})
+				break;
+			case 'gorilla1':
+				this.onGorilla1(card!.id);
 				break;
 		}
 	}
@@ -5341,6 +5359,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_ANCHOR:
 			case DaleCard.CT_BADOMEN:
 			case DaleCard.CT_JUNGLEFOWL5B:
+			case DaleCard.CT_GORILLA1:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);
@@ -7846,6 +7865,12 @@ class DaleOfMerchants extends Gamegui
 		this.undoClientSideMarketToLimbo(args.market_card_id, args.market_pos);
 	}
 
+	onGorilla1(card_id: number) {
+		this.bgaPerformAction('actGorilla1', {
+			card_id: card_id
+		});
+	}
+
 
 	//(~on)
 
@@ -7905,7 +7930,7 @@ class DaleOfMerchants extends Gamegui
 			['placeOnDeck',							500, true],
 			['placeOnDeckMultiple', 				500, true],
 			['shuffleDiscard',						500],
-			['discardEntireDeck',					1000],
+			['discardEntireDeck',					1100], // a little longer than 1000 for CT_GORIALLA1 state transition
 			['wilyFellow', 							500],
 			['DEPRECATED_whirligigShuffle', 		1750],
 			['DEPRECATED_whirligigTakeBack', 		500, true],

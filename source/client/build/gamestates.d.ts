@@ -226,6 +226,7 @@ interface GameStates {
 			'trOlm4': 119,
 			'trOlm5a': 120,
 			'trOlm5b': 121,
+			'trGorilla1': 122,
 		},
 	},
 	31: {
@@ -1627,6 +1628,22 @@ interface GameStates {
 		'transitions': {
 			'trSamePlayer': 30,
 			'trChangeActivePlayer': 29,
+		},
+	},
+	122: {
+		'name': 'gorilla1',
+		'description': 'Stubborn Isolationist: ${actplayer} must take the top or bottom card of their discard',
+		'descriptionmyturn': 'Stubborn Isolationist: ${you} must take the top or bottom card of their discard',
+		'type': 'activeplayer',
+		'possibleactions': {
+			'actGorilla1': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	6300: {
