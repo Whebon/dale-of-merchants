@@ -434,11 +434,11 @@ $this->DISABLED_ANIMALFOLK_IDS = array(
     //ANIMALFOLK_JUNGLEFOWLS,           //v0.1.1
     //ANIMALFOLK_BATS,                  //v0.1.1
 
-    ANIMALFOLK_DODOS,               //new
-    ANIMALFOLK_OLMS,                //new
-    ANIMALFOLK_GORILLAS,            //new
-    ANIMALFOLK_WALRUSES,            //new
-    ANIMALFOLK_TASMANIANDEVILS,     //new
+    //ANIMALFOLK_DODOS,                 //v0.1.2
+    //ANIMALFOLK_OLMS,                  //v0.1.2
+    //ANIMALFOLK_GORILLAS,              //v0.1.2
+    //ANIMALFOLK_WALRUSES,              //v0.1.2
+    //ANIMALFOLK_TASMANIANDEVILS,       //v0.1.2
 
     // Won't have
     ANIMALFOLK_BEAVERS,
@@ -478,14 +478,14 @@ $this->DISABLED_SOLO_ANIMALFOLK_IDS = array(
     //ANIMALFOLK_JUNGLEFOWLS,           //v0.1.1
     //ANIMALFOLK_BATS,                  //v0.1.1
     
-    ANIMALFOLK_DODOS,                   //new
-    ANIMALFOLK_OLMS,                    //new
-    ANIMALFOLK_GORILLAS,                //new
-    ANIMALFOLK_WALRUSES,                //new
-    ANIMALFOLK_TASMANIANDEVILS,         //new
+    //ANIMALFOLK_DODOS,                 //v0.1.2
+    //ANIMALFOLK_OLMS,                  //v0.1.2
+    //ANIMALFOLK_GORILLAS,              //v0.1.2
+    //ANIMALFOLK_WALRUSES,              //v0.1.2
+    //ANIMALFOLK_TASMANIANDEVILS,       //v0.1.2
 
     // Effect not finalized
-    ANIMALFOLK_LEMURS,
+    //ANIMALFOLK_LEMURS,                //v0.1.2
 
     // Won't have
     ANIMALFOLK_BEAVERS,
