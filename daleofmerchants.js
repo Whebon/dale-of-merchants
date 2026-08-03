@@ -192,6 +192,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getOlm5bIcon = function () {
             return this.getIcon(5, 5);
         };
+        DaleIcons.getGorilla2Icon = function () {
+            return this.getIcon(5, 5);
+        };
         DaleIcons.getCostModificationIcon = function (market_position) {
             var index = market_position - 1;
             if (index >= 4) {
@@ -693,6 +696,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'capuchin5a':
                     icon = DaleIcons_2.DaleIcons.getCapuchin5aIcon();
+                    break;
+                case 'gorilla2':
+                    icon = DaleIcons_2.DaleIcons.getGorilla2Icon();
                     break;
             }
             if (icon) {
@@ -4300,6 +4306,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose a card from the market for ${opponent_name}");
                     case 'client_olm4_discard':
                         return _("${card_name}: ${you} may choose the order to place the cards on ${opponent_name}\'s discard pile");
+                    case 'client_gorilla2':
+                        return _("${card_name}: ${you} may discard your hand and take a card from the market");
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -6427,6 +6435,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'gorilla1':
                     this.myDiscard.setSelectionMode('singleTopOrBottom', undefined, 'daleofmerchants-wrap-technique');
                     break;
+                case 'client_gorilla2':
+                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
+                    this.market.setSelectionMode(2, 'gorilla2', "daleofmerchants-wrap-technique", 1);
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -7012,6 +7024,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'gorilla1':
                     this.myDiscard.setSelectionMode('none');
+                    break;
+                case 'client_gorilla2':
+                    this.myHand.setSelectionMode('none');
+                    this.market.setSelectionMode(0);
                     break;
             }
         };
@@ -7924,6 +7940,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         var gorilla1_bottom_card_1 = gorilla1_cards[0];
                         this.addActionButton("bottom-card-button", _("Take ") + gorilla1_bottom_card_1.name, function () { return _this.onGorilla1(gorilla1_bottom_card_1.id); });
                     }
+                    break;
+                case 'client_gorilla2':
+                    this.addActionButton("confirm-button", _("Confirm both"), "onGorilla2");
+                    this.addActionButtonCancelClient();
                     break;
             }
         };
@@ -10241,6 +10261,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_OLM3:
                     this.clientScheduleTechnique('client_olm3_step1', card.id);
                     break;
+                case DaleCard_10.DaleCard.CT_GORILLA2:
+                    this.clientScheduleTechnique('client_gorilla2', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -11919,6 +11942,18 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onGorilla1 = function (card_id) {
             this.bgaPerformAction('actGorilla1', {
                 card_id: card_id
+            });
+        };
+        DaleOfMerchants.prototype.onGorilla2 = function () {
+            var _a;
+            var market_card_ids = this.market.orderedSelection.get();
+            if (market_card_ids.length != 1 && this.market.size > 0) {
+                this.showMessage(_("Please select a card from the market"), 'error');
+                return;
+            }
+            this.playTechniqueCard({
+                discard_card_ids: this.myHand.orderedSelection.get(),
+                market_card_id: (_a = market_card_ids[0]) !== null && _a !== void 0 ? _a : -1
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

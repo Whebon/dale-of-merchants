@@ -1572,6 +1572,10 @@ class DaleOfMerchants extends Gamegui
 			case 'gorilla1':
 				this.myDiscard.setSelectionMode('singleTopOrBottom', undefined, 'daleofmerchants-wrap-technique');
 				break;
+			case 'client_gorilla2':
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
+				this.market!.setSelectionMode(2, 'gorilla2', "daleofmerchants-wrap-technique", 1);
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -2150,6 +2154,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'gorilla1':
 				this.myDiscard.setSelectionMode('none');
+				break;
+			case 'client_gorilla2':
+				this.myHand.setSelectionMode('none');
+				this.market!.setSelectionMode(0);
 				break;
 		}
 		//(~leavingstate)
@@ -3082,6 +3090,10 @@ class DaleOfMerchants extends Gamegui
 					const gorilla1_bottom_card = gorilla1_cards[0]!;
 					this.addActionButton("bottom-card-button", _("Take ")+gorilla1_bottom_card.name, () => this.onGorilla1(gorilla1_bottom_card.id));
 				}
+				break;
+			case 'client_gorilla2':
+				this.addActionButton("confirm-button", _("Confirm both"), "onGorilla2");
+				this.addActionButtonCancelClient();
 				break;
 		}
 		//(~actionbuttons)
@@ -5920,6 +5932,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_OLM3:
 				this.clientScheduleTechnique('client_olm3_step1', card.id);
 				break;
+			case DaleCard.CT_GORILLA2:
+				this.clientScheduleTechnique('client_gorilla2', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -7868,6 +7883,18 @@ class DaleOfMerchants extends Gamegui
 	onGorilla1(card_id: number) {
 		this.bgaPerformAction('actGorilla1', {
 			card_id: card_id
+		});
+	}
+
+	onGorilla2() {
+		const market_card_ids = this.market!.orderedSelection.get();
+		if (market_card_ids.length != 1 && this.market!.size > 0) {
+			this.showMessage(_("Please select a card from the market"), 'error');
+			return;
+		}
+		this.playTechniqueCard<'client_gorilla2'>({
+			discard_card_ids: this.myHand.orderedSelection.get(),
+			market_card_id: market_card_ids[0] ?? -1
 		});
 	}
 

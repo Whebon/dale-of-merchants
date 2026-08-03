@@ -332,6 +332,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose a card from the market for ${opponent_name}");
             case 'client_olm4_discard':
                 return _("${card_name}: ${you} may choose the order to place the cards on ${opponent_name}\'s discard pile");
+            case 'client_gorilla2':
+                return _("${card_name}: ${you} may discard your hand and take a card from the market");
         }
         return "MISSING DESCRIPTION";
     }

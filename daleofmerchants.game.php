@@ -7591,6 +7591,42 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trGorilla1");
                 break;
+            case CT_GORILLA2:
+                //Discard the hand
+                $discard_card_ids = $args["discard_card_ids"];
+                $nbr = $this->discardAll(
+                    clienttranslate('Teacher of Fables: ${player_name} discards their hand'),
+                    $player_id,
+                    $discard_card_ids
+                );
+                //Get a card from the market
+                $market_card_id = $args["market_card_id"];
+                if ($market_card_id == -1) {
+                    //Partial fizzle
+                    $nbr = $this->cards->countCardInLocation(MARKET);
+                    if ($nbr > 0) {
+                        throw new BgaUserException("Please select a card from the market");
+                    }
+                    $this->notifyAllPlayers('message', clienttranslate('Teacher of Fables: ${player_name} does not take a card from the market, because it is empty'), array(
+                        'player_name' => $this->getActivePlayerName()
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card);
+                }
+                else {
+                    //Get a card from the market
+                    $card = $this->cards->getCardFromLocation($market_card_id, MARKET);
+                    $this->cards->moveCard($market_card_id, HAND.$player_id);
+                    $this->notifyAllPlayers('marketToHand', clienttranslate('Teacher of Fables: ${player_name} takes ${extended_card_name} from the market'), array (
+                        'player_id' => $player_id,
+                        'player_name' => $this->getActivePlayerName(),
+                        'card_name' => $this->getCardName($card),
+                        'extended_card_name' => $this->getCardNameExt($card),
+                        'market_card_id' => $market_card_id,
+                        'pos' => $card["location_arg"],
+                    ));
+                    $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONMARKETCARD);
+                }
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

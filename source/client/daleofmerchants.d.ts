@@ -585,6 +585,7 @@ declare global {
 		'client_capture': { opponent_id: number, from_deck: boolean }
 		'client_olm3_step1': { } //sends nothing to the server
 		'client_olm3_step2': { toss_card_id: number, market_card_ids: number[] } //sends all information to the server
+		'client_gorilla2': { discard_card_ids: number[], market_card_id: number }
 	}
 
 	interface ClientPassiveChoice {
