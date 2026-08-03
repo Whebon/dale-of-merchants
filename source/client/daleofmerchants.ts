@@ -5372,6 +5372,7 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_BADOMEN:
 			case DaleCard.CT_JUNGLEFOWL5B:
 			case DaleCard.CT_GORILLA1:
+			case DaleCard.CT_GORILLA3:
 				fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
 				if (fizzle) {
 					this.clientScheduleTechnique('client_fizzle', card.id);

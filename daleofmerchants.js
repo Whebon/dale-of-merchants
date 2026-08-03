@@ -9700,6 +9700,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_BADOMEN:
                 case DaleCard_10.DaleCard.CT_JUNGLEFOWL5B:
                 case DaleCard_10.DaleCard.CT_GORILLA1:
+                case DaleCard_10.DaleCard.CT_GORILLA3:
                     fizzle = (this.myDiscard.size + this.myDeck.size) == 0;
                     if (fizzle) {
                         this.clientScheduleTechnique('client_fizzle', card.id);

@@ -5129,6 +5129,7 @@ class DaleOfMerchants extends DaleTableBasic
                 case CT_HEROICDEED:
                 case CT_SECRETMISSION:
                 case CT_GORILLA1:
+                case CT_GORILLA3:
                     $decksize = $this->cards->countCardInLocation(DECK.$player_id);
                     $discardsize = $this->cards->countCardInLocation(DISCARD.$player_id);
                     if ($decksize + $discardsize >= 1) {
@@ -7626,6 +7627,26 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                     $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONMARKETCARD);
                 }
+                break;
+            case CT_GORILLA3:
+                // Ensure there is a card on top of the deck
+                $dbcard = $this->cards->pickCardForLocation(DECK.$player_id, 'unstable');
+                if ($dbcard == null) {
+                    throw new BgaVisibleSystemException("Pure Strength should have fizzled");
+                }
+                $this->cards->moveCardOnTop($dbcard["id"], DECK.$player_id);
+                // Toss the top card of the deck
+                $this->tossFromDeck(clienttranslate('Pure Strength: ${player_name} tosses their ${card_name}'), $dbcard["id"]);
+                if ($this->isAnimalfolk($dbcard)) {
+                    $this->draw(
+                        clienttranslate('Pure Strength: ${player_name} draws a card from the supply'), 
+                        1, 
+                        false, 
+                        MARKET, 
+                        $player_id
+                    );
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
                 $name = $this->getCardName($technique_card);
