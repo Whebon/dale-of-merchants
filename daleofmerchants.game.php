@@ -2555,7 +2555,7 @@ class DaleOfMerchants extends DaleTableBasic
     function tossFromDeck(string $msg, int $card_id, array $msg_args = array()) {
         //1. remove the card from the deck
         $player_id = $this->getActivePlayerId();
-        $dbcard = $this->cards->getCardFromLocation($card_id, DECK.$player_id);
+        $dbcard = $this->cards->removeCardFromPile($card_id, DECK.$player_id);
 
         //2. toss it
         if ($this->isJunk($dbcard)) {
@@ -10344,6 +10344,10 @@ class DaleOfMerchants extends DaleTableBasic
                 "card_name" => $this->getCardName($dbcard)
             ));
         }
+
+        //shuffle
+        $this->cards->shuffle(DECK.$player_id);
+
         $this->fullyResolveCard($player_id);
     }
 
