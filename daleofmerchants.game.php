@@ -1439,6 +1439,13 @@ class DaleOfMerchants extends DaleTableBasic
                 //     "pos" => $market_dbcard["location_arg"],
                 // ));
                 break;
+            case CT_GORILLAMONO:
+                //Each 🃏 Mono uses this turn is valued 4. Acquire.
+                $this->effects->insertGlobal(0, CT_GORILLAMONO);
+                $this->notifyAllPlayers('message', clienttranslate('Stubborn Member: each card you use this turn is valued 4'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                ));
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)

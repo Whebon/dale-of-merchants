@@ -1200,6 +1200,7 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                 }
                                 break;
                             case DaleCard.CT_GORILLA4:
+                            case DaleCard.CT_GORILLAMONO:
                                 value = 4;
                                 break;
                         }
