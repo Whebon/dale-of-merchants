@@ -909,6 +909,28 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actGorilla5a()
+	{
+		self::setAjaxMode();
+
+		/** @var string $card_ids */
+		$card_ids = self::getArg('card_ids', AT_numberlist, true);
+
+		$this->game->actGorilla5a( $card_ids );
+		self::ajaxResponse();
+	}
+
+	public function actGorilla5b()
+	{
+		self::setAjaxMode();
+
+		/** @var int $card_id */
+		$card_id = self::getArg('card_id', AT_int, true);
+
+		$this->game->actGorilla5b( $card_id );
+		self::ajaxResponse();
+	}
+
 	public function actDEPRECATED_Cheer()
 	{
 		self::setAjaxMode();

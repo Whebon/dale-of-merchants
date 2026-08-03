@@ -67,6 +67,7 @@ if (false) {
 	$game->stOlm4();
 	$game->stOlm5a();
 	$game->stOlm5b();
+	$game->stGorilla5a();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -206,6 +207,8 @@ $machinestates = array(
 			'trOlm5a' => 120,
 			'trOlm5b' => 121,
 			'trGorilla1' => 122,
+			'trGorilla5a' => 123,
+			'trGorilla5b' => 124,
 		),
 	),
 	31 => array(
@@ -1064,6 +1067,29 @@ $machinestates = array(
 		'possibleactions' => ['actGorilla1'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
+		),
+	),
+	123 => array(
+		'name' => 'gorilla5a',
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must discard 6 cards'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must discard 6 cards'),
+		'type' => 'activeplayer',
+		'action' => 'stGorilla5a',
+		'args' => 'argResolvingCardName',
+		'possibleactions' => ['actGorilla5a'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	124 => array(
+		'name' => 'gorilla5b',
+		'description' => clienttranslate('${resolving_card_name}: ${actplayer} must take 1 card from the market'),
+		'descriptionmyturn' => clienttranslate('${resolving_card_name}: ${you} must take 1 card from the market'),
+		'type' => 'activeplayer',
+		'args' => 'argResolvingCardName',
+		'possibleactions' => ['actGorilla5b'],
+		'transitions' => array(
+			'trNextPlayer' => 41,
 		),
 	),
 	6300 => array(

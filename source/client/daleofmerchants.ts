@@ -1032,6 +1032,9 @@ class DaleOfMerchants extends Gamegui
 			case 'dangerousTest':
 				this.myHand.setSelectionMode('multiple3', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 3 cards to discard"));
 				break;
+			case 'gorilla5a':
+				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 3 cards to discard"), undefined, 6);
+				break;
 			case 'client_shoppingJourney':
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
@@ -1576,6 +1579,12 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose the order to discard your hand"));
 				this.market!.setSelectionMode(2, 'gorilla2', "daleofmerchants-wrap-technique", 1);
 				break;
+			case 'client_gorilla5b':
+				this.market!.setSelectionMode(2, 'pileBlue', "daleofmerchants-wrap-technique");
+				break;
+			case 'gorilla5b':
+				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -1789,6 +1798,9 @@ class DaleOfMerchants extends Gamegui
 				this.myDeck.setSelectionMode('none');
 				break;
 			case 'dangerousTest':
+				this.myHand.setSelectionMode('none');
+				break;
+			case 'gorilla5a':
 				this.myHand.setSelectionMode('none');
 				break;
 			case 'client_shoppingJourney':
@@ -2157,6 +2169,12 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_gorilla2':
 				this.myHand.setSelectionMode('none');
+				this.market!.setSelectionMode(0);
+				break;
+			case 'client_gorilla5b':
+				this.market!.setSelectionMode(0);
+				break;
+			case 'gorilla5b':
 				this.market!.setSelectionMode(0);
 				break;
 		}
@@ -2528,6 +2546,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'dangerousTest':
 				this.addActionButton("confirm-button", _("Discard selected"), "onDangerousTest");
+				break;
+			case 'gorilla5a':
+				this.addActionButton("confirm-button", _("Discard selected"), "onGorilla5a");
 				break;
 			case 'client_glue':
 				this.addActionButton("keep-button", _("Keep"), "onPurchase");
@@ -3093,6 +3114,10 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_gorilla2':
 				this.addActionButton("confirm-button", _("Confirm both"), "onGorilla2");
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_gorilla5b':
+				this.addActionButton("confirm-button", _("Toss all"), "onGorilla5b");
 				this.addActionButtonCancelClient();
 				break;
 		}
@@ -4124,6 +4149,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_olm4_market':
 				this.onOlm4Market(card.id);
+				break;
+			case 'gorilla5b':
+				this.bgaPerformAction('actGorilla5b', {
+					card_id: card.id
+				})
 				break;
 		}
 	}
@@ -5936,6 +5966,15 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_GORILLA2:
 				this.clientScheduleTechnique('client_gorilla2', card.id);
 				break;
+			case DaleCard.CT_GORILLA5B:
+				fizzle = (this.marketDeck.size + this.marketDiscard.size + this.market!.size) == 0;
+				if (fizzle) {
+					this.clientScheduleTechnique('client_fizzle', card.id);
+				}
+				else {
+					this.clientScheduleTechnique('client_gorilla5b', card.id);
+				}
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -6638,11 +6677,24 @@ class DaleOfMerchants extends Gamegui
 
 	onDangerousTest() {
 		const card_ids = this.myHand.orderedSelection.get();
-		if (card_ids.length != 3) {
-			this.showMessage(_("Please select exactly 3 cards to discard"), 'error');
+		const expected_nbr = Math.min(3, this.myHand.count())
+		if (card_ids.length != expected_nbr) {
+			this.showMessage(_("Please select exactly ")+expected_nbr+_(" cards to discard"), 'error');
 			return;
 		}
 		this.bgaPerformAction('actDangerousTest', {
+			card_ids: this.arrayToNumberList(card_ids)
+		})
+	}
+
+	onGorilla5a() {
+		const card_ids = this.myHand.orderedSelection.get();
+		const expected_nbr = Math.min(6, this.myHand.count())
+		if (card_ids.length != expected_nbr) {
+			this.showMessage(_("Please select exactly ")+expected_nbr+_(" cards to discard"), 'error');
+			return;
+		}
+		this.bgaPerformAction('actGorilla5a', {
 			card_ids: this.arrayToNumberList(card_ids)
 		})
 	}
@@ -7897,6 +7949,12 @@ class DaleOfMerchants extends Gamegui
 			discard_card_ids: this.myHand.orderedSelection.get(),
 			market_card_id: market_card_ids[0] ?? -1
 		});
+	}
+
+	onGorilla5b() {
+		this.playTechniqueCardWithServerState<'client_gorilla5b'>({
+			card_ids: this.market!.orderedSelection.get()
+		})
 	}
 
 

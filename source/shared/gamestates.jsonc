@@ -211,7 +211,9 @@
 			"trOlm4": 119,
 			"trOlm5a": 120,
 			"trOlm5b": 121,
-			"trGorilla1": 122
+			"trGorilla1": 122,
+			"trGorilla5a": 123,
+			"trGorilla5b": 124
 		}
 	},
 
@@ -1337,6 +1339,35 @@
 		"transitions": { 
 			"trSamePlayer": 30
 		}
+	},
+
+	"123": {
+		"name": "gorilla5a",
+		"description": "${resolving_card_name}: ${actplayer} must discard 6 cards",
+		"descriptionmyturn": "${resolving_card_name}: ${you} must discard 6 cards",
+		"type": "activeplayer",
+		"action": "stGorilla5a",
+		"args": "argResolvingCardName",
+		"possibleactions": {
+			"actGorilla5a": [
+				{"name": "card_ids", "type": "AT_numberlist"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	},
+
+	"124": {
+		"name": "gorilla5b",
+		"description": "${resolving_card_name}: ${actplayer} must take 1 card from the market",
+		"descriptionmyturn": "${resolving_card_name}: ${you} must take 1 card from the market",
+		"type": "activeplayer",
+		"args": "argResolvingCardName",
+		"possibleactions": {
+			"actGorilla5b": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trNextPlayer": 41 }
 	},
 
 

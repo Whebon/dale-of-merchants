@@ -5236,6 +5236,12 @@ class DaleOfMerchants extends DaleTableBasic
                         throw new BgaVisibleSystemException("Unable to fizzle CT_ACCIDENT: there are animalfolk cards in hand");
                     }
                     break;
+                case CT_GORILLA5B:
+                    $counts = $this->cards->countCardsInLocations();
+                    if (isset($counts[DECK.MARKET]) || isset($counts[DISCARD.MARKET]) || isset($counts[MARKET])) {
+                        throw new BgaVisibleSystemException("Unable to fizzle CT_GORILLA5B: the market, supply or bin contain cards");
+                    }
+                    break;
                 default:
                     break; //by default, there is no fizzle verification. TODO: issue #126
             } //(~fizzle technique)
@@ -5795,6 +5801,10 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_DANGEROUSTEST:
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trDangerousTest");
+                break;
+            case CT_GORILLA5A:
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trGorilla5a");
                 break;
             case CT_STEADYACHIEVER:
                 $this->resolveImmediateEffects($player_id, $technique_card);
@@ -7655,6 +7665,27 @@ class DaleOfMerchants extends DaleTableBasic
                 ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_GORILLA5B:
+                //Get the selected cards
+                $card_ids = $args["card_ids"];
+                $selected_cards = $this->cards->getCardsFromLocation($card_ids, MARKET);
+                //Get the non-selected cards
+                $non_selected_cards = $this->cards->getCardsInLocation(MARKET);
+                foreach ($selected_cards as $card_id => $card) {
+                    unset($non_selected_cards[$card_id]);
+                }
+                //Toss all cards from the market board
+                $this->tossFromMarketBoard(
+                    clienttranslate('Crown of Sorrow: ${player_name} tosses all cards from the market'),
+                    $card_ids, 
+                    $selected_cards, 
+                    $non_selected_cards
+                );
+                //Refill the market
+                $this->refillMarket(false);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trGorilla5b");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -8799,18 +8830,38 @@ class DaleOfMerchants extends DaleTableBasic
         $this->checkAction("actDangerousTest");
         $card_ids = $this->numberListToArray($card_ids);
         $player_id = $this->getActivePlayerId();
-        if (count($card_ids) != 3) {
-            throw new BgaUserException($this->_("You must select exactly 3 cards to discard"));
+        $expected_nbr = min(3, $this->cards->countCardsInLocation(HAND.$player_id));
+        if (count($card_ids) != $expected_nbr) {
+            throw new BgaUserException($this->_("You must select exactly ")+$expected_nbr+_(" cards to discard"));
         }
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->discardMultiple(
-            clienttranslate('Dangerous Test: ${player_name} discards 3 cards'),
+            clienttranslate('Dangerous Test: ${player_name} discards ${nbr} cards'),
             $player_id, 
             $card_ids, 
             $cards
         );
         $this->fullyResolveCard($player_id);
     }
+
+    function actGorilla5a($card_ids) {
+        $this->checkAction("actGorilla5a");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+        $expected_nbr = min(6, $this->cards->countCardsInLocation(HAND.$player_id));
+        if (count($card_ids) != $expected_nbr) {
+            throw new BgaUserException($this->_("You must select exactly ")+$expected_nbr+_(" cards to discard"));
+        }
+        $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
+        $this->discardMultiple(
+            clienttranslate('Bar of Soap: ${player_name} discards ${nbr} cards'),
+            $player_id, 
+            $card_ids, 
+            $cards
+        );
+        $this->fullyResolveCard($player_id);
+    }
+
 
     function actNightShift($card_ids, $player_ids) {
         $this->checkAction("actNightShift");
@@ -10717,6 +10768,22 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id);
     }
 
+    function actGorilla5b($card_id) {
+        $this->checkAction("actGorilla5b");
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->getCardFromLocation($card_id, MARKET);
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->notifyAllPlayers('marketToHand', clienttranslate('Crown of Sorrow: ${player_name} takes ${extended_card_name} from the market'), array (
+            'player_id' => $player_id,
+            'player_name' => $this->getActivePlayerName(),
+            'card_name' => $this->getCardName($dbcard),
+            'extended_card_name' => $this->getCardNameExt($dbcard),
+            'market_card_id' => $card_id,
+            'pos' => $dbcard["location_arg"],
+        ));
+        $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
+    }
+
 
     // ^
     // |
@@ -11563,10 +11630,20 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     function stDangerousTest() {
-        $dbcards = $this->draw(clienttranslate('Dangerous Test: ${player_name} draws 3 cards'), 3, false);
-        if (count($dbcards) == 0) {
+        $player_id = $this->getActivePlayerId();    
+        $this->draw(clienttranslate('Dangerous Test: ${player_name} draws ${nbr} cards'), 3, false);
+        if ($this->cards->countCardsInLocation(HAND.$player_id) == 0) {
             //dangerous test has no effect
-            $this->fullyResolveCard($this->getActivePlayerId());
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
+    function stGorilla5a() {
+        $player_id = $this->getActivePlayerId();    
+        $this->draw(clienttranslate('Bar of Soap: ${player_name} draws ${nbr} cards'), 5, false);
+        if ($this->cards->countCardsInLocation(HAND.$player_id) == 0) {
+            //gorilla5a has no effect
+            $this->fullyResolveCard($player_id);
         }
     }
 
@@ -12039,7 +12116,7 @@ class DaleOfMerchants extends DaleTableBasic
     function stOlm5a() {
         $this->_stLookAtOpponentRandomHandCards(3);
     }
-    
+
     // ^
     // |
     //(~st)
