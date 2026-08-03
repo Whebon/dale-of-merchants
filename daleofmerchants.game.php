@@ -3264,7 +3264,7 @@ class DaleOfMerchants extends DaleTableBasic
 
 
     /**
-     * @return bool true if an aura effect like CT_FLASHYSHOW or CT_PRACTICALVALUES is active
+     * @return bool true if an aura effect like CT_FLASHYSHOW, CT_PRACTICALVALUES or CT_GORILLA4 is active
      */
     function isGlobalValueEffectActive(): bool {
         for ($i=0; $i < 5; $i++) { 
@@ -7646,6 +7646,13 @@ class DaleOfMerchants extends DaleTableBasic
                         $player_id
                     );
                 }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
+            case CT_GORILLA4:
+                $this->effects->insertGlobal(0, CT_GORILLA4);
+                $this->notifyAllPlayers('message', clienttranslate('Blunt Education: each card you use this turn is valued 4'), array(
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                ));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -12895,7 +12902,43 @@ class DaleOfMerchants extends DaleTableBasic
                 "stack" => 4,
                 "type_ids_from_hand" => [CT_WALRUS2, CT_DODO2],
                 "global_effects" => [CT_WALRUS2]
-            )
+            ),
+            array(
+                "name" => "Gorilla4",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_GORILLA4]
+            ),
+            array (
+                "name" => "Practical Values -> Gorilla4",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_PRACTICALVALUES, CT_GORILLA4]
+            ),
+            array (
+                "name" => "Gorilla4 -> Practical Values",
+                "stack" => 2,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_GORILLA4, CT_PRACTICALVALUES]
+            ),
+            array (
+                "name" => "Gorilla4 -> Flashy Show",
+                "stack" => 5,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_GORILLA4, CT_FLASHYSHOW]
+            ),
+            array (
+                "name" => "Flashy Show -> Gorilla4",
+                "stack" => 4,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_FLASHYSHOW, CT_GORILLA4]
+            ),
+            array (
+                "name" => "Gorilla4 -> Flashy Show -> Practical Values",
+                "stack" => 1,
+                "type_ids_from_hand" => [CT_SWIFTBROKER],
+                "global_effects" => [CT_GORILLA4, CT_FLASHYSHOW, CT_PRACTICALVALUES]
+            ),
         );
 
         foreach ($tests as $test) {

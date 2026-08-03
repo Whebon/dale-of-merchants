@@ -196,6 +196,9 @@ class DaleEffects {
                             $value = 6 - $value;
                         }
                         break;
+                    case CT_GORILLA4:
+                        $value = 4;
+                        break;
                 }
             }
         }

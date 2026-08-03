@@ -1199,6 +1199,9 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                     value = 6 - value;
                                 }
                                 break;
+                            case DaleCard.CT_GORILLA4:
+                                value = 4;
+                                break;
                         }
                     }
                 }

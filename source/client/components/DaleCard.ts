@@ -646,6 +646,9 @@ export class DaleCard {
                             value = 6 - value;
                         }
                         break;
+                    case DaleCard.CT_GORILLA4:
+                        value = 4;
+                        break;
                 }
             }
         }
