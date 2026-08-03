@@ -229,6 +229,7 @@ interface GameStates {
 			'trGorilla1': 122,
 			'trGorilla5a': 123,
 			'trGorilla5b': 124,
+			'trTasmanianDevil1': 125,
 		},
 	},
 	31: {
@@ -1681,6 +1682,24 @@ interface GameStates {
 		},
 		'transitions': {
 			'trNextPlayer': 41,
+		},
+	},
+	125: {
+		'name': 'tasmanianDevil1',
+		'description': 'Shrewd Trickster: ${actplayer} may discard the top of ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Shrewd Trickster: ${you} may discard ${opponent_name}\\\'s ${_private.card_name}',
+		'type': 'activeplayer',
+		'action': 'stTasmanianDevil1',
+		'args': 'argOpponentNameAndPassiveCardIdAndCardNamePrivate',
+		'possibleactions': {
+			'actTasmanianDevil1': [{
+				'name': 'should_discard',
+				'type': 'AT_bool',
+				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
 		},
 	},
 	6300: {

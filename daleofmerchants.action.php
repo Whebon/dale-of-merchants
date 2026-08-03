@@ -931,6 +931,17 @@ class action_daleofmerchants extends APP_GameAction
 		self::ajaxResponse();
 	}
 
+	public function actTasmanianDevil1()
+	{
+		self::setAjaxMode();
+
+		/** @var bool $should_discard */
+		$should_discard = self::getArg('should_discard', AT_bool, true);
+
+		$this->game->actTasmanianDevil1( $should_discard );
+		self::ajaxResponse();
+	}
+
 	public function actDEPRECATED_Cheer()
 	{
 		self::setAjaxMode();

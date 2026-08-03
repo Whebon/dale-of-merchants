@@ -6454,6 +6454,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'gorilla5b':
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
+                case 'tasmanianDevil1':
+                    this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Top card"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -7052,6 +7055,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'gorilla5b':
                     this.market.setSelectionMode(0);
+                    break;
+                case 'tasmanianDevil1':
+                    this.myLimbo.setSelectionMode('none');
                     break;
             }
         };
@@ -7975,6 +7981,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_gorilla5b':
                     this.addActionButton("confirm-button", _("Toss all"), "onGorilla5b");
                     this.addActionButtonCancelClient();
+                    break;
+                case 'tasmanianDevil1':
+                    this.addActionButton("confirm-discard-button", _("Discard"), "onTasmanianDevil1Discard");
+                    this.addActionButton("confirm-deck-button", _("Place back on Deck"), "onTasmanianDevil1Deck");
                     break;
             }
         };
@@ -10310,6 +10320,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.clientScheduleTechnique('client_gorilla5b', card.id);
                     }
                     break;
+                case DaleCard_10.DaleCard.CT_TASMANIANDEVIL2:
+                    this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -10388,6 +10401,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     });
                     break;
                 case DaleCard_10.DaleCard.CT_COFFEEGRINDER:
+                case DaleCard_10.DaleCard.CT_TASMANIANDEVIL1:
                     this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id, via_deck: true, keep_passive_selected: true });
                     break;
                 case DaleCard_10.DaleCard.CT_DRAMATICROMANTIC:
@@ -12017,6 +12031,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onGorilla5b = function () {
             this.playTechniqueCardWithServerState({
                 card_ids: this.market.orderedSelection.get()
+            });
+        };
+        DaleOfMerchants.prototype.onTasmanianDevil1Discard = function () {
+            this.bgaPerformAction('actTasmanianDevil1', {
+                should_discard: true
+            });
+        };
+        DaleOfMerchants.prototype.onTasmanianDevil1Deck = function () {
+            this.bgaPerformAction('actTasmanianDevil1', {
+                should_discard: false
             });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {

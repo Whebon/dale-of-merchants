@@ -5889,6 +5889,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_RUTHLESSCOMPETITION:
                 $opponent_id = $args["opponent_id"];
+                $this->validateOpponentId($opponent_id);
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Ruthless Competition must be used on ANOTHER player");
                 }
@@ -6289,6 +6290,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_BURGLARY:
                 $opponent_id = $args["opponent_id"];
+                $this->validateOpponentId($opponent_id);
                 $value = $args["value"];
                 if ($opponent_id == $player_id) {
                     throw new BgaVisibleSystemException("Burglary cannot target the active player");
@@ -7693,6 +7695,35 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trGorilla5b");
                 break;
+            case CT_TASMANIANDEVIL2:
+                $opponent_id = $args["opponent_id"];
+                $this->validatePlayerId($opponent_id);
+                $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                $nbr = 0;
+                for ($i = 0; $i < 2; $i++) {
+                    if (count($cards) == 0) {
+                        $this->notifyAllPlayers('message', clienttranslate('Disruptive Speech: ${player_name} attempts to discard a card from ${opponent_name}, but their hand is empty'), array(
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        ));
+                        break;
+                    }
+                    $card_id = array_rand($cards);
+                    $card = $cards[$card_id];
+                    unset($cards[$card_id]);
+                    $this->cards->moveCardOnTop($card_id, DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('discard', clienttranslate('Disruptive Speech: ${player_name} randomly discards ${opponent_name}\'s ${card_name}'), array(
+                        "player_id" => $opponent_id, // this player discards the card
+                        "card" => $card,
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($card)
+                    ));
+                    $nbr += 1;
+                }
+                $this->draw(clienttranslate('Disruptive Speech: ${player_name} draws ${nbr} cards'), $nbr, false, $opponent_id, $opponent_id);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -8509,6 +8540,25 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_id" => $player_id,
                     "card" => $handCard,
                 ));
+                break;
+            case CT_TASMANIANDEVIL1:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
+                //force a reshuffle, so we can already look at the top card of the deck
+                if ($this->cards->countCardsInLocation(DECK.$opponent_id) == 0) {
+                    $this->onLocationExhausted(DECK.$opponent_id);
+                }
+                //set the name of the card for the client description
+                $dbcard = $this->cards->getCardOnTop(DECK.$opponent_id);
+                if ($dbcard == null) {
+                    throw new BgaUserException("This passive has no effect on that player");
+                }
+                $this->setGameStateValue("card_id", $dbcard["id"]);
+                // set the opponent_id and passive_card_id
+                $this->effects->insertModification($passive_card_id, CT_TASMANIANDEVIL1);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->setGameStateValue("passive_card_id", $passive_card_id);
+                $this->gamestate->nextState("trTasmanianDevil1"); return;
                 break;
             default:
                 $name = $this->getCardName($passive_card);
@@ -10791,6 +10841,47 @@ class DaleOfMerchants extends DaleTableBasic
         $this->fullyResolveCard($player_id, null, null, TRIGGER_ONMARKETCARD);
     }
 
+    function actTasmanianDevil1($should_discard) {
+        $this->checkAction("actTasmanianDevil1");
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        if (count($dbcards) != 1) {
+            throw new BgaVisibleSystemException("Expected exactly 1 card in limbo");
+        }
+        $dbcard = reset($dbcards);
+        
+        if ($should_discard) {
+            //discard it
+            $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+            $this->notifyAllPlayers('discard', clienttranslate('Shrewd Trickster: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
+                "player_id" => $player_id,
+                "discard_id" => $opponent_id,
+                "from_limbo" => true,
+                "card" => $dbcard,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "card_name" => $this->getCardName($dbcard)
+            ));
+        }
+        else {
+            //put it back on the deck
+            $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Shrewd Trickster: ${player_name} places the card back on ${opponent_name}\' deck'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "deck_player_id" => $opponent_id,
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                "from_limbo" => true,
+                "_private" => array(
+                    "card" => $dbcard,
+                    "card_name" => $this->getCardName($dbcard),
+                )
+            ), clienttranslate('Shrewd Trickster: ${player_name} places ${card_name} back on ${opponent_name}\' deck'));
+        }
+
+        $this->gamestate->nextState("trSamePlayer");
+    }
 
     // ^
     // |
@@ -10992,6 +11083,13 @@ class DaleOfMerchants extends DaleTableBasic
         return array_merge(
             $this->argOpponentNameAndPassiveCardId(),
             $this->argDie()
+        );
+    }
+
+    function argOpponentNameAndPassiveCardIdAndCardNamePrivate() {
+        return array_merge(
+            $this->argOpponentNameAndPassiveCardId(),
+            $this->argCardNamePrivate()
         );
     }
 
@@ -12122,6 +12220,11 @@ class DaleOfMerchants extends DaleTableBasic
 
     function stOlm5a() {
         $this->_stLookAtOpponentRandomHandCards(3);
+    }
+
+    function stTasmanianDevil1() {
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $this->draw('', 1, true, $opponent_id);
     }
 
     // ^

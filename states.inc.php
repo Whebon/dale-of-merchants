@@ -68,6 +68,7 @@ if (false) {
 	$game->stOlm5a();
 	$game->stOlm5b();
 	$game->stGorilla5a();
+	$game->stTasmanianDevil1();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -209,6 +210,7 @@ $machinestates = array(
 			'trGorilla1' => 122,
 			'trGorilla5a' => 123,
 			'trGorilla5b' => 124,
+			'trTasmanianDevil1' => 125,
 		),
 	),
 	31 => array(
@@ -1090,6 +1092,18 @@ $machinestates = array(
 		'possibleactions' => ['actGorilla5b'],
 		'transitions' => array(
 			'trNextPlayer' => 41,
+		),
+	),
+	125 => array(
+		'name' => 'tasmanianDevil1',
+		'description' => clienttranslate('Shrewd Trickster: ${actplayer} may discard the top of ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Shrewd Trickster: ${you} may discard ${opponent_name}\'s ${_private.card_name}'),
+		'type' => 'activeplayer',
+		'action' => 'stTasmanianDevil1',
+		'args' => 'argOpponentNameAndPassiveCardIdAndCardNamePrivate',
+		'possibleactions' => ['actTasmanianDevil1'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
 		),
 	),
 	6300 => array(
