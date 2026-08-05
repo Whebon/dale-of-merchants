@@ -651,7 +651,7 @@ interface GameStates {
 	},
 	68: {
 		'name': 'duplicateEntry',
-		'description': 'Duplicate Entry: ${actplayer} must search your deck for 2 cards',
+		'description': 'Duplicate Entry: ${actplayer} must search their deck for 2 cards',
 		'descriptionmyturn': 'Duplicate Entry: ${you} must search your deck for 2 cards',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContent',
@@ -1018,7 +1018,7 @@ interface GameStates {
 	},
 	87: {
 		'name': 'resourcefulAlly',
-		'description': 'Resourceful Ally: ${actplayer} must place ${nbr} cards from your discard on the bottom of their deck',
+		'description': 'Resourceful Ally: ${actplayer} must place ${nbr} cards from their discard on the bottom of their deck',
 		'descriptionmyturn': 'Resourceful Ally: ${you} must place ${nbr} cards from your discard on the bottom of your deck',
 		'type': 'activeplayer',
 		'args': 'argResourcefulAlly',
@@ -1052,7 +1052,7 @@ interface GameStates {
 	},
 	89: {
 		'name': 'fishing',
-		'description': 'Fishing: ${actplayer} must place exactly ${die_value} cards from your discard on your deck',
+		'description': 'Fishing: ${actplayer} must place exactly ${die_value} cards from their discard on their deck',
 		'descriptionmyturn': 'Fishing: ${you} must place exactly ${die_value} cards from your discard on your deck',
 		'type': 'activeplayer',
 		'args': 'argDie',
@@ -1636,7 +1636,7 @@ interface GameStates {
 	122: {
 		'name': 'gorilla1',
 		'description': 'Stubborn Isolationist: ${actplayer} must take the top or bottom card of their discard',
-		'descriptionmyturn': 'Stubborn Isolationist: ${you} must take the top or bottom card of their discard',
+		'descriptionmyturn': 'Stubborn Isolationist: ${you} must take the top or bottom card of your discard',
 		'type': 'activeplayer',
 		'possibleactions': {
 			'actGorilla1': [{

@@ -466,7 +466,7 @@ $machinestates = array(
 	),
 	68 => array(
 		'name' => 'duplicateEntry',
-		'description' => clienttranslate('Duplicate Entry: ${actplayer} must search your deck for 2 cards'),
+		'description' => clienttranslate('Duplicate Entry: ${actplayer} must search their deck for 2 cards'),
 		'descriptionmyturn' => clienttranslate('Duplicate Entry: ${you} must search your deck for 2 cards'),
 		'type' => 'activeplayer',
 		'args' => 'argMyDeckContent',
@@ -683,7 +683,7 @@ $machinestates = array(
 	),
 	87 => array(
 		'name' => 'resourcefulAlly',
-		'description' => clienttranslate('Resourceful Ally: ${actplayer} must place ${nbr} cards from your discard on the bottom of their deck'),
+		'description' => clienttranslate('Resourceful Ally: ${actplayer} must place ${nbr} cards from their discard on the bottom of their deck'),
 		'descriptionmyturn' => clienttranslate('Resourceful Ally: ${you} must place ${nbr} cards from your discard on the bottom of your deck'),
 		'type' => 'activeplayer',
 		'args' => 'argResourcefulAlly',
@@ -705,7 +705,7 @@ $machinestates = array(
 	),
 	89 => array(
 		'name' => 'fishing',
-		'description' => clienttranslate('Fishing: ${actplayer} must place exactly ${die_value} cards from your discard on your deck'),
+		'description' => clienttranslate('Fishing: ${actplayer} must place exactly ${die_value} cards from their discard on their deck'),
 		'descriptionmyturn' => clienttranslate('Fishing: ${you} must place exactly ${die_value} cards from your discard on your deck'),
 		'type' => 'activeplayer',
 		'args' => 'argDie',
@@ -1064,7 +1064,7 @@ $machinestates = array(
 	122 => array(
 		'name' => 'gorilla1',
 		'description' => clienttranslate('Stubborn Isolationist: ${actplayer} must take the top or bottom card of their discard'),
-		'descriptionmyturn' => clienttranslate('Stubborn Isolationist: ${you} must take the top or bottom card of their discard'),
+		'descriptionmyturn' => clienttranslate('Stubborn Isolationist: ${you} must take the top or bottom card of your discard'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actGorilla1'],
 		'transitions' => array(
