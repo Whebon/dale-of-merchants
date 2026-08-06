@@ -7575,7 +7575,8 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_DODO5B:
-                $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 2);
+                // The "0" means the effect does not correspond to a card_id. It will expire, even if the card is still in the schedule.
+                $this->effects->insertGlobal(0, EFFECT_INCREASE_HAND_SIZE, 2);
                 $this->notifyAllPlayers('message', clienttranslate('Company Share: ${player_name} increases their hand size by 2'), array(
                     'player_name' => $this->getActivePlayerName()
                 ));
