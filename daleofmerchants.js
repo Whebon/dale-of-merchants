@@ -10469,6 +10469,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_TASMANIANDEVIL1:
                     this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id, via_deck: true, keep_passive_selected: true });
                     break;
+                case DaleCard_10.DaleCard.CT_TASMANIANDEVIL5A:
+                    this.mainClientState.enterOnStack('client_selectPlayerPassive', { passive_card_id: card.id });
+                    break;
                 case DaleCard_10.DaleCard.CT_DRAMATICROMANTIC:
                     this.mainClientState.enterOnStack('client_dramaticRomantic', { passive_card_id: card.id });
                     break;

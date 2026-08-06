@@ -8598,7 +8598,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //set the name of the card for the client description
                 $dbcard = $this->cards->getCardOnTop(DECK.$opponent_id);
                 if ($dbcard == null) {
-                    throw new BgaUserException("This passive has no effect on that player");
+                    throw new BgaUserException($this->_("This passive has no effect on that player"));
                 }
                 $this->setGameStateValue("card_id", $dbcard["id"]);
                 // set the opponent_id and passive_card_id
@@ -8606,6 +8606,25 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 $this->setGameStateValue("passive_card_id", $passive_card_id);
                 $this->gamestate->nextState("trTasmanianDevil1"); return;
+                break;
+            case CT_TASMANIANDEVIL5A:
+                $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
+                $this->validatePlayerId($opponent_id);
+                $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                if (count($cards) == 0) {
+                    throw new BgaUserException($this->_("This passive has no effect on that player"));
+                }
+                $card_id = array_rand($cards);
+                $card = $cards[$card_id];
+                $this->cards->moveCardOnTop($card_id, DISCARD.$opponent_id);
+                $this->notifyAllPlayers('discard', clienttranslate('Public Humiliation: ${player_name} lets ${opponent_name} discard their ${card_name}'), array(
+                    "player_id" => $opponent_id,
+                    "card" => $card,
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                    "card_name" => $this->getCardName($card)
+                ));
+                $this->effects->insertModification($passive_card_id, CT_TASMANIANDEVIL5A);
                 break;
             default:
                 $name = $this->getCardName($passive_card);
