@@ -3660,22 +3660,35 @@ class DaleOfMerchants extends DaleTableBasic
      * @param int $cost the cost that needs to be paid (explicitly paid coins should already be subtracted!)
      * @param ?int $cost_max (optional) by default, this is the same as `$cost`. overpaying is allowed up to the maximum.
      * @param bool $is_purchase (optional) if `true`, apply additional cost rules for purchases. 
+     * @param bool $is_purchase_from_bin (optional) if `true`, apply additional cost rules for purchases from the bin. 
      * @return int $value spent to cover the costs
      */
-    function verifyCost(mixed $player_id, array $funds_cards, int $cost, ?int $cost_max = null, bool $is_purchase = false): int {
+    function verifyCost(mixed $player_id, array $funds_cards, int $cost, ?int $cost_max = null, bool $is_purchase = false, bool $is_purchase_from_bin = false): int {
         $optional_value = 0;
         if ($is_purchase) {
             //Apply CT_VORACIOUSCONSUMER
             $optional_value = 2*$this->countTypeId($funds_cards, CT_VORACIOUSCONSUMER);
         }
+        if ($is_purchase_from_bin && !$is_purchase) {
+            throw new BgaVisibleSystemException("Expected is_purchase_from_bin => is_purchase");
+        }
 
+        // Determine if CT_OLM1 may be ignored for the overpaying rule (when purchasing with 2+ olm1s, one of them may be left out)
+        $ignore_olm1_for_overpaying = false;
+        if ($is_purchase_from_bin && $this->countTypeId($funds_cards, CT_OLM1) == 1) {
+            $ignore_olm1_for_overpaying = true;
+        }
+        
         //Calculate the value of the cards
         $total_value = 0;
         $lowest_value = 1000;
         foreach ($funds_cards as $card) {
             $value = $this->getValue($card);
-            $lowest_value = min($lowest_value, $value);
             $total_value += $value;
+            if ($ignore_olm1_for_overpaying && $this->getTypeId($card) == CT_OLM1) {
+                continue;
+            }
+            $lowest_value = min($lowest_value, $value);
         }
 
         //Check if funds are sufficient, if not, try to implicily add extra coins to cover the cost
@@ -4904,7 +4917,7 @@ class DaleOfMerchants extends DaleTableBasic
         $cost = $this->getCost($player_id, $market_card);
 
         //Verify the cost
-        $this->verifyCost($player_id, $funds_cards, $cost, null, true);
+        $this->verifyCost($player_id, $funds_cards, $cost, null, true, $from_bin);
 
         //Apply CT_DEPRECATED_ESSENTIALPURCHASE
         if ($this->getTypeId($market_card) == CT_DEPRECATED_ESSENTIALPURCHASE) {
