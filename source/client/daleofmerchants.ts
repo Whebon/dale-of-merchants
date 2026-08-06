@@ -1113,6 +1113,9 @@ class DaleOfMerchants extends Gamegui
 			case 'olm5b':
 				this.market!.setSelectionMode(2, 'olm5b', "daleofmerchants-wrap-technique");
 				this.market!.orderedSelection.setMaxSize(1);
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('noneCantViewContent');
+				}
 				break;
 			case 'daringAdventurer':
 				const daringAdventurer_args = args.args as { die_value: number };
@@ -1882,6 +1885,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'olm5b':
 				this.market!.setSelectionMode(0);
+				for (const [player_id, deck] of Object.entries(this.playerDecks)) {
+					deck.setSelectionMode('none');
+				}
 				break;
 			case 'daringAdventurer':
 				this.myHand.setSelectionMode('none');
@@ -3957,7 +3963,16 @@ class DaleOfMerchants extends Gamegui
 					target.classList.remove("daleofmerchants-bga-button-selected");
 				}
 				this.updateConfirmOpponentsButton();
-				console.warn(this.opponent_ids);
+
+				switch(this.gamedatas.gamestate.name) {
+					case 'olm5b':
+						// Alternative selection mode: TargetingLine
+						if (TargetingLine.exists()) {
+							TargetingLine.removeAll();
+							this.onOlm5b(); 
+						}
+						break;
+				}
 			}
 		}
 	}
@@ -4212,6 +4227,34 @@ class DaleOfMerchants extends Gamegui
 				this.bgaPerformAction('actGorilla5b', {
 					card_id: card.id
 				})
+				break;
+			case 'olm5b':
+				TargetingLine.removeAll();
+				if (this.opponent_ids.length == 0 && this.market!.orderedSelection.includes(card.id)) {
+					// Alternative selection mode: TargetingLine
+					const olm5b_args = this.gamedatas.gamestate.args as { player_ids: number[] };
+					const olm5b_targets = [];
+					for (let player_id of olm5b_args.player_ids) {
+						const deck = this.playerDecks[player_id]!;
+						const target = deck.topCardHTML ?? deck.placeholderHTML
+						target.dataset['target_id'] = String(player_id);
+						olm5b_targets.push(target);
+					}
+					new TargetingLine(
+						card,
+						olm5b_targets,
+						"daleofmerchants-line-source-technique",
+						"daleofmerchants-line-target-technique",
+						"daleofmerchants-line-technique",
+						(source_id: number) => {
+							TargetingLine.removeAll();
+						},
+						(source_id: number, target_id: number) => {
+							this.opponent_ids = [target_id]; //overwrite the action buttons, directly set the opponent_id
+							this.onOlm5b();
+						}
+					)
+				}
 				break;
 		}
 	}
