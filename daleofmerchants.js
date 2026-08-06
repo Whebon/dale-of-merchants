@@ -12585,7 +12585,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.market.removeCard(notif.args.pos);
                 if (notif.args.to_limbo) {
                     this.myLimbo.addDaleCardToStock(daleCard, slotId);
-                    return;
                 }
                 this.myHand.addDaleCardToStock(daleCard, slotId);
             }
@@ -12596,7 +12595,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 this.market.removeCard(notif.args.pos, 'overall_player_board_' + notif.args.player_id);
             }
-            this.playerHandSizes[notif.args.player_id].incValue(1);
+            if (!notif.args.to_limbo) {
+                this.playerHandSizes[notif.args.player_id].incValue(1);
+            }
         };
         DaleOfMerchants.prototype.notif_marketToDeck = function (notif) {
             var daleCard = new DaleCard_10.DaleCard(notif.args.market_card_id);

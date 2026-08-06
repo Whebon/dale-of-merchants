@@ -8595,7 +8595,6 @@ class DaleOfMerchants extends Gamegui
 			this.market!.removeCard(notif.args.pos);
 			if (notif.args.to_limbo) {
 				this.myLimbo.addDaleCardToStock(daleCard, slotId);
-				return; //don't update the hand size!
 			}
 			this.myHand.addDaleCardToStock(daleCard, slotId)
 		}
@@ -8609,7 +8608,9 @@ class DaleOfMerchants extends Gamegui
 			this.market!.removeCard(notif.args.pos, 'overall_player_board_'+notif.args.player_id);
 		}
 		//update the hand sizes
-		this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		if (!notif.args.to_limbo) {
+			this.playerHandSizes[notif.args.player_id]!.incValue(1);
+		}
 	}
 
 	notif_marketToDeck(notif: NotifAs<'marketToDeck'>) {
