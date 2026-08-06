@@ -125,6 +125,9 @@ export abstract class AbstractOrderedSelection {
             case 'gorilla2':
                 icon = DaleIcons.getGorilla2Icon();
                 break;
+            case 'tasmanianDevil3':
+                icon = DaleIcons.getTasmanianDevil3Icon();
+                break;
         }
         if (icon) {
             if (secondary) {

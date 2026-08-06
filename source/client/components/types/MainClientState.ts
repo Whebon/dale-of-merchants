@@ -336,6 +336,17 @@ export class MainClientState {
                 return _("${card_name}: ${you} may discard your hand and take a card from the market");
             case 'client_gorilla5b':
                 return _("${card_name}: ${you} may choose the order to discard cards from the market");
+            case 'client_tasmanianDevil3_step1':
+                return _("${card_name}: ${you} must choose any player");
+            case 'client_tasmanianDevil3_step2':
+                switch ((this._args as ClientGameStates['client_tasmanianDevil3_step2']).nbr) {
+                    case 0:
+                        return _("${card_name}: ${opponent_name}\'s discard is empty. Playing this card will shuffle their deck.");
+                    case 1:
+                        return _("${card_name}: ${you} must select 1 card from ${opponent_name}\'s discard");
+                    default:
+                        return _("${card_name}: ${you} must select ${nbr} cards from ${opponent_name}\'s discard");
+                }
         }
         return "MISSING DESCRIPTION";
     }

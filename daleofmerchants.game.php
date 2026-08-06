@@ -7724,6 +7724,34 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->draw(clienttranslate('Disruptive Speech: ${player_name} draws ${nbr} cards'), $nbr, false, $opponent_id, $opponent_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_TASMANIANDEVIL3:
+                $opponent_id = $args["opponent_id"];
+                $card_ids = $args["card_ids"];
+                $this->validatePlayerId($opponent_id);
+                $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$opponent_id);
+                $nbr = min(2, $this->cards->countCardsInLocation(DISCARD.$opponent_id));
+                if (count($dbcards) != $nbr) {
+                    throw new BgaUserException("You must select exactly ".$nbr." cards");
+                }
+                foreach($dbcards as $dbcard) {
+                    $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
+                    $this->notifyAllPlayers('discardToDeck', clienttranslate('Tit for Tat: ${player_name} shuffles ${opponent_name}\'s ${card_name} into their deck'), array(
+                        "player_id" => $opponent_id, // must be the owner of the discard and deck
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($dbcard),
+                        "card" => $dbcard
+                    ));
+                }
+                if (count($dbcards) == 0) {
+                    $this->notifyAllPlayers('message', clienttranslate('Tit for Tat: ${player_name} shuffles ${opponent_name}\'s deck'), array(
+                        "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                    ));
+                }
+                $this->cards->shuffle(DECK.$opponent_id);
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

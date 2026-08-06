@@ -587,6 +587,8 @@ declare global {
 		'client_olm3_step2': { toss_card_id: number, market_card_ids: number[] } //sends all information to the server
 		'client_gorilla2': { discard_card_ids: number[], market_card_id: number }
 		'client_gorilla5b': { card_ids: number[] }
+		'client_tasmanianDevil3_step1': {} //sends nothing to the server
+		'client_tasmanianDevil3_step2': { opponent_id: number, card_ids: number[] } //sends all information to the server
 	}
 
 	interface ClientPassiveChoice {
@@ -682,6 +684,7 @@ declare global {
 		'client_olm3_step2': { technique_card_id: number, toss_card_id: number, card_name: string } // stores info about the first step
 		'client_olm4_market': { opponent_name: string, toss_card_id: number, card_name: string } // stores info about the other step
 		'client_olm4_discard': { opponent_name: string, toss_card_id: number, market_card_id: number, market_pos: number, card_name: string } // stores info about the other steps
+		'client_tasmanianDevil3_step2': { technique_card_id: number, nbr: number, opponent_id: number, opponent_name: string } // stores info about the first step
 	}
 
 	//

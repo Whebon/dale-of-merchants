@@ -1549,7 +1549,6 @@ class DaleOfMerchants extends Gamegui
 					//Skip step 1: we cannot toss a card
 					//no "enterOnStack", since we never want to return to this state
 					const client_olm3_step1_args = this.mainClientState.getArgs<'client_olm3_step1'>();
-					console.log(client_olm3_step1_args);
 					this.mainClientState.enter('client_olm3_step2', {
 						technique_card_id: client_olm3_step1_args.technique_card_id,
 						toss_card_id: -1,
@@ -1587,6 +1586,19 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'tasmanianDevil1':
 				this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Top card"));
+				break;
+			case 'client_tasmanianDevil3_step1':
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					pile.setSelectionMode('top', undefined, "daleofmerchants-wrap-technique")
+				}
+				break;
+			case 'client_tasmanianDevil3_step2':
+				const client_tasmanianDevil3_step2_args = this.mainClientState.getArgs<'client_tasmanianDevil3_step2'>();
+				if (client_tasmanianDevil3_step2_args.nbr > 0) {
+					const client_tasmanianDevil3_step2_pile = this.playerDiscards[client_tasmanianDevil3_step2_args.opponent_id]!
+					client_tasmanianDevil3_step2_pile.setSelectionMode('multiple', 'tasmanianDevil3', "daleofmerchants-wrap-technique", 2);
+					client_tasmanianDevil3_step2_pile.openPopin();
+				}
 				break;
 		}
 		//(~enteringstate)
@@ -2182,6 +2194,11 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'tasmanianDevil1':
 				this.myLimbo.setSelectionMode('none');
+				break;
+			case 'client_tasmanianDevil3_step1':
+				for (const [player_id, pile] of Object.entries(this.playerDiscards)) {
+					pile.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique")
+				}
 				break;
 		}
 		//(~leavingstate)
@@ -3129,6 +3146,14 @@ class DaleOfMerchants extends Gamegui
 			case 'tasmanianDevil1':
 				this.addActionButton("confirm-discard-button", _("Discard"), "onTasmanianDevil1Discard");
 				this.addActionButton("confirm-deck-button", _("Place back on Deck"), "onTasmanianDevil1Deck");
+				break;
+			case 'client_tasmanianDevil3_step1':
+				this.addActionButtonsOpponent(this.onTasmanianDevil3Step1.bind(this), true, undefined, this.gamedatas.playerorder);
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_tasmanianDevil3_step2':
+				this.addActionButton("confirm-button", _("Confirm"), "onTasmanianDevil3Step2");
+				this.addActionButtonCancelClient(undefined, false);
 				break;
 		}
 		//(~actionbuttons)
@@ -4370,6 +4395,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectPlayerDeckTechnique':
 				this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+				break;
+			case 'client_tasmanianDevil3_step1':
+				this.onTasmanianDevil3Step1(pile.getPlayerId());
 				break;
 		}
 	}
@@ -5987,6 +6015,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case DaleCard.CT_TASMANIANDEVIL2:
 				this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+				break;
+			case DaleCard.CT_TASMANIANDEVIL3:
+				this.clientScheduleTechnique('client_tasmanianDevil3_step1', card.id);
 				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -7981,6 +8012,33 @@ class DaleOfMerchants extends Gamegui
 		this.bgaPerformAction('actTasmanianDevil1', {
 			should_discard: false
 		});
+	}
+
+	onTasmanianDevil3Step1(opponent_id: number) {
+		const args = this.gamedatas.gamestate.args as { technique_card_id: number }
+		this.mainClientState.enterOnStack('client_tasmanianDevil3_step2', {
+			technique_card_id: args.technique_card_id,
+			opponent_id: opponent_id,
+			opponent_name: this.gamedatas.players[opponent_id]!.name!,
+			nbr: Math.min(2, this.playerDiscards[opponent_id]!.size)
+		});
+	}
+
+
+	onTasmanianDevil3Step2() {
+		const args = (this.mainClientState.args as ClientGameStates['client_tasmanianDevil3_step2']);
+		const pile = this.playerDiscards[args.opponent_id]!
+		const card_ids = pile.orderedSelection.get()
+		if (card_ids.length != args.nbr) {
+			this.showMessage(_("Please select exactly ")+args.nbr+_(" card(s)"), 'error');
+			pile.openPopin(); // sets openPopinRequested = true
+			return;
+		}
+		this.playTechniqueCard<'client_tasmanianDevil3_step2'>({
+			opponent_id: args.opponent_id,
+			card_ids: card_ids
+		})
+		this.mainClientState.leave();
 	}
 
 	//(~on)

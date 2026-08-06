@@ -127,11 +127,7 @@ export class DaleIcons {
     }
 
     public static getOlm5bIcon(): HTMLElement {
-        return this.getIcon(5, 5); // TODO: MISSING ART!
-    }
-
-    public static getGorilla2Icon(): HTMLElement {
-        return this.getIcon(5, 5); // TODO: MISSING ART!
+        return this.getIcon(5, 6);
     }
     
     /////////////////////////////
@@ -149,6 +145,14 @@ export class DaleIcons {
         
     public static getCoinIcon(): HTMLElement {
         return this.getIcon(6, 4);
+    }
+    
+    public static getGorilla2Icon(): HTMLElement {
+        return this.getIcon(6, 5);
+    }
+
+    public static getTasmanianDevil3Icon(): HTMLElement {
+        return this.getIcon(6, 6);
     }
 
 

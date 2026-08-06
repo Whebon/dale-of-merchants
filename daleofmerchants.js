@@ -190,10 +190,7 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
             return this.getIcon(5, 5);
         };
         DaleIcons.getOlm5bIcon = function () {
-            return this.getIcon(5, 5);
-        };
-        DaleIcons.getGorilla2Icon = function () {
-            return this.getIcon(5, 5);
+            return this.getIcon(5, 6);
         };
         DaleIcons.getCostModificationIcon = function (market_position) {
             var index = market_position - 1;
@@ -204,6 +201,12 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         };
         DaleIcons.getCoinIcon = function () {
             return this.getIcon(6, 4);
+        };
+        DaleIcons.getGorilla2Icon = function () {
+            return this.getIcon(6, 5);
+        };
+        DaleIcons.getTasmanianDevil3Icon = function () {
+            return this.getIcon(6, 6);
         };
         DaleIcons.getCardIcon = function () {
             return this.getIcon(7, 0);
@@ -699,6 +702,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'gorilla2':
                     icon = DaleIcons_2.DaleIcons.getGorilla2Icon();
+                    break;
+                case 'tasmanianDevil3':
+                    icon = DaleIcons_2.DaleIcons.getTasmanianDevil3Icon();
                     break;
             }
             if (icon) {
@@ -3068,6 +3074,9 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             if (clone) {
                 clone.id = "maintitlebar_content_clone_closed";
             }
+            if (this.page.gamedatas.gamestate.name == 'client_tasmanianDevil3_step2') {
+                this.page.onCancelClientWithoutUndoingSchedule();
+            }
         };
         return Pile;
     }());
@@ -4314,6 +4323,17 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} may discard your hand and take a card from the market");
                     case 'client_gorilla5b':
                         return _("${card_name}: ${you} may choose the order to discard cards from the market");
+                    case 'client_tasmanianDevil3_step1':
+                        return _("${card_name}: ${you} must choose any player");
+                    case 'client_tasmanianDevil3_step2':
+                        switch (this._args.nbr) {
+                            case 0:
+                                return _("${card_name}: ${opponent_name}\'s discard is empty. Playing this card will shuffle their deck.");
+                            case 1:
+                                return _("${card_name}: ${you} must select 1 card from ${opponent_name}\'s discard");
+                            default:
+                                return _("${card_name}: ${you} must select ${nbr} cards from ${opponent_name}\'s discard");
+                        }
                 }
                 return "MISSING DESCRIPTION";
             },
@@ -6418,7 +6438,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_olm3_step1':
                     if (this.myHand.count() == 0) {
                         var client_olm3_step1_args = this.mainClientState.getArgs();
-                        console.log(client_olm3_step1_args);
                         this.mainClientState.enter('client_olm3_step2', {
                             technique_card_id: client_olm3_step1_args.technique_card_id,
                             toss_card_id: -1,
@@ -6456,6 +6475,20 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'tasmanianDevil1':
                     this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Top card"));
+                    break;
+                case 'client_tasmanianDevil3_step1':
+                    for (var _42 = 0, _43 = Object.entries(this.playerDiscards); _42 < _43.length; _42++) {
+                        var _44 = _43[_42], player_id = _44[0], pile = _44[1];
+                        pile.setSelectionMode('top', undefined, "daleofmerchants-wrap-technique");
+                    }
+                    break;
+                case 'client_tasmanianDevil3_step2':
+                    var client_tasmanianDevil3_step2_args = this.mainClientState.getArgs();
+                    if (client_tasmanianDevil3_step2_args.nbr > 0) {
+                        var client_tasmanianDevil3_step2_pile = this.playerDiscards[client_tasmanianDevil3_step2_args.opponent_id];
+                        client_tasmanianDevil3_step2_pile.setSelectionMode('multiple', 'tasmanianDevil3', "daleofmerchants-wrap-technique", 2);
+                        client_tasmanianDevil3_step2_pile.openPopin();
+                    }
                     break;
             }
         };
@@ -7058,6 +7091,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'tasmanianDevil1':
                     this.myLimbo.setSelectionMode('none');
+                    break;
+                case 'client_tasmanianDevil3_step1':
+                    for (var _39 = 0, _40 = Object.entries(this.playerDiscards); _39 < _40.length; _39++) {
+                        var _41 = _40[_39], player_id = _41[0], pile = _41[1];
+                        pile.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique");
+                    }
                     break;
             }
         };
@@ -7986,6 +8025,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-discard-button", _("Discard"), "onTasmanianDevil1Discard");
                     this.addActionButton("confirm-deck-button", _("Place back on Deck"), "onTasmanianDevil1Deck");
                     break;
+                case 'client_tasmanianDevil3_step1':
+                    this.addActionButtonsOpponent(this.onTasmanianDevil3Step1.bind(this), true, undefined, this.gamedatas.playerorder);
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_tasmanianDevil3_step2':
+                    this.addActionButton("confirm-button", _("Confirm"), "onTasmanianDevil3Step2");
+                    this.addActionButtonCancelClient(undefined, false);
+                    break;
             }
         };
         DaleOfMerchants.prototype.getChameleonTargets = function (card, type_id) {
@@ -8830,6 +8877,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_selectPlayerDeckTechnique':
                     this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+                    break;
+                case 'client_tasmanianDevil3_step1':
+                    this.onTasmanianDevil3Step1(pile.getPlayerId());
                     break;
             }
         };
@@ -10322,6 +10372,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case DaleCard_10.DaleCard.CT_TASMANIANDEVIL2:
                     this.clientScheduleTechnique('client_selectPlayerTechnique', card.id);
+                    break;
+                case DaleCard_10.DaleCard.CT_TASMANIANDEVIL3:
+                    this.clientScheduleTechnique('client_tasmanianDevil3_step1', card.id);
                     break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
@@ -12042,6 +12095,30 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.bgaPerformAction('actTasmanianDevil1', {
                 should_discard: false
             });
+        };
+        DaleOfMerchants.prototype.onTasmanianDevil3Step1 = function (opponent_id) {
+            var args = this.gamedatas.gamestate.args;
+            this.mainClientState.enterOnStack('client_tasmanianDevil3_step2', {
+                technique_card_id: args.technique_card_id,
+                opponent_id: opponent_id,
+                opponent_name: this.gamedatas.players[opponent_id].name,
+                nbr: Math.min(2, this.playerDiscards[opponent_id].size)
+            });
+        };
+        DaleOfMerchants.prototype.onTasmanianDevil3Step2 = function () {
+            var args = this.mainClientState.args;
+            var pile = this.playerDiscards[args.opponent_id];
+            var card_ids = pile.orderedSelection.get();
+            if (card_ids.length != args.nbr) {
+                this.showMessage(_("Please select exactly ") + args.nbr + _(" card(s)"), 'error');
+                pile.openPopin();
+                return;
+            }
+            this.playTechniqueCard({
+                opponent_id: args.opponent_id,
+                card_ids: card_ids
+            });
+            this.mainClientState.leave();
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

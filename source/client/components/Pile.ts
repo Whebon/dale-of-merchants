@@ -903,5 +903,10 @@ export class Pile implements DaleLocation {
         if (clone) {
             clone.id = "maintitlebar_content_clone_closed";
         }
+
+        //Hook
+        if (this.page.gamedatas.gamestate.name == 'client_tasmanianDevil3_step2') {
+            (this.page as any).onCancelClientWithoutUndoingSchedule()
+        }
     }
 }
