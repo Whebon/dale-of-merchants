@@ -7771,6 +7771,59 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trTasmanianDevil4");
                 break;
+            case CT_TASMANIANDEVIL5B:
+                $opponent_id = $args["opponent_id"];
+                $this->validatePlayerId($opponent_id);
+                // Shuffle the discard pile
+                $this->cards->shuffle(DISCARD.$opponent_id);
+                $discard_dbcards = $this->cards->getCardsInLocation(DISCARD.$opponent_id, null, 'location_arg');
+                if (count($discard_dbcards) == 0) {
+                    //throw new BgaUserException("Invalid input: CT_TASMANIANDEVIL5B should have fizzled as the discard pile is empty");
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    return;
+                }
+                $this->notifyAllPlayers('shuffleDiscard', clienttranslate('${resolving_card_name}: ${player_name} shuffles ${opponent_name}\'s discard pile'), array(
+                    "resolving_card_name" => $this->getCardName($technique_card),
+                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                    "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                    "player_id" => $opponent_id,
+                    "discardPile" => $discard_dbcards
+                ));
+                // Swap cards
+                $hand_dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id, null, 'location_arg');
+                shuffle($hand_dbcards);
+                $nbr = min(3, count($discard_dbcards), count($hand_dbcards));
+                if ($nbr > 0) {
+                    // discard to hand (must happen first, otherwise, when targeting an opponent, a card is discarded and immediately retrieved)
+                    for ($i = 0; $i < $nbr; $i++) {
+                        $discard_dbcard = $discard_dbcards[count($discard_dbcards) - $i - 1]; // = topmost discard card
+                        $this->cards->moveCard($discard_dbcard["id"], HAND.$opponent_id);
+                        $this->notifyAllPlayers('instant_discardToHand', clienttranslate('Equality: ${opponent_name} takes ${card_name}'), array(
+                            "player_id" => $opponent_id,
+                            "card" => $discard_dbcard,
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card_name" => $this->getCardName($discard_dbcard),
+                        ));
+                    }
+                    // hand to discard
+                    for ($i = 0; $i < $nbr; $i++) {
+                        $hand_card_id = array_rand($hand_dbcards);
+                        $hand_dbcard = $hand_dbcards[$hand_card_id]; // = random hand card
+                        unset($hand_dbcards[$hand_card_id]);
+                        $this->cards->moveCardOnTop($hand_dbcard["id"], DISCARD.$opponent_id);
+                        $this->notifyAllPlayers('instant_discard', clienttranslate('Equality: ${opponent_name} discards ${card_name}'), array(
+                            "player_id" => $opponent_id,
+                            "card" => $hand_dbcard,
+                            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                            "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card_name" => $this->getCardName($hand_dbcard), 
+                        ));
+                    }
+                    $this->delay500ms(); // total duration of swapping all cards
+                }
+                $this->fullyResolveCard($player_id, $technique_card);
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");

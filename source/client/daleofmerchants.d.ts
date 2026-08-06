@@ -261,6 +261,7 @@ declare global {
 			from_limbo?: boolean,
 			ignore_card_not_found?: boolean //this is useful for clients that already executed the action in a client state
 		}
+		'instant_discard': {}
 		'discardMultiple': {
 			player_id: number 
 			cards: {[card_id: number]: DbCard}
@@ -528,6 +529,7 @@ declare global {
 		'client_selectOpponentTechnique': { opponent_id: number }
 		'client_selectPlayerTechnique': { opponent_id: number }
 		'client_selectPlayerDeckTechnique': { opponent_id: number }
+		'client_selectPlayerDiscardTechnique': { opponent_id: number }
 		'client_swiftBroker': { card_ids: number[] }
 		'client_shatteredRelic': { card_id?: number }
 		'client_acorn': { stall_player_id: number, stall_card_id: number }

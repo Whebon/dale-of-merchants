@@ -4121,6 +4121,8 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must choose any player");
                     case 'client_selectPlayerDeckTechnique':
                         return _("${card_name}: ${you} must choose any player\'s deck");
+                    case 'client_selectPlayerDiscardTechnique':
+                        return _("${card_name}: ${you} must choose any player\'s discard");
                     case 'client_choicelessTechniqueCard':
                         return _("${card_name}: ${you} may play this card as a technique");
                     case 'client_choicelessBatCard':
@@ -6428,6 +6430,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     break;
+                case 'client_selectPlayerDiscardTechnique':
+                    for (var _42 = 0, _43 = Object.entries(this.playerDiscards); _42 < _43.length; _42++) {
+                        var _44 = _43[_42], player_id = _44[0], discard = _44[1];
+                        discard.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+                    }
+                    break;
                 case 'client_falseAlarm':
                     this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 1);
                     break;
@@ -6477,8 +6485,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Top card"));
                     break;
                 case 'client_tasmanianDevil3_step1':
-                    for (var _42 = 0, _43 = Object.entries(this.playerDiscards); _42 < _43.length; _42++) {
-                        var _44 = _43[_42], player_id = _44[0], pile = _44[1];
+                    for (var _45 = 0, _46 = Object.entries(this.playerDiscards); _45 < _46.length; _45++) {
+                        var _47 = _46[_45], player_id = _47[0], pile = _47[1];
                         pile.setSelectionMode('top', undefined, "daleofmerchants-wrap-technique");
                     }
                     break;
@@ -7057,6 +7065,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         deck.setSelectionMode('none');
                     }
                     break;
+                case 'client_selectPlayerDiscardTechnique':
+                    for (var _39 = 0, _40 = Object.entries(this.playerDiscards); _39 < _40.length; _39++) {
+                        var _41 = _40[_39], player_id = _41[0], discard = _41[1];
+                        discard.setSelectionMode('none');
+                    }
+                    break;
                 case 'client_falseAlarm':
                     this.myDiscard.setSelectionMode('none');
                     break;
@@ -7096,8 +7110,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none');
                     break;
                 case 'client_tasmanianDevil3_step1':
-                    for (var _39 = 0, _40 = Object.entries(this.playerDiscards); _39 < _40.length; _39++) {
-                        var _41 = _40[_39], player_id = _41[0], pile = _41[1];
+                    for (var _42 = 0, _43 = Object.entries(this.playerDiscards); _42 < _43.length; _42++) {
+                        var _44 = _43[_42], player_id = _44[0], pile = _44[1];
                         pile.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique");
                     }
                     break;
@@ -7291,6 +7305,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     else {
                         this.addActionButton("fizzle-button", _("Fizzle"), "onChoicelessTechniqueCard");
                     }
+                    this.addActionButtonCancelClient();
+                    break;
+                case 'client_selectPlayerDiscardTechnique':
+                    this.addActionButtonsOpponent(this.onSelectPlayerDeckTechnique.bind(this), true, undefined, this.gamedatas.playerorder);
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_selectOpponentPassive':
@@ -8797,6 +8815,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'gorilla1':
                     this.onGorilla1(card.id);
                     break;
+                case 'client_selectPlayerDeckTechnique':
+                    this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+                    break;
+                case 'client_selectPlayerDiscardTechnique':
+                    this.onSelectPlayerDiscardTechnique(pile.getPlayerId());
+                    break;
             }
         };
         DaleOfMerchants.prototype.onSelectMarketPileCard = function (pile, card) {
@@ -8886,6 +8910,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'client_selectPlayerDeckTechnique':
                     this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+                    break;
+                case 'client_selectPlayerDiscardTechnique':
+                    this.onSelectPlayerDiscardTechnique(pile.getPlayerId());
                     break;
                 case 'client_tasmanianDevil3_step1':
                     this.onTasmanianDevil3Step1(pile.getPlayerId());
@@ -10388,6 +10415,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_TASMANIANDEVIL4:
                     this.clientScheduleTechnique('client_selectPlayerDeckTechnique', card.id);
                     break;
+                case DaleCard_10.DaleCard.CT_TASMANIANDEVIL5B:
+                    this.clientScheduleTechnique('client_selectPlayerDiscardTechnique', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -10830,6 +10860,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             });
         };
         DaleOfMerchants.prototype.onSelectPlayerDeckTechnique = function (opponent_id) {
+            this.playTechniqueCardWithServerState({
+                opponent_id: opponent_id
+            });
+        };
+        DaleOfMerchants.prototype.onSelectPlayerDiscardTechnique = function (opponent_id) {
             this.playTechniqueCardWithServerState({
                 opponent_id: opponent_id
             });
@@ -12185,6 +12220,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['toss', 500],
                 ['tossMultiple', 500],
                 ['discard', 500],
+                ['instant_discard', 1,],
                 ['discardMultiple', 750],
                 ['placeOnDeck', 500, true],
                 ['placeOnDeckMultiple', 500, true],
@@ -12736,6 +12772,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 var nbr = Object.keys(notif.args.cards).length;
                 this.playerHandSizes[notif.args.player_id].incValue(-nbr);
             }
+        };
+        DaleOfMerchants.prototype.notif_instant_discard = function (notif) {
+            this.notif_discard(notif);
         };
         DaleOfMerchants.prototype.notif_discard = function (notif) {
             var _a;

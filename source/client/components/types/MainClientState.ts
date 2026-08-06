@@ -132,6 +132,8 @@ export class MainClientState {
                 return _("${card_name}: ${you} must choose any player"); //e.g. fresh start
             case 'client_selectPlayerDeckTechnique':
                 return _("${card_name}: ${you} must choose any player\'s deck"); //e.g. sneaky scout
+            case 'client_selectPlayerDiscardTechnique':
+                return _("${card_name}: ${you} must choose any player\'s discard"); //e.g. equality
             case 'client_choicelessTechniqueCard':
                 return _("${card_name}: ${you} may play this card as a technique");
             case 'client_choicelessBatCard':

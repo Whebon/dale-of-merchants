@@ -1537,6 +1537,11 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				break;
+			case 'client_selectPlayerDiscardTechnique':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('topIncludingEmpty', undefined, 'daleofmerchants-wrap-technique');
+				}
+				break;
 			case 'client_falseAlarm':
 				this.myDiscard.setSelectionMode('singleFromBottomX', undefined, 'daleofmerchants-wrap-technique', 1);
 				break;
@@ -2160,6 +2165,11 @@ class DaleOfMerchants extends Gamegui
 					deck.setSelectionMode('none');
 				}
 				break;
+			case 'client_selectPlayerDiscardTechnique':
+				for (const [player_id, discard] of Object.entries(this.playerDiscards)) {
+					discard.setSelectionMode('none');
+				}
+				break;
 			case 'client_falseAlarm':
 				this.myDiscard.setSelectionMode('none');
 				break;
@@ -2391,6 +2401,10 @@ class DaleOfMerchants extends Gamegui
 				else {
 					this.addActionButton("fizzle-button", _("Fizzle"), "onChoicelessTechniqueCard");
 				}
+				this.addActionButtonCancelClient();
+				break;
+			case 'client_selectPlayerDiscardTechnique':
+				this.addActionButtonsOpponent(this.onSelectPlayerDeckTechnique.bind(this), true, undefined, this.gamedatas.playerorder);
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_selectOpponentPassive':
@@ -4304,6 +4318,12 @@ class DaleOfMerchants extends Gamegui
 			case 'gorilla1':
 				this.onGorilla1(card!.id);
 				break;
+			case 'client_selectPlayerDeckTechnique':
+				this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+				break;
+			case 'client_selectPlayerDiscardTechnique':
+				this.onSelectPlayerDiscardTechnique(pile.getPlayerId());
+				break;
 		}
 	}
 
@@ -4404,6 +4424,9 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'client_selectPlayerDeckTechnique':
 				this.onSelectPlayerDeckTechnique(pile.getPlayerId());
+				break;
+			case 'client_selectPlayerDiscardTechnique':
+				this.onSelectPlayerDiscardTechnique(pile.getPlayerId());
 				break;
 			case 'client_tasmanianDevil3_step1':
 				this.onTasmanianDevil3Step1(pile.getPlayerId());
@@ -6031,6 +6054,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_TASMANIANDEVIL4:
 				this.clientScheduleTechnique('client_selectPlayerDeckTechnique', card.id);
 				break;
+			case DaleCard.CT_TASMANIANDEVIL5B:
+				this.clientScheduleTechnique('client_selectPlayerDiscardTechnique', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -6551,6 +6577,12 @@ class DaleOfMerchants extends Gamegui
 
 	onSelectPlayerDeckTechnique(opponent_id: number) {
 		this.playTechniqueCardWithServerState<'client_selectPlayerDeckTechnique'>({
+			opponent_id: opponent_id
+		})
+	}
+
+	onSelectPlayerDiscardTechnique(opponent_id: number) {
+		this.playTechniqueCardWithServerState<'client_selectPlayerDiscardTechnique'>({
 			opponent_id: opponent_id
 		})
 	}
@@ -8116,6 +8148,7 @@ class DaleOfMerchants extends Gamegui
 			['toss', 								500],
 			['tossMultiple', 						500],
 			['discard', 							500],
+			['instant_discard',						1,],
 			['discardMultiple', 					750],
 			['placeOnDeck',							500, true],
 			['placeOnDeckMultiple', 				500, true],
@@ -8776,6 +8809,10 @@ class DaleOfMerchants extends Gamegui
 			const nbr = Object.keys(notif.args.cards).length;
 			this.playerHandSizes[notif.args.player_id]!.incValue(-nbr);
 		}
+	}
+
+	notif_instant_discard(notif: NotifAs<'discard'>) {
+		this.notif_discard(notif);
 	}
 
 	notif_discard(notif: NotifAs<'discard'>) {
