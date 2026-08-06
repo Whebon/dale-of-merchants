@@ -1446,6 +1446,50 @@ class DaleOfMerchants extends DaleTableBasic
                     "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                 ));
                 break;
+            case CT_TASMANIANDEVILMONO:
+                //You discard 1 random 🃏. Mono shuffles 2 clutter 🃏🃏 from your discard into your deck. Acquire.
+                $hand_dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
+                // Discard 1 random card
+                if (count($hand_dbcards) > 0) {
+                    $card_id = array_rand($hand_dbcards);
+                    $dbcard = $hand_dbcards[$card_id];
+                    $this->monoConfirmAction(clienttranslate('Shrewd Member: ${player_name} discards ${opponent_name}\'s ${card_name}.'), array(
+                        "highlight_hand_cards" => array($dbcard),
+                        "wrap_class" => "daleofmerchants-wrap-technique",
+                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                        "card_name" => $this->getCardName($dbcard)
+                    ));
+                    $this->cards->moveCardOnTop($dbcard["id"], DISCARD.$opponent_id);
+                    $this->notifyAllPlayers('discard', '', array(
+                        "player_id" => $opponent_id,
+                        "card" => $dbcard,
+                    ));
+                }
+                // Shuffle 2 junk cards into the deck
+                $dbcards = $this->cards->getCardsInLocation(DISCARD.$opponent_id);
+                $dbcards = $this->sortCardsByLocationArg($dbcards, false); // from top (high location_arg) to bottom (low location_arg)
+                $nbr_junk = 0;
+                foreach ($dbcards as $dbcard) {
+                    if ($nbr_junk == 2) {
+                        break;
+                    }
+                    if ($this->isEffectiveJunk($dbcard)) {
+                        $nbr_junk += 1;
+                        $dbcard = $this->cards->removeCardFromPile($dbcard["id"], DISCARD.$opponent_id);
+                        $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
+                        $this->notifyAllPlayers('discardToDeck', clienttranslate('Shrewd Member: ${player_name} shuffles their ${card_name} into their deck'), array(
+                            "player_id" => $opponent_id,
+                            "player_name" => $this->getPlayerNameByIdInclMono($opponent_id),
+                            "card_name" => $this->getCardName($dbcard),
+                            "card" => $dbcard
+                        ));
+                    }
+                }
+                if ($nbr_junk > 0) {
+                    $this->cards->shuffle(DECK.$opponent_id);
+                }
+                break;
             default:
                 $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TECHNIQUE NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
                     "card_name" => $this->getCardName($technique_card)
