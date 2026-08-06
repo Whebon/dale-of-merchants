@@ -69,6 +69,7 @@ if (false) {
 	$game->stOlm5b();
 	$game->stGorilla5a();
 	$game->stTasmanianDevil1();
+	$game->stTasmanianDevil4();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -211,6 +212,7 @@ $machinestates = array(
 			'trGorilla5a' => 123,
 			'trGorilla5b' => 124,
 			'trTasmanianDevil1' => 125,
+			'trTasmanianDevil4' => 126,
 		),
 	),
 	31 => array(
@@ -1102,6 +1104,18 @@ $machinestates = array(
 		'action' => 'stTasmanianDevil1',
 		'args' => 'argOpponentNameAndPassiveCardIdAndCardNamePrivate',
 		'possibleactions' => ['actTasmanianDevil1'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	126 => array(
+		'name' => 'tasmanianDevil4',
+		'description' => clienttranslate('Shameless Rummage: ${actplayer} may discard cards from the top of ${opponent_name}\'s deck'),
+		'descriptionmyturn' => clienttranslate('Shameless Rummage: ${you} may discard cards from the top of ${opponent_name}\'s deck'),
+		'type' => 'activeplayer',
+		'action' => 'stTasmanianDevil4',
+		'args' => 'argOpponentName',
+		'possibleactions' => ['actTasmanianDevil4'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

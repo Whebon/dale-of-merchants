@@ -6490,6 +6490,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         client_tasmanianDevil3_step2_pile.openPopin();
                     }
                     break;
+                case 'tasmanianDevil4':
+                    this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose cards to discard"));
+                    break;
             }
         };
         DaleOfMerchants.prototype.onLeavingState = function (stateName) {
@@ -7098,6 +7101,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         pile.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique");
                     }
                     break;
+                case 'tasmanianDevil4':
+                    this.myLimbo.setSelectionMode('none');
+                    break;
             }
         };
         DaleOfMerchants.prototype.onUpdateActionButtons = function (stateName, args) {
@@ -7448,7 +7454,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'specialOffer':
-                    this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onSpecialOffer");
                     break;
                 case 'client_calculations':
                     this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
@@ -8032,6 +8038,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_tasmanianDevil3_step2':
                     this.addActionButton("confirm-button", _("Confirm"), "onTasmanianDevil3Step2");
                     this.addActionButtonCancelClient(undefined, false);
+                    break;
+                case 'tasmanianDevil4':
+                    this.addActionButton("confirm-button", _("Confirm selected"), "onTasmanianDevil4");
                     break;
             }
         };
@@ -10376,6 +10385,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case DaleCard_10.DaleCard.CT_TASMANIANDEVIL3:
                     this.clientScheduleTechnique('client_tasmanianDevil3_step1', card.id);
                     break;
+                case DaleCard_10.DaleCard.CT_TASMANIANDEVIL4:
+                    this.clientScheduleTechnique('client_selectPlayerDeckTechnique', card.id);
+                    break;
                 default:
                     this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
                     break;
@@ -12119,6 +12131,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 card_ids: card_ids
             });
             this.mainClientState.leave();
+        };
+        DaleOfMerchants.prototype.onTasmanianDevil4 = function () {
+            this.bgaPerformAction('actTasmanianDevil4', {
+                card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
+            });
         };
         DaleOfMerchants.prototype.setupNotifications = function () {
             var _this = this;

@@ -1600,6 +1600,9 @@ class DaleOfMerchants extends Gamegui
 					client_tasmanianDevil3_step2_pile.openPopin();
 				}
 				break;
+			case 'tasmanianDevil4':
+				this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose cards to discard"));
+				break;
 		}
 		//(~enteringstate)
 	}
@@ -2200,6 +2203,9 @@ class DaleOfMerchants extends Gamegui
 					pile.setSelectionMode('none', undefined, "daleofmerchants-wrap-technique")
 				}
 				break;
+			case 'tasmanianDevil4':
+				this.myLimbo.setSelectionMode('none');
+				break;
 		}
 		//(~leavingstate)
 	}
@@ -2557,7 +2563,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'specialOffer':
-				this.addActionButton("confirm-button", _("Confirm selection"), "onSpecialOffer");
+				this.addActionButton("confirm-button", _("Confirm selected"), "onSpecialOffer");
 				break;
 			case 'client_calculations':
 				this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
@@ -3154,6 +3160,9 @@ class DaleOfMerchants extends Gamegui
 			case 'client_tasmanianDevil3_step2':
 				this.addActionButton("confirm-button", _("Confirm"), "onTasmanianDevil3Step2");
 				this.addActionButtonCancelClient(undefined, false);
+				break;
+			case 'tasmanianDevil4':
+				this.addActionButton("confirm-button", _("Confirm selected"), "onTasmanianDevil4");
 				break;
 		}
 		//(~actionbuttons)
@@ -6019,6 +6028,9 @@ class DaleOfMerchants extends Gamegui
 			case DaleCard.CT_TASMANIANDEVIL3:
 				this.clientScheduleTechnique('client_tasmanianDevil3_step1', card.id);
 				break;
+			case DaleCard.CT_TASMANIANDEVIL4:
+				this.clientScheduleTechnique('client_selectPlayerDeckTechnique', card.id);
+				break;
 			default:
 				this.clientScheduleTechnique('client_choicelessTechniqueCard', card.id);
 				break;
@@ -8039,6 +8051,12 @@ class DaleOfMerchants extends Gamegui
 			card_ids: card_ids
 		})
 		this.mainClientState.leave();
+	}
+
+	onTasmanianDevil4() {
+		this.bgaPerformAction('actTasmanianDevil4', {
+			card_ids: this.arrayToNumberList(this.myLimbo.orderedSelection.get())
+		});
 	}
 
 	//(~on)

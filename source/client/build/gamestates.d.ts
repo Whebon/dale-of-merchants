@@ -230,6 +230,7 @@ interface GameStates {
 			'trGorilla5a': 123,
 			'trGorilla5b': 124,
 			'trTasmanianDevil1': 125,
+			'trTasmanianDevil4': 126,
 		},
 	},
 	31: {
@@ -1696,6 +1697,24 @@ interface GameStates {
 				'name': 'should_discard',
 				'type': 'AT_bool',
 				'typescriptType': boolean,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	126: {
+		'name': 'tasmanianDevil4',
+		'description': 'Shameless Rummage: ${actplayer} may discard cards from the top of ${opponent_name}\\\'s deck',
+		'descriptionmyturn': 'Shameless Rummage: ${you} may discard cards from the top of ${opponent_name}\\\'s deck',
+		'type': 'activeplayer',
+		'action': 'stTasmanianDevil4',
+		'args': 'argOpponentName',
+		'possibleactions': {
+			'actTasmanianDevil4': [{
+				'name': 'card_ids',
+				'type': 'AT_numberlist',
+				'typescriptType': string,
 			}],
 		},
 		'transitions': {

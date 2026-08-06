@@ -7752,6 +7752,25 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->cards->shuffle(DECK.$opponent_id);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
+            case CT_TASMANIANDEVIL4:
+                if (!isset($args["opponent_id"])) {
+                    // Fizzle attempt
+                    $players = $this->loadPlayersBasicInfosInclMono();
+                    $counts = $this->cards->countCardsInLocations();
+                    foreach ($players as $other_player_id => $player) {
+                        if (isset($counts[DECK.$other_player_id]) || isset($counts[DISCARD.$other_player_id])) {
+                            throw new BgaUserException("You must select an opponent");
+                        }
+                    }
+                    $this->fullyResolveCard($player_id, $technique_card);
+                    break;
+                }
+                $opponent_id = $args["opponent_id"];
+                $this->validatePlayerId($opponent_id);
+                $this->setGameStateValue("opponent_id", $opponent_id);
+                $this->beginResolvingCard($technique_card_id);
+                $this->gamestate->nextState("trTasmanianDevil4");
+                break;
             default:
                 $name = $this->getCardName($technique_card);
                 throw new BgaVisibleSystemException("TECHNIQUE NOT IMPLEMENTED: '$name'");
@@ -10911,6 +10930,49 @@ class DaleOfMerchants extends DaleTableBasic
         $this->gamestate->nextState("trSamePlayer");
     }
 
+    function actTasmanianDevil4($card_ids) {
+        $this->checkAction("actTasmanianDevil4");
+        $card_ids = $this->numberListToArray($card_ids);
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+
+        // Store discard_dbcards and remaining limbo_dbcards 
+        $discard_dbcards = array();
+        $limbo_dbcards = $this->cards->getCardsInLocation(LIMBO.$player_id);
+        foreach ($card_ids as $card_id) {
+            if (!isset($limbo_dbcards)) {
+                throw new BgaVisibleSystemException("Card $card_id was not found in limbo, and can therefore not be discarded");
+            }
+            $discard_dbcards[$card_id] = $limbo_dbcards[$card_id];
+            unset($limbo_dbcards[$card_id]);
+        }
+
+        // Discard selected cards
+        $this->discardMultiple(
+            clienttranslate('Shameless Rummage: ${player_name} discards ${nbr} card(s) from ${opponent_name}\'s deck'),
+            $player_id,
+            $card_ids,
+            $discard_dbcards,
+            null,
+            true,
+            false,
+            $opponent_id,
+        );
+
+        // Shuffle the rest back into the deck
+        $this->placeOnDeckMultiple(
+            $opponent_id,
+            clienttranslate('Shameless Rummage: ${player_name} shuffles ${opponent_name}\'s deck'),
+            array(),
+            array(),
+            $limbo_dbcards,
+            true,
+        );
+        $this->cards->shuffle(DECK.$player_id);
+        
+        $this->fullyResolveCard($player_id);
+    }
+
     // ^
     // |
      //(~acts)
@@ -12253,6 +12315,16 @@ class DaleOfMerchants extends DaleTableBasic
     function stTasmanianDevil1() {
         $opponent_id = $this->getGameStateValue("opponent_id");
         $this->draw('', 1, true, $opponent_id);
+    }
+
+    function stTasmanianDevil4() {
+        $player_id = $this->getActivePlayerId();
+        $opponent_id = $this->getGameStateValue("opponent_id");
+        $dbcards = $this->draw('', 3, true, $opponent_id, $player_id);
+        if (count($dbcards) == 0) {
+            //tasmaniandevil4 has no effect (fizzle)
+            $this->fullyResolveCard($this->getActivePlayerId());
+        }
     }
 
     // ^
