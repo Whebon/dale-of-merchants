@@ -11380,7 +11380,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function argDeckContent() {
         $_private = array();
-        $players = $this->loadPlayersBasicInfosInclMono();
+        $players = $this->loadPlayersBasicInfos(); //Exclude Mono. Mono can never search its deck.
         foreach ($players as $player_id => $player) {
             $dbcards = array_values($this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg'));
             $_private[$player_id] = array('cards' => array_values($dbcards));
@@ -11443,7 +11443,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function argNaturalSurvivor() {
         return array_merge(
-            $this->argDeckContent(),
+            $this->argMyDeckContent(),
             $this->argDie()
         );
     }
