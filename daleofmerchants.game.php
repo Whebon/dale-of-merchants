@@ -71,12 +71,13 @@ class DaleOfMerchants extends DaleTableBasic
         $this->cards->init("card");
         $this->deckSelection = new DaleDeckSelection($this);
 	}
-	
-    protected function getGameName( )
-    {
-		// Used for translations and stuff. Please do not modify.
-        return "daleofmerchants";
-    }
+
+    // TODO: safely remove this
+    // protected function getGameName( )
+    // {
+	// 	// Used for translations and stuff. Please do not modify.
+    //     return "daleofmerchants";
+    // }
 
     /*
         setupNewGame:

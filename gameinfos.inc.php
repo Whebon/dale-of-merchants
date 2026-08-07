@@ -36,4 +36,5 @@ $gameinfos = array(
 		'min' => 740,
 		'max' => null,
 	),
+	'exception_on_warning' => true,
 );

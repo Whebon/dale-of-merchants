@@ -52,6 +52,9 @@
 		"max": null
 	},
 
+	// New flag
+	"exception_on_warning": true,
+
 	//////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
 	// "is_sandbox": false, //DEPRECATED
 	// "turnControl": "simple" //DEPRECATED
