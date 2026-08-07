@@ -491,7 +491,7 @@ class DaleOfMerchants extends DaleTableBasic
             "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
         ), $args));
     }
-
+    
     /**
      * Automatically resolves all cards in Mono's schedule with the given trigger
      */
