@@ -10951,8 +10951,8 @@ class DaleOfMerchants extends DaleTableBasic
         // Fizzle both or neither
         if ($toss_card_id == -1 && $market_card_id == -1) {
             $this->notifyAllPlayers('message', clienttranslate('${resolving_card_name}: ${player_name} did not toss one of ${opponent_name}\'s cards'), array(
-                "player_name" => $this->getPlayerNameById($player_id),
-                "opponent_name" => $this->getPlayerNameById($opponent_id),
+                "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+                "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
                 "resolving_card_name" => $resolving_card_name,
             ));
             return;
