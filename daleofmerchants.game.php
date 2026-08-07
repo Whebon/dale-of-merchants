@@ -314,6 +314,9 @@ class DaleOfMerchants extends DaleTableBasic
         if (!$this->isSoloGame() || $hand_player_id == MONO_PLAYER_ID) {
             return;
         }
+        if ($this->getGameStateValue("resolvingCard") != -1) {
+            return; // Update from Sami: Alerts (Mono cards returning to Mono's discard) should only happen between card effects (not in the middle of them)
+        }
         $player_id = $this->getActivePlayerId();
         if ($hand_dbcards === null) {
             $hand_dbcards = $this->cards->getCardsInLocation(HAND.$player_id);
