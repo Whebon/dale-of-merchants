@@ -1980,7 +1980,7 @@ body {
 		display: inline-block;
 		margin-bottom: 20px;
 		transition: color 0.5s, color 0.5s, width 0.5s; //should match the js for "daleofmerchants-hidden-transitioning"
-		max-height: 19px; // workaround to not increase the label's height when an icon is added (see purchasing with / without coin)
+		max-height: 18px; // workaround to not increase the label's height when an icon is added (see purchasing with / without coin)
 
 		.daleofmerchants-log-span .daleofmerchants-icon {
 			z-index: 1;
