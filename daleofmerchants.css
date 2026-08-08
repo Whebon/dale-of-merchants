@@ -1523,6 +1523,7 @@ body {
   display: inline-block;
   margin-bottom: 20px;
   transition: color 0.5s, color 0.5s, width 0.5s;
+  max-height: 19px;
 }
 .daleofmerchants-arc-stock .daleofmerchants-label .daleofmerchants-log-span .daleofmerchants-icon {
   z-index: 1;
