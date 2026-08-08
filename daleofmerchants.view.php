@@ -66,13 +66,6 @@ class view_daleofmerchants_daleofmerchants extends game_view
             }
         }
 
-        //Action labels
-        // $this->tpl['ACTION_LABEL_TECHNIQUE'] = $this->_("Click cards to play <strong>techniques</strong>");
-        // $this->tpl['ACTION_LABEL_PURCHASE'] = $this->_("Click cards to use for <strong>purchasing</strong>");
-        // $this->tpl['ACTION_LABEL_BUILD'] = $this->_("Click cards to <strong>build stacks</strong>");
-        // $this->tpl['ACTION_LABEL_DISCARD'] = $this->_("Click cards to <strong>discard</strong>");
-        // $this->tpl['ACTION_LABEL_DEFAULT'] = $this->_("Your hand");
-
         //Filter titles
         $this->tpl['RESET_FILTERS'] = $this->_("Reset"); //$this->_("Reset Filters");
         $this->tpl['FILTER_DECKS'] = $this->_("Filter Decks");

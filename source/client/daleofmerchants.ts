@@ -667,7 +667,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'postCleanUpPhase':
 				this.mySchedule.setSelectionMode('clickOnCleanUp', undefined, 'daleofmerchants-wrap-technique');
-				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use <strong>passive abilities</strong>"));
+				this.myHand.setSelectionMode('clickAbilityPostCleanup', 'pileBlue', 'daleofmerchants-wrap-technique', _("Click cards to use their <strong>passive</strong> abilities"));
 				this.myDiscard.setSelectionMode('sliceOfLife', undefined, 'daleofmerchants-wrap-technique')
 				break;
 			case 'playerTurn':
@@ -677,21 +677,21 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setSelectionMode('implicit', 'daleofmerchants-wrap-purchase', _("Coins in this purchase"));
 				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), (this.mainClientState.args as ClientGameStates['client_purchase']).cost, true)
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', "MISSING LABEL");
-				this.setHandLabelToCardValue(_("Click cards to use for <strong>purchasing</strong>"), (this.mainClientState.args as ClientGameStates['client_purchase']).cost, 'purchase');
+				this.setHandLabelToCardValue(_("Choose cards to use for <strong>purchasing</strong>"), (this.mainClientState.args as ClientGameStates['client_purchase']).cost, 'purchase');
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.setPurchaseSelectionModes(this.mainClientState.args as ClientGameStates['client_purchase']);
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
 			case 'client_technique':
-				//const client_technique_label = _("Click cards to play <strong>techniques</strong>");
-				const client_technique_label = _("Click cards to use their effects");
+				//const client_technique_label = _("Choose cards to play <strong>techniques</strong>");
+				const client_technique_label = _("Click cards to use their <strong>technique</strong> or <strong>passive</strong> abilities");
 				this.myHand.setSelectionMode('clickTechnique', 'pileBlue', 'daleofmerchants-wrap-technique', client_technique_label);
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'client_build':
-				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Click cards to <strong>build stacks</strong>"));
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Choose cards to <strong>build stacks</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
@@ -703,8 +703,8 @@ class DaleOfMerchants extends Gamegui
 			case 'bonusBuild':
 				const bonusBuild_args = args.args as { is_first_build: number };
 				const bonusBuildLabel = bonusBuild_args.is_first_build ? 
-					_("Click cards to <strong>build stacks</strong>") :
-					_("Click cards to <strong>build additional stacks</strong>");
+					_("Choose cards to <strong>build stacks</strong>") :
+					_("Choose cards to <strong>build additional stacks</strong>");
 				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
 				this.myStall.selectLeftPlaceholder();
 				this.onBuildSelectionChanged(); //check for nostalgic item
@@ -714,7 +714,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'client_inventory':
-				this.myHand.setSelectionMode('multiple', 'pileRed', 'daleofmerchants-wrap-discard', _("Click cards to <strong>discard</strong>"));
+				this.myHand.setSelectionMode('multiple', 'pileRed', 'daleofmerchants-wrap-discard', _("Choose cards to <strong>discard</strong>"));
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.setLeftPlaceholderClickable(true);
 				break;
