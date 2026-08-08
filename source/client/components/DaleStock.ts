@@ -456,15 +456,23 @@ export class DaleStock extends Stock implements DaleLocation {
      */
 	private setWrapClass(wrapClass: DaleWrapClass = 'daleofmerchants-wrap-default', labelText?: string) {
 		if (this.actionLabel && wrapClass != 'previous') {
-			if (!labelText) {
-				labelText = this.actionLabelDefaultText
-			}
-			this.actionLabel.innerHTML = labelText ?? this.actionLabelDefaultText;
+			this.setLabelText(labelText ?? this.actionLabelDefaultText);
 			this.wrap!.classList.remove(...DALE_WRAP_CLASSES);
 			if (wrapClass) {
 				this.wrap!.classList.add(wrapClass);
 			}
 		}
+	}
+
+	/**
+     * Update the text to be displayed on the label of the wrap.
+	 * @param labelText
+     */
+	public setLabelText(labelText: string) {
+		if (!this.actionLabel) {
+			throw new Error("actionLabel undefined");
+		}
+		this.actionLabel.innerHTML = labelText ?? this.actionLabelDefaultText;
 	}
 
 	/**

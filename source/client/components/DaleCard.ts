@@ -447,6 +447,9 @@ export class DaleCard {
      * @param effect 
      */
     public static expireEffects(effects: DbEffect[]) {
+        if (effects.length == 0) {
+            return;
+        }
         let includes_global_effect = false;
         let affected_card_ids: Set<number> | number[] = new Set<number>();
         for (let effect of effects) {
@@ -509,6 +512,33 @@ export class DaleCard {
                 DaleCard.addEffect(effect);
                 break;
         }
+    }
+
+    /**
+     * Creates a local effect that targets the given card
+     * @param card DaleCard this modification applies to
+     */
+    public static addLocalEffect(card_id: number, type_id: number, arg: number | null) {
+        let localEffect = {
+            effect_id: -card_id, // local effects are negative, so they won't interfere with server effects
+            effect_class: DaleCard.EC_MODIFICATION, // local effects are always tied to a specific card
+            card_id: card_id,
+            type_id: type_id,
+            arg: arg,
+        }
+
+        const exists = DaleCard.effects.find(e => e.effect_id == localEffect.effect_id);
+        if (exists) {
+            this.updateEffect(localEffect);
+        }
+        else {
+            this.addEffect(localEffect);
+        }
+    }
+
+    public static expireAllLocalEffects() {
+        var localEffects = DaleCard.effects.filter(e => e.effect_id < 0); // local effects are negative
+        DaleCard.expireEffects(localEffects)
     }
 
 
@@ -649,6 +679,10 @@ export class DaleCard {
                     case DaleCard.CT_GORILLA4:
                     case DaleCard.CT_GORILLAMONO:
                         value = 4;
+                        break;
+                    //local effects
+                    case DaleCard.CT_VORACIOUSCONSUMER:
+                        value += effect.arg!;
                         break;
                 }
             }
@@ -1166,9 +1200,9 @@ export class DaleCard {
         }
         const old_overlay = div.querySelector(".daleofmerchants-chameleon-overlay:not(.daleofmerchants-fading)");
 		if (old_overlay) {
-            // if ((old_overlay as HTMLElement).dataset['typeid'] == String(this.effective_type_id)) {
-            //     return;
-            // }
+            if (this.isBoundChameleon() && (old_overlay as HTMLElement).dataset['typeid'] == String(this.effective_type_id)) {
+                return; //prevent flickering (e.g. selecting more cards with a copied CT_VORACIOUSCONSUMER)
+            }
             if (fade) {
                 old_overlay.classList.add("daleofmerchants-fading");
                 dojo.fadeOut({node: old_overlay as HTMLElement, onEnd: function (node: HTMLElement){dojo.destroy(node);}}).play();
@@ -1186,7 +1220,7 @@ export class DaleCard {
             Images.setCardStyle(new_overlay, this.effective_type_id);
             //new_overlay.setAttribute('style', Images.getCardStyle(this.effective_type_id));
             new_overlay.appendChild(chameleon_icon);
-            //new_overlay.dataset['typeid'] = String(this.effective_type_id);
+            new_overlay.dataset['typeid'] = String(this.effective_type_id);
             div.appendChild(new_overlay);
             if (fade) {
                 dojo.setStyle(new_overlay, 'opacity', '0');

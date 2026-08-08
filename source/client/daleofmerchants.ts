@@ -676,7 +676,8 @@ class DaleOfMerchants extends Gamegui
 			case 'client_purchase':
 				this.coinManager.setSelectionMode('implicit', 'daleofmerchants-wrap-purchase', _("Coins in this purchase"));
 				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), (this.mainClientState.args as ClientGameStates['client_purchase']).cost, true)
-				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Click cards to use for <strong>purchasing</strong>"));
+				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', "MISSING LABEL");
+				this.setHandLabelToCardValue(_("Click cards to use for <strong>purchasing</strong>"), (this.mainClientState.args as ClientGameStates['client_purchase']).cost, 'purchase');
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.setPurchaseSelectionModes(this.mainClientState.args as ClientGameStates['client_purchase']);
 				this.myStall.setLeftPlaceholderClickable(true);
@@ -1309,8 +1310,9 @@ class DaleOfMerchants extends Gamegui
 				const client_spend_wrap_class = client_spend_args.wrap_class ?? 'daleofmerchants-wrap-purchase';
 				const client_spend_icon_type = client_spend_wrap_class == 'daleofmerchants-wrap-purchase' ? 'pileYellow' : 'pileBlue';
 				this.coinManager.setSelectionMode('implicit', client_spend_wrap_class, _("Coins included"));
-				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost)
-				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, _("Choose cards to <strong>spend</strong>"));
+				this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), client_spend_args.cost);
+				this.myHand.setSelectionMode('multiple', client_spend_icon_type, client_spend_wrap_class, "MISSING LABEL");
+				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), client_spend_args.cost, 'spend');
 				if ('passive_card_id' in this.mainClientState.args) {
 					this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				}
@@ -1320,7 +1322,8 @@ class DaleOfMerchants extends Gamegui
 				const client_spendx_wrap_class = client_spendx_args.wrap_class ?? 'daleofmerchants-wrap-purchase';
 				const client_spendx_icon_type = client_spendx_wrap_class == 'daleofmerchants-wrap-purchase' ? 'pileYellow' : 'pileBlue';
 				this.coinManager.setSelectionMode('explicit', client_spendx_wrap_class, _("Click to add coins"));
-				this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, _("Choose cards to <strong>spend</strong>"));
+				this.myHand.setSelectionMode('multiple', client_spendx_icon_type, client_spendx_wrap_class, "MISSING LABEL");
+				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
 				if ('passive_card_id' in this.mainClientState.args) {
 					this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				}
@@ -1330,7 +1333,8 @@ class DaleOfMerchants extends Gamegui
 				const client_stove_args = (this.mainClientState.args as ClientGameStates['client_stove']);	
 				this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
 				this.myHand.unselectAll();
-				this.myHand.setSelectionMode('multipleExceptSecondary', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Choose cards to <strong>spend</strong>"), 'build');
+				this.myHand.setSelectionMode('multipleExceptSecondary', 'pileYellow', 'daleofmerchants-wrap-purchase', "MISSING LABEL", 'build');
+				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
 				for (let card_id of client_stove_args.stack_card_ids!.slice().reverse()) {
 					this.myHand.selectItem(card_id, true);
 				}
@@ -1346,7 +1350,8 @@ class DaleOfMerchants extends Gamegui
 			case 'charmStove':
 			case 'charmDodo2':
 				this.coinManager.setSelectionMode('explicit', 'daleofmerchants-wrap-purchase', _("Click to add coins"));
-				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', _("Choose cards to <strong>spend</strong>"), 'build');
+				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', "MISSING LABEL", 'build');
+				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
 				break;
 			case 'client_cache':
 				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
@@ -1470,6 +1475,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				this.coinManager.setSelectionMode('implicit', undefined, _("Coins included"));
 				this.coinManager.setCoinsToSpendImplicitly([], client_spendSelectOpponentTechnique_args.spend_coins, false);
+				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), client_spendSelectOpponentTechnique_args.spend_coins, 'spend');
 				//alternative selection mode: by clicking on an opponent's pile:
 				const client_spendSelectOpponentTechnique_type_id = new DaleCard(this.mainClientState.getTechniqueCardId()).effective_type_id
 				let client_spendSelectOpponentTechnique_piles: Record<number, Pile> | null = null;
@@ -1488,8 +1494,9 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'client_capuchin5b':
-				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
 				const client_capuchin5b_args = this.mainClientState.getSpendArgs();
+				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
+				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), client_capuchin5b_args.spend_coins, 'spend');
 				for (const card_id of client_capuchin5b_args.spend_card_ids.reverse()) {
 					this.myHand.selectItem(card_id);
 				}
@@ -1660,6 +1667,7 @@ class DaleOfMerchants extends Gamegui
 				if (client_purchase_args.optionalArgs?.calculations_card_ids === undefined) {
 					this.market!.restoreArrangement();
 				}
+				DaleCard.expireAllLocalEffects();
 				break;
 			case 'client_technique':
 				this.market!.setSelectionMode(0);
@@ -3389,6 +3397,46 @@ class DaleOfMerchants extends Gamegui
 	*/
 
 	/**
+	 * Update the text to be displayed on the label of the hand based on the
+	 */
+	setHandLabelToCardValue(emptySelectionText: string, targetValue: number, mode: 'purchase' | 'spend' | 'build') {
+		// Count card values
+		const cards = this.myHand.getSelectedDaleCards()
+		let totalCardValue: number = 0
+		for (const card of cards) {
+            totalCardValue += card.effective_value;
+        }
+		let remaining = targetValue - totalCardValue
+
+		// Choose text
+		let labelText = emptySelectionText;
+		if (cards.length > 0) {
+			labelText = _("Total") + `: <strong>${totalCardValue}</strong>`
+			if (targetValue != Infinity) { // Infinity is used for X
+				labelText += "/" + String(targetValue)
+			}
+		}
+
+		// Add coins
+		if (mode == 'purchase' || mode == 'spend') {
+			const totalCoins = this.coinManager.myCoins.getValue()
+			if (remaining > 0 && remaining <= totalCoins) {
+				if (cards.length > 0) {
+					// Total: 3/5 (+2🪙)
+					labelText += " "+this.format_dale_icons(`(<strong>+${remaining}</strong>ICON)`, DaleIcons.getCoinIcon())
+				}
+				else {
+					// Choose cards to spend (or use only 5🪙)
+					labelText += " "+this.format_dale_icons(_("(or use only ICON)").replace("ICON", remaining.toString()+"ICON"), DaleIcons.getCoinIcon())
+				}
+			}
+		}
+
+		// Update label
+		this.myHand.setLabelText(labelText)
+	}
+
+	/**
 	 * Sorts an unordered object of dbcards by their "location_arg"
 	 * @param cards unsorted object of dbcards
 	 * @param ascending indicates if the order should be ascending (`true`) or descending (`false`)
@@ -4063,6 +4111,7 @@ class DaleOfMerchants extends Gamegui
 			}
 			(confirm_button as HTMLElement).innerText = _("Confirm")+` (x = ${value})`;
 		}
+		this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
 	}
 
 	updateStoveButton() {
@@ -4080,7 +4129,8 @@ class DaleOfMerchants extends Gamegui
 			else {
 				(confirm_button as HTMLElement).innerText = _("Skip");
 			}
-		}	
+		}
+		this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
 	}
 
 	
@@ -4972,13 +5022,42 @@ class DaleOfMerchants extends Gamegui
 
 	onFundsSelectionChanged() {
 		const args = this.mainClientState.args as ClientGameStates['client_purchase'];
+		if (args.cost === undefined) {
+			return; // This happens when onFundsSelectionChanged() is called in 'client_technique'
+		}
+		const start = performance.now()
+
+		// Apply CT_VORACIOUSCONSUMER (Optionally add +1 or +2 to match the targetValue)
+		DaleCard.expireAllLocalEffects();
+		const cards = this.myHand.getSelectedDaleCards().reverse() // reverse: prioritize the effect on the first selected
+		let remaining: number = args.cost
+		for (const card of cards) {
+            remaining -= card.effective_value;
+        }
+		for (const card of cards) {
+			if (card.effective_type_id == DaleCard.CT_VORACIOUSCONSUMER) {
+				let value = Math.min(2, remaining);
+				if (value > 0) {
+					DaleCard.addLocalEffect(card.id, card.effective_type_id, value);
+					remaining -= value
+				}
+			}
+		}
+
 		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost, true);
+		this.setHandLabelToCardValue(_("Click cards to use for <strong>purchasing</strong>"), args.cost, 'purchase');
+		console.log(performance.now() - start, " ms");
 	}
 
 	onSpendSelectionChanged() {
 		console.warn("onSpendSelectionChanged");
 		const args = this.mainClientState.args as ClientGameStates['client_spend'];
+		if (args.cost === undefined) {
+			console.warn("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+			return; // This happens when onSpendSelectionChanged() is called in 'client_technique'
+		}
 		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost);
+		this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), args.cost, 'spend');
 	}
 
 	onSpendXSelectionChanged() {
@@ -4989,6 +5068,7 @@ class DaleOfMerchants extends Gamegui
 	onPurchase() {
 		//const args = {...(this.mainClientState.args as ClientGameStates['client_purchase'])};
 		const args = this.mainClientState.args as ClientGameStates['client_purchase'];
+		this.mainClientState.getArgs<'client_purchase'>();
 		switch (this.gamedatas.gamestate.name) {
 			case 'client_purchase':
 				args.funds_card_ids = this.myHand.orderedSelection.get();
