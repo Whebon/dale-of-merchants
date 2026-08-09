@@ -669,8 +669,8 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->cards->countCardsInDeckAndDiscardOfPlayer(MONO_PLAYER_ID),
                     $this->cards->countCardsInDeckAndDiscardOfPlayer($opponent_id)
                 );
-                $cards_for_mono = $this->cards->pickCardsForLocation($nbr, DECK.MONO_PLAYER_ID, 'boldmember1');
-                $cards_for_player = $this->cards->pickCardsForLocation($nbr, DECK.$opponent_id, 'boldmember2');
+                $cards_for_mono = $this->cards->pickCardsForLocation($nbr, DECK.$opponent_id, 'boldmember1');
+                $cards_for_player = $this->cards->pickCardsForLocation($nbr, DECK.MONO_PLAYER_ID, 'boldmember2');
                 $this->cards->moveCardsOnTop($this->toCardIds($cards_for_mono), DECK.MONO_PLAYER_ID);
                 $this->cards->moveCardsOnTop($this->toCardIds($cards_for_player), DECK.$opponent_id);
                 $this->notifyAllPlayers('instant_deckToDeck', '', array(
@@ -2943,8 +2943,9 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $bribes = $this->effects->countGlobalEffects(CT_BRIBE);
         $sofas = $this->countTypeId($stall_cards, CT_SOFA);
-        $monocards = $this->countMonoCards($hand_cards); //they will be returned to mono, so ignore them when refilling the hand
-        return 5 + $increaseHandSizeEffects + $bribes + $sofas + $monocards;
+        //Rule change: drawing a Mono card leaves you with 1 less card.
+        //$monocards = $this->countMonoCards($hand_cards); //they will be returned to mono, so ignore them when refilling the hand.
+        return 5 + $increaseHandSizeEffects + $bribes + $sofas;
     }
 
     /**
