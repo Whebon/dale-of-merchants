@@ -1233,6 +1233,8 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                                 value = 4;
                                 break;
                             case DaleCard.CT_VORACIOUSCONSUMER:
+                            case DaleCard.CT_WALRUS1:
+                            case DaleCard.CT_ACCORDION:
                                 value += effect.arg;
                                 break;
                         }
@@ -2190,9 +2192,9 @@ define("components/DaleStock", ["require", "exports", "ebg/stock", "components/D
             }
             return value;
         };
-        DaleStock.prototype.getSelectedDaleCards = function () {
+        DaleStock.prototype.getSelectedDaleCards = function (secondary) {
             var cards = [];
-            for (var _i = 0, _a = this.orderedSelection.get(); _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.orderedSelection.get(secondary); _i < _a.length; _i++) {
                 var card_id = _a[_i];
                 cards.push(new DaleCard_1.DaleCard(card_id));
             }
@@ -5172,6 +5174,9 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
                     break;
             }
         };
+        CoinManager.prototype.getSelectionMode = function () {
+            return this.selectionMode;
+        };
         CoinManager.prototype.stealCoins = function (gain_player_id, lose_player_id, nbr) {
             this.addCoins(lose_player_id, -nbr);
             this.addCoins(gain_player_id, nbr, this.playerCoinIcon[lose_player_id]);
@@ -5267,6 +5272,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             _this.myHand = new DaleStock_1.DaleStock();
             _this.myLimbo = new DaleStock_1.DaleStock();
             _this.mainClientState = new MainClientState_1.MainClientState(_this);
+            _this.disableSetHandLabelToCardValue = false;
             _this.previousMainTitle = '';
             _this.opponent_ids = [];
             _this.max_opponents = 4;
@@ -5713,7 +5719,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'client_build':
-                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Choose cards to <strong>build stacks</strong>"));
+                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', "MISSING LABEL");
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
@@ -5722,11 +5728,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case 'bonusBuild':
-                    var bonusBuild_args = args.args;
-                    var bonusBuildLabel = bonusBuild_args.is_first_build ?
-                        _("Choose cards to <strong>build stacks</strong>") :
-                        _("Choose cards to <strong>build additional stacks</strong>");
-                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
+                    this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', "MISSING LABEL");
                     this.myStall.selectLeftPlaceholder();
                     this.onBuildSelectionChanged();
                     if (!this.buildActionSuccessful && DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
@@ -6590,6 +6592,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
+                    DaleCard_9.DaleCard.expireAllLocalEffects();
                     break;
                 case 'client_inventory':
                     this.market.setSelectionMode(0);
@@ -6608,6 +6611,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('none');
                     this.myStall.unselectLeftPlaceholder();
                     this.myDiscard.setSelectionMode('none');
+                    DaleCard_9.DaleCard.expireAllLocalEffects();
                     break;
                 case 'client_swiftBroker':
                     this.myHand.setSelectionMode('none');
@@ -8172,6 +8176,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             return targets;
         };
         DaleOfMerchants.prototype.setHandLabelToCardValue = function (emptySelectionText, targetValue, mode) {
+            if (this.disableSetHandLabelToCardValue) {
+                return;
+            }
             var cards = this.myHand.getSelectedDaleCards();
             var totalCardValue = 0;
             for (var _i = 0, cards_1 = cards; _i < cards_1.length; _i++) {
@@ -8188,12 +8195,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             if (mode == 'purchase' || mode == 'spend') {
                 var totalCoins = this.coinManager.myCoins.getValue();
-                if (remaining > 0 && remaining <= totalCoins) {
+                var coins = void 0;
+                if (this.coinManager.getSelectionMode() == 'explicit') {
+                    coins = this.coinManager.getCoinsToSpend();
+                }
+                else {
+                    coins = remaining;
+                }
+                if (coins > 0 && coins <= totalCoins) {
                     if (cards.length > 0) {
-                        labelText += " " + this.format_dale_icons("(<strong>+".concat(remaining, "</strong>ICON)"), DaleIcons_10.DaleIcons.getCoinIcon());
+                        labelText += " " + this.format_dale_icons("(<strong>+".concat(coins, "</strong>ICON)"), DaleIcons_10.DaleIcons.getCoinIcon());
                     }
                     else {
-                        labelText += " " + this.format_dale_icons(_("(or use only ICON)").replace("ICON", remaining.toString() + "ICON"), DaleIcons_10.DaleIcons.getCoinIcon());
+                        labelText += " " + this.format_dale_icons(_("(or use only ICON)").replace("ICON", coins.toString() + "ICON"), DaleIcons_10.DaleIcons.getCoinIcon());
                     }
                 }
             }
@@ -9471,7 +9485,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (args.cost === undefined) {
                 return;
             }
-            var start = performance.now();
             DaleCard_9.DaleCard.expireAllLocalEffects();
             var cards = this.myHand.getSelectedDaleCards().reverse();
             var remaining = args.cost;
@@ -9491,7 +9504,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost, true);
             this.setHandLabelToCardValue(_("Click cards to use for <strong>purchasing</strong>"), args.cost, 'purchase');
-            console.log(performance.now() - start, " ms");
         };
         DaleOfMerchants.prototype.onSpendSelectionChanged = function () {
             console.warn("onSpendSelectionChanged");
@@ -10697,23 +10709,55 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onBuildSelectionChanged = function (card) {
             console.warn("onBuildSelectionChanged");
             var card_ids = this.myHand.orderedSelection.get();
+            var nextStackIndex = this.myStall.getNumberOfStacks() + 1;
+            DaleCard_9.DaleCard.expireAllLocalEffects();
+            var cards = this.myHand.getSelectedDaleCards().reverse();
+            var remaining = nextStackIndex;
+            for (var _i = 0, cards_4 = cards; _i < cards_4.length; _i++) {
+                var card_7 = cards_4[_i];
+                remaining -= card_7.effective_value;
+            }
+            for (var _a = 0, cards_5 = cards; _a < cards_5.length; _a++) {
+                var card_8 = cards_5[_a];
+                switch (card_8.effective_type_id) {
+                    case DaleCard_9.DaleCard.CT_WALRUS1:
+                        var walrus1_value = Math.min(2, remaining);
+                        if (walrus1_value > 0) {
+                            DaleCard_9.DaleCard.addLocalEffect(card_8.id, card_8.effective_type_id, walrus1_value);
+                            remaining -= walrus1_value;
+                        }
+                        break;
+                    case DaleCard_9.DaleCard.CT_ACCORDION:
+                        var accordion_value = Math.max(-1, Math.min(1, remaining));
+                        if (accordion_value != 0) {
+                            DaleCard_9.DaleCard.addLocalEffect(card_8.id, card_8.effective_type_id, accordion_value);
+                            remaining -= accordion_value;
+                        }
+                        break;
+                }
+            }
+            var args = this.gamedatas.gamestate.args;
+            var bonusBuildLabel = args.is_first_build === false ?
+                _("Choose cards to <strong>build additional stacks</strong>") :
+                _("Choose cards to <strong>build stacks</strong>");
+            this.setHandLabelToCardValue(bonusBuildLabel, nextStackIndex, 'build');
             if (DaleCard_9.DaleCard.countGlobalEffects(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) > 0) {
                 this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", 999);
                 return;
             }
             var count_nostalgic_items = 0;
-            for (var _i = 0, card_ids_2 = card_ids; _i < card_ids_2.length; _i++) {
-                var card_id = card_ids_2[_i];
-                var card_7 = new DaleCard_9.DaleCard(card_id);
-                if (card_7.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
+            for (var _b = 0, card_ids_2 = card_ids; _b < card_ids_2.length; _b++) {
+                var card_id = card_ids_2[_b];
+                var card_9 = new DaleCard_9.DaleCard(card_id);
+                if (card_9.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
                 }
             }
             if (count_nostalgic_items > 0) {
-                for (var _a = 0, _b = this.myDiscard.orderedSelection.get(); _a < _b.length; _a++) {
-                    var card_id = _b[_a];
-                    var card_8 = new DaleCard_9.DaleCard(card_id);
-                    if (card_8.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
+                for (var _c = 0, _d = this.myDiscard.orderedSelection.get(); _c < _d.length; _c++) {
+                    var card_id = _d[_c];
+                    var card_10 = new DaleCard_9.DaleCard(card_id);
+                    if (card_10.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
                         count_nostalgic_items++;
                     }
                 }
@@ -12614,6 +12658,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_buildStack = function (notif) {
             var _a;
             console.warn("notif_buildStack");
+            this.disableSetHandLabelToCardValue = true;
             var stall = this.playerStalls[notif.args.player_id];
             var dbcards_desc = this.sortCardsByLocationArg(notif.args.cards, false);
             for (var _i = 0, dbcards_desc_1 = dbcards_desc; _i < dbcards_desc_1.length; _i++) {
@@ -12675,6 +12720,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     default:
                         throw new Error("Unable to build from '".concat(notif.args.from, "'"));
                 }
+                this.disableSetHandLabelToCardValue = false;
             }
             (_a = this.bga.playerPanels.getScoreCounter(notif.args.player_id)) === null || _a === void 0 ? void 0 : _a.toValue(notif.args.stack_index_plus_1);
             if (notif.args.from == 'hand') {
@@ -12929,6 +12975,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.notif_discardMultiple = function (notif) {
             var _a;
             console.warn("discardMultiple", notif.args);
+            this.disableSetHandLabelToCardValue = true;
             this.coinManager.setSelectionMode('none');
             var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
             var discardPile = this.playerDiscards[discard_id];
@@ -12943,6 +12990,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!notif.args.from_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
             }
+            this.disableSetHandLabelToCardValue = false;
         };
         DaleOfMerchants.prototype.notif_placeOnDeck = function (notif) {
             var _a;
@@ -13201,8 +13249,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     if (cards.length != notif.args.nbr) {
                         throw new Error("DEPRECATED_whirligigTakeBack failed: expected ".concat(notif.args.nbr, " cards, got ").concat(cards.length, " cards"));
                     }
-                    for (var _i = 0, cards_4 = cards; _i < cards_4.length; _i++) {
-                        var card = cards_4[_i];
+                    for (var _i = 0, cards_6 = cards; _i < cards_6.length; _i++) {
+                        var card = cards_6[_i];
                         var limbo_card_id = limbo_card_ids.pop();
                         this.myHand.addDaleCardToStock(DaleCard_9.DaleCard.of(card), this.myLimbo.control_name + '_item_' + limbo_card_id);
                         this.myLimbo.removeFromStockByIdNoAnimation(limbo_card_id);

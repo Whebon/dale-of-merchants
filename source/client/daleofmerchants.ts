@@ -163,6 +163,9 @@ class DaleOfMerchants extends Gamegui
 	/** Class responsible for managing the deck selection page */
 	deckSelection: DaleDeckSelection | undefined;
 
+	/** Workaround to prevent the card value label to flicker during notifications */
+	disableSetHandLabelToCardValue: boolean = false;
+
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
@@ -691,23 +694,19 @@ class DaleOfMerchants extends Gamegui
 				this.mySchedule.setSelectionMode('clickOnFinishAndSnack', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'client_build':
-				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', _("Choose cards to <strong>build stacks</strong>"));
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', "MISSING LABEL");
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-purchase");
 				this.myStall.selectLeftPlaceholder();
-				this.onBuildSelectionChanged(); //check for nostalgic item
+				this.onBuildSelectionChanged(); //check for nostalgic item and update the hand label
 				//Do not open the popin when client states are being closed
 				if (!this.buildActionSuccessful && DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
 					this.myDiscard.openPopin(); 
 				}
 				break;
 			case 'bonusBuild':
-				const bonusBuild_args = args.args as { is_first_build: number };
-				const bonusBuildLabel = bonusBuild_args.is_first_build ? 
-					_("Choose cards to <strong>build stacks</strong>") :
-					_("Choose cards to <strong>build additional stacks</strong>");
-				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', bonusBuildLabel);
+				this.myHand.setSelectionMode('multiple', 'build', 'daleofmerchants-wrap-build', "MISSING LABEL");
 				this.myStall.selectLeftPlaceholder();
-				this.onBuildSelectionChanged(); //check for nostalgic item
+				this.onBuildSelectionChanged(); //check for nostalgic item and update the hand label
 				//Do not open the popin when leaving the client state
 				if (!this.buildActionSuccessful && DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
 					this.myDiscard.openPopin();
@@ -1680,6 +1679,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
+				DaleCard.expireAllLocalEffects();
 				break;
 			case 'client_inventory':
 				this.market!.setSelectionMode(0);
@@ -1698,6 +1698,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('none');
 				this.myStall.unselectLeftPlaceholder();
 				this.myDiscard.setSelectionMode('none');
+				DaleCard.expireAllLocalEffects();
 				break;
 			case 'client_swiftBroker':
 				this.myHand.setSelectionMode('none');
@@ -2321,7 +2322,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'bonusBuild':
 				this.addActionButton("confirm-button", _("Build with selected"), "onBuild");
-				const bonusBuild_args = args as { is_first_build: number };
+				const bonusBuild_args = args as { is_first_build: boolean };
 				if (bonusBuild_args.is_first_build) {
 					//the player is skipping their entire turn
 					this.addActionButton("skip-button", _("Skip turn"), "onBonusBuildSkip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
@@ -3395,11 +3396,16 @@ class DaleOfMerchants extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
-
+	
 	/**
-	 * Update the text to be displayed on the label of the hand based on the
+	 * Update the text to be displayed on the label of the hand based on the value of selected cards and coins
 	 */
 	setHandLabelToCardValue(emptySelectionText: string, targetValue: number, mode: 'purchase' | 'spend' | 'build') {
+		// Workaround to prevent the card value label to flicker during notifications
+		if (this.disableSetHandLabelToCardValue) {
+			return;
+		}
+
 		// Count card values
 		const cards = this.myHand.getSelectedDaleCards()
 		let totalCardValue: number = 0
@@ -3419,15 +3425,22 @@ class DaleOfMerchants extends Gamegui
 
 		// Add coins
 		if (mode == 'purchase' || mode == 'spend') {
-			const totalCoins = this.coinManager.myCoins.getValue()
-			if (remaining > 0 && remaining <= totalCoins) {
+			const totalCoins = this.coinManager.myCoins.getValue();
+			let coins;
+			if (this.coinManager.getSelectionMode() == 'explicit') {
+				coins = this.coinManager.getCoinsToSpend();
+			}
+			else {
+				coins = remaining;
+			}
+			if (coins > 0 && coins <= totalCoins) {
 				if (cards.length > 0) {
 					// Total: 3/5 (+2🪙)
-					labelText += " "+this.format_dale_icons(`(<strong>+${remaining}</strong>ICON)`, DaleIcons.getCoinIcon())
+					labelText += " "+this.format_dale_icons(`(<strong>+${coins}</strong>ICON)`, DaleIcons.getCoinIcon())
 				}
 				else {
 					// Choose cards to spend (or use only 5🪙)
-					labelText += " "+this.format_dale_icons(_("(or use only ICON)").replace("ICON", remaining.toString()+"ICON"), DaleIcons.getCoinIcon())
+					labelText += " "+this.format_dale_icons(_("(or use only ICON)").replace("ICON", coins.toString()+"ICON"), DaleIcons.getCoinIcon())
 				}
 			}
 		}
@@ -5025,7 +5038,6 @@ class DaleOfMerchants extends Gamegui
 		if (args.cost === undefined) {
 			return; // This happens when onFundsSelectionChanged() is called in 'client_technique'
 		}
-		const start = performance.now()
 
 		// Apply CT_VORACIOUSCONSUMER (Optionally add +1 or +2 to match the targetValue)
 		DaleCard.expireAllLocalEffects();
@@ -5046,7 +5058,6 @@ class DaleOfMerchants extends Gamegui
 
 		this.coinManager.setCoinsToSpendImplicitly(this.myHand.getSelectedDaleCards(), args.cost, true);
 		this.setHandLabelToCardValue(_("Click cards to use for <strong>purchasing</strong>"), args.cost, 'purchase');
-		console.log(performance.now() - start, " ms");
 	}
 
 	onSpendSelectionChanged() {
@@ -6332,7 +6343,41 @@ class DaleOfMerchants extends Gamegui
 	onBuildSelectionChanged(card?: DaleCard){
 		console.warn("onBuildSelectionChanged");
 		const card_ids = this.myHand.orderedSelection.get();
+		const nextStackIndex = this.myStall.getNumberOfStacks() + 1;
 		
+		// Apply CT_ACCORDION and CT_WALRUS1 (Optionally add value to match the targetValue)
+		DaleCard.expireAllLocalEffects();
+		const cards = this.myHand.getSelectedDaleCards().reverse() // reverse: prioritize the effect on the first selected
+		let remaining: number = nextStackIndex
+		for (const card of cards) {
+            remaining -= card.effective_value;
+        }
+		for (const card of cards) {
+			switch(card.effective_type_id) {
+				case DaleCard.CT_WALRUS1:
+					let walrus1_value = Math.min(2, remaining);
+					if (walrus1_value > 0) {
+						DaleCard.addLocalEffect(card.id, card.effective_type_id, walrus1_value);
+						remaining -= walrus1_value
+					}
+					break;
+				case DaleCard.CT_ACCORDION:
+					let accordion_value = Math.max(-1, Math.min(1, remaining));
+					if (accordion_value != 0) {
+						DaleCard.addLocalEffect(card.id, card.effective_type_id, accordion_value);
+						remaining -= accordion_value
+					}
+					break;
+			}
+		}
+
+		// Update the label
+		const args = this.gamedatas.gamestate.args as { is_first_build?: boolean };
+		const bonusBuildLabel = args.is_first_build === false ? // "undefined" means "true"
+			_("Choose cards to <strong>build additional stacks</strong>") :
+			_("Choose cards to <strong>build stacks</strong>");
+		this.setHandLabelToCardValue(bonusBuildLabel, nextStackIndex, 'build');
+
 		// Apply CT_CULTURALPRESERVATION
 		if (DaleCard.countGlobalEffects(DaleCard.CT_CULTURALPRESERVATION) > 0) {
 			this.myDiscard.setSelectionMode('multiple', 'build', "daleofmerchants-wrap-build", 999);
@@ -8600,6 +8645,7 @@ class DaleOfMerchants extends Gamegui
 
 	notif_buildStack(notif: NotifAs<'buildStack'>) {
 		console.warn("notif_buildStack");
+		this.disableSetHandLabelToCardValue = true;
 		const stall = this.playerStalls[notif.args.player_id]!;
 		const dbcards_desc = this.sortCardsByLocationArg(notif.args.cards, false);
 		for (let dbcard of dbcards_desc) {
@@ -8662,7 +8708,7 @@ class DaleOfMerchants extends Gamegui
 				default:
 					throw new Error(`Unable to build from '${notif.args.from}'`);
 			}
-
+			this.disableSetHandLabelToCardValue = false;
 		}
 
 		//update the score
@@ -8959,6 +9005,7 @@ class DaleOfMerchants extends Gamegui
 
 	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
 		console.warn("discardMultiple", notif.args);
+		this.disableSetHandLabelToCardValue = true;
 		this.coinManager.setSelectionMode('none'); //workaround for when the user selected 0 coins, but 'implicit' coin selection is still turned on
 		const discard_id = notif.args.discard_id ?? notif.args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
@@ -8973,6 +9020,7 @@ class DaleOfMerchants extends Gamegui
 			//update the hand sizes
 			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
 		}
+		this.disableSetHandLabelToCardValue = false;
 	}
 
 	notif_placeOnDeck(notif: NotifAs<'placeOnDeck'>) {

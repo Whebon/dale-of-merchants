@@ -682,6 +682,8 @@ export class DaleCard {
                         break;
                     //local effects
                     case DaleCard.CT_VORACIOUSCONSUMER:
+                    case DaleCard.CT_WALRUS1:
+                    case DaleCard.CT_ACCORDION:
                         value += effect.arg!;
                         break;
                 }

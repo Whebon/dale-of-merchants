@@ -179,6 +179,12 @@ export class CoinManager {
         }
     }
 
+    /**
+     * Returns the current selection mode
+     */
+	public getSelectionMode() {
+		return this.selectionMode
+	}
 
     /**
      * Moves coins between players
