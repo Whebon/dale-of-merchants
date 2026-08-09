@@ -8719,7 +8719,9 @@ class DaleOfMerchants extends Gamegui
 			if (notif.args.to_limbo) {
 				this.myLimbo.addDaleCardToStock(daleCard, slotId);
 			}
-			this.myHand.addDaleCardToStock(daleCard, slotId)
+			else {
+				this.myHand.addDaleCardToStock(daleCard, slotId);
+			}
 		}
 		else if (this.mono_hand_is_visible) {
 			//move card to mono's hand
