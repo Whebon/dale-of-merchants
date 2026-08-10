@@ -4118,9 +4118,9 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'chameleon_flexibleShopkeeper':
                         return _("Flexible Shopkeeper: ${you} may copy a card from your rightmost stack");
                     case 'chameleon_reflection':
-                        return _("Reflection: ${you} may copy the top card of another player's discard pile.");
+                        return _("Reflection: ${you} may copy the top card of another player's deck or discard pile.");
                     case 'chameleon_goodoldtimes':
-                        return _("Good Old Times: ${you} may copy the top card of the bin.");
+                        return _("Good Old Times: ${you} may copy the top card of the supply or bin.");
                     case 'chameleon_trendsetting':
                         return _("Trendsetting: ${you} may copy a card in the market");
                     case 'chameleon_seeingdoubles':
