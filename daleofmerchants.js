@@ -4140,12 +4140,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_spinningWheel':
                         return _("${card_name}: ${you} must choose 1-3 cards to discard");
                     case 'client_barricade':
-                        if (this._args.nbr_junk == 0) {
-                            return _("${card_name}: Are you sure you want to use this passive ability without any effects?");
-                        }
-                        else {
-                            return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
-                        }
+                        return _("${card_name}: ${you} may search your discard pile for up to 2 junk cards");
                     case 'client_fizzle':
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
                     case 'client_triggerFizzle':
@@ -6174,9 +6169,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_barricade':
                     var client_barricade_args = this.mainClientState.args;
                     this.myDiscard.setSelectionMode('multipleJunk', 'hand', "daleofmerchants-wrap-technique", client_barricade_args.nbr_junk);
-                    if (client_barricade_args.nbr_junk > 0) {
-                        this.myDiscard.openPopin();
-                    }
+                    this.myDiscard.openPopin();
                     break;
                 case 'wheelbarrow':
                     this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
@@ -10631,6 +10624,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         if (card_6.isJunk() && barricadeJunk < 2) {
                             barricadeJunk++;
                         }
+                    }
+                    if (barricadeJunk == 0) {
+                        this.showMessage(_("You don't have any junk cards in your discard"), 'error');
+                        return;
                     }
                     this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
                     break;

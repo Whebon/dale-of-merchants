@@ -1244,9 +1244,7 @@ class DaleOfMerchants extends Gamegui
 			case 'client_barricade':
 				const client_barricade_args = (this.mainClientState.args as ClientGameStates['client_barricade']);
 				this.myDiscard.setSelectionMode('multipleJunk', 'hand', "daleofmerchants-wrap-technique", client_barricade_args.nbr_junk);
-				if (client_barricade_args.nbr_junk > 0) {
-					this.myDiscard.openPopin();
-				}
+				this.myDiscard.openPopin();
 				break;
 			case 'wheelbarrow':
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
@@ -6263,6 +6261,10 @@ class DaleOfMerchants extends Gamegui
 					if (card.isJunk() && barricadeJunk < 2) {
 						barricadeJunk++;
 					}
+				}
+				if (barricadeJunk == 0) {
+					this.showMessage(_("You don't have any junk cards in your discard"), 'error');
+					return;
 				}
 				this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
 				break;
