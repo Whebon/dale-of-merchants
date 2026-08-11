@@ -8319,7 +8319,6 @@ class DaleOfMerchants extends Gamegui
 			['tossMultiple', 						500],
 			['discard', 							500],
 			['instant_discard',						1,],
-			['discardMultiple', 					750],
 			['placeOnDeck',							500, true],
 			['placeOnDeckMultiple', 				500, true],
 			['shuffleDiscard',						500],
@@ -9005,26 +9004,6 @@ class DaleOfMerchants extends Gamegui
 		}
 	}
 
-	notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
-		console.warn("discardMultiple", notif.args);
-		this.disableSetHandLabelToCardValue = true;
-		this.coinManager.setSelectionMode('none'); //workaround for when the user selected 0 coins, but 'implicit' coin selection is still turned on
-		const discard_id = notif.args.discard_id ?? notif.args.player_id;
-		const discardPile = this.playerDiscards[discard_id]!;
-		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-		let delay = 0;
-		for (let id of notif.args.card_ids) {
-			let card = notif.args.cards[id]!;
-			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
-			delay += 75; //delay indicates that ordering matters
-		}
-		if (!notif.args.from_limbo) {
-			//update the hand sizes
-			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
-		}
-		this.disableSetHandLabelToCardValue = false;
-	}
-
 	notif_placeOnDeck(notif: NotifAs<'placeOnDeck'>) {
 		console.warn("placeOnDeck");
 		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
@@ -9682,6 +9661,29 @@ class DaleOfMerchants extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Promise notifications (these notifications are auto-plugged using the new bgaSetupPromiseNotifications system)
+
+	async promise_notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
+		console.warn("discardMultiple", notif.args);
+		this.disableSetHandLabelToCardValue = true;
+		this.coinManager.setSelectionMode('none'); //workaround for when the user selected 0 coins, but 'implicit' coin selection is still turned on
+		const discard_id = notif.args.discard_id ?? notif.args.player_id;
+		const discardPile = this.playerDiscards[discard_id]!;
+		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+		let delay = 0;
+		for (let id of notif.args.card_ids) {
+			let card = notif.args.cards[id]!;
+			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
+			delay += 75; //delay indicates that ordering matters
+		}
+		if (!notif.args.from_limbo) {
+			//update the hand sizes
+			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
+		}
+		this.disableSetHandLabelToCardValue = false;
+
+		// Wait for all the cards to be discarded
+		await new Promise<void>(resolve => setTimeout(resolve, delay + 500));
+	}
 
 	async promise_notif_reshuffleDeck(args: NotifTypes['reshuffleDeck']) {
 		console.warn(`reshuffleDeck [market=${args.market}, player_id=${args.player_id}]`);

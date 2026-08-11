@@ -12395,7 +12395,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['tossMultiple', 500],
                 ['discard', 500],
                 ['instant_discard', 1,],
-                ['discardMultiple', 750],
                 ['placeOnDeck', 500, true],
                 ['placeOnDeckMultiple', 500, true],
                 ['shuffleDiscard', 500],
@@ -12968,26 +12967,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (!notif.args.from_limbo) {
                 this.playerHandSizes[notif.args.player_id].incValue(-1);
             }
-        };
-        DaleOfMerchants.prototype.notif_discardMultiple = function (notif) {
-            var _a;
-            console.warn("discardMultiple", notif.args);
-            this.disableSetHandLabelToCardValue = true;
-            this.coinManager.setSelectionMode('none');
-            var discard_id = (_a = notif.args.discard_id) !== null && _a !== void 0 ? _a : notif.args.player_id;
-            var discardPile = this.playerDiscards[discard_id];
-            var stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
-            var delay = 0;
-            for (var _i = 0, _b = notif.args.card_ids; _i < _b.length; _i++) {
-                var id = _b[_i];
-                var card = notif.args.cards[id];
-                this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
-                delay += 75;
-            }
-            if (!notif.args.from_limbo) {
-                this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
-            }
-            this.disableSetHandLabelToCardValue = false;
         };
         DaleOfMerchants.prototype.notif_placeOnDeck = function (notif) {
             var _a;
@@ -13572,6 +13551,38 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 throw new Error("Unknown argument ".concat(notif.args.arg));
             }
+        };
+        DaleOfMerchants.prototype.promise_notif_discardMultiple = function (notif) {
+            return __awaiter(this, void 0, void 0, function () {
+                var discard_id, discardPile, stock, delay, _i, _a, id, card;
+                var _b;
+                return __generator(this, function (_c) {
+                    switch (_c.label) {
+                        case 0:
+                            console.warn("discardMultiple", notif.args);
+                            this.disableSetHandLabelToCardValue = true;
+                            this.coinManager.setSelectionMode('none');
+                            discard_id = (_b = notif.args.discard_id) !== null && _b !== void 0 ? _b : notif.args.player_id;
+                            discardPile = this.playerDiscards[discard_id];
+                            stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+                            delay = 0;
+                            for (_i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
+                                id = _a[_i];
+                                card = notif.args.cards[id];
+                                this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
+                                delay += 75;
+                            }
+                            if (!notif.args.from_limbo) {
+                                this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
+                            }
+                            this.disableSetHandLabelToCardValue = false;
+                            return [4, new Promise(function (resolve) { return setTimeout(resolve, delay + 500); })];
+                        case 1:
+                            _c.sent();
+                            return [2];
+                    }
+                });
+            });
         };
         DaleOfMerchants.prototype.promise_notif_reshuffleDeck = function (args) {
             return __awaiter(this, void 0, void 0, function () {
