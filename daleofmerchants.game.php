@@ -3737,7 +3737,7 @@ class DaleOfMerchants extends DaleTableBasic
      * @return array result of the 2 dice rolls
      */
     function rollPangolinDice(string $msg, array $dbcard, bool $unique_results = false, array $msg_args = array(), mixed $played_id = null) {
-        $map = array(0 => DIE_DISCARD, 1 => DIE_DISCARD, 2 => DIE_DECK, 3 => DIE_DECK, 4 => DIE_DECK, 5 => DIE_HAND);
+        $map = array(0 => DIE_DISCARD, 1 => DIE_DISCARD, 2 => DIE_DECK, 3 => DIE_DECK, 4 => DIE_HAND, 5 => DIE_HAND);
         do {
             $d6_1 = rand(0, 5);
             $d6_2 = rand(0, 5);
