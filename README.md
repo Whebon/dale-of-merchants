@@ -5,4 +5,4 @@ This implementation supports 33 of the 36 animalfolk decks from the six-part Dal
 
 Play Dale of Merchants with 1 – 4 players for free on [Board Game Arena](https://boardgamearena.com/gamepanel?game=daleofmerchants).
 
-Production version: XXX
+Production version: V0.1.3
