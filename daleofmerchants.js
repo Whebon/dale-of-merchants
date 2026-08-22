@@ -5541,6 +5541,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             $('daleofmerchants-hand-limbo-flex').classList.add("daleofmerchants-hidden");
         };
         DaleOfMerchants.prototype.onGameUserPreferenceChanged = function (pref_id, pref_value) {
+            this.updatePlayerPanelGameUserPreference(pref_id, pref_value);
             switch (pref_id) {
                 case 103:
                     this.positionActionBarBasedOnPreference(true);
@@ -5627,11 +5628,15 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             toggle_holder.querySelectorAll(".toggle").forEach(function (element) {
                 element.addEventListener("click", function () {
                     var value = Number(element.dataset['value']);
-                    toggle_holder.querySelectorAll(".toggle").forEach(function (toggle) {
-                        toggle.classList.remove("chosen");
-                    });
-                    element.classList.add("chosen");
                     _this.setGameUserPreference(preference_id, value);
+                });
+            });
+        };
+        DaleOfMerchants.prototype.updatePlayerPanelGameUserPreference = function (pref_id, pref_value) {
+            var toggle_holders = document.querySelectorAll(".toggle-holder[data-preference-id=\"".concat(pref_id, "\"]"));
+            toggle_holders.forEach(function (toggle_holder) {
+                toggle_holder.querySelectorAll(".toggle").forEach(function (toggle) {
+                    toggle.classList.toggle("chosen", Number(toggle.dataset["value"]) === pref_value);
                 });
             });
         };

@@ -465,6 +465,8 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	onGameUserPreferenceChanged(pref_id: number, pref_value: number): void {
+		this.updatePlayerPanelGameUserPreference(pref_id, pref_value)
+
 		switch (pref_id) {
 			case 103:
 				this.positionActionBarBasedOnPreference(true);
@@ -601,16 +603,38 @@ class DaleOfMerchants extends Gamegui
 			element.addEventListener("click", () => {
 				const value = Number(element.dataset['value']);
 
-				toggle_holder.querySelectorAll(".toggle").forEach((toggle) => {
-					toggle.classList.remove("chosen");
-				});
-
-				element.classList.add("chosen");
+				// TODO: safely remove this. The UI update happens via 
+				// setGameUserPreference -> onGameUserPreferenceChanged -> updatePlayerPanelGameUserPreference
+				// toggle_holder.querySelectorAll(".toggle").forEach((toggle) => {
+				// 	toggle.classList.remove("chosen");
+				// });
+				// element.classList.add("chosen");
 
 				this.setGameUserPreference(preference_id, value);
 			});
 		});
 	}
+
+	/**
+	 * Updates the toggle added via addPlayerPanelGameUserPreference
+	 * @param preference_id 		preference to create a toggle for as defined by `gamepreferences.json`
+	 * @param preference_values 	labels representing the preference values
+	 */
+	updatePlayerPanelGameUserPreference(pref_id: number, pref_value: number): void {
+		const toggle_holders = document.querySelectorAll<HTMLElement>(
+			`.toggle-holder[data-preference-id="${pref_id}"]`
+		);
+
+		toggle_holders.forEach((toggle_holder) => {
+			toggle_holder.querySelectorAll<HTMLElement>(".toggle").forEach((toggle) => {
+				toggle.classList.toggle(
+					"chosen",
+					Number(toggle.dataset["value"]) === pref_value
+				);
+			});
+		});
+	}
+
 
 	/**
 	 * Should be called on refresh and on game start
