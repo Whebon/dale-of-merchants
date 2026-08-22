@@ -13578,28 +13578,28 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 throw new Error("Unknown argument ".concat(notif.args.arg));
             }
         };
-        DaleOfMerchants.prototype.promise_notif_discardMultiple = function (notif) {
+        DaleOfMerchants.prototype.promise_notif_discardMultiple = function (args) {
             return __awaiter(this, void 0, void 0, function () {
                 var discard_id, discardPile, stock, delay, _i, _a, id, card;
                 var _b;
                 return __generator(this, function (_c) {
                     switch (_c.label) {
                         case 0:
-                            console.warn("discardMultiple", notif.args);
+                            console.warn("discardMultiple", args);
                             this.disableSetHandLabelToCardValue = true;
                             this.coinManager.setSelectionMode('none');
-                            discard_id = (_b = notif.args.discard_id) !== null && _b !== void 0 ? _b : notif.args.player_id;
+                            discard_id = (_b = args.discard_id) !== null && _b !== void 0 ? _b : args.player_id;
                             discardPile = this.playerDiscards[discard_id];
-                            stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+                            stock = args.from_limbo ? this.myLimbo : this.myHand;
                             delay = 0;
-                            for (_i = 0, _a = notif.args.card_ids; _i < _a.length; _i++) {
+                            for (_i = 0, _a = args.card_ids; _i < _a.length; _i++) {
                                 id = _a[_i];
-                                card = notif.args.cards[id];
-                                this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
+                                card = args.cards[id];
+                                this.playerStockToPile(card, stock, args.player_id, discardPile, delay, args.ignore_card_not_found);
                                 delay += 75;
                             }
-                            if (!notif.args.from_limbo) {
-                                this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
+                            if (!args.from_limbo) {
+                                this.playerHandSizes[args.player_id].incValue(-args.nbr);
                             }
                             this.disableSetHandLabelToCardValue = false;
                             return [4, new Promise(function (resolve) { return setTimeout(resolve, delay + 500); })];

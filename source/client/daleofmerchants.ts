@@ -9720,22 +9720,22 @@ class DaleOfMerchants extends Gamegui
 	///////////////////////////////////////////////////
 	//// Promise notifications (these notifications are auto-plugged using the new bgaSetupPromiseNotifications system)
 
-	async promise_notif_discardMultiple(notif: NotifAs<'discardMultiple'>) {
-		console.warn("discardMultiple", notif.args);
+	async promise_notif_discardMultiple(args: NotifTypes['discardMultiple']) {
+		console.warn("discardMultiple", args);
 		this.disableSetHandLabelToCardValue = true;
 		this.coinManager.setSelectionMode('none'); //workaround for when the user selected 0 coins, but 'implicit' coin selection is still turned on
-		const discard_id = notif.args.discard_id ?? notif.args.player_id;
+		const discard_id = args.discard_id ?? args.player_id;
 		const discardPile = this.playerDiscards[discard_id]!;
-		const stock = notif.args.from_limbo ? this.myLimbo : this.myHand;
+		const stock = args.from_limbo ? this.myLimbo : this.myHand;
 		let delay = 0;
-		for (let id of notif.args.card_ids) {
-			let card = notif.args.cards[id]!;
-			this.playerStockToPile(card, stock, notif.args.player_id, discardPile, delay, notif.args.ignore_card_not_found);
+		for (let id of args.card_ids) {
+			let card = args.cards[id]!;
+			this.playerStockToPile(card, stock, args.player_id, discardPile, delay, args.ignore_card_not_found);
 			delay += 75; //delay indicates that ordering matters
 		}
-		if (!notif.args.from_limbo) {
+		if (!args.from_limbo) {
 			//update the hand sizes
-			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
+			this.playerHandSizes[args.player_id]!.incValue(-args.nbr);
 		}
 		this.disableSetHandLabelToCardValue = false;
 
