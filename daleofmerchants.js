@@ -5608,6 +5608,32 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 avatar.classList.add("daleofmerchants-mono-avatar");
                 this.updateTagName(avatar, "div");
             }
+            this.addPlayerPanelGameUserPreference(mono.id, 102, [_("Stepped turns"), _("Automatic turns")]);
+        };
+        DaleOfMerchants.prototype.addPlayerPanelGameUserPreference = function (player_id, preference_id, preference_values) {
+            var _this = this;
+            var initial_value = this.getGameUserPreference(preference_id);
+            var toggle = "\n\t\t\t<div class=\"daleofmerchants-player-panel-settings\">\n\t\t\t\t<div class=\"toggle-holder\" data-preference-id=\"".concat(preference_id, "\">\n\t\t\t\t\t").concat(preference_values.map(function (value, index) { return "\n\t\t\t\t\t\t<span\n\t\t\t\t\t\t\tclass=\"toggle ".concat(index === initial_value ? "chosen" : "", "\"\n\t\t\t\t\t\t\tdata-value=\"").concat(index, "\"\n\t\t\t\t\t\t>").concat(value, "</span>\n\t\t\t\t\t"); }).join(""), "\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t");
+            var player_panel = document.getElementById("player_board_".concat(player_id));
+            if (!player_panel) {
+                console.error("addPlayerPanelGameUserPreference failed: could not find player panel for player ".concat(player_id));
+                return;
+            }
+            player_panel.insertAdjacentHTML("beforeend", toggle);
+            var toggle_holder = player_panel.querySelector(".toggle-holder[data-preference-id=\"".concat(preference_id, "\"]"));
+            if (!toggle_holder) {
+                return;
+            }
+            toggle_holder.querySelectorAll(".toggle").forEach(function (element) {
+                element.addEventListener("click", function () {
+                    var value = Number(element.dataset['value']);
+                    toggle_holder.querySelectorAll(".toggle").forEach(function (toggle) {
+                        toggle.classList.remove("chosen");
+                    });
+                    element.classList.add("chosen");
+                    _this.setGameUserPreference(preference_id, value);
+                });
+            });
         };
         DaleOfMerchants.prototype.showAnimalfolkSpecificGameComponents = function () {
             if (!this.gamedatas.inDeckSelection) {

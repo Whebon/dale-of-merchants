@@ -544,7 +544,11 @@ class DaleOfMerchants extends Gamegui
 			avatar.classList.add("daleofmerchants-mono-avatar");
 			this.updateTagName(avatar, "div");
 		}
-		//TODO: enable a toggle for preference 102 (automate Mono's turn) in Mono's panel
+		this.addPlayerPanelGameUserPreference(mono.id, 102, [_("Stepped turns"), _("Automatic turns")])
+		
+		
+		//TODO: 
+		// Enable a toggle for preference 102 (automate Mono's turn) in Mono's panel
 		// const name = $(`player_name_${mono.id}`);
 		// if (name) {
 		// 	const icon = DaleIcons.getResetFiltersEnabledIcon();
@@ -552,6 +556,60 @@ class DaleOfMerchants extends Gamegui
 		// 	name.insertAdjacentHTML('beforeend', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
 		// 	this.addTooltip(icon.id, _("Mono's turn is automatic"), '');
 		// }
+	}
+
+	/**
+	 * Creates a toggle to change a game preference via the player panel. Which is a more accessible place than the BGA settings.
+	 * @param player_id 			player_id to add the preference toggle to
+	 * @param preference_id 		preference to create a toggle for as defined by `gamepreferences.json`
+	 * @param preference_values 	labels representing the preference values
+	 */
+	addPlayerPanelGameUserPreference(player_id: number, preference_id: number, preference_values: String[]) {
+		const initial_value = this.getGameUserPreference(preference_id);
+
+		const toggle = `
+			<div class="daleofmerchants-player-panel-settings">
+				<div class="toggle-holder" data-preference-id="${preference_id}">
+					${preference_values.map((value, index) => `
+						<span
+							class="toggle ${index === initial_value ? "chosen" : ""}"
+							data-value="${index}"
+						>${value}</span>
+					`).join("")}
+				</div>
+			</div>
+		`;
+
+		const player_panel = document.getElementById(`player_board_${player_id}`);
+
+		if (!player_panel) {
+			console.error(`addPlayerPanelGameUserPreference failed: could not find player panel for player ${player_id}`);
+			return;
+		}
+
+		player_panel.insertAdjacentHTML("beforeend", toggle);
+
+		const toggle_holder = player_panel.querySelector(
+			`.toggle-holder[data-preference-id="${preference_id}"]`
+		);
+
+		if (!toggle_holder) {
+			return;
+		}
+
+		toggle_holder.querySelectorAll<HTMLElement>(".toggle").forEach((element) => {
+			element.addEventListener("click", () => {
+				const value = Number(element.dataset['value']);
+
+				toggle_holder.querySelectorAll(".toggle").forEach((toggle) => {
+					toggle.classList.remove("chosen");
+				});
+
+				element.classList.add("chosen");
+
+				this.setGameUserPreference(preference_id, value);
+			});
+		});
 	}
 
 	/**

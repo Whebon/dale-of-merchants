@@ -1712,6 +1712,49 @@
 	}
 }
 
+//////////////////////////////////
+//////       Settings       //////
+//////////////////////////////////
+
+
+.daleofmerchants-player-panel-settings {
+	margin-top: 8px;
+	
+	// 75% smaller than the deck selection toggles
+	.toggle-holder {
+		flex: 0 1;
+		display: flex;
+		gap: 2px;
+		justify-content: right;
+		white-space: nowrap;
+		max-width: -moz-fit-content;
+		max-width: fit-content;
+		background-color: rgba(120, 62, 21, 0.1);
+		padding: 2px;
+		border-radius: 12px;
+
+		.toggle {
+			font-size: 75%;
+			user-select: none;
+			background: none;
+			color: rgb(120, 62, 21);
+			cursor: pointer;
+			padding: 4px 8px;
+			border-radius: 8px;
+
+			&:not(.chosen) {
+				opacity: 0.5;
+			}
+
+			&.chosen {
+				background-color: rgb(212, 130, 30);
+				color: white;
+			}
+		}
+	}
+}
+
+
 ////////////////////////////////////
 //////       Arc Stocks       //////
 ////////////////////////////////////

@@ -1308,6 +1308,38 @@
     bottom: 0px;
   }
 }
+.daleofmerchants-player-panel-settings {
+  margin-top: 8px;
+}
+.daleofmerchants-player-panel-settings .toggle-holder {
+  flex: 0 1;
+  display: flex;
+  gap: 2px;
+  justify-content: right;
+  white-space: nowrap;
+  max-width: -moz-fit-content;
+  max-width: fit-content;
+  background-color: rgba(120, 62, 21, 0.1);
+  padding: 2px;
+  border-radius: 12px;
+}
+.daleofmerchants-player-panel-settings .toggle-holder .toggle {
+  font-size: 75%;
+  user-select: none;
+  background: none;
+  color: rgb(120, 62, 21);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.daleofmerchants-player-panel-settings .toggle-holder .toggle:not(.chosen) {
+  opacity: 0.5;
+}
+.daleofmerchants-player-panel-settings .toggle-holder .toggle.chosen {
+  background-color: rgb(212, 130, 30);
+  color: white;
+}
+
 :root {
   --daleofmerchants-wrap-technique: rgb(40, 125, 184);
   --daleofmerchants-wrap-technique-a: rgba(40, 125, 184, 0.15);
