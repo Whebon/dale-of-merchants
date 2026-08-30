@@ -442,6 +442,15 @@ export class DaleCard {
         }
     }
 
+    public static hasGlobalEffect(type_id: number): boolean {
+        for (let effect of DaleCard.effects) {
+            if (effect.effect_class == DaleCard.EC_GLOBAL && effect.type_id == type_id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Expire (non-local) effects from the db
      * @param effect 
@@ -720,6 +729,44 @@ export class DaleCard {
             }
         }
         return cost;
+    }
+
+    /** 
+     * Returns the minimum finish cost of this card. If it doesn't have one, return `Infinity`.
+     * */
+    public get minimum_finish_cost(): number {
+        if (this.trigger != 'onFinish') {
+            return Infinity;
+        }
+        switch(this.effective_type_id) {
+            case DaleCard.CT_IMPULSIVEVISIONARY: 
+                return 1; 
+            case DaleCard.CT_COLLECTORSDESIRE: 
+                return 2; 
+            case DaleCard.CT_GROUNDBREAKINGIDEA: 
+                return 2; 
+            case DaleCard.CT_INSPIRATION: 
+                return 2; 
+            case DaleCard.CT_DEPRECATED_INSIGHT: 
+                return 2; 
+            case DaleCard.CT_INSIGHT: 
+                return 3; 
+            case DaleCard.CT_PERFECTMOVE: 
+                return 3; 
+            case DaleCard.CT_DODO1: 
+                return 2; 
+            case DaleCard.CT_DODO3: 
+                return 3; 
+            case DaleCard.CT_DODO4: 
+                return 3; 
+            case DaleCard.CT_DODO5A: 
+                return 4; 
+            case DaleCard.CT_DODO5B: 
+                return 3;
+            default:
+                console.error(`Attempted to get the minimum finish cost of a card type without finish: this.type_id = ${this.effective_type_id}`);
+                return 0;
+        }
     }
 
     // TODO: safely remove this

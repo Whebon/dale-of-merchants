@@ -1090,6 +1090,15 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 }
             }
         };
+        DaleCard.hasGlobalEffect = function (type_id) {
+            for (var _i = 0, _a = DaleCard.effects; _i < _a.length; _i++) {
+                var effect = _a[_i];
+                if (effect.effect_class == DaleCard.EC_GLOBAL && effect.type_id == type_id) {
+                    return true;
+                }
+            }
+            return false;
+        };
         DaleCard.expireEffects = function (effects) {
             if (effects.length == 0) {
                 return;
@@ -1272,6 +1281,44 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return cost;
         };
+        Object.defineProperty(DaleCard.prototype, "minimum_finish_cost", {
+            get: function () {
+                if (this.trigger != 'onFinish') {
+                    return Infinity;
+                }
+                switch (this.effective_type_id) {
+                    case DaleCard.CT_IMPULSIVEVISIONARY:
+                        return 1;
+                    case DaleCard.CT_COLLECTORSDESIRE:
+                        return 2;
+                    case DaleCard.CT_GROUNDBREAKINGIDEA:
+                        return 2;
+                    case DaleCard.CT_INSPIRATION:
+                        return 2;
+                    case DaleCard.CT_DEPRECATED_INSIGHT:
+                        return 2;
+                    case DaleCard.CT_INSIGHT:
+                        return 3;
+                    case DaleCard.CT_PERFECTMOVE:
+                        return 3;
+                    case DaleCard.CT_DODO1:
+                        return 2;
+                    case DaleCard.CT_DODO3:
+                        return 3;
+                    case DaleCard.CT_DODO4:
+                        return 3;
+                    case DaleCard.CT_DODO5A:
+                        return 4;
+                    case DaleCard.CT_DODO5B:
+                        return 3;
+                    default:
+                        console.error("Attempted to get the minimum finish cost of a card type without finish: this.type_id = ".concat(this.effective_type_id));
+                        return 0;
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         DaleCard.prototype.isChameleon = function () {
             var type_id = this.effective_type_id;
             return (type_id == DaleCard.CT_FLEXIBLESHOPKEEPER ||
@@ -7268,7 +7315,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'playerTurn':
                     break;
                 case 'client_technique':
-                    if (this.myHand.count() == 0) {
+                    if (this.areAnyActionsAvailable() == false) {
                         this.setDescriptionOnMyTurn(_("${you} must"));
                         this.addActionButton("confirm-button", _("Take an inventory action with 0 cards"), "onInventoryAction");
                     }
@@ -8198,6 +8245,30 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
             }
             return targets;
+        };
+        DaleOfMerchants.prototype.areAnyActionsAvailable = function () {
+            if (this.myHand.count() > 0) {
+                return true;
+            }
+            var totalCoins = this.coinManager.myCoins.getValue();
+            for (var _i = 0, _a = this.market.getCards(); _i < _a.length; _i++) {
+                var marketCard = _a[_i];
+                if (totalCoins >= marketCard.getCost(0)) {
+                    return true;
+                }
+            }
+            if (totalCoins > 0) {
+                for (var _b = 0, _c = this.mySchedule.getAllDaleCards(); _b < _c.length; _b++) {
+                    var card = _c[_b];
+                    if (totalCoins >= card.minimum_finish_cost) {
+                        return true;
+                    }
+                }
+            }
+            if (DaleCard_9.DaleCard.hasGlobalEffect(DaleCard_9.DaleCard.CT_CULTURALPRESERVATION) && this.myDiscard.size > 0) {
+                return true;
+            }
+            return false;
         };
         DaleOfMerchants.prototype.setHandLabelToCardValue = function (emptySelectionText, targetValue, mode) {
             if (this.disableSetHandLabelToCardValue) {
@@ -9414,25 +9485,25 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var fizzle = true;
             switch (card.effective_type_id) {
                 case DaleCard_9.DaleCard.CT_IMPULSIVEVISIONARY:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_COLLECTORSDESIRE:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_GROUNDBREAKINGIDEA:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_INSPIRATION:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_DEPRECATED_INSIGHT:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_INSIGHT:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_PERFECTMOVE:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_SHOPPINGJOURNEY:
                     fizzle = this.market.getCards().length == 0;
@@ -9485,19 +9556,19 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink5a', card.id, { nbr: skink5a_nbr });
                     break;
                 case DaleCard_9.DaleCard.CT_DODO1:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_DODO3:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_DODO4:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_DODO5A:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 4);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 case DaleCard_9.DaleCard.CT_DODO5B:
-                    this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+                    this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
                     break;
                 default:
                     this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);

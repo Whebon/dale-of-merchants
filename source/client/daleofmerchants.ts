@@ -2383,8 +2383,7 @@ class DaleOfMerchants extends Gamegui
 				//this.addActionButton("confirm-button", _("Inventory Action"), "onRequestInventoryAction");
 				break;
 			case 'client_technique':
-				if (this.myHand.count() == 0) {
-					//Requested by Sami, but technically, you can still finish techniques or build with CT_CULTURALPRESERVATION
+				if (this.areAnyActionsAvailable() == false) {
 					this.setDescriptionOnMyTurn(_("${you} must"));
 					this.addActionButton("confirm-button", _("Take an inventory action with 0 cards"), "onInventoryAction");
 				}
@@ -3477,6 +3476,43 @@ class DaleOfMerchants extends Gamegui
 		script.
 	*/
 	
+	/**
+	 * Checks if any non-inventory actions are potentially available. 
+	 */
+	areAnyActionsAvailable(): boolean {
+		// Player might purchase, build or play a card from hand
+		if (this.myHand.count() > 0) {
+			return true;
+		}
+
+		const totalCoins = this.coinManager.myCoins.getValue();
+
+		// Player might purchase a card with 0 cards:
+		// * using coins; or
+		// * for free thanks to CT_ESSENTIALPURCHASE;
+		for (const marketCard of this.market!.getCards()) {
+			if (totalCoins >= marketCard!.getCost(0)) {
+				return true;
+			}
+		}
+
+		// Player might finish a card from the schedule
+		if (totalCoins > 0) {
+			for (const card of this.mySchedule.getAllDaleCards()) {
+				if (totalCoins >= card.minimum_finish_cost) {
+					return true;
+				}
+			}
+		}
+
+		// Player might build a stack from discard
+		if (DaleCard.hasGlobalEffect(DaleCard.CT_CULTURALPRESERVATION) && this.myDiscard.size > 0) {
+			return true;
+		}
+		
+		return false;
+	}
+
 	/**
 	 * Update the text to be displayed on the label of the hand based on the value of selected cards and coins
 	 */
@@ -5021,25 +5057,25 @@ class DaleOfMerchants extends Gamegui
 		let fizzle = true;
 		switch(card.effective_type_id) {
 			case DaleCard.CT_IMPULSIVEVISIONARY:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 1);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_COLLECTORSDESIRE:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_GROUNDBREAKINGIDEA:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_INSPIRATION:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_DEPRECATED_INSIGHT:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_INSIGHT:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_PERFECTMOVE:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_SHOPPINGJOURNEY:
 				fizzle = this.market!.getCards().length == 0;
@@ -5092,19 +5128,19 @@ class DaleOfMerchants extends Gamegui
 				this.clientTriggerTechnique(fizzle ? 'client_triggerFizzle' : 'client_skink5a', card.id, {nbr: skink5a_nbr});
 				break;
 			case DaleCard.CT_DODO1:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 2);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_DODO3:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_DODO4:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_DODO5A:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 4);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			case DaleCard.CT_DODO5B:
-				this.clientFinishTechnique('resolveTechniqueCard', card.id, 3);
+				this.clientFinishTechnique('resolveTechniqueCard', card.id, card.minimum_finish_cost);
 				break;
 			default:
 				this.clientTriggerTechnique('client_choicelessTriggerTechniqueCard', card.id);
