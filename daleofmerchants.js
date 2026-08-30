@@ -6021,7 +6021,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple3', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 3 cards to discard"));
                     break;
                 case 'gorilla5a':
-                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 3 cards to discard"), undefined, 6);
+                    this.myHand.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Choose 6 cards to discard"), undefined, 6);
                     break;
                 case 'client_shoppingJourney':
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
