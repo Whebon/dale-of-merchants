@@ -9369,7 +9369,7 @@ class DaleOfMerchants extends DaleTableBasic
             //place the card on top of the deck the card
             $card_id = $card_ids[$i];
             $card = $this->cards->getCardFromLocation($card_id, MARKET);
-            $this->cards->moveCard($card_id, DECK.$other_player_id);
+            $this->cards->moveCardOnTop($card_id, DECK.$other_player_id);
             $this->notifyAllPlayers('marketToDeck', clienttranslate('Cave Banquet: ${player_name} places ${card_name} on top of ${opponent_name}\'s deck'), array (
                 'player_id' => $other_player_id, // This must be the id of the player who will get the card on their deck (i.e. the opponent)
                 'player_name' => $this->getPlayerNameByIdInclMono($player_id),
