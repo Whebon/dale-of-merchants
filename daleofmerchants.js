@@ -1503,39 +1503,49 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
                 text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
             }
             if (text.includes('COMET')) {
+                text = this.formatColoredLabel(text, 'COMET', 'daleofmerchants-hare');
                 text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCometIcon().outerHTML, "</span>"));
             }
             if (text.includes('PLANET')) {
+                text = this.formatColoredLabel(text, 'PLANET', 'daleofmerchants-hare');
                 text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
             }
             if (text.includes('STARS')) {
+                text = this.formatColoredLabel(text, 'STARS', 'daleofmerchants-hare');
                 text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getStarsIcon().outerHTML, "</span>"));
             }
             if (text.includes('COIN')) {
                 text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCoinIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAWN')) {
-                text = text.replace(/\[DAWN(.|\n)*?\]/g, function (match) {
-                    return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"0\">".concat(match.replace(/\[|\]/g, ''), "</div>");
-                });
+                text = this.formatColoredLabel(text, 'DAWN', 'daleofmerchants-dawn');
                 text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDawnIcon().outerHTML, "</span>"));
             }
             if (text.includes('DAY')) {
-                text = text.replace(/\[DAY(.|\n)*?\]/g, function (match) {
-                    return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"1\">".concat(match.replace(/\[|\]/g, ''), "</div>");
-                });
+                text = this.formatColoredLabel(text, 'DAY', 'daleofmerchants-day');
                 text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDayIcon().outerHTML, "</span>"));
             }
             if (text.includes('NIGHT')) {
-                text = text.replace(/\[NIGHT(.|\n)*?\]/g, function (match) {
-                    return "<div class=\"daleofmerchants-tooltip-clock\" data-clock=\"2\">".concat(match.replace(/\[|\]/g, ''), "</div>");
-                });
+                text = this.formatColoredLabel(text, 'NIGHT', 'daleofmerchants-night');
                 text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getNightIcon().outerHTML, "</span>"));
             }
             if (text.includes('CLOCK')) {
                 text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span>"));
             }
             return text;
+        };
+        DaleCard.formatColoredLabel = function (text, start, subclass) {
+            var _this = this;
+            var regex = new RegExp("\\[".concat(start, "(.|\\n)*?\\]"), "g");
+            text = text.replace(regex, function (match) {
+                return _this.getColoredLabel(match.replace(/\[|\]/g, ""), subclass);
+            });
+            return text;
+        };
+        DaleCard.getColoredLabel = function (text, subclass) {
+            var NOWRAP_CHARACTER_LENGTH = 23;
+            var allowWrapping = text.length > NOWRAP_CHARACTER_LENGTH ? 'daleofmerchants-allow-wrapping' : '';
+            return "<div class=\"daleofmerchants-tooltip-colored-label ".concat(subclass, " ").concat(allowWrapping, "\" data-clock=\"2\">").concat(text, "</div>");
         };
         DaleCard.prototype.getLegend = function (text) {
             var legend = '';

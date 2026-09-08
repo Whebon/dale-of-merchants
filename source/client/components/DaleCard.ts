@@ -15,6 +15,11 @@ import { PlayerClock } from './PlayerClock';
 type DataLocation = 'moving' | 'stock' | 'market' | 'stall' | 'pile';
 
 /**
+ * CSS sub-classes of daleofmerchants-tooltip-colored-span
+ */
+type ColoredLabelClass = 'daleofmerchants-hare' | 'daleofmerchants-dawn' | 'daleofmerchants-day' | 'daleofmerchants-night'
+
+/**
  * An OrderedSelection that uses DaleCards
  */
 export class OrderedSelection extends AbstractOrderedSelection {
@@ -1140,39 +1145,65 @@ export class DaleCard {
             text = text.replaceAll('DESTINATION', `<span style="color: var(--pangolin2); font-weight: bold;">${_("destination")}</span>`);
         }
         if (text.includes('COMET')) {
+            text = this.formatColoredLabel(text, 'COMET', 'daleofmerchants-hare');
             text = text.replaceAll('COMET', `<span class="daleofmerchants-log-span">${DaleIcons.getCometIcon().outerHTML}</span>`);
         }
         if (text.includes('PLANET')) {
+            text = this.formatColoredLabel(text, 'PLANET', 'daleofmerchants-hare');
             text = text.replaceAll('PLANET', `<span class="daleofmerchants-log-span">${DaleIcons.getPlanetIcon().outerHTML}</span>`);
         }
         if (text.includes('STARS')) {
+            text = this.formatColoredLabel(text, 'STARS', 'daleofmerchants-hare');
             text = text.replaceAll('STARS', `<span class="daleofmerchants-log-span">${DaleIcons.getStarsIcon().outerHTML}</span>`);
         }
         if (text.includes('COIN')) {
             text = text.replaceAll('COIN', `<span class="daleofmerchants-log-span">${DaleIcons.getCoinIcon().outerHTML}</span>`);
         }
         if (text.includes('DAWN')) {
-            text = text.replace(/\[DAWN(.|\n)*?\]/g, match => {
-                return `<div class="daleofmerchants-tooltip-clock" data-clock="0">${match.replace(/\[|\]/g,'')}</div>`;
-            });
+            text = this.formatColoredLabel(text, 'DAWN', 'daleofmerchants-dawn');
             text = text.replaceAll('DAWN', `<span class="daleofmerchants-log-span">${DaleIcons.getDawnIcon().outerHTML}</span>`);
         }
         if (text.includes('DAY')) {
-            text = text.replace(/\[DAY(.|\n)*?\]/g, match => {
-                return `<div class="daleofmerchants-tooltip-clock" data-clock="1">${match.replace(/\[|\]/g,'')}</div>`;
-            });
+            text = this.formatColoredLabel(text, 'DAY', 'daleofmerchants-day');
             text = text.replaceAll('DAY', `<span class="daleofmerchants-log-span">${DaleIcons.getDayIcon().outerHTML}</span>`);
         }
         if (text.includes('NIGHT')) {
-            text = text.replace(/\[NIGHT(.|\n)*?\]/g, match => {
-                return `<div class="daleofmerchants-tooltip-clock" data-clock="2">${match.replace(/\[|\]/g,'')}</div>`;
-            });
+            text = this.formatColoredLabel(text, 'NIGHT', 'daleofmerchants-night');
             text = text.replaceAll('NIGHT', `<span class="daleofmerchants-log-span">${DaleIcons.getNightIcon().outerHTML}</span>`);
         }
         if (text.includes('CLOCK')) {
             text = text.replaceAll('CLOCK', `<span class="daleofmerchants-log-span">${DaleIcons.getClockIcon().outerHTML}</span>`);
         }
         return text;
+    }
+
+    /** 
+     * Formats a [START <insert text here>] block as colored html 
+     * @param start defines the start of a block. In the example above: "START". 
+     * @param subclass subclass of the colored label 
+     */
+    private static formatColoredLabel(text: string, start: string, subclass: ColoredLabelClass) {
+        const regex = new RegExp(`\\[${start}(.|\\n)*?\\]`, "g");
+
+        text = text.replace(regex, match => {
+            return this.getColoredLabel(match.replace(/\[|\]/g, ""), subclass);
+        });
+
+        return text;
+    }
+
+    /**
+     * Returns a colored of a given clock type
+     * @param text text to be displayed on the label
+     * @param subclass either CLOCK_DAWN, CLOCK_DAY or CLOCK_NIGHT
+     */
+    public static getColoredLabel(text: string, subclass: ColoredLabelClass) {
+        // Fix for issue #194. Allow wrapping if there is a lot of text on the label.
+        // Do not wrap if the character length is 23 or less. ("DAY an opponent's stall" has 23 characters)
+        const NOWRAP_CHARACTER_LENGTH = 23 
+        var allowWrapping = text.length > NOWRAP_CHARACTER_LENGTH ? 'daleofmerchants-allow-wrapping' : '';
+        
+        return `<div class="daleofmerchants-tooltip-colored-label ${subclass} ${allowWrapping}" data-clock="2">${text}</div>`;
     }
 
     /**

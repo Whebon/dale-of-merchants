@@ -1070,7 +1070,7 @@
 		max-width: 300px;
 	}
 
-	.daleofmerchants-tooltip-clock {
+	.daleofmerchants-tooltip-colored-label {
 		display: inline;
 		border-radius: 10px;
 		padding-left: 0px;
@@ -1081,15 +1081,23 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 
-		&[data-clock="0"] {
+		&.daleofmerchants-allow-wrapping {
+			white-space: normal;
+		}
+
+		&.daleofmerchants-hare {
+			background-color: var(--daleofmerchants-hare);
+		}
+
+		&.daleofmerchants-dawn {
 			background-color: var(--daleofmerchants-dawn);
 		}
 
-		&[data-clock="1"] {
+		&.daleofmerchants-day {
 			background-color: var(--daleofmerchants-day);
 		}
 
-		&[data-clock="2"] {
+		&.daleofmerchants-night {
 			background-color: var(--daleofmerchants-night);
 		}
 	}
@@ -1772,6 +1780,8 @@
 	--daleofmerchants-wrap-default-g: rgb(100, 100, 100, 0.5); //grayed out
 	--daleofmerchants-wrap-default-a: rgb(100, 100, 100, 0.15);
 
+	--daleofmerchants-hare: rgb(67, 117, 180, 0.25);
+	--daleofmerchants-hare-a: rgb(67, 117, 180, 0.05);
 	--daleofmerchants-dawn: rgb(0, 163, 158, 0.25);
 	--daleofmerchants-dawn-a: rgb(0, 163, 158, 0.05);
 	--daleofmerchants-day: rgb(230, 71, 36, 0.25);
