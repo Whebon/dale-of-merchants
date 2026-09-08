@@ -5560,6 +5560,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             if (gamedatas.hiddenGamedatas) {
                 this.setupHiddenGamedatas(gamedatas.hiddenGamedatas);
             }
+            document.addEventListener("click", function () {
+                dijit.popup.close();
+            });
             console.warn("Ending game setup");
         };
         DaleOfMerchants.prototype.setupHiddenGamedatas = function (hiddenGamedatas) {

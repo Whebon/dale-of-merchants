@@ -416,6 +416,11 @@ class DaleOfMerchants extends Gamegui
 			this.setupHiddenGamedatas(gamedatas.hiddenGamedatas);
 		}
 		
+		// Experimental: close tooltips when clicking anywhere (never tested)
+		document.addEventListener("click", () => {
+			dijit.popup.close();
+		});
+
 		console.warn( "Ending game setup" );
 	}
 
