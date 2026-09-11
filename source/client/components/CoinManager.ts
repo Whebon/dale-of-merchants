@@ -99,7 +99,7 @@ export class CoinManager {
      * Get the coins to spend
      */
     public getCoinsToSpend(): number {
-        return +this.coinsToSpendSpan!.innerText;
+        return +this.coinsToSpendSpan!.innerHTML;
     }
     
     /**

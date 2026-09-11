@@ -1447,6 +1447,18 @@ export class DaleCard {
     }
 
     /**
+     * converts an array of card_ids to DaleCards
+     * @returns DaleCard
+     */
+    public static fromIds(card_ids: number[]): DaleCard[] {
+        var cards: DaleCard[] = [];
+        for (let card_id of card_ids) {
+            cards.push(new DaleCard(card_id));
+        }
+        return cards
+    }
+    
+    /**
      * @return `true` iff at least 1 of the card_ids is of type type_id
      */
     public static containsTypeId(card_ids: number[], type_id: number) {

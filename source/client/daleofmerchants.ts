@@ -3564,6 +3564,19 @@ class DaleOfMerchants extends Gamegui
 					labelText += " "+this.format_dale_icons(_("(or use only ICON)").replace("ICON", coins.toString()+"ICON"), DaleIcons.getCoinIcon())
 				}
 			}
+			else {
+				// Insufficient coins
+				coins = 0;
+			}
+
+			// REQUESTED BY THE BGA STAFF: "Grey out Confirm funds when it cannot be activated."
+			const minValue = targetValue != Infinity ? targetValue : 0; // we don't know min x cost as this point, so we assume it's 0
+			if (this.verifyCost(cards, coins, minValue, targetValue)) {
+				dojo.removeClass("confirm-button", "disabled");
+			}
+			else {
+				dojo.addClass("confirm-button", "disabled");
+			}
 		}
 
 		// Update label
@@ -10092,6 +10105,61 @@ class DaleOfMerchants extends Gamegui
 			card_name: card_name
 		})
 	}
+
+	/**
+	 * verifyCost on the client side
+	 * @param cards cards to be included in the purchase/spend funds
+	 * @param coins coins to be included in the purchase/spend funds
+	 * @param cost_min minimum cost to be covered
+	 * @param cost_max maximum cost to be covered
+	 * @returns reason why this purchase will fail. or "" if the funds are valid.
+	 */
+	public verifyCost(cards: DaleCard[], coins: number, cost_min: number, cost_max: number | null = null): boolean {
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////     REQUESTED BY THE BGA STAFF: "Grey out Confirm funds when it cannot be activated."     /////
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		cost_max = cost_max ?? cost_min;
+		
+		let lowest_value = 1000;
+		let total_value = coins;
+		const is_purchase_from_bin = this.is_purchase_from_bin()
+		const ignore_olm1_for_overpaying = is_purchase_from_bin && cards.filter(card => card.effective_type_id === DaleCard.CT_OLM1).length === 1;
+		
+		for (const card of cards) {
+			const value = card.effective_value;
+			total_value += value;
+			if (ignore_olm1_for_overpaying && card.effective_type_id === DaleCard.CT_OLM1) {
+				continue;
+			}
+			lowest_value = Math.min(lowest_value, value);
+		}
+
+		if (total_value < cost_min) {
+			//return _("Insufficient funds")+` (${total_value}/${cost_min})`;
+			return false;
+		}
+		if (total_value - lowest_value >= cost_max) {
+			//return _("Please remove unnecessary cards");
+			return false;
+		}
+		if (total_value > cost_max && this.coinManager.getCoinsToSpend() > 0) {
+			//return _("Please remove unnecessary coins");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @returns true if the current client state is a purchase from bin
+	 */
+	public is_purchase_from_bin(): boolean {
+		const client_purchase_args = (this.mainClientState.args as ClientGameStates['client_purchase']);
+		return client_purchase_args.olm1_card_id !== undefined;
+	}
+
 }
 
 

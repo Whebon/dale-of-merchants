@@ -1727,9 +1727,17 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             return new DaleCard(card.id, card.type_arg);
         };
-        DaleCard.containsTypeId = function (card_ids, type_id) {
+        DaleCard.fromIds = function (card_ids) {
+            var cards = [];
             for (var _i = 0, card_ids_1 = card_ids; _i < card_ids_1.length; _i++) {
                 var card_id = card_ids_1[_i];
+                cards.push(new DaleCard(card_id));
+            }
+            return cards;
+        };
+        DaleCard.containsTypeId = function (card_ids, type_id) {
+            for (var _i = 0, card_ids_2 = card_ids; _i < card_ids_2.length; _i++) {
+                var card_id = card_ids_2[_i];
                 if ((new DaleCard(card_id)).effective_type_id == type_id) {
                     return true;
                 }
@@ -5161,7 +5169,7 @@ define("components/CoinManager", ["require", "exports", "components/DaleIcons", 
             return max_value;
         };
         CoinManager.prototype.getCoinsToSpend = function () {
-            return +this.coinsToSpendSpan.innerText;
+            return +this.coinsToSpendSpan.innerHTML;
         };
         CoinManager.prototype.setCoinsToSpendImplicitly = function (funds, total, is_purchase) {
             if (is_purchase === void 0) { is_purchase = false; }
@@ -8318,6 +8326,16 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         labelText += " " + this.format_dale_icons(_("(or use only ICON)").replace("ICON", coins.toString() + "ICON"), DaleIcons_10.DaleIcons.getCoinIcon());
                     }
                 }
+                else {
+                    coins = 0;
+                }
+                var minValue = targetValue != Infinity ? targetValue : 0;
+                if (this.verifyCost(cards, coins, minValue, targetValue)) {
+                    dojo.removeClass("confirm-button", "disabled");
+                }
+                else {
+                    dojo.addClass("confirm-button", "disabled");
+                }
             }
             this.myHand.setLabelText(labelText);
         };
@@ -10858,8 +10876,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 return;
             }
             var count_nostalgic_items = 0;
-            for (var _b = 0, card_ids_2 = card_ids; _b < card_ids_2.length; _b++) {
-                var card_id = card_ids_2[_b];
+            for (var _b = 0, card_ids_3 = card_ids; _b < card_ids_3.length; _b++) {
+                var card_id = card_ids_3[_b];
                 var card_9 = new DaleCard_9.DaleCard(card_id);
                 if (card_9.effective_type_id == DaleCard_9.DaleCard.CT_NOSTALGICITEM) {
                     count_nostalgic_items++;
@@ -11756,8 +11774,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var card_ids = this.myLimbo.orderedSelection.get();
             var nbr_cards_remaining = this.myLimbo.count() - card_ids.length;
             var delay = 0;
-            for (var _i = 0, card_ids_3 = card_ids; _i < card_ids_3.length; _i++) {
-                var card_id = card_ids_3[_i];
+            for (var _i = 0, card_ids_4 = card_ids; _i < card_ids_4.length; _i++) {
+                var card_id = card_ids_4[_i];
                 this.stockToPile(new DaleCard_9.DaleCard(card_id), this.myLimbo, this.myDiscard, delay);
                 delay += 75;
             }
@@ -13936,6 +13954,37 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             this.bgaPerformAction('actSpawn', {
                 card_name: card_name
             });
+        };
+        DaleOfMerchants.prototype.verifyCost = function (cards, coins, cost_min, cost_max) {
+            if (cost_max === void 0) { cost_max = null; }
+            cost_max = cost_max !== null && cost_max !== void 0 ? cost_max : cost_min;
+            var lowest_value = 1000;
+            var total_value = coins;
+            var is_purchase_from_bin = this.is_purchase_from_bin();
+            var ignore_olm1_for_overpaying = is_purchase_from_bin && cards.filter(function (card) { return card.effective_type_id === DaleCard_9.DaleCard.CT_OLM1; }).length === 1;
+            for (var _i = 0, cards_7 = cards; _i < cards_7.length; _i++) {
+                var card = cards_7[_i];
+                var value = card.effective_value;
+                total_value += value;
+                if (ignore_olm1_for_overpaying && card.effective_type_id === DaleCard_9.DaleCard.CT_OLM1) {
+                    continue;
+                }
+                lowest_value = Math.min(lowest_value, value);
+            }
+            if (total_value < cost_min) {
+                return false;
+            }
+            if (total_value - lowest_value >= cost_max) {
+                return false;
+            }
+            if (total_value > cost_max && this.coinManager.getCoinsToSpend() > 0) {
+                return false;
+            }
+            return true;
+        };
+        DaleOfMerchants.prototype.is_purchase_from_bin = function () {
+            var client_purchase_args = this.mainClientState.args;
+            return client_purchase_args.olm1_card_id !== undefined;
         };
         DaleOfMerchants.ACTION_BUTTON_SKIP = 'red';
         DaleOfMerchants.ACTION_BUTTON_SELECT_PLAYER = 'gray';
