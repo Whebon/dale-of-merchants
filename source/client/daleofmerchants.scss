@@ -533,6 +533,8 @@
 
 .daleofmerchants-token-area {
 	display: inline-flex;
+	align-items: center;
+	gap: 10px;
 	float: right;
 
 	.daleofmerchants-icon {
@@ -1738,7 +1740,8 @@
 
 
 .daleofmerchants-player-panel-settings {
-	margin-top: 8px;
+	// Needed when it's in the player panel, but it's is in the token area now
+	//margin-top: 8px;
 	
 	// 75% smaller than the deck selection toggles
 	.toggle-holder {

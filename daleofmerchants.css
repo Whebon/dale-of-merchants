@@ -363,6 +363,8 @@
 
 .daleofmerchants-token-area {
   display: inline-flex;
+  align-items: center;
+  gap: 10px;
   float: right;
 }
 .daleofmerchants-token-area .daleofmerchants-icon {
@@ -1319,9 +1321,6 @@
     opacity: 1;
     bottom: 0px;
   }
-}
-.daleofmerchants-player-panel-settings {
-  margin-top: 8px;
 }
 .daleofmerchants-player-panel-settings .toggle-holder {
   flex: 0 1;

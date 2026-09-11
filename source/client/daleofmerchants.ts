@@ -552,17 +552,6 @@ class DaleOfMerchants extends Gamegui
 			this.updateTagName(avatar, "div");
 		}
 		this.addPlayerPanelGameUserPreference(mono.id, 102, [_("Stepped turns"), _("Automatic turns")])
-		
-		
-		//TODO: 
-		// Enable a toggle for preference 102 (automate Mono's turn) in Mono's panel
-		// const name = $(`player_name_${mono.id}`);
-		// if (name) {
-		// 	const icon = DaleIcons.getResetFiltersEnabledIcon();
-		// 	icon.id = "daleofmerchants-mono-automatic";
-		// 	name.insertAdjacentHTML('beforeend', `<span class="daleofmerchants-log-span">${icon.outerHTML}</span>`);
-		// 	this.addTooltip(icon.id, _("Mono's turn is automatic"), '');
-		// }
 	}
 
 	/**
@@ -587,14 +576,16 @@ class DaleOfMerchants extends Gamegui
 			</div>
 		`;
 
-		const player_panel = document.getElementById(`player_board_${player_id}`);
+		//const player_panel = document.getElementById(`player_board_${player_id}`); // BGA STAFF DISALLOWED THIS
+		const player_panel = document.getElementById(`daleofmerchants-token-area-${player_id}`);
 
 		if (!player_panel) {
 			console.error(`addPlayerPanelGameUserPreference failed: could not find player panel for player ${player_id}`);
 			return;
 		}
 
-		player_panel.insertAdjacentHTML("beforeend", toggle);
+		//player_panel.insertAdjacentHTML("beforeend", toggle);
+		player_panel.insertAdjacentHTML("afterbegin", toggle);
 
 		const toggle_holder = player_panel.querySelector(
 			`.toggle-holder[data-preference-id="${preference_id}"]`
@@ -607,14 +598,6 @@ class DaleOfMerchants extends Gamegui
 		toggle_holder.querySelectorAll<HTMLElement>(".toggle").forEach((element) => {
 			element.addEventListener("click", () => {
 				const value = Number(element.dataset['value']);
-
-				// TODO: safely remove this. The UI update happens via 
-				// setGameUserPreference -> onGameUserPreferenceChanged -> updatePlayerPanelGameUserPreference
-				// toggle_holder.querySelectorAll(".toggle").forEach((toggle) => {
-				// 	toggle.classList.remove("chosen");
-				// });
-				// element.classList.add("chosen");
-
 				this.setGameUserPreference(preference_id, value);
 			});
 		});

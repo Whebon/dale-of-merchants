@@ -5683,12 +5683,12 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var _this = this;
             var initial_value = this.getGameUserPreference(preference_id);
             var toggle = "\n\t\t\t<div class=\"daleofmerchants-player-panel-settings\">\n\t\t\t\t<div class=\"toggle-holder\" data-preference-id=\"".concat(preference_id, "\">\n\t\t\t\t\t").concat(preference_values.map(function (value, index) { return "\n\t\t\t\t\t\t<span\n\t\t\t\t\t\t\tclass=\"toggle ".concat(index === initial_value ? "chosen" : "", "\"\n\t\t\t\t\t\t\tdata-value=\"").concat(index, "\"\n\t\t\t\t\t\t>").concat(value, "</span>\n\t\t\t\t\t"); }).join(""), "\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t");
-            var player_panel = document.getElementById("player_board_".concat(player_id));
+            var player_panel = document.getElementById("daleofmerchants-token-area-".concat(player_id));
             if (!player_panel) {
                 console.error("addPlayerPanelGameUserPreference failed: could not find player panel for player ".concat(player_id));
                 return;
             }
-            player_panel.insertAdjacentHTML("beforeend", toggle);
+            player_panel.insertAdjacentHTML("afterbegin", toggle);
             var toggle_holder = player_panel.querySelector(".toggle-holder[data-preference-id=\"".concat(preference_id, "\"]"));
             if (!toggle_holder) {
                 return;
