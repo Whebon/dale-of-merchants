@@ -5657,6 +5657,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 if (player_id != +mono_player_id) {
                     mono = gamedatas.players[mono_player_id];
                     gamedatas.playerorder.push(+mono_player_id);
+                    if (DaleOfMerchants.MONO_PLAYER_ID != +mono_player_id) {
+                        console.error("Client and server's MONO_PLAYER_ID out of sync");
+                    }
                 }
             }
             if (gamedatas.playerorder.length != 2) {
@@ -13134,7 +13137,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.allDecks[notif.args.deck_player_id].push(new DaleCard_9.DaleCard(0, 0), 'overall_player_board_' + notif.args.player_id);
                 }
             }
-            if (!notif.args.from_limbo) {
+            if (!notif.args.from_limbo || notif.args.player_id == DaleOfMerchants.MONO_PLAYER_ID) {
                 this.playerHandSizes[notif.args.player_id].incValue(-notif.args.nbr);
             }
         };
@@ -13991,6 +13994,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.ACTION_BUTTON_ABSTAIN = 'red';
         DaleOfMerchants.ACTION_BUTTON_UNDO = 'gray';
         DaleOfMerchants.ACTION_BUTTON_CANCEL = 'red';
+        DaleOfMerchants.MONO_PLAYER_ID = 1;
         return DaleOfMerchants;
     }(Gamegui));
     dojo.setObject("bgagame.daleofmerchants", DaleOfMerchants);

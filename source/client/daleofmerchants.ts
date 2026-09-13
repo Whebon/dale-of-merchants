@@ -49,6 +49,9 @@ class DaleOfMerchants extends Gamegui
 	static readonly ACTION_BUTTON_UNDO = 'gray' // = 'red', bga staff wants it to be red, but I think gray makes the button "safer" to click compared to skip.
 	static readonly ACTION_BUTTON_CANCEL = 'red'
 
+	/** Mono's player_id, must be the same as MONO_PLAYER_ID on the server-side */
+	static readonly MONO_PLAYER_ID: number = 1;
+
 	/** For conveniene, each new Pile will add a reference to itself in this array*/
 	allPiles: Pile[] = [];
 
@@ -529,6 +532,9 @@ class DaleOfMerchants extends Gamegui
 			if (player_id != +mono_player_id) {
 				mono = gamedatas.players[mono_player_id]!;
 				gamedatas.playerorder.push(+mono_player_id);
+				if (DaleOfMerchants.MONO_PLAYER_ID != +mono_player_id) {
+					console.error("Client and server's MONO_PLAYER_ID out of sync");
+				}
 			}
 		}
 		if (gamedatas.playerorder.length != 2) {
@@ -9160,7 +9166,7 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 		//update the hand sizes
-		if (!notif.args.from_limbo) {
+		if (!notif.args.from_limbo || notif.args.player_id == DaleOfMerchants.MONO_PLAYER_ID) {
 			this.playerHandSizes[notif.args.player_id]!.incValue(-notif.args.nbr);
 		}
 	}

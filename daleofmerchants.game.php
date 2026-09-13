@@ -1156,7 +1156,8 @@ class DaleOfMerchants extends DaleTableBasic
                     $junk_dbcards,
                     null,
                     true,
-                    array("player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID))
+                    array(),
+                    MONO_PLAYER_ID
                 );
                 break;
             case CT_DRAMATICMEMBER:
@@ -2298,8 +2299,12 @@ class DaleOfMerchants extends DaleTableBasic
      * @param array $cards array with exactly the same keys as $card_ids
      * @param array $unordered_cards (optional) - if provided, first place this collection of unordered cards on top of the deck
      * @param bool $from_limbo (optional) - default false. If `false`, place from hand. If `true`, place from limbo.
+     * @param array $msg_args
+     * @param mixed $player_id (optional) - default active player if. If provided, another player places cards on a deck.
      */
-    function placeOnDeckMultiple(mixed $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, $msg_args = array()) {
+    function placeOnDeckMultiple(mixed $deck_player_id, string $msg, array $card_ids, array $cards, array $unordered_cards = null, bool $from_limbo = false, array $msg_args = array(), mixed $player_id = null) {
+        $player_id = $player_id ?? $this->getActivePlayerId();
+
         //1: move the unordered cards on top of the deck (no message)
         $nbr_unordered_cards = 0;
         if ($unordered_cards) {
@@ -2307,8 +2312,8 @@ class DaleOfMerchants extends DaleTableBasic
             $unordered_card_ids = array_keys($unordered_cards);
             $this->cards->moveCardsOnTop($unordered_card_ids, DECK.$deck_player_id);
             $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array_merge( array (
-                'player_id' => $this->getActivePlayerId(),
-                'player_name' => $this->getActivePlayerName(),
+                'player_id' => $player_id,
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
                 "_private" => array(
                     'card_ids' => $unordered_card_ids,
                     'cards' => $unordered_cards,
@@ -2323,8 +2328,8 @@ class DaleOfMerchants extends DaleTableBasic
         if ($cards) {
             $this->cards->moveCardsOnTop($card_ids, DECK.$deck_player_id);
             $this->notifyAllPlayersWithPrivateArguments('placeOnDeckMultiple', '', array_merge( array (
-                'player_id' => $this->getActivePlayerId(),
-                'player_name' => $this->getActivePlayerName(),
+                'player_id' => $player_id,
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
                 "_private" => array(
                     'card_ids' => $card_ids,
                     'cards' => $cards,
@@ -2339,8 +2344,8 @@ class DaleOfMerchants extends DaleTableBasic
         $nbr = count($cards) + $nbr_unordered_cards;
         if ($nbr > 0) {
             $this->notifyAllPlayers('message', $msg, array_merge( array (
-                'player_id' => $this->getActivePlayerId(),
-                'player_name' => $this->getActivePlayerName(),
+                'player_id' => $player_id,
+                'player_name' => $this->getPlayerNameByIdInclMono($player_id),
                 'opponent_name' => $this->getPlayerNameByIdInclMono($deck_player_id),
                 'nbr' => count($cards) + $nbr_unordered_cards,
             ), $msg_args));
