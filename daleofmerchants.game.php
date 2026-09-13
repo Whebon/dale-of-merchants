@@ -544,7 +544,7 @@ class DaleOfMerchants extends DaleTableBasic
                     break;
                 case CT_SKINKMONO:
                     //At the end of Mono’s turn, it draws 1 🃏 from the supply.
-                    $this->draw('', 1, false, MARKET, MONO_PLAYER_ID);
+                    $this->draw(clienttranslate('Erratic Member: ${player_name} draws a card from the supply'), 1, false, MARKET, MONO_PLAYER_ID);
                     // Old implementation, Mono drew the card face-up:
                     // $dbcards = $this->draw('', 1, false, MARKET, MONO_PLAYER_ID);
                     // if (count($dbcards) == 1) {
