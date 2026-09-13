@@ -543,7 +543,19 @@ class DaleOfMerchants extends DaleTableBasic
                     }
                     break;
                 case CT_SKINKMONO:
-                    //no immediate effects
+                    //At the end of Mono’s turn, it draws 1 🃏 from the supply.
+                    $this->draw('', 1, false, MARKET, MONO_PLAYER_ID);
+                    // Old implementation, Mono drew the card face-up:
+                    // $dbcards = $this->draw('', 1, false, MARKET, MONO_PLAYER_ID);
+                    // if (count($dbcards) == 1) {
+                    //     $dbcard = $dbcards[0];
+                    //     $this->monoConfirmAction(clienttranslate('${player_name} draws a ${card_name} from the supply'), array(  
+                    //         "highlight_limbo_cards" => array($dbcard),
+                    //         "wrap_class" => "daleofmerchants-wrap-technique",
+                    //         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                    //         "card_name" => $this->getCardName($dbcard),
+                    //     ));
+                    // }
                     break;
                 default:
                     $this->notifyAllPlayers('message', clienttranslate('ERROR: MONO TRIGGER NOT IMPLEMENTED: \'${card_name}\'. IT WILL RESOLVE WITHOUT ANY EFFECTS.'), array(
@@ -1230,17 +1242,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_SKINKMONO:
-                //At the end of Mono’s turn, it draws 1 🃏 from the supply.
-                $dbcards = $this->draw('', 1, false, MARKET, MONO_PLAYER_ID);
-                if (count($dbcards) == 1) {
-                    $dbcard = $dbcards[0];
-                    $this->monoConfirmAction(clienttranslate('${player_name} draws a ${card_name} from the supply'), array(  
-                        "highlight_limbo_cards" => array($dbcard),
-                        "wrap_class" => "daleofmerchants-wrap-technique",
-                        "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                        "card_name" => $this->getCardName($dbcard),
-                    ));
-                }
+                //no immediate effects
                 break;
             case CT_JUNGLEFOWLMONO:
                 $clock = $this->getClock(MONO_PLAYER_ID);
