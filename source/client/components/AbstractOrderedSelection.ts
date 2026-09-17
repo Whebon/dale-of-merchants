@@ -128,6 +128,12 @@ export abstract class AbstractOrderedSelection {
             case 'tasmanianDevil3':
                 icon = DaleIcons.getTasmanianDevil3Icon();
                 break;
+            case 'olm4Primary':
+                icon = DaleIcons.getBluePileIcon(Math.min(index+1, 5));
+                break;
+            case 'olm4Secondary':
+                icon = DaleIcons.getOlm4Icon()
+                break;
         }
         if (icon) {
             if (secondary) {

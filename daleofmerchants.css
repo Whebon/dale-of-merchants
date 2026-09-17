@@ -45,6 +45,11 @@
   margin-left: auto;
   margin-right: auto;
 }
+#daleofmerchants-page-game .daleofmerchants-horizontal-flex {
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .daleofmerchants-custom-action-bar#after-page-title {
   display: none !important;

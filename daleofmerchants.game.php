@@ -10913,6 +10913,14 @@ class DaleOfMerchants extends DaleTableBasic
             $market_card_id
         );
 
+        // Rule change: always discard the market card first
+        if ($market_card_id != -1) {
+            if (in_array($market_card_id, $discard_card_ids)) {
+                throw new BgaVisibleSystemException("The market_card_id should not be included in the optional discard_card_ids");
+            }
+            $discard_card_ids[] = $market_card_id;
+        }
+
         $this->discardAll(
             clienttranslate('Opener Sticks: ${player_name} places the ${nbr} cards on ${opponent_name}\'s discard pile'),
             $player_id, 

@@ -275,4 +275,8 @@ export class DaleIcons {
     ///////////////////////////////
     ////////    MISSING    ////////
     ///////////////////////////////
+
+    public static getOlm4Icon(): HTMLElement {
+        return this.getIcon(0, 0);
+    }
 }

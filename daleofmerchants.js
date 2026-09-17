@@ -280,6 +280,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getRandomIcon = function () {
             return this.getIcon(11, 3);
         };
+        DaleIcons.getOlm4Icon = function () {
+            return this.getIcon(0, 0);
+        };
         DaleIcons.ROWS = 12;
         DaleIcons.COLUMNS = 7;
         DaleIcons.ICON_WIDTH = 150;
@@ -705,6 +708,12 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'tasmanianDevil3':
                     icon = DaleIcons_2.DaleIcons.getTasmanianDevil3Icon();
+                    break;
+                case 'olm4Primary':
+                    icon = DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index + 1, 5));
+                    break;
+                case 'olm4Secondary':
+                    icon = DaleIcons_2.DaleIcons.getOlm4Icon();
                     break;
             }
             if (icon) {
@@ -6604,7 +6613,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'client_olm4_discard':
-                    this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"));
+                    var client_olm4_discard_args = this.mainClientState.getArgs();
+                    if (client_olm4_discard_args.market_card_id != -1) {
+                        this.myLimbo.setSelectionMode('multipleExceptSecondary', 'olm4Primary', "daleofmerchants-wrap-technique", _("Choose order to discard <strong>other</strong> cards"), 'olm4Secondary');
+                        this.myLimbo.selectItem(client_olm4_discard_args.market_card_id, true);
+                    }
+                    else {
+                        this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"));
+                    }
                     break;
                 case 'gorilla1':
                     this.myDiscard.setSelectionMode('singleTopOrBottom', undefined, 'daleofmerchants-wrap-technique');

@@ -1657,7 +1657,14 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'client_olm4_discard':
-				this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"))
+				const client_olm4_discard_args = this.mainClientState.getArgs<'client_olm4_discard'>();
+				if (client_olm4_discard_args.market_card_id != -1) {
+					this.myLimbo.selectItem(client_olm4_discard_args.market_card_id, true);
+					this.myLimbo.setSelectionMode('multipleExceptSecondary', 'olm4Primary', "daleofmerchants-wrap-technique", _("Choose order to discard <strong>other</strong> cards"), 'olm4Secondary');
+				}
+				else {
+					this.myLimbo.setSelectionMode('multiple', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose order to discard cards"));
+				}
 				break;
 			case 'gorilla1':
 				this.myDiscard.setSelectionMode('singleTopOrBottom', undefined, 'daleofmerchants-wrap-technique');
