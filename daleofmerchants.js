@@ -133,6 +133,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getBluePileIcon = function (index) {
             return this.getIcon(0, index);
         };
+        DaleIcons.getOlm4Icon = function () {
+            return this.getIcon(0, 6);
+        };
         DaleIcons.getYellowPileIcon = function (index) {
             return this.getIcon(1, index);
         };
@@ -279,9 +282,6 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         };
         DaleIcons.getRandomIcon = function () {
             return this.getIcon(11, 3);
-        };
-        DaleIcons.getOlm4Icon = function () {
-            return this.getIcon(0, 0);
         };
         DaleIcons.ROWS = 12;
         DaleIcons.COLUMNS = 7;

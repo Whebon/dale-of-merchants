@@ -32,6 +32,10 @@ export class DaleIcons {
         return this.getIcon(0, index);
     }
 
+    public static getOlm4Icon(): HTMLElement {
+        return this.getIcon(0, 6);
+    }
+    
     /////////////////////////////
     ////////    ROW 1    ////////
     /////////////////////////////
@@ -276,7 +280,4 @@ export class DaleIcons {
     ////////    MISSING    ////////
     ///////////////////////////////
 
-    public static getOlm4Icon(): HTMLElement {
-        return this.getIcon(0, 0);
-    }
 }
