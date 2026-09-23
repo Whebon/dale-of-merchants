@@ -2142,13 +2142,13 @@ class DaleOfMerchants extends DaleTableBasic
             'cards' => $unaffected_dbcards,
             'status' => true
         ));
-
+        
         //move to the trigger state (28), and store the state to visit afterwards in `trigger_next_state_id`
-        if ($next_transition !== null && !array_key_exists($next_transition, $this->gamestate->states[$current_state_id]['transitions'])) {
+        if ($next_transition !== null && !array_key_exists($next_transition, $this->gamestate->getCurrentMainState()->transitions)) {
             throw new BgaVisibleSystemException("Beaver trigger: '$next_transition' is not a valid transition in in the current gamestate");
         }
         $next_player_id = $this->getActivePlayerId();
-        $next_state_id = $next_transition === null ? $this->gamestate->getCurrentMainStateId() : $this->gamestate->states[$current_state_id]['transitions'][$next_transition];
+        $next_state_id = $next_transition === null ? $this->gamestate->getCurrentMainStateId() : $this->gamestate->getCurrentMainState()->transitions[$next_transition];
         $this->setGameStateValue("trigger_next_player_id", $next_player_id);
         $this->setGameStateValue("trigger_next_state_id", $next_state_id);
         if ($trigger_player_id == $next_player_id) {
@@ -7007,6 +7007,7 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_SELECTINGCONTRACTS:
                 //1. get the top of cards of the discard pile
+                $nbr = 0;
                 switch($this->getClock($player_id)) {
                     case CLOCK_DAWN:
                         $nbr = 2;
@@ -7431,6 +7432,8 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 $dbcard = $dbcards[0];
                 $clock = $this->getClock($player_id);
+                $nbr = 0;
+                $nbr_string = "";
                 switch ($clock) {
                     case CLOCK_DAWN:
                         $nbr = 2;
@@ -11890,6 +11893,9 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->draw($msg, 2, true, null, null, null, $msg_args); //bonus draws, does not count toward the fizzle check
                 }
                 break;
+            default:
+                $dbcards = array();
+                break;
         }
         if (count($dbcards) == 0) {
             //skyglass has no effect (fizzle)
@@ -11909,6 +11915,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $dbcard = $this->getResolvingCard();
         $type_id = (int)$this->getTypeId($dbcard);
+        $nbr = 0;
         switch ($type_id) {
             case CT_SPECIALOFFER:
                 $nbr = 3;
@@ -12344,6 +12351,7 @@ class DaleOfMerchants extends DaleTableBasic
     
     function stSerenade() {
         $player_id = $this->getActivePlayerId();
+        $nbr = 0;
         switch($this->getClock($player_id)) {
             case CLOCK_DAWN:
                 $nbr = 2;
