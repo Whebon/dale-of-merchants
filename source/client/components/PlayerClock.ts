@@ -85,20 +85,20 @@ export class PlayerClock {
         let content = "";
         switch (position) {
             case PlayerClock.CLOCK_DAWN:
-                content += _("It is DAWN time. After playing a technique, move your clock to DAY time.");
+                content += _("It is ${dawn} time. After playing a technique, move your clock to ${day} time.");
                 break;
             case PlayerClock.CLOCK_DAY:
-                content += _("It is DAY time. After playing a technique, move your clock to NIGHT time.");
+                content += _("It is ${day} time. After playing a technique, move your clock to ${night} time.");
                 break;
             case PlayerClock.CLOCK_NIGHT:
-                content += _("It is NIGHT time. At the start of your next turn, your clock resets to DAWN time.");
+                content += _("It is ${night} time. At the start of your next turn, your clock resets to ${dawn} time.");
                 break;
             default:
                 throw new Error("Invalid clock position "+position);
         }
-        return content.replace('DAWN', `dawn (<span class="daleofmerchants-log-span">${DaleIcons.getDawnIcon().outerHTML}</span>)`)
-            .replace('DAY', `day (<span class="daleofmerchants-log-span">${DaleIcons.getDayIcon().outerHTML}</span>)`)
-            .replace('NIGHT', `night (<span class="daleofmerchants-log-span">${DaleIcons.getNightIcon().outerHTML}</span>)`);
+        return content.replace('${dawn}', `${_('Dawn')} (<span class="daleofmerchants-log-span">${DaleIcons.getDawnIcon().outerHTML}</span>)`)
+            .replace('${day}', `${_('Day')} (<span class="daleofmerchants-log-span">${DaleIcons.getDayIcon().outerHTML}</span>)`)
+            .replace('${night}', `${_('Night')} (<span class="daleofmerchants-log-span">${DaleIcons.getNightIcon().outerHTML}</span>)`);
     }
 
     /**
@@ -137,7 +137,7 @@ export class PlayerClock {
 
     /**
      * @param position `CLOCK_DAWN`, `CLOCK_DAY` or `CLOCK_NIGHT`
-     * @returns html string of style `"${label} (${icon})""`
+     * @returns html string of style `"${label} (ICON)""`
      */
     public static getClockLabelAndIconTpl(position: number): string {
         const label = PlayerClock.getClockLabel(position).toLowerCase();

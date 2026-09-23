@@ -943,20 +943,20 @@ define("components/PlayerClock", ["require", "exports", "components/DaleIcons"],
             var content = "";
             switch (position) {
                 case PlayerClock.CLOCK_DAWN:
-                    content += _("It is DAWN time. After playing a technique, move your clock to DAY time.");
+                    content += _("It is ${dawn} time. After playing a technique, move your clock to ${day} time.");
                     break;
                 case PlayerClock.CLOCK_DAY:
-                    content += _("It is DAY time. After playing a technique, move your clock to NIGHT time.");
+                    content += _("It is ${day} time. After playing a technique, move your clock to ${night} time.");
                     break;
                 case PlayerClock.CLOCK_NIGHT:
-                    content += _("It is NIGHT time. At the start of your next turn, your clock resets to DAWN time.");
+                    content += _("It is ${night} time. At the start of your next turn, your clock resets to ${dawn} time.");
                     break;
                 default:
                     throw new Error("Invalid clock position " + position);
             }
-            return content.replace('DAWN', "dawn (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDawnIcon().outerHTML, "</span>)"))
-                .replace('DAY', "day (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getDayIcon().outerHTML, "</span>)"))
-                .replace('NIGHT', "night (<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_3.DaleIcons.getNightIcon().outerHTML, "</span>)"));
+            return content.replace('${dawn}', "".concat(_('Dawn'), " (<span class=\"daleofmerchants-log-span\">").concat(DaleIcons_3.DaleIcons.getDawnIcon().outerHTML, "</span>)"))
+                .replace('${day}', "".concat(_('Day'), " (<span class=\"daleofmerchants-log-span\">").concat(DaleIcons_3.DaleIcons.getDayIcon().outerHTML, "</span>)"))
+                .replace('${night}', "".concat(_('Night'), " (<span class=\"daleofmerchants-log-span\">").concat(DaleIcons_3.DaleIcons.getNightIcon().outerHTML, "</span>)"));
         };
         PlayerClock.getClockLabel = function (position) {
             switch (position) {
@@ -1478,99 +1478,100 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             DaleCard.tooltips.set(this.id, tooltip);
         };
         DaleCard.format_string = function (text) {
-            if (text.includes('CARDS3')) {
-                text = text.replaceAll('CARDS3', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCards3Icon().outerHTML, "</span>"));
+            if (text.includes('${cards3}')) {
+                text = text.replaceAll('${cards3}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCards3Icon().outerHTML, "</span>"));
             }
-            if (text.includes('CARDS2')) {
-                text = text.replaceAll('CARDS2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCards2Icon().outerHTML, "</span>"));
+            if (text.includes('${cards2}')) {
+                text = text.replaceAll('${cards2}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCards2Icon().outerHTML, "</span>"));
             }
-            if (text.includes('CARD')) {
-                text = text.replaceAll('CARD', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCardIcon().outerHTML, "</span>"));
+            if (text.includes('${card}')) {
+                text = text.replaceAll('${card}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCardIcon().outerHTML, "</span>"));
             }
-            if (text.includes('DIE_OCELOT')) {
-                text = text.replaceAll('DIE_OCELOT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDieOcelotIcon().outerHTML, "</span>"));
+            if (text.includes('${die_ocelot}')) {
+                text = text.replaceAll('${die_ocelot}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDieOcelotIcon().outerHTML, "</span>"));
             }
-            if (text.includes('DIE_POLECAT')) {
-                text = text.replaceAll('DIE_POLECAT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePolecatIcon().outerHTML, "</span>"));
+            if (text.includes('${die_polecat}')) {
+                text = text.replaceAll('${die_polecat}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePolecatIcon().outerHTML, "</span>"));
             }
-            if (text.includes('DIE_HARE')) {
-                text = text.replaceAll('DIE_HARE', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDieHareIcon().outerHTML, "</span>"));
+            if (text.includes('${die_hare}')) {
+                text = text.replaceAll('${die_hare}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDieHareIcon().outerHTML, "</span>"));
             }
-            if (text.includes('DIE_PANGOLINS')) {
-                text = text.replaceAll('DIE_PANGOLINS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin1Icon().outerHTML).concat(DaleIcons_4.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
+            if (text.includes('${die_pangolins}')) {
+                text = text.replaceAll('${die_pangolins}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin1Icon().outerHTML).concat(DaleIcons_4.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
             }
-            if (text.includes('DIE_PANGOLIN1')) {
-                text = text.replaceAll('DIE_PANGOLIN1', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>"));
+            if (text.includes('${die_pangolin1}')) {
+                text = text.replaceAll('${die_pangolin1}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin1Icon().outerHTML, "</span>"));
             }
-            if (text.includes('DIE_PANGOLIN2')) {
-                text = text.replaceAll('DIE_PANGOLIN2', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
+            if (text.includes('${die_pangolin2}')) {
+                text = text.replaceAll('${die_pangolin2}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.get3DDiePangolin2Icon().outerHTML, "</span>"));
             }
-            if (text.includes('SOURCE')) {
-                text = text.replaceAll('SOURCE', "<span style=\"color: var(--pangolin1); font-weight: bold;\">".concat(_("source"), "</span>"));
+            if (text.includes('${source}')) {
+                text = text.replaceAll('${source}', "<span style=\"color: var(--pangolin1); font-weight: bold;\">".concat(_("source"), "</span>"));
             }
-            if (text.includes('DESTINATION')) {
-                text = text.replaceAll('DESTINATION', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
+            if (text.includes('${destination}')) {
+                text = text.replaceAll('${destination}', "<span style=\"color: var(--pangolin2); font-weight: bold;\">".concat(_("destination"), "</span>"));
             }
-            if (text.includes('COMET')) {
-                text = this.formatColoredLabel(text, 'COMET', 'daleofmerchants-hare');
-                text = text.replaceAll('COMET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCometIcon().outerHTML, "</span>"));
+            if (text.includes('${comet}')) {
+                text = this.formatColoredLabel(text, '${comet}', 'daleofmerchants-hare');
+                text = text.replaceAll('${comet}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCometIcon().outerHTML, "</span>"));
             }
-            if (text.includes('PLANET')) {
-                text = this.formatColoredLabel(text, 'PLANET', 'daleofmerchants-hare');
-                text = text.replaceAll('PLANET', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
+            if (text.includes('${planet}')) {
+                text = this.formatColoredLabel(text, '${planet}', 'daleofmerchants-hare');
+                text = text.replaceAll('${planet}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getPlanetIcon().outerHTML, "</span>"));
             }
-            if (text.includes('STARS')) {
-                text = this.formatColoredLabel(text, 'STARS', 'daleofmerchants-hare');
-                text = text.replaceAll('STARS', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getStarsIcon().outerHTML, "</span>"));
+            if (text.includes('${stars}')) {
+                text = this.formatColoredLabel(text, '${stars}', 'daleofmerchants-hare');
+                text = text.replaceAll('${stars}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getStarsIcon().outerHTML, "</span>"));
             }
-            if (text.includes('COIN')) {
-                text = text.replaceAll('COIN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCoinIcon().outerHTML, "</span>"));
+            if (text.includes('${coin}')) {
+                text = text.replaceAll('${coin}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getCoinIcon().outerHTML, "</span>"));
             }
-            if (text.includes('DAWN')) {
-                text = this.formatColoredLabel(text, 'DAWN', 'daleofmerchants-dawn');
-                text = text.replaceAll('DAWN', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDawnIcon().outerHTML, "</span>"));
+            if (text.includes('${dawn}')) {
+                text = this.formatColoredLabel(text, '${dawn}', 'daleofmerchants-dawn');
+                text = text.replaceAll('${dawn}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDawnIcon().outerHTML, "</span>"));
             }
-            if (text.includes('DAY')) {
-                text = this.formatColoredLabel(text, 'DAY', 'daleofmerchants-day');
-                text = text.replaceAll('DAY', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDayIcon().outerHTML, "</span>"));
+            if (text.includes('${day}')) {
+                text = this.formatColoredLabel(text, '${day}', 'daleofmerchants-day');
+                text = text.replaceAll('${day}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getDayIcon().outerHTML, "</span>"));
             }
-            if (text.includes('NIGHT')) {
-                text = this.formatColoredLabel(text, 'NIGHT', 'daleofmerchants-night');
-                text = text.replaceAll('NIGHT', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getNightIcon().outerHTML, "</span>"));
+            if (text.includes('${night}')) {
+                text = this.formatColoredLabel(text, '${night}', 'daleofmerchants-night');
+                text = text.replaceAll('${night}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getNightIcon().outerHTML, "</span>"));
             }
-            if (text.includes('CLOCK')) {
-                text = text.replaceAll('CLOCK', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span>"));
+            if (text.includes('${clock}')) {
+                text = text.replaceAll('${clock}', "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span>"));
             }
             return text;
         };
         DaleCard.formatColoredLabel = function (text, start, subclass) {
             var _this = this;
-            var regex = new RegExp("\\[".concat(start, "(.|\\n)*?\\]"), "g");
+            var escapedStart = start.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            var regex = new RegExp("\\[".concat(escapedStart, "(.|\\n)*?\\]"), "g");
             text = text.replace(regex, function (match) {
                 return _this.getColoredLabel(match.replace(/\[|\]/g, ""), subclass);
             });
             return text;
         };
         DaleCard.getColoredLabel = function (text, subclass) {
-            var NOWRAP_CHARACTER_LENGTH = 23;
+            var NOWRAP_CHARACTER_LENGTH = 26;
             var allowWrapping = text.length > NOWRAP_CHARACTER_LENGTH ? 'daleofmerchants-allow-wrapping' : '';
             return "<div class=\"daleofmerchants-tooltip-colored-label ".concat(subclass, " ").concat(allowWrapping, "\" data-clock=\"2\">").concat(text, "</div>");
         };
         DaleCard.prototype.getLegend = function (text) {
             var legend = '';
-            if (text.includes('DIE_OCELOT')) {
+            if (text.includes('${die_ocelot}')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('ocelot'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('ocelot'), "<br style=\"line-height: 10px\" />");
             }
-            if (text.includes('DIE_POLECAT')) {
+            if (text.includes('${die_polecat}')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('polecat'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('polecat'), "<br style=\"line-height: 10px\" />");
             }
-            if (text.includes('DIE_HARE')) {
+            if (text.includes('${die_hare}')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('hare'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('hare'), "<br style=\"line-height: 10px\" />");
             }
-            if (text.includes('DIE_PANGOLIN1') || text.includes('DIE_PANGOLINS')) {
+            if (text.includes('${die_pangolin1}') || text.includes('${die_pangolins}')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin1'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin1'), "<br style=\"line-height: 10px\" />");
             }
-            if (text.includes('DIE_PANGOLIN2') || text.includes('DIE_PANGOLINS')) {
+            if (text.includes('${die_pangolin2}') || text.includes('${die_pangolins}')) {
                 legend += "".concat(DaleDie_1.DaleDie.get3DDieTpl('pangolin2'), " <strong>:</strong> ").concat(DaleDie_1.DaleDie.getAllFacesTpl('pangolin2'), "<br style=\"line-height: 10px\" />");
             }
             if (text.includes(_('Acquire')) || text.includes(_('acquire'))) {
@@ -1596,10 +1597,10 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
             }
             if (text.includes(_('Spend')) || text.includes(_('spend')) || text.includes(_('Finish')) || text.includes(_('finish'))) {
                 legend += '<strong> ' + _('Spend') + ' : </strong> ' +
-                    DaleCard.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold COIN.'))
+                    DaleCard.format_string(_('You must first pay the amount listed after spend in any combination of cards from your hand and acquired gold ${coin}.'))
                     + '<br><br style="line-height: 10px" />';
             }
-            if (text.includes('CLOCK')) {
+            if (text.includes('${clock}')) {
                 legend += "<span class=\"daleofmerchants-log-span\">".concat(DaleIcons_4.DaleIcons.getClockIcon().outerHTML, "</span> <strong>:</strong> ");
                 legend += _("a clock that tracks the");
                 legend += " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(0), ", ").concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(1), " ") + _("and") + " ".concat(PlayerClock_1.PlayerClock.getClockLabelAndIconTpl(2));
@@ -8068,14 +8069,14 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_dramaticRomantic':
                     switch (this.myClock.getClock()) {
                         case PlayerClock_3.PlayerClock.CLOCK_DAWN:
-                            this.addActionButton("forward-button", DaleCard_9.DaleCard.format_string(_("forward (DAY)")), "onDramaticRomanticForward");
+                            this.addActionButton("forward-button", DaleCard_9.DaleCard.format_string(_("forward (${day})")), "onDramaticRomanticForward");
                             break;
                         case PlayerClock_3.PlayerClock.CLOCK_DAY:
-                            this.addActionButton("forward-button", DaleCard_9.DaleCard.format_string(_("forward (NIGHT)")), "onDramaticRomanticForward");
-                            this.addActionButton("backward-button", DaleCard_9.DaleCard.format_string(_("backward (DAWN)")), "onDramaticRomanticBackward");
+                            this.addActionButton("forward-button", DaleCard_9.DaleCard.format_string(_("forward (${night})")), "onDramaticRomanticForward");
+                            this.addActionButton("backward-button", DaleCard_9.DaleCard.format_string(_("backward (${dawn})")), "onDramaticRomanticBackward");
                             break;
                         case PlayerClock_3.PlayerClock.CLOCK_NIGHT:
-                            this.addActionButton("backward-button", DaleCard_9.DaleCard.format_string(_("backward (DAY)")), "onDramaticRomanticBackward");
+                            this.addActionButton("backward-button", DaleCard_9.DaleCard.format_string(_("backward (${day})")), "onDramaticRomanticBackward");
                             break;
                     }
                     this.addActionButtonCancelClient();

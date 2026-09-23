@@ -3120,14 +3120,14 @@ class DaleOfMerchants extends Gamegui
 			case 'client_dramaticRomantic':
 				switch(this.myClock.getClock()) {
 					case PlayerClock.CLOCK_DAWN:
-						this.addActionButton("forward-button", DaleCard.format_string(_("forward (DAY)")), "onDramaticRomanticForward");
+						this.addActionButton("forward-button", DaleCard.format_string(_("forward (${day})")), "onDramaticRomanticForward");
 						break;
 					case PlayerClock.CLOCK_DAY:
-						this.addActionButton("forward-button", DaleCard.format_string(_("forward (NIGHT)")), "onDramaticRomanticForward");
-						this.addActionButton("backward-button", DaleCard.format_string(_("backward (DAWN)")),  "onDramaticRomanticBackward");
+						this.addActionButton("forward-button", DaleCard.format_string(_("forward (${night})")), "onDramaticRomanticForward");
+						this.addActionButton("backward-button", DaleCard.format_string(_("backward (${dawn})")),  "onDramaticRomanticBackward");
 						break;
 					case PlayerClock.CLOCK_NIGHT:
-						this.addActionButton("backward-button", DaleCard.format_string(_("backward (DAY)")),  "onDramaticRomanticBackward");
+						this.addActionButton("backward-button", DaleCard.format_string(_("backward (${day})")),  "onDramaticRomanticBackward");
 						break;
 				}
 				this.addActionButtonCancelClient();

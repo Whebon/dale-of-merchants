@@ -5,32 +5,32 @@ import pyperclip
 def format_emojis(text: str):
     return text.replace("–", "-") \
                 .replace("’", "'") \
-                .replace("🃏🃏🃏", "CARDS3") \
-                .replace("🃏🃏", "CARDS2") \
-                .replace("🃏", "CARD") \
-                .replace("🐱", "DIE_OCELOT") \
-                .replace("💈", "DIE_POLECAT") \
-                .replace("🐰", "DIE_HARE") \
-                .replace("❇️✳️", "DIE_PANGOLINS") \
-                .replace("❇️", "DIE_PANGOLIN1") \
-                .replace("✳️", "DIE_PANGOLIN2") \
-                .replace("[source]", "SOURCE") \
-                .replace("[destination]", "DESTINATION") \
-                .replace("☄️", "COMET") \
-                .replace("🪐", "PLANET") \
-                .replace("✨", "STARS") \
-                .replace("🟡", "COIN") \
-                .replace("🌅", "DAWN") \
-                .replace("☀️", "DAY") \
-                .replace("🌙", "NIGHT") \
-                .replace("🕰️", "CLOCK")
+                .replace("🃏🃏🃏", "${cards3}") \
+                .replace("🃏🃏", "${cards2}") \
+                .replace("🃏", "${card}") \
+                .replace("🐱", "${die_ocelot}") \
+                .replace("💈", "${die_polecat}") \
+                .replace("🐰", "${die_hare}") \
+                .replace("❇️✳️", "${die_pangolins}") \
+                .replace("❇️", "${die_pangolin1}") \
+                .replace("✳️", "${die_pangolin2}") \
+                .replace("[source]", "${source}") \
+                .replace("[destination]", "${destination}") \
+                .replace("☄️", "${comet}") \
+                .replace("🪐", "${planet}") \
+                .replace("✨", "${stars}") \
+                .replace("🟡", "${coin}") \
+                .replace("🌅", "${dawn}") \
+                .replace("☀️", "${day}") \
+                .replace("🌙", "${night}") \
+                .replace("🕰️", "${clock}")
 
 def type_displayed(row):
     if (row['is_technique'] == "X"):
-        return 'clienttranslate("Technique")'
+        return "clienttranslate('Technique')"
     if (int(row['animalfolk_id']) == 0):
-        return 'clienttranslate("Rubbish")'
-    return 'clienttranslate("Passive")'
+        return "clienttranslate('Rubbish')"
+    return "clienttranslate('Passive')"
 
 def is_technique(row):
     if (row['is_technique'] == "X"):
@@ -64,8 +64,9 @@ def is_mono(sheet_name):
 
 def string_literal(str):
     if (str == "" or str == "null" or str== "nan" or str == None or isinstance(str, numbers.Number)):
-        return "null";
-    return f"\"{str}\""
+        return "null"
+    escaped_str = str.replace("'", "\\'")
+    return f"'{escaped_str}'"
 
 # Load the Excel file
 file_path = 'material_11thanniversary.xlsx'
@@ -87,8 +88,8 @@ for sheet_name in xls.sheet_names:
         UPPERNAME = row['name'].replace(' ', '').replace("'", '').upper() #warning: CT_JUNK != CT_JUNK2
         card_types[type_id] = {
             'type_id': type_id,
-            'name': f"clienttranslate(\"{row['name']}\")",
-            'text': f"clienttranslate(\"{format_emojis(row['text'])}\")",
+            'name': f"clienttranslate({string_literal(row['name'])})",
+            'text': f"clienttranslate({string_literal(format_emojis(row['text']))})",
             'type_displayed': type_displayed(row),
             'is_technique': is_technique(row),
             'has_plus': has_plus(row),
