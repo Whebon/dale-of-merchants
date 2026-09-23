@@ -1124,14 +1124,17 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_RESOURCEFULMEMBER:
                 //Add +1 to Mono’s highest valued animalfolk 🃏 for each junk 🃏 in its hand.
                 $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
-                $dbcard = $this->monoPickHighestValuedCard($dbcards);
                 $nbr = $this->countJunk($dbcards);
-                $this->notifyAllPlayers('message', clienttranslate('Resourceful Member: ${player_name} adds +${nbr} to their ${card_name}'), array(
-                    'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-                    'nbr' => $nbr,
-                    'card_name' => $this->getCardName($dbcard)
-                ));
-                $this->effects->insertModification($dbcard["id"], CT_RESOURCEFULMEMBER, $nbr);
+                $animalfolk_dbcards = array_filter($dbcards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
+                $animalfolk_dbcard = $this->monoPickHighestValuedCard($animalfolk_dbcards);
+                if ($animalfolk_dbcard) {
+                    $this->notifyAllPlayers('message', clienttranslate('Resourceful Member: ${player_name} adds +${nbr} to their ${card_name}'), array(
+                        'player_name' => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
+                        'nbr' => $nbr,
+                        'card_name' => $this->getCardName($animalfolk_dbcard)
+                    ));
+                    $this->effects->insertModification($animalfolk_dbcard["id"], CT_RESOURCEFULMEMBER, $nbr);
+                }
                 break;
             case CT_IMPULSIVEMEMBER:
                 //no immediate effects
@@ -3242,7 +3245,7 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
-     * Returns the effective animalfolk of a dbcard. 0 represents rubbish/junk.
+     * Returns the effective animalfolk of a dbcard. 0 represents clutter/junk.
      * @param array $dbcard dbcard object
     */
     function getAnimalfolk(array $dbcard): int {

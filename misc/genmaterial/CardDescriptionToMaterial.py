@@ -29,7 +29,7 @@ def type_displayed(row):
     if (row['is_technique'] == "X"):
         return "clienttranslate('Technique')"
     if (int(row['animalfolk_id']) == 0):
-        return "clienttranslate('Rubbish')"
+        return "clienttranslate('Clutter')"
     return "clienttranslate('Passive')"
 
 def is_technique(row):
