@@ -3713,12 +3713,6 @@ class DaleOfMerchants extends Gamegui
 			if ('clock' in args) {
 				args['clock'] = PlayerClock.getClockLabelAndIconTpl(+args['clock']); 
 			}
-
-			//parse ocelot die
-			if (log.includes('${ocelot}')) {
-				args['ocelot'] = 'OCELOT_DIE_ICON';
-				//args['ocelot'] = `<span class="daleofmerchants-log-span">${DaleIcons.getChameleonIcon().outerHTML}</span>`;
-			}
 		}
 		return super.format_string_recursive(log, args)
 	}

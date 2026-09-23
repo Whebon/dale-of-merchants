@@ -8456,9 +8456,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 if ('clock' in args) {
                     args['clock'] = PlayerClock_3.PlayerClock.getClockLabelAndIconTpl(+args['clock']);
                 }
-                if (log.includes('${ocelot}')) {
-                    args['ocelot'] = 'OCELOT_DIE_ICON';
-                }
             }
             return _super.prototype.format_string_recursive.call(this, log, args);
         };
