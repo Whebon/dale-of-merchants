@@ -147,6 +147,13 @@ class DaleOfMerchants extends DaleTableBasic
         $this->initStat("player", "actions_passive", 0);
         $this->initStat("player", "cards_remaining", 0);
 
+        // Init table statistics
+        for ($animalfolk_id = ANIMALFOLK_MACAWS; $animalfolk_id <= ANIMALFOLK_BATS; $animalfolk_id++) {
+            //$this->initStat("table", "deck_selection_".$animalfolk_id, false); broken for setting statistics to false    
+            $this->bga->tableStats->init("deck_selection_".$animalfolk_id, false);
+        }
+        
+
         /************ End of the game initialization *****/
     }
 
@@ -1997,14 +2004,29 @@ class DaleOfMerchants extends DaleTableBasic
     }
 
     /**
+     * Hard-coded copy of "changeActivePlayer"'s "transitions"
+     */
+    function getChangeActivePlayerTransitions(): array {
+        # return $this->gamestate->states[29]['transitions']; // Deprecated
+        return array(
+            "trSamePlayer" => 30,
+			"trDEPRECATED_Blindfold" => 56,
+			"trDEPRECATED_BlindfoldIncorrectGuess" => 57,
+			"trFullyResolve" => 33,
+			"trDEPRECATED_Tasters" => 6500
+        );
+    }
+
+
+    /**
      * transition to the next state if all players are deactive, and make the player stored in `"changeActivePlayer_player_id"` the active player.
      * IMPORTANT: `"changeActivePlayer_player_id"` should have been set before entering the multipleactiveplayer state 
      */
     function nextStateChangeActivePlayerFromMultiActive(string $transition, int $player_id) {
-        if (!array_key_exists($transition, $this->gamestate->states[29]['transitions'])) {
+        if (!array_key_exists($transition, $this->getChangeActivePlayerTransitions())) {
             throw new BgaVisibleSystemException("'$transition' is not a valid transition in 'changeActivePlayer'");
         }
-        $state_id = $this->gamestate->states[29]['transitions'][$transition];
+        $state_id = $this->getChangeActivePlayerTransitions()[$transition];
         //moving `active_player_id` => `changeActivePlayer_player_id` is redundant and performance-wise inefficient
         //however, from an architectural POV it is better to let "changeActivePlayer_player_id" be a protected single-purpose game state label
         $active_player_id = $this->getGameStateValue("active_player_id");
@@ -2024,10 +2046,10 @@ class DaleOfMerchants extends DaleTableBasic
             $this->gamestate->nextState($transition);
             return;
         }
-        if (!array_key_exists($transition, $this->gamestate->states[29]['transitions'])) {
+        if (!array_key_exists($transition, $this->getChangeActivePlayerTransitions())) {
             throw new BgaVisibleSystemException("'$transition' is not a valid transition in 'changeActivePlayer'");
         }
-        $state_id = $this->gamestate->states[29]['transitions'][$transition];
+        $state_id = $this->getChangeActivePlayerTransitions()[$transition];
         $this->setGameStateValue("changeActivePlayer_player_id", $player_id);
         $this->setGameStateValue("changeActivePlayer_state_id", $state_id);
         $this->gamestate->nextState("trChangeActivePlayer");
@@ -4565,7 +4587,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
         }
         else if ($this->card_types[$type_id]["has_plus"]) {
-            if ($this->getActivePlayerId() == $player_id || $this->gamestate->getCurrentMainState()["type"] == "game") {
+            if ($this->getActivePlayerId() == $player_id || $this->gamestate->getCurrentMainState()?->type == "game") {
                 $this->nextStateViaTriggers("trSamePlayer", ...$triggers);
             }
             else {
@@ -11598,7 +11620,7 @@ class DaleOfMerchants extends DaleTableBasic
         $players = $this->loadPlayersBasicInfosInclMono();
         $animalfolk_ids = $this->deckSelection->selectAnimalfolkIds();
         foreach ($animalfolk_ids as $animalfolk_id) {
-            $this->initStat("table", "deck_selection_".$animalfolk_id, true);
+            $this->bga->tableStats->set("deck_selection_".$animalfolk_id, true);
             $this->notifyAllPlayers('deckSelectionResult', clienttranslate('${animalfolk_displayed_name} have been selected'), array(
                 "animalfolk_displayed_name" => $this->getAnimalfolkDisplayedName($animalfolk_id),
                 "animalfolk_id" => $animalfolk_id
