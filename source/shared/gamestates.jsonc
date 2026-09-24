@@ -17,14 +17,15 @@
 {
 	"$schema": "../../node_modules/bga-ts-template/schema/gamestates.schema.json",
 
-	// The initial state. Please do not modify.
-	"1": {
-		"name": "gameSetup",
-		"description": "",
-		"type": "manager",
-		"action": "stGameSetup",
-		"transitions": { "": 2 }
-	},
+	// DEPRECATED
+	// // The initial state. Please do not modify.
+	// "1": {
+	// 	"name": "gameSetup",
+	// 	"description": "",
+	// 	"type": "manager",
+	// 	"action": "stGameSetup",
+	// 	"transitions": { "": 2 }
+	// },
 
 	//////////////// Game Setup (+choosing animalfolk sets) ////////////////
 
@@ -1411,18 +1412,19 @@
 		"type": "game",
 		"action": "stFinalStatistics",
 		"transitions": { "trGameEnd": 99 }
-	},
-
-	// Final state.
-	// Please do not modify (and do not overload action/args methods}.
-	"99": {
-		"name": "gameEnd",
-		"description": "End of game",
-		"type": "manager",
-		"action": "stGameEnd",
-		"args": "argGameEnd",
-		"updateGameProgression": true, //modified
-		/* TODO: get the arguments that are passed at the end of a game.. */
-		"argsType": "object"
 	}
+
+	// DEPRECATED
+	// // Final state.
+	// // Please do not modify (and do not overload action/args methods}.
+	// "99": {
+	// 	"name": "gameEnd",
+	// 	"description": "End of game",
+	// 	"type": "manager",
+	// 	"action": "stGameEnd",
+	// 	"args": "argGameEnd",
+	// 	"updateGameProgression": true, //modified
+	// 	/* TODO: get the arguments that are passed at the end of a game.. */
+	// 	"argsType": "object"
+	// }
 }

@@ -10,15 +10,6 @@
  */
 
 interface GameStates {
-	1: {
-		'name': 'gameSetup',
-		'description': '',
-		'type': 'manager',
-		'action': 'stGameSetup',
-		'transitions': {
-			'': 2,
-		},
-	},
 	2: {
 		'name': 'deckSelection',
 		'description': 'Other players may vote for up to ${n_plus_1} animalfolk sets to play with',
@@ -1222,15 +1213,6 @@ interface GameStates {
 		'transitions': {
 			'trGameEnd': 99,
 		},
-	},
-	99: {
-		'name': 'gameEnd',
-		'description': 'End of game',
-		'type': 'manager',
-		'action': 'stGameEnd',
-		'args': 'argGameEnd',
-		'updateGameProgression': true,
-		'argsType': object,
 	},
 	101: {
 		'name': 'coffeeGrinder',

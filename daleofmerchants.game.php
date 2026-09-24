@@ -153,7 +153,8 @@ class DaleOfMerchants extends DaleTableBasic
         for ($animalfolk_id = ANIMALFOLK_MACAWS; $animalfolk_id <= ANIMALFOLK_BATS; $animalfolk_id++) {
             $this->bga->tableStats->init("deck_selection_".$animalfolk_id, false);
         }
-        
+
+        return 2;
 
         /************ End of the game initialization *****/
     }

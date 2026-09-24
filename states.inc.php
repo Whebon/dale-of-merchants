@@ -74,15 +74,6 @@ if (false) {
 }
 
 $machinestates = array(
-	1 => array(
-		'name' => 'gameSetup',
-		'description' => '',
-		'type' => 'manager',
-		'action' => 'stGameSetup',
-		'transitions' => array(
-			'' => 2,
-		),
-	),
 	2 => array(
 		'name' => 'deckSelection',
 		'description' => clienttranslate('Other players may vote for up to ${n_plus_1} animalfolk sets to play with'),
@@ -810,14 +801,6 @@ $machinestates = array(
 		'transitions' => array(
 			'trGameEnd' => 99,
 		),
-	),
-	99 => array(
-		'name' => 'gameEnd',
-		'description' => clienttranslate('End of game'),
-		'type' => 'manager',
-		'action' => 'stGameEnd',
-		'args' => 'argGameEnd',
-		'updateGameProgression' => true,
 	),
 	101 => array(
 		'name' => 'coffeeGrinder',
