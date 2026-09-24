@@ -41,7 +41,7 @@ declare global {
 		},
 		'scheduleTechniqueDelay': {
 			player_id: number
-			_private: true | undefined
+			_private?: {}
 		},
 		'scheduleToHand': {
 			player_id: number

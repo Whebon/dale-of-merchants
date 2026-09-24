@@ -1,5 +1,8 @@
 <?php
 
+use Bga\GameFramework\UserException;
+use Bga\GameFramework\VisibleSystemException;
+
 require_once "DaleTableBasic.php";
 
 if (!defined('EC_GLOBAL')) {
@@ -281,7 +284,7 @@ class DaleEffects {
         foreach ($this->cache as $index => $row) {
             if ($row["card_id"] == $card_id && $row["type_id"] == $type_id) {
                 if ($found) {
-                    throw new BgaVisibleSystemException("updateArg found multiple effects of the same card_id $card_id and type_id $type_id. Is this intended...?");
+                    throw new VisibleSystemException("updateArg found multiple effects of the same card_id $card_id and type_id $type_id. Is this intended...?");
                 }
                 $this->cache[$index]["arg"] = $arg;
                 $this->game->notifyAllPlayers('updateEffect', '', array("effect" => $this->cache[$index]));
@@ -289,7 +292,7 @@ class DaleEffects {
             }
         }
         if ($found == false) {
-            throw new BgaVisibleSystemException("Card id $card_id has no active effect with type_id $type_id, so the effect cannot be updated");
+            throw new VisibleSystemException("Card id $card_id has no active effect with type_id $type_id, so the effect cannot be updated");
         }
     }
 
@@ -313,14 +316,14 @@ class DaleEffects {
 
     /**
      * Turns a $chameleon_dbcard into a copy of the $target_dbcard. EXCLUDES a message to the players.
-     * @param array chameleon dbcard that is going to become a copy.
-     * @param array target dbcard that will be copied.
+     * @param array $chameleon_dbcard dbcard that is going to become a copy.
+     * @param array $target_dbcard dbcard that will be copied.
      */
     function copyCard(array $chameleon_dbcard, array $target_dbcard) {
         $chameleon_card_id = $chameleon_dbcard["id"];
         $chameleon_type_id = $chameleon_dbcard["type_arg"];
         if (!$this->isChameleonTypeId($chameleon_type_id)) {
-            throw new BgaVisibleSystemException("type_id $chameleon_type_id should never copy another card");
+            throw new VisibleSystemException("type_id $chameleon_type_id should never copy another card");
         }
         $copied_card_id = $target_dbcard["id"];
         $copied_type_id = $this->getTypeId($target_dbcard);
@@ -433,7 +436,7 @@ class DaleEffects {
         }
         if (count($expired_effects) != 1) {
             $count = count($expired_effects);
-            throw new BgaVisibleSystemException("expireSingleModification expected 1 effect, but found $count effects of type_id $type_id.");
+            throw new VisibleSystemException("expireSingleModification expected 1 effect, but found $count effects of type_id $type_id.");
         }
         $this->notifyExpireEffects($expired_effects);
         //for the db

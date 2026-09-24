@@ -1,5 +1,8 @@
 <?php
 
+use Bga\GameFramework\UserException;
+use Bga\GameFramework\VisibleSystemException;
+
 require_once(APP_GAMEMODULE_PATH.'module/common/deck.game.php');
 
 if (!defined('HAND')) {
@@ -56,7 +59,7 @@ class DaleDeck {
     // function getCardsInStall(string $stall_location, int $stack_index) {
     //     $prefix = substr($stall_location, 0, 4);
     //     if ($prefix != STALL) {
-    //         throw new BgaVisibleSystemException("getCardsInStall must be called with a stall location");
+    //         throw new VisibleSystemException("getCardsInStall must be called with a stall location");
     //     }
     //     $min = MAX_STACK_SIZE * $stack_index;
     //     $max = MAX_STACK_SIZE * ($stack_index + 1);
@@ -88,7 +91,7 @@ class DaleDeck {
     function moveCardsToStall(array $card_ids, string $stall_location, int $stack_index, int $index = 0){
         $prefix = substr($stall_location, 0, 4);
         if ($prefix != STALL) {
-            throw new BgaVisibleSystemException("moveCardsToStall must be called with a stall location");
+            throw new VisibleSystemException("moveCardsToStall must be called with a stall location");
         }
         for ($i = 0; $i < count($card_ids); $i++) {
             $pos = $stack_index * MAX_STACK_SIZE + $index + $i;
@@ -215,7 +218,7 @@ class DaleDeck {
         //when starting a new pile, make sure it is 1-indexed
         if ($bottom_location_arg <= 0) {
             if ($this->countCardsInLocation($location) > 0) {
-                throw new BgaVisibleSystemException($location." is not 1-indexed");
+                throw new VisibleSystemException($location." is not 1-indexed");
             }
             $bottom_location_arg = 1;
         }
@@ -232,7 +235,6 @@ class DaleDeck {
      * Move 1 card on top of the provided location
      * @param mixed $card_id string or int representing the card id of the card to move
      * @param string $location location to put the card
-     * @param bool $expire_chameleon if true, expire the chameleon target that was on top of this pile
      */
     function moveCardOnTop($card_id, string $location) {
         $this->insertCardOnExtremePosition($card_id, $location, true);
@@ -262,7 +264,7 @@ class DaleDeck {
      */
     function removeCardsFromTop(array $card_ids, int $nbr, string $location) {
         if (count($card_ids) < 1 || count($card_ids) > $nbr) {
-            throw new BgaUserException("Please select the expected number of cards"."(1-".$nbr.")"); //0 cards should be a fizzle instead
+            throw new UserException("Please select the expected number of cards"."(1-".$nbr.")"); //0 cards should be a fizzle instead
         }
         $top3_dbcards = $this->getCardsOnTop($nbr, $location);
         foreach ($card_ids as $card_id) {
@@ -274,7 +276,7 @@ class DaleDeck {
                 }
             }
             if (!$within_top3) {
-                throw new BgaUserException("Please only select cards within the top ".$nbr." cards of the discard pile");
+                throw new UserException("Please only select cards within the top ".$nbr." cards of the discard pile");
             }
         }
         return $this->removeCardsFromPile($card_ids, $location);
@@ -333,7 +335,7 @@ class DaleDeck {
     function getCardsInRightmostStack(string $location): array {
         $prefix = substr($location, 0, 4);
         if ($prefix != STALL) {
-            throw new BgaSystemException("$location is not a stall location");
+            throw new VisibleSystemException("$location is not a stall location");
         }
         $player_id = substr($location, strlen(STALL));
         
@@ -357,7 +359,7 @@ class DaleDeck {
     function getCardFromLocation($card_id, $location) {
         $card = $this->getCard($card_id);
         if ($card["location"] != $location) {
-            throw new BgaVisibleSystemException("getCardFromLocation: some card was not found at its expected location");
+            throw new VisibleSystemException("getCardFromLocation: some card was not found at its expected location");
         }
         return $card;
     }

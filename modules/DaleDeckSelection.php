@@ -1,5 +1,8 @@
 <?php
 
+use Bga\GameFramework\UserException;
+use Bga\GameFramework\VisibleSystemException;
+
 class DaleDeckSelection {
     private $game;
 
@@ -27,10 +30,10 @@ class DaleDeckSelection {
     function submitPreference(int $player_id, array $animalfolk_ids) {
         $n = $this->game->getPlayersNumberInclMono();
         if (count($animalfolk_ids) !== count(array_unique($animalfolk_ids))) {
-            throw new BgaVisibleSystemException("A player's deck selection preferences must be unique");
+            throw new VisibleSystemException("A player's deck selection preferences must be unique");
         }
         if (count($animalfolk_ids) > $n+1) {
-            throw new BgaVisibleSystemException("Players can only select up to n+1 preferences, got ".count($animalfolk_ids));
+            throw new VisibleSystemException("Players can only select up to n+1 preferences, got ".count($animalfolk_ids));
         }
         for ($i = 0; $i < count($animalfolk_ids); $i++) { 
             $animalfolk_id = $animalfolk_ids[$i];
@@ -70,7 +73,7 @@ class DaleDeckSelection {
         foreach ($animalfolk_ids as $animalfolk_id) {
             //TODO: increase this range when new animalfolk are added (when ANIMALFOLK_BATS are not the last anymore)
             if ($animalfolk_id < ANIMALFOLK_MACAWS || $animalfolk_id > ANIMALFOLK_BATS) {
-                throw new BgaSystemException($animalfolk_id+" is not a valid animalfolk_id");
+                throw new VisibleSystemException($animalfolk_id+" is not a valid animalfolk_id");
             }
         }
         $cached_animalfolk_ids = array_slice($animalfolk_ids, 0, $n + 1);
@@ -89,7 +92,7 @@ class DaleDeckSelection {
         $collection = $this->game->getCollectionFromDB($sql);
         $n = $this->game->getPlayersNumberInclMono();
         if (count($collection) != $n+1) {
-            throw new BgaVisibleSystemException("'getAnimalfolkIds' failed, please ensure that 'selectAnimalfolkIds' was called exactly once");
+            throw new VisibleSystemException("'getAnimalfolkIds' failed, please ensure that 'selectAnimalfolkIds' was called exactly once");
         }
         $this->cached_animalfolk_ids = array_keys($collection);
         return $this->cached_animalfolk_ids;
