@@ -6532,7 +6532,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'client_capuchin5b':
                     var client_capuchin5b_args = this.mainClientState.getSpendArgs();
                     this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
-                    this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), client_capuchin5b_args.spend_coins, 'spend');
                     for (var _37 = 0, _38 = client_capuchin5b_args.spend_card_ids.reverse(); _37 < _38.length; _37++) {
                         var card_id = _38[_37];
                         this.myHand.selectItem(card_id);

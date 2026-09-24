@@ -1569,7 +1569,6 @@ class DaleOfMerchants extends Gamegui
 			case 'client_capuchin5b':
 				const client_capuchin5b_args = this.mainClientState.getSpendArgs();
 				this.myHand.setSelectionMode('multipleProgrammatic', "pileYellow", undefined);
-				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), client_capuchin5b_args.spend_coins, 'spend');
 				for (const card_id of client_capuchin5b_args.spend_card_ids.reverse()) {
 					this.myHand.selectItem(card_id);
 				}
