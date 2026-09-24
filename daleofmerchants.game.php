@@ -11827,8 +11827,7 @@ class DaleOfMerchants extends DaleTableBasic
             $score_player = $this->getScore($player_id);
             $score_mono = $this->getScore(MONO_PLAYER_ID);
             $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"
-            $this->bga->playerScore->set($player_id, $score_difference);
-            $this->bga->playerScoreAux->set($player_id, 0);
+            $this->bga->playerScore->set($player_id, $score_difference, null);
         }
 
         // Reveal all hidden information
