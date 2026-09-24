@@ -37,8 +37,8 @@ class view_daleofmerchants_daleofmerchants extends game_view
   	function build_page( $viewArgs )
   	{		
   	    // Get players & players number
-        /** @var mixed $game */
-        $players = $game->loadPlayersBasicInfosInclMono();
+        /** @var mixed $this->game */
+        $players = $this->game->loadPlayersBasicInfosInclMono();
         $template = $this->getGameName() . "_" . $this->getGameName();
 
         // Your stall and schedule
