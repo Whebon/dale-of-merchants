@@ -2250,8 +2250,7 @@ class DaleOfMerchants extends DaleTableBasic
             $this->setGameStateValue("mono_score", $new_score);
         }
         else {
-            $sql = "UPDATE player SET player_score=$new_score WHERE player_id='$player_id'";
-            $this->DbQuery($sql);
+            $this->bga->playerScore->set($player_id, $new_score);
         }
         return $new_score >= MAX_STACKS;
     }
@@ -11837,10 +11836,12 @@ class DaleOfMerchants extends DaleTableBasic
         }
         if ($this->isSoloGame()) {
             $this->monoShowHand();
-            $score_player = $this->getScore($this->getActivePlayerId());
+            $player_id = $this->getActivePlayerId();
+            $score_player = $this->getScore($player_id);
             $score_mono = $this->getScore(MONO_PLAYER_ID);
             $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"
-            $this->DbQuery("UPDATE player SET `player_score` = $score_difference, `player_score_aux` = 0");
+            $this->bga->playerScore->set($player_id, $score_difference);
+            $this->bga->playerScoreAux->set($player_id, 0);
         }
 
         // Reveal all hidden information
