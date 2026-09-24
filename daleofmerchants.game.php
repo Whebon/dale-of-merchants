@@ -8206,7 +8206,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
                 $nbr = count($dbcards);
                 if ($nbr != 1 && $nbr != 2) {
-                    throw new UserException(_("Please select exactly 1 or 2 cards"));
+                    throw new UserException(clienttranslate("Please select exactly 1 or 2 cards"));
                 }
                 $this->discardMultiple(
                     clienttranslate('Erratic Assistant: ${player_name} discards ${nbr} card(s)'),
@@ -8226,7 +8226,7 @@ class DaleOfMerchants extends DaleTableBasic
                     // Toss an animalfolk card
                     $dbcard = $this->toss1FromHand($player_id, $technique_card, $args);
                     if ($dbcard == null || !$this->isAnimalfolk($dbcard)) {
-                        throw new UserException(_("Please select an animalfolk card"));
+                        throw new UserException(clienttranslate("Please select an animalfolk card"));
                     }
                     $this->fullyResolveCard($player_id, $technique_card);
                 }
@@ -8672,7 +8672,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //set the name of the card for the client description
                 $dbcard = $this->cards->getCardOnTop(DECK.MARKET);
                 if ($dbcard == null) {
-                    throw new UserException(_("This passive has no effect because the supply is empty"));
+                    throw new UserException(clienttranslate("This passive has no effect because the supply is empty"));
                 }
                 $this->setGameStateValue("card_id", $dbcard["id"]);
                 $this->effects->insertModification($passive_card_id, CT_FASHIONHINT);
@@ -9089,7 +9089,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $expected_nbr = min(3, $this->cards->countCardsInLocation(HAND.$player_id));
         if (count($card_ids) != $expected_nbr) {
-            throw new UserException(clienttranslate("You must select exactly ")+$expected_nbr+_(" cards to discard"));
+            throw new UserException(clienttranslate("You must select exactly ")+$expected_nbr+clienttranslate(" cards to discard"));
         }
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->discardMultiple(
@@ -9107,7 +9107,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $expected_nbr = min(6, $this->cards->countCardsInLocation(HAND.$player_id));
         if (count($card_ids) != $expected_nbr) {
-            throw new UserException(clienttranslate("You must select exactly ")+$expected_nbr+_(" cards to discard"));
+            throw new UserException(clienttranslate("You must select exactly ")+$expected_nbr+clienttranslate(" cards to discard"));
         }
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->discardMultiple(
