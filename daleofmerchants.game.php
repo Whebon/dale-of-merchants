@@ -1923,7 +1923,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function validateOpponentId($opponent_id) {
         if ($opponent_id == $this->getActivePlayerId()) {
-            throw new UserException($this->_("Please select another player, not yourself"));
+            throw new UserException(clienttranslate("Please select another player, not yourself"));
         }
         return $this->validatePlayerId($opponent_id);
     }
@@ -1934,7 +1934,7 @@ class DaleOfMerchants extends DaleTableBasic
     function validatePlayerId($player_id) {
         $players = $this->loadPlayersBasicInfosInclMono();
         if (!isset($players[$player_id])) {
-            throw new UserException($player_id.$this->_(" is not a valid player id"));
+            throw new UserException($player_id.clienttranslate(" is not a valid player id"));
         }
         return $player_id;
     }
@@ -1944,7 +1944,7 @@ class DaleOfMerchants extends DaleTableBasic
      */
     function validateIsAnimalfolkCard($dbcard) {
         if ($this->isEffectiveJunk($dbcard)) {
-            throw new UserException($this->getCardName($dbcard).$this->_(" is not an animalfolk card"));
+            throw new UserException($this->getCardName($dbcard).clienttranslate(" is not an animalfolk card"));
         }
     }
 
@@ -3551,7 +3551,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $coins = $this->getCoins($player_id);
         if ($coins < $nbr) {
-            throw new UserException($this->_("Insufficient coins")." ($coins / $nbr)");
+            throw new UserException(clienttranslate("Insufficient coins")." ($coins / $nbr)");
         }
         $this->addCoins($player_id, -$nbr);
 
@@ -3598,7 +3598,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($x_without_coins > $cost_max) {
             $x_without_coins = $cost_max;
             if ($spend_coins > 0) {
-                throw new UserException($this->_("Unable to overpay with coins. Please reduce the number of included coins."));
+                throw new UserException(clienttranslate("Unable to overpay with coins. Please reduce the number of included coins."));
             }
         }
 
@@ -3647,7 +3647,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Spend coins (explicitly)
         if ($spend_coins > $cost) {
-            throw new UserException($this->_("All coins must be necessary for a purchase. Please reduce the number of coins"));
+            throw new UserException(clienttranslate("All coins must be necessary for a purchase. Please reduce the number of coins"));
         }
         $this->spendCoins($player_id, $spend_coins, $msg_prefix);
         $cost -= $spend_coins;
@@ -3718,7 +3718,7 @@ class DaleOfMerchants extends DaleTableBasic
             $coins = $this->getCoins($player_id);
             if ($total_value + $optional_value + $coins < $cost) {
                 $total_value += $optional_value + $coins;
-                throw new UserException($this->_("Insufficient funds")." ($total_value / $cost)");
+                throw new UserException(clienttranslate("Insufficient funds")." ($total_value / $cost)");
             }
             $remaining = $cost - $total_value - $optional_value;
             $this->spendCoins($player_id, $remaining);
@@ -3730,7 +3730,7 @@ class DaleOfMerchants extends DaleTableBasic
             $cost_max = $cost;
         }
         if (($total_value - $lowest_value) >= $cost_max && !$this->containsTypeId($funds_cards, CT_DEPRECATED_STOCKCLEARANCE)) {
-            throw new UserException($this->_("All cards must be necessary for a purchase. Please remove unnecessary cards"));
+            throw new UserException(clienttranslate("All cards must be necessary for a purchase. Please remove unnecessary cards"));
         }
         return $total_value;
     }
@@ -4645,7 +4645,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($from == null && $this->effects->countGlobalEffects(CT_CULTURALPRESERVATION) > 0) { // We check from == null to ignore CT_CULTURALPRESERVATION when building with CT_CHARM
             //Apply CT_CULTURALPRESERVATION
             if (count($cards_from_hand) != 0) {
-                throw new UserException($this->_("Cultural Preservation: you may only build using cards from discard"));
+                throw new UserException(clienttranslate("Cultural Preservation: you may only build using cards from discard"));
             }
             $nbr_nostalgic_items = $this->countTypeId($cards_from_discard, CT_NOSTALGICITEM);
         }
@@ -4657,7 +4657,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $nbr_nostalgic_items += $this->countTypeId($cards_from_discard, CT_NOSTALGICITEM);
             }
             if (count($cards_from_discard) > $nbr_nostalgic_items) {
-                throw new UserException($this->_("You cannot include cards from your discard pile"));
+                throw new UserException(clienttranslate("You cannot include cards from your discard pile"));
             }
         }
         if ($nbr_nostalgic_items > 0) {
@@ -4665,7 +4665,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $ignore_animalfolk_rule = true;
                 $nbr_different_animalfolk_cards = $this->countNonJunkNonSquirrel($cards_from_discard);
                 if ($nbr_different_animalfolk_cards > $nbr_nostalgic_items) {
-                    throw new UserException($this->_("Cards in the stack must be of the same animalfolk set").$this->_(" (not enough nostalgic items)"));
+                    throw new UserException(clienttranslate("Cards in the stack must be of the same animalfolk set").clienttranslate(" (not enough nostalgic items)"));
                 }
                 $nbr_nostalgic_items -= $nbr_different_animalfolk_cards;
             }
@@ -4676,13 +4676,13 @@ class DaleOfMerchants extends DaleTableBasic
         $nbr_junk = $this->countJunk($cards_all);
         if ($nbr_junk > $max_nbr_junk) {
             if ($max_nbr_junk == 0) {
-                throw new UserException($this->_("Junk cards cannot be included in a stack"));
+                throw new UserException(clienttranslate("Junk cards cannot be included in a stack"));
             }
             else if ($max_nbr_junk == 1) {
-                throw new UserException($this->_("You may include at most 1 junk card"));
+                throw new UserException(clienttranslate("You may include at most 1 junk card"));
             }
             else {
-                throw new UserException($this->_("You may include at most ").$max_nbr_junk.$this->_(" junk cards"));
+                throw new UserException(clienttranslate("You may include at most ").$max_nbr_junk.clienttranslate(" junk cards"));
             }
         }
 
@@ -4690,7 +4690,7 @@ class DaleOfMerchants extends DaleTableBasic
         if (!$ignore_animalfolk_rule) {
             $animalfolks = $this->getAnimalfolks($cards_all);
             if (count($animalfolks) >= 2) {
-                throw new UserException($this->_("Cards in the stack must be of the same animalfolk set"));
+                throw new UserException(clienttranslate("Cards in the stack must be of the same animalfolk set"));
             }
         }
 
@@ -4709,9 +4709,9 @@ class DaleOfMerchants extends DaleTableBasic
         $max_value = $base_value + $nbr_accordion + $nbr_walrus5b;
         
         if ($total_value < $min_value || $total_value > $max_value) {
-            $message = $this->_("Stack value is incorrect")." ($total_value / $base_value)";
+            $message = clienttranslate("Stack value is incorrect")." ($total_value / $base_value)";
             if ($nbr_nastyThreat) {
-                $message .= ". ".$this->_("The stack requires +").$nbr_nastyThreat.$this->_(" value due to Nasty Threat(s)");
+                $message .= ". ".clienttranslate("The stack requires +").$nbr_nastyThreat.clienttranslate(" value due to Nasty Threat(s)");
             }
             throw new UserException($message);
         }
@@ -4933,7 +4933,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($from_bin) {
             $market_card = $this->cards->getCardOnTop(DISCARD.MARKET);
             if (!$this->containsTypeId($funds_cards, CT_OLM1)) {
-                throw new UserException($this->_("To purchase from the bin, 'Blind Examiner' must be included in the funds"));
+                throw new UserException(clienttranslate("To purchase from the bin, 'Blind Examiner' must be included in the funds"));
             }
         }
         $cost = $this->getCost($player_id, $market_card);
@@ -5031,13 +5031,13 @@ class DaleOfMerchants extends DaleTableBasic
             $first_market_card_id = $this->getGameStateValue("card_id");
             if ($toss_card_id == $first_market_card_id) {
                 //TODO: forbid immediately tossing the purchased card? Use limbo? (see issue #111)
-                //throw new UserException($this->_("You just buys this card, please choose another card!")); 
+                //throw new UserException(clienttranslate("You just buys this card, please choose another card!")); 
             }
 
             //toss the animalfolk card
             $toss_card = $this->cards->getCardFromLocation($toss_card_id, HAND.$player_id);
             if (!$this->isAnimalfolk($toss_card)) {
-                throw new UserException($this->_("Royal Privilege: the chosen card is not an animalfolk card"));
+                throw new UserException(clienttranslate("Royal Privilege: the chosen card is not an animalfolk card"));
             }
             $this->toss(clienttranslate('Royal Privilege: ${player_name} tosses their ${card_name}'), $toss_card);
     
@@ -5064,7 +5064,7 @@ class DaleOfMerchants extends DaleTableBasic
         $technique_card = $this->cards->getCardFromLocation($technique_card_id, HAND.$player_id);
         $technique_type_id = $this->getTypeId($technique_card);
         if ($this->card_types[$technique_type_id]['playable'] == false) {
-            throw new UserException($this->_("That card is not playable!"));
+            throw new UserException(clienttranslate("That card is not playable!"));
         }
         $this->bga->playerStats->inc("actions_technique", 1, $player_id);
 
@@ -5263,7 +5263,7 @@ class DaleOfMerchants extends DaleTableBasic
                                 throw new VisibleSystemException("Unable to fizzle CT_COLOURSWAP. '". $card_name."' can be swapped...");
                             }
                             else {
-                                throw new UserException($this->_("Matching Colours has valid targets. Try using '").$card_name."' as '".$target_name."'.");
+                                throw new UserException(clienttranslate("Matching Colours has valid targets. Try using '").$card_name."' as '".$target_name."'.");
                             } 
                         }
                     }
@@ -6754,7 +6754,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_CACHE:
-                $this->spend($player_id, $args, 2, $this->_("Cache"));
+                $this->spend($player_id, $args, 2, clienttranslate("Cache"));
                 $card_id = $args["card_id"];
                 $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
                 $this->cards->moveCard($card_id, HAND.$player_id);
@@ -6767,7 +6767,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DISPLAYOFPOWER:
-                $this->spend($player_id, $args, 2, $this->_("Display of Power"));
+                $this->spend($player_id, $args, 2, clienttranslate("Display of Power"));
                 $this->effects->insertGlobal($technique_card_id, EFFECT_INCREASE_HAND_SIZE, 2);
                 $this->bga->notify->all('message', clienttranslate('Display of Power: ${player_name} increases their hand size by 2'), array(
                     'player_name' => $this->getActivePlayerName()
@@ -6786,17 +6786,17 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_SAFEPROFITS:
-                $x = $this->spendX($player_id, $args, 1, 10, $this->_("Safe Profits"));
+                $x = $this->spendX($player_id, $args, 1, 10, clienttranslate("Safe Profits"));
                 $this->gainCoins($player_id, ($x+1)/2, $technique_card);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_RESOURCEFULALLY:
                 $this->beginResolvingCard($technique_card_id);
-                $this->spend($player_id, $args, 1, $this->_("Resourceful Ally"));
+                $this->spend($player_id, $args, 1, clienttranslate("Resourceful Ally"));
                 $this->gamestate->nextState("trResourcefulAlly");
                 break;
             case CT_ICETRADE:
-                $x = $this->spendX($player_id, $args, 1, 1000, $this->_("Ice Trade"));
+                $x = $this->spendX($player_id, $args, 1, 1000, clienttranslate("Ice Trade"));
                 $this->draw(
                     clienttranslate('Ice Trade: ${player_name} draws 1 card from the supply'), 
                     1, 
@@ -6809,11 +6809,11 @@ class DaleOfMerchants extends DaleTableBasic
                 break;
             case CT_TRAVELINGEQUIPMENT:
                 $this->beginResolvingCard($technique_card_id);
-                $this->spend($player_id, $args, 2, $this->_("Traveling Equipment"));
+                $this->spend($player_id, $args, 2, clienttranslate("Traveling Equipment"));
                 $this->gamestate->nextState("trTravelingEquipment");
                 break;
             case CT_FISHING:
-                $x = $this->spendX($player_id, $args, 1, 1000, $this->_("Fishing"));
+                $x = $this->spendX($player_id, $args, 1, 1000, clienttranslate("Fishing"));
                 $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
                 if ($discard_size == 0) {
                     $this->fullyResolveCard($player_id, $technique_card); //fizzle
@@ -6849,7 +6849,7 @@ class DaleOfMerchants extends DaleTableBasic
                 else {
                     //skip tossing a card
                     if ($this->cards->countCardInLocation(DISCARD.$player_id) > 0) {
-                        throw new UserException($this->_("Please select a card to toss"));
+                        throw new UserException(clienttranslate("Please select a card to toss"));
                     }
                 }
                 $this->resolveImmediateEffects($player_id, $technique_card);
@@ -7008,11 +7008,11 @@ class DaleOfMerchants extends DaleTableBasic
                 //2. toss a card
                 $card_ids = $args["card_ids"];
                 if (count($card_ids) == 0) {
-                    throw new UserException($this->_("You must select at least 1 card to toss"));
+                    throw new UserException(clienttranslate("You must select at least 1 card to toss"));
                 }
                 $toss_card_id = array_pop($card_ids); //the last index is the card to toss
                 if (!isset($top_cards[$toss_card_id])) {
-                    throw new UserException($this->_("The selected card to toss is not within the top X cards of the discard pile"));
+                    throw new UserException(clienttranslate("The selected card to toss is not within the top X cards of the discard pile"));
                 }
                 unset($top_cards[$toss_card_id]);
                 $this->tossFromDiscard(clienttranslate('Selecting Contracts: ${player_name} tosses their ${card_name}'), $toss_card_id);
@@ -7025,7 +7025,7 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 foreach($card_ids as $card_id) {
                     if (!isset($top_cards[$card_id])) {
-                        throw new UserException($this->_("Some selected card is not within the top X cards of the discard pile"));
+                        throw new UserException(clienttranslate("Some selected card is not within the top X cards of the discard pile"));
                     }
                     $this->cards->moveCardOnTop($card_id, DECK.$player_id);
                     $this->bga->notify->all('discardToDeck', clienttranslate('Selecting Contracts: ${player_name} places ${card_name} on top of their deck'), array(
@@ -7180,7 +7180,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card_ids = $args["card_ids"];
                 $nbr = min(2, $this->cards->countCardInLocation(DISCARD.$player_id));
                 if (count($card_ids) != $nbr) {
-                    throw new UserException($this->_("Please select exactly ").$nbr.$this->_(" cards"));
+                    throw new UserException(clienttranslate("Please select exactly ").$nbr.clienttranslate(" cards"));
                 }
                 //take 2 cards the discard pile to your hand (show 1 message per card)
                 $this->discardToHandMultiple(
@@ -7284,7 +7284,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_CAPUCHIN4:
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
-                $this->spend($player_id, $args, 2, $this->_("Fishing Pole"));
+                $this->spend($player_id, $args, 2, clienttranslate("Fishing Pole"));
                 $dbcards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($dbcards) == 0) {
                     $this->bga->notify->all('message', clienttranslate('${resolving_card_name}: ${player_name} attempted to take a card from ${opponent_name}, but their hand is empty'), array(
@@ -7305,18 +7305,18 @@ class DaleOfMerchants extends DaleTableBasic
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
-                $this->spend($player_id, $args, 2, $this->_("Crowbar"));
+                $this->spend($player_id, $args, 2, clienttranslate("Crowbar"));
                 $this->beginResolvingCard($technique_card_id);
                 $this->gamestate->nextState("trCapuchin5a");
                 break;
             case CT_CAPUCHIN5B:
-                $this->spend($player_id, $args, 2, $this->_("Unattended Property"));
+                $this->spend($player_id, $args, 2, clienttranslate("Unattended Property"));
                 $opponent_id = isset($args["opponent_id"]) ? $args["opponent_id"] : $this->getUniqueOpponentId();
                 $this->validateOpponentId($opponent_id);
                 $card_id = $args["card_id"];
                 $top_cards = $this->toAssociativeArray($this->cards->getCardsOnTop(2, DISCARD.$opponent_id));
                 if (!isset($top_cards[$card_id])) {
-                    throw new UserException($this->_("Some selected card is not within the top X cards of the discard pile"));
+                    throw new UserException(clienttranslate("Some selected card is not within the top X cards of the discard pile"));
                 }
                 $dbcard = $top_cards[$card_id];
                 $this->discardToHandMultiple(
@@ -7606,7 +7606,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->resolveImmediateEffects($player_id, $technique_card);
                 break;
             case CT_DODO5A:
-                $this->spend($player_id, $args, 1, $this->_("Nesting Doll"));
+                $this->spend($player_id, $args, 1, clienttranslate("Nesting Doll"));
                 $this->draw(clienttranslate('Nesting Doll: ${player_name} draws ${nbr} cards'), 2);
                 $this->gainCoins($player_id, 3, $technique_card);
                 $this->resolveImmediateEffects($player_id, $technique_card);
@@ -8039,7 +8039,7 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 else {
-                    throw new UserException($this->_("You MUST take a card from your discard pile"));
+                    throw new UserException(clienttranslate("You MUST take a card from your discard pile"));
                 }
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
@@ -8086,12 +8086,12 @@ class DaleOfMerchants extends DaleTableBasic
                 }
                 break;
             case CT_IMPULSIVEVISIONARY:
-                $this->spend($player_id, $args, 1, $this->_("Impulsive Visionary"));
+                $this->spend($player_id, $args, 1, clienttranslate("Impulsive Visionary"));
                 $this->draw(clienttranslate('Impulsive Visionary: ${player_name} draws a card'));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_COLLECTORSDESIRE:
-                $this->spend($player_id, $args, 2, $this->_("Collector's Desire"));
+                $this->spend($player_id, $args, 2, clienttranslate("Collector's Desire"));
                 //Find the leftmost card
                 $marketcards = $this->cards->getCardsInLocation(MARKET);
                 if (count($marketcards) == 0) {
@@ -8120,7 +8120,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card, null, TRIGGER_ONMARKETCARD);
                 break;
             case CT_GROUNDBREAKINGIDEA:
-                $this->spend($player_id, $args, 2, $this->_("Groundbreaking Idea"));
+                $this->spend($player_id, $args, 2, clienttranslate("Groundbreaking Idea"));
                 if ($this->cards->countCardInLocation(DISCARD.$player_id) == 0) {
                     $this->fullyResolveCard($player_id, $technique_card);
                     return;
@@ -8129,17 +8129,17 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trGroundbreakingIdea");
                 break;
             case CT_INSPIRATION:
-                $this->spend($player_id, $args, 2, $this->_("Inspiration"));
+                $this->spend($player_id, $args, 2, clienttranslate("Inspiration"));
                 $this->draw(clienttranslate('Inspiration: ${player_name} draws ${nbr} cards'), 2);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DEPRECATED_INSIGHT:
-                $this->spend($player_id, $args, 2, $this->_("DEPRECATED_Insight"));
+                $this->spend($player_id, $args, 2, clienttranslate("DEPRECATED_Insight"));
                 $this->draw(clienttranslate('DEPRECATED_Insight: ${player_name} draws ${nbr} cards'), 2);
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_INSIGHT:
-                $this->spend($player_id, $args, 3, $this->_("Insight"));
+                $this->spend($player_id, $args, 3, clienttranslate("Insight"));
                 if ($this->cards->countCardInLocation(DISCARD.$player_id) == 0) {
                     $this->fullyResolveCard($player_id, $technique_card);
                     return;
@@ -8148,7 +8148,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trInsightTake");
                 break;
             case CT_PERFECTMOVE:
-                $this->spend($player_id, $args, 3, $this->_("Perfect Move"));
+                $this->spend($player_id, $args, 3, clienttranslate("Perfect Move"));
                 $this->effects->insertGlobal(0, CT_FLASHYSHOW); //CT_PERFECTMOVE == CT_FLASHYSHOW
                 $this->bga->notify->all('message', clienttranslate('Perfect Move: ${player_name} increases the value of all cards they use by 1 for this turn'), array(
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
@@ -8266,23 +8266,23 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DODO1:
-                $this->spend($player_id, $args, 2, $this->_("Eager Borrower"));
+                $this->spend($player_id, $args, 2, clienttranslate("Eager Borrower"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DODO3:
-                $this->spend($player_id, $args, 3, $this->_("Pet Boar"));
+                $this->spend($player_id, $args, 3, clienttranslate("Pet Boar"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DODO4:
-                $this->spend($player_id, $args, 3, $this->_("Sunglasses"));
+                $this->spend($player_id, $args, 3, clienttranslate("Sunglasses"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DODO5A:
-                $this->spend($player_id, $args, 4, $this->_("Nesting Doll"));
+                $this->spend($player_id, $args, 4, clienttranslate("Nesting Doll"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_DODO5B:
-                $this->spend($player_id, $args, 3, $this->_("Company Share"));
+                $this->spend($player_id, $args, 3, clienttranslate("Company Share"));
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             default:
@@ -8311,11 +8311,11 @@ class DaleOfMerchants extends DaleTableBasic
         }
 
         if ($this->card_types[$type_id]['has_ability'] == false) {
-            throw new UserException($this->_("That card has no ability!"));
+            throw new UserException(clienttranslate("That card has no ability!"));
         }
 
         if ($this->effects->isPassiveUsed($passive_card) && ($type_id != CT_GOODOLDTIMES || $this->effects->getArg($passive_card_id, $type_id) == null)) {
-            throw new UserException($this->_("That card's ability has already been used this turn!"));
+            throw new UserException(clienttranslate("That card's ability has already been used this turn!"));
         }
 
         $this->bga->playerStats->inc("actions_passive", 1, $player_id);
@@ -8323,10 +8323,10 @@ class DaleOfMerchants extends DaleTableBasic
         //Check triggers
         $isPostCleanUpPhase = $this->gamestate->getCurrentMainState()->name == 'postCleanUpPhase';
         if ($isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] != TRIGGER_ONCLEANUP) {
-            throw new UserException($this->_("This card's ability can not be used at the end of your turn"));
+            throw new UserException(clienttranslate("This card's ability can not be used at the end of your turn"));
         }
         if (!$isPostCleanUpPhase && $this->card_types[$type_id]['trigger'] == TRIGGER_ONCLEANUP) {
-            throw new UserException($this->_("This card's ability can only be used at the end of your turn"));
+            throw new UserException(clienttranslate("This card's ability can only be used at the end of your turn"));
         }
 
         //Execute Passive Ability
@@ -8413,7 +8413,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->validateOpponentId($opponent_id);
                 $this->setGameStateValue("opponent_id", $opponent_id);
                 if ($this->cards->countCardsInLocation(HAND.$opponent_id) == 0) {
-                    throw new UserException($this->_("Sound Detector cannot be used on opponents with an empty hand"));
+                    throw new UserException(clienttranslate("Sound Detector cannot be used on opponents with an empty hand"));
                 }
                 $this->setGameStateValue("passive_card_id", $passive_card_id);
                 $this->gamestate->nextState("trSoundDetectors"); return;
@@ -8461,7 +8461,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_DEPRECATED_SLICEOFLIFE:
                 $card_ids = $args["card_ids"];
                 if (count($card_ids) != 2) {
-                    throw new UserException($this->_("You must discard exactly 2 cards"));
+                    throw new UserException(clienttranslate("You must discard exactly 2 cards"));
                 }
                 $this->discardMultiple(
                     clienttranslate('Slice of Life: ${player_name} discards 2 cards'),
@@ -8476,7 +8476,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $card_ids = $args["card_ids"];
                 $x = count($card_ids);
                 if ($x == 0 || $x > 3) {
-                    throw new UserException($this->_("You must discard exactly 1-3 cards"));
+                    throw new UserException(clienttranslate("You must discard exactly 1-3 cards"));
                 }
                 $this->discardMultiple(
                     clienttranslate('Spinning Wheel: ${player_name} discards ${nbr} cards'),
@@ -8491,7 +8491,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_BARGAINSEEKER:
                 $rightmostcards = $this->cards->getCardsInLocation(MARKET, 0);
                 if (count($rightmostcards) != 1) {
-                    throw new UserException($this->_("Unable to toss the rightmost card in the market"));
+                    throw new UserException(clienttranslate("Unable to toss the rightmost card in the market"));
                 }
                 $this->tossFromMarketBoard(
                     clienttranslate('Bargain Seeker: ${player_name} tosses the rightmost card from the market'),
@@ -8527,7 +8527,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->gamestate->nextState("trTacticalMeasurement"); return;
                 break;
             case CT_GREED:
-                $this->spend($player_id, $args, 1, $this->_("Greed"));
+                $this->spend($player_id, $args, 1, clienttranslate("Greed"));
                 $this->draw(clienttranslate('Greed: ${player_name} draws 1 card'), 1);
                 $this->effects->insertModification($passive_card_id, CT_GREED);
                 break;
@@ -8571,7 +8571,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_BAROMETER:
                 $dbcards = $this->cards->pickCardsForLocation(1, DECK.MARKET, 'barometer');
                 if (count($dbcards) == 0) {
-                    throw new UserException($this->_("The supply is empty"));
+                    throw new UserException(clienttranslate("The supply is empty"));
                 }
                 $dbcard = $dbcards[0];
                 $value = $this->getOriginalValue($dbcard);
@@ -8592,7 +8592,7 @@ class DaleOfMerchants extends DaleTableBasic
             case CT_CALENDAR:
                 $topCard = $this->cards->getCardOnTop(DISCARD.$player_id);
                 if (!$topCard) {
-                    throw new UserException($this->_("Your discard is empty"));
+                    throw new UserException(clienttranslate("Your discard is empty"));
                 }
                 $this->cards->moveCardOnTop($topCard["id"], DECK.$player_id);
                 $this->bga->notify->all('discardToDeck', clienttranslate('Calendar: ${player_name} shuffles their ${card_name} into their deck'), array(
@@ -8621,7 +8621,7 @@ class DaleOfMerchants extends DaleTableBasic
                     ));
                 }
                 else {
-                    throw new UserException($this->_("This passive has no effect on that player"));
+                    throw new UserException(clienttranslate("This passive has no effect on that player"));
                 }
                 //mark this passive as used
                 $this->effects->insertModification($passive_card_id, CT_COFFEEGRINDER);
@@ -8733,7 +8733,7 @@ class DaleOfMerchants extends DaleTableBasic
                 //set the name of the card for the client description
                 $dbcard = $this->cards->getCardOnTop(DECK.$opponent_id);
                 if ($dbcard == null) {
-                    throw new UserException($this->_("This passive has no effect on that player"));
+                    throw new UserException(clienttranslate("This passive has no effect on that player"));
                 }
                 $this->setGameStateValue("card_id", $dbcard["id"]);
                 // set the opponent_id and passive_card_id
@@ -8747,7 +8747,7 @@ class DaleOfMerchants extends DaleTableBasic
                 $this->validatePlayerId($opponent_id);
                 $cards = $this->cards->getCardsInLocation(HAND.$opponent_id);
                 if (count($cards) == 0) {
-                    throw new UserException($this->_("This passive has no effect on that player"));
+                    throw new UserException(clienttranslate("This passive has no effect on that player"));
                 }
                 $card_id = array_rand($cards);
                 $card = $cards[$card_id];
@@ -8780,7 +8780,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //get the card to draw (first card from the card_ids array)
         if (count($card_ids) == 0) {
-            throw new UserException($this->_("You must select at least 1 card to place into your hand"));
+            throw new UserException(clienttranslate("You must select at least 1 card to place into your hand"));
         }
         $draw_card_id = array_pop($card_ids); //the last index is the card to draw
         $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
@@ -8826,7 +8826,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //get the card to draw (first card from the card_ids array)
         if (count($card_ids) == 0) {
-            throw new UserException($this->_("You must select at least 1 card to place into your hand"));
+            throw new UserException(clienttranslate("You must select at least 1 card to place into your hand"));
         }
         $draw_card_id = array_pop($card_ids); //the last index is the card to draw
         $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
@@ -8870,7 +8870,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //get the card to draw (first card from the card_ids array)
         if (count($card_ids) == 0) {
-            throw new UserException($this->_("You must select at least 1 card to place into your hand"));
+            throw new UserException(clienttranslate("You must select at least 1 card to place into your hand"));
         }
         $draw_card_id = array_pop($card_ids); //the last index is the card to draw
         $draw_card = $this->cards->getCardFromLocation($draw_card_id, LIMBO.$player_id);
@@ -9090,7 +9090,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $expected_nbr = min(3, $this->cards->countCardsInLocation(HAND.$player_id));
         if (count($card_ids) != $expected_nbr) {
-            throw new UserException($this->_("You must select exactly ")+$expected_nbr+_(" cards to discard"));
+            throw new UserException(clienttranslate("You must select exactly ")+$expected_nbr+_(" cards to discard"));
         }
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->discardMultiple(
@@ -9108,7 +9108,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $expected_nbr = min(6, $this->cards->countCardsInLocation(HAND.$player_id));
         if (count($card_ids) != $expected_nbr) {
-            throw new UserException($this->_("You must select exactly ")+$expected_nbr+_(" cards to discard"));
+            throw new UserException(clienttranslate("You must select exactly ")+$expected_nbr+_(" cards to discard"));
         }
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->discardMultiple(
@@ -9436,7 +9436,7 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId(); 
         $die_value = $this->getGameStateValue("die_value");
         if (count($card_ids) != $die_value) {
-            throw new UserException($this->_("You must discard the same number of cards that you drew"));
+            throw new UserException(clienttranslate("You must discard the same number of cards that you drew"));
         }
         $cards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->discardMultiple(
@@ -9503,7 +9503,7 @@ class DaleOfMerchants extends DaleTableBasic
         //New 10th anniversary rule: you must select 3 cards
         $nbr = min(3, $this->cards->countCardsInLocation(DECK.$player_id));
         if (count($card_ids) != $nbr) {
-            throw new UserException($this->_("You must choose exactly ").$nbr.$this->_(" cards from your deck"));
+            throw new UserException(clienttranslate("You must choose exactly ").$nbr.clienttranslate(" cards from your deck"));
         }
         else {
             //1. draw a card
@@ -9590,7 +9590,7 @@ class DaleOfMerchants extends DaleTableBasic
         $value = $this->getGameStateValue("die_value");
         $original_value = $this->card_types[$type_id]['value'];
         if (abs($value - $original_value) > 1) {
-            throw new UserException($this->_("The replacement card must be within 1 of value ").$value);
+            throw new UserException(clienttranslate("The replacement card must be within 1 of value ").$value);
         }
 
         //Place the card into the player's hand
@@ -9696,12 +9696,12 @@ class DaleOfMerchants extends DaleTableBasic
             //take the selected card
             $card_id = array_pop($card_ids);
             if (!isset($dbcards[$card_id])) {
-                throw new UserException($this->_("The selected card is not in limbo"));
+                throw new UserException(clienttranslate("The selected card is not in limbo"));
             }
             $dbcard = $dbcards[$card_id];
             unset($dbcards[$card_id]);
             if ($animalfolk_id != $this->getAnimalfolk($dbcard)) {
-                throw new UserException($this->_("You can only take a card of the chosen set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                throw new UserException(clienttranslate("You can only take a card of the chosen set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
             }
             $this->cards->moveCard($card_id, HAND.$player_id);
             $this->notifyAllPlayersWithPrivateArguments('limboToHand', clienttranslate('Pompous Professional: ${player_name} places ${card_name} into their hand'), array(
@@ -9717,7 +9717,7 @@ class DaleOfMerchants extends DaleTableBasic
             //otherwise, confirm the player can indeed not draw any card of the chosen animalfolk
             foreach ($dbcards as $dbcard) {
                 if ($this->getAnimalfolk($dbcard) == $animalfolk_id) {
-                    throw new UserException($this->_("You must take a card of the chosen set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
+                    throw new UserException(clienttranslate("You must take a card of the chosen set: ").$this->getAnimalfolkDisplayedName($animalfolk_id));
                 }
             }
         }
@@ -10065,7 +10065,7 @@ class DaleOfMerchants extends DaleTableBasic
             "spend_card_ids" => $spend_card_ids,
             "spend_coins" => $spend_coins,
         );
-        $x = $this->spendX($player_id, $stove_spend_args, 0, 1000, $this->_("Stove"));
+        $x = $this->spendX($player_id, $stove_spend_args, 0, 1000, clienttranslate("Stove"));
         if ($x > 0) {
             $stove_value = (int)(($x + 1)/2);
             $this->effects->insertModification($dbcard["id"], CT_STOVE, $stove_value);
@@ -10114,7 +10114,7 @@ class DaleOfMerchants extends DaleTableBasic
             "spend_card_ids" => $spend_card_ids,
             "spend_coins" => $spend_coins,
         );
-        $x = $this->spendX($player_id, $dodo2_spend_args, 0, 3, $this->_("Promising Invention"));
+        $x = $this->spendX($player_id, $dodo2_spend_args, 0, 3, clienttranslate("Promising Invention"));
         if ($x > 0) {
             $this->effects->insertModification($dbcard["id"], CT_DODO2, $x);
             $this->bga->notify->all('message', clienttranslate('Promising Invention: ${player_name} adds +${x} to its value'), array(
@@ -10150,10 +10150,10 @@ class DaleOfMerchants extends DaleTableBasic
         $player_id = $this->getActivePlayerId();
         $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
         if (count($card_ids) == 0 && $discard_size != 0) {
-            throw new UserException($this->_("Please select at least 1 card"));
+            throw new UserException(clienttranslate("Please select at least 1 card"));
         }
         else if (count($card_ids) > 2) {
-            throw new UserException($this->_("Please select at most 2 cards"));
+            throw new UserException(clienttranslate("Please select at most 2 cards"));
         }
         foreach ($card_ids as $card_id) {
             $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
@@ -10184,7 +10184,7 @@ class DaleOfMerchants extends DaleTableBasic
         $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
         $x = min($discard_size, $this->getGameStateValue("die_value"));
         if (count($card_ids) != $x) {
-            throw new UserException($this->_("Please select exactly ").$x.(" card(s)"));
+            throw new UserException(clienttranslate("Please select exactly ").$x.(" card(s)"));
         }
         foreach ($card_ids as $card_id) {
             $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
@@ -10453,7 +10453,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->validatePlayerId($source_id);
         $this->validatePlayerId($destination_id);
         if ($source_id == $destination_id) {
-            throw new UserException($this->_("The source and destination cannot be the same"));
+            throw new UserException(clienttranslate("The source and destination cannot be the same"));
         }
         $player_id = $this->getActivePlayerId();
         $this->_actPangolinDice($source_id, $destination_id,
@@ -10469,7 +10469,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->validatePlayerId($source_id);
         $this->validatePlayerId($destination_id);
         if ($source_id == $destination_id) {
-            throw new UserException($this->_("The source and destination cannot be the same"));
+            throw new UserException(clienttranslate("The source and destination cannot be the same"));
         }
         $player_id = $this->getActivePlayerId();
         $dice = $this->argPangolinDice();
@@ -10573,7 +10573,7 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         else {
-            throw new UserException($this->_("This passive has no effect on that player"));
+            throw new UserException(clienttranslate("This passive has no effect on that player"));
         }
         
         // Check if we can leave this state
@@ -10610,7 +10610,7 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         else {
-            throw new UserException($this->_("Unable to discard a card"));
+            throw new UserException(clienttranslate("Unable to discard a card"));
         }
         
         // Check if we can leave this state
@@ -10645,7 +10645,7 @@ class DaleOfMerchants extends DaleTableBasic
         $card_ids = $this->numberListToArray($card_ids);
         $nbr = min(2, $this->cards->countCardInLocation(HAND.$player_id));
         if (count($card_ids) < $nbr) {
-            throw new UserException($this->_("You must choose exactly ").$nbr.$this->_(" cards"));
+            throw new UserException(clienttranslate("You must choose exactly ").$nbr.clienttranslate(" cards"));
         }
         $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $this->placeOnDeckMultiple($player_id, clienttranslate('Serenade: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
@@ -10658,10 +10658,10 @@ class DaleOfMerchants extends DaleTableBasic
         $toss_card_ids = $this->numberListToArray($toss_card_ids);
         $discard_card_ids = $this->numberListToArray($discard_card_ids);
         if (count($toss_card_ids) > 1) {
-            throw new UserException($this->_("Please select at most 1 card to toss"));
+            throw new UserException(clienttranslate("Please select at most 1 card to toss"));
         }
         if (count($discard_card_ids) > 2) {
-            throw new UserException($this->_("Please select at most 2 card to discard"));
+            throw new UserException(clienttranslate("Please select at most 2 card to discard"));
         }
 
         //toss cards
@@ -10800,7 +10800,7 @@ class DaleOfMerchants extends DaleTableBasic
         if ($take_card_id != -1) {
             //take the selected card
             if (!isset($dbcards[$take_card_id])) {
-                throw new UserException($this->_("The selected card is not in limbo"));
+                throw new UserException(clienttranslate("The selected card is not in limbo"));
             }
             $dbcard = $dbcards[$take_card_id];
             unset($dbcards[$take_card_id]);
@@ -11160,10 +11160,10 @@ class DaleOfMerchants extends DaleTableBasic
             foreach ($args["stove_spend_args"] as $stove_card_id => $stove_spend_args) {
                 foreach ($stove_spend_args["spend_card_ids"] as $spend_card_id) {
                     if (in_array($spend_card_id, $stack_card_ids)) {
-                        throw new UserException($this->_("Unable to spend and build the same card"));
+                        throw new UserException(clienttranslate("Unable to spend and build the same card"));
                     }
                 }
-                $x = $this->spendX($player_id, $stove_spend_args, 0, 1000, $this->_("Stove"));
+                $x = $this->spendX($player_id, $stove_spend_args, 0, 1000, clienttranslate("Stove"));
                 if ($x > 0) {
                     $stove_value = (int)(($x + 1)/2);
                     $this->effects->insertModification($stove_card_id, CT_STOVE, $stove_value);
@@ -11180,10 +11180,10 @@ class DaleOfMerchants extends DaleTableBasic
             foreach ($args["dodo2_spend_args"] as $dodo2_card_id => $dodo2_spend_args) {
                 foreach ($dodo2_spend_args["spend_card_ids"] as $spend_card_id) {
                     if (in_array($spend_card_id, $stack_card_ids)) {
-                        throw new UserException($this->_("Unable to spend and build the same card"));
+                        throw new UserException(clienttranslate("Unable to spend and build the same card"));
                     }
                 }
-                $x = $this->spendX($player_id, $dodo2_spend_args, 0, 3, $this->_("Promising Invention"));
+                $x = $this->spendX($player_id, $dodo2_spend_args, 0, 3, clienttranslate("Promising Invention"));
                 if ($x > 0) {
                     $this->effects->insertModification($dodo2_card_id, CT_DODO2, $x);
                     $this->bga->notify->all('message', clienttranslate('Promising Invention: ${player_name} adds +${x} to its value'), array(
@@ -11431,13 +11431,13 @@ class DaleOfMerchants extends DaleTableBasic
         $die_value1 = (int)$this->getGameStateValue("die_value");
         switch ($die_value1) {
             case DIE_DISCARD:
-                $die_label_source = $this->_("discard");
+                $die_label_source = clienttranslate("discard");
                 break;
             case DIE_DECK:
-                $die_label_source = $this->_("deck");
+                $die_label_source = clienttranslate("deck");
                 break;
             case DIE_HAND:
-                $die_label_source = $this->_("hand");
+                $die_label_source = clienttranslate("hand");
                 break;
             default:
                 $die_label_source = "MISSING LABEL";
@@ -11446,13 +11446,13 @@ class DaleOfMerchants extends DaleTableBasic
         $die_value2 = (int)$this->getGameStateValue("die_value2");
         switch ($die_value2) {
             case DIE_DISCARD2:
-                $die_label = $this->_("discard");
+                $die_label = clienttranslate("discard");
                 break;
             case DIE_DECK2:
-                $die_label = $this->_("deck");
+                $die_label = clienttranslate("deck");
                 break;
             case DIE_HAND2:
-                $die_label = $this->_("hand");
+                $die_label = clienttranslate("hand");
                 break;
             default:
                 $die_label = "MISSING LABEL";
@@ -11506,7 +11506,7 @@ class DaleOfMerchants extends DaleTableBasic
         $card_id = $this->getGameStateValue("card_id");
         if ($card_id == -1) {
             //should not happen. but if it does, let's see if we can improvise our way out
-            $card_name = $this->_("card");
+            $card_name = clienttranslate("card");
         }
         else {
             $dbcard = $this->cards->getCard($card_id);
@@ -11522,7 +11522,7 @@ class DaleOfMerchants extends DaleTableBasic
         $card_id = $this->getGameStateValue("card_id");
         if ($card_id == -1) {
             //should not happen. but if it does, let's see if we can improvise our way out
-            $card_name = $this->_("card");
+            $card_name = clienttranslate("card");
         }
         else {
             $dbcard = $this->cards->getCard($card_id);
@@ -12674,7 +12674,7 @@ class DaleOfMerchants extends DaleTableBasic
         }
         $debugMode = $this->getGameStateValue("debugMode", 1);
         if ($debugMode) {
-            throw new UserException($this->_("Debug mode is already enabled for this game!"));
+            throw new UserException(clienttranslate("Debug mode is already enabled for this game!"));
         }
         $player_id = $this->getCurrentPlayerId();
         $player_ids = $this->getGameStateValuePlayerIds();
@@ -12686,7 +12686,7 @@ class DaleOfMerchants extends DaleTableBasic
             ));
         }
         else {
-            throw new UserException($this->_("Waiting for other players to enable debug mode..."));
+            throw new UserException(clienttranslate("Waiting for other players to enable debug mode..."));
         }
         if (count($player_ids) == $this->getPlayersNumber()) {
             $this->setGameStateValue("debugMode", 1);
@@ -12699,7 +12699,7 @@ class DaleOfMerchants extends DaleTableBasic
 
     function actSpawn($card_name) {
         if (!$this->getGameStateValue("debugMode")) {
-            throw new UserException($this->_("Debug mode is disabled"));
+            throw new UserException(clienttranslate("Debug mode is disabled"));
         }
         $this->spawn($card_name);
     }
