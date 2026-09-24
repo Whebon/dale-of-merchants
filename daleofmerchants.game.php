@@ -612,7 +612,7 @@ class DaleOfMerchants extends DaleTableBasic
         ));
 
         //schedule the technique
-        $this->scheduleCard(MONO_PLAYER_ID, $technique_card, true);
+        $this->scheduleCard(MONO_PLAYER_ID, $technique_card);
 
         // //Confirm action (the technique is in schedule)
         // $this->monoConfirmAction($msg, array(
@@ -4370,9 +4370,8 @@ class DaleOfMerchants extends DaleTableBasic
      * IMPORTANT: the caller is responsible for assuring that the card is currently in hand.
      * @param string $player_id player to schedule a card for
      * @param array $dbcard card to be scheduled
-     * @param bool $choiceless (optional) default false. If true, add a synchronization delay to scheduling
      */
-    function scheduleCard(string $player_id, array $dbcard, bool $choiceless = false){
+    function scheduleCard(string $player_id, array $dbcard){
         //for replays, notify ALL players about the scheduled card, even the active player, who already locally scheduled the card
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
         $this->bga->notify->all('scheduleTechnique', '${player_name} schedules their ${card_name}', array(
@@ -4381,18 +4380,6 @@ class DaleOfMerchants extends DaleTableBasic
             'card_name' => $this->getCardName($dbcard),
             'card' => $dbcard,
         ));
-        //all clients that did not locally schedule the card will get a synchronization delay
-        if ($choiceless) {
-            $this->bga->notify->all('scheduleTechniqueDelay', '', array(
-                'player_id' => $player_id,
-                '_private' => [] //in case of a choiceless card, the active player also needs a delay
-            ));
-        }
-        else {
-            $this->bga->notify->all('scheduleTechniqueDelay', '', array(
-                'player_id' => $player_id
-            ));
-        }
     }
 
     /**
@@ -5338,8 +5325,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //Schedule Technique
         if ($technique_type_id != CT_ACORN && $technique_type_id != CT_GIFTVOUCHER && $technique_type_id != CT_SAFETYPRECAUTION && $technique_type_id != CT_DEPRECATED_VELOCIPEDE && $technique_type_id != CT_BOUQUETS) {
-            $choiceless = isset($args["choiceless"]) ? $args["choiceless"] : false;
-            $this->scheduleCard($player_id, $technique_card, $choiceless);
+            $this->scheduleCard($player_id, $technique_card);
         }
 
         //Resolve Technique from Hand

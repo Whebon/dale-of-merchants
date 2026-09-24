@@ -39,10 +39,6 @@ declare global {
 			player_id: number
 			card: DbCard
 		},
-		'scheduleTechniqueDelay': {
-			player_id: number
-			_private?: {}
-		},
 		'scheduleToHand': {
 			player_id: number
 			card: DbCard

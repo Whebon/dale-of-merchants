@@ -5604,7 +5604,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 $("daleofmerchants-schedule-title-" + player_id).textContent = _("Hand") + " + " + _("Schedule");
                 for (var _d = 0, _e = Object.values(hiddenGamedatas.hand[+player_id]); _d < _e.length; _d++) {
                     var handDbCard = _e[_d];
-                    this_6.handtoSchedule(+player_id, handDbCard);
+                    this_6.handToSchedule(+player_id, handDbCard);
                 }
                 setTimeout(function () {
                     schedule.updateDisplay();
@@ -8507,6 +8507,36 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
             }
             throw new Error("getScheduledCardOfTypeId expected a card of type id ".concat(type_id, ", but such a card was not found"));
+        };
+        DaleOfMerchants.prototype.handToSchedule = function (player_id, card) {
+            if (player_id == this.player_id) {
+                var card_id = +card.id;
+                if ($(this.myHand.control_name + '_item_' + card_id)) {
+                    this.mySchedule.addDaleCardToStock(DaleCard_9.DaleCard.of(card), this.myHand.control_name + '_item_' + card_id);
+                    this.myHand.removeFromStockByIdNoAnimation(+card_id);
+                }
+                else {
+                    console.warn("SKIP scheduling the technique: already done by client");
+                    return false;
+                }
+            }
+            else if (this.mono_hand_is_visible) {
+                var card_id = +card.id;
+                if ($(this.myLimbo.control_name + '_item_' + card_id)) {
+                    this.monoSchedule.addDaleCardToStock(DaleCard_9.DaleCard.of(card), this.myLimbo.control_name + '_item_' + card_id);
+                    this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
+                }
+                else {
+                    console.warn("Mono: SKIP scheduling the technique: already done by client");
+                    return false;
+                }
+            }
+            else {
+                var schedule = this.playerSchedules[player_id];
+                schedule.addDaleCardToStock(DaleCard_9.DaleCard.of(card), 'overall_player_board_' + player_id);
+            }
+            this.playerHandSizes[player_id].incValue(-1);
+            return true;
         };
         DaleOfMerchants.prototype.stockToPile = function (card, stock, pile, delay, ignore_card_not_found) {
             if (delay === void 0) { delay = 0; }
@@ -12506,8 +12536,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 ['deckSelectionResult', 500],
                 ['delay', 500],
                 ['startGame', 500],
-                ['scheduleTechnique', 1],
-                ['scheduleTechniqueDelay', 500, true],
                 ['resolveTechnique', 500],
                 ['cancelTechnique', 500],
                 ['scheduleToHand', 500],
@@ -12631,41 +12659,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
             this.showAnimalfolkSpecificGameComponents();
             this.market.onResize();
-        };
-        DaleOfMerchants.prototype.notif_scheduleTechnique = function (notif) {
-            this.handtoSchedule(+notif.args.player_id, notif.args.card);
-        };
-        DaleOfMerchants.prototype.handtoSchedule = function (player_id, card) {
-            if (player_id == this.player_id) {
-                var card_id = +card.id;
-                if ($(this.myHand.control_name + '_item_' + card_id)) {
-                    this.mySchedule.addDaleCardToStock(DaleCard_9.DaleCard.of(card), this.myHand.control_name + '_item_' + card_id);
-                    this.myHand.removeFromStockByIdNoAnimation(+card_id);
-                }
-                else {
-                    console.warn("SKIP scheduling the technique: already done by client");
-                    return;
-                }
-            }
-            else if (this.mono_hand_is_visible) {
-                var card_id = +card.id;
-                if ($(this.myLimbo.control_name + '_item_' + card_id)) {
-                    this.monoSchedule.addDaleCardToStock(DaleCard_9.DaleCard.of(card), this.myLimbo.control_name + '_item_' + card_id);
-                    this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
-                }
-                else {
-                    console.warn("Mono: SKIP scheduling the technique: already done by client");
-                    return;
-                }
-            }
-            else {
-                var schedule = this.playerSchedules[player_id];
-                schedule.addDaleCardToStock(DaleCard_9.DaleCard.of(card), 'overall_player_board_' + player_id);
-            }
-            this.playerHandSizes[player_id].incValue(-1);
-        };
-        DaleOfMerchants.prototype.notif_scheduleTechniqueDelay = function (notif) {
-            console.warn("notif_scheduleTechniqueDelay");
         };
         DaleOfMerchants.prototype.notif_cancelTechnique = function (notif) {
             if (notif.args.player_id == this.player_id) {
@@ -13701,6 +13694,24 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             else {
                 throw new Error("Unknown argument ".concat(notif.args.arg));
             }
+        };
+        DaleOfMerchants.prototype.promise_notif_scheduleTechnique = function (args) {
+            return __awaiter(this, void 0, void 0, function () {
+                var should_wait_for_animation;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            console.warn("scheduleTechnique", args);
+                            should_wait_for_animation = this.handToSchedule(+args.player_id, args.card);
+                            if (!should_wait_for_animation) return [3, 2];
+                            return [4, new Promise(function (resolve) { return setTimeout(resolve, 500); })];
+                        case 1:
+                            _a.sent();
+                            _a.label = 2;
+                        case 2: return [2];
+                    }
+                });
+            });
         };
         DaleOfMerchants.prototype.promise_notif_discardMultiple = function (args) {
             return __awaiter(this, void 0, void 0, function () {

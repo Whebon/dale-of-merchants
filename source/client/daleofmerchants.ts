@@ -458,7 +458,7 @@ class DaleOfMerchants extends Gamegui
 			// Move cards to schedule
 			$("daleofmerchants-schedule-title-"+player_id)!.textContent = _("Hand")+" + "+_("Schedule");
 			for (const handDbCard of Object.values(hiddenGamedatas.hand[+player_id]!)) {
-				this.handtoSchedule(+player_id, handDbCard);
+				this.handToSchedule(+player_id, handDbCard);
 			}
 
 			// Update schedule layout (monkey patch)
@@ -3794,6 +3794,49 @@ class DaleOfMerchants extends Gamegui
 		}
 		throw new Error(`getScheduledCardOfTypeId expected a card of type id ${type_id}, but such a card was not found`);
 	}
+
+	/**
+	 * Moves a DbCard from a player's hand to that player's schedule
+	 * @param player_id owner of the hand and schedule
+	 * @param card DbCard to move
+	 * @returns `true` if the animation for the move started. `false` if the card didn't exist in the player's hand anymore.
+	 */
+	handToSchedule(player_id: number, card: DbCard): boolean {
+		//hand to schedule
+		if (player_id == this.player_id) {
+			//animate from my hand (if not done already by the client state)
+			const card_id = +card.id;
+			if ($(this.myHand.control_name+'_item_' + card_id)) {
+				this.mySchedule.addDaleCardToStock(DaleCard.of(card), this.myHand.control_name+'_item_'+card_id)
+				this.myHand.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				console.warn("SKIP scheduling the technique: already done by client")
+				return false;
+			}
+		}
+		else if (this.mono_hand_is_visible) {
+			//animate from my limbo
+			const card_id = +card.id;
+			if ($(this.myLimbo.control_name+'_item_' + card_id)) {
+				this.monoSchedule.addDaleCardToStock(DaleCard.of(card), this.myLimbo.control_name+'_item_'+card_id)
+				this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
+			}
+			else {
+				console.warn("Mono: SKIP scheduling the technique: already done by client")
+				return false;
+			}
+		}
+		else {
+			//animate from player board
+			const schedule = this.playerSchedules[player_id]!;
+			schedule.addDaleCardToStock(DaleCard.of(card), 'overall_player_board_'+player_id)
+		}
+		//update the hand sizes
+		this.playerHandSizes[player_id]!.incValue(-1);
+		return true;
+	}
+
 
 	/**
 	 * Move a card from the specified stock to the specified pile
@@ -8406,8 +8449,6 @@ class DaleOfMerchants extends Gamegui
 			['deckSelectionResult', 				500],
 			['delay', 								500],
 			['startGame', 							500],
-			['scheduleTechnique', 					1],
-			['scheduleTechniqueDelay', 				500, true],
 			['resolveTechnique', 					500],
 			['cancelTechnique', 					500],
 			['scheduleToHand',						500],
@@ -8559,49 +8600,6 @@ class DaleOfMerchants extends Gamegui
 		}
 		this.showAnimalfolkSpecificGameComponents();
 		this.market!.onResize();
-	}
-
-	notif_scheduleTechnique(notif: NotifAs<'scheduleTechnique'>) {
-		this.handtoSchedule(+notif.args.player_id, notif.args.card);
-	}
-
-	handtoSchedule(player_id: number, card: DbCard) {
-		//hand to schedule
-		if (player_id == this.player_id) {
-			//animate from my hand (if not done already by the client state)
-			const card_id = +card.id;
-			if ($(this.myHand.control_name+'_item_' + card_id)) {
-				this.mySchedule.addDaleCardToStock(DaleCard.of(card), this.myHand.control_name+'_item_'+card_id)
-				this.myHand.removeFromStockByIdNoAnimation(+card_id);
-			}
-			else {
-				console.warn("SKIP scheduling the technique: already done by client")
-				return;
-			}
-		}
-		else if (this.mono_hand_is_visible) {
-			//animate from my limbo
-			const card_id = +card.id;
-			if ($(this.myLimbo.control_name+'_item_' + card_id)) {
-				this.monoSchedule.addDaleCardToStock(DaleCard.of(card), this.myLimbo.control_name+'_item_'+card_id)
-				this.myLimbo.removeFromStockByIdNoAnimation(+card_id);
-			}
-			else {
-				console.warn("Mono: SKIP scheduling the technique: already done by client")
-				return;
-			}
-		}
-		else {
-			//animate from player board
-			const schedule = this.playerSchedules[player_id]!;
-			schedule.addDaleCardToStock(DaleCard.of(card), 'overall_player_board_'+player_id)
-		}
-		//update the hand sizes
-		this.playerHandSizes[player_id]!.incValue(-1);
-	}
-
-	notif_scheduleTechniqueDelay(notif: NotifAs<'scheduleTechniqueDelay'>) {
-		console.warn("notif_scheduleTechniqueDelay");
 	}
 
 	notif_cancelTechnique(notif: NotifAs<'cancelTechnique'>) {
@@ -9787,6 +9785,14 @@ class DaleOfMerchants extends Gamegui
 
 	///////////////////////////////////////////////////
 	//// Promise notifications (these notifications are auto-plugged using the new bgaSetupPromiseNotifications system)
+
+	async promise_notif_scheduleTechnique(args: NotifTypes['scheduleTechnique']) {
+		console.warn("scheduleTechnique", args);
+		var should_wait_for_animation = this.handToSchedule(+args.player_id, args.card);
+		if (should_wait_for_animation) {
+			await new Promise<void>(resolve => setTimeout(resolve, 500));
+		}
+	}
 
 	async promise_notif_discardMultiple(args: NotifTypes['discardMultiple']) {
 		console.warn("discardMultiple", args);
