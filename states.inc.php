@@ -53,7 +53,6 @@ if (false) {
 	$game->stTravelingEquipment();
 	$game->stDEPRECATED_Insight();
 	$game->stBadOmen();
-	$game->stFinalStatistics();
 	$game->stSerenade();
 	$game->stSoundDetectors();
 	$game->stHistoryLesson();
@@ -791,15 +790,6 @@ $machinestates = array(
 		'possibleactions' => ['actAnotherFineMess'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
-		),
-	),
-	98 => array(
-		'name' => 'finalStatistics',
-		'description' => '',
-		'type' => 'game',
-		'action' => 'stFinalStatistics',
-		'transitions' => array(
-			'trGameEnd' => 99,
 		),
 	),
 	101 => array(

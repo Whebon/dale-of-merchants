@@ -1,10 +1,12 @@
 <?php
 
+namespace Bga\Games\DaleOfMerchants;
+
 use Bga\GameFramework\UserException;
 use Bga\GameFramework\VisibleSystemException;
 
 class DaleDeckSelection {
-    private $game;
+    private Game $game;
 
     private ?array $cached_animalfolk_ids;
 

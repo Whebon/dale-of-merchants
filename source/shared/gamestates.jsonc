@@ -1401,18 +1401,19 @@
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }
-	},
+	}
 
 
 	//////////////// BGA Final State ////////////////
 
-	"98": {
-		"name": "finalStatistics",
-		"description": "",
-		"type": "game",
-		"action": "stFinalStatistics",
-		"transitions": { "trGameEnd": 99 }
-	}
+	// Replaced by FinalStatistics.php
+	// "98": {
+	// 	"name": "finalStatistics",
+	// 	"description": "",
+	// 	"type": "game",
+	// 	"action": "stFinalStatistics",
+	// 	"transitions": { "trGameEnd": 99 }
+	// }
 
 	// DEPRECATED
 	// // Final state.

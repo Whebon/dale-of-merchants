@@ -19,6 +19,9 @@
  *
  */
 
+namespace Bga\Games\DaleOfMerchants;
+
+
 //define all Card Types (CT)
 if (!defined('CT_CARDBACK')) {
     define('CT_CARDBACK', 0);

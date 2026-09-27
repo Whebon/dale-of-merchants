@@ -1,9 +1,9 @@
 <?php
 
+namespace Bga\Games\DaleOfMerchants;
+
 use Bga\GameFramework\UserException;
 use Bga\GameFramework\VisibleSystemException;
-
-require_once(APP_GAMEMODULE_PATH.'module/common/deck.game.php');
 
 if (!defined('HAND')) {
     //deck location prefixes

@@ -1205,15 +1205,6 @@ interface GameStates {
 			'trSamePlayer': 30,
 		},
 	},
-	98: {
-		'name': 'finalStatistics',
-		'description': '',
-		'type': 'game',
-		'action': 'stFinalStatistics',
-		'transitions': {
-			'trGameEnd': 99,
-		},
-	},
 	101: {
 		'name': 'coffeeGrinder',
 		'description': 'Coffee Grinder: ${actplayer} may discard another card from ${opponent_name}\\\'s deck (${die_value} left)',

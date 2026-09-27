@@ -25,7 +25,7 @@
  */
   
 require_once( APP_BASE_PATH."view/common/game.view.php" );
-  
+
 class view_daleofmerchants_daleofmerchants extends game_view
 {
     protected function getGameName()

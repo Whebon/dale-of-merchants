@@ -1,9 +1,10 @@
 <?php
 
+namespace Bga\Games\DaleOfMerchants;
+
 use Bga\GameFramework\UserException;
 use Bga\GameFramework\VisibleSystemException;
 
-require_once "DaleTableBasic.php";
 
 if (!defined('EC_GLOBAL')) {
     define('EC_GLOBAL', 0);
@@ -16,11 +17,11 @@ if (!defined('EC_GLOBAL')) {
  * This class is responsible for managing card effects that last until end of turn.
  */
 class DaleEffects {
-    public DaleOfMerchants $game;
+    public Game $game;
     public array $cache;
     public int $last_effect_id;
 
-    function __construct(DaleOfMerchants $game) {
+    function __construct(Game $game) {
         $this->game = $game;
         $this->loadFromDb();
     }

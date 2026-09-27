@@ -16,14 +16,18 @@
   *
   */
 
+namespace Bga\Games\DaleOfMerchants;
+
 use Bga\GameFramework\UserException;
 use Bga\GameFramework\VisibleSystemException;
 
-require_once "modules/DaleEffects.php";
-require_once "modules/DaleDeckSelection.php";
-
-class DaleOfMerchants extends DaleTableBasic
+class Game extends \Bga\GameFramework\Table
 {
+    var $card_types; //Defined by the materials
+    var $DISABLED_ANIMALFOLK_IDS; //Defined by the materials
+    var $DISABLED_SOLO_ANIMALFOLK_IDS; //Defined by the materials
+    var $AUTORESOLVE_TRIGGERS; //Defined by the materials
+
     var DaleDeckSelection $deckSelection;
     var DaleDeck $cards;
     var DaleEffects $effects;
@@ -38,6 +42,8 @@ class DaleOfMerchants extends DaleTableBasic
         //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
+
+        require 'material.inc.php';
         
         $this->initGameStateLabels( array(
             "inDeckSelection" => 10,
@@ -175,7 +181,7 @@ class DaleOfMerchants extends DaleTableBasic
 
         //assert deck location prefixes are of length 4 (otherwise auto shuffling in the DaleOfMerchantsDeck will not work as intended)
         if (strlen(MARKET) != 4 || strlen(DECK) != 4 || strlen(DISCARD) != 4 || strlen(HAND) != 4 || strlen(STALL) != 4 || strlen(JUNKRESERVE) != 4 || strlen(SCHEDULE) != 4 || strlen(LIMBO) != 4) {
-            throw new AssertionError("All location prefixes must be of length 4");
+            throw new VisibleSystemException("All location prefixes must be of length 4");
         }
     
         // Get information about players
@@ -478,6 +484,7 @@ class DaleOfMerchants extends DaleTableBasic
         $this->refillHand(MONO_PLAYER_ID);
         $this->monoResolveCards(TRIGGER_ONCLEANUP);
         $this->expireEffectsAtTheEndOfTurn();
+        $this->gamestate->nextState("trNextPlayer");
     }
     
     /**
@@ -4459,7 +4466,7 @@ class DaleOfMerchants extends DaleTableBasic
             $technique_card_id = $this->getGameStateValue("resolvingCard");
             $technique_card = $this->cards->getCard($technique_card_id);
             if ($technique_card_id == -1) {
-                throw new Error("Trying to 'partiallyResolveCard' without 'beginResolvingCard'");
+                throw new VisibleSystemException("Trying to 'partiallyResolveCard' without 'beginResolvingCard'");
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
@@ -4498,7 +4505,7 @@ class DaleOfMerchants extends DaleTableBasic
             $technique_card_id = $this->getGameStateValue("resolvingCard");
             $technique_card = $this->cards->getCard($technique_card_id);
             if ($technique_card_id == -1) {
-                throw new Error("Trying to 'fullyResolveCard' without 'beginResolvingCard'");
+                throw new VisibleSystemException("Trying to 'fullyResolveCard' without 'beginResolvingCard'");
             }
             $this->setGameStateValue("resolvingCard", -1);
         }
@@ -11792,12 +11799,14 @@ class DaleOfMerchants extends DaleTableBasic
 
         //4. activate the next player
         $next_player_id = $this->activeNextPlayer();
+        $this->bga->playerStats->inc("number_of_turns", 1, $next_player_id);
         $this->giveExtraTime($next_player_id);
         if ($this->isSoloGame()) {
             $this->monoTurn();
         }
-        $this->bga->playerStats->inc("number_of_turns", 1, $next_player_id);
-        $this->gamestate->nextState("trNextPlayer");
+        else {
+            $this->gamestate->nextState("trNextPlayer");
+        }
     }
 
     function stChangeActivePlayer() {
@@ -11824,10 +11833,11 @@ class DaleOfMerchants extends DaleTableBasic
         if ($this->isSoloGame()) {
             $this->monoShowHand();
             $player_id = $this->getActivePlayerId();
-            $score_player = $this->getScore($player_id);
-            $score_mono = $this->getScore(MONO_PLAYER_ID);
-            $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"
-            $this->bga->playerScore->set($player_id, $score_difference, null);
+            // Replaced by "FinalStatistics.php"
+            // $score_player = $this->getScore($player_id);
+            // $score_mono = $this->getScore(MONO_PLAYER_ID);
+            // $score_difference = $score_player - $score_mono; //in a solo game, a non-positive score means "defeat"
+            // $this->bga->playerScore->set($player_id, $score_difference, null);
         }
 
         // Reveal all hidden information
@@ -11839,7 +11849,9 @@ class DaleOfMerchants extends DaleTableBasic
         $this->bga->notify->all("revealAllHiddenGamedatas", '', array(
             'hiddenGamedatas' => $hiddenGamedatas
         ));
-        $this->gamestate->nextState("trGameEnd");
+
+        // Replaced by "FinalStatistics.php"
+        // $this->gamestate->nextState("trGameEnd");
     }
 
     function stSpyglass() {
@@ -12536,7 +12548,7 @@ class DaleOfMerchants extends DaleTableBasic
             return;
         }
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new VisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:
@@ -13063,7 +13075,7 @@ class DaleOfMerchants extends DaleTableBasic
     function getResolvingCard(){
         $technique_card_id = $this->getGameStateValue("resolvingCard");
         if ($technique_card_id == -1) {
-            throw new Error("Trying to 'getResolvingCard' without 'beginResolvingCard'");
+            throw new VisibleSystemException("Trying to 'getResolvingCard' without 'beginResolvingCard'");
         }
         return $this->cards->getCard($technique_card_id);
     }
@@ -13421,7 +13433,7 @@ class DaleOfMerchants extends DaleTableBasic
                     $this->assertFalse("Building an invalid stack was allowed", $test["name"]);
                 }
             }
-            catch (feException $e) {
+            catch (VisibleSystemException | UserException $e) {
                 if ($test["is_valid"]) {
                     $this->assertFalse($e->getMessage(), $test["name"]);
                 }
