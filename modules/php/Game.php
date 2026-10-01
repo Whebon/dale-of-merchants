@@ -5515,7 +5515,7 @@ class Game extends \Bga\GameFramework\Table
                 $card = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
                 $this->placeOnDeckMultiple(
                     $opponent_id, 
-                    clienttranslate('Rotten food: ${player_name} places a card on top of ${opponent_name}\'s deck'),
+                    clienttranslate('Rotten Food: ${player_name} places a card on top of ${opponent_name}\'s deck'),
                     array($card_id), 
                     array($card_id => $card)
                 );
@@ -5900,7 +5900,7 @@ class Game extends \Bga\GameFramework\Table
                     }
                 }
                 $this->cards->moveCards($card_ids, HAND.$player_id);
-                $this->bga->notify->all('discardToHandMultiple', clienttranslate('House Cleaning: ${player_name} takes ${nbr} junk cards from their discard pile'), array(
+                $this->bga->notify->all('discardToHandMultiple', clienttranslate('Housecleaning: ${player_name} takes ${nbr} junk cards from their discard pile'), array(
                     "player_id" => $player_id,
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                     "nbr" => count($dbcards),
@@ -8008,10 +8008,10 @@ class Game extends \Bga\GameFramework\Table
                 if (isset($args["card_id"])) {
                     $card_id = $args["card_id"];
                     $dbcard = $this->cards->getCardFromLocation($card_id, HAND.$player_id);
-                    $this->toss(clienttranslate('House Cleaning: ${player_name} tosses ${card_name}'), $dbcard);
+                    $this->toss(clienttranslate('Housecleaning: ${player_name} tosses ${card_name}'), $dbcard);
                 }
                 else {
-                    $this->bga->notify->all('message', clienttranslate('House Cleaning: ${player_name} does not toss a card'), array(
+                    $this->bga->notify->all('message', clienttranslate('Housecleaning: ${player_name} does not toss a card'), array(
                         'player_name' => $this->getActivePlayerName()
                     ));
                 }
@@ -10151,7 +10151,7 @@ class Game extends \Bga\GameFramework\Table
         foreach ($card_ids as $card_id) {
             $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
             $this->cards->moveCardOnBottom($card_id, DECK.$player_id);
-            $this->bga->notify->all('discardToDeck', clienttranslate('Resourceful Ally: ${player_name} places their ${card_name} on the bottom their deck'), array(
+            $this->bga->notify->all('discardToDeck', clienttranslate('Resourceful Ally: ${player_name} places their ${card_name} on the bottom of their deck'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "card_name" => $this->getCardName($dbcard),

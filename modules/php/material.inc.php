@@ -1300,7 +1300,7 @@ $this->card_types = array(
   50 => array(
       'type_id' => 50,
       'name' => clienttranslate('Housecleaning'),
-      'text' => clienttranslate('Take 0-3 clutter ${card} from your discard. At the start of your next turn, toss 0-1 ${card}.'),
+      'text' => clienttranslate('Take 0-3 clutter ${cards3} from your discard. At the start of your next turn, toss 0-1 ${card}.'),
       'type_displayed' => clienttranslate('Technique'),
       'is_technique' => true,
       'has_plus' => true,
@@ -2691,7 +2691,7 @@ $this->card_types = array(
   ),
   137 => array(
       'type_id' => 137,
-      'name' => clienttranslate('Cave Banquett'),
+      'name' => clienttranslate('Cave Banquet'),
       'text' => clienttranslate('Place 1 ${card} from the market on each player\'s deck.'),
       'type_displayed' => clienttranslate('Technique'),
       'is_technique' => true,

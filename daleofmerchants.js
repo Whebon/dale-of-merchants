@@ -7637,7 +7637,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButton("confirm-button", _("Confirm selected"), "onSpecialOffer");
                     break;
                 case 'client_calculations':
-                    this.addActionButton("calculations-button", _("Purchase CARD_NAME"), "onCalculations");
+                    this.addActionButton("calculations-button", _("Confirm"), "onCalculations");
                     this.addActionButton("cancel-button", _("Cancel"), "onCalculationsCancel", undefined, false, DaleOfMerchants.ACTION_BUTTON_CANCEL);
                     this.onCalculationsUpdateActionButton(null);
                     break;
@@ -8343,7 +8343,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         labelText += " " + this.format_dale_icons("(<strong>+".concat(coins, "</strong>ICON)"), DaleIcons_10.DaleIcons.getCoinIcon());
                     }
                     else {
-                        labelText += " " + this.format_dale_icons(_("(or use only ICON)").replace("ICON", coins.toString() + "ICON"), DaleIcons_10.DaleIcons.getCoinIcon());
+                        labelText += " " + this.format_dale_icons(_("(or use only ${coin})").replace("${coin}", coins.toString() + "ICON"), DaleIcons_10.DaleIcons.getCoinIcon());
                     }
                 }
                 else {
