@@ -81,7 +81,7 @@ export class MainClientState {
             
             //Optional purchase states
             case 'client_deprecated_essentialPurchase':
-                return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected junk cards");
+                return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected clutter cards");
             case 'client_glue':
                 return _("Glue: ${you} may keep Glue in your hand");
             
@@ -115,7 +115,7 @@ export class MainClientState {
             case 'client_spinningWheel':
                 return _("${card_name}: ${you} must choose 1-3 cards to discard");
             case 'client_barricade':
-                return _("${card_name}: ${you} may search your discard pile for up to 2 junk cards");
+                return _("${card_name}: ${you} may search your discard pile for up to 2 clutter cards");
             
             //Generic technique states
             case 'client_fizzle':
@@ -198,7 +198,7 @@ export class MainClientState {
                 if((this._args as ClientGameStates['client_houseCleaning']).nbr_junk == 0) {
                     return _("${card_name}: ${you} may schedule this technique without immediate effects");
                 } else {
-                    return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
+                    return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} clutter cards");
                 }
             case 'client_houseCleaningToss':
                 return _("${card_name}: ${you} may <stronger>toss</stronger> a card from your hand");
@@ -283,7 +283,7 @@ export class MainClientState {
             case 'client_snack':
                 return _("${card_name}: ${you} must take a card from the market");
             case 'client_bonsai':
-                return _("${card_name}: ${you} must discard 2 junk cards");
+                return _("${card_name}: ${you} must discard 2 clutter cards");
             case 'client_generationChange':
                 switch ((this._args as ClientGameStates['client_generationChange']).nbr) {
                     case 0:

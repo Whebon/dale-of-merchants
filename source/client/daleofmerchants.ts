@@ -797,7 +797,7 @@ class DaleOfMerchants extends Gamegui
 				const client_deprecated_essentialPurchase_args = (this.mainClientState.args as ClientGameStates['client_deprecated_essentialPurchase']);	
 				this.setPurchaseSelectionModes(client_deprecated_essentialPurchase_args);
 				this.myHand.unselectAll();
-				this.myHand.setSelectionMode('deprecated_essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
+				this.myHand.setSelectionMode('deprecated_essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 clutter cards to <strong>toss</strong>"), 'pileYellow');
 				let junk_selected = 0;
 				let client_essentialPurchase_skip = true;
 				for (let card_id of client_deprecated_essentialPurchase_args.funds_card_ids!.slice().reverse()) {
@@ -1506,7 +1506,7 @@ class DaleOfMerchants extends Gamegui
 				this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'client_bonsai':
-				this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
+				this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 clutter cards to discard"), undefined, 2);
 				// QoL feature: skip the selection if all junk cards are printed junk cards (i.e. not chameleons).
 				const client_bonsai_junk_cards = this.myHand.getAllDaleCards().filter(card => card.isJunk());
 				const client_bonsai_has_chameleon_junk = this.myHand.getAllDaleCards().some(card => card.isEffectiveJunk() && !card.isJunk());
@@ -2416,7 +2416,7 @@ class DaleOfMerchants extends Gamegui
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_deprecated_essentialPurchase':
-				this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
+				this.addActionButton("confirm-button", _("Toss selected clutter"), "onPurchase");
 				this.addActionButtonCancelClient();
 				break;
 			case 'client_swiftBroker':
@@ -6431,7 +6431,7 @@ class DaleOfMerchants extends Gamegui
 					}
 				}
 				if (barricadeJunk == 0) {
-					this.showMessage(_("You don't have any junk cards in your discard"), 'error');
+					this.showMessage(_("You don't have any clutter cards in your discard"), 'error');
 					return;
 				}
 				this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
@@ -8068,7 +8068,7 @@ class DaleOfMerchants extends Gamegui
 	onBonsai() {
 		const card_ids = this.myHand.orderedSelection.get();
 		if (card_ids.length != 2) {
-			this.showMessage(_("Please select exactly 2 junk cards"), "error");
+			this.showMessage(_("Please select exactly 2 clutter cards"), "error");
 			return;
 		}
 		this.playPassiveCard<'client_bonsai'>({

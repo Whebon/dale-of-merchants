@@ -4187,7 +4187,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_inventory':
                         return _("${you} must select any number of cards to discard");
                     case 'client_deprecated_essentialPurchase':
-                        return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected junk cards");
+                        return _("Essential Purchase: ${you} may <stronger>toss</stronger> up to 3 selected clutter cards");
                     case 'client_glue':
                         return _("Glue: ${you} may keep Glue in your hand");
                     case 'chameleon_flexibleShopkeeper':
@@ -4215,7 +4215,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_spinningWheel':
                         return _("${card_name}: ${you} must choose 1-3 cards to discard");
                     case 'client_barricade':
-                        return _("${card_name}: ${you} may search your discard pile for up to 2 junk cards");
+                        return _("${card_name}: ${you} may search your discard pile for up to 2 clutter cards");
                     case 'client_fizzle':
                         return _("${card_name}: Are you sure you want to play this technique without any effects?");
                     case 'client_triggerFizzle':
@@ -4297,7 +4297,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                             return _("${card_name}: ${you} may schedule this technique without immediate effects");
                         }
                         else {
-                            return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} junk cards");
+                            return _("${card_name}: ${you} may search your discard pile for up to ${nbr_junk} clutter cards");
                         }
                     case 'client_houseCleaningToss':
                         return _("${card_name}: ${you} may <stronger>toss</stronger> a card from your hand");
@@ -4379,7 +4379,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_snack':
                         return _("${card_name}: ${you} must take a card from the market");
                     case 'client_bonsai':
-                        return _("${card_name}: ${you} must discard 2 junk cards");
+                        return _("${card_name}: ${you} must discard 2 clutter cards");
                     case 'client_generationChange':
                         switch (this._args.nbr) {
                             case 0:
@@ -5851,7 +5851,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var client_deprecated_essentialPurchase_args = this.mainClientState.args;
                     this.setPurchaseSelectionModes(client_deprecated_essentialPurchase_args);
                     this.myHand.unselectAll();
-                    this.myHand.setSelectionMode('deprecated_essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 junk cards to <strong>toss</strong>"), 'pileYellow');
+                    this.myHand.setSelectionMode('deprecated_essentialPurchase', 'toss', 'daleofmerchants-wrap-purchase', _("Choose up to 3 clutter cards to <strong>toss</strong>"), 'pileYellow');
                     var junk_selected = 0;
                     var client_essentialPurchase_skip = true;
                     for (var _i = 0, _p = client_deprecated_essentialPurchase_args.funds_card_ids.slice().reverse(); _i < _p.length; _i++) {
@@ -6471,7 +6471,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myDiscard.setSelectionMode('single', undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'client_bonsai':
-                    this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 junk cards to discard"), undefined, 2);
+                    this.myHand.setSelectionMode('multipleJunk', 'pileBlue', "daleofmerchants-wrap-technique", _("Choose 2 clutter cards to discard"), undefined, 2);
                     var client_bonsai_junk_cards = this.myHand.getAllDaleCards().filter(function (card) { return card.isJunk(); });
                     var client_bonsai_has_chameleon_junk = this.myHand.getAllDaleCards().some(function (card) { return card.isEffectiveJunk() && !card.isJunk(); });
                     if (!client_bonsai_has_chameleon_junk && client_bonsai_junk_cards.length >= 2) {
@@ -7386,7 +7386,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_deprecated_essentialPurchase':
-                    this.addActionButton("confirm-button", _("Toss selected junk"), "onPurchase");
+                    this.addActionButton("confirm-button", _("Toss selected clutter"), "onPurchase");
                     this.addActionButtonCancelClient();
                     break;
                 case 'client_swiftBroker':
@@ -10805,7 +10805,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         }
                     }
                     if (barricadeJunk == 0) {
-                        this.showMessage(_("You don't have any junk cards in your discard"), 'error');
+                        this.showMessage(_("You don't have any clutter cards in your discard"), 'error');
                         return;
                     }
                     this.mainClientState.enterOnStack('client_barricade', { passive_card_id: card.id, nbr_junk: barricadeJunk });
@@ -12214,7 +12214,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
         DaleOfMerchants.prototype.onBonsai = function () {
             var card_ids = this.myHand.orderedSelection.get();
             if (card_ids.length != 2) {
-                this.showMessage(_("Please select exactly 2 junk cards"), "error");
+                this.showMessage(_("Please select exactly 2 clutter cards"), "error");
                 return;
             }
             this.playPassiveCard({
