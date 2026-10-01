@@ -221,6 +221,9 @@ class DaleOfMerchants extends Gamegui
 			}
 		}
 
+		//Set the names of the play areas
+		this.setPlayAreaTitles();
+
 		//Set play area styling (incl mono)
 		this.setPlayAreaStyling();
 
@@ -9925,6 +9928,25 @@ class DaleOfMerchants extends Gamegui
 		}
 
 		return [...order.slice(startIndex), ...order.slice(0, startIndex)];
+	}
+
+
+	/**
+	 * Set the title of the play areas
+	 */
+	setPlayAreaTitles() {
+		for (let player_id of this.getPlayerOrderStartingWith(this.player_id)) {
+			const player_name = this.gamedatas.players[player_id]!.name
+			const play_area_title = document.querySelector(`#daleofmerchants-play-area-title-${player_id}`) as HTMLElement;
+			if (player_id == this.player_id) {
+				play_area_title.innerHTML = _("${your} play area")
+					.replace("${your}", "<strong>"+_("Your")+"</strong>")
+			}
+			else {
+				play_area_title.innerHTML = _("${player_name_possessive} play area")
+					.replace("${player_name_possessive}", "<strong>"+_("${player_name}'s").replace("${player_name}", player_name)+"</strong>")
+			}
+		}
 	}
 
 	/**

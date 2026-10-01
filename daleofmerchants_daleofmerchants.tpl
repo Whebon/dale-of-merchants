@@ -128,7 +128,8 @@
                     <span id="daleofmerchants-clock-label-{PLAYER_ID}" class="daleofmerchants-clock-label">Clock</span>
                 </span>
             </span>
-            <div class="daleofmerchants-play-area-title" style="background-color:#{PLAYER_COLOR};"><strong>{PLAYER_NAME_POSSESSIVE}</strong> {PLAY_AREA} </div>
+            <!-- Client sets the title with a parameterized translation: "Your play area", "Play area of you", "Opponent's play area", etc -->
+            <div id="daleofmerchants-play-area-title-{PLAYER_ID}" class="daleofmerchants-play-area-title" style="background-color:#{PLAYER_COLOR};"></div>
             <div class="daleofmerchants-horizontal-flex">
                 <div id="daleofmerchants-deck-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>
                 <div id="daleofmerchants-discard-{PLAYER_ID}" class="daleofmerchants-pile-container"></div>

@@ -47,7 +47,6 @@ class view_daleofmerchants_daleofmerchants extends game_view
         if (isset($players[$current_player])) {
             $this->page->insert_block("stall", array (
                 "PLAYER_ID" => $current_player,
-                "PLAYER_NAME_POSSESSIVE" => clienttranslate("Your"),
                 "PLAYER_COLOR" => $players[$current_player]['player_color'],
                 "SCHEDULE" => "Schedule",
                 "STORED_CARDS" => "Stored Cards"
@@ -59,7 +58,6 @@ class view_daleofmerchants_daleofmerchants extends game_view
             if ($player['player_id'] != $current_player) {
                 $this->page->insert_block("stall", array(
                     "PLAYER_ID" => $player['player_id'],
-                    "PLAYER_NAME_POSSESSIVE" => $player['player_name']."'s",
                     "PLAYER_COLOR" => $player['player_color'],
                     "SCHEDULE" => "Schedule",
                     "STORED_CARDS" => "Stored Cards"
@@ -88,7 +86,6 @@ class view_daleofmerchants_daleofmerchants extends game_view
         //Other variables
         // $this->tpl['YOUR_HAND'] = clienttranslate("Your hand");
         $this->tpl['MARKET'] = clienttranslate("Market");
-        $this->tpl['PLAY_AREA'] = clienttranslate("play area");
         $this->tpl['STALL'] = clienttranslate("Stall");
 
         /*

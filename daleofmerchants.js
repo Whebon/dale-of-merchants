@@ -5441,6 +5441,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                 }
             }
+            this.setPlayAreaTitles();
             this.setPlayAreaStyling();
             if (gamedatas.gamestate.type == 'activeplayer') {
                 this.movePlayAreaOnTop(gamedatas.gamestate.active_player);
@@ -13858,6 +13859,21 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 startIndex = 0;
             }
             return __spreadArray(__spreadArray([], order.slice(startIndex), true), order.slice(0, startIndex), true);
+        };
+        DaleOfMerchants.prototype.setPlayAreaTitles = function () {
+            for (var _i = 0, _a = this.getPlayerOrderStartingWith(this.player_id); _i < _a.length; _i++) {
+                var player_id = _a[_i];
+                var player_name = this.gamedatas.players[player_id].name;
+                var play_area_title = document.querySelector("#daleofmerchants-play-area-title-".concat(player_id));
+                if (player_id == this.player_id) {
+                    play_area_title.innerHTML = _("${your} play area")
+                        .replace("${your}", "<strong>" + _("Your") + "</strong>");
+                }
+                else {
+                    play_area_title.innerHTML = _("${player_name_possessive} play area")
+                        .replace("${player_name_possessive}", "<strong>" + _("${player_name}'s").replace("${player_name}", player_name) + "</strong>");
+                }
+            }
         };
         DaleOfMerchants.prototype.setPlayAreaStyling = function () {
             if (this.getGameUserPreference(101) == 0) {
