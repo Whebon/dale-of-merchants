@@ -1298,8 +1298,8 @@ interface GameStates {
 	},
 	106: {
 		'name': 'historyLesson',
-		'description': 'History Lesson: ${actplayer} must choose 1 card to take and reorder the rest',
-		'descriptionmyturn': 'History Lesson: ${you} must choose 1 card to take and reorder the rest',
+		'description': 'History Lesson: ${actplayer} must choose 1 card to take and discard the rest',
+		'descriptionmyturn': 'History Lesson: ${you} must choose 1 card to take and discard the rest',
 		'type': 'activeplayer',
 		'action': 'stHistoryLesson',
 		'possibleactions': {

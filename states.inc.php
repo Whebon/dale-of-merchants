@@ -851,8 +851,8 @@ $machinestates = array(
 	),
 	106 => array(
 		'name' => 'historyLesson',
-		'description' => clienttranslate('History Lesson: ${actplayer} must choose 1 card to take and reorder the rest'),
-		'descriptionmyturn' => clienttranslate('History Lesson: ${you} must choose 1 card to take and reorder the rest'),
+		'description' => clienttranslate('History Lesson: ${actplayer} must choose 1 card to take and discard the rest'),
+		'descriptionmyturn' => clienttranslate('History Lesson: ${you} must choose 1 card to take and discard the rest'),
 		'type' => 'activeplayer',
 		'action' => 'stHistoryLesson',
 		'possibleactions' => ['actHistoryLesson'],
