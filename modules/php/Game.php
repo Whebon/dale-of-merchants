@@ -3134,7 +3134,13 @@ class Game extends \Bga\GameFramework\Table
     function obtainStoredCards($player_id) {
         $storedCards = $this->cards->getCardsInLocation(STORED_CARDS.$player_id);
         if (count($storedCards) > 0) {
-            $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
+            if ($player_id == MONO_PLAYER_ID) {
+                shuffle($storedCards); # STORED_CARDS is an unordered location. For balanced games, just shuffle.
+                $this->cards->moveCardsOnTop($this->toCardIds($storedCards), HAND.$player_id);
+            }
+            else {
+                $this->cards->moveAllCardsInLocation(STORED_CARDS.$player_id, HAND.$player_id);
+            }
             $msg = count($storedCards) == 1 ? 
                 clienttranslate('${player_name} places a stored card into their hand') : 
                 clienttranslate('${player_name} places ${nbr} stored cards into their hand');
