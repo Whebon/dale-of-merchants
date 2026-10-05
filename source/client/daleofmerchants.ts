@@ -845,7 +845,7 @@ class DaleOfMerchants extends Gamegui
 				const spyglass_iconType = spyglass_type_id == DaleCard.CT_JUNGLEFOWL4 ? 'junglefowl4' : 'spyglass'
 				const spyglass_icon = spyglass_type_id == DaleCard.CT_JUNGLEFOWL4 ? DaleIcons.getJunglefowl4Icon() : DaleIcons.getSpyglassIcon()
 				this.myLimbo.setSelectionMode('multiple', spyglass_iconType, 'daleofmerchants-wrap-technique',
-					this.format_dale_icons(_("Choose cards to take (ICON) and place back (ICON)"), spyglass_icon, DaleIcons.getBluePileIcon(0))
+					this.format_dale_icons(_("Choose cards to take (${icon}) and place back (${icon})"), spyglass_icon, DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'sneakyScout':
@@ -853,7 +853,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'historyLesson':
 				this.myLimbo.setSelectionMode('multiple', 'historyLesson', 'daleofmerchants-wrap-technique',
-					this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), DaleIcons.getHistoryLessonIcon(), DaleIcons.getBluePileIcon(0))
+					this.format_dale_icons(_("Choose cards to take (${icon}) and discard (${icon})"), DaleIcons.getHistoryLessonIcon(), DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'client_acorn':
@@ -895,7 +895,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'specialOffer':
 				this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', 
-					this.format_dale_icons(_("Choose cards to take (ICON) and toss (ICON)"), DaleIcons.getCheeseIcon(), DaleIcons.getBluePileIcon(0))
+					this.format_dale_icons(_("Choose cards to take (${icon}) and toss (${icon})"), DaleIcons.getCheeseIcon(), DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'client_rottenFood':
@@ -1522,13 +1522,13 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case 'rake':
-				this.setMainTitle(this.format_dale_icons($('pagemaintitletext')!.innerHTML,
+				this.setDescriptionOnMyTurn(this.format_dale_icons(_("Rake: ${you} may toss 0-1 cards (${icon}) and discard 0-1 cards (${icon}) from your deck"),
 					DaleIcons.getTossIcon(),
 					DaleIcons.getBluePileIcon(0)
 				));
 				const rake_args = args.args as { _private: { cards: DbCard[] } };
 				this.myDeck.setContent(rake_args._private.cards.map(DaleCard.of));
-				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'toss', "daleofmerchants-wrap-technique", 1, 'pileBlue', 2);
+				this.myDeck.setSelectionMode('multiplePrimarySecondary', 'toss', "daleofmerchants-wrap-technique", 1, 'pileBlue', 1);
 				this.myDeck.openPopin();
 				break;
 			case 'client_generationChange':
@@ -2832,7 +2832,7 @@ class DaleOfMerchants extends Gamegui
 					return;
 				}
 				this.removeActionButtons();
-				const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: number };
+				const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: string };
 				const pompousProfessional_is_taking_card = this.myLimbo.getAllItems().some(
 					(item) => new DaleCard(item.id).effective_animalfolk_id == pompousProfessional_args.animalfolk_id
 				);
@@ -2843,14 +2843,14 @@ class DaleOfMerchants extends Gamegui
 					this.restoreMainTitle();
 				}
 				else {
-					this.setMainTitle(_("No '")+pompousProfessional_args.animalfolk_name+_("' found. You may choose the order to discard the cards"));
+					this.setDescriptionOnMyTurn(_("Pompous Professional: No \'${animalfolk_name}\' found. ${you} may choose the order to discard the cards").replace("${animalfolk_name}", String(pompousProfessional_args.animalfolk_name)));
 					this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Discard cards"));
 					this.addActionButton("confirm-button", _("Discard"), "onPompousProfessionalDiscard");
 				}
 				break;
 			case 'capuchin5a':
 				const capuchin5a_args = this.gamedatas.gamestate.args as { opponent_id: number, opponent_name: string };
-				const capuchin5a_label = this.format_dale_icons(_("Choose cards to take (ICON) and discard (ICON)"), 
+				const capuchin5a_label = this.format_dale_icons(_("Choose cards to take (${icon}) and discard (${icon})"), 
 					DaleIcons.getCapuchin5aIcon(), 
 					DaleIcons.getBluePileIcon(0)
 				)
@@ -3555,11 +3555,11 @@ class DaleOfMerchants extends Gamegui
 			if (coins > 0 && coins <= totalCoins) {
 				if (cards.length > 0) {
 					// Total: 3/5 (+2🪙)
-					labelText += " "+this.format_dale_icons(`(<strong>+${coins}</strong>ICON)`, DaleIcons.getCoinIcon())
+					labelText += " "+this.format_dale_icons("(<strong>+"+String(coins)+"</strong>${icon})", DaleIcons.getCoinIcon())
 				}
 				else {
 					// Choose cards to spend (or use only 5🪙)
-					labelText += " "+this.format_dale_icons(_("(or use only ${coin})").replace("${coin}", coins.toString()+"ICON"), DaleIcons.getCoinIcon())
+					labelText += " "+this.format_dale_icons(_("(or use only ${coin})").replace("${coin}", coins.toString()+"${icon}"), DaleIcons.getCoinIcon())
 				}
 			}
 			else {
@@ -3655,15 +3655,15 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	/**
-	 * Replaces each "ICON" in the `text` with the respective `icons`
-	 * @param text Text containing `n` occurrences of "ICON"
-	 * @param icons `n` HTMLElement icons to replace each "ICON"
-	 * @returns A new string with "ICON" replaced by each icon's HTML
+	 * Replaces each "${icon}" in the `text` with the respective `icons`
+	 * @param text Text containing `n` occurrences of "${icon}"
+	 * @param icons `n` HTMLElement icons to replace each "${icon}"
+	 * @returns A new string with "${icon}" replaced by each icon's HTML
 	 */
 	public format_dale_icons(text: string, ...icons: HTMLElement[]): string {
-		const parts = text.split("ICON");
+		const parts = text.split("${icon}");
 		if (parts.length - 1 !== icons.length) {
-			console.warn("format_dale_icons: number of icons does not match number of 'ICON' placeholders");
+			console.warn("format_dale_icons: number of icons does not match number of '${icon}' placeholders");
 			return text;
 		}
 		let result = "";
@@ -4802,7 +4802,7 @@ class DaleOfMerchants extends Gamegui
 						client_rottenFood_targets.push(target);
 					}
 				}
-				const label = _("Place '") + card.name + _("' on another player\'s deck");
+				const label = _("Place \'${card_name}\' on another player\'s deck").replace("${card_name}", card.name);
 				this.setMainTitle(label);
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', label);
 				new TargetingLine(
@@ -4881,10 +4881,10 @@ class DaleOfMerchants extends Gamegui
 			case 'client_colourSwap':
 				const client_colourSwap_targets = this.getColourSwapStallTargets(card);
 				if (client_colourSwap_targets.length == 0) {
-					this.showMessage(_("No card in any oppponent's stall matches this card's value")+` (${card.effective_value})`, "error");
+					this.showMessage(_("No card in any opponent's stall matches this card's value")+` (${card.effective_value})`, "error");
 					return;
 				}
-				const client_colourSwap_label = _("Swap '") + card.name + _("' with an equal valued card in another player\'s stall");
+				const client_colourSwap_label = _("Swap ${card_name} with an equal valued card in another player\'s stall").replace("${card_name}", card.name);
 				this.setMainTitle(client_colourSwap_label);
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_colourSwap_label);
 				new TargetingLine(
@@ -4909,7 +4909,7 @@ class DaleOfMerchants extends Gamegui
 					target.dataset['target_id'] = player_id;
 					client_manufacturedJoy_targets.push(target);
 				}
-				const client_manufacturedJoy_label = _("Place '") + card.name + _("' on a discard pile");
+				const client_manufacturedJoy_label = _("Place ${card_name} on a discard pile").replace("${card_name}", card.name);
 				this.setMainTitle(client_manufacturedJoy_label);
 				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', client_manufacturedJoy_label);
 				new TargetingLine(
@@ -5030,7 +5030,7 @@ class DaleOfMerchants extends Gamegui
 					target.dataset['target_id'] = player_id;
 					anchor_targets.push(target);
 				}
-				const anchor_label = _("Place '") + card.name + _("' on a discard pile");
+				const anchor_label = _("Place ${card_name} on a discard pile").replace("${card_name}", card.name);
 				this.setMainTitle(anchor_label);
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-default', anchor_label);
 				new TargetingLine(
@@ -8086,8 +8086,8 @@ class DaleOfMerchants extends Gamegui
 			this.showMessage(_("Please select at most 1 card to toss"), "error");
 			return;
 		}
-		if (discard_card_ids.length > 2) {
-			this.showMessage(_("Please select at most 2 cards to toss"), "error");
+		if (discard_card_ids.length > 1) {
+			this.showMessage(_("Please select at most 1 card to discard"), "error");
 			return;
 		}
 		this.bgaPerformAction('actRake', {

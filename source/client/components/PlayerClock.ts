@@ -137,7 +137,7 @@ export class PlayerClock {
 
     /**
      * @param position `CLOCK_DAWN`, `CLOCK_DAY` or `CLOCK_NIGHT`
-     * @returns html string of style `"${label} (ICON)""`
+     * @returns html string of style `"${label} (${icon})""`
      */
     public static getClockLabelAndIconTpl(position: number): string {
         const label = PlayerClock.getClockLabel(position).toLowerCase();

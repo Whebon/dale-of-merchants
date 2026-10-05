@@ -273,7 +273,7 @@ export class MainClientState {
                     return _("${card_name}: ${you} must <stronger>toss</stronger> the top card of your discard");
                 } else {
                     return (this._page as any).format_dale_icons(
-                        _("${card_name}: ${you} must <stronger>toss</stronger> (ICON) one of the top ${nbr} cards of your discard and place the rest on your deck (ICON)"),
+                        _("${card_name}: ${you} must <stronger>toss</stronger> ${icon} one of the top ${nbr} cards of your discard and place the rest on your deck (${icon})"),
                         DaleIcons.getTossIcon(),
                         DaleIcons.getBluePileIcon(0)
                     )

@@ -719,15 +719,15 @@ class Game extends \Bga\GameFramework\Table
             case CT_LITTLEMEMBER:
                 //"Mono draws 1 🃏 from your deck. It places back its lowest 🃏. Acquire."
                 $this->draw(
-                    clienttranslate('Little Member: ${player_name} draws a card from ${opponent_name}\' deck'), 
+                    clienttranslate('Little Member: ${player_name} draws a card from ${opponent_name}\'s deck'), 
                     1, false, $opponent_id, MONO_PLAYER_ID, 
-                    clienttranslate('Little Member: ${player_name} draws ${card_name} from ${opponent_name}\' deck')
+                    clienttranslate('Little Member: ${player_name} draws ${card_name} from ${opponent_name}\'s deck')
                 );
                 $dbcards = $this->cards->getCardsInLocation(HAND.MONO_PLAYER_ID);
                 $dbcard = $this->monoPickLowestValuedCard($dbcards);
                 if ($dbcard) {
                     $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
-                    $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Little Member: ${player_name} places ${card_name} on ${opponent_name}\' deck'), array(
+                    $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Little Member: ${player_name} places ${card_name} on ${opponent_name}\'s deck'), array(
                         "player_id" => MONO_PLAYER_ID,
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         "deck_player_id" => $opponent_id,
@@ -845,8 +845,8 @@ class Game extends \Bga\GameFramework\Table
                         }
                         $this->delay500ms();
                         $this->_actPangolinDice(MONO_PLAYER_ID, $opponent_id,
-                            clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
-                            clienttranslate('Fumbling Member: ${player_name} returns Junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                            clienttranslate('Fumbling Member: ${player_name} returns junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                            clienttranslate('Fumbling Member: ${player_name} returns junk to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
                             '', //impossible, the junk card must be there
                             $dice,
                             $dbcard["id"]
@@ -1169,7 +1169,7 @@ class Game extends \Bga\GameFramework\Table
                     }
                 }
                 $this->placeOnDeckMultiple(MONO_PLAYER_ID, 
-                    clienttranslate('Pristine Member: ${player_name} places ${nbr} Junk cards on their deck'),
+                    clienttranslate('Pristine Member: ${player_name} places ${nbr} junk cards on their deck'),
                     $this->toCardIds($junk_dbcards),
                     $junk_dbcards,
                     null,
@@ -4052,7 +4052,7 @@ class Game extends \Bga\GameFramework\Table
         $player_id = $this->getActivePlayerId();
         $chameleon_name_before_copying = $this->getCardName($chameleon_dbcard);
         $this->effects->copyCard($chameleon_dbcard, $target_dbcard);
-        $this->bga->notify->all('message', clienttranslate('${player_name} uses ${chameleon_card_name} chameleon to <strong>copy</strong> ${target_card_name}'), array(
+        $this->bga->notify->all('message', clienttranslate('${chameleon_card_name}: ${player_name} copies ${target_card_name}'), array(
             'chameleon_card_name' => $chameleon_name_before_copying,
             'target_card_name' => $this->getCardName($target_dbcard),
             'player_name' => $this->getPlayerNameByIdInclMono($player_id)
@@ -4387,7 +4387,7 @@ class Game extends \Bga\GameFramework\Table
     function scheduleCard(string $player_id, array $dbcard){
         //for replays, notify ALL players about the scheduled card, even the active player, who already locally scheduled the card
         $this->cards->moveCard($dbcard["id"], SCHEDULE.$player_id);
-        $this->bga->notify->all('scheduleTechnique', '${player_name} schedules their ${card_name}', array(
+        $this->bga->notify->all('scheduleTechnique', clienttranslate('${player_name} schedules their ${card_name}'), array(
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'card_name' => $this->getCardName($dbcard),
@@ -4645,7 +4645,7 @@ class Game extends \Bga\GameFramework\Table
         if ($from == null && $this->effects->countGlobalEffects(CT_CULTURALPRESERVATION) > 0) { // We check from == null to ignore CT_CULTURALPRESERVATION when building with CT_CHARM
             //Apply CT_CULTURALPRESERVATION
             if (count($cards_from_hand) != 0) {
-                throw new UserException(clienttranslate("Cultural Preservation: you may only build using cards from discard"));
+                throw new UserException(clienttranslate("Cultural Preservation: you may only build using cards from your discard"));
             }
             $nbr_nostalgic_items = $this->countTypeId($cards_from_discard, CT_NOSTALGICITEM);
         }
@@ -7114,7 +7114,7 @@ class Game extends \Bga\GameFramework\Table
                 break;
             case CT_RAKE:
                 $this->beginResolvingCard($technique_card_id);
-                $this->reshuffleDeckForSearch($player_id, 3);
+                $this->reshuffleDeckForSearch($player_id, 2);
                 $this->gamestate->nextState("trRake");
                 break;
             case CT_SLOTMACHINE:
@@ -9375,14 +9375,14 @@ class Game extends \Bga\GameFramework\Table
         $card_ids = $this->numberListToArray($card_ids);
         $player_ids = $this->numberListToArray($player_ids);
         if (count($card_ids) != count($player_ids)) {
-            throw new VisibleSystemException("Olm5b: count(card_ids) != count(player_ids)");
+            throw new VisibleSystemException("Cave Banquet: count(card_ids) != count(player_ids)");
         }
         $remaining_player_ids = $this->getGameStateValuePlayerIds();
         for ($i = 0; $i < count($card_ids); $i++) {
             //get the player that will receive the card
             $other_player_id = $player_ids[$i];
             if (!in_array($other_player_id, $remaining_player_ids)) {
-                throw new VisibleSystemException("Olm5b: provided player_id is not authorized to receive a card");
+                throw new VisibleSystemException("Cave Banquet: provided player_id is not authorized to receive a card");
             }
             //place the card on top of the deck the card
             $card_id = $card_ids[$i];
@@ -9415,7 +9415,7 @@ class Game extends \Bga\GameFramework\Table
         //market is empty? the remaining players miss out on receiving a card
         if ($this->cards->countCardsInLocation(MARKET) == 0) {
             foreach ($remaining_player_ids as $remaining_player_id) {
-                $this->bga->notify->all('message', clienttranslate('Olm5b: ${player_name} receives nothing'), array (
+                $this->bga->notify->all('message', clienttranslate('Cave Banquet: ${player_name} receives nothing'), array (
                     'player_name' => $this->getPlayerNameByIdInclMono($remaining_player_id),
                 ));
             }
@@ -10659,8 +10659,8 @@ class Game extends \Bga\GameFramework\Table
         if (count($toss_card_ids) > 1) {
             throw new UserException(clienttranslate("Please select at most 1 card to toss"));
         }
-        if (count($discard_card_ids) > 2) {
-            throw new UserException(clienttranslate("Please select at most 2 card to discard"));
+        if (count($discard_card_ids) > 1) {
+            throw new UserException(clienttranslate("Please select at most 1 card to discard"));
         }
 
         //toss cards
@@ -10847,7 +10847,7 @@ class Game extends \Bga\GameFramework\Table
     function actSkink4($card_id) {
         $this->checkAction("actSkink4");
         $player_id = $this->getActivePlayerId();
-        $this->drawCardId(clienttranslate('Skink: ${player_name} draws a card from their deck'), $card_id);
+        $this->drawCardId(clienttranslate('Hot Pie: ${player_name} draws a card from their deck'), $card_id);
         $this->fullyResolveCard($player_id);
     }
 
@@ -11074,7 +11074,7 @@ class Game extends \Bga\GameFramework\Table
         else {
             //put it back on the deck
             $this->cards->moveCardOnTop($dbcard["id"], DECK.$opponent_id);
-            $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Shrewd Trickster: ${player_name} places the card back on ${opponent_name}\' deck'), array(
+            $this->notifyAllPlayersWithPrivateArguments('placeOnDeck', clienttranslate('Shrewd Trickster: ${player_name} places the card back on ${opponent_name}\'s deck'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "deck_player_id" => $opponent_id,
@@ -11084,7 +11084,7 @@ class Game extends \Bga\GameFramework\Table
                     "card" => $dbcard,
                     "card_name" => $this->getCardName($dbcard),
                 )
-            ), clienttranslate('Shrewd Trickster: ${player_name} places ${card_name} back on ${opponent_name}\' deck'));
+            ), clienttranslate('Shrewd Trickster: ${player_name} places ${card_name} back on ${opponent_name}\'s deck'));
         }
 
         $this->gamestate->nextState("trSamePlayer");
@@ -13110,14 +13110,6 @@ class Game extends \Bga\GameFramework\Table
     function d($arg) {
         //debugClient
         $this->bga->notify->all('debugClient', clienttranslate('Debugging (arg = ${arg})...'), array('arg' => $arg));
-    }
-
-    function debugNotificationOrder() {
-        $player_id = $this->getActivePlayerId();
-        $this->bga->notify->all('message', clienttranslate('1: all'), array());
-        $this->bga->notify->player($player_id, 'message', clienttranslate('2: player'), array());
-        $this->bga->notify->all('message', clienttranslate('3: all'), array());
-        $this->bga->notify->player($player_id, 'message', clienttranslate('4: player'), array());
     }
 
     function debugUpdatingGameSituation() {

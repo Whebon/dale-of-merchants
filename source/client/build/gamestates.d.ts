@@ -1242,8 +1242,8 @@ interface GameStates {
 	},
 	103: {
 		'name': 'rake',
-		'description': '${resolving_card_name}: ${actplayer} may toss 0-1 cards and discard 0-2 cards from their deck',
-		'descriptionmyturn': '${resolving_card_name}: ${you} may toss (ICON) 0-1 cards and discard (ICON) 0-2 cards from your deck',
+		'description': '${resolving_card_name}: ${actplayer} may toss 0-1 cards and discard 0-1 cards from their deck',
+		'descriptionmyturn': '-',
 		'type': 'activeplayer',
 		'args': 'argMyDeckContentAndResolvingCardName',
 		'possibleactions': {
@@ -1660,7 +1660,7 @@ interface GameStates {
 	},
 	125: {
 		'name': 'tasmanianDevil1',
-		'description': 'Shrewd Trickster: ${actplayer} may discard the top of ${opponent_name}\\\'s deck',
+		'description': 'Shrewd Trickster: ${actplayer} may discard the top card of ${opponent_name}\\\'s deck',
 		'descriptionmyturn': 'Shrewd Trickster: ${you} may discard ${opponent_name}\\\'s ${_private.card_name}',
 		'type': 'activeplayer',
 		'action': 'stTasmanianDevil1',
