@@ -333,7 +333,7 @@ export class MainClientState {
             case 'client_gorilla2':
                 return _("${card_name}: ${you} may discard your hand and take a card from the market");
             case 'client_gorilla5b':
-                return _("${card_name}: ${you} may choose the order to discard cards from the market");
+                return _("${card_name}: ${you} may choose the order to toss cards from the market");
             case 'client_tasmanianDevil3_step1':
                 return _("${card_name}: ${you} must choose any player");
             case 'client_tasmanianDevil3_step2':

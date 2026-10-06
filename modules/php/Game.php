@@ -1478,7 +1478,7 @@ class Game extends \Bga\GameFramework\Table
                 if (count($hand_dbcards) > 0) {
                     $card_id = array_rand($hand_dbcards);
                     $dbcard = $hand_dbcards[$card_id];
-                    $this->monoConfirmAction(clienttranslate('Shrewd Member: ${player_name} discards ${opponent_name}\'s ${card_name}.'), array(
+                    $this->monoConfirmAction(clienttranslate('Shrewd Member: ${player_name} discards ${opponent_name}\'s ${card_name}'), array(
                         "highlight_hand_cards" => array($dbcard),
                         "wrap_class" => "daleofmerchants-wrap-technique",
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),

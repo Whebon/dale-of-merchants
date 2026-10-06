@@ -2334,7 +2334,7 @@ class DaleOfMerchants extends Gamegui
 		{
 			case 'deckSelection':
 				if (this.is_solo) {
-                    this.setDescriptionOnMyTurn("${you} may choose up to ${n_plus_1} animalfolk sets to play with");
+                    this.setDescriptionOnMyTurn(_("${you} may choose up to ${n_plus_1} animalfolk sets to play with"));
                 }
 				this.addActionButton("submit-button", this.is_solo ? _("Confirm") : _("Vote"), "onSubmitPreference");
 				this.addActionButton("abstain-button", this.is_solo ? _("Skip") : _("Abstain"), "onSubmitPreferenceAbstain", undefined, false, DaleOfMerchants.ACTION_BUTTON_ABSTAIN);
