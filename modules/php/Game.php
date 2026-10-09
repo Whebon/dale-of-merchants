@@ -4760,7 +4760,7 @@ class Game extends \Bga\GameFramework\Table
         //Apply the rules for a valid stack
         $this->enforceValidStack($stack_index, $cards_from_hand, $cards_from_discard, $from);
 
-        //Check for winter is coming (before effects expire)
+        //Check for Winter Is Coming (before effects expire)
         $cards = $cards_from_discard ? array_merge($cards_from_hand, $cards_from_discard) : $cards_from_hand;
         $winter_is_coming = $this->containsTypeId($cards, CT_WINTERISCOMING);
 
@@ -4802,7 +4802,7 @@ class Game extends \Bga\GameFramework\Table
             return "trGameEnd";
         }
 
-        //Winter is coming
+        //Winter Is Coming
         if ($winter_is_coming) {
             $this->bga->notify->all('message', clienttranslate('Winter Is Coming: ${player_name} may build an additional stack'), array(
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id)
@@ -8505,15 +8505,15 @@ class Game extends \Bga\GameFramework\Table
                 $card_ids = $args["card_ids"];
                 $dbcards = $this->cards->removeCardsFromPile($card_ids, DISCARD.$player_id);
                 if (count($card_ids) > 2) {
-                    throw new VisibleSystemException("Please select at most 2 junk cards");
+                    throw new VisibleSystemException("Please select at most 2 clutter cards");
                 }
                 foreach ($dbcards as $dbcard) {
                     if (!$this->isJunk($dbcard)) {
-                        throw new VisibleSystemException("CT_BARRICADE cannot be used to take non-junk cards");
+                        throw new VisibleSystemException("CT_BARRICADE cannot be used to take non-clutter cards");
                     }
                 }
                 $this->cards->moveCards($card_ids, HAND.$player_id);
-                $this->bga->notify->all('discardToHandMultiple', clienttranslate('Barricade: ${player_name} takes ${nbr} junk cards from their discard pile'), array(
+                $this->bga->notify->all('discardToHandMultiple', clienttranslate('Barricade: ${player_name} takes ${nbr} clutter cards from their discard pile'), array(
                     "player_id" => $player_id,
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                     "nbr" => count($dbcards),

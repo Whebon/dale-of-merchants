@@ -6692,7 +6692,7 @@ class DaleOfMerchants extends Gamegui
 	
 	onBonusBuildSkip() {
 		if (this.myHand.orderedSelection.getSize() > 0) {
-			//help players to not accidentally skip winter is coming if they intend to cancel their selection instead of skipping
+			//help players to not accidentally skip Winter Is Coming if they intend to cancel their selection instead of skipping
 			this.myHand.unselectAll();
 		}
 		else if(this.checkAction('actBonusBuildSkip')) {

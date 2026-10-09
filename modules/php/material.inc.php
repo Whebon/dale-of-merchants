@@ -963,7 +963,7 @@ $this->card_types = array(
   ),
   29 => array(
       'type_id' => 29,
-      'name' => clienttranslate('Winter is coming'),
+      'name' => clienttranslate('Winter Is Coming'),
       'text' => clienttranslate('After you build with this ${card}, you may immediately build another stack.'),
       'type_displayed' => clienttranslate('Passive'),
       'is_technique' => false,
