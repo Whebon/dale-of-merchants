@@ -3032,8 +3032,12 @@ class Game extends \Bga\GameFramework\Table
         }
 
         //notify about the new cards from deck
+        $nbr_junk_cards = max(0, $maximum_hand_size - count($hand_cards));
         if (count($new_hand_cards) > 0) {
-            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', clienttranslate('${player_name} draws ${nbr} card(s) to refill their hand to ${maximum_hand_size}'), array(
+            $msg = $nbr_junk_cards == 0 ?
+                clienttranslate('${player_name} draws ${nbr} card(s) to refill their hand to ${maximum_hand_size}') : 
+                clienttranslate('${player_name} draws ${nbr} card(s) to refill their hand');
+            $this->notifyAllPlayersWithPrivateArguments('drawMultiple', $msg, array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "nbr" => count($new_hand_cards),
@@ -3045,16 +3049,16 @@ class Game extends \Bga\GameFramework\Table
         }
 
         //draw missing cards from junk reserve
-        $nbr_junk_cards = $maximum_hand_size - count($hand_cards);
         if ($nbr_junk_cards > 0) {
             $junk_cards = $this->cards->getJunk($nbr_junk_cards);
             $junk_ids = array_keys($junk_cards);
             $this->cards->moveCards($junk_ids, HAND.$player_id);
-            $this->bga->notify->all('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and receives ${nbr} junk cards'), array(
+            $this->bga->notify->all('obtainNewJunkInHand', clienttranslate('${player_name} ran out of cards and receives ${nbr} junk cards to refill their hand to ${maximum_hand_size}'), array(
                 "player_id" => $player_id,
                 "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 "cards" => $junk_cards,
                 "nbr" => $nbr_junk_cards,
+                "maximum_hand_size" => $maximum_hand_size,
             ));
         }
 
