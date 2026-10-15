@@ -63,7 +63,7 @@ class DaleEffects {
             "arg" => $arg,
         );
         $this->cache[] = $row;
-        $this->game->notifyAllPlayers('addEffect', '', array("effect" => $row));
+        $this->game->bga->notify->all('addEffect', '', array("effect" => $row));
         return $row;
     }
 
@@ -288,7 +288,7 @@ class DaleEffects {
                     throw new VisibleSystemException("updateArg found multiple effects of the same card_id $card_id and type_id $type_id. Is this intended...?");
                 }
                 $this->cache[$index]["arg"] = $arg;
-                $this->game->notifyAllPlayers('updateEffect', '', array("effect" => $this->cache[$index]));
+                $this->game->bga->notify->all('updateEffect', '', array("effect" => $this->cache[$index]));
                 $found = true;
             }
         }
@@ -537,8 +537,8 @@ class DaleEffects {
      */
     private function notifyExpireEffects(array $expired_effects) {
         $count = count($expired_effects);
-        $msg = "DEBUG MESSAGE: $count effect(s) expired";
-        $this->game->notifyAllPlayers('expireEffects', $msg, array(
+        $msg = '';// "DEBUG MESSAGE: $count effect(s) expired";
+        $this->game->bga->notify->all('expireEffects', $msg, array(
             'effects' => $expired_effects
         ));
     }
