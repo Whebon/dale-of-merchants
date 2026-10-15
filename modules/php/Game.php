@@ -1003,7 +1003,7 @@ class Game extends \Bga\GameFramework\Table
             case CT_CUNNINGMEMBER:
                 // Mono draws 1 🃏 from its and your deck. It gives you the lower valued 🃏 of those. Acquire.
                 $mono_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from their deck'), 1, false, MONO_PLAYER_ID, MONO_PLAYER_ID);
-                $opponent_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from your deck'), 1, false, $opponent_id, MONO_PLAYER_ID);
+                $opponent_dbcards = $this->draw(clienttranslate('Cunning Member: ${player_name} draws a card from ${opponent_name}\'s deck'), 1, false, $opponent_id, MONO_PLAYER_ID);
                 $dbcards = array_merge($mono_dbcards, $opponent_dbcards);
                 if (count($dbcards) > 0) {
                     // Give the lower valued card
