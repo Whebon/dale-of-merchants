@@ -1058,7 +1058,7 @@ class Game extends \Bga\GameFramework\Table
                     }
                 }
                 if ($match) {
-                    $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} takes ${card_name}, as it matches a card value in the market.'), array(
+                    $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} takes ${card_name}, as it matches a card value in the market'), array(
                         "highlight_hand_cards" => array($dbcard),
                         "wrap_class" => "daleofmerchants-wrap-technique",
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
@@ -1073,7 +1073,7 @@ class Game extends \Bga\GameFramework\Table
                     $this->discardToHandMultiple('', MONO_PLAYER_ID, array($dbcard["id"]), false, $opponent_id);
                 }
                 else {
-                    $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} discards ${opponent_name}\'s ${card_name}, as it doesn\'t match a card value in the market.'), array(
+                    $this->monoConfirmAction(clienttranslate('Pompous Member: ${player_name} discards ${opponent_name}\'s ${card_name}, as it doesn\'t match a card value in the market'), array(
                         "highlight_hand_cards" => array($dbcard),
                         "wrap_class" => "daleofmerchants-wrap-technique",
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
