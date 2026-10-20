@@ -4223,7 +4223,7 @@ class DaleOfMerchants extends Gamegui
 	}
 
 	getAnimalfolkName(animalfolk_id: number) {
-		return DaleCard.cardTypes[6*animalfolk_id]!.animalfolk_displayed;
+		return _(DaleCard.cardTypes[6*animalfolk_id]!.animalfolk_displayed);
 	}
 
 	/**
@@ -10055,8 +10055,8 @@ class DaleOfMerchants extends Gamegui
 		for (let i in this.gamedatas.cardTypes) {
 			const cardType = this.gamedatas.cardTypes[i]!;
 			if (cardType.type_id > 4) {
-				const cardName = cardType.name.toLowerCase();
-				const cardNameExt = cardType.animalfolk_displayed.length > 0 ? ` (${cardType.animalfolk_displayed.toLowerCase()} ${cardType.value})` : "";
+				const cardName = _(cardType.name).toLowerCase();
+				const cardNameExt = ` (${_(cardType.animalfolk_displayed).toLowerCase()} ${cardType.value})`
 				words.push(cardName);
 				wordExt.set(cardName, ` <span style="font-size: x-small;">${cardNameExt}</span>`);
 			}

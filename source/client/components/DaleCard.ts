@@ -982,11 +982,11 @@ export class DaleCard {
     }
 
     public get animalfolk_displayed(): string {
-        return DaleCard.cardTypes[this.effective_type_id]!.animalfolk_displayed
+        return _(DaleCard.cardTypes[this.effective_type_id]!.animalfolk_displayed)
     }
 
     public get name(): string {
-        return DaleCard.cardTypes[this.effective_type_id]!.name
+        return _(DaleCard.cardTypes[this.effective_type_id]!.name)
     }
 
     public get div(): HTMLElement {
@@ -1057,22 +1057,22 @@ export class DaleCard {
 
     private getTooltipContent(): string {
         const cardType = DaleCard.cardTypes[this.effective_type_id]!;
-        const animalfolkWithBull = cardType.animalfolk_displayed ? " • "+cardType.animalfolk_displayed : ""
+        const animalfolkWithBull = " • "+_(cardType.animalfolk_displayed)
         let chameleonName = "";
         if (this.isBoundChameleon()) {
-            chameleonName += `<span class=daleofmerchants-chameleon-name>${DaleCard.cardTypes[this.original_type_id]!.name}</span><br>`;
+            chameleonName += `<span class=daleofmerchants-chameleon-name>${_(DaleCard.cardTypes[this.original_type_id]!.name)}</span><br>`;
         }
         let effective_value: string | number = DaleCard.page!.isCurrentPlayerActive() ? this.effective_value : cardType.value; // We check if the player is active to fix #178
         if (effective_value != cardType.value) {
             effective_value =  `(<span class=daleofmerchants-original-value>${cardType.value}</span>) ${effective_value}`;
         }
-        const legend = this.getLegend(cardType.text);
+        const legend = this.getLegend(_(cardType.text));
         return `<div class="daleofmerchants-card-tooltip">
-            <h3>${chameleonName}${cardType.name}</h3>
+            <h3>${chameleonName}${_(cardType.name)}</h3>
             <hr>
-            ${effective_value}${animalfolkWithBull} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)" :""}
+            ${effective_value}${animalfolkWithBull} • ${_(cardType.type_displayed)} ${cardType.has_plus ? "(+)" :""}
             <br><br>
-            <div class="daleofmerchants-card-tooltip-text">${DaleCard.format_string(cardType.text)}</div>
+            <div class="daleofmerchants-card-tooltip-text">${DaleCard.format_string(_(cardType.text))}</div>
             <div style="color:gray" class="daleofmerchants-card-tooltip-text">${legend ? '<hr>'+legend : '<br style="line-height: 10px" />'}</div>
         </div>`
 	}

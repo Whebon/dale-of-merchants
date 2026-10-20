@@ -1387,14 +1387,14 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         });
         Object.defineProperty(DaleCard.prototype, "animalfolk_displayed", {
             get: function () {
-                return DaleCard.cardTypes[this.effective_type_id].animalfolk_displayed;
+                return _(DaleCard.cardTypes[this.effective_type_id].animalfolk_displayed);
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(DaleCard.prototype, "name", {
             get: function () {
-                return DaleCard.cardTypes[this.effective_type_id].name;
+                return _(DaleCard.cardTypes[this.effective_type_id].name);
             },
             enumerable: false,
             configurable: true
@@ -1443,17 +1443,17 @@ define("components/DaleCard", ["require", "exports", "components/DaleIcons", "co
         };
         DaleCard.prototype.getTooltipContent = function () {
             var cardType = DaleCard.cardTypes[this.effective_type_id];
-            var animalfolkWithBull = cardType.animalfolk_displayed ? " • " + cardType.animalfolk_displayed : "";
+            var animalfolkWithBull = " • " + _(cardType.animalfolk_displayed);
             var chameleonName = "";
             if (this.isBoundChameleon()) {
-                chameleonName += "<span class=daleofmerchants-chameleon-name>".concat(DaleCard.cardTypes[this.original_type_id].name, "</span><br>");
+                chameleonName += "<span class=daleofmerchants-chameleon-name>".concat(_(DaleCard.cardTypes[this.original_type_id].name), "</span><br>");
             }
             var effective_value = DaleCard.page.isCurrentPlayerActive() ? this.effective_value : cardType.value;
             if (effective_value != cardType.value) {
                 effective_value = "(<span class=daleofmerchants-original-value>".concat(cardType.value, "</span>) ").concat(effective_value);
             }
-            var legend = this.getLegend(cardType.text);
-            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(cardType.name, "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(DaleCard.format_string(cardType.text), "</div>\n            <div style=\"color:gray\" class=\"daleofmerchants-card-tooltip-text\">").concat(legend ? '<hr>' + legend : '<br style="line-height: 10px" />', "</div>\n        </div>");
+            var legend = this.getLegend(_(cardType.text));
+            return "<div class=\"daleofmerchants-card-tooltip\">\n            <h3>".concat(chameleonName).concat(_(cardType.name), "</h3>\n            <hr>\n            ").concat(effective_value).concat(animalfolkWithBull, " \u2022 ").concat(_(cardType.type_displayed), " ").concat(cardType.has_plus ? "(+)" : "", "\n            <br><br>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(DaleCard.format_string(_(cardType.text)), "</div>\n            <div style=\"color:gray\" class=\"daleofmerchants-card-tooltip-text\">").concat(legend ? '<hr>' + legend : '<br style="line-height: 10px" />', "</div>\n        </div>");
         };
         DaleCard.prototype.removeTooltip = function () {
             var _a;
@@ -4938,7 +4938,7 @@ define("components/DaleDeckSelection", ["require", "exports", "components/DaleIc
             else if (this.page.is_solo) {
                 var type_id = Images_7.Images.first_mono_type_id + animalfolk_id - 1;
                 var cardType = DaleCard_8.DaleCard.cardTypes[type_id];
-                footer = "<hr>\n                <strong>".concat(cardType.name, " \u2022 ").concat(cardType.type_displayed, " ").concat(cardType.has_plus ? "(+)" : "", "</strong><br>\n                ").concat(DaleCard_8.DaleCard.format_string(cardType.text), " <br><br style=\"line-height: 10px\" />");
+                footer = "<hr>\n                <strong>".concat(_(cardType.name), " \u2022 ").concat(_(cardType.type_displayed), " ").concat(cardType.has_plus ? "(+)" : "", "</strong><br>\n                ").concat(DaleCard_8.DaleCard.format_string(_(cardType.text)), " <br><br style=\"line-height: 10px\" />");
             }
             return "<div class=\"daleofmerchants-card-tooltip\">\n            <div class=\"daleofmerchants-card-tooltip-text\">".concat(flavour_text, "</div>\n            <div class=\"daleofmerchants-card-tooltip-text\">").concat(footer, "</div>\n        </div>");
         };
@@ -8793,7 +8793,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             }
         };
         DaleOfMerchants.prototype.getAnimalfolkName = function (animalfolk_id) {
-            return DaleCard_9.DaleCard.cardTypes[6 * animalfolk_id].animalfolk_displayed;
+            return _(DaleCard_9.DaleCard.cardTypes[6 * animalfolk_id].animalfolk_displayed);
         };
         DaleOfMerchants.prototype.getColourSwapHandTargets = function (colourSwap_card_id) {
             var cards = [];
@@ -13948,8 +13948,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             for (var i in this.gamedatas.cardTypes) {
                 var cardType = this.gamedatas.cardTypes[i];
                 if (cardType.type_id > 4) {
-                    var cardName = cardType.name.toLowerCase();
-                    var cardNameExt = cardType.animalfolk_displayed.length > 0 ? " (".concat(cardType.animalfolk_displayed.toLowerCase(), " ").concat(cardType.value, ")") : "";
+                    var cardName = _(cardType.name).toLowerCase();
+                    var cardNameExt = " (".concat(_(cardType.animalfolk_displayed).toLowerCase(), " ").concat(cardType.value, ")");
                     words.push(cardName);
                     wordExt.set(cardName, " <span style=\"font-size: x-small;\">".concat(cardNameExt, "</span>"));
                 }

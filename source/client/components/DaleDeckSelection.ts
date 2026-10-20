@@ -121,8 +121,8 @@ export class DaleDeckSelection {
             const cardType = DaleCard.cardTypes[type_id]! 
             //footer = `<strong>${_("Mono will have this card:")}</strong><br>`
             footer = `<hr>
-                <strong>${cardType.name} • ${cardType.type_displayed} ${cardType.has_plus ? "(+)":""}</strong><br>
-                ${DaleCard.format_string(cardType.text)} <br><br style="line-height: 10px" />`;
+                <strong>${_(cardType.name)} • ${_(cardType.type_displayed)} ${cardType.has_plus ? "(+)":""}</strong><br>
+                ${DaleCard.format_string(_(cardType.text))} <br><br style="line-height: 10px" />`;
         }
         return `<div class="daleofmerchants-card-tooltip">
             <div class="daleofmerchants-card-tooltip-text">${flavour_text}</div>
