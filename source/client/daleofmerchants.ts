@@ -3699,6 +3699,11 @@ class DaleOfMerchants extends Gamegui
 				args['extended_card_name'] = `<strong>${daleCard.name}</strong> (${daleCard.animalfolk_displayed} ${daleCard.effective_value})`;
 			}
 
+			//parse optional spend card names (a.k.a. "msg_prefix")
+			if ('msg_prefix' in args) {
+				args['msg_prefix'] = args['msg_prefix'] + ": "
+			}
+
 			//parse die icon
 			if ('die_icon_source' in args) {
 				const iconTpl = DaleDie.getIconTpl(args['die_icon_source']);

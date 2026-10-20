@@ -3561,9 +3561,9 @@ class Game extends \Bga\GameFramework\Table
      * Also notifies the players.
      * @param mixed $player_id player that spends coins
      * @param int $nbr number of coins to spend
-     * @param string $msg_prefix (optional) - source of this effect
+     * @param ?string $msg_prefix (optional) - source of this effect
      */
-    function spendCoins(mixed $player_id, int $nbr, string $msg_prefix = null) {
+    function spendCoins(mixed $player_id, int $nbr, ?string $msg_prefix = null) {
         if ($nbr == 0) {
             return;
         }
@@ -3579,7 +3579,7 @@ class Game extends \Bga\GameFramework\Table
         //notify players
         $msg = clienttranslate('${msg_prefix}${player_name} spends ${positive_nbr} ${coin_icon}');
         $this->bga->notify->all('gainCoins', $msg, array(
-            'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
+            'msg_prefix' => $msg_prefix,
             'player_id' => $player_id,
             'player_name' => $this->getPlayerNameByIdInclMono($player_id),
             'positive_nbr' => $nbr,
@@ -3595,10 +3595,10 @@ class Game extends \Bga\GameFramework\Table
      * @param array $args requires `"spend_coins"` and `"spend_card_ids"` to get the chosen funds from
      * @param int $cost_min mimum value of `$x`
      * @param int $cost_max maximum value of `$x`
-     * @param string $msg_prefix (optional) - source of this effect
+     * @param ?string $msg_prefix (optional) - source of this effect
      * @return int $x
      */
-    function spendX(mixed $player_id, array $args, int $cost_min, int $cost_max, string $msg_prefix = null): int {
+    function spendX(mixed $player_id, array $args, int $cost_min, int $cost_max, ?string $msg_prefix = null): int {
         //Extract the arguments
         $spend_coins = (int)$args["spend_coins"];
         $spend_card_ids = $args["spend_card_ids"];
@@ -3630,7 +3630,7 @@ class Game extends \Bga\GameFramework\Table
                 clienttranslate('${msg_prefix}${player_name} spends 1 card') : 
                 clienttranslate('${msg_prefix}${player_name} spends ${nbr} cards');
             $this->bga->notify->all('discardMultiple', $msg, array(
-                'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
+                'msg_prefix' => $msg_prefix,
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $spend_card_ids,
@@ -3643,7 +3643,7 @@ class Game extends \Bga\GameFramework\Table
         $x = $x_without_coins + $spend_coins;
         if ($x > 0) {
             $this->bga->notify->all('message', '${msg_prefix}x = ${x}', array(
-                'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
+                'msg_prefix' => $msg_prefix,
                 'x' => $x
             ));
         }
@@ -3656,9 +3656,9 @@ class Game extends \Bga\GameFramework\Table
      * @param mixed $player_id the player that needs to to pay the spend cost
      * @param array $args requires `"spend_coins"` and `"spend_card_ids"` to get the chosen funds from
      * @param int $cost number of coins to spend
-     * @param string $msg_prefix (optional) - source of this effect
+     * @param ?string $msg_prefix (optional) - source of this effect
      */
-    function spend(mixed $player_id, array $args, int $cost, string $msg_prefix = null) {
+    function spend(mixed $player_id, array $args, int $cost, ?string $msg_prefix = null) {
         //Extract the arguments
         $spend_coins = $args["spend_coins"];
         $spend_card_ids = $args["spend_card_ids"];
@@ -3684,7 +3684,7 @@ class Game extends \Bga\GameFramework\Table
                 clienttranslate('${msg_prefix}${player_name} spends 1 card') : 
                 clienttranslate('${msg_prefix}${player_name} spends ${nbr} cards');
             $this->bga->notify->all('discardMultiple', $msg, array(
-                'msg_prefix' => $msg_prefix ? $msg_prefix.": " : "",
+                'msg_prefix' => $msg_prefix,
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
                 'card_ids' => $spend_card_ids,
@@ -11614,8 +11614,8 @@ class Game extends \Bga\GameFramework\Table
         $animalfolk_ids = $this->deckSelection->selectAnimalfolkIds();
         foreach ($animalfolk_ids as $animalfolk_id) {
             $this->bga->tableStats->set("deck_selection_".$animalfolk_id, true);
-            $this->bga->notify->all('deckSelectionResult', clienttranslate('${animalfolk_displayed_name} have been selected'), array(
-                "animalfolk_displayed_name" => $this->getAnimalfolkDisplayedName($animalfolk_id),
+            $this->bga->notify->all('deckSelectionResult', clienttranslate('${animalfolk_name} have been selected'), array(
+                "animalfolk_name" => $this->getAnimalfolkDisplayedName($animalfolk_id),
                 "animalfolk_id" => $animalfolk_id
             ));
         }
@@ -12518,6 +12518,7 @@ class Game extends \Bga\GameFramework\Table
         "card_name",
         "resolving_card_name",
         "animalfolk_name",
+        "msg_prefix",
     );
 
 
