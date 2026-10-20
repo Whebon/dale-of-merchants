@@ -456,7 +456,7 @@ class Game extends \Bga\GameFramework\Table
         }
         
         if ($technique_result == MONO_TECHNIQUE_ACQUIRE) {
-            if (!$this->monoMarketAction($msg, '${player_name} purchases ${card_name} (because of acquire)')) {
+            if (!$this->monoMarketAction($msg, clienttranslate('${player_name} purchases ${card_name} (because of acquire)'))) {
                 $msg = clienttranslate('${player_name} failed to purchase, so it now tries to build');
                 if (!$this->monoStallAction($msg)) {
                     $this->bga->notify->all('message', clienttranslate('${player_name} also failed to build') , array(
@@ -468,7 +468,7 @@ class Game extends \Bga\GameFramework\Table
         else if ($technique_result == MONO_TECHNIQUE_NO_ACQUIRE) {
             if (!$this->monoStallAction($msg)) {
                 $msg = clienttranslate('${player_name} failed to build, so it now tries to purchase');
-                if (!$this->monoMarketAction($msg, '${player_name} purchases ${card_name} (because it failed to build)')) {
+                if (!$this->monoMarketAction($msg, clienttranslate('${player_name} purchases ${card_name} (because it failed to build)'))) {
                     $this->bga->notify->all('message', clienttranslate('${player_name} also failed to purchase') , array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID)
                     ));
@@ -607,7 +607,7 @@ class Game extends \Bga\GameFramework\Table
         if ($technique_card == null) {
             $this->monoConfirmAction($msg, array(
                 "wrap_class" => "daleofmerchants-wrap-technique",
-                "description" => '${player_name} has no Mono cards to play'
+                "description" => clienttranslate('${player_name} has no Mono cards to play')
             ));
             return MONO_TECHNIQUE_NONE;
         }
@@ -1230,7 +1230,7 @@ class Game extends \Bga\GameFramework\Table
                         "wrap_class" => "daleofmerchants-wrap-technique",
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         "card_name" => $this->getCardName($dbcard),
-                        "description" => '${player_name} took a ${card_name} from the bin'
+                        "description" => clienttranslate('${player_name} took a ${card_name} from the bin')
                     ));
                 }
                 break;
@@ -1577,7 +1577,7 @@ class Game extends \Bga\GameFramework\Table
         if ($hand_cards == null) {
             $this->monoConfirmAction($msg, array(
                 "wrap_class" => "daleofmerchants-wrap-build",
-                "description" => '${player_name} fails to build stack ${stack_index_plus_1}',
+                "description" => clienttranslate('${player_name} fails to build stack ${stack_index_plus_1}'),
                 "stack_index_plus_1" => $stack_index + 1
             ));
             return false;
@@ -1587,7 +1587,7 @@ class Game extends \Bga\GameFramework\Table
         $this->monoConfirmAction($msg, array(
             "highlight_limbo_cards" => $hand_cards,
             "wrap_class" => "daleofmerchants-wrap-build",
-            "description" => '${player_name} builds stack ${stack_index_plus_1}',
+            "description" => clienttranslate('${player_name} builds stack ${stack_index_plus_1}'),
             "stack_index_plus_1" => $stack_index + 1
         ));
 
@@ -1671,7 +1671,7 @@ class Game extends \Bga\GameFramework\Table
         }
         $this->monoConfirmAction($msg, array(
             "wrap_class" => "daleofmerchants-wrap-purchase",
-            "description" => '${player_name} fails to purchase'
+            "description" => clienttranslate('${player_name} fails to purchase')
         ));
         return false;
     }
