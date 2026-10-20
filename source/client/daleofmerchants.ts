@@ -3701,7 +3701,7 @@ class DaleOfMerchants extends Gamegui
 
 			//parse optional spend card names (a.k.a. "msg_prefix")
 			if ('msg_prefix' in args) {
-				args['msg_prefix'] = args['msg_prefix'] + ": "
+				args['msg_prefix'] = args['msg_prefix'] ? args['msg_prefix'] + ": " : "";
 			}
 
 			//parse die icon

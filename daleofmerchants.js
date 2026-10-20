@@ -8446,7 +8446,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     args['extended_card_name'] = "<strong>".concat(daleCard.name, "</strong> (").concat(daleCard.animalfolk_displayed, " ").concat(daleCard.effective_value, ")");
                 }
                 if ('msg_prefix' in args) {
-                    args['msg_prefix'] = args['msg_prefix'] + ": ";
+                    args['msg_prefix'] = args['msg_prefix'] ? args['msg_prefix'] + ": " : "";
                 }
                 if ('die_icon_source' in args) {
                     var iconTpl = DaleDie_2.DaleDie.getIconTpl(args['die_icon_source']);
