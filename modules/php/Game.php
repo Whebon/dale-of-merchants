@@ -8715,12 +8715,12 @@ class Game extends \Bga\GameFramework\Table
                 }
                 //discard to hand (instant)
                 $this->cards->moveCard($topCard["id"], HAND.$player_id);
-                $this->bga->notify->all('instant_discardToHand', clienttranslate('${resolving_card_name}: ${player_name} swaps their ${hand_card_name} from their hand with their ${card_name} from the top of their discard'), array(
+                $this->bga->notify->all('instant_discardToHand', clienttranslate('${resolving_card_name}: ${player_name} swaps their ${hand_card_name} from their hand with their ${discard_card_name} from the top of their discard'), array(
                     "resolving_card_name" => $this->getCardName($passive_card),
                     "player_id" => $player_id,
                     "card" => $topCard,
                     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                    "card_name" => $this->getCardName($topCard),
+                    "discard_card_name" => $this->getCardName($topCard),
                     "hand_card_name" => $this->getCardName($handCard),
                 ));
                 //hand to discard
@@ -12516,6 +12516,8 @@ class Game extends \Bga\GameFramework\Table
 
     const I18N_ARGUMENTS = array(
         "card_name",
+        "hand_card_name",
+        "discard_card_name",
         "resolving_card_name",
         "animalfolk_name",
         "msg_prefix",

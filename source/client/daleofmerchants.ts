@@ -1608,7 +1608,7 @@ class DaleOfMerchants extends Gamegui
 					(source_id: number, target_id: number) => this.onSkink5b(target_id)
 				)
 				this.myDiscard.setSelectionMode('noneCantViewContent');
-				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ")+skink5b_args.card_name);
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ${discard_card_name}").replace("${discard_card_name}", skink5b_args.discard_card_name));
 				break;
 			case 'junglefowl5a':
 				const junglefowl5a_args = args.args as { nbr: number };
@@ -6500,7 +6500,7 @@ class DaleOfMerchants extends Gamegui
 					this.showMessage(_("This passive has no effect"), "error");
 				}
 				else {
-					this.mainClientState.enterOnStack('client_skink5b', {passive_card_id: card.id, disable_cancel_on_click: true, card_name: this.myDiscard.peek()!.name});
+					this.mainClientState.enterOnStack('client_skink5b', {passive_card_id: card.id, disable_cancel_on_click: true, discard_card_name: this.myDiscard.peek()!.name});
 				}
 				break;
 			default:

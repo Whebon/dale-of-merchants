@@ -4404,7 +4404,7 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                     case 'client_skink5a':
                         return _("${card_name}: ${you} must choose ${nbr} cards to discard");
                     case 'client_skink5b':
-                        return _("${card_name}: ${you} may choose a card to swap with ${card_name} from your discard");
+                        return _("${card_name}: ${you} may choose a card to swap with ${discard_card_name} from your discard");
                     case 'client_falseAlarm':
                         return _("${card_name}: ${you} must choose one");
                     case 'client_secretMission':
@@ -6563,7 +6563,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var skink5b_args = this.mainClientState.getArgs();
                     new TargetingLine_1.TargetingLine(this.myDiscard.peek(), this.myHand.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onCancelClient(); }, function (source_id, target_id) { return _this.onSkink5b(target_id); });
                     this.myDiscard.setSelectionMode('noneCantViewContent');
-                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ") + skink5b_args.card_name);
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose a card to swap with ${discard_card_name}").replace("${discard_card_name}", skink5b_args.discard_card_name));
                     break;
                 case 'junglefowl5a':
                     var junglefowl5a_args = args.args;
@@ -10868,7 +10868,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         this.showMessage(_("This passive has no effect"), "error");
                     }
                     else {
-                        this.mainClientState.enterOnStack('client_skink5b', { passive_card_id: card.id, disable_cancel_on_click: true, card_name: this.myDiscard.peek().name });
+                        this.mainClientState.enterOnStack('client_skink5b', { passive_card_id: card.id, disable_cancel_on_click: true, discard_card_name: this.myDiscard.peek().name });
                     }
                     break;
                 default:

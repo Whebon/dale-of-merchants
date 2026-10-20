@@ -676,7 +676,7 @@ declare global {
 		'client_generationChange': { technique_card_id: number, nbr: number }
 		'client_spendSelectOpponentTechnique': { technique_card_id: number, player_ids?: number[]}
 		'client_skink5a': { technique_card_id: number, nbr: number }
-		'client_skink5b': { passive_card_id: number, card_name: string }
+		'client_skink5b': { passive_card_id: number, discard_card_name: string }
 		'client_choicelessBatCard': { technique_card_id: number, clock: number }
 		'client_capture': { technique_card_id: number, clock: number }
 		'client_olm3_step2': { technique_card_id: number, toss_card_id: number, card_name: string } // stores info about the first step
