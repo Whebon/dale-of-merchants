@@ -26,6 +26,14 @@
   
 require_once( APP_BASE_PATH."view/common/game.view.php" );
 
+
+/////////////////////////////////////////////////////////////
+/////                                                   /////
+/////     clienttranslate doesn't work in this file     /////
+/////                                                   /////
+/////////////////////////////////////////////////////////////
+
+
 class view_daleofmerchants_daleofmerchants extends game_view
 {
     protected function getGameName()
@@ -48,8 +56,8 @@ class view_daleofmerchants_daleofmerchants extends game_view
             $this->page->insert_block("stall", array (
                 "PLAYER_ID" => $current_player,
                 "PLAYER_COLOR" => $players[$current_player]['player_color'],
-                "SCHEDULE" => "Schedule",
-                "STORED_CARDS" => "Stored Cards"
+                "SCHEDULE" => $this->_("Schedule"),
+                "STORED_CARDS" => $this->_("Stored Cards")
             ));
         }
 
@@ -59,34 +67,34 @@ class view_daleofmerchants_daleofmerchants extends game_view
                 $this->page->insert_block("stall", array(
                     "PLAYER_ID" => $player['player_id'],
                     "PLAYER_COLOR" => $player['player_color'],
-                    "SCHEDULE" => "Schedule",
-                    "STORED_CARDS" => "Stored Cards"
+                    "SCHEDULE" => $this->_("Schedule"),
+                    "STORED_CARDS" => $this->_("Stored Cards")
                 ));
             }
         }
 
         //Filter titles
-        $this->tpl['RESET_FILTERS'] = clienttranslate("Reset"); //clienttranslate("Reset Filters");
-        $this->tpl['FILTER_DECKS'] = clienttranslate("Filter Decks");
-        $this->tpl['COMPLEXITY'] = clienttranslate("Complexity");
-        $this->tpl['INTERACTIVITY'] = clienttranslate("Interactivity");
-        $this->tpl['NASTINESS'] = clienttranslate("Nastiness");
-        $this->tpl['RANDOMNESS'] = clienttranslate("Randomness");
-        $this->tpl['GAME'] = clienttranslate("Game");
-        $this->tpl['PICK_RANDOM'] = clienttranslate("Pick random from filtered");
-        $this->tpl['TITLE_UNAVAILABLE_DECKS'] = clienttranslate("Physical games have even more decks available");
+        $this->tpl['RESET_FILTERS'] = $this->_("Reset"); //$this->_("Reset Filters");
+        $this->tpl['FILTER_DECKS'] = $this->_("Filter Decks");
+        $this->tpl['COMPLEXITY'] = $this->_("Complexity");
+        $this->tpl['INTERACTIVITY'] = $this->_("Interactivity");
+        $this->tpl['NASTINESS'] = $this->_("Nastiness");
+        $this->tpl['RANDOMNESS'] = $this->_("Randomness");
+        $this->tpl['GAME'] = $this->_("Game");
+        $this->tpl['PICK_RANDOM'] = $this->_("Pick random from filtered");
+        $this->tpl['TITLE_UNAVAILABLE_DECKS'] = $this->_("Physical games have even more decks available");
 
         //Filter toggles
-        $this->tpl['NONE'] = clienttranslate("None");
-        $this->tpl['LOW'] = clienttranslate("Low");
-        $this->tpl['MEDIUM'] = clienttranslate("Medium");
-        $this->tpl['HIGH'] = clienttranslate("High");
-        $this->tpl['DECK_SELECTION_WARNING'] = clienttranslate("Choose one to display decks.");
+        $this->tpl['NONE'] = $this->_("None");
+        $this->tpl['LOW'] = $this->_("Low");
+        $this->tpl['MEDIUM'] = $this->_("Medium");
+        $this->tpl['HIGH'] = $this->_("High");
+        $this->tpl['DECK_SELECTION_WARNING'] = $this->_("Choose one to display decks.");
 
         //Other variables
         // $this->tpl['YOUR_HAND'] = clienttranslate("Your hand");
-        $this->tpl['MARKET'] = clienttranslate("Market");
-        $this->tpl['STALL'] = clienttranslate("Stall");
+        $this->tpl['MARKET'] = $this->_("Market");
+        $this->tpl['STALL'] = $this->_("Stall");
 
         /*
         
