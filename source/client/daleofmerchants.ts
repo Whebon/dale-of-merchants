@@ -62,10 +62,10 @@ class DaleOfMerchants extends Gamegui
 	allCardSlots: CardSlot[] = [];
 
 	/** Pile of hidden cards representing the market deck. */
-	marketDeck: HiddenPile = new HiddenPile(this, "daleofmerchants-market-deck", 'Supply');
+	marketDeck: HiddenPile = new HiddenPile(this, "daleofmerchants-market-deck", _('Supply'));
 
 	/** Ordered pile of known cards representing the market discard deck. */
-	marketDiscard: Pile = new Pile(this, "daleofmerchants-market-discard", 'Bin');
+	marketDiscard: Pile = new Pile(this, "daleofmerchants-market-discard", _('Bin'));
 
 	/** A clock for each player  */
 	playerClocks: Record<number, PlayerClock> = {};
@@ -265,12 +265,12 @@ class DaleOfMerchants extends Gamegui
 			
 			//deck per player
 			console.log("Create deck for player "+player_id);
-			this.playerDecks[player_id] = new HiddenPile(this, "daleofmerchants-deck-"+player_id, 'Deck', +player_id);
+			this.playerDecks[player_id] = new HiddenPile(this, "daleofmerchants-deck-"+player_id, _('Deck'), +player_id);
 			this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]!);
 			this.allDecks[player_id] = this.playerDecks[player_id];
 
 			//discard pile per player
-			this.playerDiscards[player_id] = new Pile(this, "daleofmerchants-discard-"+player_id, 'Discard', +player_id);
+			this.playerDiscards[player_id] = new Pile(this, "daleofmerchants-discard-"+player_id, _('Discard'), +player_id);
 			for (let i in gamedatas.discardPiles[player_id]) {
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));

@@ -5325,8 +5325,8 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             _this.allPiles = [];
             _this.allDaleStocks = [];
             _this.allCardSlots = [];
-            _this.marketDeck = new HiddenPile_1.HiddenPile(_this, "daleofmerchants-market-deck", 'Supply');
-            _this.marketDiscard = new Pile_2.Pile(_this, "daleofmerchants-market-discard", 'Bin');
+            _this.marketDeck = new HiddenPile_1.HiddenPile(_this, "daleofmerchants-market-deck", _('Supply'));
+            _this.marketDiscard = new Pile_2.Pile(_this, "daleofmerchants-market-discard", _('Bin'));
             _this.playerClocks = {};
             _this.playerHandSizes = {};
             _this.playerDecks = {};
@@ -5464,10 +5464,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.addTooltip('icon_point_' + player_id, _("Number of stacks built."), '');
                 (_d = player_board_div.querySelector(".player_score_value")) === null || _d === void 0 ? void 0 : _d.insertAdjacentText('afterend', "/8");
                 console.log("Create deck for player " + player_id);
-                this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, "daleofmerchants-deck-" + player_id, 'Deck', +player_id);
+                this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, "daleofmerchants-deck-" + player_id, _('Deck'), +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
                 this.allDecks[player_id] = this.playerDecks[player_id];
-                this.playerDiscards[player_id] = new Pile_2.Pile(this, "daleofmerchants-discard-" + player_id, 'Discard', +player_id);
+                this.playerDiscards[player_id] = new Pile_2.Pile(this, "daleofmerchants-discard-" + player_id, _('Discard'), +player_id);
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
                     this.playerDiscards[player_id].push(DaleCard_9.DaleCard.of(card));
