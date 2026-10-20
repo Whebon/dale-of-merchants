@@ -8444,7 +8444,7 @@ class Game extends \Bga\GameFramework\Table
                 break;
             case CT_BOLDHAGGLER:
                 $value = $this->rollDie(
-                    clienttranslate('Bold Haggler: ${player_name} rolls ${die_icon} and adds ${die_label} to the card\'s value'),
+                    clienttranslate('Bold Haggler: ${player_name} rolls ${die_icon} and adds +${die_label} to the card\'s value'),
                     ANIMALFOLK_OCELOTS,
                     $passive_card
                 );
