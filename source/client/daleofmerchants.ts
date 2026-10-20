@@ -3693,6 +3693,12 @@ class DaleOfMerchants extends Gamegui
 				args['opponent_name'] = `<span class="playername" style="color:#${opponent_color};">${opponent_name}</span>`;
 			}
 
+			//parse extended_card_name
+			if ('extended_card_name' in args) {
+				const daleCard = DaleCard.of(args['extended_card_name']);
+				args['extended_card_name'] = `<strong>${daleCard.name}</strong> (${daleCard.animalfolk_displayed} ${daleCard.effective_value})`;
+			}
+
 			//parse die icon
 			if ('die_icon_source' in args) {
 				const iconTpl = DaleDie.getIconTpl(args['die_icon_source']);

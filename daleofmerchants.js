@@ -8441,6 +8441,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     args['opponent_name'] = "<span class=\"playername\" style=\"color:#".concat(opponent_color, ";\">").concat(opponent_name, "</span>");
                 }
+                if ('extended_card_name' in args) {
+                    var daleCard = DaleCard_9.DaleCard.of(args['extended_card_name']);
+                    args['extended_card_name'] = "<strong>".concat(daleCard.name, "</strong> (").concat(daleCard.animalfolk_displayed, " ").concat(daleCard.effective_value, ")");
+                }
                 if ('die_icon_source' in args) {
                     var iconTpl = DaleDie_2.DaleDie.getIconTpl(args['die_icon_source']);
                     args['die_icon_source'] = "<span class=\"daleofmerchants-log-span\">".concat(iconTpl, "</span>");

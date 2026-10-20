@@ -78,6 +78,8 @@ class Game extends \Bga\GameFramework\Table
         $this->cards = new DaleDeck($this->bga->deckFactory->createDeck("deck"), $this, $this->effects, "onLocationExhausted");
         $this->cards->init("card");
         $this->deckSelection = new DaleDeckSelection($this);
+        
+        $this->bga->notify->addDecorator(fn(string $message, array $args) => $this->decorateNotifArgs_i18n($message, $args));
 	}
 
     // TODO: safely remove this
@@ -3418,15 +3420,17 @@ class Game extends \Bga\GameFramework\Table
 
     /**
      * Returns the effective name of the card AND the animalfolk name + value
+     * PATCH: the client is responsible for formatting the card name
      * @param array $dbcard card to get the name of
      * @example "Good Old Times (Chameleons 3)"
     */
-    function getCardNameExt(array $dbcard): string {
-        $type_id = $this->getTypeId($dbcard);
-        $name = $this->card_types[$type_id]['name'];
-        $animalfolk_name = $this->card_types[$type_id]['animalfolk_displayed'];
-        $value = $this->card_types[$type_id]['value'];
-        return "<strong>$name</strong> ($animalfolk_name $value)";
+    function getCardNameExt(array $dbcard): array {
+        return $dbcard;
+        // $type_id = $this->getTypeId($dbcard);
+        // $name = $this->card_types[$type_id]['name'];
+        // $animalfolk_name = $this->card_types[$type_id]['animalfolk_displayed'];
+        // $value = $this->card_types[$type_id]['value'];
+        // return "<strong>$name</strong> ($animalfolk_name $value)";
     }
 
 
@@ -12506,6 +12510,29 @@ class Game extends \Bga\GameFramework\Table
     // |
     //(~st)
 
+//////////////////////////////////////////////////////////////////////////////
+//////////// Notification decorators
+////////////
+
+    const I18N_ARGUMENTS = array(
+        "card_name",
+        "resolving_card_name",
+        "animalfolk_name",
+    );
+
+
+    // Adds the i18n argument
+    public function decorateNotifArgs_i18n(string $message, array $args): array {
+        foreach (self::I18N_ARGUMENTS as $i18n_arg) {
+            if (isset($args[$i18n_arg])) {
+                if (!isset($args['i18n'])) {
+                    $args['i18n'] = array();
+                }
+                $args['i18n'][] = $i18n_arg;
+            }
+        }
+        return $args;
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
