@@ -923,7 +923,7 @@ class Game extends \Bga\GameFramework\Table
                 }
                 if ($mono_junk_dbcard == null) {
                     //fizzle (mono has no cards)
-                    $this->bga->notify->all('message', clienttranslate('Wily Member: ${player_name} has no junk cards to give to ${opponent_name}'), array(
+                    $this->bga->notify->all('message', clienttranslate('Wily Member: ${player_name} has no clutter cards to give to ${opponent_name}'), array(
                         "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
                         "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id)
                     ));
@@ -1744,7 +1744,7 @@ class Game extends \Bga\GameFramework\Table
             "highlight_hand_cards" => array($opponent_dbcard),
             "wrap_class" => "daleofmerchants-wrap-technique",
             "player_name" => $this->getPlayerNameByIdInclMono(MONO_PLAYER_ID),
-            "player_card_name" => $this->getCardName($opponent_dbcard),
+            "player_card_name" => $this->getCardName($mono_dbcard),
             "opponent_name" => $this->getPlayerNameByIdInclMono($opponent_id),
             "opponent_card_name" => $this->getCardName($opponent_dbcard)
         ));
@@ -12519,6 +12519,8 @@ class Game extends \Bga\GameFramework\Table
         "hand_card_name",
         "discard_card_name",
         "resolving_card_name",
+        "player_card_name",
+        "opponent_card_name",
         "animalfolk_name",
         "msg_prefix",
     );
