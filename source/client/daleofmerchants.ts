@@ -1058,7 +1058,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'soundDetectors':
 				const soundDetector_args = args.args as { passive_card_id: number, opponent_id: number, opponent_name: string };
-				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', soundDetector_args.opponent_name+_("'s cards"));
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("${opponent_name}\'s cards").replace("${opponent_name}", soundDetector_args.opponent_name));
 				setTimeout((() => {
 					const soundDetector_source = new DaleCard(soundDetector_args.passive_card_id);
 					const soundDetector_targets = this.getChameleonTargets(soundDetector_source);
@@ -2956,7 +2956,7 @@ class DaleOfMerchants extends Gamegui
 			case 'umbrella':
 				const delicacy_args = (args as { opponent_name: string });
 				const delicacy_action = stateName == 'delicacy' ? this.onDelicacy.bind(this) : this.onUmbrella.bind(this);
-				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', delicacy_args.opponent_name+_("'s cards"));
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("${opponent_name}\'s cards").replace("${opponent_name}", delicacy_args.opponent_name));
 				setTimeout((() => {
 					const delicacy_type = stateName == 'delicacy' ? DaleCard.CT_DELICACY : DaleCard.CT_UMBRELLA;
 					const delicacy_targets: DaleCard[] = this.myLimbo.getAllItems().map(item => new DaleCard(item.id));

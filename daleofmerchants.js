@@ -6069,7 +6069,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     break;
                 case 'soundDetectors':
                     var soundDetector_args_1 = args.args;
-                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', soundDetector_args_1.opponent_name + _("'s cards"));
+                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("${opponent_name}\'s cards").replace("${opponent_name}", soundDetector_args_1.opponent_name));
                     setTimeout((function () {
                         var soundDetector_source = new DaleCard_9.DaleCard(soundDetector_args_1.passive_card_id);
                         var soundDetector_targets = _this.getChameleonTargets(soundDetector_source);
@@ -7915,7 +7915,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 case 'umbrella':
                     var delicacy_args = args;
                     var delicacy_action_1 = stateName == 'delicacy' ? this.onDelicacy.bind(this) : this.onUmbrella.bind(this);
-                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', delicacy_args.opponent_name + _("'s cards"));
+                    this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("${opponent_name}\'s cards").replace("${opponent_name}", delicacy_args.opponent_name));
                     setTimeout((function () {
                         var delicacy_type = stateName == 'delicacy' ? DaleCard_9.DaleCard.CT_DELICACY : DaleCard_9.DaleCard.CT_UMBRELLA;
                         var delicacy_targets = _this.myLimbo.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); });
