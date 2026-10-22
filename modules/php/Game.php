@@ -18,6 +18,7 @@
 
 namespace Bga\Games\DaleOfMerchants;
 
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\UserException;
 use Bga\GameFramework\VisibleSystemException;
 
@@ -4717,11 +4718,27 @@ class Game extends \Bga\GameFramework\Table
         $max_value = $base_value + $nbr_accordion + $nbr_walrus5b;
         
         if ($total_value < $min_value || $total_value > $max_value) {
-            $message = clienttranslate("Stack value is incorrect")." ($total_value / $base_value)";
-            if ($nbr_nastyThreat) {
-                $message .= ". ".clienttranslate("The stack requires +").$nbr_nastyThreat.clienttranslate(" value due to Nasty Threat(s)");
+            if ($nbr_nastyThreat <= 0) {
+                $msg = new NotificationMessage(
+                    clienttranslate('Stack value is incorrect (${total}/${base})'),
+                    array(
+                        "total" => $total_value,
+                        "base" => $base_value,
+                        "nbr" => $nbr_nastyThreat,
+                    )
+                );
             }
-            throw new UserException($message);
+            else {
+                $msg = new NotificationMessage(
+                    clienttranslate('Stack value is incorrect (${total}/${base}). The stack requires +${nbr} value due to Nasty Threat'),
+                    array(
+                        "total" => $total_value,
+                        "base" => $base_value,
+                        "nbr" => $nbr_nastyThreat,
+                    )
+                );
+            }
+            throw new UserException($msg);
         }
     }
 
