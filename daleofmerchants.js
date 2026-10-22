@@ -5467,7 +5467,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 this.playerDecks[player_id] = new HiddenPile_1.HiddenPile(this, "daleofmerchants-deck-" + player_id, _('Deck'), +player_id);
                 this.playerDecks[player_id].pushHiddenCards(gamedatas.deckSizes[player_id]);
                 this.allDecks[player_id] = this.playerDecks[player_id];
-                this.playerDiscards[player_id] = new Pile_2.Pile(this, "daleofmerchants-discard-" + player_id, _('Discard'), +player_id);
+                this.playerDiscards[player_id] = new Pile_2.Pile(this, "daleofmerchants-discard-" + player_id, _('Discard Pile'), +player_id);
                 for (var i in gamedatas.discardPiles[player_id]) {
                     var card = gamedatas.discardPiles[player_id][+i];
                     this.playerDiscards[player_id].push(DaleCard_9.DaleCard.of(card));

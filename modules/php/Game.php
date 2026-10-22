@@ -11455,7 +11455,7 @@ class Game extends \Bga\GameFramework\Table
         $die_value1 = (int)$this->getGameStateValue("die_value");
         switch ($die_value1) {
             case DIE_DISCARD:
-                $die_label_source = clienttranslate("discard");
+                $die_label_source = clienttranslate("discard pile");
                 break;
             case DIE_DECK:
                 $die_label_source = clienttranslate("deck");
@@ -11470,7 +11470,7 @@ class Game extends \Bga\GameFramework\Table
         $die_value2 = (int)$this->getGameStateValue("die_value2");
         switch ($die_value2) {
             case DIE_DISCARD2:
-                $die_label = clienttranslate("discard");
+                $die_label = clienttranslate("discard pile");
                 break;
             case DIE_DECK2:
                 $die_label = clienttranslate("deck");

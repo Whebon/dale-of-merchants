@@ -270,7 +270,7 @@ class DaleOfMerchants extends Gamegui
 			this.allDecks[player_id] = this.playerDecks[player_id];
 
 			//discard pile per player
-			this.playerDiscards[player_id] = new Pile(this, "daleofmerchants-discard-"+player_id, _('Discard'), +player_id);
+			this.playerDiscards[player_id] = new Pile(this, "daleofmerchants-discard-"+player_id, _('Discard Pile'), +player_id);
 			for (let i in gamedatas.discardPiles[player_id]) {
 				let card = gamedatas.discardPiles[player_id][+i]!;
 				this.playerDiscards[player_id].push(DaleCard.of(card));
