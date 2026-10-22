@@ -1329,7 +1329,7 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
 				break;
 			case 'fashionHint':
-				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of your deck"));
+				this.myLimbo.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Top card of the supply"));
 				break;
 			case 'vigilance':
 				const vigilance_args = args.args as { _private: { cards: DbCard[] } };
