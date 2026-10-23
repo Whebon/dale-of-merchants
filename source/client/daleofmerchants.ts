@@ -3698,6 +3698,11 @@ class DaleOfMerchants extends Gamegui
 				const daleCard = DaleCard.of(args['extended_card_name']);
 				args['extended_card_name'] = `<strong>${daleCard.name}</strong> (${daleCard.animalfolk_displayed} ${daleCard.effective_value})`;
 			}
+			
+			//TEMPORARY downward compatibility: do not error on "msg_prefix"
+			if ('msg_prefix' in args) {
+				args['msg_prefix'] = ""
+			}
 
 			//parse die icon
 			if ('die_icon_source' in args) {
