@@ -2849,13 +2849,16 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             var player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
             var title = "";
             if (player) {
+                var player_name_possesive = "";
                 if (this.player_id == this.page.player_id) {
-                    title = "<span style=\"font-weight:bold;color:#".concat(player.color, "\">Your</span> ");
+                    player_name_possesive = _("Your");
                 }
                 else {
-                    title = "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player.name, "</span>'s ");
+                    player_name_possesive = _("${player_name}\'s").replace("${player_name}", player.name);
                 }
-                title += (_c = (_b = this.pile_name) === null || _b === void 0 ? void 0 : _b.toLowerCase()) !== null && _c !== void 0 ? _c : "unnamed pile";
+                title = _("${player_name_possessive} ${pile_name}")
+                    .replace("${player_name_possessive}", "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player_name_possesive, "</span>"))
+                    .replace("${pile_name}", (_c = (_b = this.pile_name) === null || _b === void 0 ? void 0 : _b.toLowerCase()) !== null && _c !== void 0 ? _c : "unnamed pile");
             }
             else {
                 title += (_d = this.pile_name) !== null && _d !== void 0 ? _d : "Unnamed pile";
@@ -7796,7 +7799,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var pompousProfessional_args_1 = this.gamedatas.gamestate.args;
                     var pompousProfessional_is_taking_card = this.myLimbo.getAllItems().some(function (item) { return new DaleCard_9.DaleCard(item.id).effective_animalfolk_id == pompousProfessional_args_1.animalfolk_id; });
                     if (pompousProfessional_is_taking_card) {
-                        var pompousProfessional_label = _("Choose a '") + pompousProfessional_args_1.animalfolk_name + ("' card to take");
+                        var pompousProfessional_label = _("Choose a '${animalfolk_name}' card to take").replace("${animalfolk_name}", pompousProfessional_args_1.animalfolk_name);
                         this.myLimbo.setSelectionMode('multiple', 'pompousProfessional', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
                         this.addActionButton("confirm-button", _("Confirm"), "onPompousProfessionalTakeAndDiscard");
                         this.restoreMainTitle();

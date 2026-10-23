@@ -12539,6 +12539,7 @@ class Game extends \Bga\GameFramework\Table
         "player_card_name",
         "opponent_card_name",
         "chameleon_card_name",
+        "target_card_name",
         "animalfolk_name",
         "msg_prefix",
     );

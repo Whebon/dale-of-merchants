@@ -477,13 +477,16 @@ export class Pile implements DaleLocation {
         const player = this.player_id ? this.page.gamedatas.players[this.player_id] : undefined;
         var title = "";
         if (player) {
+            var player_name_possesive = ""
             if (this.player_id == this.page.player_id) {
-                title = `<span style="font-weight:bold;color:#${player.color}">Your</span> `;
+                player_name_possesive = _("Your")
             }
             else {
-                title = `<span style="font-weight:bold;color:#${player.color}">${player.name}</span>'s `
+                player_name_possesive = _("${player_name}\'s").replace("${player_name}", player.name)
             }
-            title += this.pile_name?.toLowerCase() ?? "unnamed pile";
+            title = _("${player_name_possessive} ${pile_name}")
+                .replace("${player_name_possessive}", `<span style="font-weight:bold;color:#${player.color}">${player_name_possesive}</span>`)
+                .replace("${pile_name}", this.pile_name?.toLowerCase() ?? "unnamed pile")
         }
         else {
             title += this.pile_name ?? "Unnamed pile";
