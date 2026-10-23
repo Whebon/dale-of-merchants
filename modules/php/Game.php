@@ -80,7 +80,7 @@ class Game extends \Bga\GameFramework\Table
         $this->cards->init("card");
         $this->deckSelection = new DaleDeckSelection($this);
         
-        $this->bga->notify->addDecorator(fn(string $message, array $args) => $this->decorateNotifArgs_i18n($message, $args));
+        $this->bga->notify->addDecorator(fn(string $message, array $args) => $this->addArgs_i18n($args));
 	}
 
     // TODO: safely remove this
@@ -11327,10 +11327,10 @@ class Game extends \Bga\GameFramework\Table
 
     function argNumberOfPlayers() {
         $n = $this->getPlayersNumberInclMono();
-        return array(
+        return $this->addArgs_i18n(array(
             'n' => $n,
             'n_plus_1' => $n + 1
-        );
+        ));
     }
 
     function argStackIndex() {
@@ -11338,71 +11338,71 @@ class Game extends \Bga\GameFramework\Table
         $stack_index = $this->cards->getNextStackIndex($player_id);
         $bonus_build_type_id = $this->getGameStateValue("bonus_build_type_id");
         $is_first_build = ($bonus_build_type_id == CT_SNACK);
-        return array(
+        return $this->addArgs_i18n(array(
             'is_first_build' => $is_first_build,
             'bonus_build_type_id' => $bonus_build_type_id,
             'bonus_build_name' => $this->card_types[$bonus_build_type_id]['name'],
             'stack_index' => $stack_index,
             'stack_index_plus_1' => $stack_index + 1
-        );
+        ));
     }
 
     function argOpponentName() {
         $opponent_id = $this->getGameStateValue("opponent_id");
-        return array(
+        return $this->addArgs_i18n(array(
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
-        );
+        ));
     }
 
     function argPassiveCardId() {
         $passive_card_id = $this->getGameStateValue("passive_card_id");
-        return array(
+        return $this->addArgs_i18n(array(
             'passive_card_id' => $passive_card_id
-        );
+        ));
     }
 
     function argOpponentNameAndPassiveCardId() {
         $opponent_id = $this->getGameStateValue("opponent_id");
         $passive_card_id = $this->getGameStateValue("passive_card_id");
-        return array(
+        return $this->addArgs_i18n(array(
             'passive_card_id' => $passive_card_id,
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
-        );
+        ));
     }
 
     function argOpponentNameAndPassiveCardIdAndDie() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argOpponentNameAndPassiveCardId(),
             $this->argDie()
-        );
+        ));
     }
 
     function argOpponentNameAndPassiveCardIdAndCardNamePrivate() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argOpponentNameAndPassiveCardId(),
             $this->argCardNamePrivate()
-        );
+        ));
     }
 
     function argOpponentNameAndResolvingCardName() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argOpponentName(),
             $this->argResolvingCardName()
-        );
+        ));
     }
 
     function argBlindfold() {
         $card_id = $this->getGameStateValue("card_id");
         $dbcard = $this->cards->getCard($card_id);
         $prior_modifications = " (prior modifications will be overwritten)";
-        return array(
+        return $this->addArgs_i18n(array(
             'card_name' => $this->getCardName($dbcard),
             'card_id' => $card_id,
             'prior_modifications' => $this->isGlobalValueEffectActive() ? $prior_modifications : ""
             //'base_effective_values' => $this->getBaseEffectiveValues(), // Not used anymore
-        );
+        ));
     }
 
     function argDEPRECATED_Blindfold() {
@@ -11410,7 +11410,7 @@ class Game extends \Bga\GameFramework\Table
         $player_id = $this->getActivePlayerId();
         $opponent_id = $this->getGameStateValue("opponent_id");
         $card_id = $this->getGameStateValue("card_id");
-        return array(
+        return $this->addArgs_i18n(array(
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id),
             '_private' => array( 
@@ -11419,24 +11419,24 @@ class Game extends \Bga\GameFramework\Table
                 )
             ),
             'possible_values' => $this->getPossibleEffectiveValues()
-        );
+        ));
     }
 
     function argDEPRECATED_BlindfoldDecideValue() {
         $card_id = $this->getGameStateValue("card_id");
         $dbcard = $this->cards->getCard($card_id);
-        return array(
+        return $this->addArgs_i18n(array(
             'card_id' => $card_id,
             'card_name' => $this->getCardName($dbcard),
             'possible_values' => $this->getBaseEffectiveValues()
-        );
+        ));
     }
 
     function argMyDeckContentAndResolvingCardName() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argMyDeckContent(), 
             $this->argResolvingCardName()
-        );
+        ));
     }
 
     function argMyDeckContent() {
@@ -11444,7 +11444,7 @@ class Game extends \Bga\GameFramework\Table
         $player_id = $this->getActivePlayerId();
         $dbcards = $this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg');
         $_private[$player_id] = array('cards' => array_values($dbcards));
-        return array('_private' => $_private);
+        return $this->addArgs_i18n(array('_private' => $_private));
     }
 
     function argDeckContent() {
@@ -11454,19 +11454,19 @@ class Game extends \Bga\GameFramework\Table
             $dbcards = array_values($this->cards->getCardsInLocation(DECK.$player_id, null, 'location_arg'));
             $_private[$player_id] = array('cards' => array_values($dbcards));
         }
-        return array('_private' => $_private);
+        return $this->addArgs_i18n(array('_private' => $_private));
     }
 
     function argPlayerIds() {
-        return array(
+        return $this->addArgs_i18n(array(
             'player_ids' => $this->getGameStateValuePlayerIds()
-        );
+        ));
     }
 
     function argDie() {
-        return array(
+        return $this->addArgs_i18n(array(
             'die_value' => $this->getGameStateValue("die_value")
-        );
+        ));
     }
 
     function argPangolinDice() {
@@ -11500,47 +11500,47 @@ class Game extends \Bga\GameFramework\Table
                 $die_label = "MISSING LABEL";
                 break;
         }
-        return array(
+        return $this->addArgs_i18n(array(
             'die_label_source' => $die_label_source,
             'die_label' => $die_label,
             'die_icon_source' => $die_value1,
             'die_icon' => $die_value2,
             'die_value1' => $die_value1,
             'die_value2' => $die_value2
-        );
+        ));
     }
 
     function argNaturalSurvivor() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argMyDeckContent(),
             $this->argDie()
-        );
+        ));
     }
 
     function argReplacement() {
         $value = $this->getGameStateValue("die_value");
-        return array(
+        return $this->addArgs_i18n(array(
             'value_minus_1' => $value - 1,
             'value' => $value,
             'value_plus_1' => $value + 1
-        );
+        ));
     }
 
     function argTopCardBin() {
         $dbcard = $this->cards->getCardOnTop(DISCARD.MARKET);
-        return array(
+        return $this->addArgs_i18n(array(
             'card_id' => $dbcard["id"],
             'card_name' => $this->getCardName($dbcard)
-        );
+        ));
     }
 
     function argAnimalfolk() {
         $animalfolk_id = $this->getGameStateValue("animalfolk_id");
         $animalfolk_name = $this->getAnimalfolkDisplayedName($animalfolk_id);
-        return array(
+        return $this->addArgs_i18n(array(
             'animalfolk_id' => $animalfolk_id,
             'animalfolk_name' => $animalfolk_name
-        );
+        ));
     }
 
     function argCardNamePublic() {
@@ -11554,9 +11554,9 @@ class Game extends \Bga\GameFramework\Table
             $dbcard = $this->cards->getCard($card_id);
             $card_name = $this->getCardName($dbcard);
         }
-        return array(
+        return $this->addArgs_i18n(array(
             'card_name' => $card_name
-        );
+        ));
     }
 
     function argCardNamePrivate() {
@@ -11570,61 +11570,61 @@ class Game extends \Bga\GameFramework\Table
             $dbcard = $this->cards->getCard($card_id);
             $card_name = $this->getCardName($dbcard);
         }
-        return array(
+        return $this->addArgs_i18n(array(
             '_private' => array( 
                 'active' => array(
                     'card_name' => $card_name
                 )
             ),
-        );
+        ));
     }
 
     function argOpponentNameAndCardNamePrivate() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argOpponentName(),
             $this->argCardNamePrivate()
-        );
+        ));
     }
 
     function argOpponentNameAndCardNamePublic() {
-        return array_merge(
+        return $this->addArgs_i18n(array_merge(
             $this->argOpponentName(),
             $this->argCardNamePublic()
-        );
+        ));
     }
 
     function argResolvingCardName() {
         $resolving_card = $this->getResolvingCard();
-        return array(
+        return $this->addArgs_i18n(array(
             'resolving_card' => $resolving_card,
             'resolving_card_name' => $this->getCardName($resolving_card)
-        );
+        ));
     }
 
     function argResourcefulAlly() {
         $player_id = $this->getActivePlayerId();
         $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
-        return array(
+        return $this->addArgs_i18n(array(
             'nbr' => $discard_size >= 2 ? "1-2" : $discard_size
-        );
+        ));
     }
 
     function argMonoName() {
         //currently unused, but might be helpful later
         $opponent_id = MONO_PLAYER_ID;
-        return array(
+        return $this->addArgs_i18n(array(
             'opponent_id' => $opponent_id,
             'opponent_name' => $this->getPlayerNameByIdInclMono($opponent_id)
-        );
+        ));
     }
 
     function argJunglefowl5a() {
         $player_id = $this->getActivePlayerId();
         $discard_size = $this->cards->countCardsInLocation(DISCARD.$player_id);
         $nbr = $this->getClock($player_id) == CLOCK_DAWN ? 4 : 2;
-        return array(
+        return $this->addArgs_i18n(array(
             'nbr' => min($nbr, $discard_size),
-        );
+        ));
     }
 
     //(~arg)
@@ -12559,17 +12559,20 @@ class Game extends \Bga\GameFramework\Table
         "chameleon_card_name",
         "target_card_name",
         "animalfolk_name",
+        "bonus_build_name",
     );
 
 
-    // Adds the i18n argument
-    public function decorateNotifArgs_i18n(string $message, array $args): array {
+    // Adds the i18n argument to $args
+    public function addArgs_i18n(array $args): array {
         foreach (self::I18N_ARGUMENTS as $i18n_arg) {
             if (isset($args[$i18n_arg])) {
                 if (!isset($args['i18n'])) {
                     $args['i18n'] = array();
                 }
-                $args['i18n'][] = $i18n_arg;
+                if (in_array($i18n_arg, $args['i18n'])) {
+                    $args['i18n'][] = $i18n_arg;
+                }
             }
         }
         return $args;
