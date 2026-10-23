@@ -12570,7 +12570,7 @@ class Game extends \Bga\GameFramework\Table
                 if (!isset($args['i18n'])) {
                     $args['i18n'] = array();
                 }
-                if (in_array($i18n_arg, $args['i18n'])) {
+                if (!in_array($i18n_arg, $args['i18n'])) {
                     $args['i18n'][] = $i18n_arg;
                 }
             }
