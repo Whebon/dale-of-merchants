@@ -815,7 +815,7 @@ class Game extends \Bga\GameFramework\Table
             case CT_FUMBLINGMEMBER:
                 //Roll ❇️✳️. Look at 1 🃏 from your [source]. If it is not junk, place it into Mono's [destination]. Acquire.
                 $this->rollPangolinDice(
-                    clienttranslate('Fumbling Dreamer: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
+                    clienttranslate('Fumbling Member: ${player_name} rolls ${die_icon_source} and ${die_icon}'),
                     $technique_card,
                     false,
                     array(),
