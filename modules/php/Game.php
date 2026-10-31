@@ -10489,7 +10489,7 @@ class Game extends \Bga\GameFramework\Table
         $this->validatePlayerId($opponent_id);
         $player_id = $this->getActivePlayerId();
         $this->_actPangolinDice($opponent_id, $opponent_id,
-            clienttranslate('Fumbling Dreamer: ${player_name} moves a "${card_name}" from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
+            clienttranslate('Fumbling Dreamer: ${player_name} moves ${card_name} from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
             clienttranslate('Fumbling Dreamer: ${player_name} moves a card from their ${die_label_source} (${die_icon_source}) to their ${die_label} (${die_icon})'),
             clienttranslate('Fumbling Dreamer: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
         );
@@ -10523,14 +10523,14 @@ class Game extends \Bga\GameFramework\Table
         $dice = $this->argPangolinDice();
         //move first card
         $first_card = $this->_actPangolinDice($source_id, $destination_id,
-            clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Another Fine Mess: ${card_name} moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
             clienttranslate('Another Fine Mess: 2 cards move from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
             clienttranslate('Another Fine Mess: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
         );
         if ($first_card) {
             //move second card
             $second_card = $this->_actPangolinDice($source_id, $destination_id,
-                clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+                clienttranslate('Another Fine Mess: ${card_name} moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
                 '', //already covered by "2 cards move"
                 clienttranslate('Another Fine Mess: moving a second card is skipped because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
             );
@@ -10583,14 +10583,14 @@ class Game extends \Bga\GameFramework\Table
             }
             //move 2 cards back (note that the icons in the strings are reversed)
             $this->_actPangolinDice($destination_id, $source_id,
-                clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                clienttranslate('Another Fine Mess: ${card_name} moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
                 clienttranslate('Another Fine Mess: 2 cards move from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
                 '', //impossible, because $first_card moved here
                 $dice
             );
             if ($second_card) {
                 $this->_actPangolinDice($destination_id, $source_id,
-                    clienttranslate('Another Fine Mess: "${card_name}" moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
+                    clienttranslate('Another Fine Mess: ${card_name} moves from ${player_name}\'s ${die_label} (${die_icon}) to ${opponent_name}\'s ${die_label_source} (${die_icon_source})'),
                     '', //already covered by "2 cards move"
                     '', //impossible, because $second_card moved here
                     $dice
