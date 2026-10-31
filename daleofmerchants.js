@@ -2839,7 +2839,7 @@ define("components/Pile", ["require", "exports", "components/Images", "component
         };
         Pile.prototype.openPopin = function () {
             var _this = this;
-            var _a, _b, _c, _d, _e, _f, _g;
+            var _a, _b, _c, _d, _e, _f;
             this.openPopinRequested = true;
             if (this.isPopinOpen || this.openPopinCooldown) {
                 return;
@@ -2851,17 +2851,18 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             if (player) {
                 var player_name_possesive = "";
                 if (this.player_id == this.page.player_id) {
-                    player_name_possesive = _("Your");
+                    title = _("${your} ${pile_name}")
+                        .replace("${your}", "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(_("Your"), "</span>"));
                 }
                 else {
-                    player_name_possesive = _("${player_name}\'s").replace("${player_name}", player.name);
+                    var player_name_possesive = player_name_possesive = _("${player_name}\'s").replace("${player_name}", player.name);
+                    title = _("${player_name_possessive} ${pile_name}")
+                        .replace("${player_name_possessive}", "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player_name_possesive, "</span>"));
                 }
-                title = _("${player_name_possessive} ${pile_name}")
-                    .replace("${player_name_possessive}", "<span style=\"font-weight:bold;color:#".concat(player.color, "\">").concat(player_name_possesive, "</span>"))
-                    .replace("${pile_name}", (_c = (_b = this.pile_name) === null || _b === void 0 ? void 0 : _b.toLowerCase()) !== null && _c !== void 0 ? _c : "unnamed pile");
+                title = title.replace("${pile_name}", (_b = this.pile_name) !== null && _b !== void 0 ? _b : "unnamed pile");
             }
             else {
-                title += (_d = this.pile_name) !== null && _d !== void 0 ? _d : "Unnamed pile";
+                title += (_c = this.pile_name) !== null && _c !== void 0 ? _c : "Unnamed pile";
             }
             var popin_id = this.pile_container_id + '-popin';
             this.popin.create(popin_id);
@@ -2869,14 +2870,14 @@ define("components/Pile", ["require", "exports", "components/Images", "component
             this.popin.setMaxWidth(1000);
             var maintitlebar = null;
             if (this.showMainTitleBarInPopin) {
-                maintitlebar = (_e = $("maintitlebar_content")) === null || _e === void 0 ? void 0 : _e.cloneNode(true);
+                maintitlebar = (_d = $("maintitlebar_content")) === null || _d === void 0 ? void 0 : _d.cloneNode(true);
                 maintitlebar.id = "maintitlebar_content_clone";
                 setTimeout(function () {
                     _this.cloneEventHandlers($("maintitlebar_content"), $("maintitlebar_content_clone"));
                 }, 1);
-                (_f = $("maintitlebar_content")) === null || _f === void 0 ? void 0 : _f.classList.add("daleofmerchants-transparent");
+                (_e = $("maintitlebar_content")) === null || _e === void 0 ? void 0 : _e.classList.add("daleofmerchants-transparent");
             }
-            this.popin.setContent("".concat((_g = maintitlebar === null || maintitlebar === void 0 ? void 0 : maintitlebar.outerHTML) !== null && _g !== void 0 ? _g : "", "<div id=\"").concat(popin_id, "-card-container\" class=\"popin-card-container ").concat(this.wrapClass, "\"></div>"));
+            this.popin.setContent("".concat((_f = maintitlebar === null || maintitlebar === void 0 ? void 0 : maintitlebar.outerHTML) !== null && _f !== void 0 ? _f : "", "<div id=\"").concat(popin_id, "-card-container\" class=\"popin-card-container ").concat(this.wrapClass, "\"></div>"));
             var container_id = popin_id + "-card-container";
             var _loop_2 = function (card) {
                 var div = card.toDiv(container_id, 'stock');
@@ -2900,8 +2901,8 @@ define("components/Pile", ["require", "exports", "components/Images", "component
                 this_2.cardIdToPopinDiv.set(card.id, div);
             };
             var this_2 = this;
-            for (var _i = 0, _h = this.cards.slice().reverse(); _i < _h.length; _i++) {
-                var card = _h[_i];
+            for (var _i = 0, _g = this.cards.slice().reverse(); _i < _g.length; _i++) {
+                var card = _g[_i];
                 _loop_2(card);
             }
             dojo.connect($("popin_" + this.popin.id + "_close"), "onclick", this, "onClosePopin");
