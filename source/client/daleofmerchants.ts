@@ -5015,8 +5015,8 @@ class DaleOfMerchants extends Gamegui
 			case 'pompousProfessional':
 				const pompousProfessional_isValid = this.validatePompousProfessionalSelection();
 				if (!pompousProfessional_isValid) {
-					const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: number };
-					this.showMessage(_("Please choose a '")+pompousProfessional_args.animalfolk_name+_("' card"), 'error');
+					const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: string };
+					this.showMessage(_("Please choose a '${animalfolk_name}' card").replace("${animalfolk_name}", _(pompousProfessional_args.animalfolk_name)), 'error');
 					return;
 				}
 				break;
@@ -7484,8 +7484,8 @@ class DaleOfMerchants extends Gamegui
 	onPompousProfessionalTakeAndDiscard() {
 		const card_ids = this.arrayToNumberList(this.myLimbo.orderedSelection.get());
 		if (card_ids.length == 0) {
-			const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: number };
-			this.showMessage(_("Please choose a '")+pompousProfessional_args.animalfolk_name+_("' card"), 'error');
+			const pompousProfessional_args = this.gamedatas.gamestate.args as { animalfolk_id: number, animalfolk_name: string };
+			this.showMessage(_("Please choose a '${animalfolk_name}' card").replace("${animalfolk_name}", _(pompousProfessional_args.animalfolk_name)), 'error');
 			return;
 		}
 		this.bgaPerformAction('actPompousProfessional', {

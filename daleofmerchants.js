@@ -9483,7 +9483,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var pompousProfessional_isValid = this.validatePompousProfessionalSelection();
                     if (!pompousProfessional_isValid) {
                         var pompousProfessional_args = this.gamedatas.gamestate.args;
-                        this.showMessage(_("Please choose a '") + pompousProfessional_args.animalfolk_name + _("' card"), 'error');
+                        this.showMessage(_("Please choose a '${animalfolk_name}' card").replace("${animalfolk_name}", _(pompousProfessional_args.animalfolk_name)), 'error');
                         return;
                     }
                     break;
@@ -11713,7 +11713,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var card_ids = this.arrayToNumberList(this.myLimbo.orderedSelection.get());
             if (card_ids.length == 0) {
                 var pompousProfessional_args = this.gamedatas.gamestate.args;
-                this.showMessage(_("Please choose a '") + pompousProfessional_args.animalfolk_name + _("' card"), 'error');
+                this.showMessage(_("Please choose a '${animalfolk_name}' card").replace("${animalfolk_name}", _(pompousProfessional_args.animalfolk_name)), 'error');
                 return;
             }
             this.bgaPerformAction('actPompousProfessional', {
