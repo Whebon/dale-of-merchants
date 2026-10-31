@@ -12575,6 +12575,8 @@ class Game extends \Bga\GameFramework\Table
         "target_card_name",
         "animalfolk_name",
         "bonus_build_name",
+        "die_label_source",
+        "die_label",
     );
 
 

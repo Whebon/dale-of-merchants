@@ -91,10 +91,10 @@ export class DaleDie {
             resultLabel.classList.remove('daleofmerchants-die-reveal');
             resultLabel.classList.add('daleofmerchants-die-hide');
             if (this.type != 'pangolin1' && this.type != 'pangolin2') {
-                resultLabel.innerHTML = `Rolled ${name_displayed}`;
+                resultLabel.innerHTML = `Rolled ${_(name_displayed)}`;
             }
             else {
-                resultLabel.innerHTML = name_displayed;
+                resultLabel.innerHTML = _(name_displayed);
             }
             setTimeout(() => {
               resultLabel.classList.add('daleofmerchants-die-reveal');

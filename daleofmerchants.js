@@ -477,10 +477,10 @@ define("components/DaleDie", ["require", "exports", "components/DaleAnimalfolk",
                 resultLabel.classList.remove('daleofmerchants-die-reveal');
                 resultLabel.classList.add('daleofmerchants-die-hide');
                 if (this.type != 'pangolin1' && this.type != 'pangolin2') {
-                    resultLabel.innerHTML = "Rolled ".concat(name_displayed);
+                    resultLabel.innerHTML = "Rolled ".concat(_(name_displayed));
                 }
                 else {
-                    resultLabel.innerHTML = name_displayed;
+                    resultLabel.innerHTML = _(name_displayed);
                 }
                 setTimeout(function () {
                     resultLabel.classList.add('daleofmerchants-die-reveal');
