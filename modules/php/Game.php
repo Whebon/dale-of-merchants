@@ -6733,10 +6733,10 @@ class Game extends \Bga\GameFramework\Table
             case CT_GOODWILLPRESENTS:
                 $opponent_ids = $args["opponent_ids"];
                 if (count($opponent_ids) == 0) {
-                    throw new UserException("Goodwill presents cannot have 0 targets");
+                    throw new UserException(clienttranslate("Goodwill presents cannot have 0 targets"));
                 }
                 if (count($opponent_ids) > 2) {
-                    throw new UserException("Goodwill presents cannot have more than 2 targets");
+                    throw new UserException(clienttranslate("Goodwill presents cannot have more than 2 targets"));
                 }
                 foreach ($opponent_ids as $opponent_id) {
                     $junk_cards = $this->cards->getJunk();
@@ -6796,17 +6796,9 @@ class Game extends \Bga\GameFramework\Table
                 $this->fullyResolveCard($player_id, $technique_card);
                 break;
             case CT_CACHE:
+                $this->beginResolvingCard($technique_card_id);
                 $this->spend($player_id, $args, 2, clienttranslate("Cache"));
-                $card_id = $args["card_id"];
-                $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
-                $this->cards->moveCard($card_id, HAND.$player_id);
-                $this->bga->notify->all('discardToHand', clienttranslate('Cache: ${player_name} takes their ${card_name} from their discard pile'), array(
-                    "player_id" => $player_id,
-                    "player_name" => $this->getPlayerNameByIdInclMono($player_id),
-                    "card_name" => $this->getCardName($dbcard),
-                    "card" => $dbcard
-                ));
-                $this->fullyResolveCard($player_id, $technique_card);
+                $this->gamestate->nextState("trCache");
                 break;
             case CT_DISPLAYOFPOWER:
                 $this->spend($player_id, $args, 2, clienttranslate("Display of Power"));
@@ -10211,6 +10203,20 @@ class Game extends \Bga\GameFramework\Table
         $this->fullyResolveCard($player_id);
     }
 
+    function actCache($card_id) {
+        $player_id = $this->getActivePlayerId();
+        $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
+        $this->cards->moveCard($card_id, HAND.$player_id);
+        $this->bga->notify->all('discardToHand', clienttranslate('Cache: ${player_name} takes their ${card_name} from their discard pile'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameByIdInclMono($player_id),
+            "card_name" => $this->getCardName($dbcard),
+            "card" => $dbcard
+        ));
+        $this->fullyResolveCard($player_id);
+    }
+
+
     function actTravelingEquipment($toss_card_id) {
         $this->checkAction("actTravelingEquipment");
         $player_id = $this->getActivePlayerId();
@@ -12537,7 +12543,16 @@ class Game extends \Bga\GameFramework\Table
         $dbcards = $this->draw('', 3, true, $opponent_id, $player_id);
         if (count($dbcards) == 0) {
             //tasmaniandevil4 has no effect (fizzle)
-            $this->fullyResolveCard($this->getActivePlayerId());
+            $this->fullyResolveCard($player_id);
+        }
+    }
+
+    function stCache() {
+        $player_id = $this->getActivePlayerId();
+        $discard_size = $this->cards->countCardInLocation(DISCARD.$player_id);
+        if ($discard_size == 0) {
+            //cache has no effect (fizzle)
+            $this->fullyResolveCard($player_id);
         }
     }
 

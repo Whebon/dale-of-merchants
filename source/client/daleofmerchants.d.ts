@@ -569,7 +569,6 @@ declare global {
 		'client_shakyEnterprise': { card_ids: number[] }
 		'client_spend' : { spend_card_ids: number[], spend_coins: number }
 		'client_spendx' : { spend_card_ids: number[], spend_coins: number }
-		'client_cache': { card_id: number }
 		'client_groundbreakingIdea': { card_id: number }
 		'client_selectingContracts': { card_ids: number[] }
 		'client_generationChange': { card_ids: number[] }

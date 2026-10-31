@@ -69,6 +69,7 @@ if (false) {
 	$game->stGorilla5a();
 	$game->stTasmanianDevil1();
 	$game->stTasmanianDevil4();
+	$game->stCache();
 	$game->stDEPRECATED_Cheer();
 }
 
@@ -203,6 +204,7 @@ $machinestates = array(
 			'trGorilla5b' => 124,
 			'trTasmanianDevil1' => 125,
 			'trTasmanianDevil4' => 126,
+			'trCache' => 127,
 		),
 	),
 	31 => array(
@@ -1089,6 +1091,17 @@ $machinestates = array(
 		'action' => 'stTasmanianDevil4',
 		'args' => 'argOpponentName',
 		'possibleactions' => ['actTasmanianDevil4'],
+		'transitions' => array(
+			'trSamePlayer' => 30,
+		),
+	),
+	127 => array(
+		'name' => 'cache',
+		'description' => clienttranslate('Cache: ${actplayer} must take 1 card from their discard pile'),
+		'descriptionmyturn' => clienttranslate('Cache: ${you} must take 1 card from your discard pile'),
+		'type' => 'activeplayer',
+		'action' => 'stCache',
+		'possibleactions' => ['actCache'],
 		'transitions' => array(
 			'trSamePlayer' => 30,
 		),

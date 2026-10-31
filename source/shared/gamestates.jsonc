@@ -216,7 +216,8 @@
 			"trGorilla5a": 123,
 			"trGorilla5b": 124,
 			"trTasmanianDevil1": 125,
-			"trTasmanianDevil4": 126
+			"trTasmanianDevil4": 126,
+			"trCache": 127
 		}
 	},
 
@@ -1401,8 +1402,21 @@
 			]
 		},
 		"transitions": { "trSamePlayer": 30 }
-	}
+	},
 
+	"127": {
+		"name": "cache",
+		"description": "Cache: ${actplayer} must take 1 card from their discard pile",
+		"descriptionmyturn": "Cache: ${you} must take 1 card from your discard pile",
+		"type": "activeplayer",
+		"action": "stCache",
+		"possibleactions": {
+			"actCache": [
+				{"name": "card_id", "type": "AT_int"}
+			]
+		},
+		"transitions": { "trSamePlayer": 30 }
+	}
 
 	//////////////// BGA Final State ////////////////
 

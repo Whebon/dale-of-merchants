@@ -260,8 +260,6 @@ export class MainClientState {
                 return _("${card_name}: ${you} must place a card on any player\'s discard pile");
             case 'client_shakyEnterprise':
                 return _("${card_name}: ${you} must take any of the top 3 cards of your discard pile");
-            case 'client_cache':
-                return _("${card_name}: ${you} must take 1 card from your discard pile");
             case 'client_groundbreakingIdea':
                 return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
             case 'client_badOmen':

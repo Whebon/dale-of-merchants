@@ -222,6 +222,7 @@ interface GameStates {
 			'trGorilla5b': 124,
 			'trTasmanianDevil1': 125,
 			'trTasmanianDevil4': 126,
+			'trCache': 127,
 		},
 	},
 	31: {
@@ -1688,6 +1689,23 @@ interface GameStates {
 				'name': 'card_ids',
 				'type': 'AT_numberlist',
 				'typescriptType': string,
+			}],
+		},
+		'transitions': {
+			'trSamePlayer': 30,
+		},
+	},
+	127: {
+		'name': 'cache',
+		'description': 'Cache: ${actplayer} must take 1 card from their discard pile',
+		'descriptionmyturn': 'Cache: ${you} must take 1 card from your discard pile',
+		'type': 'activeplayer',
+		'action': 'stCache',
+		'possibleactions': {
+			'actCache': [{
+				'name': 'card_id',
+				'type': 'AT_int',
+				'typescriptType': number,
 			}],
 		},
 		'transitions': {

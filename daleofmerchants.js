@@ -4363,8 +4363,6 @@ define("components/types/MainClientState", ["require", "exports", "components/Da
                         return _("${card_name}: ${you} must place a card on any player\'s discard pile");
                     case 'client_shakyEnterprise':
                         return _("${card_name}: ${you} must take any of the top 3 cards of your discard pile");
-                    case 'client_cache':
-                        return _("${card_name}: ${you} must take 1 card from your discard pile");
                     case 'client_groundbreakingIdea':
                         return _("${card_name}: ${you} must choose a card to <stronger>toss</stronger>");
                     case 'client_badOmen':
@@ -6395,7 +6393,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', "MISSING LABEL", 'build');
                     this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
                     break;
-                case 'client_cache':
+                case 'cache':
                     this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
                     break;
                 case 'resourcefulAlly':
@@ -7087,7 +7085,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.coinManager.setSelectionMode('none');
                     this.myHand.setSelectionMode('none');
                     break;
-                case 'client_cache':
+                case 'cache':
                     this.myDiscard.setSelectionMode('none');
                     break;
                 case 'resourcefulAlly':
@@ -8007,9 +8005,6 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Card drawn by Charm"));
                     this.addActionButton("confirm-button", _("Confirm"), "onCharmStove");
                     this.updateStoveButton();
-                    break;
-                case 'client_cache':
-                    this.addActionButtonCancelClient();
                     break;
                 case 'resourcefulAlly':
                     this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
@@ -9070,8 +9065,10 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         card_id: card.id
                     });
                     break;
-                case 'client_cache':
-                    this.playTechniqueCard(__assign({ card_id: card.id }, this.mainClientState.getSpendArgs()));
+                case 'cache':
+                    this.bgaPerformAction('actCache', {
+                        card_id: card.id
+                    });
                     break;
                 case 'client_groundbreakingIdea':
                     this.playTechniqueCard({
@@ -10522,13 +10519,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     }
                     break;
                 case DaleCard_9.DaleCard.CT_CACHE:
-                    fizzle = this.myDiscard.size == 0;
-                    if (fizzle) {
-                        this.clientScheduleTechnique('client_fizzle', card.id);
-                    }
-                    else {
-                        this.clientScheduleSpendTechnique('client_cache', card.id, 2);
-                    }
+                    this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
                     break;
                 case DaleCard_9.DaleCard.CT_DISPLAYOFPOWER:
                     this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);

@@ -1429,7 +1429,7 @@ class DaleOfMerchants extends Gamegui
 				this.myHand.setSelectionMode('multiple', 'pileYellow', 'daleofmerchants-wrap-purchase', "MISSING LABEL", 'build');
 				this.setHandLabelToCardValue(_("Choose cards to <strong>spend</strong>"), Infinity, 'spend');
 				break;
-			case 'client_cache':
+			case 'cache':
 				this.myDiscard.setSelectionMode('single', undefined, 'daleofmerchants-wrap-technique');
 				break;
 			case 'resourcefulAlly':
@@ -2129,7 +2129,7 @@ class DaleOfMerchants extends Gamegui
 				this.coinManager.setSelectionMode('none');
 				this.myHand.setSelectionMode('none');
 				break;
-			case 'client_cache':
+			case 'cache':
 				this.myDiscard.setSelectionMode('none');
 				break;
 			case 'resourcefulAlly':
@@ -3058,9 +3058,6 @@ class DaleOfMerchants extends Gamegui
 				this.myLimbo.setSelectionMode('none', undefined, "daleofmerchants-wrap-default", _("Card drawn by Charm"));
 				this.addActionButton("confirm-button", _("Confirm"), "onCharmStove");
 				this.updateStoveButton();
-				break;
-			case 'client_cache':
-				this.addActionButtonCancelClient();
 				break;
 			case 'resourcefulAlly':
 				this.addActionButton("confirm-button", _("Confirm"), "onResourcefulAlly");
@@ -4554,10 +4551,9 @@ class DaleOfMerchants extends Gamegui
 					card_id: card!.id
 				})
 				break;
-			case 'client_cache':
-				this.playTechniqueCard<'client_cache'>({
-					card_id: card!.id,
-					...this.mainClientState.getSpendArgs()
+			case 'cache':
+				this.bgaPerformAction('actCache', {
+					card_id: card!.id
 				})
 				break;
 			case 'client_groundbreakingIdea':
@@ -6147,13 +6143,7 @@ class DaleOfMerchants extends Gamegui
 				}
 				break;
 			case DaleCard.CT_CACHE:
-				fizzle = this.myDiscard.size == 0;
-				if (fizzle) {
-					this.clientScheduleTechnique('client_fizzle', card.id);
-				}
-				else {
-					this.clientScheduleSpendTechnique('client_cache', card.id, 2);
-				}
+				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
 				break;
 			case DaleCard.CT_DISPLAYOFPOWER:
 				this.clientScheduleSpendTechnique('playTechniqueCard', card.id, 2);
