@@ -2837,13 +2837,13 @@ class DaleOfMerchants extends Gamegui
 					(item) => new DaleCard(item.id).effective_animalfolk_id == pompousProfessional_args.animalfolk_id
 				);
 				if (pompousProfessional_is_taking_card) {
-					const pompousProfessional_label = _("Choose a '${animalfolk_name}' card to take").replace("${animalfolk_name}", pompousProfessional_args.animalfolk_name);
+					const pompousProfessional_label = _("Choose a '${animalfolk_name}' card to take").replace("${animalfolk_name}", _(pompousProfessional_args.animalfolk_name));
 					this.myLimbo.setSelectionMode('multiple', 'pompousProfessional', 'daleofmerchants-wrap-technique', pompousProfessional_label, undefined, Infinity);
 					this.addActionButton("confirm-button", _("Confirm"), "onPompousProfessionalTakeAndDiscard");
 					this.restoreMainTitle();
 				}
 				else {
-					this.setDescriptionOnMyTurn(_("Pompous Professional: No \'${animalfolk_name}\' found. ${you} may choose the order to discard the cards").replace("${animalfolk_name}", String(pompousProfessional_args.animalfolk_name)));
+					this.setDescriptionOnMyTurn(_("Pompous Professional: No \'${animalfolk_name}\' found. ${you} may choose the order to discard the cards").replace("${animalfolk_name}", _(pompousProfessional_args.animalfolk_name)));
 					this.myLimbo.setSelectionMode('multiple', 'pileBlue', 'daleofmerchants-wrap-technique', _("Discard cards"));
 					this.addActionButton("confirm-button", _("Discard"), "onPompousProfessionalDiscard");
 				}
