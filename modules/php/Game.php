@@ -10696,7 +10696,7 @@ class Game extends \Bga\GameFramework\Table
             throw new UserException(clienttranslate("You must choose exactly ").$nbr.clienttranslate(" cards"));
         }
         $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
-        $this->placeOnDeckMultiple($player_id, clienttranslate('Serenade: ${player_name} places a card on top of their deck'), $card_ids, $dbcards);
+        $this->placeOnDeckMultiple($player_id, clienttranslate('Serenade: ${player_name} places ${nbr} card(s) on top of their deck'), $card_ids, $dbcards);
         $this->fullyResolveCard($player_id);
     }
 
