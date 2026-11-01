@@ -9438,7 +9438,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.mainClientState.enterOnStack('client_olm3_step2', {
                         technique_card_id: client_olm3_step1_args.technique_card_id,
                         toss_card_id: card.id,
-                        card_name: (_c = client_olm3_step1_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME"
+                        card_name: _((_c = client_olm3_step1_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME")
                     });
                     break;
                 case null:
@@ -9517,7 +9517,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var badOmen_args = this.gamedatas.gamestate.args;
                     this.mainClientState.enterOnStack('client_badOmen', {
                         toss_card_id: card.id,
-                        card_name: (_c = badOmen_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME"
+                        card_name: _((_c = badOmen_args.resolving_card_name) !== null && _c !== void 0 ? _c : "MISSING CARD NAME")
                     });
                     break;
                 case 'capuchin4':
@@ -9530,7 +9530,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.mainClientState.enterOnStack('client_olm4_market', {
                         toss_card_id: card.id,
                         opponent_name: (_d = olm4_args.opponent_name) !== null && _d !== void 0 ? _d : "MISSING OPPONENT NAME",
-                        card_name: (_e = olm4_args.resolving_card_name) !== null && _e !== void 0 ? _e : "MISSING CARD NAME"
+                        card_name: _((_e = olm4_args.resolving_card_name) !== null && _e !== void 0 ? _e : "MISSING CARD NAME")
                     });
                     break;
             }
@@ -11879,7 +11879,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     opponent_id: opponent_id,
                     opponent_name: this.gamedatas.players[opponent_id].name,
                     discard_card_id: card_id,
-                    card_name: anchor_args.resolving_card_name
+                    card_name: _(anchor_args.resolving_card_name)
                 });
             }
             else {
@@ -12059,7 +12059,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
             var badOmen_args = this.gamedatas.gamestate.args;
             this.mainClientState.enterOnStack('client_badOmen', {
                 toss_card_id: -1,
-                card_name: (_a = badOmen_args.resolving_card_name) !== null && _a !== void 0 ? _a : "MISSING CARD NAME"
+                card_name: _((_a = badOmen_args.resolving_card_name) !== null && _a !== void 0 ? _a : "MISSING CARD NAME")
             });
         };
         DaleOfMerchants.prototype.onBadOmenUndo = function () {
@@ -12415,7 +12415,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                         market_card_id: -1,
                         market_pos: -1,
                         opponent_name: (_a = olm4_args.opponent_name) !== null && _a !== void 0 ? _a : "MISSING OPPONENT NAME",
-                        card_name: (_b = olm4_args.resolving_card_name) !== null && _b !== void 0 ? _b : "MISSING CARD NAME"
+                        card_name: _((_b = olm4_args.resolving_card_name) !== null && _b !== void 0 ? _b : "MISSING CARD NAME")
                     });
                     break;
                 case 'olm5a':

@@ -4963,7 +4963,7 @@ class DaleOfMerchants extends Gamegui
 				this.mainClientState.enterOnStack('client_olm3_step2', {
 					technique_card_id: client_olm3_step1_args.technique_card_id,
 					toss_card_id: card.id,
-					card_name: client_olm3_step1_args.resolving_card_name ?? "MISSING CARD NAME"
+					card_name: _(client_olm3_step1_args.resolving_card_name ?? "MISSING CARD NAME")
 				});
 				break;
 			case null:
@@ -5058,7 +5058,7 @@ class DaleOfMerchants extends Gamegui
 				const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 				this.mainClientState.enterOnStack('client_badOmen', {
 					toss_card_id: card.id,
-					card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
+					card_name: _(badOmen_args.resolving_card_name ?? "MISSING CARD NAME")
 				});
 				break;
 			case 'capuchin4':
@@ -5071,7 +5071,7 @@ class DaleOfMerchants extends Gamegui
 				this.mainClientState.enterOnStack('client_olm4_market', {
 					toss_card_id: card.id,
 					opponent_name: olm4_args.opponent_name ?? "MISSING OPPONENT NAME",
-					card_name: olm4_args.resolving_card_name ?? "MISSING CARD NAME"
+					card_name: _(olm4_args.resolving_card_name ?? "MISSING CARD NAME")
 				});
 				break;
 		}
@@ -7683,7 +7683,7 @@ class DaleOfMerchants extends Gamegui
 				opponent_id: opponent_id,
 				opponent_name: this.gamedatas.players[opponent_id]!.name!,
 				discard_card_id: card_id,
-				card_name: anchor_args.resolving_card_name
+				card_name: _(anchor_args.resolving_card_name)
 			});
 		}
 		else {
@@ -7889,7 +7889,7 @@ class DaleOfMerchants extends Gamegui
 		const badOmen_args = this.gamedatas.gamestate.args as { resolving_card_name?: string }
 		this.mainClientState.enterOnStack('client_badOmen', {
 			toss_card_id: -1,
-			card_name: badOmen_args.resolving_card_name ?? "MISSING CARD NAME"
+			card_name: _(badOmen_args.resolving_card_name ?? "MISSING CARD NAME")
 		});
 	}
 
@@ -8307,7 +8307,7 @@ class DaleOfMerchants extends Gamegui
 					market_card_id: -1,
 					market_pos: -1,
 					opponent_name: olm4_args.opponent_name ?? "MISSING OPPONENT NAME",
-					card_name: olm4_args.resolving_card_name ?? "MISSING CARD NAME"
+					card_name: _(olm4_args.resolving_card_name ?? "MISSING CARD NAME")
 				});
 				break;
 			case 'olm5a':
