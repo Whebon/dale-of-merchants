@@ -3693,7 +3693,7 @@ class DaleOfMerchants extends Gamegui
 			//parse extended_card_name
 			if ('extended_card_name' in args) {
 				const daleCard = DaleCard.of(args['extended_card_name']);
-				args['extended_card_name'] = `<strong>${daleCard.name}</strong> (${daleCard.animalfolk_displayed} ${daleCard.effective_value})`;
+				args['extended_card_name'] = `<strong>${daleCard.name}</strong> (${daleCard.animalfolk_displayed} ${daleCard.original_value})`;
 			}
 			
 			//TEMPORARY downward compatibility: do not error on "msg_prefix"
@@ -3723,7 +3723,7 @@ class DaleOfMerchants extends Gamegui
 			if ('clock' in args) {
 				args['clock'] = PlayerClock.getClockLabelAndIconTpl(+args['clock']); 
 			}
-			
+
 			//translate private card name argument on the client side (suggested by Abel)
 			if ('_private' in args && 'card_name' in args['_private']) {
 				args['_private']['card_name'] = _(args['_private']['card_name']);

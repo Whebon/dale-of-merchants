@@ -8442,7 +8442,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 }
                 if ('extended_card_name' in args) {
                     var daleCard = DaleCard_9.DaleCard.of(args['extended_card_name']);
-                    args['extended_card_name'] = "<strong>".concat(daleCard.name, "</strong> (").concat(daleCard.animalfolk_displayed, " ").concat(daleCard.effective_value, ")");
+                    args['extended_card_name'] = "<strong>".concat(daleCard.name, "</strong> (").concat(daleCard.animalfolk_displayed, " ").concat(daleCard.original_value, ")");
                 }
                 if ('msg_prefix' in args) {
                     args['msg_prefix'] = "";
