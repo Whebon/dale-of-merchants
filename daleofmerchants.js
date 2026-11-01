@@ -8462,6 +8462,9 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                 if ('clock' in args) {
                     args['clock'] = PlayerClock_3.PlayerClock.getClockLabelAndIconTpl(+args['clock']);
                 }
+                if ('_private' in args && 'card_name' in args['_private']) {
+                    args['_private']['card_name'] = _(args['_private']['card_name']);
+                }
             }
             return _super.prototype.format_string_recursive.call(this, log, args);
         };

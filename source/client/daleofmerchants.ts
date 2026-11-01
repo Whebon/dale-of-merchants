@@ -3723,6 +3723,11 @@ class DaleOfMerchants extends Gamegui
 			if ('clock' in args) {
 				args['clock'] = PlayerClock.getClockLabelAndIconTpl(+args['clock']); 
 			}
+			
+			//translate private card name argument on the client side (suggested by Abel)
+			if ('_private' in args && 'card_name' in args['_private']) {
+				args['_private']['card_name'] = _(args['_private']['card_name']);
+			}
 		}
 		return super.format_string_recursive(log, args)
 	}
