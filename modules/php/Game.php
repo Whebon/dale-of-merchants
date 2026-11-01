@@ -8065,7 +8065,7 @@ class Game extends \Bga\GameFramework\Table
                     $dbcard = $this->cards->removeCardFromPile($card_id, DISCARD.$player_id);
                     $this->cards->moveCard($card_id, HAND.$player_id);
                     $this->bga->notify->all('discardToHand', clienttranslate('${resolving_card_name}: ${player_name} takes their ${card_name} from their discard pile'), array(
-                        "resolving_card_name" => $this->getCardName($dbcard),
+                        "resolving_card_name" => $this->getCardName($technique_card),
                         "player_id" => $player_id,
                         "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                         "card_name" => $this->getCardName($dbcard),
