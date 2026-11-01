@@ -3169,7 +3169,7 @@ class DaleOfMerchants extends Gamegui
 				break;
 			case 'capuchin4':
 				const capuchin4_args = (args as { opponent_name: string });
-				const capuchin4_label = capuchin4_args.opponent_name+"\'s "+_("card")
+				const capuchin4_label = _("${player_name}\'s card").replace("${player_name}", capuchin4_args.opponent_name);
 				this.myLimbo.setSelectionMode('click', undefined, 'daleofmerchants-wrap-technique', capuchin4_label);
 				this.addActionButton("confirm-button", _("Take"), "onCapuchin4Take");
 				this.addActionButton("skip-button", _("Skip"), "onCapuchin4Skip", undefined, false, DaleOfMerchants.ACTION_BUTTON_SKIP);
