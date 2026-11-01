@@ -6733,10 +6733,10 @@ class Game extends \Bga\GameFramework\Table
             case CT_GOODWILLPRESENTS:
                 $opponent_ids = $args["opponent_ids"];
                 if (count($opponent_ids) == 0) {
-                    throw new UserException(clienttranslate("Goodwill presents cannot have 0 targets"));
+                    throw new UserException(clienttranslate("Goodwill Presents cannot have 0 targets"));
                 }
                 if (count($opponent_ids) > 2) {
-                    throw new UserException(clienttranslate("Goodwill presents cannot have more than 2 targets"));
+                    throw new UserException(clienttranslate("Goodwill Presents cannot have more than 2 targets"));
                 }
                 foreach ($opponent_ids as $opponent_id) {
                     $junk_cards = $this->cards->getJunk();
