@@ -9518,7 +9518,7 @@ class Game extends \Bga\GameFramework\Table
         $card_ids = $this->numberListToArray($card_ids);
         if (count($card_ids) != 2) {
             //otherwise, this game state should have be skipped. CT_DUPLICATEENTRY should have moved to badOmen immediately.
-            throw new UserException("Duplicate Entry expects exactly 2 cards");
+            throw new UserException(_("Duplicate Entry expects exactly 2 cards"));
         }
         foreach ($card_ids as $card_id) {
             $this->drawCardId('', $card_id, true);
