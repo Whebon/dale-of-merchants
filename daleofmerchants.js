@@ -229,6 +229,9 @@ define("components/DaleIcons", ["require", "exports"], function (require, export
         DaleIcons.getStarsIcon = function () {
             return this.getIcon(7, 5);
         };
+        DaleIcons.getInheritanceIcon = function () {
+            return this.getIcon(7, 6);
+        };
         DaleIcons.getDawnIcon = function () {
             return this.getIcon(8, 0);
         };
@@ -678,6 +681,9 @@ define("components/AbstractOrderedSelection", ["require", "exports", "components
                     break;
                 case 'cheese':
                     icon = (index == 0) ? DaleIcons_2.DaleIcons.getCheeseIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
+                    break;
+                case 'inheritance':
+                    icon = (index == 0) ? DaleIcons_2.DaleIcons.getInheritanceIcon() : DaleIcons_2.DaleIcons.getBluePileIcon(Math.min(index - 1, 5));
                     break;
                 case 'numbers':
                     icon = DaleIcons_2.DaleIcons.getNumberIcon(Math.min(index, 4));
@@ -5930,7 +5936,11 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     this.market.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
                     break;
                 case 'specialOffer':
-                    this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (${icon}) and toss (${icon})"), DaleIcons_10.DaleIcons.getCheeseIcon(), DaleIcons_10.DaleIcons.getBluePileIcon(0)));
+                    var specialOffer_args = args.args;
+                    var specialOffer_type_id = DaleCard_9.DaleCard.of(specialOffer_args.resolving_card).effective_type_id;
+                    var specialOffer_iconType = specialOffer_type_id == DaleCard_9.DaleCard.CT_INHERITANCE ? 'inheritance' : 'cheese';
+                    var specialOffer_icon = specialOffer_type_id == DaleCard_9.DaleCard.CT_INHERITANCE ? DaleIcons_10.DaleIcons.getInheritanceIcon() : DaleIcons_10.DaleIcons.getCheeseIcon();
+                    this.myLimbo.setSelectionMode('multiple', specialOffer_iconType, 'daleofmerchants-wrap-technique', this.format_dale_icons(_("Choose cards to take (${icon}) and toss (${icon})"), specialOffer_icon, DaleIcons_10.DaleIcons.getBluePileIcon(0)));
                     break;
                 case 'client_rottenFood':
                     for (var _s = 0, _t = Object.entries(this.allDecks); _s < _t.length; _s++) {

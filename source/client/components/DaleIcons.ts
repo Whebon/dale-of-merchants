@@ -188,6 +188,10 @@ export class DaleIcons {
         return this.getIcon(7, 5);
     }
 
+    public static getInheritanceIcon(): HTMLElement {
+        return this.getIcon(7, 6);
+    }
+
     /////////////////////////////
     ////////    ROW 8    ////////
     /////////////////////////////

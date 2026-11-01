@@ -894,8 +894,12 @@ class DaleOfMerchants extends Gamegui
 				this.market!.setSelectionMode(1, undefined, "daleofmerchants-wrap-technique");
 				break;
 			case 'specialOffer':
-				this.myLimbo.setSelectionMode('multiple', 'cheese', 'daleofmerchants-wrap-technique', 
-					this.format_dale_icons(_("Choose cards to take (${icon}) and toss (${icon})"), DaleIcons.getCheeseIcon(), DaleIcons.getBluePileIcon(0))
+				const specialOffer_args = args.args as { resolving_card: DbCard };
+				const specialOffer_type_id = DaleCard.of(specialOffer_args.resolving_card).effective_type_id;
+				const specialOffer_iconType = specialOffer_type_id == DaleCard.CT_INHERITANCE ? 'inheritance' : 'cheese'
+				const specialOffer_icon = specialOffer_type_id == DaleCard.CT_INHERITANCE ? DaleIcons.getInheritanceIcon() : DaleIcons.getCheeseIcon()
+				this.myLimbo.setSelectionMode('multiple', specialOffer_iconType, 'daleofmerchants-wrap-technique', 
+					this.format_dale_icons(_("Choose cards to take (${icon}) and toss (${icon})"), specialOffer_icon, DaleIcons.getBluePileIcon(0))
 				);
 				break;
 			case 'client_rottenFood':

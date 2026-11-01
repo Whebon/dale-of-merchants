@@ -98,6 +98,9 @@ export abstract class AbstractOrderedSelection {
             case 'cheese':
                 icon = (index == 0) ? DaleIcons.getCheeseIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
                 break;
+            case 'inheritance':
+                icon = (index == 0) ? DaleIcons.getInheritanceIcon() : DaleIcons.getBluePileIcon(Math.min(index-1, 5));
+                break
             case 'numbers':
                 icon = DaleIcons.getNumberIcon(Math.min(index, 4));
                 break;
