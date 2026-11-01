@@ -6252,7 +6252,7 @@ define("bgagame/daleofmerchants", ["require", "exports", "ebg/core/gamegui", "co
                     var velocipede_args = args.args;
                     new TargetingLine_1.TargetingLine(new DaleCard_9.DaleCard(velocipede_args.card_id), this.myHand.getAllItems().map(function (item) { return new DaleCard_9.DaleCard(item.id); }).filter(function (card) { return card.isAnimalfolk(); }), "daleofmerchants-line-source-technique", "daleofmerchants-line-target-technique", "daleofmerchants-line-technique", function (source_id) { return _this.onVelocipedeSwapSkip(); }, function (source_id, target_id) { return _this.onVelocipedeSwap(target_id); });
                     this.marketDiscard.setSelectionMode('noneCantViewContent');
-                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ") + velocipede_args.card_name);
+                    this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ${card_name}").replace("${card_name}", _(velocipede_args.card_name)));
                     break;
                 case 'DEPRECATED_royalPrivilege':
                     this.market.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');

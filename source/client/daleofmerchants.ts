@@ -1281,7 +1281,7 @@ class DaleOfMerchants extends Gamegui
 					(source_id: number, target_id: number) => this.onVelocipedeSwap(target_id)
 				)
 				this.marketDiscard.setSelectionMode('noneCantViewContent');
-				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ")+velocipede_args.card_name);
+				this.myHand.setSelectionMode('none', undefined, 'daleofmerchants-wrap-technique', _("Choose an animalfolk card to swap with ${card_name}").replace("${card_name}", _(velocipede_args.card_name)));
 				break;
 			case 'DEPRECATED_royalPrivilege':
 				this.market!.setSelectionMode(1, undefined, 'daleofmerchants-wrap-purchase');
