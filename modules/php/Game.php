@@ -9518,7 +9518,7 @@ class Game extends \Bga\GameFramework\Table
         $card_ids = $this->numberListToArray($card_ids);
         if (count($card_ids) != 2) {
             //otherwise, this game state should have be skipped. CT_DUPLICATEENTRY should have moved to badOmen immediately.
-            throw new UserException(_("Duplicate Entry expects exactly 2 cards"));
+            throw new UserException(clienttranslate("Duplicate Entry expects exactly 2 cards"));
         }
         foreach ($card_ids as $card_id) {
             $this->drawCardId('', $card_id, true);
@@ -9964,10 +9964,10 @@ class Game extends \Bga\GameFramework\Table
         $dbcards = $this->cards->getCardsFromLocation($card_ids, HAND.$player_id);
         $nbr = count($dbcards);
         if ($nbr > 2) {
-            throw new VisibleSystemException("Tactical Measurement: you may place at most 2 cards on top of your deck");
+            throw new VisibleSystemException(clienttranslate("Tactical Measurement: you may place at most 2 cards on top of your deck"));
         }
         if ($nbr < 2 && $nbr != $this->cards->countCardsInLocation(HAND.$player_id)) {
-            throw new UserException("Tactical Measurement: please select exacly 2 cards");
+            throw new UserException(clienttranslate("Tactical Measurement: please select exactly 2 cards"));
         }
         $this->placeOnDeckMultiple(
             $player_id, 
