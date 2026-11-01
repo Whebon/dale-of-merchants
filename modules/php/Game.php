@@ -1567,12 +1567,12 @@ class Game extends \Bga\GameFramework\Table
         }
         $hand_cards = $this->monoPickCardsOfValue($all_hand_cards, $base_value);
         
-        //Apply CT_WALRUSMONO: overwrite the picked cards with the lowest animalfolk card
+        //Apply CT_WALRUSMONO: overwrite the picked cards with the leftmost animalfolk card
         if ($this->effects->countGlobalEffects(CT_WALRUSMONO) > 0) {
             $animalfolk_cards = array_filter($all_hand_cards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
             if (count($animalfolk_cards) > 0) {
-                $lowest_animalfolk_card = $this->monoPickLowestValuedCard($animalfolk_cards);
-                $hand_cards = array($lowest_animalfolk_card["id"] => $lowest_animalfolk_card);
+                $leftmost_dbcard = end($animalfolk_cards);
+                $hand_cards = array($leftmost_dbcard["id"] => $leftmost_dbcard);
             }
         }
 
