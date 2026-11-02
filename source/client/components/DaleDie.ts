@@ -30,15 +30,6 @@ export class DaleDie {
     static readonly DIE_DECK2: number = 15;
     static readonly DIE_HAND2: number = 16;
 
-    //TODO: safely remove this
-    // private static results: Record<DieType, string[]> = {
-    //     "ocelot":     ['0', '1', '1', '2', '2', '3'],
-    //     "polecat":    ['1', '1', '2', '2', '3', '3'],
-    //     "hare":       ['stars', 'stars', 'planet', 'planet', 'reroll planet', 'comet'],
-    //     "pangolin1":  ['discard', 'discard', 'deck', 'deck', 'deck', 'hand'],
-    //     "pangolin2":  ['discard', 'discard', 'deck', 'deck', 'deck', 'hand']
-    // };
-
     constructor(animalfolk_id: number, d6: 0|1|2|3|4|5, name_displayed: string, parentHTML: HTMLElement) {
         //construct the die
         switch(animalfolk_id) {

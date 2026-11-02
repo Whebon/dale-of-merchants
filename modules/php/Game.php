@@ -3905,7 +3905,7 @@ class Game extends \Bga\GameFramework\Table
                     case 0:
                     case 1:
                         $die_value = DIE_DISCARD;
-                        $die_label = clienttranslate('discard');
+                        $die_label = clienttranslate('discard pile');
                         $die_icon = DIE_DISCARD;
                         break;
                     case 2:
@@ -3927,7 +3927,7 @@ class Game extends \Bga\GameFramework\Table
                     case 0:
                     case 1:
                         $die_value = DIE_DISCARD2;
-                        $die_label = clienttranslate('discard');
+                        $die_label = clienttranslate('discard pile');
                         $die_icon = DIE_DISCARD2;
                         break;
                     case 2:
