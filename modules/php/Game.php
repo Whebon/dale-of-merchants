@@ -6555,7 +6555,7 @@ class Game extends \Bga\GameFramework\Table
                 // $card_name = trim($args["card_name"], '"');
                 // $type_id = $this->nameToTypeId($card_name);
                 // $players = $this->loadPlayersBasicInfosInclMono();
-                // $this->bga->notify->all('message', clienttranslate('Periscope: ${player_name} named "${card_name}"'), array(
+                // $this->bga->notify->all('message', clienttranslate('Periscope: ${player_name} named ${card_name}'), array(
                 //     "player_name" => $this->getPlayerNameByIdInclMono($player_id),
                 //     "card_name" => $this->card_types[$type_id]['name'],
                 // ));
@@ -10506,7 +10506,7 @@ class Game extends \Bga\GameFramework\Table
         }
         $player_id = $this->getActivePlayerId();
         $this->_actPangolinDice($source_id, $destination_id,
-            clienttranslate('Loose Marbles: "${card_name}" moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
+            clienttranslate('Loose Marbles: ${card_name} moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
             clienttranslate('Loose Marbles: a card moves from ${player_name}\'s ${die_label_source} (${die_icon_source}) to ${opponent_name}\'s ${die_label} (${die_icon})'),
             clienttranslate('Loose Marbles: nothing happens because ${player_name}\'s ${die_label_source} (${die_icon_source}) is empty')
         );
