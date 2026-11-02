@@ -1571,7 +1571,8 @@ class Game extends \Bga\GameFramework\Table
         if ($this->effects->countGlobalEffects(CT_WALRUSMONO) > 0) {
             $animalfolk_cards = array_filter($all_hand_cards, function($dbcard) { return $this->isAnimalfolk($dbcard); });
             if (count($animalfolk_cards) > 0) {
-                $leftmost_dbcard = end($animalfolk_cards);
+                $animalfolk_cards = $this->sortCardsByLocationArg($animalfolk_cards, false);
+                $leftmost_dbcard = reset($animalfolk_cards);
                 $hand_cards = array($leftmost_dbcard["id"] => $leftmost_dbcard);
             }
         }
